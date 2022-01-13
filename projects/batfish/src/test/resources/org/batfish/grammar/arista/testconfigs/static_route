@@ -3,6 +3,9 @@
 !
 hostname static_route
 !
+interface Ethernet1
+interface Ethernet2
+!
 vrf definition VRF
 !
 ! Cannot ECMP to Null0 interface. (Ethernet1 blocked)

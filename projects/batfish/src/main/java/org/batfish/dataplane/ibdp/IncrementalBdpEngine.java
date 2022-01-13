@@ -389,9 +389,9 @@ final class IncrementalBdpEngine {
       // Static nextHopIp routes
       Span nhIpSpan =
           GlobalTracer.get()
-              .buildSpan(iterationLabel + ": Recompute static routes with next-hop IP")
+              .buildSpan(iterationLabel + ": Recompute conditional static routes")
               .start();
-      LOGGER.info("{}: Recompute static routes with next-hop IP", iterationLabel);
+      LOGGER.info("{}: Recompute conditional static routes", iterationLabel);
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(nhIpSpan)) {
         assert innerScope != null; // avoid unused warning
         vrs.parallelStream().forEach(VirtualRouter::activateStaticRoutes);

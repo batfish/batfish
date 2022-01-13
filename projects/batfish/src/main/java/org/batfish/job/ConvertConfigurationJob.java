@@ -55,6 +55,7 @@ import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -75,6 +76,12 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVisitor;
+import org.batfish.datamodel.route.nh.NextHopVrf;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier;
 import org.batfish.datamodel.transformation.Transformation;
@@ -425,6 +432,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
     verifyVrrpGroups(c, w);
+    removeInvalidStaticRoutes(c, w);
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
@@ -468,6 +476,73 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
     removeInvalidAcls(c, w);
+  }
+
+  private static void removeInvalidStaticRoutes(Configuration c, Warnings w) {
+    StaticRouteNextHopChecker checker = new StaticRouteNextHopChecker(c, w);
+    for (Vrf v : c.getVrfs().values()) {
+      boolean modified = false;
+      ImmutableSortedSet.Builder<StaticRoute> builder = ImmutableSortedSet.naturalOrder();
+      for (StaticRoute sr : v.getStaticRoutes()) {
+        if (!checker.visit(sr.getNextHop())) {
+          modified = true;
+        } else {
+          builder.add(sr);
+        }
+      }
+      if (modified) {
+        v.setStaticRoutes(builder.build());
+      }
+    }
+  }
+
+  private static final class StaticRouteNextHopChecker implements NextHopVisitor<Boolean> {
+    private StaticRouteNextHopChecker(Configuration c, Warnings w) {
+      _c = c;
+      _w = w;
+    }
+
+    private final @Nonnull Configuration _c;
+    private final @Nonnull Warnings _w;
+
+    @Override
+    public Boolean visitNextHopIp(NextHopIp nextHopIp) {
+      return true;
+    }
+
+    @Override
+    public Boolean visitNextHopInterface(NextHopInterface nextHopInterface) {
+      if (!_c.getAllInterfaces().containsKey(nextHopInterface.getInterfaceName())) {
+        _w.redFlag(
+            String.format(
+                "Removing invalid static route on node '%s' with undefined next hop interface '%s'",
+                _c.getHostname(), nextHopInterface.getInterfaceName()));
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public Boolean visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+      return true;
+    }
+
+    @Override
+    public Boolean visitNextHopVrf(NextHopVrf nextHopVrf) {
+      if (!_c.getVrfs().containsKey(nextHopVrf.getVrfName())) {
+        _w.redFlag(
+            String.format(
+                "Removing invalid static route on node '%s' with undefined next hop vrf '%s'",
+                _c.getHostname(), nextHopVrf.getVrfName()));
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public Boolean visitNextHopVtep(NextHopVtep nextHopVtep) {
+      throw new IllegalArgumentException("Static routes cannot have next hop VTEP");
+    }
   }
 
   private static void verifyAsPathStructures(Configuration c) {
