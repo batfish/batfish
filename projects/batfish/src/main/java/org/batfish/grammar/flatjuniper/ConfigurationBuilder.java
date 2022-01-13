@@ -310,6 +310,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_primaryContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_vrrp_groupContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_no_preemptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_preemptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_virtual_addressContext;
@@ -4517,6 +4518,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIfiav_preempt(Ifiav_preemptContext ctx) {
     _currentVrrpGroup.setPreempt(true);
+  }
+
+  @Override
+  public void exitIfiav_no_preempt(Ifiav_no_preemptContext ctx) {
+    _currentVrrpGroup.setPreempt(false);
   }
 
   @Override

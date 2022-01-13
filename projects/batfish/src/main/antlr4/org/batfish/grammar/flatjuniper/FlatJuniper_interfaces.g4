@@ -483,6 +483,8 @@ ifia_vrrp_group
       | ifiav_advertise_interval
       | ifiav_authentication_key
       | ifiav_authentication_type
+      | ifiav_fast_interval
+      | ifiav_no_preempt
       | ifiav_preempt
       | ifiav_priority
       | ifiav_track
@@ -512,6 +514,16 @@ ifiav_authentication_type
       MD5
       | SIMPLE
    )
+;
+
+ifiav_fast_interval
+:
+   FAST_INTERVAL dec
+;
+
+ifiav_no_preempt
+:
+   NO_PREEMPT
 ;
 
 ifiav_preempt
