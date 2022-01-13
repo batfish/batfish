@@ -3193,6 +3193,7 @@ F_NameChar
   [0-9A-Za-z_]
   | '-'
   | '/'
+  | '.'
 ;
 
 fragment

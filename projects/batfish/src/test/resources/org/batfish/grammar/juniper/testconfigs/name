@@ -7,4 +7,8 @@ set policy-options policy-statement XX term 10/8 from route-filter 10.0.0.0/8 lo
 set policy-options policy-statement XX term 10/8 then metric 0
 set policy-options policy-statement XX term 10/8 then community add EU1_BE_LOCAL
 set policy-options policy-statement XX term 10/8 then accept
+set firewall family inet filter filterName term Slash/Name then accept
 #
+# '.' is allowed in names
+set policy-options policy-statement XX term Dot.Name from protocol bgp
+set firewall family inet filter filterName term Dot.Name then accept
