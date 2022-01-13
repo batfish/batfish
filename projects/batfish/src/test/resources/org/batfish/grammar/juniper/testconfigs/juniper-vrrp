@@ -4,9 +4,19 @@ set system host-name juniper-vrrp
 
 # one virtual-addresses
 set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.1/24 vrrp-group 1 virtual-address 10.0.0.2
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.1/24 vrrp-group 1 preempt
 
 # multiple virtual-addresses
 set interfaces xe-0/0/0 unit 0 family inet address 10.0.1.1/24 vrrp-group 2 virtual-address 10.0.1.2
 set interfaces xe-0/0/0 unit 0 family inet address 10.0.1.1/24 vrrp-group 2 virtual-address 10.0.1.3
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.1.1/24 vrrp-group 2 no-preempt
 
-#
+# parsed but ignored syntax
+set interfaces xe-2/3/0 unit 3440 family inet address 10.249.48.36/27 vrrp-group 100 fast-interval 300
+set interfaces xe-2/3/0 unit 3440 family inet address 10.249.48.36/27 vrrp-group 100 accept-data
+set interfaces xe-2/3/0 unit 3440 family inet address 10.249.48.36/27 vrrp-group 100 advertise-interval 300
+set interfaces xe-2/3/0 unit 3440 family inet address 10.249.48.36/27 vrrp-group 100 authentication-key kkkkkk
+set interfaces xe-2/3/0 unit 3440 family inet address 10.249.48.36/27 vrrp-group 100 authentication-type md5
+set interfaces xe-2/3/0 unit 3440 family inet address 10.249.48.36/27 vrrp-group 100 authentication-type simple
+
+

@@ -479,10 +479,12 @@ ifia_vrrp_group
    VRRP_GROUP (wildcard | number = dec)
    (
       apply
-      | ifiav_accept_data
-      | ifiav_advertise_interval
-      | ifiav_authentication_key
-      | ifiav_authentication_type
+      | ifiav_accept_data_null
+      | ifiav_advertise_interval_null
+      | ifiav_authentication_key_null
+      | ifiav_authentication_type_null
+      | ifiav_fast_interval_null
+      | ifiav_no_preempt
       | ifiav_preempt
       | ifiav_priority
       | ifiav_track
@@ -490,28 +492,38 @@ ifia_vrrp_group
    )
 ;
 
-ifiav_accept_data
+ifiav_accept_data_null
 :
    ACCEPT_DATA
 ;
 
-ifiav_advertise_interval
+ifiav_advertise_interval_null
 :
    ADVERTISE_INTERVAL dec
 ;
 
-ifiav_authentication_key
+ifiav_authentication_key_null
 :
    AUTHENTICATION_KEY string
 ;
 
-ifiav_authentication_type
+ifiav_authentication_type_null
 :
    AUTHENTICATION_TYPE
    (
       MD5
       | SIMPLE
    )
+;
+
+ifiav_fast_interval_null
+:
+   FAST_INTERVAL dec
+;
+
+ifiav_no_preempt
+:
+   NO_PREEMPT
 ;
 
 ifiav_preempt
