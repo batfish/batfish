@@ -4979,6 +4979,24 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testImplicitInitInterface() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("implicit-init-interface");
+
+    String phyIfaceName = "ge-1/1/0";
+    String unitIfaceName = phyIfaceName + ".1001";
+    Map<String, org.batfish.representation.juniper.Interface> interfaces =
+        juniperConfiguration.getMasterLogicalSystem().getInterfaces();
+
+    assertThat(interfaces.keySet(), equalTo(ImmutableSet.of(phyIfaceName)));
+    org.batfish.representation.juniper.Interface phyIface = interfaces.get(phyIfaceName);
+
+    assertThat(phyIface.getUnits().keySet(), equalTo(ImmutableSet.of(unitIfaceName)));
+    org.batfish.representation.juniper.Interface unitIface = phyIface.getUnits().get(unitIfaceName);
+
+    assertThat(unitIface.getParent(), equalTo(phyIface));
+  }
+
+  @Test
   public void testRouteFilters() {
     Configuration c = parseConfig("route-filter");
     RouteFilterList rfl = c.getRouteFilterLists().get("route-filter-test:t1");
