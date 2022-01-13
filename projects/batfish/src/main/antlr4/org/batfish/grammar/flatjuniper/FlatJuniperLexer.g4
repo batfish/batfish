@@ -592,6 +592,8 @@ FAIL_FILTER: 'fail-filter';
 
 FAMILY: 'family';
 
+FAST_INTERVAL: 'fast-interval';
+
 FASTETHER_OPTIONS: 'fastether-options';
 
 FILE: 'file';
@@ -1755,6 +1757,8 @@ NO_PEER_LOOP_CHECK: 'no-peer-loop-check';
 NO_PING_RECORD_ROUTE: 'no-ping-record-route';
 
 NO_PING_TIME_STAMP: 'no-ping-time-stamp';
+
+NO_PREEMPT: 'no-preempt';
 
 NO_PREPEND_GLOBAL_AS: 'no-prepend-global-as';
 
