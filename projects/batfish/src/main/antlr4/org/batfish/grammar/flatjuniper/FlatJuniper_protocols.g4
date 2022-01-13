@@ -43,6 +43,7 @@ s_protocols
       | MSTP
       | MVPN
       | NEIGHBOR_DISCOVERY
+      | OAM
       | PIM
       | ROUTER_ADVERTISEMENT
       | ROUTER_DISCOVERY

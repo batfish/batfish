@@ -1792,6 +1792,8 @@ NSSA: 'nssa';
 
 NTP: 'ntp';
 
+OAM: 'oam';
+
 OFF: 'off';
 
 OFFSET: 'offset';

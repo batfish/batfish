@@ -6391,4 +6391,10 @@ public final class FlatJuniperGrammarTest {
                 "Configuration will not actually commit. Cannot create VRRP group for vrid 1 on"
                     + " interface 'xe-0/0/0.0' because no virtual-address is assigned.")));
   }
+
+  @Test
+  public void testIgnoredProtocols() {
+    // don't crash
+    parseJuniperConfig("ignored-protocols");
+  }
 }
