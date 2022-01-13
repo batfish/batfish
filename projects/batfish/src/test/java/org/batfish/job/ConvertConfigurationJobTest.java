@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.job.ConvertConfigurationJob.finalizeConfiguration;
 import static org.hamcrest.Matchers.contains;
@@ -13,6 +14,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedMap;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
@@ -27,11 +29,18 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.job.ConvertConfigurationJob.CollectIpSpaceReferences;
@@ -195,5 +204,72 @@ public final class ConvertConfigurationJobTest {
       assertThat(c.getAllInterfaces().get("exists").getVrrpGroups(), equalTo(vrrpGroups));
       assertThat(w.getRedFlagWarnings(), empty());
     }
+  }
+
+  @Test
+  public void testRemoveInvalidStaticRoutes() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("foo")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+    Interface.builder().setName("i1").setVrf(v).setOwner(c).build();
+
+    StaticRoute intMissing =
+        StaticRoute.builder()
+            .setNextHop(NextHopInterface.of("missing"))
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute intPresent =
+        StaticRoute.builder()
+            .setNextHop(NextHopInterface.of("i1"))
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute vrfPresent =
+        StaticRoute.builder()
+            .setNextHop(NextHopVrf.of(DEFAULT_VRF_NAME))
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute vrfMissing =
+        StaticRoute.builder()
+            .setNextHop(NextHopVrf.of("missing"))
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute ip =
+        StaticRoute.builder()
+            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute discard =
+        StaticRoute.builder()
+            .setNextHop(NextHopDiscard.instance())
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .build();
+
+    v.setStaticRoutes(
+        ImmutableSortedSet.of(intMissing, intPresent, vrfPresent, vrfMissing, ip, discard));
+
+    Warnings w = new Warnings(false, true, false);
+    finalizeConfiguration(c, w);
+
+    assertThat(v.getStaticRoutes(), containsInAnyOrder(intPresent, vrfPresent, ip, discard));
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText(
+                "Removing invalid static route on node 'foo' with undefined next hop interface"
+                    + " 'missing'"),
+            hasText(
+                "Removing invalid static route on node 'foo' with undefined next hop vrf"
+                    + " 'missing'")));
   }
 }
