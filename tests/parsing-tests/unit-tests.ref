@@ -71514,7 +71514,7 @@
         "cisco_ios_neighbor" : "PASSED",
         "cisco_ip" : "PASSED",
         "cisco_ip_nat" : "PASSED",
-        "cisco_ip_route" : "PASSED",
+        "cisco_ip_route" : "WARNINGS",
         "cisco_ipsla" : "PASSED",
         "cisco_ipv6" : "PASSED",
         "cisco_ipv6_access_list" : "PASSED",
@@ -71621,7 +71621,7 @@
         "ios_xr_multipart" : "PASSED",
         "ios_xr_ntp" : "PASSED",
         "ios_xr_ospf" : "PASSED",
-        "ios_xr_router_static" : "PASSED",
+        "ios_xr_router_static" : "WARNINGS",
         "ios_xr_ssh" : "PASSED",
         "ios_xr_taskgroup" : "PASSED",
         "iosxrmulticast" : "PASSED",
@@ -86211,6 +86211,42 @@
             }
           ]
         },
+        "cisco_ip_route" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'cisco_ip_route' with undefined next hop interface 'Dialer1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'cisco_ip_route' with undefined next hop interface 'Dialer2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'cisco_ip_route' with undefined next hop interface 'GigabitEthernet3/0/0.212'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'cisco_ip_route' with undefined next hop interface 'Loopback66'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'cisco_ip_route' with undefined next hop interface 'Loopback99'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'cisco_ip_route' with undefined next hop interface 'POS5/3:10'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'cisco_ip_route' with undefined next hop interface 'Serial5/0:2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'cisco_ip_route' with undefined next hop interface 'Serial5/1:5'"
+            }
+          ]
+        },
         "cisco_ospf" : {
           "Red flags" : [
             {
@@ -86385,6 +86421,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot create IS-IS process without specifying net-address"
+            }
+          ]
+        },
+        "ios_xr_router_static" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'ios_xr_router_static' with undefined next hop interface 'GigabitEthernet0/2/1/5.290'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Removing invalid static route on node 'ios_xr_router_static' with undefined next hop interface 'TenGigE0/0/2/3'"
             }
           ]
         },

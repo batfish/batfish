@@ -221,12 +221,7 @@ public class VirtualRouterTest {
     VirtualRouter vr = makeIosVirtualRouter("n1");
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
 
-    StaticRoute baseRoute =
-        StaticRoute.testBuilder()
-            .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setNextHopInterface("Ethernet1")
-            .setAdministrativeCost(1)
-            .build();
+    ConnectedRoute baseRoute = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet1");
     StaticRoute dependentRoute =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("2.2.2.2/32"))
@@ -237,9 +232,10 @@ public class VirtualRouterTest {
     vr.getConfiguration()
         .getVrfs()
         .get(DEFAULT_VRF_NAME)
-        .setStaticRoutes(ImmutableSortedSet.of(baseRoute, dependentRoute));
+        .setStaticRoutes(ImmutableSortedSet.of(dependentRoute));
 
     // Initial activation
+    vr.initConnectedRib();
     vr.initStaticRibs();
     vr.activateStaticRoutes();
 
@@ -387,38 +383,28 @@ public class VirtualRouterTest {
         ImmutableList.of(
             StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.1.1.1/32"))
-                .setNextHopInterface("Ethernet1")
+                .setNextHop(NextHopInterface.of("Ethernet1"))
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(1L)
                 .build(),
             StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("2.2.2.2/32"))
-                .setNextHopIp(Ip.parse("9.9.9.8"))
+                .setNextHop(NextHopIp.of(Ip.parse("9.9.9.8")))
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(1L)
                 .build(),
             StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("3.3.3.3/32"))
-                .setNextHopIp(Ip.parse("9.9.9.9"))
-                .setNextHopInterface("Ethernet1")
+                .setNextHop(NextHopInterface.of("Ethernet1", Ip.parse("9.9.9.9")))
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(1L)
                 .build(),
             StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("4.4.4.4/32"))
-                .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-                .setAdministrativeCost(1)
-                .setMetric(0L)
-                .setTag(1L)
-                .build(),
-
-            // These do not get activated due to missing/incorrect interface names
-            StaticRoute.testBuilder()
-                .setNetwork(Prefix.parse("5.5.5.5/32"))
-                .setNextHopInterface("Eth1")
+                .setNextHop(NextHopDiscard.instance())
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(1L)
@@ -431,10 +417,10 @@ public class VirtualRouterTest {
     // Test
     vr.initStaticRibs();
 
+    assertThat(vr._staticUnconditionalRib.getTypedRoutes(), containsInAnyOrder(routes.get(3)));
     assertThat(
-        vr._staticUnconditionalRib.getTypedRoutes(),
-        containsInAnyOrder(routes.get(0), routes.get(2), routes.get(3)));
-    assertThat(vr._staticNextHopRib.getTypedRoutes(), containsInAnyOrder(routes.get(1)));
+        vr._staticConditionalRib.getTypedRoutes(),
+        containsInAnyOrder(routes.get(0), routes.get(1), routes.get(2)));
   }
 
   @Test
@@ -446,7 +432,7 @@ public class VirtualRouterTest {
 
     // Simple RIBs
     assertThat(vr.getConnectedRib().getRoutes(), empty());
-    assertThat(vr._staticNextHopRib.getRoutes(), empty());
+    assertThat(vr._staticConditionalRib.getRoutes(), empty());
     assertThat(vr._staticUnconditionalRib.getRoutes(), empty());
     assertThat(vr._independentRib.getRoutes(), empty());
 
@@ -514,7 +500,7 @@ public class VirtualRouterTest {
     // Test
     vr.initStaticRibs();
 
-    assertThat(vr._staticNextHopRib.getTypedRoutes(), equalTo(routeSet));
+    assertThat(vr._staticConditionalRib.getTypedRoutes(), equalTo(routeSet));
   }
 
   /** Test basic message queuing operations */

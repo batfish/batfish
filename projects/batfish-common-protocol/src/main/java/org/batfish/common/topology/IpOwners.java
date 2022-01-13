@@ -39,7 +39,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.HsrpPriorityEvaluator;
-import org.batfish.datamodel.tracking.PredicateTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackMethod;
 
 /** A utility class for working with IPs owned by network devices. */
@@ -337,7 +337,7 @@ public final class IpOwners {
   static int computeHsrpPriority(@Nonnull Interface iface, @Nonnull HsrpGroup group) {
     Configuration c = iface.getOwner();
     Map<String, TrackMethod> trackMethods = c.getTrackingGroups();
-    PredicateTrackMethodEvaluator trackMethodEvaluator = new PredicateTrackMethodEvaluator(c);
+    StaticTrackMethodEvaluator trackMethodEvaluator = new StaticTrackMethodEvaluator(c);
     HsrpPriorityEvaluator hsrpEvaluator = new HsrpPriorityEvaluator(group.getPriority());
     group
         .getTrackActions()

@@ -97,6 +97,7 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.isis.IsisTopology;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -106,6 +107,8 @@ import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.RibExpr;
+import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.visitors.RibExprVisitor;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -216,7 +219,7 @@ public final class VirtualRouter {
   RipInternalRib _ripInternalStagingRib;
   RipRib _ripRib;
   StaticRib _staticUnconditionalRib;
-  StaticRib _staticNextHopRib;
+  StaticRib _staticConditionalRib;
 
   /** FIB (forwarding information base) built from the main RIB */
   private Fib _fib;
@@ -245,6 +248,7 @@ public final class VirtualRouter {
   final Vrf _vrf;
 
   @Nonnull private final RibExprEvaluator _ribExprEvaluator;
+  @Nonnull private final DataplaneTrackEvaluator _trackEvaluator;
 
   @Nonnull
   private final ResolutionRestriction<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
@@ -281,6 +285,7 @@ public final class VirtualRouter {
               _vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY, _prefixTracer);
     }
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
+    _trackEvaluator = new DataplaneTrackEvaluator(_c, _mainRib);
   }
 
   @VisibleForTesting
@@ -572,14 +577,15 @@ public final class VirtualRouter {
   }
 
   /**
-   * Activate static routes with next hop IP. Adds a static route {@code route} to the main RIB if
-   * there exists an active route to the {@code routes}'s next-hop-ip.
+   * Activate conditional static routes, i.e. static routes with next hop IP or track. Adds a static
+   * route {@code route} to the main RIB if there exists an active route to the {@code routes}'s
+   * next-hop-ip (if present), and if the track succeeds (if present).
    *
    * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
   void activateStaticRoutes() {
-    for (StaticRoute sr : _staticNextHopRib.getTypedRoutes()) {
-      if (shouldActivateNextHopIpRoute(sr, _mainRib, _resolutionRestriction)) {
+    for (StaticRoute sr : _staticConditionalRib.getTypedRoutes()) {
+      if (shouldActivateConditionalStaticRoute(sr)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
         /*
@@ -588,6 +594,115 @@ public final class VirtualRouter {
         _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(annotateRoute(sr)));
       }
     }
+  }
+
+  private boolean shouldActivateConditionalStaticRoute(StaticRoute sr) {
+    if (!shouldActivateConditionalStaticRouteNextHop(sr)) {
+      return false;
+    }
+    if (sr.getTrack() != null && !evaluateTrack(sr.getTrack())) {
+      // Required track failed
+      return false;
+    }
+    return true;
+  }
+
+  private boolean shouldActivateConditionalStaticRouteNextHop(StaticRoute sr) {
+    return new ShouldActivateConditionalStaticRouteNextHop(sr).visit(sr.getNextHop());
+  }
+
+  private final class ShouldActivateConditionalStaticRouteNextHop
+      implements NextHopVisitor<Boolean> {
+
+    private ShouldActivateConditionalStaticRouteNextHop(StaticRoute sr) {
+      _sr = sr;
+    }
+
+    private final @Nonnull StaticRoute _sr;
+
+    @Override
+    public Boolean visitNextHopIp(NextHopIp nextHopIp) {
+      return shouldActivateNextHopIpRoute(_sr, _mainRib, _resolutionRestriction);
+    }
+
+    @Override
+    public Boolean visitNextHopInterface(NextHopInterface nextHopInterface) {
+      String iface = nextHopInterface.getInterfaceName();
+      assert _c.getAllInterfaces().containsKey(iface);
+      return _c.getAllInterfaces().get(iface).getActive();
+    }
+
+    @Override
+    public Boolean visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+      assert _sr.getTrack() != null;
+      return true;
+    }
+
+    @Override
+    public Boolean visitNextHopVrf(NextHopVrf nextHopVrf) {
+      assert _sr.getTrack() != null;
+      return true;
+    }
+
+    @Override
+    public Boolean visitNextHopVtep(NextHopVtep nextHopVtep) {
+      throw new IllegalArgumentException("StaticRoute cannot have next hop VTEP");
+    }
+  }
+
+  private boolean isConditionalStaticRoute(StaticRoute sr) {
+    return sr.getTrack() != null || isConditionalStaticRouteNextHop(sr.getNextHop());
+  }
+
+  private boolean isConditionalStaticRouteNextHop(NextHop nextHop) {
+    return _isConditionalStaticRouteNextHop.visit(nextHop);
+  }
+
+  private final @Nonnull NextHopVisitor<Boolean> _isConditionalStaticRouteNextHop =
+      new NextHopVisitor<Boolean>() {
+        @Override
+        public Boolean visitNextHopIp(NextHopIp nextHopIp) {
+          return true;
+        }
+
+        @Override
+        public Boolean visitNextHopInterface(NextHopInterface nextHopInterface) {
+          assert _c.getAllInterfaces().containsKey(nextHopInterface.getInterfaceName());
+          return true;
+        }
+
+        @Override
+        public Boolean visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+          return false;
+        }
+
+        @Override
+        public Boolean visitNextHopVrf(NextHopVrf nextHopVrf) {
+          assert _c.getVrfs().containsKey(nextHopVrf.getVrfName());
+          return false;
+        }
+
+        @Override
+        public Boolean visitNextHopVtep(NextHopVtep nextHopVtep) {
+          // should not be possible; only EVPN and BGP routes have this next hop type.
+          throw new IllegalStateException("Static routes cannot forward via VXLAN tunnel");
+        }
+      };
+
+  /**
+   * Evaluates the {@link TrackMethod} indexed by {@code trackName} and returns {@code true} iff the
+   * track succeeds.
+   */
+  private boolean evaluateTrack(String trackName) {
+    TrackMethod method = _c.getTrackingGroups().get(trackName);
+    assert method != null;
+    if (method instanceof TrackRoute && !((TrackRoute) method).getVrf().equals(_vrf.getName())) {
+      // TODO: Support tracking a route in a different VRF
+      //       This change will be complicated, because in the current implementation this method is
+      //       called while other VRFs' main RIBs are being updated.
+      return false;
+    }
+    return _trackEvaluator.visit(method);
   }
 
   /** Compute the FIB from the main RIB */
@@ -959,7 +1074,7 @@ public final class VirtualRouter {
     _ripRib = new RipRib();
 
     // Static
-    _staticNextHopRib = new StaticRib();
+    _staticConditionalRib = new StaticRib();
     _staticUnconditionalRib = new StaticRib();
   }
 
@@ -971,54 +1086,15 @@ public final class VirtualRouter {
     return proc.getLevel1() != null && proc.getLevel2() == null;
   }
 
-  /**
-   * Initialize the static route RIBs from the VRF config. Interface and next-vrf routes go into
-   * {@link #_staticUnconditionalRib}; routes that only have next-hop-ip go into {@link
-   * #_staticNextHopRib}
-   */
+  /** Initialize the static route RIBs from the VRF config. */
   @VisibleForTesting
   void initStaticRibs() {
     for (StaticRoute sr : _vrf.getStaticRoutes()) {
-      new NextHopVisitor<Void>() {
-
-        @Override
-        public Void visitNextHopIp(NextHopIp nextHopIp) {
-          // We have a next-hop-ip route, keep in it that RIB
-          _staticNextHopRib.mergeRouteGetDelta(sr);
-          return null;
-        }
-
-        @Override
-        public Void visitNextHopInterface(NextHopInterface nextHopInterface) {
-          // We have an interface route, check that interface exists and is active
-          Interface iface = _c.getAllInterfaces().get(nextHopInterface.getInterfaceName());
-          if (iface == null || !iface.getActive()) {
-            return null;
-          }
-          _staticUnconditionalRib.mergeRouteGetDelta(sr);
-          return null;
-        }
-
-        @Override
-        public Void visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-          // Null routes are always active unconditionally
-          _staticUnconditionalRib.mergeRouteGetDelta(sr);
-          return null;
-        }
-
-        @Override
-        public Void visitNextHopVrf(NextHopVrf nextHopVrf) {
-          // next vrf routes are always active unconditionally
-          _staticUnconditionalRib.mergeRouteGetDelta(sr);
-          return null;
-        }
-
-        @Override
-        public Void visitNextHopVtep(NextHopVtep nextHopVtep) {
-          // should not be possible; only EVPN and BGP routes have this next hop type.
-          throw new IllegalStateException("Static routes cannot forward via VXLAN tunnel");
-        }
-      }.visit(sr.getNextHop());
+      if (isConditionalStaticRoute(sr)) {
+        _staticConditionalRib.mergeRouteGetDelta(sr);
+      } else {
+        _staticUnconditionalRib.mergeRouteGetDelta(sr);
+      }
     }
   }
 
