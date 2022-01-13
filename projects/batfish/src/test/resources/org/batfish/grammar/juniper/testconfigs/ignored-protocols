@@ -1,0 +1,11 @@
+#
+set system host-name ignored-protocols
+#
+# this is not the complete set of ignore protocols
+set protocols igmp interface xe-2/2/1.300 version 2
+set protocols ldp interface ge-1/0/0.0
+set protocols lldp interface all
+set protocols oam ethernet connectivity-fault-management maintenance-domain XOXO level 7
+set protocols pim interface xe-2/2/0.0 version 2
+set protocols rsvp interface xe-2/3/1.0
+set protocols vrrp delegate-processing ae-irb
