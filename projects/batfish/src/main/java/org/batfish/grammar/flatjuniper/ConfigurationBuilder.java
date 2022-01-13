@@ -6571,8 +6571,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         unitIface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
         units.put(unitFullName, unitIface);
         unitIface.setParent(iface);
-        iface = unitIface;
       }
+      iface = unitIface;
     }
     return iface;
   }
