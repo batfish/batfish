@@ -15,3 +15,5 @@ set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 preference 180
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 tag 12
 set routing-instances ri3 routing-options static route 8.0.0.0/8 next-table inet.0
+
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/24

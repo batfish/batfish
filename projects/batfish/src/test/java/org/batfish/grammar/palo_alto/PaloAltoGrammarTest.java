@@ -2680,7 +2680,7 @@ public final class PaloAltoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String filename = "configs/" + hostname;
     assertThat(
-        ccae, hasUndefinedReference(filename, INTERFACE, "ethernet1/1", STATIC_ROUTE_INTERFACE));
+        ccae, hasReferencedStructure(filename, INTERFACE, "ethernet1/1", STATIC_ROUTE_INTERFACE));
     assertThat(
         ccae, hasUndefinedReference(filename, PaloAltoStructureType.VIRTUAL_ROUTER, "fakevr"));
   }
