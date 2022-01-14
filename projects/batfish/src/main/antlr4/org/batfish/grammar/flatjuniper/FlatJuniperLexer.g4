@@ -486,7 +486,7 @@ DSTOPTS: 'dstopts';
 
 DTCP_ONLY: 'dtcp-only';
 
-DUMPONPANIC: 'dump-on-panic';
+DUMP_ON_PANIC: 'dump-on-panic';
 
 DVMRP: 'dvmrp';
 
@@ -1557,6 +1557,8 @@ MAX_SESSIONS_PER_CONNECTION: 'max-sessions-per-connection';
 MAXIMUM: 'maximum';
 
 MAXIMUM_LABELS: 'maximum-labels';
+
+MAXIMUM_PREFIXES: 'maximum-prefixes';
 
 MD5: 'md5';
 

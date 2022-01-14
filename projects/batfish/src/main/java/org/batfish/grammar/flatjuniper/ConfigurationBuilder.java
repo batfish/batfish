@@ -466,6 +466,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfac
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_maximum_prefixesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_resolutionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_rib_groupsContext;
@@ -5386,6 +5387,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         ROUTING_OPTIONS_INSTANCE_IMPORT,
         getLine(ctx.name.getStart()));
     _currentRoutingInstance.getInstanceImports().add(policyName);
+  }
+
+  @Override
+  public void exitRo_maximum_prefixes(Ro_maximum_prefixesContext ctx) {
+    warn(ctx, "Batfish does not limit maximum-prefixes");
   }
 
   @Override

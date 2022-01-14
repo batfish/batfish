@@ -6425,4 +6425,15 @@ public final class FlatJuniperGrammarTest {
     // don't crash
     parseJuniperConfig("ignored-protocols");
   }
+
+  @Test
+  public void testMaximumPrefixes() throws IOException {
+    String hostname = "maximum-prefixes";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning("configs/" + hostname, equalTo("Batfish does not limit maximum-prefixes")));
+  }
 }

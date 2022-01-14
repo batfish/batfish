@@ -111,7 +111,7 @@ foh_null
 fohb_common
 :
    fohb_null
-   | fohb_server
+   | fohb_server_null
 ;
 
 fohb_interface
@@ -136,9 +136,9 @@ fohb_null
    ) null_filler
 ;
 
-fohb_server
+fohb_server_null
 :
-   SERVER address = IP_ADDRESS
+   SERVER variable
    (
       ROUTING_INSTANCE ri = variable
    )?

@@ -1,0 +1,5 @@
+#
+set system host-name maximum-prefixes
+#
+set routing-instances et/1/0/7/0 routing-options maximum-prefixes 10000
+set routing-instances et/1/0/7/0 routing-options maximum-prefixes threshold 75
