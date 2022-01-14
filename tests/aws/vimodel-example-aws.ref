@@ -19,6 +19,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.1.2/24"
             ],
@@ -34,6 +35,7 @@
             },
             "hmm" : false,
             "incomingFilter" : "~INGRESS_ACL~subnet-1641fa70",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "~EGRESS_ACL~subnet-1641fa70",
             "prefix" : "192.168.1.2/24",
@@ -252,6 +254,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.2.2/28"
             ],
@@ -267,6 +270,7 @@
             },
             "hmm" : false,
             "incomingFilter" : "~INGRESS_ACL~subnet-7044ff16",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "~EGRESS_ACL~subnet-7044ff16",
             "prefix" : "192.168.2.2/28",
@@ -503,6 +507,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -514,6 +519,7 @@
               ]
             },
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -532,6 +538,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -543,6 +550,7 @@
               ]
             },
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -26597,11 +26605,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -26620,12 +26630,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d",
             "hmm" : false,
             "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -26785,11 +26797,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -26808,12 +26822,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
             "hmm" : false,
             "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -26972,11 +26988,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -26995,12 +27013,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-925131f4",
             "hmm" : false,
             "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -27156,9 +27176,11 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -27177,12 +27199,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "240.254.254.1/30"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "240.254.254.1/30",
             "proxyArp" : false,
@@ -27343,10 +27367,12 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "hmm" : false,
             "incomingFilter" : "Block incoming traffic using reserved addresses",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "Block outgoing traffic using reserved addresses",
             "prefix" : "link-local:169.254.0.1",
@@ -27366,9 +27392,11 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -27387,9 +27415,11 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -27408,9 +27438,11 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -27429,9 +27461,11 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -27450,9 +27484,11 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -60500,6 +60536,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -60507,6 +60544,8 @@
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -60525,6 +60564,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.10.10.38/30"
             ],
@@ -60536,6 +60576,7 @@
             ],
             "description" : "link to lhr-fw-01 e1/3",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
@@ -60566,6 +60607,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.10.10.46/30"
             ],
@@ -60577,6 +60619,7 @@
             ],
             "description" : "link to lhr-fw-02 e1/3",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
@@ -60607,6 +60650,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -60614,6 +60658,7 @@
               "Ethernet1/2"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -60632,6 +60677,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allPrefixes" : [
               "10.10.30.1/30"
             ],
@@ -60643,7 +60689,9 @@
             ],
             "description" : "link to lix-peer-01 e1/1",
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
             "incomingFilter" : "LIMIT_PEER",
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.10.30.1/30",
             "proxyArp" : true,
@@ -60663,6 +60711,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -60670,6 +60719,8 @@
               "Ethernet1/4"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -60688,6 +60739,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -60695,6 +60747,8 @@
               "Ethernet1/5"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -60713,6 +60767,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -60720,6 +60775,8 @@
               "Ethernet1/6"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -60738,6 +60795,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -60745,6 +60803,8 @@
               "Ethernet1/7"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -60763,6 +60823,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.60.37/24"
             ],
@@ -60773,6 +60834,7 @@
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.168.60.37/24",
             "proxyArp" : true,
@@ -60792,6 +60854,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "172.16.1.2/30"
             ],
@@ -60803,6 +60866,7 @@
             ],
             "description" : "Border Interface",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "172.16.1.2/30",
             "proxyArp" : false,
@@ -60822,6 +60886,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.10.255.8/32"
             ],
@@ -60832,6 +60897,7 @@
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
@@ -60861,6 +60927,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "169.254.15.194/30"
             ],
@@ -60871,6 +60938,7 @@
               "Tunnel1"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "169.254.15.194/30",
             "proxyArp" : true,
@@ -60889,6 +60957,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "169.254.13.238/30"
             ],
@@ -60899,6 +60968,7 @@
               "Tunnel2"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "169.254.13.238/30",
             "proxyArp" : true,
@@ -62181,6 +62251,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.2.17/28"
             ],
@@ -62189,6 +62260,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-073b8061",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.168.2.17/28",
             "proxyArp" : false,
@@ -62207,12 +62279,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -62232,12 +62306,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -62395,6 +62471,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.1.1/24"
             ],
@@ -62403,6 +62480,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-1641fa70",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.168.1.1/24",
             "proxyArp" : false,
@@ -62421,12 +62499,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -62446,12 +62526,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -62608,6 +62690,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "172.31.0.1/20"
             ],
@@ -62616,6 +62699,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-1f315846",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "172.31.0.1/20",
             "proxyArp" : false,
@@ -62634,12 +62718,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d",
             "hmm" : false,
             "incomingFilter" : "acl-4db39c28_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -62659,12 +62745,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d-vrf-igw-068fee63",
             "hmm" : false,
             "incomingFilter" : "acl-4db39c28_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -62834,6 +62922,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.2.33/28"
             ],
@@ -62842,6 +62931,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-30398256",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.168.2.33/28",
             "proxyArp" : false,
@@ -62860,12 +62950,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -62885,12 +62977,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63048,6 +63142,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.0.0.1/24"
             ],
@@ -63056,6 +63151,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-62f14104",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.0.0.1/24",
             "proxyArp" : false,
@@ -63074,12 +63170,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-925131f4",
             "hmm" : false,
             "incomingFilter" : "acl-3d4f745b_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-3d4f745b_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63099,12 +63197,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-925131f4-vrf-igw-fac5839d",
             "hmm" : false,
             "incomingFilter" : "acl-3d4f745b_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-3d4f745b_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63262,6 +63362,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.2.1/28"
             ],
@@ -63270,6 +63371,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-7044ff16",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.168.2.1/28",
             "proxyArp" : false,
@@ -63288,12 +63390,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63313,12 +63417,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63476,6 +63582,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.0.1.1/24"
             ],
@@ -63484,6 +63591,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-8d0cbdeb",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.0.1.1/24",
             "proxyArp" : false,
@@ -63502,12 +63610,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-925131f4",
             "hmm" : false,
             "incomingFilter" : "acl-3d4f745b_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-3d4f745b_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63527,12 +63637,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-925131f4-vrf-igw-fac5839d",
             "hmm" : false,
             "incomingFilter" : "acl-3d4f745b_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-3d4f745b_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63689,6 +63801,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "172.31.32.1/20"
             ],
@@ -63697,6 +63810,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-9c8adceb",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "172.31.32.1/20",
             "proxyArp" : false,
@@ -63715,12 +63829,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d",
             "hmm" : false,
             "incomingFilter" : "acl-4db39c28_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63740,12 +63856,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d-vrf-igw-068fee63",
             "hmm" : false,
             "incomingFilter" : "acl-4db39c28_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63914,6 +64032,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "172.31.16.1/20"
             ],
@@ -63922,6 +64041,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-d9cafabc",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "172.31.16.1/20",
             "proxyArp" : false,
@@ -63940,12 +64060,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d",
             "hmm" : false,
             "incomingFilter" : "acl-4db39c28_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -63965,12 +64087,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d-vrf-igw-068fee63",
             "hmm" : false,
             "incomingFilter" : "acl-4db39c28_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -64140,6 +64264,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.2.49/28"
             ],
@@ -64148,6 +64273,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To instances subnet-f73a8191",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "192.168.2.49/28",
             "proxyArp" : false,
@@ -64166,12 +64292,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -64191,12 +64319,14 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "hmm" : false,
             "incomingFilter" : "acl-7b78771d_ingress",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
             "prefix" : "link-local:169.254.0.1",
@@ -64353,6 +64483,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "192.168.1.3/24"
             ],
@@ -64368,6 +64499,7 @@
             },
             "hmm" : false,
             "incomingFilter" : "~INGRESS_ACL~test-rds-subnet-1641fa70",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "~EGRESS_ACL~test-rds-subnet-1641fa70",
             "prefix" : "192.168.1.3/24",
@@ -64950,11 +65082,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -64973,6 +65107,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "52.27.166.152/32"
             ],
@@ -64981,6 +65116,7 @@
             "bandwidth" : 1.0E12,
             "description" : "IPSec tunnel vpn-ba2e34a8-1",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "52.27.166.152/32",
             "proxyArp" : false,
@@ -64999,6 +65135,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "52.39.121.126/32"
             ],
@@ -65007,6 +65144,7 @@
             "bandwidth" : 1.0E12,
             "description" : "IPSec tunnel vpn-ba2e34a8-2",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "52.39.121.126/32",
             "proxyArp" : false,
@@ -65025,11 +65163,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "BGP loopback",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65048,11 +65188,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-815775e7",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65071,6 +65213,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "169.254.15.193/30"
             ],
@@ -65079,6 +65222,7 @@
             "bandwidth" : 1.0E12,
             "description" : "VPN vpn-ba2e34a8-1",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "169.254.15.193/30",
             "proxyArp" : false,
@@ -65097,6 +65241,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "169.254.13.237/30"
             ],
@@ -65105,6 +65250,7 @@
             "bandwidth" : 1.0E12,
             "description" : "VPN vpn-ba2e34a8-2",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "169.254.13.237/30",
             "proxyArp" : false,
@@ -65420,11 +65566,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vgw-81fd279f",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65502,11 +65650,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To igw-fac5839d",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65525,11 +65675,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-8d0cbdeb",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65548,11 +65700,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-8d0cbdeb-vrf-igw-fac5839d",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65571,11 +65725,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-62f14104",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65594,11 +65750,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-62f14104-vrf-igw-fac5839d",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65712,11 +65870,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To igw-9b93ddfc",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65735,11 +65895,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-073b8061",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65758,11 +65920,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-073b8061-vrf-igw-9b93ddfc",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65781,11 +65945,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-1641fa70",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65804,11 +65970,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-1641fa70-vrf-igw-9b93ddfc",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65827,11 +65995,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-7044ff16",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65850,11 +66020,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-7044ff16-vrf-igw-9b93ddfc",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65873,11 +66045,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-30398256",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65896,11 +66070,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-30398256-vrf-igw-9b93ddfc",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65919,11 +66095,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-f73a8191",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65942,11 +66120,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-f73a8191-vrf-igw-9b93ddfc",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -66113,11 +66293,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To igw-068fee63",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -66136,11 +66318,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-1f315846",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -66159,11 +66343,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-1f315846-vrf-igw-068fee63",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -66182,11 +66368,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-9c8adceb",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -66205,11 +66393,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-9c8adceb-vrf-igw-068fee63",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -66228,11 +66418,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-d9cafabc",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -66251,11 +66443,13 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-d9cafabc-vrf-igw-068fee63",
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,

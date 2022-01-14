@@ -64,7 +64,7 @@ public final class DifferentialReachabilityAnswererTest {
     String i1Name = "i1";
 
     Configuration snapshotConfig = getResolveStartLocationsConfig(hostname, i0Name, i1Name);
-    snapshotConfig.getAllInterfaces().get(i0Name).setActive(false); // fail i0
+    snapshotConfig.getAllInterfaces().get(i0Name).administrativelyDisable(); // fail i0
 
     Configuration referenceConfig = getResolveStartLocationsConfig(hostname, i0Name, i1Name);
 

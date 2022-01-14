@@ -2,6 +2,9 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
+import static org.batfish.datamodel.InactiveReason.LINE_DOWN;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -42,12 +45,15 @@ public final class Interface extends ComparableStructure<String> {
 
     private @Nullable Integer _accessVlan;
     private boolean _active;
+
+    // defaults to true if null
+    private @Nullable Boolean _adminUp;
+
     private InterfaceAddress _address;
     private @Nonnull Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
     private @Nullable IntegerSpace _allowedVlans;
     private boolean _autoState;
     @Nullable private Double _bandwidth;
-    private boolean _blacklisted;
     private @Nullable String _channelGroup;
     private @Nonnull SortedSet<String> _channelGroupMembers;
     private SortedSet<String> _declaredNames;
@@ -64,6 +70,10 @@ public final class Interface extends ComparableStructure<String> {
     private IpAccessList _incomingFilter;
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
+
+    // defaults to effective value of _adminUp if null
+    private @Nullable Boolean _lineUp;
+
     private @Nullable Integer _mlagId;
     private @Nullable Integer _mtu;
     private @Nullable String _name;
@@ -113,7 +123,6 @@ public final class Interface extends ComparableStructure<String> {
       if (_accessVlan != null) {
         iface.setAccessVlan(_accessVlan);
       }
-      iface.setActive(_active);
 
       // Set addresses. If the primary address is missing from allAddresses, add it.
       ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
@@ -130,7 +139,6 @@ public final class Interface extends ComparableStructure<String> {
       }
       iface.setAutoState(_autoState);
       iface.setBandwidth(_bandwidth);
-      iface.setBlacklisted(_blacklisted);
       iface.setChannelGroup(_channelGroup);
       iface.setChannelGroupMembers(_channelGroupMembers);
       iface.setDeclaredNames(_declaredNames);
@@ -183,8 +191,100 @@ public final class Interface extends ComparableStructure<String> {
       iface.setZoneName(_zoneName);
 
       iface.setOspfSettings(_ospfSettings);
-
+      processStatus(iface);
       return iface;
+    }
+
+    private void processStatus(Interface iface) {
+      // Try to set interface status to be as "up" as possible, preferring line down to admin down:
+      // For interfaces without line status:
+      // - If active is false, and adminUp is null or false, administratively disable the interface.
+      // - Throw IllegalStateException if adminUp is non-null and not equal to active
+      // This leaves 4/6 valid combinations of active and adminUp:
+      // - active: false adminUp:null (ADMIN_DOWN)
+      // - active: false adminUp:false (ADMIN_DOWN)
+      // - active: false adminUp:true (invalid combination)
+      // - active: true  adminUp:null (up)
+      // - active: true  adminUp:false (invalid combination)
+      // - active: true  adminUp:true (up)
+      // For interfaces with line status:
+      // - If active is false and adminUp is true or null, disconnect the interface.
+      // - Else if active and adminUp are false, administratively disable the interface.
+      // - Throw IllegalStateException if active is true and either adminUp or lineUp is false, or
+      //   if active is false and both adminUp and lineUp are true.
+      // This leaves /18 valid combinations of active, lineUp, adminUp for interfaces that have
+      // line status:
+      // - active:false adminUp:null  lineUp:null  (LINE_DOWN)
+      // - active:false adminUp:null  lineUp:false (LINE_DOWN)
+      // - active:false adminUp:null  lineUp:true  (ADMIN_DOWN)
+      // - active:false adminUp:false lineUp:null  (ADMIN_DOWN)
+      // - active:false adminUp:false lineUp:false (ADMIN_DOWN)
+      // - active:false adminUp:false lineUp:true  (ADMIN_DOWN)
+      // - active:false adminUp:true  lineUp:null  (LINE_DOWN)
+      // - active:false adminUp:true  lineUp:false (LINE_DOWN)
+      // - active:false adminUp:true  lineUp:true  (invalid combination)
+      // - active:true  adminUp:null  lineUp:null  (up/up)
+      // - active:true  adminUp:null  lineUp:false (invalid combination)
+      // - active:true  adminUp:null  lineUp:true  (up/up)
+      // - active:true  adminUp:false lineUp:null  (invalid combination)
+      // - active:true  adminUp:false lineUp:false (invalid combination)
+      // - active:true  adminUp:false lineUp:true  (invalid combination)
+      // - active:true  adminUp:true  lineUp:null  (up/up)
+      // - active:true  adminUp:true  lineUp:false (invalid combination)
+      // - active:true  adminUp:true  lineUp:true  (up/up)
+      checkValidStatus(iface.getInterfaceType());
+      if (!iface.hasLineStatus()) {
+        // no line status
+        if (!_active && !Boolean.TRUE.equals(_adminUp)) {
+          iface.administrativelyDisable();
+        }
+      } else if (!_active) {
+        // has line status
+        if (Boolean.FALSE.equals(_adminUp) || Boolean.TRUE.equals(_lineUp)) {
+          iface.administrativelyDisableWithoutDisconnecting();
+        }
+        if (Boolean.FALSE.equals(_lineUp)
+            || Boolean.TRUE.equals(_adminUp)
+            || (_lineUp == null && _adminUp == null)) {
+          iface.disconnect();
+        }
+      }
+    }
+
+    private void checkValidStatus(InterfaceType type) {
+      String invalidStatusReason = getInvalidStatusReason(type);
+      checkState(invalidStatusReason == null, invalidStatusReason);
+    }
+
+    /**
+     * Return the reason why the combination of status fields is invalid, or {@code null} if the
+     * combination is valid.
+     */
+    @VisibleForTesting
+    @Nullable
+    String getInvalidStatusReason(InterfaceType type) {
+      if (_active && Boolean.FALSE.equals(_adminUp)) {
+        return "Cannot be active when admin down";
+      }
+      if (!hasLineStatus(type)) {
+        // no line status
+        if (_lineUp != null) {
+          return String.format("Cannot set lineUp value for interface type: %s", type);
+        }
+        if (!_active && Boolean.TRUE.equals(_adminUp)) {
+          return String.format(
+              "Interface type '%s' without line status cannot be inactive when admin up", type);
+        }
+      } else {
+        // has line status
+        if (_active && Boolean.FALSE.equals(_lineUp)) {
+          return "Cannot be active when line down";
+        }
+        if (!_active && Boolean.TRUE.equals(_lineUp) && Boolean.TRUE.equals(_adminUp)) {
+          return "Cannot be inactive when admin up and line up";
+        }
+      }
+      return null;
     }
 
     public Builder setActive(boolean active) {
@@ -255,6 +355,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public @Nonnull Builder setAdminUp(@Nullable Boolean adminUp) {
+      _adminUp = adminUp;
+      return this;
+    }
+
     public @Nonnull Builder setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
       _allowedVlans = allowedVlans;
       return this;
@@ -267,11 +372,6 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setBandwidth(@Nullable Double bandwidth) {
       _bandwidth = bandwidth;
-      return this;
-    }
-
-    public Builder setBlacklisted(boolean blacklisted) {
-      _blacklisted = blacklisted;
       return this;
     }
 
@@ -353,6 +453,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setIsis(IsisInterfaceSettings isis) {
       _isis = isis;
+      return this;
+    }
+
+    public @Nonnull Builder setLineUp(@Nullable Boolean lineUp) {
+      _lineUp = lineUp;
       return this;
     }
 
@@ -565,6 +670,7 @@ public final class Interface extends ComparableStructure<String> {
   public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";
   private static final String PROP_ACCESS_VLAN = "accessVlan";
   private static final String PROP_ACTIVE = "active";
+  private static final String PROP_ADMIN_UP = "adminUp";
   private static final String PROP_ADDITIONAL_ARP_IPS = "additionalArpIps";
   private static final String PROP_ADDRESS_METADATA = "addressMetadata";
   private static final String PROP_ALL_PREFIXES = "allPrefixes";
@@ -584,11 +690,13 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_HSRP_GROUPS = "hsrpGroups";
   private static final String PROP_HSRP_VERSION = "hsrpVersion";
   private static final String PROP_HUMAN_NAME = "humanName";
+  private static final String PROP_INACTIVE_REASON = "inactiveReason";
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
   private static final String PROP_INCOMING_FILTER = "incomingFilter";
   private static final String PROP_INCOMING_TRANSFORMATION = "incomingTransformation";
   private static final String PROP_INTERFACE_TYPE = "type";
   private static final String PROP_ISIS = "isis";
+  private static final String PROP_LINE_UP = "lineUp";
   private static final String PROP_MLAG_ID = "mlagId";
   private static final String PROP_MTU = "mtu";
   private static final String PROP_NATIVE_VLAN = "nativeVlan";
@@ -841,6 +949,7 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable private Integer _accessVlan;
   private boolean _active;
   private @Nonnull IpSpace _additionalArpIps;
+  private boolean _adminUp;
   private IntegerSpace _allowedVlans;
   @Nonnull private SortedSet<InterfaceAddress> _allAddresses;
   @Nonnull private SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
@@ -851,7 +960,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _autoState;
   @Nullable private Double _bandwidth;
-  private transient boolean _blacklisted;
+  private transient @Nullable Boolean _lineUp;
   private String _channelGroup;
   private SortedSet<String> _channelGroupMembers;
   private String _cryptoMap;
@@ -867,6 +976,7 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _hmm;
   private Map<Integer, HsrpGroup> _hsrpGroups;
   private @Nullable String _humanName;
+  private @Nullable InactiveReason _inactiveReason;
   private IpAccessList _inboundFilter;
   private transient String _inboundFilterName;
   private IpAccessList _incomingFilter;
@@ -924,6 +1034,7 @@ public final class Interface extends ComparableStructure<String> {
   private Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
     super(name);
     _active = true;
+    _adminUp = true;
     _additionalArpIps = EmptyIpSpace.INSTANCE;
     _addressMetadata = ImmutableSortedMap.of();
     _autoState = true;
@@ -935,6 +1046,9 @@ public final class Interface extends ComparableStructure<String> {
     _dhcpRelayAddresses = ImmutableList.of();
     _hsrpGroups = ImmutableSortedMap.of();
     _interfaceType = interfaceType;
+    if (hasLineStatus()) {
+      _lineUp = true;
+    }
     _mtu = DEFAULT_MTU;
     _owner = owner;
     _switchportMode = SwitchportMode.NONE;
@@ -1067,6 +1181,11 @@ public final class Interface extends ComparableStructure<String> {
     return _addressMetadata;
   }
 
+  @JsonProperty(PROP_ADMIN_UP)
+  public boolean getAdminUp() {
+    return _adminUp;
+  }
+
   /** Ranges of allowed VLANs when switchport mode is TRUNK. */
   @JsonProperty(PROP_ALLOWED_VLANS)
   public IntegerSpace getAllowedVlans() {
@@ -1126,9 +1245,9 @@ public final class Interface extends ComparableStructure<String> {
     return _bandwidth;
   }
 
-  @JsonIgnore
-  public boolean getBlacklisted() {
-    return _blacklisted;
+  @JsonProperty(PROP_LINE_UP)
+  public @Nullable Boolean getLineUp() {
+    return _lineUp;
   }
 
   @JsonProperty(PROP_CHANNEL_GROUP)
@@ -1206,6 +1325,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_HUMAN_NAME)
   public @Nullable String getHumanName() {
     return _humanName;
+  }
+
+  @JsonProperty(PROP_INACTIVE_REASON)
+  public @Nullable InactiveReason getInactiveReason() {
+    return _inactiveReason;
   }
 
   @JsonIgnore
@@ -1540,7 +1664,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ACTIVE)
-  public void setActive(boolean active) {
+  private void setActive(boolean active) {
     _active = active;
   }
 
@@ -1554,6 +1678,11 @@ public final class Interface extends ComparableStructure<String> {
       @Nullable SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata) {
     _addressMetadata =
         ImmutableSortedMap.copyOf(firstNonNull(addressMetadata, ImmutableSortedMap.of()));
+  }
+
+  @JsonProperty(PROP_ADMIN_UP)
+  private void setAdminUp(boolean adminUp) {
+    _adminUp = adminUp;
   }
 
   @JsonProperty(PROP_ALLOWED_VLANS)
@@ -1577,15 +1706,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_BANDWIDTH)
   public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
-  }
-
-  /**
-   * To be used by the builder only. Use {@link #blacklist()} for public blacklisting, it enforces
-   * that the interface is inactive if blacklisted.
-   */
-  @JsonIgnore
-  private void setBlacklisted(boolean blacklisted) {
-    _blacklisted = blacklisted;
   }
 
   @JsonProperty(PROP_CHANNEL_GROUP)
@@ -1666,6 +1786,11 @@ public final class Interface extends ComparableStructure<String> {
     _humanName = humanName;
   }
 
+  @JsonProperty(PROP_INACTIVE_REASON)
+  private void setInactiveReason(@Nullable InactiveReason inactiveReason) {
+    _inactiveReason = inactiveReason;
+  }
+
   @JsonIgnore
   public void setInboundFilter(IpAccessList inboundFilter) {
     _inboundFilter = inboundFilter;
@@ -1704,6 +1829,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_MLAG_ID)
   public void setMlagId(Integer mlagId) {
     _mlagId = mlagId;
+  }
+
+  @JsonProperty(PROP_LINE_UP)
+  private void setLineUp(@Nullable Boolean lineUp) {
+    _lineUp = lineUp;
   }
 
   @JsonProperty(PROP_MTU)
@@ -1865,10 +1995,20 @@ public final class Interface extends ComparableStructure<String> {
             .build();
   }
 
-  /** Blacklist this interface, making it inactive and blacklisted */
-  public void blacklist() {
-    setActive(false);
-    _blacklisted = true;
+  /** Return {code} iff this interface is of a type that has line status. */
+  public boolean hasLineStatus() {
+    return hasLineStatus(_interfaceType);
+  }
+
+  /** Return {code} iff this {@code type} of interface has line status. */
+  public static boolean hasLineStatus(InterfaceType type) {
+    switch (type) {
+      case PHYSICAL:
+      case UNKNOWN:
+        return true;
+      default:
+        return false;
+    }
   }
 
   /**
@@ -1882,5 +2022,84 @@ public final class Interface extends ComparableStructure<String> {
             NULL_INTERFACE_NAME,
             INVALID_LOCAL_INTERFACE)
         .contains(name);
+  }
+
+  /**
+   * Administratively disable this active interface, after which {@link #getActive()} and {@link
+   * #getAdminUp()} will return {@code false}. Then {@link #disconnect()} this interface if it
+   * {@link #hasLineStatus()}.
+   *
+   * <p>Should only be called during conversion, on vendors where admin down implies line down.
+   *
+   * @throws IllegalStateException if this interface is already administratively disabled or
+   *     inactive; or if this interface has line status and is already disconnected.
+   */
+  public void administrativelyDisable() {
+    administrativelyDisableWithoutDisconnecting();
+    if (hasLineStatus()) {
+      disconnect();
+    }
+  }
+
+  /**
+   * Administratively disable this active interface, after which {@link #getActive()} and {@link
+   * #getAdminUp()} will return {@code false}.
+   *
+   * <p>Should only be called during conversion, on vendors where admin down is independent of line
+   * down, e.g. Palo Alto.
+   *
+   * @throws IllegalStateException if this interface is already administratively disabled or
+   *     inactive.
+   */
+  public void administrativelyDisableWithoutDisconnecting() {
+    _adminUp = false;
+    deactivate(ADMIN_DOWN);
+  }
+
+  /**
+   * Nark this interface as disconnected, after which {@link #getActive()} and {@link #getLineUp()}
+   * will return {@code false}. Set inactive reason to {@link InactiveReason#LINE_DOWN} if this
+   * interface was not already inactive. Should only be called after conversion.
+   *
+   * @throws IllegalStateException if this interface is already disconnected.
+   */
+  public void disconnect() {
+    checkState(!Boolean.FALSE.equals(_lineUp), "Cannot disconnect a disconnected interface.");
+    _lineUp = false;
+    if (_active) {
+      deactivate(LINE_DOWN);
+    }
+  }
+
+  /**
+   * Deactivate this active interface and record the reason, after which {@link #getActive()} will
+   * return {@code false}.
+   *
+   * <p>Should only be called after conversion.
+   *
+   * @throws IllegalStateException if this interface is already inactive.
+   */
+  public void deactivate(InactiveReason inactiveReason) {
+    checkState(_active, "Cannot deactivate an inactive interface");
+    _active = false;
+    _inactiveReason = inactiveReason;
+  }
+
+  /**
+   * Activate this inactive interface and clear inactive reason.
+   *
+   * <p>Should only be called from test code.
+   *
+   * @throws IllegalStateException if this interface is already active.
+   */
+  @VisibleForTesting
+  public void activate() {
+    checkState(!_active, "Cannot activate an active interface");
+    _active = true;
+    _adminUp = true;
+    _inactiveReason = null;
+    if (hasLineStatus()) {
+      _lineUp = true;
+    }
   }
 }

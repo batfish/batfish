@@ -605,16 +605,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     // when interface is inactive, it doesn't own any IPs
     {
-      iface.setActive(false);
-      BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
-      Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
-          ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
-      assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
-    }
-
-    // when interface is blacklisted, it doesn't own any IPs
-    {
-      iface.blacklist();
+      iface.administrativelyDisable();
       BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
       Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
           ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));

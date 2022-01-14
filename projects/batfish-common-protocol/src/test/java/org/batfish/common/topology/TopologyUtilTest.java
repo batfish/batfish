@@ -94,12 +94,12 @@ public final class TopologyUtilTest {
   }
 
   /** Make an interface with the specified parameters */
-  private Interface iface(String interfaceName, String ip, boolean active, boolean blacklisted) {
+  private Interface iface(String interfaceName, String ip, boolean active, boolean lineUp) {
     return _nf.interfaceBuilder()
         .setName(interfaceName)
         .setActive(active)
         .setAddress(ConcreteInterfaceAddress.parse(ip))
-        .setBlacklisted(blacklisted)
+        .setLineUp(lineUp)
         .build();
   }
 
@@ -1471,9 +1471,8 @@ public final class TopologyUtilTest {
         ImmutableMap.of(
             "node",
             ImmutableSet.of(
-                iface("active", "1.1.1.1/32", true, false),
+                iface("active", "1.1.1.1/32", true, true),
                 iface("shut", "1.1.1.1/32", false, false),
-                iface("active-black", "1.1.1.1/32", true, true),
                 iface("shut-black", "1.1.1.1/32", false, true)));
     NetworkConfigurations nc =
         NetworkConfigurations.of(
@@ -1490,8 +1489,7 @@ public final class TopologyUtilTest {
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"),
-                ImmutableMap.of(
-                    "node", ImmutableSet.of("active", "shut", "active-black", "shut-black")))));
+                ImmutableMap.of("node", ImmutableSet.of("active", "shut", "shut-black")))));
   }
 
   @Test

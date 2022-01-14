@@ -30,6 +30,7 @@
           "additionalArpIps" : {
             "class" : "org.batfish.datamodel.EmptyIpSpace"
           },
+          "adminUp" : false,
           "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E7,
@@ -37,6 +38,7 @@
             "Ethernet0/0"
           ],
           "hmm" : false,
+          "inactiveReason" : "ADMIN_DOWN",
           "mtu" : 1500,
           "proxyArp" : true,
           "ripEnabled" : false,
@@ -79,6 +81,7 @@
           "additionalArpIps" : {
             "class" : "org.batfish.datamodel.EmptyIpSpace"
           },
+          "adminUp" : true,
           "allPrefixes" : [
             "1.0.1.1/24"
           ],
@@ -143,6 +146,7 @@
           "additionalArpIps" : {
             "class" : "org.batfish.datamodel.EmptyIpSpace"
           },
+          "adminUp" : true,
           "allPrefixes" : [
             "10.12.11.1/24"
           ],
@@ -196,6 +200,7 @@
           "additionalArpIps" : {
             "class" : "org.batfish.datamodel.EmptyIpSpace"
           },
+          "adminUp" : true,
           "allPrefixes" : [
             "1.1.1.1/32"
           ],

@@ -760,9 +760,13 @@ public final class A10Configuration extends VendorConfiguration {
    */
   private void convertInterface(Interface iface, Vrf vrf) {
     String name = getInterfaceName(iface);
+    boolean enabledEffective = getInterfaceEnabledEffective(iface, _majorVersionNumber);
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
-            .setActive(getInterfaceEnabledEffective(iface, _majorVersionNumber))
+            .setActive(enabledEffective)
+            .setAdminUp(enabledEffective)
+            // TODO: verify line down when admin down
+            .setLineUp(iface.getType() == Type.ETHERNET ? enabledEffective : null)
             .setMtu(getInterfaceMtuEffective(iface))
             .setType(getInterfaceType(iface))
             .setName(name)

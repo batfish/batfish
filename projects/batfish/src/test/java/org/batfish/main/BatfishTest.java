@@ -248,7 +248,7 @@ public class BatfishTest {
 
     // Ethernet0 should be inactive and blacklisted
     Interface ethernet0 = interfaces.get("Ethernet0");
-    assertTrue(ethernet0.getBlacklisted() && !ethernet0.getActive());
+    assertTrue(!ethernet0.getLineUp() && !ethernet0.getActive());
 
     // Ensure other interfaces are active
     assertThat(

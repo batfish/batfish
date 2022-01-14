@@ -1,5 +1,6 @@
 package org.batfish.representation.fortios;
 
+import static org.batfish.datamodel.Interface.hasLineStatus;
 import static org.batfish.representation.fortios.FortiosBgpConversions.convertBgp;
 import static org.batfish.representation.fortios.FortiosBgpConversions.convertRouteMap;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
@@ -289,6 +290,9 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setVrf(vrf)
             .setDescription(iface.getDescription())
             .setActive(iface.getStatusEffective())
+            .setAdminUp(iface.getStatusEffective())
+            // TODO: verify line down when admin down
+            .setLineUp(hasLineStatus(type) ? iface.getStatusEffective() : null)
             .setMtu(iface.getMtuEffective())
             .setSpeed(toSpeed(iface.getSpeedEffective()))
             .setType(type);

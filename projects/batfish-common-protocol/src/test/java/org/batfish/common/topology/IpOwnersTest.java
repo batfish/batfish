@@ -257,7 +257,8 @@ public class IpOwnersTest {
           Interface.builder()
               .setName("name")
               .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-              .setBlacklisted(true)
+              .setActive(false)
+              .setLineUp(false)
               .build();
       Ip ip1 = Ip.parse("1.1.1.1");
       i.setHsrpGroups(
@@ -566,7 +567,8 @@ public class IpOwnersTest {
                           .setSourceAddress(sourceAddress)
                           .setVirtualAddresses("name", ip1)
                           .build()))
-              .setBlacklisted(true)
+              .setActive(false)
+              .setLineUp(false)
               .build();
       extractVrrp(groups, i);
       assertTrue(groups.isEmpty());

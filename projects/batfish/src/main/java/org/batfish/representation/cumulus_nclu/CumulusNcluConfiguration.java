@@ -296,7 +296,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setType(InterfaceType.LOOPBACK)
             .build();
-    newIface.setActive(true);
     if (!vrf.getAddresses().isEmpty()) {
       newIface.setAddress(vrf.getAddresses().get(0));
     }
@@ -534,7 +533,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     applyBridgeSettings(bond.getBridge(), newIface);
 
-    newIface.setActive(true);
     if (!bond.getIpAddresses().isEmpty()) {
       newIface.setAddress(bond.getIpAddresses().get(0));
     }
@@ -555,6 +553,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setType(InterfaceType.PHYSICAL)
             .setActive(!iface.isDisabled())
+            .setAdminUp(!iface.isDisabled())
+            // TODO: verify line down when disabled
+            .setLineUp(!iface.isDisabled())
             .build();
     applyCommonInterfaceSettings(iface, newIface);
 
@@ -585,6 +586,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                     ? InterfaceType.AGGREGATE_CHILD
                     : InterfaceType.LOGICAL)
             .setActive(!iface.isDisabled())
+            .setAdminUp(!iface.isDisabled())
             .build();
     newIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));
@@ -600,7 +602,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setType(InterfaceType.VLAN)
             .build();
-    newIface.setActive(true);
     newIface.setVlan(vlan.getVlanId());
 
     // Interface addreses

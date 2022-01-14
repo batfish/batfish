@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.forEachWithIndex;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
+import static org.batfish.datamodel.Interface.hasLineStatus;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -823,12 +824,13 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   void convertInterface(Interface iface, Vrf vrf) {
     String ifaceName = iface.getName();
+    InterfaceType type = getInterfaceType(iface);
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
             .setOwner(_c)
             .setVrf(vrf)
-            .setType(getInterfaceType(iface));
+            .setType(type);
 
     Optional<Integer> parentBondingGroupOpt = getParentBondingGroupNumber(iface);
     if (parentBondingGroupOpt.isPresent()) {
@@ -843,6 +845,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       newIface
           .setAddress(iface.getAddress())
           .setActive(iface.getState())
+          .setAdminUp(iface.getState())
+          // TODO: verify line down when admin down
+          .setLineUp(hasLineStatus(type) ? iface.getState() : null)
           .setMtu(iface.getMtuEffective());
     }
 
@@ -885,7 +890,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                         "Bonding group mode active-backup is not yet supported in Batfish."
                             + " Deactivating interface %s.",
                         ifaceName));
-                newIface.setActive(false);
+                newIface.setActive(false).setAdminUp(false);
               }
             });
 

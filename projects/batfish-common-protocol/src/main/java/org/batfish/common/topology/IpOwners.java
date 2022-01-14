@@ -234,7 +234,7 @@ public final class IpOwners {
         (hostname, interfaces) ->
             interfaces.forEach(
                 i -> {
-                  if ((!i.getActive() || i.getBlacklisted()) && excludeInactive) {
+                  if (!i.getActive() && excludeInactive) {
                     return;
                   }
                   extractVrrp(vrrpGroups, i);
@@ -267,7 +267,7 @@ public final class IpOwners {
   @VisibleForTesting
   static void extractHsrp(Table<Ip, Integer, Set<Interface>> hsrpGroups, Interface i) {
     // Inactive interfaces could never win a HSRP election
-    if (!i.getActive() || i.getBlacklisted()) {
+    if (!i.getActive()) {
       return;
     }
     // collect hsrp info
@@ -361,7 +361,7 @@ public final class IpOwners {
   static void extractVrrp(
       Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups, Interface i) {
     // Inactive interfaces could never win a VRRP election
-    if (!i.getActive() || i.getBlacklisted()) {
+    if (!i.getActive()) {
       return;
     }
     i.getVrrpGroups()

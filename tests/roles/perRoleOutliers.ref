@@ -19,6 +19,7 @@
           "additionalArpIps" : {
             "class" : "org.batfish.datamodel.EmptyIpSpace"
           },
+          "adminUp" : true,
           "allPrefixes" : [
             "2.23.11.2/24"
           ],
@@ -74,6 +75,7 @@
           "additionalArpIps" : {
             "class" : "org.batfish.datamodel.EmptyIpSpace"
           },
+          "adminUp" : true,
           "allPrefixes" : [
             "2.23.12.2/24"
           ],
