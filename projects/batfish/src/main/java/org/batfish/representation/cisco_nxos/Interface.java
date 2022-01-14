@@ -141,7 +141,7 @@ public final class Interface implements Serializable {
 
   private @Nullable Integer _accessVlan;
   private @Nullable InterfaceAddressWithAttributes _address;
-  private @Nullable IntegerSpace _allowedVlans;
+  private @Nonnull IntegerSpace _allowedVlans;
   private boolean _autostate;
   private @Nullable Long _bandwidth;
   private @Nullable String _channelGroup;
@@ -213,7 +213,7 @@ public final class Interface implements Serializable {
     return _address;
   }
 
-  public @Nullable IntegerSpace getAllowedVlans() {
+  public @Nonnull IntegerSpace getAllowedVlans() {
     return _allowedVlans;
   }
 
@@ -477,7 +477,7 @@ public final class Interface implements Serializable {
     _address = address;
   }
 
-  public void setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
+  public void setAllowedVlans(@Nonnull IntegerSpace allowedVlans) {
     _allowedVlans = allowedVlans;
   }
 

@@ -5928,14 +5928,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          if (iface.getSwitchportMode() == null) {
-            // NX-OS has these commands in show run all even for interfaces in other modes.
-            iface.setSwitchportMode(SwitchportMode.TRUNK);
-          }
           if (ctx.ADD() != null) {
             iface.setAllowedVlans(iface.getAllowedVlans().union(vlans));
           } else if (ctx.REMOVE() != null) {
-            iface.setAllowedVlans(iface.getAllowedVlans().difference(vlans));
+            IntegerSpace allowedAfterRemoval = iface.getAllowedVlans().difference(vlans);
+            // If all allowed VLANs were removed, none are now set, so revert to default.
+            iface.setAllowedVlans(
+                allowedAfterRemoval.isEmpty() ? _currentValidVlanRange : allowedAfterRemoval);
           } else {
             iface.setAllowedVlans(vlans);
           }
