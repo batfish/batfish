@@ -17,6 +17,7 @@ import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -3010,7 +3011,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(c.getIpAccessLists().keySet(), containsInAnyOrder(filterNameV4, filterNameV6));
 
     IpAccessList fwSourceAddressAcl = c.getIpAccessLists().get(filterNameV4);
-    assertThat(fwSourceAddressAcl.getLines(), hasSize(1));
+    assertThat(fwSourceAddressAcl.getLines(), hasSize(2));
 
     // should have the same acl as defined in the config
     assertThat(
@@ -3019,36 +3020,67 @@ public final class FlatJuniperGrammarTest {
             filterNameV4,
             IpAccessListMatchers.hasLines(
                 equalTo(
-                    ImmutableList.of(
-                        ExprAclLine.builder()
-                            .setAction(LineAction.PERMIT)
-                            .setMatchCondition(
-                                new AndMatchExpr(
-                                    ImmutableList.of(
-                                        or(
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setSrcIps(
-                                                        IpWildcard.ipWithWildcardMask(
-                                                                Ip.parse("1.0.3.0"),
-                                                                Ip.parse("0.255.0.255"))
-                                                            .toIpSpace())
-                                                    .build(),
-                                                TraceElement.of(
-                                                    "Matched source-address 1.2.3.4/255.0.255.0")),
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setSrcIps(
-                                                        IpWildcard.parse("2.3.4.5/24").toIpSpace())
-                                                    .build(),
-                                                TraceElement.of(
-                                                    "Matched source-address 2.3.4.5/24"))))))
-                            .setName("TERM")
-                            .setTraceElement(
-                                matchingFirewallFilterTerm(filename, filterNameV4, "TERM"))
-                            .setVendorStructureId(
-                                firewallFilterTermVendorStructureId(filename, filterNameV4, "TERM"))
-                            .build())))));
+                    ExprAclLine.builder()
+                        .setAction(LineAction.PERMIT)
+                        .setMatchCondition(
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    or(
+                                        new MatchHeaderSpace(
+                                            HeaderSpace.builder()
+                                                .setSrcIps(
+                                                    IpWildcard.ipWithWildcardMask(
+                                                            Ip.parse("1.0.3.0"),
+                                                            Ip.parse("0.255.0.255"))
+                                                        .toIpSpace())
+                                                .build(),
+                                            TraceElement.of(
+                                                "Matched source-address 1.2.3.4/255.0.255.0")),
+                                        new MatchHeaderSpace(
+                                            HeaderSpace.builder()
+                                                .setSrcIps(
+                                                    IpWildcard.parse("2.3.4.5/24").toIpSpace())
+                                                .build(),
+                                            TraceElement.of(
+                                                "Matched source-address 2.3.4.5/24"))))))
+                        .setName("TERM")
+                        .setTraceElement(matchingFirewallFilterTerm(filename, filterNameV4, "TERM"))
+                        .setVendorStructureId(
+                            firewallFilterTermVendorStructureId(filename, filterNameV4, "TERM"))
+                        .build()),
+                equalTo(
+                    ExprAclLine.builder()
+                        .setAction(LineAction.PERMIT)
+                        .setMatchCondition(
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setSrcIps(IpWildcard.parse("0.0.0.0/0").toIpSpace())
+                                            .build(),
+                                        TraceElement.of("Matched source-address 0.0.0.0/0")),
+                                    and(
+                                        new MatchHeaderSpace(
+                                            HeaderSpace.builder()
+                                                .setNotSrcIps(
+                                                    IpWildcard.parse("1.1.1.1/32").toIpSpace())
+                                                .build(),
+                                            TraceElement.of(
+                                                "Matched source-address 1.1.1.1/32 except")),
+                                        new MatchHeaderSpace(
+                                            HeaderSpace.builder()
+                                                .setNotSrcIps(
+                                                    IpWildcard.parse("2.2.2.2/32").toIpSpace())
+                                                .build(),
+                                            TraceElement.of(
+                                                "Matched source-address 2.2.2.2/32 except"))))))
+                        .setName("TERM-EXCEPT")
+                        .setTraceElement(
+                            matchingFirewallFilterTerm(filename, filterNameV4, "TERM-EXCEPT"))
+                        .setVendorStructureId(
+                            firewallFilterTermVendorStructureId(
+                                filename, filterNameV4, "TERM-EXCEPT"))
+                        .build()))));
   }
 
   @Test
@@ -3367,7 +3399,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(c.getIpAccessLists().keySet(), hasSize(2));
 
     Flow whiteListedSrc = createFlow("1.8.3.9", "2.5.6.7");
-    Flow blackListedSrc = createFlow("5.8.4.9", "2.5.6.7");
+    Flow blackListedSrc = createFlow("2.2.2.2", "2.5.6.7");
 
     IpAccessList incomingFilter = c.getAllInterfaces().get("xe-0/0/0.0").getIncomingFilter();
 
