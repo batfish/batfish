@@ -612,14 +612,20 @@ public class EdgesAnswererTest {
 
   @Test
   public void testGetLayer1Edges() {
-    Layer1Node layer1Node1 = new Layer1Node("host1", "int1");
-    Layer1Node layer1Node2 = new Layer1Node("host2", "int2");
+    Layer1Node host1Int1 = new Layer1Node("host1", "int1");
+    Layer1Node host1Int10 = new Layer1Node("host1", "int10");
+    Layer1Node host2Int2 = new Layer1Node("host2", "int2");
+    Layer1Node host2Int3 = new Layer1Node("host2", "int3");
 
-    Multiset<Row> rows =
+    List<Row> rows =
         getLayer1Edges(
             _includeNodes,
             _includeRemoteNodes,
-            new Layer1Topology(new Layer1Edge(layer1Node1, layer1Node2)));
+            new Layer1Topology(
+                new Layer1Edge(host1Int1, host2Int2),
+                new Layer1Edge(host1Int1, host2Int3),
+                new Layer1Edge(host1Int10, host2Int2),
+                new Layer1Edge(host1Int10, host2Int3)));
     assertThat(
         rows,
         contains(
@@ -631,6 +637,33 @@ public class EdgesAnswererTest {
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(NodeInterfacePair.of("host2", "int2")),
+                    Schema.INTERFACE)),
+            allOf(
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host2", "int3")),
+                    Schema.INTERFACE)),
+            allOf(
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host1", "int10")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host2", "int2")),
+                    Schema.INTERFACE)),
+            allOf(
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host1", "int10")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host2", "int3")),
                     Schema.INTERFACE))));
   }
 

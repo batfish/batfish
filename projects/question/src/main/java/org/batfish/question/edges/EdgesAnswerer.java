@@ -179,7 +179,7 @@ public class EdgesAnswerer extends Answerer {
             .map(
                 layer1LogicalTopology ->
                     getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
-            .orElse(ImmutableMultiset.of());
+            .orElse(ImmutableList.of());
       case USER_PROVIDED_LAYER1:
         // user-provided layer1 edges do not support filtering by node.
         // the only use case we care about is getting the entire (canonicalized) layer1 topology,
@@ -280,20 +280,21 @@ public class EdgesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static Multiset<Row> getLayer1Edges(
+  static List<Row> getLayer1Edges(
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       @Nullable Layer1Topology layer1Topology) {
     if (layer1Topology == null) {
-      return HashMultiset.create();
+      return ImmutableList.of();
     }
     return layer1Topology.getGraph().edges().stream()
         .filter(
             layer1Edge ->
                 includeNodes.contains(layer1Edge.getNode1().getHostname())
                     && includeRemoteNodes.contains(layer1Edge.getNode2().getHostname()))
+        .sorted()
         .map(EdgesAnswerer::layer1EdgeToRow)
-        .collect(Collectors.toCollection(HashMultiset::create));
+        .collect(ImmutableList.toImmutableList());
   }
 
   @VisibleForTesting

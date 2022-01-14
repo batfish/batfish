@@ -10,6 +10,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.util.InterfaceNameComparator;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 @ParametersAreNonnullByDefault
@@ -43,7 +44,7 @@ public final class Layer1Node implements Comparable<Layer1Node> {
   @Override
   public int compareTo(Layer1Node o) {
     return Comparator.comparing(Layer1Node::getHostname)
-        .thenComparing(Layer1Node::getInterfaceName)
+        .thenComparing(Layer1Node::getInterfaceName, InterfaceNameComparator.instance())
         .compare(this, o);
   }
 
