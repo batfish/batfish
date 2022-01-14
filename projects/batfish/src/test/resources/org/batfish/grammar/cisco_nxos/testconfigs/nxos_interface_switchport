@@ -8,6 +8,10 @@ boot nxos bootflash:/nxos.9.2.3.bin
 system default switchport
 no system default switchport shutdown
 
+! Declare VLANs.
+! TODO Add a suspended VLAN once supported to test that it isn't included in allowed VLANs.
+vlan 1-5
+
 ! Ethernet interface with no configuration:
 ! - shutdown = false
 ! - active = true
@@ -116,8 +120,9 @@ interface Ethernet1/4
 ! - switchport = true
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 2
-! - switchport allowed vlans = 1-3967
+! - switchport allowed vlans = 1-5 (all active VLANs)
 interface Ethernet1/5
+  switchport mode trunk
   switchport trunk native vlan 2
 !
 
@@ -129,6 +134,7 @@ interface Ethernet1/5
 ! - switchport native vlan = 1
 ! - switchport allowed vlans = 1-3
 interface Ethernet1/6
+  switchport mode trunk
   switchport trunk allowed vlan 1-3
 !
 
@@ -138,8 +144,9 @@ interface Ethernet1/6
 ! - switchport = true
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
-! - switchport allowed vlans = 1-3
+! - switchport allowed vlans = 1-4
 interface Ethernet1/7
+  switchport mode trunk
   switchport trunk allowed vlan 1-3
   switchport trunk allowed vlan add 4
 !
@@ -150,9 +157,10 @@ interface Ethernet1/7
 ! - switchport = true
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
-! - switchport allowed vlans = 1-3966
+! - switchport allowed vlans = 1, 3-5
 interface Ethernet1/8
-  switchport trunk allowed vlan except 3967
+  switchport mode trunk
+  switchport trunk allowed vlan except 2
 !
 
 ! Ethernet interface with allowed vlans none
@@ -163,6 +171,7 @@ interface Ethernet1/8
 ! - switchport native vlan = 1
 ! - switchport allowed vlans = {}
 interface Ethernet1/9
+  switchport mode trunk
   switchport trunk allowed vlan none
 !
 
@@ -172,8 +181,9 @@ interface Ethernet1/9
 ! - switchport = true
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
-! - switchport allowed vlans = 1-3
+! - switchport allowed vlans = 1-2
 interface Ethernet1/10
+  switchport mode trunk
   switchport trunk allowed vlan 1-3
   switchport trunk allowed vlan remove 3
 !
@@ -207,7 +217,7 @@ interface Ethernet1/13
 ! - switchport = true
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
-! - switchport allowed vlans = 1-3967
+! - switchport allowed vlans = 1-5
 interface Ethernet1/14
   switchport mode trunk
 !
