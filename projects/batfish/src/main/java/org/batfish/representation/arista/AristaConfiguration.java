@@ -1170,7 +1170,9 @@ public final class AristaConfiguration extends VendorConfiguration {
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
-    newIface.setActive(!iface.getShutdown());
+    if (iface.getShutdown()) {
+      newIface.adminDown();
+    }
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setVrf(c.getVrfs().get(vrfName));

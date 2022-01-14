@@ -461,7 +461,6 @@ public class TracerouteEngineImplTest {
     Interface i1 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(c1Addr)
@@ -480,7 +479,6 @@ public class TracerouteEngineImplTest {
     Interface i2 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c2)
             .setVrf(v2)
             .setAddress(c2Addr)
@@ -599,7 +597,6 @@ public class TracerouteEngineImplTest {
     Interface i1 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(i1Addr)
@@ -607,7 +604,6 @@ public class TracerouteEngineImplTest {
     Interface i2 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(i2Addr)
@@ -734,13 +730,11 @@ public class TracerouteEngineImplTest {
     Interface i1 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(i1Addr)
             .build();
-    Interface i2 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
+    Interface i2 = nf.interfaceBuilder().setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.testBuilder()
@@ -814,11 +808,7 @@ public class TracerouteEngineImplTest {
     Ip ip41 = Ip.parse("4.0.0.2");
     Prefix prefix2 = Prefix.parse("2.0.0.0/24");
     Interface.Builder ib =
-        nf.interfaceBuilder()
-            .setType(InterfaceType.PHYSICAL)
-            .setOwner(c)
-            .setVrf(vrf)
-            .setActive(true);
+        nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setOwner(c).setVrf(vrf);
     Interface inInterface =
         ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setIncomingTransformation(
@@ -1004,7 +994,6 @@ public class TracerouteEngineImplTest {
     Interface i1 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(i1Addr)
@@ -1012,7 +1001,6 @@ public class TracerouteEngineImplTest {
     Interface i2 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(i2Addr)
@@ -1109,7 +1097,6 @@ public class TracerouteEngineImplTest {
     Interface i1 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(i1Addr)
@@ -1117,7 +1104,6 @@ public class TracerouteEngineImplTest {
     Interface i2 =
         nf.interfaceBuilder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(i2Addr)
@@ -1405,11 +1391,7 @@ public class TracerouteEngineImplTest {
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .build();
     Interface.Builder ib =
-        nf.interfaceBuilder()
-            .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
-            .setOwner(c)
-            .setVrf(vrf);
+        nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setOwner(c).setVrf(vrf);
     ib.setName(i1Name).setAddresses(ConcreteInterfaceAddress.parse("10.0.1.1/24")).build();
     ib.setName("i2")
         .setAddresses(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
@@ -1469,8 +1451,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(parse("10.0.1.2"))
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .build();
-    Interface.Builder ib =
-        nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setActive(true).setOwner(c);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setOwner(c);
     ib.setName(i1Name)
         .setVrf(vrf1)
         .setAddresses(ConcreteInterfaceAddress.parse("10.0.1.1/24"))

@@ -55,7 +55,7 @@ public class TestNetworkSources {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).setOwner(config).build();
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(config).setVrf(vrf);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf);
 
     Interface inInterface = ib.setName(INGRESS_IFACE_NAME).setAddress(CONFIG_ADDR).build();
 
@@ -95,7 +95,6 @@ public class TestNetworkSources {
             .build();
     Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).setOwner(config).build();
     nf.interfaceBuilder()
-        .setActive(true)
         .setOwner(config)
         .setName(PEER_IFACE_NAME)
         .setVrf(vrf)

@@ -19,6 +19,7 @@
           "additionalArpIps" : {
             "class" : "org.batfish.datamodel.EmptyIpSpace"
           },
+          "adminUp" : true,
           "allPrefixes" : [
             "2.23.11.2/24"
           ],
@@ -30,6 +31,7 @@
           ],
           "hmm" : false,
           "incomingFilter" : "blocktelnet",
+          "lineUp" : true,
           "mtu" : 1500,
           "ospfSettings" : {
             "area" : 1,
@@ -74,6 +76,7 @@
           "additionalArpIps" : {
             "class" : "org.batfish.datamodel.EmptyIpSpace"
           },
+          "adminUp" : true,
           "allPrefixes" : [
             "2.23.12.2/24"
           ],
@@ -85,6 +88,7 @@
           ],
           "hmm" : false,
           "incomingFilter" : "blocktelnet",
+          "lineUp" : true,
           "mtu" : 1500,
           "ospfSettings" : {
             "area" : 1,

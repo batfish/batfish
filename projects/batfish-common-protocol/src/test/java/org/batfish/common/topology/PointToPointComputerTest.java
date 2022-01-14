@@ -62,7 +62,7 @@ public class PointToPointComputerTest {
     // Inactive interface, so not valid.
     nf.interfaceBuilder()
         .setOwner(c)
-        .setActive(false)
+        .setAdminUp(false)
         .setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1")))
         .setSwitchport(false)
         .setType(InterfaceType.PHYSICAL)
@@ -70,7 +70,7 @@ public class PointToPointComputerTest {
     Interface physical =
         nf.interfaceBuilder()
             .setOwner(c)
-            .setActive(true)
+            .setAdminUp(true)
             .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
             .setSwitchport(false)
             .setType(InterfaceType.PHYSICAL)
@@ -78,7 +78,7 @@ public class PointToPointComputerTest {
     Interface lla =
         nf.interfaceBuilder()
             .setOwner(c)
-            .setActive(true)
+            .setAdminUp(true)
             .setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1")))
             .setSwitchport(false)
             .setType(InterfaceType.PHYSICAL)
@@ -86,7 +86,7 @@ public class PointToPointComputerTest {
     Interface agg =
         nf.interfaceBuilder()
             .setOwner(c)
-            .setActive(true)
+            .setAdminUp(true)
             .setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1")))
             .setSwitchport(false)
             .setType(InterfaceType.AGGREGATED)
@@ -94,7 +94,7 @@ public class PointToPointComputerTest {
     Interface aggChild =
         nf.interfaceBuilder()
             .setOwner(c)
-            .setActive(true)
+            .setAdminUp(true)
             .setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1")))
             .setSwitchport(false)
             .setType(InterfaceType.AGGREGATE_CHILD)
@@ -103,7 +103,7 @@ public class PointToPointComputerTest {
     // A virtual interface like a VLAN has no connection
     nf.interfaceBuilder()
         .setOwner(c)
-        .setActive(true)
+        .setAdminUp(true)
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .setSwitchport(false)
         .setType(InterfaceType.VLAN)

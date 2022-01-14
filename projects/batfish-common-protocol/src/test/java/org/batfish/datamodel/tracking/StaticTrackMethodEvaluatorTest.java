@@ -25,22 +25,14 @@ public class StaticTrackMethodEvaluatorTest {
         .setOwner(c1)
         .setName("i1")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-        .setActive(true)
+        .setAdminUp(true)
         .build();
     // i2: not active
     Interface.builder()
         .setOwner(c1)
         .setName("i2")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-        .setActive(false)
-        .build();
-    // i3: active, but blacklisted
-    Interface.builder()
-        .setOwner(c1)
-        .setName("i3")
-        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-        .setActive(true)
-        .setBlacklisted(true)
+        .setAdminUp(false)
         .build();
 
     StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
@@ -51,10 +43,6 @@ public class StaticTrackMethodEvaluatorTest {
     // Iface is not active
     TrackInterface trackInterface2 = new TrackInterface("i2");
     assertFalse(evaluator.visit(trackInterface2));
-
-    // Iface is active, but blacklisted
-    TrackInterface trackInterface3 = new TrackInterface("i3");
-    assertFalse(evaluator.visit(trackInterface3));
 
     // Non-existent iface
     TrackInterface trackInterface4 = new TrackInterface("i4");
@@ -74,7 +62,7 @@ public class StaticTrackMethodEvaluatorTest {
         .setOwner(c1)
         .setName("i1")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-        .setActive(true)
+        .setAdminUp(true)
         .build();
     StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
     // Iface is active
@@ -100,7 +88,7 @@ public class StaticTrackMethodEvaluatorTest {
         .setOwner(c1)
         .setName("i1")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-        .setActive(true)
+        .setAdminUp(true)
         .build();
     StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
 

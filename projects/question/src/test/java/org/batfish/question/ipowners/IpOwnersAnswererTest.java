@@ -72,11 +72,11 @@ public class IpOwnersAnswererTest {
         ImmutableMap.of(
             "n1",
             ImmutableSet.of(
-                ib.setActive(false).setAddress(duplicateAddr).setName("Eth1/1").build()),
+                ib.setAdminUp(false).setAddress(duplicateAddr).setName("Eth1/1").build()),
             "n2",
             ImmutableSet.of(
-                ib.setActive(true).setAddress(duplicateAddr).setName("Eth2/1").build(),
-                ib.setActive(true)
+                ib.setAdminUp(true).setAddress(duplicateAddr).setName("Eth2/1").build(),
+                ib.setAdminUp(true)
                     // VRRP-like scenario
                     .setAddresses(uniqueAddr, secondaryUniqueAddr)
                     .setName("Eth2/2")

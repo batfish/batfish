@@ -1105,7 +1105,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
-    newIface.setActive(iface.getActive());
+    if (!iface.getActive()) {
+      newIface.adminDown();
+    }
     if (iface.getBundleId() != null) {
       newIface.setChannelGroup(String.format("Bundle-Ether%d", iface.getBundleId()));
     }

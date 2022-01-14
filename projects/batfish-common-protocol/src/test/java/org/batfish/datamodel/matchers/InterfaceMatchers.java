@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -45,6 +46,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasFirewallSessionIn
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpGroup;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpVersion;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHumanName;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasInactiveReason;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasInterfaceType;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMlagId;
@@ -64,7 +66,9 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrfName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsAdminUp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsAutoState;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsLineUp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
@@ -508,7 +512,7 @@ public final class InterfaceMatchers {
   }
 
   /** Provides a matcher that matches if the interface is active. */
-  public static IsActive isActive() {
+  public static @Nonnull Matcher<Interface> isActive() {
     return new IsActive(equalTo(true));
   }
 
@@ -516,16 +520,68 @@ public final class InterfaceMatchers {
    * Provides a matcher that matches if the provided active flag matches the interface's active
    * flag.
    */
-  public static IsActive isActive(boolean active) {
-    return new IsActive(equalTo(active));
+  public static @Nonnull Matcher<Interface> isActive(boolean expectedActive) {
+    return new IsActive(equalTo(expectedActive));
   }
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
    * active flag.
    */
-  public static IsActive isActive(@Nonnull Matcher<? super Boolean> subMatcher) {
+  public static @Nonnull Matcher<Interface> isActive(@Nonnull Matcher<? super Boolean> subMatcher) {
     return new IsActive(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface's adminUp flag is true. */
+  public static @Nonnull Matcher<Interface> isAdminUp() {
+    return new IsAdminUp(equalTo(true));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided adminUp flag matches the interface's adminUp
+   * flag.
+   */
+  public static @Nonnull Matcher<Interface> isAdminUp(boolean expectedAdminUp) {
+    return new IsAdminUp(equalTo(expectedAdminUp));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * adminUp flag.
+   */
+  public static @Nonnull Matcher<Interface> isAdminUp(
+      @Nonnull Matcher<? super Boolean> subMatcher) {
+    return new IsAdminUp(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface's lineUp flag is true. */
+  public static @Nonnull Matcher<Interface> isLineUp() {
+    return new IsLineUp(equalTo(true));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided lineUp flag matches the interface's lineUp
+   * flag.
+   */
+  public static @Nonnull Matcher<Interface> isLineUp(boolean expectedActive) {
+    return new IsLineUp(equalTo(expectedActive));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * lineUp flag.
+   */
+  public static @Nonnull Matcher<Interface> isLineUp(@Nonnull Matcher<? super Boolean> subMatcher) {
+    return new IsLineUp(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@code expectedInactiveReason} matches the interface's
+   * inactiveReason.
+   */
+  public static @Nonnull Matcher<Interface> hasInactiveReason(
+      @Nullable InactiveReason expectedInactiveReason) {
+    return new HasInactiveReason(equalTo(expectedInactiveReason));
   }
 
   /** A matcher that matches if the interface's autoState flag is {@code true}. */

@@ -242,7 +242,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @VisibleForTesting
   org.batfish.datamodel.Interface createVIInterfaceForLo() {
     return org.batfish.datamodel.Interface.builder()
-        .setActive(true)
         .setName(LOOPBACK_INTERFACE_NAME)
         .setOwner(_c)
         .setType(InterfaceType.LOOPBACK)
@@ -296,7 +295,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setType(InterfaceType.LOOPBACK)
             .build();
-    newIface.setActive(true);
     if (!vrf.getAddresses().isEmpty()) {
       newIface.setAddress(vrf.getAddresses().get(0));
     }
@@ -534,7 +532,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     applyBridgeSettings(bond.getBridge(), newIface);
 
-    newIface.setActive(true);
     if (!bond.getIpAddresses().isEmpty()) {
       newIface.setAddress(bond.getIpAddresses().get(0));
     }
@@ -554,7 +551,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setName(name)
             .setOwner(_c)
             .setType(InterfaceType.PHYSICAL)
-            .setActive(!iface.isDisabled())
+            .setAdminUp(!iface.isDisabled())
             .build();
     applyCommonInterfaceSettings(iface, newIface);
 
@@ -584,7 +581,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 iface.getType() == CumulusInterfaceType.BOND_SUBINTERFACE
                     ? InterfaceType.AGGREGATE_CHILD
                     : InterfaceType.LOGICAL)
-            .setActive(!iface.isDisabled())
+            .setAdminUp(!iface.isDisabled())
             .build();
     newIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));
@@ -600,7 +597,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setType(InterfaceType.VLAN)
             .build();
-    newIface.setActive(true);
     newIface.setVlan(vlan.getVlanId());
 
     // Interface addreses

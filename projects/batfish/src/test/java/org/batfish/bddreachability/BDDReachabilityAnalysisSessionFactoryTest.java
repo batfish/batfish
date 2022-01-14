@@ -149,7 +149,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
     Configuration r2 = cb.setHostname(R2).build();
     Configuration r3 = cb.setHostname(R3).build();
 
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder();
 
     // initialize R1
     // interfaces

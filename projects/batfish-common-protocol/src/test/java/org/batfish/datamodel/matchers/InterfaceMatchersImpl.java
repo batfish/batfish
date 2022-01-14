@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -534,6 +535,39 @@ final class InterfaceMatchersImpl {
     @Override
     protected Boolean featureValueOf(Interface actual) {
       return actual.getActive();
+    }
+  }
+
+  static final class IsAdminUp extends FeatureMatcher<Interface, Boolean> {
+    IsAdminUp(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with adminUp:", "adminUp");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getAdminUp();
+    }
+  }
+
+  static final class IsLineUp extends FeatureMatcher<Interface, Boolean> {
+    IsLineUp(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with lineUp:", "lineUp");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getLineUp();
+    }
+  }
+
+  static final class HasInactiveReason extends FeatureMatcher<Interface, InactiveReason> {
+    HasInactiveReason(@Nonnull Matcher<? super InactiveReason> subMatcher) {
+      super(subMatcher, "an Interface with inactiveReason:", "inactiveReason");
+    }
+
+    @Override
+    protected @Nullable InactiveReason featureValueOf(Interface anInterface) {
+      return anInterface.getInactiveReason();
     }
   }
 

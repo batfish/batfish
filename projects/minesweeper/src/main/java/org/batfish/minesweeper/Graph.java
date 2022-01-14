@@ -493,7 +493,6 @@ public class Graph {
         String name = sr.getNextHopInterface();
         // Create null route interface
         Interface iface = Interface.builder().setName(name).build();
-        iface.setActive(true);
         iface.setAddress(
             ConcreteInterfaceAddress.create(
                 sr.getNetwork().getStartIp(), sr.getNextHopIp().numSubnetBits()));
@@ -563,7 +562,6 @@ public class Graph {
    */
   private Interface createIbgpInterface(BgpActivePeerConfig n, String peer) {
     Interface iface = Interface.builder().setName("iBGP-" + peer).build();
-    iface.setActive(true);
     // TODO is this valid.
     iface.setAddress(ConcreteInterfaceAddress.create(n.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH));
     iface.setBandwidth(0.);

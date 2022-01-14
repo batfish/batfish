@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -41,6 +42,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
 
   public static final String ACCESS_VLAN = "Access_VLAN";
   public static final String ACTIVE = "Active";
+  public static final String ADMIN_UP = "Admin_Up";
   public static final String ALLOWED_VLANS = "Allowed_VLANs";
   public static final String ALL_PREFIXES = "All_Prefixes";
   public static final String AUTO_STATE_VLAN = "Auto_State_VLAN";
@@ -54,8 +56,10 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String ENCAPSULATION_VLAN = "Encapsulation_VLAN";
   public static final String HSRP_GROUPS = "HSRP_Groups";
   public static final String HSRP_VERSION = "HSRP_Version";
+  public static final String INACTIVE_REASON = "Inactive_Reason";
   public static final String INCOMING_FILTER_NAME = "Incoming_Filter_Name";
   public static final String INTERFACE_TYPE = "Interface_Type";
+  public static final String LINE_UP = "Line_Up";
   public static final String MLAG_ID = "MLAG_ID";
   public static final String MTU = "MTU";
   public static final String NATIVE_VLAN = "Native_VLAN";
@@ -74,6 +78,22 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String VRF = "VRF";
   public static final String VRRP_GROUPS = "VRRP_Groups";
   public static final String ZONE_NAME = "Zone_Name";
+
+  private static boolean getBlacklisted(@Nonnull Interface i) {
+    return i.hasLineStatus() && !i.getLineUp();
+  }
+
+  private static boolean getLineUp(@Nonnull Interface i) {
+    return i.hasLineStatus() && !i.getLineUp();
+  }
+
+  private static @Nullable String getInactiveReason(@Nonnull Interface i) {
+    InactiveReason reason = i.getInactiveReason();
+    if (reason == null) {
+      return "";
+    }
+    return reason.description();
+  }
 
   private static @Nullable String getIncomingFilterName(@Nonnull Interface i) {
     IpAccessList acl = i.getIncomingFilter();
@@ -104,6 +124,12 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Interface::getActive, Schema.BOOLEAN, "Whether the interface is active"))
           .put(
+              ADMIN_UP,
+              new PropertyDescriptor<>(
+                  Interface::getAdminUp,
+                  Schema.BOOLEAN,
+                  "Whether the interface is administratively enabled"))
+          .put(
               ALLOWED_VLANS,
               new PropertyDescriptor<>(
                   Interface::getAllowedVlans,
@@ -131,7 +157,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               BLACKLISTED,
               new PropertyDescriptor<>(
-                  Interface::getBlacklisted,
+                  // TODO: Decide on better semantics and update implementation (should probably not
+                  //       be equivalent to lineUp)
+                  InterfacePropertySpecifier::getBlacklisted,
                   Schema.BOOLEAN,
                   "Whether the interface is considered down for maintenance"))
           .put(
@@ -176,6 +204,12 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               HSRP_VERSION,
               new PropertyDescriptor<>(
                   Interface::getHsrpVersion, Schema.STRING, "HSRP version that will be used"))
+          .put(
+              INACTIVE_REASON,
+              new PropertyDescriptor<>(
+                  InterfacePropertySpecifier::getInactiveReason,
+                  Schema.STRING,
+                  "Reason why interface is inactive"))
           // use incomingFilterName instead of incomingFilter
           .put(
               INCOMING_FILTER_NAME,
@@ -187,6 +221,13 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               INTERFACE_TYPE,
               new PropertyDescriptor<>(
                   Interface::getInterfaceType, Schema.STRING, "Interface type"))
+          .put(
+              LINE_UP,
+              new PropertyDescriptor<>(
+                  Interface::getLineUp,
+                  Schema.BOOLEAN,
+                  "Whether the interface is and powered on and connected to another line up"
+                      + " interface"))
           .put(
               MLAG_ID,
               new PropertyDescriptor<>(

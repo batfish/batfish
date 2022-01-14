@@ -204,7 +204,9 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
                 return;
               }
               boolean isDisabled = Boolean.FALSE.equals(portSettings.getDisabled());
-              viIface.setActive(!isDisabled);
+              if (isDisabled) {
+                viIface.adminDown();
+              }
 
               if (portSettings.getSpeed() != null) {
                 double speed = portSettings.getSpeed() * SPEED_CONVERSION_FACTOR;
@@ -254,7 +256,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       viIface.setDescription(iface.getAlias());
     }
     if (iface.getShutdown()) {
-      viIface.setActive(false);
+      viIface.adminDown();
     }
 
     // ip addresses
@@ -358,7 +360,6 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   private static void populateVlanInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     viIface.setInterfaceType(InterfaceType.VLAN);
-    viIface.setActive(true);
     viIface.setVlan(iface.getVlanId());
     viIface.setDescription(iface.getDescription());
 
@@ -378,7 +379,6 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   private void populateVrfInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     viIface.setInterfaceType(InterfaceType.LOOPBACK);
-    viIface.setActive(true);
     // this loopback should be in its own vrf
     viIface.setVrf(getOrCreateVrf(c, iface.getName()));
   }
@@ -413,7 +413,6 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
         slaves.stream()
             .map(slave -> new Dependency(slave, DependencyType.AGGREGATE))
             .collect(ImmutableSet.toImmutableSet()));
-    viIface.setActive(true);
     populateBridgeSettings(iface, viIface);
     viIface.setMlagId(iface.getClagId());
   }

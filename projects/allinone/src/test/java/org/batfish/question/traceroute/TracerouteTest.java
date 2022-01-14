@@ -751,8 +751,7 @@ public class TracerouteTest {
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Interface.Builder ifaceBuilder =
-        nf.interfaceBuilder().setActive(true).setOwner(config).setVrf(vrf);
+    Interface.Builder ifaceBuilder = nf.interfaceBuilder().setOwner(config).setVrf(vrf);
     Interface lo0 = ifaceBuilder.setAddress(ConcreteInterfaceAddress.parse("5.5.5.5/32")).build();
     Interface lo1 = ifaceBuilder.setAddress(ConcreteInterfaceAddress.parse("6.6.6.6/32")).build();
     Builder routeBuilder = StaticRoute.testBuilder().setNetwork(dst).setAdministrativeCost(1);

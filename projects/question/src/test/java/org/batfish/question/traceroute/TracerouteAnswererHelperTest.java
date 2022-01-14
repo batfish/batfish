@@ -46,8 +46,8 @@ public class TracerouteAnswererHelperTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().build();
     Interface.Builder ifaceBuilder = nf.interfaceBuilder().setOwner(config).setVrf(vrf);
-    Interface activeIface = ifaceBuilder.setActive(true).build();
-    Interface inactiveIface = ifaceBuilder.setActive(false).build();
+    Interface activeIface = ifaceBuilder.setAdminUp(true).build();
+    Interface inactiveIface = ifaceBuilder.setAdminUp(false).build();
 
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
 
@@ -104,8 +104,7 @@ public class TracerouteAnswererHelperTest {
             .setHostname("node")
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Interface iface =
-        nf.interfaceBuilder().setVrf(vrf).setOwner(config).setActive(true).setName("iface").build();
+    Interface iface = nf.interfaceBuilder().setVrf(vrf).setOwner(config).setName("iface").build();
     SpecifierContext ctxt =
         MockSpecifierContext.builder()
             .setConfigs(ImmutableMap.of(config.getHostname(), config))

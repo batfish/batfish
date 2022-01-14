@@ -1,12 +1,19 @@
 package org.batfish.datamodel.interface_dependency;
 
 import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
+import static org.batfish.datamodel.InactiveReason.BIND_DOWN;
+import static org.batfish.datamodel.InactiveReason.LACP_FAILURE;
+import static org.batfish.datamodel.InactiveReason.LINE_DOWN;
+import static org.batfish.datamodel.InactiveReason.NO_ACTIVE_MEMBERS;
+import static org.batfish.datamodel.InactiveReason.NO_MEMBERS;
+import static org.batfish.datamodel.InactiveReason.PARENT_DOWN;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -14,7 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -24,6 +31,7 @@ import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -38,7 +46,7 @@ public class InterfaceDependencies {
    * Compute the interfaces that should be deactivated because they depend on one or more missing or
    * inactive interfaces.
    */
-  public static Set<NodeInterfacePair> getInterfacesToDeactivate(
+  public static Map<NodeInterfacePair, InactiveReason> getInterfacesToDeactivate(
       Map<String, Configuration> configs, Layer1Topologies layer1Topologies) {
     InterfaceDependencies deps = new InterfaceDependencies(configs, layer1Topologies);
     deps.initialize();
@@ -51,7 +59,7 @@ public class InterfaceDependencies {
   private final Layer1Topologies _layer1Topologies;
   private final Graph<NodeInterfacePair, DependencyEdge> _depGraph;
   private final Set<NodeInterfacePair> _inactiveInterfaces = new HashSet<>();
-  private final Set<NodeInterfacePair> _interfacesToDeactivate = new HashSet<>();
+  private final Map<NodeInterfacePair, InactiveReason> _interfacesToDeactivate = new HashMap<>();
 
   private InterfaceDependencies(
       Map<String, Configuration> configs, Layer1Topologies layer1Topologies) {
@@ -93,7 +101,7 @@ public class InterfaceDependencies {
               if (iface.getDependencies().stream().noneMatch(dep -> dep.getType() == AGGREGATE)) {
                 _logger.warn(
                     "deactivating AGGREGATE/REDUNDANT interface {} with no dependencies", ifaceId);
-                _interfacesToDeactivate.add(ifaceId);
+                _interfacesToDeactivate.put(ifaceId, NO_MEMBERS);
                 break;
               }
 
@@ -168,7 +176,7 @@ public class InterfaceDependencies {
                                 + "Some of its members do have neighbors: %s",
                             iface.getInterfaceType(), ifaceId, depToNeighbor);
                       });
-                  _interfacesToDeactivate.add(ifaceId);
+                  _interfacesToDeactivate.put(ifaceId, LACP_FAILURE);
                   break;
                 }
 
@@ -176,12 +184,16 @@ public class InterfaceDependencies {
                 break;
               }
 
-              _logger.warn(
-                  "deactivating {} interface {} with neighbors {}",
-                  iface.getInterfaceType(),
-                  ifaceId,
-                  neighbors);
-              _interfacesToDeactivate.add(ifaceId);
+              if (iface.getInterfaceType() == InterfaceType.AGGREGATED) {
+                // AGGREGATED interface with more than 2 logical L1 neighbors. Probably would break
+                // LACP, so disable. Warn, since something is probably wrong with L1 input.
+                _logger.warn(
+                    "deactivating {} interface {} with neighbors {}",
+                    iface.getInterfaceType(),
+                    ifaceId,
+                    neighbors);
+                _interfacesToDeactivate.put(ifaceId, LACP_FAILURE);
+              }
               break;
             }
           default:
@@ -269,21 +281,45 @@ public class InterfaceDependencies {
   private boolean isInactive(NodeInterfacePair nip) {
     return nip == NON_EXISTENT_INTERFACE
         || _inactiveInterfaces.contains(nip)
-        || _interfacesToDeactivate.contains(nip);
+        || _interfacesToDeactivate.containsKey(nip);
+  }
+
+  private int preferPhysical(NodeInterfacePair lhs, NodeInterfacePair rhs) {
+    InterfaceType lhsType =
+        _configs
+            .get(lhs.getHostname())
+            .getAllInterfaces()
+            .get(lhs.getInterface())
+            .getInterfaceType();
+    InterfaceType rhsType =
+        _configs
+            .get(rhs.getHostname())
+            .getAllInterfaces()
+            .get(rhs.getInterface())
+            .getInterfaceType();
+    if (lhsType == InterfaceType.PHYSICAL && rhsType != InterfaceType.PHYSICAL) {
+      return -1;
+    } else if (lhsType != InterfaceType.PHYSICAL && rhsType == InterfaceType.PHYSICAL) {
+      return 1;
+    }
+    return 0;
   }
 
   private void run() {
     Queue<NodeInterfacePair> workQueue = new LinkedList<>();
     workQueue.add(NON_EXISTENT_INTERFACE);
-    Stream.of(_inactiveInterfaces, _interfacesToDeactivate)
+    Stream.of(_inactiveInterfaces, _interfacesToDeactivate.keySet())
         .flatMap(Set::stream)
+        // Queue physical interfaces first so we get most relevant reason for aggregate/redundant
+        // interface deactivation.
+        .sorted(this::preferPhysical)
         .filter(_depGraph::containsVertex)
         .forEach(workQueue::add);
 
-    Consumer<NodeInterfacePair> deactivate =
-        (iface) -> {
+    BiConsumer<NodeInterfacePair, InactiveReason> deactivate =
+        (iface, inactiveReason) -> {
           assert !isInactive(iface) : "deactivating already-inactive iface";
-          _interfacesToDeactivate.add(iface);
+          _interfacesToDeactivate.put(iface, inactiveReason);
           workQueue.add(iface);
         };
 
@@ -298,18 +334,67 @@ public class InterfaceDependencies {
           continue;
         }
         switch (outEdge.getDependencyType()) {
-          case BIND:
-            deactivate.accept(tgtIface);
-            break;
           case AGGREGATE:
-            if (_depGraph.incomingEdgesOf(tgtIface).stream()
-                .filter(edge -> edge.getDependencyType() == AGGREGATE)
-                .map(_depGraph::getEdgeSource)
-                .allMatch(this::isInactive)) {
-              // all the interfaces tgtIface depends upon are inactive. deactivate it.
-              deactivate.accept(tgtIface);
+            {
+              if (_depGraph.incomingEdgesOf(tgtIface).stream()
+                  .filter(edge -> edge.getDependencyType() == AGGREGATE)
+                  .map(_depGraph::getEdgeSource)
+                  .allMatch(this::isInactive)) {
+                // all the interfaces tgtIface depends upon are inactive. deactivate it.
+                deactivate.accept(tgtIface, NO_ACTIVE_MEMBERS);
+              }
+              break;
             }
-            break;
+          case BIND:
+            {
+              InterfaceType tgtType =
+                  _configs
+                      .get(tgtIface.getHostname())
+                      .getAllInterfaces()
+                      .get(tgtIface.getInterface())
+                      .getInterfaceType();
+              switch (tgtType) {
+                case AGGREGATED:
+                  // Down due to single logical neighbor that is down (see initialize()).
+                  // Note that AGGREGATE-case deactivation should trigger (if applicable) before
+                  // BIND
+                  // case because all physical interface deactivations are queued first. So this
+                  // case
+                  // is only reachable if each side has at least one member interface that is up.
+                  // TODO: Seems like you should only lose an L3 edge, not an L1 edge. But if you do
+                  //       lose an L1 edge, best guess is LACP failures.
+                  deactivate.accept(tgtIface, LACP_FAILURE);
+                  break;
+                case REDUNDANT:
+                  // Down due to single logical neighbor that is down (see initialize()).
+                  // Note that AGGREGATE-case deactivation should trigger (if applicable) before
+                  // BIND
+                  // case because all physical interface deactivations are queued first. So this
+                  // case
+                  // is only reachable if each side has at least one member interface that is up.
+                  // TODO: Seems like you should only lose an L3 edge, not an L1 edge. But if you do
+                  //       lose an L1 edge, best guess is line down.
+                  deactivate.accept(tgtIface, LINE_DOWN);
+                  break;
+                case AGGREGATE_CHILD:
+                case REDUNDANT_CHILD:
+                case LOGICAL:
+                  deactivate.accept(tgtIface, PARENT_DOWN);
+                  break;
+                case PHYSICAL:
+                  // Down due to down neighbor
+                  deactivate.accept(tgtIface, LINE_DOWN);
+                  break;
+                case TUNNEL:
+                  deactivate.accept(tgtIface, BIND_DOWN);
+                  break;
+                default:
+                  assert false
+                      : String.format("unexpected interface type as bind target: %s", tgtType);
+                  break;
+              }
+              break;
+            }
           default:
             throw new IllegalStateException(
                 "Unexpected Interface.DependencyType " + outEdge.getDependencyType().name());

@@ -23,7 +23,7 @@ public final class SpecifierUtilsTest {
     Vrf vrf = nf.vrfBuilder().setOwner(node).build();
     Interface activeInterface = nf.interfaceBuilder().setOwner(node).setVrf(vrf).build();
     Interface inactiveInterface =
-        nf.interfaceBuilder().setActive(false).setOwner(node).setVrf(vrf).build();
+        nf.interfaceBuilder().setAdminUp(false).setOwner(node).setVrf(vrf).build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(node.getHostname(), node);
 
     String hostname = node.getHostname();

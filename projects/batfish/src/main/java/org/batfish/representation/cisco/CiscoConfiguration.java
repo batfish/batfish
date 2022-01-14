@@ -1369,7 +1369,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
-    newIface.setActive(iface.getActive());
+    if (!iface.getActive()) {
+      newIface.adminDown();
+    }
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(

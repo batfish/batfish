@@ -1059,14 +1059,14 @@ public class IspModelingUtilsTest {
     ConcreteInterfaceAddress addr25 = ConcreteInterfaceAddress.create(localIp, 25);
     Interface active1 =
         _nf.interfaceBuilder()
-            .setActive(true)
+            .setAdminUp(true)
             .setName("active1")
             .setAddresses(addr24, addr25)
             .build();
 
     Interface inactive1 =
         _nf.interfaceBuilder()
-            .setActive(false)
+            .setAdminUp(false)
             .setName("inactive1")
             .setAddresses(addr22, addr23)
             .build();

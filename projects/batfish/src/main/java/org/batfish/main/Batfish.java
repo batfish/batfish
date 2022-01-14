@@ -21,6 +21,8 @@ import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.datamodel.InactiveReason.AUTOSTATE_FAILURE;
+import static org.batfish.datamodel.InactiveReason.IGNORE_MGMT;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.interface_dependency.InterfaceDependencies.getInterfacesToDeactivate;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
@@ -975,7 +977,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _logger.warnf(
                   "Disabling unusable vlan interface because no switch port is assigned to it: %s",
                   NodeInterfacePair.of(iface));
-              iface.blacklist();
+              iface.deactivate(AUTOSTATE_FAILURE);
             }
           }
         }
@@ -1785,12 +1787,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<String, Configuration> configurations, Layer1Topologies layer1Topologies) {
     getInterfacesToDeactivate(configurations, layer1Topologies)
         .forEach(
-            iface ->
+            (iface, inactiveReason) ->
                 configurations
                     .get(iface.getHostname())
                     .getAllInterfaces()
                     .get(iface.getInterface())
-                    .setActive(false));
+                    .deactivate(inactiveReason));
   }
 
   private void postProcessEigrpCosts(Map<String, Configuration> configurations) {
@@ -1866,7 +1868,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .map(iface -> configurations.getInterface(iface.getHostname(), iface.getInterface()))
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .forEach(Interface::blacklist);
+        .filter(Interface::hasLineStatus)
+        .filter(Interface::getLineUp)
+        .forEach(Interface::disconnect);
   }
 
   @VisibleForTesting
@@ -1890,9 +1894,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .forEach(
             configuration -> {
               for (Interface iface : configuration.getAllInterfaces().values()) {
-                if (MANAGEMENT_INTERFACES.matcher(iface.getName()).find()
-                    || MANAGEMENT_VRFS.matcher(iface.getVrfName()).find()) {
-                  iface.blacklist();
+                if (iface.getActive()
+                    && (MANAGEMENT_INTERFACES.matcher(iface.getName()).find()
+                        || MANAGEMENT_VRFS.matcher(iface.getVrfName()).find())) {
+                  if (iface.hasLineStatus() && iface.getLineUp()) {
+                    iface.disconnect();
+                  } else {
+                    iface.deactivate(IGNORE_MGMT);
+                  }
                 }
               }
             });
@@ -2037,6 +2046,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NetworkId networkId = snapshot.getNetwork();
     SnapshotId snapshotId = snapshot.getSnapshot();
 
+    disconnectAdminDownInterfaces(configurations.values());
+
     SortedSet<String> blacklistedNodes = _storage.loadNodeBlacklist(networkId, snapshotId);
     if (blacklistedNodes != null) {
       processInterfaceBlacklist(nodeToInterfaceBlacklist(blacklistedNodes, nc), nc);
@@ -2075,6 +2086,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: take this out once dependencies are *the* definitive way to disable interfaces
     disableUnusableVlanInterfaces(configurations);
+  }
+
+  private void disconnectAdminDownInterfaces(Collection<Configuration> configurations) {
+    for (Configuration c : configurations) {
+      if (!c.getDisconnectAdminDownInterfaces()) {
+        continue;
+      }
+      for (Interface i : c.getAllInterfaces().values()) {
+        if (!i.getAdminUp() && i.hasLineStatus() && i.getLineUp()) {
+          i.disconnect();
+        }
+      }
+    }
   }
 
   /**

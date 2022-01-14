@@ -219,7 +219,7 @@ public final class BidirectionalReachabilityAnalysisTest {
                 .setAdmin(1)
                 .build());
 
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setType(InterfaceType.PHYSICAL);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL);
     // start node interfaces
     ib.setOwner(n1).setVrf(v1);
     ib.setName(FPFN_INGRESS_IFACE).setAddresses(FPFN_START_INGRESS_ADDRESS).build();
@@ -273,7 +273,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setType(InterfaceType.PHYSICAL);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL);
 
     Configuration source1 = cb.build();
     Vrf vrf = nf.vrfBuilder().setOwner(source1).build();
@@ -528,7 +528,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setType(InterfaceType.PHYSICAL);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL);
 
     Configuration source1 = cb.build();
     Vrf vrf = nf.vrfBuilder().setOwner(source1).build();
@@ -689,7 +689,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setType(InterfaceType.PHYSICAL);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL);
 
     HeaderSpace tcpHeaderSpace =
         HeaderSpace.builder().setIpProtocols(ImmutableList.of(IpProtocol.TCP)).build();
@@ -945,7 +945,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Vrf egressVrf = nf.vrfBuilder().setName(SFL_EGRESS_VRF).setOwner(ingressNode).build();
 
     Interface.Builder ib =
-        Interface.builder().setOwner(ingressNode).setActive(true).setType(InterfaceType.PHYSICAL);
+        Interface.builder().setOwner(ingressNode).setType(InterfaceType.PHYSICAL);
     ib.setName(SFL_INGRESS_IFACE).setVrf(ingressVrf).setAddress(SFL_INGRESS_IFACE_ADDRESS).build();
     ib.setName(SFL_EGRESS_IFACE)
         .setVrf(separateEgressVrf ? egressVrf : ingressVrf)
@@ -990,7 +990,6 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration neighbor = cb.setHostname(SFL_NEIGHBOR).build();
     Vrf neighborVrf = nf.vrfBuilder().setName(SFL_NEIGHBOR_VRF).setOwner(neighbor).build();
     Interface.builder()
-        .setActive(true)
         .setOwner(neighbor)
         .setVrf(neighborVrf)
         .setName(SFL_NEIGHBOR_IFACE)
@@ -1036,7 +1035,6 @@ public final class BidirectionalReachabilityAnalysisTest {
                 .build());
     nf.interfaceBuilder()
         .setOwner(node)
-        .setActive(true)
         .setName(SFL_INGRESS_IFACE)
         .setVrf(vrf)
         .setAddress(SFL_INGRESS_IFACE_ADDRESS)
@@ -1276,7 +1274,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setType(InterfaceType.PHYSICAL);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL);
     StaticRoute.Builder rb = StaticRoute.testBuilder().setAdministrativeCost(1);
 
     Prefix srcTransitPrefix = Prefix.parse("2.0.0.0/31");

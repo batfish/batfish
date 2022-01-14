@@ -33,7 +33,7 @@ public class StaticTrackMethodEvaluator implements GenericTrackMethodVisitor<Boo
       //       vendor.
       return false;
     }
-    return trackedInterface.getActive() && !trackedInterface.getBlacklisted();
+    return trackedInterface.getActive();
   }
 
   @Override

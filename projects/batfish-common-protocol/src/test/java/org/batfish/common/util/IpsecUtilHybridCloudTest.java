@@ -86,7 +86,7 @@ public class IpsecUtilHybridCloudTest {
             .put("Tunnel1", Interface.builder().setName("Tunnel1").setOwner(c1).build())
             .put(
                 "interface1",
-                Interface.builder().setName("interface1").setOwner(c1).setActive(false).build())
+                Interface.builder().setName("interface1").setOwner(c1).setAdminUp(false).build())
             .build());
     interfaceBuilder = ImmutableSortedMap.naturalOrder();
     c2.setInterfaces(

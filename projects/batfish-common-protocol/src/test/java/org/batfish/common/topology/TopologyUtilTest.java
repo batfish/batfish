@@ -94,12 +94,12 @@ public final class TopologyUtilTest {
   }
 
   /** Make an interface with the specified parameters */
-  private Interface iface(String interfaceName, String ip, boolean active, boolean blacklisted) {
+  private Interface iface(String interfaceName, String ip, boolean active, boolean lineUp) {
     return _nf.interfaceBuilder()
         .setName(interfaceName)
-        .setActive(active)
+        .setAdminUp(active)
         .setAddress(ConcreteInterfaceAddress.parse(ip))
-        .setBlacklisted(blacklisted)
+        .setLineUp(lineUp)
         .build();
   }
 
@@ -144,7 +144,7 @@ public final class TopologyUtilTest {
     Configuration s2 = _cb.setHostname(s2Name).build();
     Vrf v1 = _vb.setOwner(s1).setName(vrfName).build();
     Vrf v2 = _vb.setOwner(s2).setName(vrfName).build();
-    _ib.setActive(true);
+    _ib.setAdminUp(true);
 
     // Switchports
     _ib.setAccessVlan(vlanId).setSwitchport(true).setSwitchportMode(SwitchportMode.ACCESS);
@@ -219,7 +219,7 @@ public final class TopologyUtilTest {
     String c3i1Name = "c3i1";
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1).setActive(true);
+    _ib.setOwner(c1).setVrf(v1).setAdminUp(true);
     _ib.setName(c1i1Name).build();
     Configuration c2 = _cb.setHostname(c2Name).build();
     Vrf v2 = _vb.setOwner(c2).build();
@@ -249,7 +249,7 @@ public final class TopologyUtilTest {
       // c1i1 is only connected to c3i1, leaving c2 without layer1 edges
 
       Vrf v3 = _vb.setOwner(c3).build();
-      _ib.setOwner(c3).setVrf(v3).setActive(true);
+      _ib.setOwner(c3).setVrf(v3).setAdminUp(true);
       _ib.setName(c3i1Name).build();
 
       Layer1Topology layer1Topology = layer1Topology(c1Name, c1i1Name, c3Name, c3i1Name);
@@ -279,7 +279,7 @@ public final class TopologyUtilTest {
     String c4i2Name = "c4i2";
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1).setActive(true);
+    _ib.setOwner(c1).setVrf(v1).setAdminUp(true);
     _ib.setName(c1i1Name).build();
 
     Configuration c2 = _cb.setHostname(c2Name).build();
@@ -557,7 +557,7 @@ public final class TopologyUtilTest {
     Vrf v1 = _vb.setOwner(config1).build();
     Vrf v2 = _vb.setOwner(config2).build();
     // L2 interfaces
-    _ib.setActive(true).setSwitchportMode(SwitchportMode.TRUNK);
+    _ib.setAdminUp(true).setSwitchportMode(SwitchportMode.TRUNK);
     _ib.setOwner(config1).setVrf(v1).setName(i1).setAllowedVlans(i1Vlans).build();
     _ib.setName(i2).setAllowedVlans(i2Vlans).build();
     _ib.setOwner(config2).setVrf(v2).setName(i1).setAllowedVlans(i1Vlans).build();
@@ -629,7 +629,7 @@ public final class TopologyUtilTest {
     String i2Name = "i2";
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1).setActive(true);
+    _ib.setOwner(c1).setVrf(v1).setAdminUp(true);
     Interface i1 = _ib.setName(i1Name).build();
     i1.setSwitchport(true);
     i1.setSwitchportMode(SwitchportMode.ACCESS);
@@ -664,7 +664,7 @@ public final class TopologyUtilTest {
     Vrf v1 = _vb.setOwner(c1).build();
     _ib.setOwner(c1)
         .setVrf(v1)
-        .setActive(true)
+        .setAdminUp(true)
         .setName(irbName)
         .setType(InterfaceType.VLAN)
         .setVlan(vlanId)
@@ -700,7 +700,7 @@ public final class TopologyUtilTest {
     Vrf v1 = _vb.setOwner(c1).build();
     _ib.setOwner(c1)
         .setVrf(v1)
-        .setActive(true)
+        .setAdminUp(true)
         .setName(switchportName)
         .setType(InterfaceType.PHYSICAL)
         .setAccessVlan(vlanId)
@@ -754,7 +754,7 @@ public final class TopologyUtilTest {
     Vrf v2 = _vb.setOwner(n2).build();
 
     // Interfaces
-    _ib.setActive(true);
+    _ib.setAdminUp(true);
     // n1 interfaces
     _ib.setOwner(n1).setVrf(v1);
     _ib.setName(i1Name).setDependencies(ImmutableList.of()).setEncapsulationVlan(null).build();
@@ -837,7 +837,7 @@ public final class TopologyUtilTest {
     Vrf v2 = _vb.setOwner(n2).build();
 
     // Interfaces
-    _ib.setActive(true);
+    _ib.setAdminUp(true);
     // n1 interfaces
     _ib.setOwner(n1).setVrf(v1);
     // parent interface that multiplexes based on tags
@@ -921,7 +921,7 @@ public final class TopologyUtilTest {
     Configuration n2 = _cb.setHostname(n2Name).build();
 
     // Interfaces
-    _ib.setActive(true).setSwitchport(true);
+    _ib.setAdminUp(true).setSwitchport(true);
     // n1 interfaces
     _ib.setOwner(n1);
     _ib.setName(tr1Name)
@@ -986,7 +986,7 @@ public final class TopologyUtilTest {
 
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1).setActive(true);
+    _ib.setOwner(c1).setVrf(v1).setAdminUp(true);
 
     Configuration c2 = _cb.setHostname(c2Name).build();
     Vrf v2 = _vb.setOwner(c2).build();
@@ -1110,7 +1110,7 @@ public final class TopologyUtilTest {
 
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1).setActive(true);
+    _ib.setOwner(c1).setVrf(v1).setAdminUp(true);
 
     Configuration c2 = _cb.setHostname(c2Name).build();
     Vrf v2 = _vb.setOwner(c2).build();
@@ -1196,7 +1196,7 @@ public final class TopologyUtilTest {
 
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1).setActive(true);
+    _ib.setOwner(c1).setVrf(v1).setAdminUp(true);
 
     Configuration c2 = _cb.setHostname(c2Name).build();
     Vrf v2 = _vb.setOwner(c2).build();
@@ -1409,7 +1409,7 @@ public final class TopologyUtilTest {
     NodeInterfacePair l3n3i2 = NodeInterfacePair.of(n3Name, i2Name);
     NodeInterfacePair l3n4i1 = NodeInterfacePair.of(n4Name, i1Name);
 
-    _ib.setActive(true);
+    _ib.setAdminUp(true);
 
     ConcreteInterfaceAddress n2n3Address = ConcreteInterfaceAddress.parse("10.0.0.0/31");
     ConcreteInterfaceAddress n3n2Address = ConcreteInterfaceAddress.parse("10.0.0.1/31");
@@ -1471,9 +1471,8 @@ public final class TopologyUtilTest {
         ImmutableMap.of(
             "node",
             ImmutableSet.of(
-                iface("active", "1.1.1.1/32", true, false),
+                iface("active", "1.1.1.1/32", true, true),
                 iface("shut", "1.1.1.1/32", false, false),
-                iface("active-black", "1.1.1.1/32", true, true),
                 iface("shut-black", "1.1.1.1/32", false, true)));
     NetworkConfigurations nc =
         NetworkConfigurations.of(
@@ -1490,8 +1489,7 @@ public final class TopologyUtilTest {
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"),
-                ImmutableMap.of(
-                    "node", ImmutableSet.of("active", "shut", "active-black", "shut-black")))));
+                ImmutableMap.of("node", ImmutableSet.of("active", "shut", "shut-black")))));
   }
 
   @Test

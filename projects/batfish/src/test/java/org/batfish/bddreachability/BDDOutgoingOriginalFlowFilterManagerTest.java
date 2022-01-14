@@ -81,7 +81,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     IpAccessList filter2 =
         aclBuilder.setName("acl2").setLines(ImmutableList.of(acceptDstIp2, REJECT_ALL)).build();
 
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setAdminUp(true);
     if (ifaces.contains(ACTIVE_IFACE_WITH_FILTER_1)) {
       ib.setName(ACTIVE_IFACE_WITH_FILTER_1).setOutgoingOriginalFlowFilter(filter1).build();
     }
@@ -96,7 +96,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     }
     if (ifaces.contains(INACTIVE_IFACE_WITH_FILTER)) {
       ib.setName(INACTIVE_IFACE_WITH_FILTER)
-          .setActive(false)
+          .setAdminUp(false)
           .setOutgoingOriginalFlowFilter(filter1)
           .build();
     }

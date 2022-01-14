@@ -29,12 +29,17 @@ public final class DataplaneTrackEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    Interface.builder().setName("i1").setOwner(c).setVrf(c.getDefaultVrf()).setActive(true).build();
+    Interface.builder()
+        .setName("i1")
+        .setOwner(c)
+        .setVrf(c.getDefaultVrf())
+        .setAdminUp(true)
+        .build();
     Interface.builder()
         .setName("i2")
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
-        .setActive(false)
+        .setAdminUp(false)
         .build();
     TrackInterface tiUp = new TrackInterface("i1");
     TrackInterface tiDown = new TrackInterface("i2");
@@ -70,12 +75,17 @@ public final class DataplaneTrackEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    Interface.builder().setName("i1").setOwner(c).setVrf(c.getDefaultVrf()).setActive(true).build();
+    Interface.builder()
+        .setName("i1")
+        .setOwner(c)
+        .setVrf(c.getDefaultVrf())
+        .setAdminUp(true)
+        .build();
     Interface.builder()
         .setName("i2")
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
-        .setActive(false)
+        .setAdminUp(false)
         .build();
     TrackInterface tiUp = new TrackInterface("i1");
     c.setTrackingGroups(ImmutableMap.of("1", tiUp));
@@ -90,12 +100,17 @@ public final class DataplaneTrackEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    Interface.builder().setName("i1").setOwner(c).setVrf(c.getDefaultVrf()).setActive(true).build();
+    Interface.builder()
+        .setName("i1")
+        .setOwner(c)
+        .setVrf(c.getDefaultVrf())
+        .setAdminUp(true)
+        .build();
     Interface.builder()
         .setName("i2")
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
-        .setActive(false)
+        .setAdminUp(false)
         .build();
     TrackInterface tiUp = new TrackInterface("i1");
     DataplaneTrackEvaluator e = new DataplaneTrackEvaluator(c, new Rib());
