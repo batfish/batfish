@@ -2101,7 +2101,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         break;
 
       case TRUNK:
-        newIfaceBuilder.setAllowedVlans(iface.getAllowedVlans());
+        IntegerSpace.Builder activeVlans = IntegerSpace.builder();
+        _vlans.keySet().forEach(activeVlans::including);
+        newIfaceBuilder.setAllowedVlans(iface.getAllowedVlans().intersection(activeVlans.build()));
         newIfaceBuilder.setNativeVlan(iface.getNativeVlan());
         break;
 
