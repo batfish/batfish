@@ -4,6 +4,10 @@ set system host-name firewall-source-address
 set firewall family inet filter FILTER term TERM from source-address 1.2.3.4/255.0.255.0
 set firewall family inet filter FILTER term TERM from source-address 2.3.4.5/24
 set firewall family inet filter FILTER term TERM then accept
+set firewall family inet filter FILTER term TERM-EXCEPT from source-address 1.1.1.1/32 except
+set firewall family inet filter FILTER term TERM-EXCEPT from source-address 2.2.2.2/32 except
+set firewall family inet filter FILTER term TERM-EXCEPT from source-address 0.0.0.0/0
+set firewall family inet filter FILTER term TERM-EXCEPT then accept
 set firewall family inet filter FILTERv6 term TERM from source-address 2001:0db8::1234
 set firewall family inet filter FILTERv6 term TERM from source-address 2001:0db8::FFFF/124
 set firewall family inet filter FILTERv6 term TERM then accept

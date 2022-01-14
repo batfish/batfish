@@ -2807,14 +2807,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
             // EnumMap is sorted, which gives us deterministic ordering of the And conjuncts
             .collect(
                 groupingBy(FwFrom::getField, () -> new EnumMap<>(Field.class), Collectors.toList()))
-            .values()
+            .entrySet()
             .stream()
             .map(
-                fwFromDisjuncts ->
-                    or(
-                        fwFromDisjuncts.stream()
-                            .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
-                            .collect(ImmutableList.toImmutableList())))
+                e -> {
+                  Field field = e.getKey();
+                  List<FwFrom> froms = e.getValue();
+                  List<AclLineMatchExpr> inner =
+                      froms.stream()
+                          .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
+                          .collect(ImmutableList.toImmutableList());
+                  switch (field) {
+                    case DESTINATION_EXCEPT:
+                    case FRAGMENT_OFFSET_EXCEPT:
+                    case PACKET_LENGTH_EXCEPT:
+                    case SOURCE_EXCEPT:
+                      // FOO_EXCEPT is already compiled to a list of (Not(MatchFoo),
+                      // so combining them needs an AND.
+                      return and(inner);
+                    default:
+                      return or(inner);
+                  }
+                })
             .collect(ImmutableList.toImmutableList());
     return new AndMatchExpr(conjuncts, traceElement);
   }
