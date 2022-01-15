@@ -6436,4 +6436,10 @@ public final class FlatJuniperGrammarTest {
         pvcae,
         hasParseWarning("configs/" + hostname, equalTo("Batfish does not limit maximum-prefixes")));
   }
+
+  @Test
+  public void testIgnoredSystem() {
+    // don't crash
+    parseJuniperConfig("ignored-system");
+  }
 }

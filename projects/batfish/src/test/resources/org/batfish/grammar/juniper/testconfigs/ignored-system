@@ -1,0 +1,9 @@
+#
+set system host-name ignored-system
+#
+# these "set system" commands are ignored
+# it is not the full set
+set system arp aging-timer 20
+set system dump-on-panic
+set system time-zone America/New_York
+set system static-host-mapping ony-nm1-i inet 1.1.1.1

@@ -138,7 +138,11 @@ fohb_null
 
 fohb_server_null
 :
-   SERVER variable
+   SERVER
+   (
+      wildcard
+      | IP_ADDRESS
+   )
    (
       ROUTING_INSTANCE ri = variable
    )?
