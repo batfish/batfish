@@ -6283,6 +6283,14 @@ public final class FlatJuniperGrammarTest {
     }
   }
 
+  /** Test that using the physical interface in OSPF context maps things to unit 0 */
+  @Test
+  public void testOspfImplicitUnit0() {
+    String hostname = "ospf-implicit-unit0";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(110))));
+  }
+
   /**
    * Test that logical interfaces inherit OSPF settings from their routing instance, not from the
    * physical parent.
