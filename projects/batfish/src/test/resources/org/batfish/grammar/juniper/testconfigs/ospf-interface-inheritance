@@ -1,0 +1,11 @@
+#
+set system host-name ospf-logical-interface-inheritance
+#
+# Configure the default metric for the default routing instance
+# Should not be inherited by interfaces in other routing instances
+set protocols ospf area 0 interface all metric 110
+#
+# Configure the default hello-interval for the default routing instance
+set routing-instances ri protocols ospf area 0 interface all hello-interval 13
+#
+set routing-instances ri interface ge-0/0/0.1

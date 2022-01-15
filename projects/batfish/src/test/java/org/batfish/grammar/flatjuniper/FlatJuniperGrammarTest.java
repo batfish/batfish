@@ -6292,15 +6292,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   /**
-   * Test that logical interfaces inherit OSPF settings from their routing instance, not from the
-   * physical parent.
+   * Test that interfaces inherit OSPF settings from their routing instance, and that they do not
+   * inherit from the default routing instance.
    */
   @Test
-  public void testOspfLogicalInterfaceInheritance() {
-    String hostname = "ospf-logical-interface-inheritance";
-    Configuration c = parseConfig(hostname);
-    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(110))));
-    assertThat(c, hasInterface("ge-0/0/0.1", hasOspfCost(equalTo(111))));
+  public void testOspfInterfaceInheritance() {
+    String hostname = "ospf-interface-inheritance";
+    JuniperConfiguration c = parseJuniperConfig(hostname);
+    org.batfish.representation.juniper.Interface iface =
+        c.getMasterLogicalSystem().getInterfaces().get("ge-0/0/0").getUnits().get("ge-0/0/0.1");
+    // don't inherit the value from the default routing instance
+    assertThat(iface.getEffectiveOspfCost(), nullValue());
+    // inherit the value from your own routing instance
+    assertThat(iface.getEffectiveOspfHelloInterval(), equalTo(13));
   }
 
   @Test
