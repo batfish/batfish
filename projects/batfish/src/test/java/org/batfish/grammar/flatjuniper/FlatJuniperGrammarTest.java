@@ -376,6 +376,7 @@ import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
+import org.batfish.representation.juniper.OspfSettings;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
@@ -2843,19 +2844,24 @@ public final class FlatJuniperGrammarTest {
     String iface3 = "ge-0/0/3";
     assertThat(ifaces, hasKeys(iface0, iface1, iface2, iface3));
 
+    OspfSettings iface0unit0 = ifaces.get(iface0).getUnits().get(iface0 + ".0").getOspfSettings();
+    OspfSettings iface1unit0 = ifaces.get(iface1).getUnits().get(iface1 + ".0").getOspfSettings();
+    OspfSettings iface2unit0 = ifaces.get(iface2).getUnits().get(iface2 + ".0").getOspfSettings();
+    OspfSettings iface3unit0 = ifaces.get(iface3).getUnits().get(iface3 + ".0").getOspfSettings();
+
     // Confirm explicitly set hello and dead intervals show up in the VS model
     // Also confirm intervals that are not set show up as nulls in the VS model
-    assertThat(ifaces.get(iface0).getOspfDeadInterval(), nullValue());
-    assertThat(ifaces.get(iface0).getOspfHelloInterval(), equalTo(11));
+    assertThat(iface0unit0.getOspfDeadInterval(), nullValue());
+    assertThat(iface0unit0.getOspfHelloInterval(), equalTo(11));
 
-    assertThat(ifaces.get(iface1).getOspfDeadInterval(), equalTo(22));
-    assertThat(ifaces.get(iface1).getOspfHelloInterval(), equalTo(2));
+    assertThat(iface1unit0.getOspfDeadInterval(), equalTo(22));
+    assertThat(iface1unit0.getOspfHelloInterval(), equalTo(2));
 
-    assertThat(ifaces.get(iface2).getOspfDeadInterval(), equalTo(44));
-    assertThat(ifaces.get(iface2).getOspfHelloInterval(), nullValue());
+    assertThat(iface2unit0.getOspfDeadInterval(), equalTo(44));
+    assertThat(iface2unit0.getOspfHelloInterval(), nullValue());
 
-    assertThat(ifaces.get(iface3).getOspfDeadInterval(), nullValue());
-    assertThat(ifaces.get(iface3).getOspfHelloInterval(), nullValue());
+    assertThat(iface3unit0.getOspfDeadInterval(), nullValue());
+    assertThat(iface3unit0.getOspfHelloInterval(), nullValue());
   }
 
   @Test
@@ -6260,10 +6266,7 @@ public final class FlatJuniperGrammarTest {
             "et-0/0/0.0", hasAllowedVlans(equalTo(IntegerSpace.of(Range.closed(1, 4094))))));
   }
 
-  /**
-   * Test that interfaces inherit OSPF properties from the virtual master interface inside a routing
-   * instance
-   */
+  /** Test that interfaces inherit OSPF settings inside a routing instance. */
   @Test
   public void testOspfInterfaceAllInRoutingInstanceInheritance() {
     String hostname = "ospf-area-interface-all";
@@ -6278,6 +6281,18 @@ public final class FlatJuniperGrammarTest {
           c.getAllInterfaces().get(iface).getOspfSettings().getHelloInterval(), equalTo(222));
       assertThat(c.getAllInterfaces().get(iface).getOspfSettings().getDeadInterval(), equalTo(333));
     }
+  }
+
+  /**
+   * Test that logical interfaces inherit OSPF settings from their routing instance, not from the
+   * physical parent.
+   */
+  @Test
+  public void testOspfLogicalInterfaceInheritance() {
+    String hostname = "ospf-logical-interface-inheritance";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(110))));
+    assertThat(c, hasInterface("ge-0/0/0.1", hasOspfCost(equalTo(111))));
   }
 
   @Test

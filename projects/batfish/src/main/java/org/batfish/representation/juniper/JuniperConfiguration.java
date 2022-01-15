@@ -188,8 +188,8 @@ import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
-import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.Interface.VlanTaggingMode;
+import org.batfish.representation.juniper.OspfSettings.OspfInterfaceType;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -1244,9 +1244,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       @Nullable Long areaNum) {
     OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
 
-    ospfSettings.setEnabled(!firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
+    ospfSettings.setEnabled(!firstNonNull(vsIface.getEffectiveOspfDisable(), Boolean.FALSE));
     ospfSettings.setPassive(vsIface.getOspfPassive());
-    Integer ospfCost = vsIface.getOspfCost();
+    Integer ospfCost = vsIface.getEffectiveOspfCost();
     if (ospfCost == null && iface.isLoopback()) {
       ospfCost = 0;
     }
@@ -1261,9 +1261,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // chooses the correct
     // interface type...you should never have to set the interface type" (see
     // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
-    ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceTypeOrDefault()));
+    ospfSettings.setNetworkType(
+        toOspfNetworkType(vsIface.getEffectiveOspfInterfaceTypeOrDefault()));
 
-    if (vsIface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
+    if (vsIface.getEffectiveOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       // neighbors only for NBMA mode:
       // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/neighbor-edit-protocols-ospf.html
       ospfSettings.setNbmaNeighbors(
@@ -1284,15 +1285,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
    */
   @VisibleForTesting
   static int toOspfDeadInterval(Interface iface) {
-    Integer deadInterval = iface.getOspfDeadInterval();
+    Integer deadInterval = iface.getEffectiveOspfDeadInterval();
     if (deadInterval != null) {
       return deadInterval;
     }
-    Integer helloInterval = iface.getOspfHelloInterval();
+    Integer helloInterval = iface.getEffectiveOspfHelloInterval();
     if (helloInterval != null) {
       return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
-    if (iface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
+    if (iface.getEffectiveOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_DEAD_INTERVAL;
     }
     return DEFAULT_DEAD_INTERVAL;
@@ -1306,11 +1307,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
    */
   @VisibleForTesting
   static int toOspfHelloInterval(Interface iface) {
-    Integer helloInterval = iface.getOspfHelloInterval();
+    Integer helloInterval = iface.getEffectiveOspfHelloInterval();
     if (helloInterval != null) {
       return helloInterval;
     }
-    if (iface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
+    if (iface.getEffectiveOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_HELLO_INTERVAL;
     }
     return DEFAULT_HELLO_INTERVAL;
@@ -1494,7 +1495,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface iface,
       String vrfName) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces(vrfName).get(interfaceName);
-    Ip ospfArea = iface.getOspfArea();
+    Ip ospfArea = iface.getEffectiveOspfArea();
     if (ospfArea == null) {
       return;
     }
@@ -1742,7 +1743,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setMtu(iface.getMtu());
     }
     newIface.setNativeVlan(iface.getNativeVlan());
-    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
+    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance().getName()));
     return newIface;
   }
 
@@ -1770,7 +1771,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setMtu(mtu);
     }
     newIface.setVrrpGroups(convertVrrpGroups(iface.getName(), iface.getVrrpGroups()));
-    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
+    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance().getName()));
     newIface.setAdditionalArpIps(
         AclIpSpace.union(
             iface.getAdditionalArpIps().stream().map(Ip::toIpSpace).collect(Collectors.toList())));
@@ -1992,7 +1993,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   @Nullable
-  private OspfNetworkType toOspfNetworkType(Interface.OspfInterfaceType type) {
+  private OspfNetworkType toOspfNetworkType(OspfSettings.OspfInterfaceType type) {
     switch (type) {
       case BROADCAST:
         return OspfNetworkType.BROADCAST;
@@ -2026,7 +2027,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(name))
             .map(Zone::getName)
             .orElse(null);
-    String routingInstance = iface.getRoutingInstance();
+    String routingInstance = iface.getRoutingInstance().getName();
 
     List<NatRuleSet> ruleSets =
         orderedRuleSetList.stream()
@@ -2221,7 +2222,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(ifaceName))
             .map(Zone::getName)
             .orElse(null);
-    String routingInstance = iface.getRoutingInstance();
+    String routingInstance = iface.getRoutingInstance().getName();
 
     /*
      * Precedence of rule set is by fromLocation: interface > zone > routing instance

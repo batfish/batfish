@@ -717,7 +717,6 @@ import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
-import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.Interface.VlanTaggingMode;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -767,6 +766,8 @@ import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
 import org.batfish.representation.juniper.OspfArea;
+import org.batfish.representation.juniper.OspfSettings;
+import org.batfish.representation.juniper.OspfSettings.OspfInterfaceType;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
@@ -2050,7 +2051,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private Interface _currentMasterInterface;
 
-  private Interface _currentOspfInterface;
+  private OspfSettings _currentOspfSettings;
 
   private Nat _currentNat;
 
@@ -2398,7 +2399,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (_currentInterfaceOrRange == null) {
       _currentInterfaceOrRange = new Interface(unitFullName);
       _currentInterfaceOrRange.setRoutingInstance(
-          _currentLogicalSystem.getDefaultRoutingInstance().getName());
+          _currentLogicalSystem.getDefaultRoutingInstance());
       _currentInterfaceOrRange.setParent(_currentMasterInterface);
       units.put(unitFullName, _currentInterfaceOrRange);
     }
@@ -2467,8 +2468,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (currentInterfaceRange == null) {
       currentInterfaceRange =
           _currentLogicalSystem.getInterfaceRanges().computeIfAbsent(name, InterfaceRange::new);
-      currentInterfaceRange.setRoutingInstance(
-          _currentLogicalSystem.getDefaultRoutingInstance().getName());
+      currentInterfaceRange.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance());
       currentInterfaceRange.setParent(_currentLogicalSystem.getGlobalMasterInterface());
     }
     currentInterfaceRange.setDefined(true);
@@ -2502,8 +2502,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       if (currentInterface == null) {
         String fullIfaceName = nodeDevicePrefix + ifaceName;
         currentInterface = new Interface(fullIfaceName);
-        currentInterface.setRoutingInstance(
-            _currentLogicalSystem.getDefaultRoutingInstance().getName());
+        currentInterface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance());
         currentInterface.setParent(_currentLogicalSystem.getGlobalMasterInterface());
         interfaces.put(fullIfaceName, currentInterface);
       }
@@ -2518,7 +2517,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
-    _currentIsisInterface = initInterface(ctx.id);
+    _currentIsisInterface = initRoutingInterface(ctx.id);
     _currentIsisInterface.getOrInitIsisSettings();
     _configuration.referenceStructure(
         INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
@@ -2615,32 +2614,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     Map<String, Interface> interfaces = _currentLogicalSystem.getInterfaces();
     String unitFullName = null;
     if (ctx.ALL() != null) {
-      _currentOspfInterface = _currentRoutingInstance.getGlobalMasterInterface();
+      _currentOspfSettings = _currentRoutingInstance.getOspfSettings();
     } else if (ctx.ip != null) {
       Ip ip = Ip.parse(ctx.ip.getText());
       for (Interface iface : interfaces.values()) {
         for (Interface unit : iface.getUnits().values()) {
           if (unit.getAllAddressIps().contains(ip)) {
-            _currentOspfInterface = unit;
+            _currentOspfSettings = unit.getOspfSettings();
             unitFullName = unit.getName();
           }
         }
       }
-      if (_currentOspfInterface == null) {
+      if (_currentOspfSettings == null) {
         throw new BatfishException("Could not find interface with ip address: " + ip);
       }
     } else {
-      _currentOspfInterface = initInterface(ctx.id);
-      unitFullName = _currentOspfInterface.getName();
+      Interface iface = initRoutingInterface(ctx.id);
+      _currentOspfSettings = iface.getOspfSettings();
+      unitFullName = iface.getName();
       _configuration.referenceStructure(
           INTERFACE, unitFullName, OSPF_AREA_INTERFACE, getLine(ctx.id.getStop()));
     }
     Ip currentArea = Ip.create(_currentArea.getName());
-    Ip currentInterfaceArea = _currentOspfInterface.getOspfArea();
+    Ip currentInterfaceArea = _currentOspfSettings.getOspfArea();
     if (currentInterfaceArea != null && !currentArea.equals(currentInterfaceArea)) {
       _w.redFlag("Interface: \"" + unitFullName + "\" assigned to multiple areas");
     } else {
-      _currentOspfInterface.setOspfArea(currentArea);
+      _currentOspfSettings.setOspfArea(currentArea);
     }
   }
 
@@ -2676,7 +2676,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitOai_passive(Oai_passiveContext ctx) {
-    _currentOspfInterface.setOspfPassive(true);
+    _currentOspfSettings.setOspfPassive(true);
   }
 
   @Override
@@ -2937,8 +2937,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRi_named_routing_instance(Ri_named_routing_instanceContext ctx) {
-    String name;
-    name = ctx.name.getText();
+    String name = ctx.name.getText();
     _currentRoutingInstance =
         _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
     _currentRoutingInstance.getGlobalMasterInterface().setParent(_currentMasterInterface);
@@ -4840,7 +4839,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitOa_interface(Oa_interfaceContext ctx) {
-    _currentOspfInterface = null;
+    _currentOspfSettings = null;
   }
 
   @Override
@@ -4855,19 +4854,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitOai_disable(Oai_disableContext ctx) {
-    _currentOspfInterface.setOspfDisable(true);
+    _currentOspfSettings.setOspfDisable(true);
   }
 
   @Override
   public void exitOai_enable(Oai_enableContext ctx) {
-    _currentOspfInterface.setOspfDisable(false);
+    _currentOspfSettings.setOspfDisable(false);
   }
 
   @Override
   public void exitOai_interface_type(Oai_interface_typeContext ctx) {
     OspfInterfaceType type = toOspfInterfaceType(ctx.type);
     if (type != null) {
-      _currentOspfInterface.setOspfInterfaceType(toOspfInterfaceType(ctx.type));
+      _currentOspfSettings.setOspfInterfaceType(toOspfInterfaceType(ctx.type));
     }
   }
 
@@ -4880,7 +4879,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _w.redFlag("Invalid OSPF dead interval, must be 1-65535");
       return;
     }
-    _currentOspfInterface.setOspfDeadInterval(seconds);
+    _currentOspfSettings.setOspfDeadInterval(seconds);
   }
 
   @Override
@@ -4892,7 +4891,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _w.redFlag("Invalid OSPF hello interval, must be 1-255");
       return;
     }
-    _currentOspfInterface.setOspfHelloInterval(seconds);
+    _currentOspfSettings.setOspfHelloInterval(seconds);
   }
 
   @Override
@@ -4902,13 +4901,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.ELIGIBLE() != null) {
       neighbor.setDesignated(true);
     }
-    _currentOspfInterface.getOspfNeighbors().add(neighbor);
+    _currentOspfSettings.getOspfNeighbors().add(neighbor);
   }
 
   @Override
   public void exitOai_metric(FlatJuniperParser.Oai_metricContext ctx) {
     int ospfCost = toInt(ctx.dec());
-    _currentOspfInterface.setOspfCost(ospfCost);
+    _currentOspfSettings.setOspfCost(ospfCost);
   }
 
   @Override
@@ -5324,9 +5323,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRi_interface(Ri_interfaceContext ctx) {
-    Interface iface = initInterface(ctx.id);
-    iface.setRoutingInstance(_currentRoutingInstance.getName());
-    iface.setParent(_currentRoutingInstance.getGlobalMasterInterface());
+    Interface iface = initRoutingInterface(ctx.id);
+    iface.setRoutingInstance(_currentRoutingInstance);
+    // iface.getOspfSettings().setParent(_currentRoutingInstance.getOspfSettings());
     _configuration.referenceStructure(
         INTERFACE, iface.getName(), ROUTING_INSTANCE_INTERFACE, getLine(ctx.id.getStop()));
   }
@@ -6542,8 +6541,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return proposals;
   }
 
+  /**
+   * Returns a logical interface mentioned in an OSPF or ISIS routing context. The physical and
+   * logical interfaces are created if they doesn't already exist. If the unit is not explicit in
+   * the configuration text, it is considered to be zero (per Junos semantics).
+   */
   @Nonnull
-  private Interface initInterface(Interface_idContext id) {
+  private Interface initRoutingInterface(Interface_idContext id) {
     Map<String, Interface> interfaces;
     if (id.node != null) {
       String nodeDeviceName = id.node.getText();
@@ -6554,33 +6558,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       interfaces = _currentLogicalSystem.getInterfaces();
     }
     String name = getInterfaceName(id);
-    String unit = null;
-    if (id.unit != null) {
-      unit = id.unit.getText();
-    }
-    String unitFullName = name + "." + unit;
+
     Interface iface = interfaces.get(name);
     if (iface == null) {
       // TODO: this is not ideal, interface should not be created here as we are not sure if the
       // interface was defined
       iface = new Interface(name);
-      iface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
+      iface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance());
       interfaces.put(name, iface);
     }
-    if (unit != null) {
-      Map<String, Interface> units = iface.getUnits();
-      Interface unitIface = units.get(unitFullName);
-      if (unitIface == null) {
-        // TODO: this is not ideal, interface should not be created here as we are not sure if the
-        // interface was defined
-        unitIface = new Interface(unitFullName);
-        unitIface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
-        units.put(unitFullName, unitIface);
-        unitIface.setParent(iface);
-      }
-      iface = unitIface;
+    String unit = (id.unit != null) ? id.unit.getText() : "0";
+    String unitFullName = name + "." + unit;
+    Map<String, Interface> units = iface.getUnits();
+    Interface unitIface = units.get(unitFullName);
+    if (unitIface == null) {
+      // TODO: this is not ideal, interface should not be created here as we are not sure if the
+      // interface was defined
+      unitIface = new Interface(unitFullName);
+      unitIface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance());
+      units.put(unitFullName, unitIface);
+      unitIface.setParent(iface);
     }
-    return iface;
+    return unitIface;
   }
 
   private String initIpsecProposal(IpsecProposal proposal) {
