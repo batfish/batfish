@@ -46,7 +46,7 @@ public final class FwFromSourcePort implements FwFrom {
 
   private HeaderSpace toHeaderspace() {
     return HeaderSpace.builder()
-        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
         .setSrcPorts(_portRange)
         .build();
   }
