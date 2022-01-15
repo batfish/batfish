@@ -138,7 +138,7 @@ rmm_ip
 
 rmm_ipv6
 :
-  IPV6 null_rest_of_line
+  IPV6 rmmipv6_address
 ;
 
 rmm_source_protocol
@@ -185,6 +185,25 @@ rmmipa_prefix_len
 ;
 
 rmmipa_prefix_list
+:
+  PREFIX_LIST name = ip_prefix_list_name NEWLINE
+;
+
+rmmipv6_address
+:
+  ADDRESS
+  (
+    rmmipv6a_prefix_len_null
+    | rmmipv6a_prefix_list
+  )
+;
+
+rmmipv6a_prefix_len_null
+:
+  PREFIX_LEN null_rest_of_line
+;
+
+rmmipv6a_prefix_list
 :
   PREFIX_LIST name = ip_prefix_list_name NEWLINE
 ;

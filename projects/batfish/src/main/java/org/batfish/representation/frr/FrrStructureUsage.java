@@ -39,6 +39,7 @@ public enum FrrStructureUsage {
   ROUTE_MAP_MATCH_INTERFACE("route-map match interface"),
   ROUTE_MAP_MATCH_AS_PATH("route-map match as-path"),
   ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST("route-map match ip prefix-list"),
+  ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST("route-map match ipv6 prefix-list"),
   ROUTE_MAP_SET_COMM_LIST_DELETE("route-map set comm-list delete");
 
   private final @Nonnull String _description;
