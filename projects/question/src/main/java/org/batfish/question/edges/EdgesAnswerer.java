@@ -298,7 +298,7 @@ public class EdgesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static List<Row> getLayer3Edges(
+  static Multiset<Row> getLayer3Edges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
@@ -308,9 +308,8 @@ public class EdgesAnswerer extends Answerer {
             layer3Edge ->
                 includeNodes.contains(layer3Edge.getNode1())
                     && includeRemoteNodes.contains(layer3Edge.getNode2()))
-        .sorted()
         .map(layer3edge -> layer3EdgeToRow(configurations, layer3edge))
-        .collect(ImmutableList.toImmutableList());
+        .collect(Collectors.toCollection(HashMultiset::create));
   }
 
   @VisibleForTesting
