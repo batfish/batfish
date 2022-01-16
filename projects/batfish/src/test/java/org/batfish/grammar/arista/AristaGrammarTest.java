@@ -379,6 +379,21 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testOspfNetworkWarning() throws IOException {
+    String hostname = "arista_ospf_network";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae.getWarnings().get(String.format("configs/%s", hostname)).getParseWarnings(),
+        contains(
+            allOf(
+                hasComment(
+                    "Invalid wildcard mask (expecting the inverse of a subnet mask): 0.0.1.0"),
+                hasText("network 10.0.0.0 0.0.1.0 area 0.0.0.123"))));
+  }
+
+  @Test
   public void testIpVirtualRouterParsing() {
     // TODO: change to extraction and conversion tests for the two cases
     parseVendorConfig("arista_ip_virtual_router");
