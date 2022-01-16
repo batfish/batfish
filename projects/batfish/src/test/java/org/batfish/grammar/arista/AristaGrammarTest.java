@@ -228,6 +228,7 @@ import org.batfish.representation.arista.ExpandedCommunityListLine;
 import org.batfish.representation.arista.IpAsPathAccessList;
 import org.batfish.representation.arista.IpAsPathAccessListLine;
 import org.batfish.representation.arista.MlagConfiguration;
+import org.batfish.representation.arista.OspfNetwork;
 import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
 import org.batfish.representation.arista.RouteMap;
@@ -356,6 +357,25 @@ public class AristaGrammarTest {
                 IpWildcard.parse("1.2.0.4:0.0.255.0")),
             new StandardAccessListActionLine(30, LineAction.DENY, "30 deny any", IpWildcard.ANY),
             new StandardAccessListRemarkLine(40, "last line")));
+  }
+
+  @Test
+  public void testOspfNetworkExtraction() {
+    String hostname = "arista_ospf_network";
+    AristaConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getNetworks(),
+        containsInAnyOrder(
+            new OspfNetwork(Prefix.strict("10.0.0.0/8"), 0L),
+            new OspfNetwork(Prefix.strict("10.0.1.1/32"), 90L)));
+  }
+
+  @Test
+  public void testOspfNetworkConversion() {
+    String hostname = "arista_ospf_network";
+    Configuration c = parseConfig(hostname);
+    // https://github.com/batfish/batfish/issues/1644
+    assertThat(c.getAllInterfaces().get("Ethernet1").getOspfAreaName(), equalTo(90L));
   }
 
   @Test
