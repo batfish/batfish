@@ -19,7 +19,7 @@ public class FwFromSourcePortTest {
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
             HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
                 .setSrcPorts(new SubRange(1, 2))
                 .build(),
             TraceElement.of("Matched source-port 1-2")));
@@ -32,7 +32,7 @@ public class FwFromSourcePortTest {
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
             HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
                 .setSrcPorts(SubRange.singleton(1))
                 .build(),
             TraceElement.of("Matched source-port 1")));
