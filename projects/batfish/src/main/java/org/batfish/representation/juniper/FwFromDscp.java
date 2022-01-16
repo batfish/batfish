@@ -57,20 +57,19 @@ public final class FwFromDscp implements FwFrom {
       }
       return Optional.of(value);
     } catch (NumberFormatException ignored) {
-      // not a number, so it must be a named alias
+      // not a number, so try if it is a known alias
+      Optional<Integer> value =
+          dscpAliases.containsKey(spec)
+              ? Optional.of(dscpAliases.get(spec))
+              : DscpUtil.defaultValue(spec);
+
+      if (!value.isPresent()) {
+        w.redFlag("Reference to unknown DSCP alias \"" + spec + "\"");
+      }
+
+      // no need to check if this value is legal because only legal values are parsed for custom
+      // aliases, and builtin aliases are legal of course.
+      return value;
     }
-
-    Optional<Integer> value =
-        dscpAliases.containsKey(spec)
-            ? Optional.of(dscpAliases.get(spec))
-            : DscpUtil.defaultValue(spec);
-
-    if (!value.isPresent()) {
-      w.redFlag("Reference to unknown DSCP alias \"" + spec + "\"");
-    }
-
-    // no need to check if this value is legal. only legal values are parsed for custom aliases, and
-    // builtin aliases are legal of course.
-    return value;
   }
 }
