@@ -1132,8 +1132,8 @@ public final class AristaConfiguration extends VendorConfiguration {
    */
   private static @Nullable OspfNetwork getOspfNetworkForInterface(
       Interface iface, OspfProcess process) {
-    ConcreteInterfaceAddress interfaceAddress = iface.getAddress();
-    if (interfaceAddress == null) {
+    Ip interfaceIp = iface.getAddress() != null ? iface.getAddress().getIp() : null;
+    if (interfaceIp == null) {
       // Iface has no IP address / isn't associated with a network in this OSPF process
       return null;
     }
@@ -1147,11 +1147,7 @@ public final class AristaConfiguration extends VendorConfiguration {
                 .thenComparingLong(OspfNetwork::getArea),
             process.getNetworks());
     for (OspfNetwork network : networks) {
-      Prefix networkPrefix = network.getPrefix();
-      Ip networkAddress = networkPrefix.getStartIp();
-      Ip maskedInterfaceAddress =
-          interfaceAddress.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
-      if (maskedInterfaceAddress.equals(networkAddress)) {
+      if (network.getPrefix().containsIp(interfaceIp)) {
         // Found a longest prefix match, so found the network in this OSPF process for the iface
         return network;
       }
