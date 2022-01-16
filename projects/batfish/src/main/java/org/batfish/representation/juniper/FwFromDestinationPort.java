@@ -41,7 +41,7 @@ public final class FwFromDestinationPort implements FwFrom {
   @VisibleForTesting
   HeaderSpace toHeaderspace() {
     return HeaderSpace.builder()
-        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
         .setDstPorts(_portRange)
         .build();
   }
