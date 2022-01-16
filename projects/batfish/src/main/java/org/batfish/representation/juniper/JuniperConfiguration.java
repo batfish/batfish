@@ -3877,12 +3877,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private void handleFilterLists(Interface i) {
     if (i.getIncomingFilterList() != null) {
       i.setIncomingFilter(
-          generateCompositeInterfaceFilter(i.getIncomingFilterList(), i.getName() + "-i"));
+          generateCompositeInterfaceFilter(
+              i.getIncomingFilterList(), compositeInterfaceFilterName(i.getName(), "input")));
     }
     if (i.getOutgoingFilterList() != null) {
       i.setOutgoingFilter(
-          generateCompositeInterfaceFilter(i.getOutgoingFilterList(), i.getName() + "-o"));
+          generateCompositeInterfaceFilter(
+              i.getOutgoingFilterList(), compositeInterfaceFilterName(i.getName(), "output")));
     }
+  }
+
+  private String compositeInterfaceFilterName(String ifaceName, String inputOrOutput) {
+    return String.format("~%s~%s~", ifaceName, inputOrOutput);
   }
 
   /**
