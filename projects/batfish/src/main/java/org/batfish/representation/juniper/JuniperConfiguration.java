@@ -1666,6 +1666,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return String.format("~ISIS_EXPORT_POLICY:%s~", routingInstanceName);
   }
 
+  public static String computeInterfaceFilterName(String ifaceName, boolean input) {
+    return String.format("~%s~%s~", ifaceName, input ? "input" : "output");
+  }
+
   /**
    * Converts {@link IkePolicy} to {@link IkePhase1Policy} and puts the used pre-shared key as a
    * {@link IkePhase1Key} in the passed-in {@code ikePhase1Keys}
@@ -3878,17 +3882,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (i.getIncomingFilterList() != null) {
       i.setIncomingFilter(
           generateCompositeInterfaceFilter(
-              i.getIncomingFilterList(), compositeInterfaceFilterName(i.getName(), "input")));
+              i.getIncomingFilterList(), computeInterfaceFilterName(i.getName(), true)));
     }
     if (i.getOutgoingFilterList() != null) {
       i.setOutgoingFilter(
           generateCompositeInterfaceFilter(
-              i.getOutgoingFilterList(), compositeInterfaceFilterName(i.getName(), "output")));
+              i.getOutgoingFilterList(), computeInterfaceFilterName(i.getName(), false)));
     }
-  }
-
-  private String compositeInterfaceFilterName(String ifaceName, String inputOrOutput) {
-    return String.format("~%s~%s~", ifaceName, inputOrOutput);
   }
 
   /**

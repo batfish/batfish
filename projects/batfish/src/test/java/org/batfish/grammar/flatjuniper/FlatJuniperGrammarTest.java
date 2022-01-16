@@ -143,6 +143,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_G
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeInterfaceFilterName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
@@ -1607,13 +1608,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasIpAccessList(
-            "xe-0/0/3.0-i",
+            computeInterfaceFilterName("xe-0/0/3.0", true),
             allOf(
                 rejects(src1235, null, c), accepts(src1236, null, c), rejects(src8888, null, c))));
     assertThat(
         c,
         hasIpAccessList(
-            "xe-0/0/3.0-o",
+            computeInterfaceFilterName("xe-0/0/3.0", false),
             allOf(
                 rejects(src1235, null, c), rejects(src1236, null, c), rejects(src8888, null, c))));
   }
@@ -4991,18 +4992,19 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testGH6149Preprocess() {
     Configuration c = parseConfig("gh-6149-preprocess");
+    String interfaceFilterName = computeInterfaceFilterName("ae1.0", true);
     assertThat(
         c,
         allOf(
             hasInterface("ae1.0"),
-            hasIpAccessList("ae1.0-i"),
+            hasIpAccessList(interfaceFilterName),
             hasIpAccessList("filterA"),
             hasIpAccessList("filterB")));
     Interface ae1_0 = c.getAllInterfaces().get("ae1.0");
     // The interface gets the Juniper-standard name for a composite input filter.
-    assertThat(ae1_0, hasIncomingFilter(hasName("ae1.0-i")));
+    assertThat(ae1_0, hasIncomingFilter(hasName(interfaceFilterName)));
     // The ACL has the correct lines.
-    List<AclLine> lines = c.getIpAccessLists().get("ae1.0-i").getLines();
+    List<AclLine> lines = c.getIpAccessLists().get(interfaceFilterName).getLines();
     assertThat(lines, contains(instanceOf(AclAclLine.class), instanceOf(AclAclLine.class)));
     AclAclLine line0 = (AclAclLine) lines.get(0);
     assertThat(line0.getAclName(), equalTo("filterA"));
