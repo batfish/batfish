@@ -51,6 +51,10 @@ public final class FwFromDscp implements FwFrom {
       String spec, Map<String, Integer> dscpAliases, Warnings w) {
     try {
       int value = Integer.parseInt(spec);
+      if (value > 63) {
+        w.redFlag("Illegal DSCP value \"" + spec + "\"");
+        return Optional.empty();
+      }
       return Optional.of(value);
     } catch (NumberFormatException ignored) {
       // not a number, so it must be a named alias
@@ -65,6 +69,8 @@ public final class FwFromDscp implements FwFrom {
       w.redFlag("Reference to unknown DSCP alias \"" + spec + "\"");
     }
 
+    // no need to check if this value is legal. only legal values are parsed for custom aliases, and
+    // builtin aliases are legal of course.
     return value;
   }
 }

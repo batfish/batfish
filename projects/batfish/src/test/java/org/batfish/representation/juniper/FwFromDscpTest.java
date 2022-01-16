@@ -69,4 +69,14 @@ public class FwFromDscpTest {
         Iterables.getOnlyElement(_w.getRedFlagWarnings()).getText(),
         equalTo("Reference to unknown DSCP alias \"other\""));
   }
+
+  @Test
+  public void testToAclLineMatchExpr_badConstant() {
+    assertEquals(
+        new FwFromDscp("93").toAclLineMatchExpr(_jc, _c, _w),
+        new MatchHeaderSpace(HeaderSpace.builder().build(), TraceElement.of("Matched DSCP 93")));
+    assertThat(
+        Iterables.getOnlyElement(_w.getRedFlagWarnings()).getText(),
+        equalTo("Illegal DSCP value \"93\""));
+  }
 }
