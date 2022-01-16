@@ -14,7 +14,7 @@ import org.batfish.representation.juniper.FwTerm.Field;
 /** Class for firewall filter from dscp */
 public final class FwFromDscp implements FwFrom {
 
-  // either a decimal value, user-defined alias, or one of the standard values
+  // either a decimal value, user-defined alias, or a builtin alias
   private final String _spec;
 
   public FwFromDscp(String spec) {
@@ -28,10 +28,10 @@ public final class FwFromDscp implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(jc, c, w), getTraceElement());
+    return new MatchHeaderSpace(toHeaderspace(jc, w), getTraceElement());
   }
 
-  private HeaderSpace toHeaderspace(JuniperConfiguration jc, Configuration c, Warnings w) {
+  private HeaderSpace toHeaderspace(JuniperConfiguration jc, Warnings w) {
     Optional<Integer> dscpValue =
         toDscpValue(_spec, jc.getMasterLogicalSystem().getDscpAliases(), w);
 
