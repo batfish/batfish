@@ -899,10 +899,10 @@ import org.batfish.representation.arista.MlagConfiguration;
 import org.batfish.representation.arista.NamedRsaPubKey;
 import org.batfish.representation.arista.NatPool;
 import org.batfish.representation.arista.NssaSettings;
+import org.batfish.representation.arista.OspfNetwork;
 import org.batfish.representation.arista.OspfNetworkType;
 import org.batfish.representation.arista.OspfProcess;
 import org.batfish.representation.arista.OspfRedistributionPolicy;
-import org.batfish.representation.arista.OspfWildcardNetwork;
 import org.batfish.representation.arista.Prefix6List;
 import org.batfish.representation.arista.Prefix6ListLine;
 import org.batfish.representation.arista.PrefixList;
@@ -6441,19 +6441,26 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRo_network(Ro_networkContext ctx) {
-    Ip address;
-    Ip wildcard;
-    if (ctx.prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      address = prefix.getStartIp();
-      wildcard = prefix.getPrefixWildcard();
-    } else {
-      address = toIp(ctx.ip);
-      wildcard = toIp(ctx.wildcard);
-    }
+    Prefix prefix;
     long area = toLong(ctx.area);
-    OspfWildcardNetwork network = new OspfWildcardNetwork(address, wildcard, area);
-    _currentOspfProcess.getWildcardNetworks().add(network);
+    if (ctx.prefix != null) {
+      prefix = Prefix.parse(ctx.prefix.getText());
+    } else {
+      Ip address = toIp(ctx.ip);
+      Ip wildcard = toIp(ctx.wildcard);
+      Ip mask = wildcard.inverted();
+      if (!mask.isValidNetmask1sLeading()) {
+        // Tested on 4.18 and 4.23
+        warn(
+            ctx,
+            String.format(
+                "Invalid wildcard mask (expecting the inverse of a subnet mask): %s", wildcard));
+        return;
+      }
+      prefix = Prefix.create(address, mask);
+    }
+    OspfNetwork network = new OspfNetwork(prefix, area);
+    _currentOspfProcess.getNetworks().add(network);
   }
 
   @Override
@@ -6746,7 +6753,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitS_router_ospf(S_router_ospfContext ctx) {
-    _currentOspfProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentOspfProcess = null;
     _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }

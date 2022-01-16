@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_ospf_network
+!
+ip routing
+
+interface Ethernet1
+  no switchport
+  ip address 10.0.1.1/31
+!
+
+router ospf 1
+  network 10.0.0.0/8 area 0.0.0.0
+  network 10.0.1.1/32 area 0.0.0.90
+  ! warn on invalid wildcard
+  network 10.0.0.0 0.0.1.0 area 0.0.0.123
+!
