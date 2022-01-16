@@ -5756,12 +5756,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitScos_code_point_aliases(Scos_code_point_aliasesContext ctx) {
     String aliasName = ctx.name.getText();
-    Integer value = null;
+    int value;
     try {
       value = Integer.parseInt(ctx.dec().getText(), 2);
     } catch (NumberFormatException ignored) {
+      warn(
+          ctx,
+          String.format(
+              "%s is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.",
+              ctx.dec().getText()));
+      return;
     }
-    if (value == null || value > 63) {
+    if (value > 63) {
       warn(
           ctx,
           String.format(
