@@ -48,6 +48,8 @@ ACTIVE: 'active';
 
 ACTIVE_SERVER_GROUP: 'active-server-group';
 
+ADAPTIVE_SHAPERS: 'adaptive-shapers';
+
 ADD: 'add';
 
 ADD_PATH: 'add-path';
@@ -146,6 +148,8 @@ APPLICATION_PROTOCOL: 'application-protocol';
 APPLICATION_SET: 'application-set';
 
 APPLICATION_TRACKING: 'application-tracking';
+
+APPLICATION_TRAFFIC_CONTROL: 'application-traffic-control';
 
 APPLICATIONS: 'applications';
 
@@ -298,6 +302,8 @@ CLASS: 'class';
 
 CLASS_OF_SERVICE: 'class-of-service';
 
+CLASSIFIERS: 'classifiers';
+
 CLEAR: 'clear';
 
 CLIENT: 'client';
@@ -315,6 +321,8 @@ CLIENTS: 'clients';
 CLUSTER: 'cluster';
 
 CMD: 'cmd';
+
+CODE_POINT_ALIASES: 'code-point-aliases';
 
 COLOR: 'color';
 
@@ -472,6 +480,8 @@ DOMAIN_NAME: 'domain-name';
 DOMAIN_SEARCH: 'domain-search';
 
 DROP_PATH_ATTRIBUTES: 'drop-path-attributes';
+
+DROP_PROFILES: 'drop-profiles';
 
 DSA_SIGNATURES: 'dsa-signatures';
 
@@ -638,13 +648,19 @@ FORWARDING_CLASS: 'forwarding-class';
 
 FORWARDING_CLASS_ACCOUNTING: 'forwarding-class-accounting';
 
+FORWARDING_CLASSES: 'forwarding-classes';
+
 FORWARDING_OPTIONS: 'forwarding-options';
+
+FORWARDING_POLICY: 'forwarding-policy';
 
 FORWARDING_TABLE: 'forwarding-table';
 
 FRAGMENT: 'fragment';
 
 FRAGMENT_HEADER: 'fragment-header';
+
+FRAGMENTATION_MAPS: 'fragmentation-maps';
 
 FRAGMENTATION_NEEDED: 'fragmentation-needed';
 
@@ -732,6 +748,8 @@ HIP_HEADER: 'HIP-header';
 HOME_ADDRESS_OPTION: 'home-address-option';
 
 HOP_BY_HOP_HEADER: 'hop-by-hop-header';
+
+HOST_OUTBOUND_TRAFFIC: 'host-outbound-traffic';
 
 HMAC_MD5_96: 'hmac-md5-96';
 
@@ -1507,6 +1525,8 @@ LOOSE_SOURCE_ROUTE_OPTION: 'loose-source-route-option';
 
 LOSS_PRIORITY: 'loss-priority';
 
+LOSS_PRIORITY_MAPS: 'loss-priority-maps';
+
 LOW: 'low';
 
 LSP: 'lsp';
@@ -1793,6 +1813,8 @@ NODE_GROUP: 'node-group';
 NODE_LINK_PROTECTION: 'node-link-protection';
 
 NONSTOP_ROUTING: 'nonstop-routing';
+
+NON_STRICT_PRIORITY_SCHEDULING: 'non-strict-priority-scheduling';
 
 NSSA: 'nssa';
 
@@ -2096,6 +2118,8 @@ REST: 'rest';
 
 RESTRICT: 'restrict';
 
+RESTRICTED_QUEUES: 'restricted-queues';
+
 RETAIN: 'retain';
 
 REVERSE: 'reverse';
@@ -2103,6 +2127,8 @@ REVERSE: 'reverse';
 REVERSE_SSH: 'reverse-ssh';
 
 REVERSE_TELNET: 'reverse-telnet';
+
+REWRITE_RULES: 'rewrite-rules';
 
 RIB: 'rib';
 
@@ -2194,6 +2220,10 @@ SAVED_CORE_FILES: 'saved-core-files';
 SCCP: 'sccp';
 
 SCHEDULER: 'scheduler';
+
+SCHEDULER_MAPS: 'scheduler-maps';
+
+SCHEDULERS: 'schedulers';
 
 SCREEN: 'screen';
 
@@ -2488,13 +2518,19 @@ TO_ZONE: 'to-zone';
 
 TRACE: 'trace';
 
+TRACE_OPTIONS: 'trace-options';
+
 TRACEOPTIONS: 'traceoptions';
 
 TRACEROUTE: 'traceroute';
 
 TRACK: 'track';
 
+TRAFFIC_CONTROL_PROFILES: 'traffic-control-profiles';
+
 TRAFFIC_ENGINEERING: 'traffic-engineering';
+
+TRANSLATION_TABLE: 'translation-table';
 
 TRAP_DESTINATIONS: 'trap-destinations';
 
@@ -2505,6 +2541,8 @@ TRAP_GROUP: 'trap-group';
 TRAP_OPTIONS: 'trap-options';
 
 TRAPS: 'traps';
+
+TRI_COLOR: 'tri-color';
 
 TRUNK: 'trunk';
 
@@ -2564,6 +2602,8 @@ VERSION
 VIEW: 'view';
 
 VIRTUAL_ADDRESS: 'virtual-address';
+
+VIRTUAL_CHANNEL: 'virtual-channel';
 
 VIRTUAL_CHASSIS: 'virtual-chassis';
 
@@ -3572,7 +3612,7 @@ mode M_DSCP;
 
 M_DSCP_VARIABLE
 :
-   F_NonWhitespaceChar+ -> type ( VARIABLE )
+   F_NonWhitespaceChar+ -> type ( VARIABLE ), popMode
 ;
 
 M_DSCP_NEWLINE

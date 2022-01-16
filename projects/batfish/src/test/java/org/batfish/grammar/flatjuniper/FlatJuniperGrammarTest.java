@@ -351,6 +351,7 @@ import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
+import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -2980,6 +2981,34 @@ public final class FlatJuniperGrammarTest {
 
     // verify vlan assignment
     assertThat(irb0.getVlan(), equalTo(5));
+  }
+
+  @Test
+  public void testFirewallFilterDscp() {
+    String hostname = "firewall-filter-dscp";
+    Configuration c = parseConfig(hostname);
+
+    Flow.Builder flowBuilder = Flow.builder().setIngressNode(c.getHostname());
+
+    // Test custom alias
+    assertThat(
+        c, hasIpAccessList("FILTER1", accepts(flowBuilder.setDscp(0b001000).build(), null, c)));
+    assertThat(
+        c, hasIpAccessList("FILTER1", rejects(flowBuilder.setDscp(0b111111).build(), null, c)));
+
+    // Test builtin alias
+    assertThat(
+        c,
+        hasIpAccessList(
+            "FILTER2",
+            accepts(flowBuilder.setDscp(DscpUtil.defaultValue("cs1").get()).build(), null, c)));
+    assertThat(
+        c, hasIpAccessList("FILTER2", rejects(flowBuilder.setDscp(0b111111).build(), null, c)));
+
+    // Test constant value
+    assertThat(c, hasIpAccessList("FILTER3", accepts(flowBuilder.setDscp(3).build(), null, c)));
+    assertThat(
+        c, hasIpAccessList("FILTER3", rejects(flowBuilder.setDscp(0b111111).build(), null, c)));
   }
 
   @Test
@@ -6473,5 +6502,27 @@ public final class FlatJuniperGrammarTest {
   public void testIgnoredSystem() {
     // don't crash
     parseJuniperConfig("ignored-system");
+  }
+
+  @Test
+  public void testIgnoredClassOfService() {
+    // don't crash
+    parseJuniperConfig("ignored-class-of-service");
+  }
+
+  @Test
+  public void testClassOfServiceCodePointAliases() throws IOException {
+    String hostname = "class-of-service-code-point-aliases";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get("configs/" + hostname).getParseWarnings(),
+        containsInAnyOrder(
+            hasComment(
+                "200000 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0."),
+            hasComment(
+                "1010101 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.")));
   }
 }

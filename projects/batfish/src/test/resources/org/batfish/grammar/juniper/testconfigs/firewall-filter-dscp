@@ -1,0 +1,14 @@
+#
+set system host-name firewall-filter-dscp
+#
+set class-of-service code-point-aliases dscp my 001000
+#
+set firewall family inet filter FILTER1 term CUSTOM_ALIAS from dscp my
+set firewall family inet filter FILTER1 term CUSTOM_ALIAS then accept
+#
+set firewall family inet filter FILTER2 term BUILTIN_ALIAS from dscp cs1
+set firewall family inet filter FILTER2 term BUILTIN_ALIAS then accept
+#
+set firewall family inet filter FILTER3 term CONSTANT_VALUE from dscp 3
+set firewall family inet filter FILTER3 term CONSTANT_VALUE then accept
+#

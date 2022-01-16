@@ -249,6 +249,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_prefix_listContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_dscpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_first_fragmentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offsetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offset_exceptContext;
@@ -535,6 +536,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scos_code_point_aliasesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_address_bookContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_authentication_key_chainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_zonesContext;
@@ -684,6 +686,7 @@ import org.batfish.representation.juniper.FwFromDestinationAddressExcept;
 import org.batfish.representation.juniper.FwFromDestinationPort;
 import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
+import org.batfish.representation.juniper.FwFromDscp;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
@@ -4041,6 +4044,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitFftf_dscp(Fftf_dscpContext ctx) {
+    String aliasName = ctx.variable().getText();
+    FwFromDscp from = new FwFromDscp(aliasName);
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
   public void exitFftf_first_fragment(Fftf_first_fragmentContext ctx) {
     SubRange subRange = SubRange.singleton(0);
     FwFrom from = new FwFromFragmentOffset(subRange, false);
@@ -5741,6 +5751,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitS_vlans_named(S_vlans_namedContext ctx) {
     _currentNamedVlan = null;
+  }
+
+  @Override
+  public void exitScos_code_point_aliases(Scos_code_point_aliasesContext ctx) {
+    String aliasName = ctx.name.getText();
+    Integer value = null;
+    try {
+      value = Integer.parseInt(ctx.dec().getText(), 2);
+    } catch (NumberFormatException ignored) {
+    }
+    if (value == null || value > 63) {
+      warn(
+          ctx,
+          String.format(
+              "%s is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.",
+              ctx.dec().getText()));
+    }
+    _currentLogicalSystem.getDscpAliases().put(aliasName, value);
   }
 
   @Override
