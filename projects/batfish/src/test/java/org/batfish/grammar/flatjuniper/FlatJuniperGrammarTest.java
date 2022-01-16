@@ -6524,5 +6524,12 @@ public final class FlatJuniperGrammarTest {
                 "200000 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0."),
             hasComment(
                 "1010101 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.")));
+
+    assertThat(
+        ((JuniperConfiguration)
+                batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname))
+            .getMasterLogicalSystem()
+            .getDscpAliases(),
+        equalTo(ImmutableMap.of("my1", 3)));
   }
 }

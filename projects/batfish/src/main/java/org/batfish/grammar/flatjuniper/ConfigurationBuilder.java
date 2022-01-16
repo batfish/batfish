@@ -5767,6 +5767,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           String.format(
               "%s is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.",
               ctx.dec().getText()));
+      return;
     }
     _currentLogicalSystem.getDscpAliases().put(aliasName, value);
   }
