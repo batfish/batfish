@@ -73,6 +73,7 @@ fft_from
       | fftf_first_fragment
       | fftf_forwarding_class
       | fftf_fragment_offset
+      | fftf_fragment_offset_except
       | fftf_icmp_code
       | fftf_icmp_type
       | fftf_ip_options
