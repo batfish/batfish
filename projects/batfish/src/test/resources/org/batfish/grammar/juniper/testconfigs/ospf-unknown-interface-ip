@@ -1,0 +1,4 @@
+#
+set system host-name ospf-area-interface-unknown-ip
+#
+set protocols ospf area 0 interface 1.1.1.1

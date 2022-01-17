@@ -2564,6 +2564,20 @@ public final class FlatJuniperGrammarTest {
         config.getDefaultVrf().getOspfProcesses().get(DEFAULT_VRF_NAME).getAreas().containsKey(1L));
   }
 
+  /** Test that we warn on uknown IPs as interfaces */
+  @Test
+  public void testOspfUnknownInterfaceIp() throws IOException {
+    String hostname = "ospf-unknown-interface-ip";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname,
+            containsString("Could not find interface with ip address: 1.1.1.1")));
+  }
+
   @Test
   public void testOspfInterfaceDisable() {
     // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.
