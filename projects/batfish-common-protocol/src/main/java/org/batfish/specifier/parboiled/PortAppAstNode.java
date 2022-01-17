@@ -27,8 +27,8 @@ abstract class PortAppAstNode implements AppAstNode {
     int portFromInt = Integer.parseInt(portFrom);
     int portToInt = Integer.parseInt(portTo);
 
-    checkArgument(portFromInt <= 65535, "Invalid port number: %s", portFrom);
-    checkArgument(portToInt <= 65535, "Invalid port number: %s", portFrom);
+    checkArgument(portFromInt > 0 && portFromInt <= 65535, "Invalid port number: %s", portFrom);
+    checkArgument(portToInt > 0 && portToInt <= 65535, "Invalid port number: %s", portTo);
     checkArgument(portFromInt <= portToInt, "Invalid port range: %s - %s", portFrom, portTo);
 
     List<SubRange> newList =
