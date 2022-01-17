@@ -1,14 +1,14 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.ImmutableList;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from dscp */
@@ -22,32 +22,26 @@ public final class FwFromDscp implements FwFrom {
   }
 
   @Override
-  public Field getField() {
+  public @Nonnull Field getField() {
     return Field.DSCP;
   }
 
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(jc, w), getTraceElement());
-  }
-
-  private HeaderSpace toHeaderspace(JuniperConfiguration jc, Warnings w) {
+  public @Nonnull AclLineMatchExpr toAclLineMatchExpr(
+      JuniperConfiguration jc, Configuration c, Warnings w) {
     Optional<Integer> dscpValue =
         toDscpValue(_spec, jc.getMasterLogicalSystem().getDscpAliases(), w);
 
-    if (!dscpValue.isPresent()) {
-      // match nothing
-      return HeaderSpace.builder().setDscps(ImmutableList.of()).build();
-    }
-
-    return HeaderSpace.builder().setDscps(ImmutableList.of(dscpValue.get())).build();
+    return dscpValue
+        .map(value -> AclLineMatchExprs.matchDscp(value, getTraceElement()))
+        .orElse(new FalseExpr(getTraceElement()));
   }
 
-  private TraceElement getTraceElement() {
+  private @Nonnull TraceElement getTraceElement() {
     return TraceElement.of(String.format("Matched DSCP %s", _spec));
   }
 
-  private static Optional<Integer> toDscpValue(
+  private @Nonnull static Optional<Integer> toDscpValue(
       String spec, Map<String, Integer> dscpAliases, Warnings w) {
     try {
       int value = Integer.parseInt(spec);
@@ -58,18 +52,12 @@ public final class FwFromDscp implements FwFrom {
       return Optional.of(value);
     } catch (NumberFormatException ignored) {
       // not a number, so try if it is a known alias
-      Optional<Integer> value =
-          dscpAliases.containsKey(spec)
-              ? Optional.of(dscpAliases.get(spec))
-              : DscpUtil.defaultValue(spec);
-
-      if (!value.isPresent()) {
-        w.redFlag("Reference to unknown DSCP alias \"" + spec + "\"");
-      }
-
-      // no need to check if this value is legal because only legal values are parsed for custom
+      // no need to check if any returned value is <64 because only legal values are parsed for
+      // custom
       // aliases, and builtin aliases are legal of course.
-      return value;
+      return dscpAliases.containsKey(spec)
+          ? Optional.of(dscpAliases.get(spec))
+          : DscpUtil.defaultValue(spec);
     }
   }
 }

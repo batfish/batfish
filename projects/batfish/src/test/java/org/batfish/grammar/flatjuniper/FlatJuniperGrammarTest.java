@@ -156,6 +156,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
@@ -6513,12 +6514,13 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testClassOfServiceCodePointAliases() throws IOException {
     String hostname = "class-of-service-code-point-aliases";
+    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
 
     assertThat(
-        pvcae.getWarnings().get("configs/" + hostname).getParseWarnings(),
+        pvcae.getWarnings().get(filename).getParseWarnings(),
         containsInAnyOrder(
             hasComment(
                 "200000 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0."),
@@ -6531,5 +6533,15 @@ public final class FlatJuniperGrammarTest {
             .getMasterLogicalSystem()
             .getDscpAliases(),
         equalTo(ImmutableMap.of("my1", 3)));
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, CLASS_OF_SERVICE_CODE_POINT_ALIAS, "my1", contains(4)));
+
+    assertThat(ccae, hasNumReferrers(filename, CLASS_OF_SERVICE_CODE_POINT_ALIAS, "my1", 1));
   }
 }

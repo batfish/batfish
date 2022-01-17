@@ -5,6 +5,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.DscpType;
 
+/**
+ * A helper class for DSCP related functionality. Currently, converts named-aliases to their values.
+ */
 @ParametersAreNonnullByDefault
 public final class DscpUtil {
 

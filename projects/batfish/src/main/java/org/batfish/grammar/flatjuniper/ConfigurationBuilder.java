@@ -15,6 +15,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GR
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
@@ -52,6 +53,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPOR
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DSCP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
@@ -676,6 +678,7 @@ import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
+import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
@@ -4045,8 +4048,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_dscp(Fftf_dscpContext ctx) {
-    String aliasName = ctx.variable().getText();
-    FwFromDscp from = new FwFromDscp(aliasName);
+    String dscpSpec = ctx.variable().getText();
+    FwFromDscp from = new FwFromDscp(dscpSpec);
+    try {
+      Integer.parseInt(dscpSpec);
+    } catch (NumberFormatException ignored) {
+      // if it is not a builtin alias or it has been overridden, we add a reference
+      // TODO: this is not quite right because the builtin override could happen later
+      if (!DscpUtil.defaultValue(dscpSpec).isPresent()
+          || _currentLogicalSystem.getDscpAliases().containsKey(dscpSpec)) {
+        _configuration.referenceStructure(
+            CLASS_OF_SERVICE_CODE_POINT_ALIAS,
+            dscpSpec,
+            FIREWALL_FILTER_DSCP,
+            getLine(ctx.variable().getStart()));
+      }
+    }
     _currentFwTerm.getFroms().add(from);
   }
 
@@ -5776,6 +5793,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     _currentLogicalSystem.getDscpAliases().put(aliasName, value);
+    _configuration.defineFlattenedStructure(
+        CLASS_OF_SERVICE_CODE_POINT_ALIAS, aliasName, ctx, _parser);
   }
 
   @Override

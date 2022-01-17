@@ -136,12 +136,17 @@ public final class AclLineMatchExprs {
   }
 
   public static @Nonnull AclLineMatchExpr matchDscp(DscpType dscp) {
-    return matchDscp(dscp.number());
+    return matchDscp(dscp.number(), null);
   }
 
   public static @Nonnull AclLineMatchExpr matchDscp(int dscp) {
+    return matchDscp(dscp, null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchDscp(int dscp, @Nullable TraceElement traceElement) {
     checkArgument(0 <= dscp && dscp <= 63, "Invalid DSCP: %s", dscp);
-    return new MatchHeaderSpace(HeaderSpace.builder().setDscps(ImmutableList.of(dscp)).build());
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setDscps(ImmutableList.of(dscp)).build(), traceElement);
   }
 
   public static AclLineMatchExpr matchDst(IpSpace ipSpace) {

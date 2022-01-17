@@ -12,6 +12,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,17 +65,14 @@ public class FwFromDscpTest {
   public void testToAclLineMatchExpr_undefinedAlias() {
     assertEquals(
         new FwFromDscp("other").toAclLineMatchExpr(_jc, _c, _w),
-        new MatchHeaderSpace(HeaderSpace.builder().build(), TraceElement.of("Matched DSCP other")));
-    assertThat(
-        Iterables.getOnlyElement(_w.getRedFlagWarnings()).getText(),
-        equalTo("Reference to unknown DSCP alias \"other\""));
+        new FalseExpr(TraceElement.of("Matched DSCP other")));
   }
 
   @Test
   public void testToAclLineMatchExpr_badConstant() {
     assertEquals(
         new FwFromDscp("93").toAclLineMatchExpr(_jc, _c, _w),
-        new MatchHeaderSpace(HeaderSpace.builder().build(), TraceElement.of("Matched DSCP 93")));
+        new FalseExpr(TraceElement.of("Matched DSCP 93")));
     assertThat(
         Iterables.getOnlyElement(_w.getRedFlagWarnings()).getText(),
         equalTo("Illegal DSCP value \"93\""));
