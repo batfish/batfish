@@ -4,6 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
+import static org.batfish.datamodel.Names.generatedIncomingInterfaceFilterName;
+import static org.batfish.datamodel.Names.generatedOutgoingInterfaceFilterName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -1664,10 +1666,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static String computeIsisExportPolicyName(String routingInstanceName) {
     return String.format("~ISIS_EXPORT_POLICY:%s~", routingInstanceName);
-  }
-
-  public static String computeInterfaceFilterName(String ifaceName, boolean input) {
-    return String.format("~%s~%s~", ifaceName, input ? "input" : "output");
   }
 
   /**
@@ -3882,12 +3880,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (i.getIncomingFilterList() != null) {
       i.setIncomingFilter(
           generateCompositeInterfaceFilter(
-              i.getIncomingFilterList(), computeInterfaceFilterName(i.getName(), true)));
+              i.getIncomingFilterList(), generatedIncomingInterfaceFilterName(i.getName())));
     }
     if (i.getOutgoingFilterList() != null) {
       i.setOutgoingFilter(
           generateCompositeInterfaceFilter(
-              i.getOutgoingFilterList(), computeInterfaceFilterName(i.getName(), false)));
+              i.getOutgoingFilterList(), generatedOutgoingInterfaceFilterName(i.getName())));
     }
   }
 

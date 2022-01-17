@@ -146,6 +146,14 @@ public final class Names {
         "~OSPF_INBOUND_DISTRIBUTE_LIST:%s:%s:%s:%s~", vrf, procName, areaNum, ifaceName);
   }
 
+  public static String generatedIncomingInterfaceFilterName(String ifaceName) {
+    return String.format("~INCOMING_FILTER:%s~", ifaceName);
+  }
+
+  public static String generatedOutgoingInterfaceFilterName(String ifaceName) {
+    return String.format("~OUTGOING_FILTER:%s~", ifaceName);
+  }
+
   public static String generatedReferenceBook(String hostname, String source) {
     return String.format("%s~on~%s", source, hostname);
   }
