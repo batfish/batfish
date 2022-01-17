@@ -916,7 +916,17 @@ INTERFACE_SWITCH: 'interface-switch';
 
 INTERFACE_TRANSMIT_STATISTICS: 'interface-transmit-statistics';
 
-INTERFACES: 'interfaces';
+INTERFACES
+:
+  'interfaces'
+  {
+    if (lastTokenType() == CLASS_OF_SERVICE) {
+      pushMode(M_InterfaceWildcard);
+    } else {
+      pushMode(M_Interface);
+    }
+  }
+;
 
 INTERFACE_ROUTES: 'interface-routes';
 
