@@ -20,3 +20,6 @@ set interfaces xe-0/0/3 unit 0 family inet filter input-list FILTER1
 set interfaces xe-0/0/3 unit 0 family inet filter input-list FILTER2
 set interfaces xe-0/0/3 unit 0 family inet filter output-list FILTER2
 set interfaces xe-0/0/3 unit 0 family inet filter output-list FILTER1
+#
+set firewall filter PARSING term PARSING from fragment-offset 1-10
+set firewall filter PARSING term PARSING from fragment-offset-except 11
