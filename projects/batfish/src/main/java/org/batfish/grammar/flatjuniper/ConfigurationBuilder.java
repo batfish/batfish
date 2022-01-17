@@ -123,6 +123,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -4050,9 +4051,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitFftf_dscp(Fftf_dscpContext ctx) {
     String dscpSpec = ctx.variable().getText();
     FwFromDscp from = new FwFromDscp(dscpSpec);
-    try {
-      Integer.parseInt(dscpSpec);
-    } catch (NumberFormatException ignored) {
+    Integer value = Ints.tryParse(dscpSpec);
+    if (value == null) {
+      // not a number, so must be an alias
       // if it is not a builtin alias or it has been overridden, we add a reference
       // TODO: this is not quite right because the builtin override could happen later
       if (!DscpUtil.defaultValue(dscpSpec).isPresent()

@@ -1,12 +1,9 @@
 package org.batfish.representation.juniper;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -65,16 +62,13 @@ public class FwFromDscpTest {
   public void testToAclLineMatchExpr_undefinedAlias() {
     assertEquals(
         new FwFromDscp("other").toAclLineMatchExpr(_jc, _c, _w),
-        new FalseExpr(TraceElement.of("Matched DSCP other")));
+        new FalseExpr(TraceElement.of("Treated undefined DSCP alias 'other' as not matching")));
   }
 
   @Test
   public void testToAclLineMatchExpr_badConstant() {
     assertEquals(
         new FwFromDscp("93").toAclLineMatchExpr(_jc, _c, _w),
-        new FalseExpr(TraceElement.of("Matched DSCP 93")));
-    assertThat(
-        Iterables.getOnlyElement(_w.getRedFlagWarnings()).getText(),
-        equalTo("Illegal DSCP value \"93\""));
+        new FalseExpr(TraceElement.of("Treated illegal DSCP value '93' as not matching")));
   }
 }

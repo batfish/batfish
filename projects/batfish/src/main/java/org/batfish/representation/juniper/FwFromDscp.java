@@ -1,7 +1,6 @@
 package org.batfish.representation.juniper;
 
-import java.util.Map;
-import java.util.Optional;
+import com.google.common.primitives.Ints;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -29,35 +28,36 @@ public final class FwFromDscp implements FwFrom {
   @Override
   public @Nonnull AclLineMatchExpr toAclLineMatchExpr(
       JuniperConfiguration jc, Configuration c, Warnings w) {
-    Optional<Integer> dscpValue =
-        toDscpValue(_spec, jc.getMasterLogicalSystem().getDscpAliases(), w);
 
-    return dscpValue
-        .map(value -> AclLineMatchExprs.matchDscp(value, getTraceElement()))
-        .orElse(new FalseExpr(getTraceElement()));
+    // try in following order: number, defined alias, builtin
+
+    @SuppressWarnings("UnstableApiUsage")
+    Integer value = Ints.tryParse(_spec);
+    if (value != null) {
+      return value < 64
+          ? AclLineMatchExprs.matchDscp(value, getTraceElement())
+          : new FalseExpr(
+              TraceElement.of(
+                  String.format("Treated illegal DSCP value '%d' as not matching", value)));
+    }
+
+    if (jc.getMasterLogicalSystem().getDscpAliases().containsKey(_spec)) {
+      // no need to check if defined value is <64 because only legal values are parsed
+      return AclLineMatchExprs.matchDscp(
+          jc.getMasterLogicalSystem().getDscpAliases().get(_spec), getTraceElement());
+    }
+
+    return DscpUtil.defaultValue(_spec)
+        .map(integer -> AclLineMatchExprs.matchDscp(integer, getTraceElement()))
+        .orElseGet(
+            () ->
+                new FalseExpr(
+                    TraceElement.of(
+                        String.format(
+                            "Treated undefined DSCP alias '%s' as not matching", _spec))));
   }
 
   private @Nonnull TraceElement getTraceElement() {
     return TraceElement.of(String.format("Matched DSCP %s", _spec));
-  }
-
-  private @Nonnull static Optional<Integer> toDscpValue(
-      String spec, Map<String, Integer> dscpAliases, Warnings w) {
-    try {
-      int value = Integer.parseInt(spec);
-      if (value > 63) {
-        w.redFlag("Illegal DSCP value \"" + spec + "\"");
-        return Optional.empty();
-      }
-      return Optional.of(value);
-    } catch (NumberFormatException ignored) {
-      // not a number, so try if it is a known alias
-      // no need to check if any returned value is <64 because only legal values are parsed for
-      // custom
-      // aliases, and builtin aliases are legal of course.
-      return dscpAliases.containsKey(spec)
-          ? Optional.of(dscpAliases.get(spec))
-          : DscpUtil.defaultValue(spec);
-    }
   }
 }
