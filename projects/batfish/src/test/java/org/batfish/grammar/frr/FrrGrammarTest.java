@@ -1450,6 +1450,17 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testFrrRouteMapMatchIpv6PrefixListRefTracking() {
+    parseLines("route-map ROUTE_MAP1 permit 10", "match ipv6 address prefix-list PREFIX_LIST1");
+    Set<Integer> reference =
+        getStructureReferences(
+            FrrStructureType.IPV6_PREFIX_LIST,
+            "PREFIX_LIST1",
+            FrrStructureUsage.ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST);
+    assertThat(reference, equalTo(ImmutableSet.of(2)));
+  }
+
+  @Test
   public void testFrrVrfRouteMapMatchSourceProtocol() {
     String name = "ROUTE-MAP-NAME";
     StringBuilder sb = new StringBuilder();

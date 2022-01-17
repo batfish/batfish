@@ -157,6 +157,7 @@ import org.batfish.grammar.frr.FrrParser.Rmm_source_protocolContext;
 import org.batfish.grammar.frr.FrrParser.Rmm_tagContext;
 import org.batfish.grammar.frr.FrrParser.Rmmipa_prefix_lenContext;
 import org.batfish.grammar.frr.FrrParser.Rmmipa_prefix_listContext;
+import org.batfish.grammar.frr.FrrParser.Rmmipv6a_prefix_listContext;
 import org.batfish.grammar.frr.FrrParser.Rmom_gotoContext;
 import org.batfish.grammar.frr.FrrParser.Rmom_nextContext;
 import org.batfish.grammar.frr.FrrParser.Rms_as_path_excludeContext;
@@ -1604,6 +1605,16 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
         IP_PREFIX_LIST,
         name,
         FrrStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
+        ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRmmipv6a_prefix_list(Rmmipv6a_prefix_listContext ctx) {
+    String name = ctx.name.getText();
+    _vc.referenceStructure(
+        IPV6_PREFIX_LIST,
+        name,
+        FrrStructureUsage.ROUTE_MAP_MATCH_IPV6_ADDRESS_PREFIX_LIST,
         ctx.getStart().getLine());
   }
 
