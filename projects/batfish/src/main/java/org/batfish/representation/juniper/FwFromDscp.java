@@ -29,6 +29,12 @@ public final class FwFromDscp implements FwFrom {
   public @Nonnull AclLineMatchExpr toAclLineMatchExpr(
       JuniperConfiguration jc, Configuration c, Warnings w) {
 
+    // TODO: The corner cases of behavior have not been tested in a lab. In particular,
+    //  1) what happens with illegal values like 93? Will '93' be looked up as an alias?
+    //  2) what happens with undefined aliases?
+    // The code below assumes that illegal values and undefined names do not match any packet. The
+    // trace will show the user what happend if the term is hit.
+
     // try in following order: number, defined alias, builtin
 
     @SuppressWarnings("UnstableApiUsage")
