@@ -15,7 +15,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.OSPF;
-import static org.batfish.datamodel.Names.generatedIncomingInterfaceFilterName;
+import static org.batfish.datamodel.Names.generateCompositeFilterName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -1608,13 +1608,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasIpAccessList(
-            generatedIncomingInterfaceFilterName("xe-0/0/3.0"),
+            generateCompositeFilterName("in", "xe-0/0/3.0"),
             allOf(
                 rejects(src1235, null, c), accepts(src1236, null, c), rejects(src8888, null, c))));
     assertThat(
         c,
         hasIpAccessList(
-            generatedIncomingInterfaceFilterName("xe-0/0/3.0"),
+            generateCompositeFilterName("out", "xe-0/0/3.0"),
             allOf(
                 rejects(src1235, null, c), rejects(src1236, null, c), rejects(src8888, null, c))));
   }
@@ -4992,7 +4992,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testGH6149Preprocess() {
     Configuration c = parseConfig("gh-6149-preprocess");
-    String interfaceFilterName = generatedIncomingInterfaceFilterName("ae1.0");
+    String interfaceFilterName = generateCompositeFilterName("in", "ae1.0");
     assertThat(
         c,
         allOf(

@@ -4,8 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
-import static org.batfish.datamodel.Names.generatedIncomingInterfaceFilterName;
-import static org.batfish.datamodel.Names.generatedOutgoingInterfaceFilterName;
+import static org.batfish.datamodel.Names.generateCompositeFilterName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -3880,12 +3879,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (i.getIncomingFilterList() != null) {
       i.setIncomingFilter(
           generateCompositeInterfaceFilter(
-              i.getIncomingFilterList(), generatedIncomingInterfaceFilterName(i.getName())));
+              i.getIncomingFilterList(), generateCompositeFilterName("in", i.getName())));
     }
     if (i.getOutgoingFilterList() != null) {
       i.setOutgoingFilter(
           generateCompositeInterfaceFilter(
-              i.getOutgoingFilterList(), generatedOutgoingInterfaceFilterName(i.getName())));
+              i.getOutgoingFilterList(), generateCompositeFilterName("out", i.getName())));
     }
   }
 

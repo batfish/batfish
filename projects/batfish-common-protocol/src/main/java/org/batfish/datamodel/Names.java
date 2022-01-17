@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.logging.log4j.util.Strings;
 
 /**
  * Provides helper methods to auto-generate structure names and to check the validity of names of
@@ -146,12 +147,17 @@ public final class Names {
         "~OSPF_INBOUND_DISTRIBUTE_LIST:%s:%s:%s:%s~", vrf, procName, areaNum, ifaceName);
   }
 
-  public static String generatedIncomingInterfaceFilterName(String ifaceName) {
-    return String.format("~INCOMING_FILTER:%s~", ifaceName);
+  /** Generates a composite filter name from provided ingredient names. */
+  public static String generateCompositeFilterName(String... ingredientNames) {
+    checkArgument(ingredientNames.length > 0, "At least one ingredient name must be provided.");
+    return String.format("~filter~%s~", Strings.join(Arrays.asList(ingredientNames), '~'));
   }
 
-  public static String generatedOutgoingInterfaceFilterName(String ifaceName) {
-    return String.format("~OUTGOING_FILTER:%s~", ifaceName);
+  /** Returns whether the specified name matches the generated-named convention for filters. */
+  public static boolean isCompositeFilterName(String name) {
+    // this test could be tighter, given generateCompositeFilterName, but most vendors do not call
+    // into this helper.
+    return name.startsWith("~");
   }
 
   public static String generatedReferenceBook(String hostname, String source) {

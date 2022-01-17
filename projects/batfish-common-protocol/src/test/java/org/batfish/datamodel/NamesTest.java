@@ -3,11 +3,14 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.Names.Type.REFERENCE_OBJECT;
 import static org.batfish.datamodel.Names.Type.TABLE_COLUMN;
 import static org.batfish.datamodel.Names.VALID_PATTERNS;
+import static org.batfish.datamodel.Names.generateCompositeFilterName;
+import static org.batfish.datamodel.Names.isCompositeFilterName;
 import static org.batfish.datamodel.Names.nameNeedsEscaping;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -67,5 +70,17 @@ public class NamesTest {
   @Test
   public void testZoneToZoneFilter() {
     assertThat(zoneToZoneFilter("a", "b"), equalTo("zone~a~to~zone~b"));
+  }
+
+  @Test
+  public void testGenerateCompositeFilterName() {
+    assertEquals("~filter~name~", generateCompositeFilterName("name"));
+    assertEquals("~filter~name1~name2~", generateCompositeFilterName("name1", "name2"));
+  }
+
+  @Test
+  public void testIsCompositeFilterName() {
+    assertTrue(isCompositeFilterName(generateCompositeFilterName("name")));
+    assertFalse(isCompositeFilterName("filter"));
   }
 }

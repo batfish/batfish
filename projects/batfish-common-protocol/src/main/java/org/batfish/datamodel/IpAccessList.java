@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Names.isCompositeFilterName;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -180,7 +181,7 @@ public class IpAccessList implements Serializable {
 
   @JsonIgnore
   public boolean isComposite() {
-    return getName().startsWith("~");
+    return isCompositeFilterName(getName());
   }
 
   @Override
