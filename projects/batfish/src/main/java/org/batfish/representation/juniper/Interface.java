@@ -1,7 +1,5 @@
 package org.batfish.representation.juniper;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
@@ -18,7 +16,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.SubRange;
-import org.batfish.representation.juniper.OspfSettings.OspfInterfaceType;
 
 public class Interface implements Serializable {
 
@@ -166,7 +163,7 @@ public class Interface implements Serializable {
   private Integer _mtu;
   private final String _name;
   @Nullable private Integer _nativeVlan;
-  @Nonnull private final OspfSettings _ospfSettings;
+  @Nullable private OspfInterfaceSettings _ospfSettings;
   private @Nullable String _outgoingFilter;
   private @Nullable List<String> _outgoingFilterList;
   private Interface _parent;
@@ -189,7 +186,6 @@ public class Interface implements Serializable {
     _bandwidth = getDefaultBandwidthByName(name);
     _defined = false;
     _name = name;
-    _ospfSettings = new OspfSettings();
     _allowedVlans = new LinkedList<>();
     _allowedVlanNames = new LinkedList<>();
     _type = getInterfaceTypeByName(name);
@@ -277,7 +273,7 @@ public class Interface implements Serializable {
     return _nativeVlan;
   }
 
-  public OspfSettings getOspfSettings() {
+  public OspfInterfaceSettings getOspfSettings() {
     return _ospfSettings;
   }
 
@@ -335,62 +331,12 @@ public class Interface implements Serializable {
     return _vrrpGroups;
   }
 
-  /** Returns configured or inherited OSPF area. */
-  public @Nullable Ip getEffectiveOspfArea() {
-    return firstNonNullOrSecond(
-        _ospfSettings.getOspfArea(), _routingInstance.getOspfSettings().getOspfArea());
-  }
-
-  /** Returns configured or inherited OSPF cost. */
-  public Integer getEffectiveOspfCost() {
-    return firstNonNullOrSecond(
-        _ospfSettings.getOspfCost(), _routingInstance.getOspfSettings().getOspfCost());
-  }
-
-  /** Returns configured or inherited OSPF dead interval in seconds. */
-  public @Nullable Integer getEffectiveOspfDeadInterval() {
-    return firstNonNullOrSecond(
-        _ospfSettings.getOspfDeadInterval(),
-        _routingInstance.getOspfSettings().getOspfDeadInterval());
-  }
-
-  /** Returns configured or inherited OSPF disable setting. */
-  public @Nullable Boolean getEffectiveOspfDisable() {
-    return firstNonNullOrSecond(
-        _ospfSettings.getOspfDisable(), _routingInstance.getOspfSettings().getOspfDisable());
-  }
-
-  /** Returns configured or inherited OSPF dead interval in seconds */
-  public @Nullable Integer getEffectiveOspfHelloInterval() {
-    return firstNonNullOrSecond(
-        _ospfSettings.getOspfHelloInterval(),
-        _routingInstance.getOspfSettings().getOspfHelloInterval());
-  }
-
   /**
-   * Returns the configured, inherited, or vendor default (considered in that order) {@link
-   * OspfInterfaceType}.
+   * Returns effective OSPF settings, that is, those are directly configured for the interface or
+   * those inherited via "interface all" in the routing instance.
    */
-  public @Nonnull OspfInterfaceType getEffectiveOspfInterfaceTypeOrDefault() {
-    return firstNonNull(
-        _ospfSettings.getOspfInterfaceType(),
-        firstNonNull(
-            _routingInstance.getOspfSettings().getOspfInterfaceType(),
-            OspfInterfaceType.BROADCAST));
-  }
-
-  /** Returns the set of configured OSPF neighbors for this interface. */
-  public @Nonnull Set<InterfaceOspfNeighbor> getOspfNeighbors() {
-    return _ospfSettings.getOspfNeighbors();
-  }
-
-  /** Returns OSPF passive setting for this interface. */
-  public boolean getOspfPassive() {
-    return _ospfSettings.getOspfPassive();
-  }
-
-  private @Nullable static <T> T firstNonNullOrSecond(@Nullable T first, @Nullable T second) {
-    return (first != null) ? first : second;
+  public @Nullable OspfInterfaceSettings getEffectiveOspfSettings() {
+    return _ospfSettings != null ? _ospfSettings : _routingInstance.getOspfSettings();
   }
 
   public void inheritUnsetFields() {
@@ -486,6 +432,10 @@ public class Interface implements Serializable {
 
   public void setNativeVlan(Integer vlan) {
     _nativeVlan = vlan;
+  }
+
+  public void setOspfSettings(OspfInterfaceSettings ospfSettings) {
+    _ospfSettings = ospfSettings;
   }
 
   public void setOutgoingFilter(@Nullable String accessListName) {

@@ -1,13 +1,18 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
-public class OspfSettings implements Serializable {
+/** Represents OSPF settings for an interface. */
+@ParametersAreNonnullByDefault
+public class OspfInterfaceSettings implements Serializable {
 
   /** Represents the type of interface for OSPF */
   public enum OspfInterfaceType {
@@ -23,8 +28,8 @@ public class OspfSettings implements Serializable {
     P2P
   }
 
-  private Ip _ospfArea;
-  private Integer _ospfCost;
+  @Nonnull private final Ip _ospfArea;
+  @Nullable private Integer _ospfCost;
   @Nullable private Integer _ospfDeadInterval;
   @Nullable private Boolean _ospfDisable;
   @Nullable private Integer _ospfHelloInterval;
@@ -32,11 +37,17 @@ public class OspfSettings implements Serializable {
   private boolean _ospfPassive;
   @Nonnull private final Set<InterfaceOspfNeighbor> _ospfNeighbors;
 
-  public OspfSettings() {
+  public OspfInterfaceSettings(Ip ospfArea) {
+    _ospfArea = ospfArea;
     _ospfNeighbors = new HashSet<>();
   }
 
-  public Ip getOspfArea() {
+  /** Returns the configured or vendor default {@link OspfInterfaceType}. */
+  public @Nonnull OspfInterfaceType getOspfInterfaceTypeOrDefault() {
+    return firstNonNull(_ospfInterfaceType, OspfInterfaceType.BROADCAST);
+  }
+
+  public @Nonnull Ip getOspfArea() {
     return _ospfArea;
   }
 
@@ -61,7 +72,6 @@ public class OspfSettings implements Serializable {
     return _ospfHelloInterval;
   }
 
-  /** Return the set (or inherited from parent interface) OSPF interface type. */
   @Nullable
   public OspfInterfaceType getOspfInterfaceType() {
     return _ospfInterfaceType;
@@ -73,10 +83,6 @@ public class OspfSettings implements Serializable {
 
   public @Nonnull Set<InterfaceOspfNeighbor> getOspfNeighbors() {
     return _ospfNeighbors;
-  }
-
-  public void setOspfArea(Ip ospfArea) {
-    _ospfArea = ospfArea;
   }
 
   public void setOspfCost(int ospfCost) {

@@ -51,7 +51,7 @@ public class RoutingInstance implements Serializable {
   private List<String> _ospfExportPolicies;
   @Nullable private Boolean _ospfDisable;
   private double _ospfReferenceBandwidth;
-  @Nonnull private final OspfSettings _ospfSettings;
+  @Nullable private OspfInterfaceSettings _interfaceAllOspfSettings;
   private final Map<String, RoutingInformationBase> _ribs;
   private Ip _routerId;
   private SnmpServer _snmpServer;
@@ -80,7 +80,6 @@ public class RoutingInstance implements Serializable {
     _ospfAreas = new TreeMap<>();
     _ospfExportPolicies = new LinkedList<>();
     _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
-    _ospfSettings = new OspfSettings();
     _ribs = new TreeMap<>();
     _ribs.put(
         RoutingInformationBase.RIB_IPV4_UNICAST,
@@ -145,8 +144,8 @@ public class RoutingInstance implements Serializable {
     return _globalMasterInterface;
   }
 
-  public OspfSettings getOspfSettings() {
-    return _ospfSettings;
+  public OspfInterfaceSettings getOspfSettings() {
+    return _interfaceAllOspfSettings;
   }
 
   public String getHostname() {
@@ -247,6 +246,10 @@ public class RoutingInstance implements Serializable {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+  }
+
+  public void setInterfaceAllOspfSettings(OspfInterfaceSettings interfaceAllOspfSettings) {
+    _interfaceAllOspfSettings = interfaceAllOspfSettings;
   }
 
   public void setOspfDisable(boolean ospfDisable) {

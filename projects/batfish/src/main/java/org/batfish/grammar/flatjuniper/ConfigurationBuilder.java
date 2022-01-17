@@ -766,8 +766,8 @@ import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
 import org.batfish.representation.juniper.OspfArea;
-import org.batfish.representation.juniper.OspfSettings;
-import org.batfish.representation.juniper.OspfSettings.OspfInterfaceType;
+import org.batfish.representation.juniper.OspfInterfaceSettings;
+import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
@@ -2051,7 +2051,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private Interface _currentMasterInterface;
 
-  private OspfSettings _currentOspfSettings;
+  private OspfInterfaceSettings _currentOspfSettings;
 
   private Nat _currentNat;
 
@@ -2612,16 +2612,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterOa_interface(Oa_interfaceContext ctx) {
     Map<String, Interface> interfaces = _currentLogicalSystem.getInterfaces();
-    String unitFullName = null;
+    String ospfInterfaceName = null;
     if (ctx.ALL() != null) {
+      ospfInterfaceName = "all";
       _currentOspfSettings = _currentRoutingInstance.getOspfSettings();
+      if (_currentOspfSettings == null) {
+        _currentOspfSettings = new OspfInterfaceSettings(Ip.create(_currentArea.getName()));
+        _currentRoutingInstance.setInterfaceAllOspfSettings(_currentOspfSettings);
+      }
     } else if (ctx.ip != null) {
       Ip ip = Ip.parse(ctx.ip.getText());
       for (Interface iface : interfaces.values()) {
         for (Interface unit : iface.getUnits().values()) {
           if (unit.getAllAddressIps().contains(ip)) {
             _currentOspfSettings = unit.getOspfSettings();
-            unitFullName = unit.getName();
+            if (_currentOspfSettings == null) {
+              _currentOspfSettings = new OspfInterfaceSettings(Ip.create(_currentArea.getName()));
+              unit.setOspfSettings(_currentOspfSettings);
+            }
+            ospfInterfaceName = unit.getName();
           }
         }
       }
@@ -2631,16 +2640,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       Interface iface = initRoutingInterface(ctx.id);
       _currentOspfSettings = iface.getOspfSettings();
-      unitFullName = iface.getName();
+      if (_currentOspfSettings == null) {
+        _currentOspfSettings = new OspfInterfaceSettings(Ip.create(_currentArea.getName()));
+        iface.setOspfSettings(_currentOspfSettings);
+      }
+      ospfInterfaceName = iface.getName();
       _configuration.referenceStructure(
-          INTERFACE, unitFullName, OSPF_AREA_INTERFACE, getLine(ctx.id.getStop()));
+          INTERFACE, ospfInterfaceName, OSPF_AREA_INTERFACE, getLine(ctx.id.getStop()));
     }
     Ip currentArea = Ip.create(_currentArea.getName());
     Ip currentInterfaceArea = _currentOspfSettings.getOspfArea();
-    if (currentInterfaceArea != null && !currentArea.equals(currentInterfaceArea)) {
-      _w.redFlag("Interface: \"" + unitFullName + "\" assigned to multiple areas");
-    } else {
-      _currentOspfSettings.setOspfArea(currentArea);
+    if (!currentArea.equals(currentInterfaceArea)) {
+      throw new WillNotCommitException(
+          "Interface \"" + ospfInterfaceName + "\" assigned to multiple areas");
     }
   }
 

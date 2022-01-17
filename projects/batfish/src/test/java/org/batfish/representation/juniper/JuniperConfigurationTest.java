@@ -76,7 +76,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
-import org.batfish.representation.juniper.OspfSettings.OspfInterfaceType;
+import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
@@ -625,54 +625,50 @@ public class JuniperConfigurationTest {
 
   @Test
   public void testToOspfDeadIntervalExplicit() {
-    Interface iface = new Interface("ge-0/0/0.0");
-    iface.setRoutingInstance(new RoutingInstance("test"));
-    iface.getOspfSettings().setOspfDeadInterval(7);
+    OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
+    ospfInterfaceSettings.setOspfDeadInterval(7);
     // Explicitly set dead interval should be preferred over inference
-    assertThat(toOspfDeadInterval(iface), equalTo(7));
+    assertThat(toOspfDeadInterval(ospfInterfaceSettings), equalTo(7));
   }
 
   @Test
   public void testToOspfDeadIntervalFromHello() {
-    Interface iface = new Interface("ge-0/0/0.0");
-    iface.setRoutingInstance(new RoutingInstance("test"));
     int helloInterval = 1;
-    iface.getOspfSettings().setOspfHelloInterval(helloInterval);
+    OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
+    ospfInterfaceSettings.setOspfHelloInterval(1);
     // Since the dead interval is not set, it should be inferred as four times the hello interval
     assertThat(
-        toOspfDeadInterval(iface), equalTo(OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval));
+        toOspfDeadInterval(ospfInterfaceSettings),
+        equalTo(OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval));
   }
 
   @Test
   public void testToOspfDeadIntervalFromType() {
-    Interface iface = new Interface("ge-0/0/0.0");
-    iface.setRoutingInstance(new RoutingInstance("test"));
+    OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
     // Since the dead interval and hello interval are not set, it should be inferred from the
     // network type
-    iface.getOspfSettings().setOspfInterfaceType(OspfInterfaceType.P2P);
-    assertThat(toOspfDeadInterval(iface), equalTo(DEFAULT_DEAD_INTERVAL));
-    iface.getOspfSettings().setOspfInterfaceType(OspfInterfaceType.NBMA);
-    assertThat(toOspfDeadInterval(iface), equalTo(DEFAULT_NBMA_DEAD_INTERVAL));
+    ospfInterfaceSettings.setOspfInterfaceType(OspfInterfaceType.P2P);
+    assertThat(toOspfDeadInterval(ospfInterfaceSettings), equalTo(DEFAULT_DEAD_INTERVAL));
+    ospfInterfaceSettings.setOspfInterfaceType(OspfInterfaceType.NBMA);
+    assertThat(toOspfDeadInterval(ospfInterfaceSettings), equalTo(DEFAULT_NBMA_DEAD_INTERVAL));
   }
 
   @Test
   public void testToOspfHelloIntervalExplicit() {
-    Interface iface = new Interface("ge-0/0/0.0");
-    iface.setRoutingInstance(new RoutingInstance("test"));
-    iface.getOspfSettings().setOspfHelloInterval(7);
+    OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
+    ospfInterfaceSettings.setOspfHelloInterval(7);
     // Explicitly set hello interval should be preferred over inference
-    assertThat(toOspfHelloInterval(iface), equalTo(7));
+    assertThat(toOspfHelloInterval(ospfInterfaceSettings), equalTo(7));
   }
 
   @Test
   public void testToOspfHelloIntervalFromType() {
-    Interface iface = new Interface("ge-0/0/0.0");
-    iface.setRoutingInstance(new RoutingInstance("test"));
+    OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
     // Since the hello interval is not set, it should be inferred from the network type
-    iface.getOspfSettings().setOspfInterfaceType(OspfInterfaceType.P2P);
-    assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_HELLO_INTERVAL));
-    iface.getOspfSettings().setOspfInterfaceType(OspfInterfaceType.NBMA);
-    assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_NBMA_HELLO_INTERVAL));
+    ospfInterfaceSettings.setOspfInterfaceType(OspfInterfaceType.P2P);
+    assertThat(toOspfHelloInterval(ospfInterfaceSettings), equalTo(DEFAULT_HELLO_INTERVAL));
+    ospfInterfaceSettings.setOspfInterfaceType(OspfInterfaceType.NBMA);
+    assertThat(toOspfHelloInterval(ospfInterfaceSettings), equalTo(DEFAULT_NBMA_HELLO_INTERVAL));
   }
 
   @Test
