@@ -81602,7 +81602,7 @@
                 7
               ]
             },
-            "ge-0/0/1" : {
+            "ge-0/0/1.0" : {
               "routing-instance interface" : [
                 24
               ]
@@ -85651,7 +85651,7 @@
         },
         "configs/juniper_interfaces" : {
           "interface" : {
-            "ge-0/0/1" : {
+            "ge-0/0/1.0" : {
               "routing-instance interface" : [
                 24
               ]

@@ -51,6 +51,7 @@ public class RoutingInstance implements Serializable {
   private List<String> _ospfExportPolicies;
   @Nullable private Boolean _ospfDisable;
   private double _ospfReferenceBandwidth;
+  @Nullable private OspfInterfaceSettings _interfaceAllOspfSettings;
   private final Map<String, RoutingInformationBase> _ribs;
   private Ip _routerId;
   private SnmpServer _snmpServer;
@@ -72,7 +73,7 @@ public class RoutingInstance implements Serializable {
     _masterBgpGroup.setMultipath(false);
     _masterBgpGroup.setMultipathMultipleAs(false);
     _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME);
-    _globalMasterInterface.setRoutingInstance(name);
+    _globalMasterInterface.setRoutingInstance(this);
     _name = name;
     _namedBgpGroups = new TreeMap<>();
     _nodeDevices = new TreeMap<>();
@@ -141,6 +142,15 @@ public class RoutingInstance implements Serializable {
 
   public Interface getGlobalMasterInterface() {
     return _globalMasterInterface;
+  }
+
+  /**
+   * Returns OSPF settings configured for "interface all" in this routing instance.
+   *
+   * <p>Returns null if "interface all" wasn't used in the configuration.
+   */
+  public @Nullable OspfInterfaceSettings getInterfaceAllOspfSettings() {
+    return _interfaceAllOspfSettings;
   }
 
   public String getHostname() {
@@ -241,6 +251,11 @@ public class RoutingInstance implements Serializable {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+  }
+
+  /** Sets the OSPF settings configures for "interface all" */
+  public void setInterfaceAllOspfSettings(OspfInterfaceSettings interfaceAllOspfSettings) {
+    _interfaceAllOspfSettings = interfaceAllOspfSettings;
   }
 
   public void setOspfDisable(boolean ospfDisable) {
