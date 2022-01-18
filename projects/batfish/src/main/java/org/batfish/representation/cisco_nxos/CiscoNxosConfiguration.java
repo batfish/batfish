@@ -2093,7 +2093,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setSwitchportMode(switchportMode.toSwitchportMode());
     switch (switchportMode) {
       case ACCESS:
-        newIfaceBuilder.setAccessVlan(iface.getAccessVlan());
+        Integer accessVlan = iface.getAccessVlan();
+        if (accessVlan != null && _vlans.containsKey(accessVlan)) {
+          newIfaceBuilder.setAccessVlan(accessVlan);
+        }
         break;
 
       case NONE:

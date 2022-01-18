@@ -114,6 +114,16 @@ interface Ethernet1/4
   switchport access vlan 2
 !
 
+! Ethernet interface with access vlan that is not configured
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = ACCESS
+! - switchport access vlan = null
+interface Ethernet1/5
+  switchport access vlan 25
+!
+
 ! Ethernet interface with native vlan
 ! - shutdown = false
 ! - active = true
@@ -121,7 +131,7 @@ interface Ethernet1/4
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 2
 ! - switchport allowed vlans = 1-5 (all active VLANs)
-interface Ethernet1/5
+interface Ethernet1/6
   switchport mode trunk
   switchport trunk native vlan 2
 !
@@ -133,7 +143,7 @@ interface Ethernet1/5
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
 ! - switchport allowed vlans = 1-3
-interface Ethernet1/6
+interface Ethernet1/7
   switchport mode trunk
   switchport trunk allowed vlan 1-3
 !
@@ -145,7 +155,7 @@ interface Ethernet1/6
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
 ! - switchport allowed vlans = 1-4
-interface Ethernet1/7
+interface Ethernet1/8
   switchport mode trunk
   switchport trunk allowed vlan 1-3
   switchport trunk allowed vlan add 4
@@ -158,7 +168,7 @@ interface Ethernet1/7
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
 ! - switchport allowed vlans = 1, 3-5
-interface Ethernet1/8
+interface Ethernet1/9
   switchport mode trunk
   switchport trunk allowed vlan except 2
 !
@@ -170,7 +180,7 @@ interface Ethernet1/8
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
 ! - switchport allowed vlans = {}
-interface Ethernet1/9
+interface Ethernet1/10
   switchport mode trunk
   switchport trunk allowed vlan none
 !
@@ -182,7 +192,7 @@ interface Ethernet1/9
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
 ! - switchport allowed vlans = 1-2
-interface Ethernet1/10
+interface Ethernet1/11
   switchport mode trunk
   switchport trunk allowed vlan 1-3
   switchport trunk allowed vlan remove 3
@@ -194,19 +204,19 @@ interface Ethernet1/10
 ! - switchport = true
 ! - switchport mode = access
 ! - switchport access vlan = 1
-interface Ethernet1/11
+interface Ethernet1/12
   switchport mode access
 !
 
 ! Ethernet interface with dot1q-tunnel mode set
 ! TODO: semantics
-interface Ethernet1/12
+interface Ethernet1/13
   switchport mode dot1q-tunnel
 !
 
 ! Ethernet interface with fex-fabric mode set
 ! TODO: semantics
-interface Ethernet1/13
+interface Ethernet1/14
   switchport mode fex-fabric
   fex associate 100
 !
@@ -218,7 +228,7 @@ interface Ethernet1/13
 ! - switchport mode = TRUNK
 ! - switchport native vlan = 1
 ! - switchport allowed vlans = 1-5
-interface Ethernet1/14
+interface Ethernet1/15
   switchport mode trunk
 !
 
@@ -227,7 +237,7 @@ interface Ethernet1/14
 ! - active = true
 ! - switchport = true
 ! - switchport mode = MONITOR
-interface Ethernet1/15
+interface Ethernet1/16
   no switchport
   switchport
   switchport mode monitor buffer-limit 36000 packets
