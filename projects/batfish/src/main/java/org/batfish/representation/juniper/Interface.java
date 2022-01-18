@@ -1,10 +1,7 @@
 package org.batfish.representation.juniper;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -136,10 +133,6 @@ public class Interface implements Serializable {
     return InterfaceType.UNKNOWN;
   }
 
-  public @Nonnull Set<InterfaceOspfNeighbor> getOspfNeighbors() {
-    return _ospfNeighbors;
-  }
-
   public @Nullable EthernetSwitching getEthernetSwitching() {
     return _ethernetSwitching;
   }
@@ -148,20 +141,6 @@ public class Interface implements Serializable {
     if (_ethernetSwitching == null) {
       _ethernetSwitching = new EthernetSwitching();
     }
-  }
-
-  /** Represents the type of interface for OSPF */
-  public enum OspfInterfaceType {
-    /** This is not an explicit type -- assumed by default */
-    BROADCAST,
-    /** non-broadcast multi-access */
-    NBMA,
-    /** Point to multipoint */
-    P2MP,
-    /** Point to multipoint over lan */
-    P2MP_OVER_LAN,
-    /** Point to point */
-    P2P
   }
 
   private boolean _active;
@@ -184,22 +163,14 @@ public class Interface implements Serializable {
   private Integer _mtu;
   private final String _name;
   @Nullable private Integer _nativeVlan;
-  private Ip _ospfArea;
-  private Integer _ospfCost;
-  @Nullable private Integer _ospfDeadInterval;
-  @Nullable private Boolean _ospfDisable;
-  @Nullable private Integer _ospfHelloInterval;
-  private int _ospfHelloMultiplier;
-  private boolean _ospfPassive;
-  @Nullable private OspfInterfaceType _ospfInterfaceType;
-  private @Nonnull Set<InterfaceOspfNeighbor> _ospfNeighbors;
+  @Nullable private OspfInterfaceSettings _ospfSettings;
   private @Nullable String _outgoingFilter;
   private @Nullable List<String> _outgoingFilterList;
   private Interface _parent;
   private InterfaceAddress _preferredAddress;
   private ConcreteInterfaceAddress _primaryAddress;
   @Nullable private String _redundantParentInterface;
-  private String _routingInstance;
+  private RoutingInstance _routingInstance;
   private final @Nonnull InterfaceType _type;
   private final SortedMap<String, Interface> _units;
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
@@ -215,10 +186,8 @@ public class Interface implements Serializable {
     _bandwidth = getDefaultBandwidthByName(name);
     _defined = false;
     _name = name;
-    _ospfNeighbors = new HashSet<>();
     _allowedVlans = new LinkedList<>();
     _allowedVlanNames = new LinkedList<>();
-    _ospfCost = null;
     _type = getInterfaceTypeByName(name);
     _units = new TreeMap<>();
     _vlanTagging = VlanTaggingMode.NONE;
@@ -304,52 +273,8 @@ public class Interface implements Serializable {
     return _nativeVlan;
   }
 
-  public Ip getOspfArea() {
-    return _ospfArea;
-  }
-
-  public Integer getOspfCost() {
-    return _ospfCost;
-  }
-
-  /** Get the time (in seconds) to wait before neighbors are declared dead */
-  @Nullable
-  public Integer getOspfDeadInterval() {
-    return _ospfDeadInterval;
-  }
-
-  @Nullable
-  public Boolean getOspfDisable() {
-    return _ospfDisable;
-  }
-
-  /** Get the time (in seconds) between sending hello messages to neighbors */
-  @Nullable
-  public Integer getOspfHelloInterval() {
-    return _ospfHelloInterval;
-  }
-
-  public int getOspfHelloMultiplier() {
-    return _ospfHelloMultiplier;
-  }
-
-  /** Return the set (or inherited from parent interface) OSPF interface type. */
-  @Nullable
-  public OspfInterfaceType getOspfInterfaceType() {
-    return _ospfInterfaceType;
-  }
-
-  /**
-   * Return the set (or inherited from parent interface) OSPF interface type. If unset, returns
-   * vendor default.
-   */
-  @Nonnull
-  public OspfInterfaceType getOspfInterfaceTypeOrDefault() {
-    return firstNonNull(_ospfInterfaceType, OspfInterfaceType.BROADCAST);
-  }
-
-  public boolean getOspfPassive() {
-    return _ospfPassive;
+  public OspfInterfaceSettings getOspfSettings() {
+    return _ospfSettings;
   }
 
   public @Nullable String getOutgoingFilter() {
@@ -377,7 +302,7 @@ public class Interface implements Serializable {
     return _redundantParentInterface;
   }
 
-  public String getRoutingInstance() {
+  public RoutingInstance getRoutingInstance() {
     return _routingInstance;
   }
 
@@ -406,6 +331,15 @@ public class Interface implements Serializable {
     return _vrrpGroups;
   }
 
+  /**
+   * Returns effective OSPF settings, that is, those are directly configured for the interface or
+   * those inherited via "interface all" in the routing instance.
+   */
+  // This behavior was tested in lab. See unit test testOspfInterfaceAll in FlatJuniperGrammarTest
+  public @Nullable OspfInterfaceSettings getEffectiveOspfSettings() {
+    return _ospfSettings != null ? _ospfSettings : _routingInstance.getInterfaceAllOspfSettings();
+  }
+
   public void inheritUnsetFields() {
     if (_parent == null || _inherited) {
       return;
@@ -417,24 +351,6 @@ public class Interface implements Serializable {
     }
     if (_mtu == null) {
       _mtu = _parent._mtu;
-    }
-    if (_ospfCost == null) {
-      _ospfCost = _parent._ospfCost;
-    }
-    if (_ospfArea == null) {
-      _ospfArea = _parent._ospfArea;
-    }
-    if (_ospfDisable == null) {
-      _ospfDisable = _parent._ospfDisable;
-    }
-    if (_ospfHelloInterval == null) {
-      _ospfHelloInterval = _parent._ospfHelloInterval;
-    }
-    if (_ospfDeadInterval == null) {
-      _ospfDeadInterval = _parent._ospfDeadInterval;
-    }
-    if (_ospfInterfaceType == null) {
-      _ospfInterfaceType = _parent._ospfInterfaceType;
     }
   }
 
@@ -519,36 +435,8 @@ public class Interface implements Serializable {
     _nativeVlan = vlan;
   }
 
-  public void setOspfArea(Ip ospfArea) {
-    _ospfArea = ospfArea;
-  }
-
-  public void setOspfCost(int ospfCost) {
-    _ospfCost = ospfCost;
-  }
-
-  public void setOspfDeadInterval(int seconds) {
-    _ospfDeadInterval = seconds;
-  }
-
-  public void setOspfDisable(boolean disable) {
-    _ospfDisable = disable;
-  }
-
-  public void setOspfHelloInterval(int seconds) {
-    _ospfHelloInterval = seconds;
-  }
-
-  public void setOspfHelloMultiplier(int multiplier) {
-    _ospfHelloMultiplier = multiplier;
-  }
-
-  public void setOspfPassive(boolean ospfPassive) {
-    _ospfPassive = true;
-  }
-
-  public void setOspfInterfaceType(OspfInterfaceType ospfInterfaceType) {
-    _ospfInterfaceType = ospfInterfaceType;
+  public void setOspfSettings(OspfInterfaceSettings ospfSettings) {
+    _ospfSettings = ospfSettings;
   }
 
   public void setOutgoingFilter(@Nullable String accessListName) {
@@ -580,7 +468,7 @@ public class Interface implements Serializable {
     _redundantParentInterface = redundantParentInterface;
   }
 
-  public void setRoutingInstance(String routingInstance) {
+  public void setRoutingInstance(RoutingInstance routingInstance) {
     _routingInstance = routingInstance;
   }
 

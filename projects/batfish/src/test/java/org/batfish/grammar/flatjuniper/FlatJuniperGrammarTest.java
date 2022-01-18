@@ -378,6 +378,7 @@ import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
+import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
@@ -2565,6 +2566,20 @@ public final class FlatJuniperGrammarTest {
         config.getDefaultVrf().getOspfProcesses().get(DEFAULT_VRF_NAME).getAreas().containsKey(1L));
   }
 
+  /** Test that we warn on uknown IPs as interfaces */
+  @Test
+  public void testOspfUnknownInterfaceIp() throws IOException {
+    String hostname = "ospf-unknown-interface-ip";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname,
+            containsString("Could not find interface with ip address: 1.1.1.1")));
+  }
+
   @Test
   public void testOspfInterfaceDisable() {
     // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.
@@ -2845,19 +2860,28 @@ public final class FlatJuniperGrammarTest {
     String iface3 = "ge-0/0/3";
     assertThat(ifaces, hasKeys(iface0, iface1, iface2, iface3));
 
+    OspfInterfaceSettings iface0unit0 =
+        ifaces.get(iface0).getUnits().get(iface0 + ".0").getOspfSettings();
+    OspfInterfaceSettings iface1unit0 =
+        ifaces.get(iface1).getUnits().get(iface1 + ".0").getOspfSettings();
+    OspfInterfaceSettings iface2unit0 =
+        ifaces.get(iface2).getUnits().get(iface2 + ".0").getOspfSettings();
+    OspfInterfaceSettings iface3unit0 =
+        ifaces.get(iface3).getUnits().get(iface3 + ".0").getOspfSettings();
+
     // Confirm explicitly set hello and dead intervals show up in the VS model
     // Also confirm intervals that are not set show up as nulls in the VS model
-    assertThat(ifaces.get(iface0).getOspfDeadInterval(), nullValue());
-    assertThat(ifaces.get(iface0).getOspfHelloInterval(), equalTo(11));
+    assertThat(iface0unit0.getOspfDeadInterval(), nullValue());
+    assertThat(iface0unit0.getOspfHelloInterval(), equalTo(11));
 
-    assertThat(ifaces.get(iface1).getOspfDeadInterval(), equalTo(22));
-    assertThat(ifaces.get(iface1).getOspfHelloInterval(), equalTo(2));
+    assertThat(iface1unit0.getOspfDeadInterval(), equalTo(22));
+    assertThat(iface1unit0.getOspfHelloInterval(), equalTo(2));
 
-    assertThat(ifaces.get(iface2).getOspfDeadInterval(), equalTo(44));
-    assertThat(ifaces.get(iface2).getOspfHelloInterval(), nullValue());
+    assertThat(iface2unit0.getOspfDeadInterval(), equalTo(44));
+    assertThat(iface2unit0.getOspfHelloInterval(), nullValue());
 
-    assertThat(ifaces.get(iface3).getOspfDeadInterval(), nullValue());
-    assertThat(ifaces.get(iface3).getOspfHelloInterval(), nullValue());
+    // not added to OSPF
+    assertThat(iface3unit0, nullValue());
   }
 
   @Test
@@ -6099,6 +6123,7 @@ public final class FlatJuniperGrammarTest {
             .get("ge-0/0/0")
             .getUnits()
             .get("ge-0/0/0.0")
+            .getEffectiveOspfSettings()
             .getOspfNeighbors(),
         contains(new InterfaceOspfNeighbor(Ip.parse("1.0.0.1"))));
 
@@ -6118,6 +6143,7 @@ public final class FlatJuniperGrammarTest {
             .get("ge-0/0/1")
             .getUnits()
             .get("ge-0/0/1.0")
+            .getEffectiveOspfSettings()
             .getOspfNeighbors(),
         contains(neighbor));
   }
@@ -6312,24 +6338,63 @@ public final class FlatJuniperGrammarTest {
             "et-0/0/0.0", hasAllowedVlans(equalTo(IntegerSpace.of(Range.closed(1, 4094))))));
   }
 
-  /**
-   * Test that interfaces inherit OSPF properties from the virtual master interface inside a routing
-   * instance
-   */
+  /** Test that interfaces inherit OSPF settings inside a routing instance. */
   @Test
-  public void testOspfInterfaceAllInRoutingInstanceInheritance() {
+  public void testOspfInterfaceAll() {
     String hostname = "ospf-area-interface-all";
     Configuration c = parseConfig(hostname);
-    List<String> ifaces = ImmutableList.of("ge-0/0/0.0", "ge-0/0/1.0");
-    for (String iface : ifaces) {
-      assertThat(c, hasInterface(iface, hasOspfCost(equalTo(111))));
-      assertThat(
-          c.getAllInterfaces().get(iface).getOspfSettings().getNetworkType(),
-          equalTo(OspfNetworkType.POINT_TO_POINT));
-      assertThat(
-          c.getAllInterfaces().get(iface).getOspfSettings().getHelloInterval(), equalTo(222));
-      assertThat(c.getAllInterfaces().get(iface).getOspfSettings().getDeadInterval(), equalTo(333));
-    }
+
+    // ge-0/0/0.0 does not inherit from "all" (cost 1 is default for xe)
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(1))));
+
+    // ge-0/0/1.0 does not inherit from "all"
+    // has its own hello-interval
+    assertThat(c, hasInterface("ge-0/0/1.0", hasOspfCost(equalTo(1))));
+    assertThat(
+        c.getAllInterfaces().get("ge-0/0/1.0").getOspfSettings().getHelloInterval(), equalTo(20));
+
+    // ge-0/0/2.0 inherits from "all"
+    assertThat(c, hasInterface("ge-0/0/2.0", hasOspfCost(equalTo(111))));
+    assertThat(
+        c.getAllInterfaces().get("ge-0/0/2.0").getOspfSettings().getNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(
+        c.getAllInterfaces().get("ge-0/0/2.0").getOspfSettings().getHelloInterval(), equalTo(222));
+    assertThat(
+        c.getAllInterfaces().get("ge-0/0/2.0").getOspfSettings().getDeadInterval(), equalTo(333));
+
+    // ge-0/0/3.0 does not inherit from "all" (different routing instance)
+    assertThat(c, hasInterface("ge-0/0/3.0", hasOspfCost(equalTo(1))));
+  }
+
+  /** Test that using the physical interface in OSPF context maps things to unit 0 */
+  @Test
+  public void testOspfImplicitUnit0() {
+    String hostname = "ospf-implicit-unit0";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(110))));
+  }
+
+  @Test
+  public void testOspfAreaInterfaceAllDuplicateError() {
+    _thrown.expect(BatfishException.class);
+    _thrown.expect(
+        hasStackTrace(
+            allOf(
+                containsString("WillNotCommitException"),
+                containsString("Interface \"all\" assigned to multiple areas"))));
+    parseConfig("ospf-area-interface-all-duplicate-error");
+  }
+
+  @Test
+  public void testOspfAreaInterfaceDuplicateError() {
+    _thrown.expect(BatfishException.class);
+    _thrown.expect(
+        hasStackTrace(
+            allOf(
+                containsString("WillNotCommitException"),
+                containsString("Interface \"ge-0/0/0.0\" assigned to multiple areas"))));
+    parseConfig("ospf-area-interface-duplicate-error");
   }
 
   @Test

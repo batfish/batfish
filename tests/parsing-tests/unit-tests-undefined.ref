@@ -3699,7 +3699,7 @@
       {
         "File_Name" : "configs/juniper_interfaces",
         "Struct_Type" : "interface",
-        "Ref_Name" : "ge-0/0/1",
+        "Ref_Name" : "ge-0/0/1.0",
         "Context" : "routing-instance interface",
         "Lines" : {
           "filename" : "configs/juniper_interfaces",

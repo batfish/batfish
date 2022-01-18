@@ -1,13 +1,57 @@
-#
 set system host-name ospf-area-interface-all
-#
+
 set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/31
-set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.2/31
-#
-set routing-instances ri instance-type forwarding
-set routing-instances ri interface ge-0/0/0.0
-set routing-instances ri interface ge-0/0/1.0
-set routing-instances ri protocols ospf area 0 interface all metric 111
-set routing-instances ri protocols ospf area 0 interface all interface-type p2p
-set routing-instances ri protocols ospf area 0 interface all hello-interval 222
-set routing-instances ri protocols ospf area 0 interface all dead-interval 333
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.1/31
+set interfaces ge-0/0/2 unit 0 family inet address 10.0.2.1/31
+set interfaces ge-0/0/3 unit 0 family inet address 10.0.3.1/31
+
+# explicitly add ge-0/0/0 to ospf; no additional settings
+set protocols ospf area 0 interface ge-0/0/0
+
+# explicitly add ge-0/0/1 to ospf; some additional settings
+set protocols ospf area 0 interface ge-0/0/1 hello-interval 20
+
+# ge-0/0/2 is not explicitly added to ospf
+
+# ge-0/0/3 is not explicitly added but is in a different routing instance
+set routing-instances ri interface ge-0/0/3
+set routing-instances ri protocols ospf area 0 interface ge-0/0/3 hello-interval 20
+
+# these settings should only apply to interfaces in the routing instance that have not been explicitly added to an area
+set protocols ospf area 0 interface all metric 111
+set protocols ospf area 0 interface all interface-type p2p
+set protocols ospf area 0 interface all hello-interval 222
+set protocols ospf area 0 interface all dead-interval 333
+
+### Relevant bits from show output follow
+#root# run show ospf interface detail
+#Interface           State   Area            DR ID           BDR ID          Nbrs
+#ge-0/0/0.0          DR      0.0.0.0         1.1.1.0         0.0.0.0            0
+#  Type: LAN, Address: 1.1.1.0, Mask: 255.255.255.254, MTU: 1500, Cost: 1
+#  DR addr: 1.1.1.0, Priority: 128
+#  Adj count: 0
+#  Hello: 10, Dead: 40, ReXmit: 5, Not Stub
+#  Auth type: None
+#  Protection type: None
+#  Topology default (ID 0) -> Cost: 1
+#ge-0/0/1.0          DR      0.0.0.0         1.1.1.0         0.0.0.0            0
+#  Type: LAN, Address: 2.1.1.0, Mask: 255.255.255.254, MTU: 1500, Cost: 1
+#  DR addr: 2.1.1.0, Priority: 128
+#  Adj count: 0
+#  Hello: 20, Dead: 80, ReXmit: 5, Not Stub
+#  Auth type: None
+#  Protection type: None
+#  Topology default (ID 0) -> Cost: 1
+#ge-0/0/2.0          PtToPt  0.0.0.0         0.0.0.0         0.0.0.0            0
+#  Type: P2P, Address: 3.1.1.0, Mask: 255.255.255.254, MTU: 1500, Cost: 111
+#  Adj count: 0
+#  Hello: 222, Dead: 333, ReXmit: 5, Not Stub
+#  Auth type: None
+#  Protection type: None
+#  Topology default (ID 0) -> Cost: 111
+
+#root# run show ospf route instance ri detail
+#Prefix             Path  Route      NH       Metric NextHop       Nexthop
+#                   Type  Type       Type            Interface     Address/LSP
+#4.1.1.0/31         Intra Network    IP            1 ge-0/0/3.0
+##  area 0.0.0.0, origin 4.1.1.0, priority low

@@ -1,0 +1,8 @@
+#
+set system host-name ospf-area-interface-duplicate-error
+#
+set interfaces ge-0/0/0 unit 0
+#
+set protocols ospf area 0 interface ge-0/0/0
+set protocols ospf area 1 interface ge-0/0/0
+#
