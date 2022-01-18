@@ -1,0 +1,6 @@
+#
+set system host-name firewall-address
+#
+set firewall family inet filter FILTER term TERM from address 1.0.0.0/8
+set firewall family inet filter FILTER term TERM from address 2.0.0.0/8
+set firewall family inet filter FILTER term TERM then accept
