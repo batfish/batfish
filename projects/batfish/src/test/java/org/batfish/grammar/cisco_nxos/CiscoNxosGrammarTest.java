@@ -300,6 +300,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1844,6 +1845,8 @@ public final class CiscoNxosGrammarTest {
                 new org.batfish.datamodel.tracking.TrackInterface("port-channel1"),
                 "100",
                 TrackRoute.of(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(HMM), "v1"),
+                "101",
+                TrackTrue.instance(),
                 "200",
                 TrackRoute.of(Prefix.strict("192.0.2.2/32"), ImmutableSet.of(), DEFAULT_VRF_NAME),
                 "500",
@@ -1858,14 +1861,15 @@ public final class CiscoNxosGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    assertThat(c.getTrackingGroups(), anEmptyMap());
+    assertThat(c.getTrackingGroups(), hasKeys("1", "500"));
     assertThat(
         ccae,
         hasRedFlagWarning(
             hostname,
             containsString(
                 String.format(
-                    "Interface track mode %s is not yet supported and will be ignored.",
+                    "Interface track mode %s is not yet supported and will be treated as always"
+                        + " succeeding.",
                     Mode.IP_ROUTING))));
     assertThat(
         ccae,
@@ -1873,7 +1877,8 @@ public final class CiscoNxosGrammarTest {
             hostname,
             containsString(
                 String.format(
-                    "Interface track mode %s is not yet supported and will be ignored.",
+                    "Interface track mode %s is not yet supported and will be treated as always"
+                        + " succeeding.",
                     Mode.IPV6_ROUTING))));
   }
 

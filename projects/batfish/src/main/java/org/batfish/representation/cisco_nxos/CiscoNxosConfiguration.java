@@ -1955,7 +1955,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       w.redFlag(
           String.format(
               "Interface track mode %s is not yet supported and will be treated as always"
-                  + " matching.",
+                  + " succeeding.",
               trackInterface.getMode()));
     } else if (track instanceof TrackIpRoute) {
       TrackIpRoute trackIpRoute = (TrackIpRoute) track;
