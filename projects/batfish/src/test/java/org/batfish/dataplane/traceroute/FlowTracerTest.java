@@ -54,7 +54,6 @@ import java.util.SortedMap;
 import java.util.Stack;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
@@ -1546,12 +1545,13 @@ public final class FlowTracerTest {
       BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow).toAclLineMatchExpr());
       assertEquals(
           returnFlowBdd,
-          BDDOps.andNull(
-              returnFlowDstIpBdd,
-              returnFlowSrcIpBdd,
-              pkt.getDstPort().value(flow.getSrcPort()),
-              pkt.getSrcPort().value(flow.getDstPort()),
-              pkt.getIpProtocol().value(flow.getIpProtocol())));
+          pkt.getFactory()
+              .andAll(
+                  returnFlowDstIpBdd,
+                  returnFlowSrcIpBdd,
+                  pkt.getDstPort().value(flow.getSrcPort()),
+                  pkt.getSrcPort().value(flow.getDstPort()),
+                  pkt.getIpProtocol().value(flow.getIpProtocol())));
     }
 
     // UDP
@@ -1560,12 +1560,13 @@ public final class FlowTracerTest {
       BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow).toAclLineMatchExpr());
       assertEquals(
           returnFlowBdd,
-          BDDOps.andNull(
-              returnFlowDstIpBdd,
-              returnFlowSrcIpBdd,
-              pkt.getDstPort().value(flow.getSrcPort()),
-              pkt.getSrcPort().value(flow.getDstPort()),
-              pkt.getIpProtocol().value(flow.getIpProtocol())));
+          pkt.getFactory()
+              .andAll(
+                  returnFlowDstIpBdd,
+                  returnFlowSrcIpBdd,
+                  pkt.getDstPort().value(flow.getSrcPort()),
+                  pkt.getSrcPort().value(flow.getDstPort()),
+                  pkt.getIpProtocol().value(flow.getIpProtocol())));
     }
 
     // ICMP
@@ -1574,10 +1575,11 @@ public final class FlowTracerTest {
       BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow).toAclLineMatchExpr());
       assertEquals(
           returnFlowBdd,
-          BDDOps.andNull(
-              returnFlowDstIpBdd,
-              returnFlowSrcIpBdd,
-              pkt.getIpProtocol().value(flow.getIpProtocol())));
+          pkt.getFactory()
+              .andAll(
+                  returnFlowDstIpBdd,
+                  returnFlowSrcIpBdd,
+                  pkt.getIpProtocol().value(flow.getIpProtocol())));
     }
   }
 

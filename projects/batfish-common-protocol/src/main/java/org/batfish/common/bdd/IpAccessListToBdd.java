@@ -267,7 +267,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public final BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      return _bddOps.orAll(
+      return _bddOps.or(
           orMatchExpr.getDisjuncts().stream()
               .map(IpAccessListToBdd.this::toBdd)
               .toArray(BDD[]::new));

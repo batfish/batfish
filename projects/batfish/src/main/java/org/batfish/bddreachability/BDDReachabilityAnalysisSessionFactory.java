@@ -498,7 +498,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                 mapping(
                     Entry::getValue,
                     collectingAndThen(
-                        toList(), bdds -> ipProtocolsWithSessionsBdd.and(ops.orAll(bdds))))));
+                        toList(), bdds -> ipProtocolsWithSessionsBdd.and(ops.or(bdds))))));
   }
 
   /**
@@ -545,7 +545,6 @@ final class BDDReachabilityAnalysisSessionFactory {
                                 Entry::getKey, // VRF name
                                 vrfEntry ->
                                     // BDD of flows that can match originating session on VRF
-                                    ipProtocolsWithSessionsBdd.and(
-                                        ops.orAll(vrfEntry.getValue()))))));
+                                    ipProtocolsWithSessionsBdd.and(ops.or(vrfEntry.getValue()))))));
   }
 }

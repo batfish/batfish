@@ -3,6 +3,8 @@ package org.batfish.common.bdd;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -10,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -24,12 +27,13 @@ public class HeaderSpaceToBDDTest {
   private HeaderSpaceToBDD _toBDD;
 
   private BDDPacket _pkt;
-
+  private BDDFactory _factory;
   private IpSpaceToBDD _dstIpSpaceToBdd;
 
   @Before
   public void setup() {
     _pkt = new BDDPacket();
+    _factory = _pkt.getFactory();
     _toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     _dstIpSpaceToBdd = new IpSpaceToBDD(_pkt.getDstIp());
   }
@@ -43,6 +47,7 @@ public class HeaderSpaceToBDDTest {
   public void test_negate() {
     IpSpace ip = Ip.parse("1.2.3.4").toIpSpace();
     BDD ipBDD = HeaderSpaceToBDD.toBDD(ip, _dstIpSpaceToBdd);
+    assertThat(ipBDD, notNullValue());
     assertThat(
         _toBDD.toBDD(HeaderSpace.builder().setDstIps(ip).setNegate(true).build()),
         equalTo(ipBDD.not()));
@@ -214,5 +219,24 @@ public class HeaderSpaceToBDDTest {
             .and(_pkt.getTcpEce().not())
             .or(_pkt.getTcpCwr().and(_pkt.getTcpFin().not()));
     assertThat(bdd, equalTo(tcpFlagsBDD));
+  }
+
+  @Test
+  public void testOrNull_null() {
+    assertThat(HeaderSpaceToBDD.orNull(), nullValue());
+    assertThat(HeaderSpaceToBDD.orNull(null, null), nullValue());
+  }
+
+  @Test
+  public void testOrNull_one() {
+    BDD var = _factory.ithVar(0);
+    assertThat(HeaderSpaceToBDD.orNull(var, null), equalTo(var));
+  }
+
+  @Test
+  public void testOrNull_two() {
+    BDD var1 = _factory.ithVar(0);
+    BDD var2 = _factory.ithVar(1);
+    assertThat(HeaderSpaceToBDD.orNull(null, var1, var2), equalTo(var1.or(var2)));
   }
 }

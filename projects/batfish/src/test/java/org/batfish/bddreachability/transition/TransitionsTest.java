@@ -21,8 +21,8 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDFiniteDomain;
-import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Ip;
@@ -31,11 +31,12 @@ import org.junit.Test;
 /** Tests of {@link Transitions}. */
 public class TransitionsTest {
   private final BDDPacket _pkt = new BDDPacket();
-  private final BDD _zero = _pkt.getFactory().zero();
-  private final BDD _one = _pkt.getFactory().one();
+  private final BDDFactory _factory = _pkt.getFactory();
+  private final BDD _zero = _factory.zero();
+  private final BDD _one = _factory.one();
 
   private BDD var(int i) {
-    return _pkt.getFactory().ithVar(i);
+    return _factory.ithVar(i);
   }
 
   private Transition eraseVar(int i) {
@@ -212,7 +213,7 @@ public class TransitionsTest {
     Transition expected =
         compose(
             constraint(bdd.and(finiteDomain.getIsValidConstraint())),
-            eraseAndSet(finiteDomain.getVar(), _pkt.getFactory().one()));
+            eraseAndSet(finiteDomain.getVar(), _factory.one()));
     assertEquals(expected, actual);
   }
 
@@ -343,7 +344,7 @@ public class TransitionsTest {
     BDD v2 = var(2);
     BDD v3 = var(3);
     Transition actual = or(constraint(v0), constraint(v1), constraint(v2), constraint(v3));
-    assertThat(actual, equalTo(constraint(BDDOps.orNull(v0, v1, v2, v3))));
+    assertThat(actual, equalTo(constraint(_factory.orAll(v0, v1, v2, v3))));
   }
 
   @Test
