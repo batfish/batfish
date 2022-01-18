@@ -1,12 +1,12 @@
 package org.batfish.datamodel.tracking;
 
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.junit.Test;
 
@@ -14,36 +14,32 @@ import org.junit.Test;
 public class StaticTrackMethodEvaluatorTest {
   @Test
   public void testVisitTrackInterface() {
-    Configuration c1 =
-        Configuration.builder()
-            .setHostname("c1")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
-    c1.setTrackingGroups(ImmutableMap.of("1", new TrackInterface("i1tracked")));
+    Configuration c =
+        Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     // i1: active
     Interface.builder()
-        .setOwner(c1)
+        .setOwner(c)
         .setName("i1")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .setActive(true)
         .build();
     // i2: not active
     Interface.builder()
-        .setOwner(c1)
+        .setOwner(c)
         .setName("i2")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .setActive(false)
         .build();
     // i3: active, but blacklisted
     Interface.builder()
-        .setOwner(c1)
+        .setOwner(c)
         .setName("i3")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .setActive(true)
         .setBlacklisted(true)
         .build();
 
-    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
+    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c);
     // Iface is active
     TrackInterface trackInterface1 = new TrackInterface("i1");
     assertTrue(evaluator.visit(trackInterface1));
@@ -63,48 +59,31 @@ public class StaticTrackMethodEvaluatorTest {
 
   @Test
   public void testVisitNegatedTrackMethod() {
-    Configuration c1 =
-        Configuration.builder()
-            .setHostname("c1")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
-    c1.setTrackingGroups(ImmutableMap.of("1", new TrackInterface("i1")));
-    // i1: active
-    Interface.builder()
-        .setOwner(c1)
-        .setName("i1")
-        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-        .setActive(true)
-        .build();
-    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
-    // Iface is active
-    TrackInterface trackInterface1 = new TrackInterface("i1");
+    Configuration c =
+        Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
+    TrackMethod base = TrackTrue.instance();
+    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c);
 
-    assertTrue(evaluator.visit(trackInterface1));
-    assertFalse(evaluator.visit(NegatedTrackMethod.of(trackInterface1)));
+    assertFalse(evaluator.visit(NegatedTrackMethod.of(base)));
   }
 
   @Test
   public void testVisitTrackMethodReference() {
-    Configuration c1 =
-        Configuration.builder()
-            .setHostname("c1")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
-    // Iface is active
-    TrackInterface trackInterface1 = new TrackInterface("i1");
+    Configuration c =
+        Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
+    TrackMethod base = TrackTrue.instance();
+    c.setTrackingGroups(ImmutableMap.of("1", base));
+    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c);
 
-    c1.setTrackingGroups(ImmutableMap.of("1", trackInterface1));
-    // i1: active
-    Interface.builder()
-        .setOwner(c1)
-        .setName("i1")
-        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-        .setActive(true)
-        .build();
-    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
-
-    assertTrue(evaluator.visit(trackInterface1));
     assertTrue(evaluator.visit(TrackMethodReference.of("1")));
+  }
+
+  @Test
+  public void testVisitTrackTrue() {
+    Configuration c =
+        Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
+    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c);
+
+    assertTrue(evaluator.visit(TrackTrue.instance()));
   }
 }
