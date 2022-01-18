@@ -335,8 +335,9 @@ public class Interface implements Serializable {
    * Returns effective OSPF settings, that is, those are directly configured for the interface or
    * those inherited via "interface all" in the routing instance.
    */
+  // This behavior was tested in lab. See unit test testOspfInterfaceAll in FlatJuniperGrammarTest
   public @Nullable OspfInterfaceSettings getEffectiveOspfSettings() {
-    return _ospfSettings != null ? _ospfSettings : _routingInstance.getOspfSettings();
+    return _ospfSettings != null ? _ospfSettings : _routingInstance.getInterfaceAllOspfSettings();
   }
 
   public void inheritUnsetFields() {

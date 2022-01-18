@@ -144,7 +144,12 @@ public class RoutingInstance implements Serializable {
     return _globalMasterInterface;
   }
 
-  public OspfInterfaceSettings getOspfSettings() {
+  /**
+   * Returns OSPF settings configured for "interface all" in this routing instance.
+   *
+   * <p>Returns null if "interface all" wasn't used in the configuration.
+   */
+  public @Nullable OspfInterfaceSettings getInterfaceAllOspfSettings() {
     return _interfaceAllOspfSettings;
   }
 
@@ -248,6 +253,7 @@ public class RoutingInstance implements Serializable {
     _hostname = hostname.toLowerCase();
   }
 
+  /** Sets the OSPF settings configures for "interface all" */
   public void setInterfaceAllOspfSettings(OspfInterfaceSettings interfaceAllOspfSettings) {
     _interfaceAllOspfSettings = interfaceAllOspfSettings;
   }

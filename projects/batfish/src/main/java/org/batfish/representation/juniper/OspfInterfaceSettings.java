@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
-/** Represents OSPF settings for an interface. */
+/** Represents OSPF settings for an interface, including the "all" interface. */
 @ParametersAreNonnullByDefault
 public class OspfInterfaceSettings implements Serializable {
 
@@ -51,29 +51,25 @@ public class OspfInterfaceSettings implements Serializable {
     return _ospfArea;
   }
 
-  public Integer getOspfCost() {
+  public @Nullable Integer getOspfCost() {
     return _ospfCost;
   }
 
   /** Get the time (in seconds) to wait before neighbors are declared dead */
-  @Nullable
-  public Integer getOspfDeadInterval() {
+  public @Nullable Integer getOspfDeadInterval() {
     return _ospfDeadInterval;
   }
 
-  @Nullable
-  public Boolean getOspfDisable() {
+  public @Nullable Boolean getOspfDisable() {
     return _ospfDisable;
   }
 
   /** Get the time (in seconds) between sending hello messages to neighbors */
-  @Nullable
-  public Integer getOspfHelloInterval() {
+  public @Nullable Integer getOspfHelloInterval() {
     return _ospfHelloInterval;
   }
 
-  @Nullable
-  public OspfInterfaceType getOspfInterfaceType() {
+  public @Nullable OspfInterfaceType getOspfInterfaceType() {
     return _ospfInterfaceType;
   }
 
@@ -102,10 +98,10 @@ public class OspfInterfaceSettings implements Serializable {
   }
 
   public void setOspfPassive(boolean ospfPassive) {
-    _ospfPassive = true;
+    _ospfPassive = ospfPassive;
   }
 
-  public void setOspfInterfaceType(OspfInterfaceType ospfInterfaceType) {
+  public void setOspfInterfaceType(@Nullable OspfInterfaceType ospfInterfaceType) {
     _ospfInterfaceType = ospfInterfaceType;
   }
 }

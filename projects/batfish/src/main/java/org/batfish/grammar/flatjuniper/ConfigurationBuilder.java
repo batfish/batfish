@@ -2615,7 +2615,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String ospfInterfaceName = null;
     if (ctx.ALL() != null) {
       ospfInterfaceName = "all";
-      _currentOspfSettings = _currentRoutingInstance.getOspfSettings();
+      _currentOspfSettings = _currentRoutingInstance.getInterfaceAllOspfSettings();
       if (_currentOspfSettings == null) {
         _currentOspfSettings = new OspfInterfaceSettings(Ip.create(_currentArea.getName()));
         _currentRoutingInstance.setInterfaceAllOspfSettings(_currentOspfSettings);
@@ -6558,7 +6558,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   /**
    * Returns a logical interface mentioned in an OSPF or ISIS routing context. The physical and
    * logical interfaces are created if they doesn't already exist. If the unit is not explicit in
-   * the configuration text, it is considered to be zero (per Junos semantics).
+   * the configuration text, it is considered to be zero (tested in lab for both OSPF and ISIS).
    */
   @Nonnull
   private Interface initRoutingInterface(Interface_idContext id) {
