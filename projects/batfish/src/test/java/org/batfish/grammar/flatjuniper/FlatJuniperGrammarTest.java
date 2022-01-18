@@ -417,11 +417,11 @@ public final class FlatJuniperGrammarTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
-    Flow.Builder fb = Flow.builder();
-    fb.setIngressNode("node");
-    fb.setSrcIp(Ip.parse(sourceAddress));
-    fb.setDstIp(Ip.parse(destinationAddress));
-    return fb.build();
+    return createFlow(Ip.parse(sourceAddress), Ip.parse(destinationAddress));
+  }
+
+  private static Flow createFlow(Ip src, Ip dst) {
+    return Flow.builder().setIngressNode("node").setSrcIp(src).setDstIp(dst).build();
   }
 
   private static Flow createFlow(IpProtocol protocol, int port) {
@@ -3338,6 +3338,28 @@ public final class FlatJuniperGrammarTest {
                     IpsecPeerConfigMatchers.hasSourceInterface("ge-0/0/3.0"),
                     IpsecPeerConfigMatchers.hasLocalAddress(Ip.parse("198.51.100.2")),
                     IpsecPeerConfigMatchers.hasTunnelInterface(equalTo("st0.0"))))));
+  }
+
+  @Test
+  public void testAddress() {
+    Configuration c = parseConfig("firewall-address");
+
+    assertThat(c.getIpAccessLists(), hasKeys("FILTER"));
+    IpAccessList filter = c.getIpAccessLists().get("FILTER");
+    Ip allowed1 = Ip.parse("1.0.0.0");
+    Ip allowed2 = Ip.parse("2.0.0.0");
+    Ip rejected = Ip.parse("3.3.3.3");
+
+    // Both addresses permitted, same or different rules
+    assertThat(filter, accepts(createFlow(allowed1, allowed1), null, c));
+    assertThat(filter, accepts(createFlow(allowed2, allowed2), null, c));
+    assertThat(filter, accepts(createFlow(allowed1, allowed2), null, c));
+    // Allowed if EITHER is allowed.
+    assertThat(filter, accepts(createFlow(allowed1, rejected), null, c));
+    assertThat(filter, accepts(createFlow(rejected, allowed1), null, c));
+    assertThat(filter, accepts(createFlow(rejected, allowed2), null, c));
+    // Rejected if BOTH rejected
+    assertThat(filter, rejects(createFlow(rejected, rejected), null, c));
   }
 
   @Test
