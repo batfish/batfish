@@ -125,7 +125,8 @@ fftf_address
 :
    ADDRESS
    (
-      IP_PREFIX
+      fftfa_address_mask_prefix
+      | IPV6_ADDRESS
       | IPV6_PREFIX
    )
 ;

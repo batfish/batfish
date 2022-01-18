@@ -246,6 +246,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_prefix_listContext;
@@ -677,6 +678,7 @@ import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
+import org.batfish.representation.juniper.FwFromAddress;
 import org.batfish.representation.juniper.FwFromApplicationOrApplicationSet;
 import org.batfish.representation.juniper.FwFromDestinationAddress;
 import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
@@ -3994,6 +3996,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFf_term(Ff_termContext ctx) {
     _currentFwTerm = null;
+  }
+
+  @Override
+  public void exitFftf_address(Fftf_addressContext ctx) {
+    FwFrom from;
+    IpWildcard ipWildcard = formIpWildCard(ctx.fftfa_address_mask_prefix());
+    if (ipWildcard != null) {
+      String text = getFullText(ctx.fftfa_address_mask_prefix());
+      from = new FwFromAddress(ipWildcard, text);
+      _currentFwTerm.getFroms().add(from);
+    }
   }
 
   @Override
