@@ -16,6 +16,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   BGP_FAMILY_INET_UNICAST_RIB_GROUP("bgp family inet unicast rib-group"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
   FIREWALL_FILTER_DESTINATION_PREFIX_LIST("firewall filter destination prefix-list"),
+  FIREWALL_FILTER_DSCP("firewall filter dscp"),
   FIREWALL_FILTER_PREFIX_LIST("firewall filter prefix-list"),
   FIREWALL_FILTER_SOURCE_PREFIX_LIST("firewall filter source prefix-list"),
   FIREWALL_FILTER_TERM_DEFINITION("firewall filter term"),

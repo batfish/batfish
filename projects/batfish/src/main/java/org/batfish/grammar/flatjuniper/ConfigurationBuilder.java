@@ -15,6 +15,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GR
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
@@ -52,6 +53,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPOR
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DSCP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
@@ -121,6 +123,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -250,6 +253,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_prefix_listContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_dscpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_first_fragmentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offsetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offset_exceptContext;
@@ -536,6 +540,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Scos_code_point_aliasesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_address_bookContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_authentication_key_chainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_zonesContext;
@@ -675,6 +680,7 @@ import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
+import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
@@ -686,6 +692,7 @@ import org.batfish.representation.juniper.FwFromDestinationAddressExcept;
 import org.batfish.representation.juniper.FwFromDestinationPort;
 import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
+import org.batfish.representation.juniper.FwFromDscp;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
@@ -4054,6 +4061,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitFftf_dscp(Fftf_dscpContext ctx) {
+    String dscpSpec = ctx.variable().getText();
+    FwFromDscp from = new FwFromDscp(dscpSpec);
+    Integer value = Ints.tryParse(dscpSpec);
+    if (value == null) {
+      // not a number, so must be an alias
+      // if it is not a builtin alias or it has been overridden, we add a reference
+      // TODO: this is not quite right because the builtin override could happen later
+      if (!DscpUtil.defaultValue(dscpSpec).isPresent()
+          || _currentLogicalSystem.getDscpAliases().containsKey(dscpSpec)) {
+        _configuration.referenceStructure(
+            CLASS_OF_SERVICE_CODE_POINT_ALIAS,
+            dscpSpec,
+            FIREWALL_FILTER_DSCP,
+            getLine(ctx.variable().getStart()));
+      }
+    }
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
   public void exitFftf_first_fragment(Fftf_first_fragmentContext ctx) {
     SubRange subRange = SubRange.singleton(0);
     FwFrom from = new FwFromFragmentOffset(subRange, false);
@@ -5754,6 +5782,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitS_vlans_named(S_vlans_namedContext ctx) {
     _currentNamedVlan = null;
+  }
+
+  @Override
+  public void exitScos_code_point_aliases(Scos_code_point_aliasesContext ctx) {
+    String aliasName = ctx.name.getText();
+    int value;
+    try {
+      value = Integer.parseInt(ctx.dec().getText(), 2);
+    } catch (NumberFormatException ignored) {
+      warn(
+          ctx,
+          String.format(
+              "%s is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.",
+              ctx.dec().getText()));
+      return;
+    }
+    if (value > 63) {
+      warn(
+          ctx,
+          String.format(
+              "%s is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.",
+              ctx.dec().getText()));
+      return;
+    }
+    _currentLogicalSystem.getDscpAliases().put(aliasName, value);
+    _configuration.defineFlattenedStructure(
+        CLASS_OF_SERVICE_CODE_POINT_ALIAS, aliasName, ctx, _parser);
   }
 
   @Override
