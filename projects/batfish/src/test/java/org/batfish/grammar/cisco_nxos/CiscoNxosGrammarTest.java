@@ -3031,6 +3031,7 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/13",
             "Ethernet1/14",
             "Ethernet1/15",
+            "Ethernet1/16",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -3101,26 +3102,32 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/5");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
-      assertThat(iface.getNativeVlan(), equalTo(2));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(25));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/6");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
-      assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
+      assertThat(iface.getNativeVlan(), equalTo(2));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/7");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4))));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/8");
+      assertThat(iface.getShutdown(), nullValue());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getNativeVlan(), equalTo(1));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4))));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/9");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
@@ -3129,44 +3136,44 @@ public final class CiscoNxosGrammarTest {
           equalTo(IntegerSpace.unionOf(Range.singleton(1), Range.closed(3, 3967))));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/9");
+      Interface iface = vc.getInterfaces().get("Ethernet1/10");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/10");
+      Interface iface = vc.getInterfaces().get("Ethernet1/11");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/11");
+      Interface iface = vc.getInterfaces().get("Ethernet1/12");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/12");
+      Interface iface = vc.getInterfaces().get("Ethernet1/13");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.DOT1Q_TUNNEL));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/13");
+      Interface iface = vc.getInterfaces().get("Ethernet1/14");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.FEX_FABRIC));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/14");
+      Interface iface = vc.getInterfaces().get("Ethernet1/15");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/15");
+      Interface iface = vc.getInterfaces().get("Ethernet1/16");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.MONITOR));
       assertTrue(iface.getSwitchportMonitor());
