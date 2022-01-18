@@ -44,6 +44,8 @@ public class LogicalSystem implements Serializable {
 
   private NavigableSet<String> _dnsServers;
 
+  private final Map<String, Integer> _dscpAliases;
+
   private final Map<String, FirewallFilter> _filters;
 
   private final Map<String, ConcreteFirewallFilter> _securityPolicies;
@@ -114,6 +116,7 @@ public class LogicalSystem implements Serializable {
     _defaultCrossZoneAction = LineAction.PERMIT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
+    _dscpAliases = new TreeMap<>();
     _filters = new TreeMap<>();
     _screens = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
@@ -205,6 +208,10 @@ public class LogicalSystem implements Serializable {
 
   public NavigableSet<String> getDnsServers() {
     return _dnsServers;
+  }
+
+  public Map<String, Integer> getDscpAliases() {
+    return _dscpAliases;
   }
 
   public Map<String, FirewallFilter> getFirewallFilters() {
