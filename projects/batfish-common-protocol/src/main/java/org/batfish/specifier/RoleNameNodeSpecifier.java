@@ -1,5 +1,6 @@
 package org.batfish.specifier;
 
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
@@ -45,9 +46,10 @@ public final class RoleNameNodeSpecifier implements NodeSpecifier {
                         "Role dimension '" + _roleDimension + "' not found"));
     SortedMap<String, SortedSet<String>> roleNodesMap =
         nodeRoleDimension.createRoleNodesMap(ctxt.getConfigs().keySet());
-    roleNodesMap.keySet().stream()
-        .filter(r -> r.equalsIgnoreCase(_roleName))
+    return roleNodesMap.entrySet().stream()
+        .filter(e -> e.getKey().equalsIgnoreCase(_roleName))
         .findAny()
+        .map(Entry::getValue)
         .orElseThrow(
             () ->
                 new NoSuchElementException(
@@ -56,7 +58,5 @@ public final class RoleNameNodeSpecifier implements NodeSpecifier {
                         + "' not found in dimension '"
                         + _roleDimension
                         + "'"));
-
-    return roleNodesMap.get(_roleName);
   }
 }
