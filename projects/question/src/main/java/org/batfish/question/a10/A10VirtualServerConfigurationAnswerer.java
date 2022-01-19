@@ -29,6 +29,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.a10.representation.A10Configuration;
+import org.batfish.vendor.a10.representation.A10Conversion;
 import org.batfish.vendor.a10.representation.Server;
 import org.batfish.vendor.a10.representation.ServerPort;
 import org.batfish.vendor.a10.representation.ServerPort.ServerPortAndType;
@@ -38,8 +39,6 @@ import org.batfish.vendor.a10.representation.ServiceGroup;
 import org.batfish.vendor.a10.representation.ServiceGroupMember;
 import org.batfish.vendor.a10.representation.VirtualServer;
 import org.batfish.vendor.a10.representation.VirtualServerPort;
-import org.batfish.vendor.a10.representation.VirtualServerTargetAddress;
-import org.batfish.vendor.a10.representation.VirtualServerTargetVisitor;
 
 public class A10VirtualServerConfigurationAnswerer extends Answerer {
 
@@ -134,9 +133,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
       A10Configuration a10Vc = (A10Configuration) vc;
       Node node = new Node(nodeName);
       for (VirtualServer virtualServer : a10Vc.getVirtualServers().values()) {
-        Ip virtualServerIp =
-            ((VirtualServerTargetVisitor<Ip>) VirtualServerTargetAddress::getAddress)
-                .visit(virtualServer.getTarget());
+        Ip virtualServerIp = A10Conversion.getTargetIp(virtualServer);
         if (!virtualServerIpSpace.containsIp(virtualServerIp, ImmutableMap.of())) {
           continue;
         }
@@ -183,7 +180,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
    * Returns if this server is active based on whether the member, server, and server port are
    * enabled.
    */
-  private static String getServerActive(
+  public static String getServerActive(
       ServiceGroupMember member, @Nullable Server server, Type type) {
     if (server == null) {
       return "inactive";
@@ -198,7 +195,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
         : "inactive";
   }
 
-  private static String getServerTarget(@Nullable Server server) {
+  public static String getServerTarget(@Nullable Server server) {
     if (server == null) {
       return "Undefined";
     }

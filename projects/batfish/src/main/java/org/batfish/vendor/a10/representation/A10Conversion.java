@@ -347,7 +347,7 @@ public class A10Conversion {
     return virtualServers.stream()
         .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .filter(vs -> vrid == getVirtualServerVrid(vs))
-        .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
+        .map(A10Conversion::getTargetIp);
   }
 
   /**
@@ -359,7 +359,7 @@ public class A10Conversion {
     return virtualServers.stream()
         .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .filter(vs -> haGroup == getVirtualServerHaGroup(vs))
-        .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
+        .map(A10Conversion::getTargetIp);
   }
 
   private static int getVirtualServerHaGroup(VirtualServer virtualServer) {
@@ -371,7 +371,7 @@ public class A10Conversion {
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
         .filter(A10Conversion::isAnyVirtualServerPortEnabled)
-        .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
+        .map(A10Conversion::getTargetIp);
   }
 
   /** Get all of the the kernel routes generated for all enabled {@code slb virtual-server}s. */
@@ -384,7 +384,7 @@ public class A10Conversion {
 
   @VisibleForTesting
   static @Nonnull KernelRoute toKernelRoute(VirtualServer virtualServer) {
-    Ip requiredOwnedIp = VirtualServerTargetVirtualAddressExtractor.extractIp(virtualServer);
+    Ip requiredOwnedIp = getTargetIp(virtualServer);
     Prefix network = VirtualServerTargetKernelRouteNetworkExtractor.extractNetwork(virtualServer);
     long tag =
         getRedistributionFlagged(virtualServer)
@@ -441,16 +441,16 @@ public class A10Conversion {
     return firstNonNull(virtualServer.getRedistributionFlagged(), Boolean.FALSE);
   }
 
+  public static @Nonnull Ip getTargetIp(VirtualServer virtualServer) {
+    return virtualServer.getTarget().accept(VirtualServerTargetVirtualAddressExtractor.INSTANCE);
+  }
+
   /** Extracts the virtual {@link Ip} of a {@link VirtualServerTarget} that the device may own. */
-  static final class VirtualServerTargetVirtualAddressExtractor
+  public static final class VirtualServerTargetVirtualAddressExtractor
       implements VirtualServerTargetVisitor<Ip> {
     // TODO: this may need to return a set of IPs; or a prefix or an IP.
     static final VirtualServerTargetVirtualAddressExtractor INSTANCE =
         new VirtualServerTargetVirtualAddressExtractor();
-
-    private static @Nonnull Ip extractIp(VirtualServer virtualServer) {
-      return virtualServer.getTarget().accept(INSTANCE);
-    }
 
     @Override
     public Ip visitAddress(VirtualServerTargetAddress address) {
