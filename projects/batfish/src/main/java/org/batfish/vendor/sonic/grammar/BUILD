@@ -11,9 +11,7 @@ java_library(
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/frr",
         "//projects/batfish/src/main/java/org/batfish/grammar/frr",
-        "//projects/batfish/src/main/java/org/batfish/representation/frr",
         "//projects/batfish/src/main/java/org/batfish/vendor/sonic/representation",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_google_code_findbugs_jsr305",
