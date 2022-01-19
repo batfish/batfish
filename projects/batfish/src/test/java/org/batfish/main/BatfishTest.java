@@ -248,7 +248,7 @@ public class BatfishTest {
 
     // Ethernet0 should be inactive and blacklisted
     Interface ethernet0 = interfaces.get("Ethernet0");
-    assertTrue(ethernet0.getBlacklisted() && !ethernet0.getActive());
+    assertTrue(!ethernet0.getLineUp() && !ethernet0.getActive());
 
     // Ensure other interfaces are active
     assertThat(
@@ -620,16 +620,16 @@ public class BatfishTest {
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
 
-    ib.setName("eth0").setActive(false).build();
+    ib.setName("eth0").setAdminUp(false).build();
     ib.setName("eth1")
-        .setActive(true)
+        .setAdminUp(true)
         .setDependencies(ImmutableSet.of(new Dependency("eth0", DependencyType.BIND)))
         .build();
     ib.setName("eth2")
-        .setActive(true)
+        .setAdminUp(true)
         .setDependencies(ImmutableSet.of(new Dependency("eth1", DependencyType.BIND)))
         .build();
-    ib.setName("eth9").setDependencies(ImmutableSet.of()).setActive(true).build();
+    ib.setName("eth9").setDependencies(ImmutableSet.of()).setAdminUp(true).build();
 
     ImmutableSet<String> activeIfaces = ImmutableSet.of("eth9");
     ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth0", "eth1", "eth2");
@@ -654,7 +654,7 @@ public class BatfishTest {
     Vrf vrf = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
     ib.setName("eth1")
-        .setActive(true)
+        .setAdminUp(true)
         .setDependencies(ImmutableSet.of(new Dependency("NON_EXISTENT", DependencyType.BIND)))
         .build();
 
@@ -675,10 +675,10 @@ public class BatfishTest {
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
 
-    ib.setName("eth0").setActive(false).setType(InterfaceType.PHYSICAL).build();
-    ib.setName("eth1").setActive(true).setType(InterfaceType.PHYSICAL).build();
+    ib.setName("eth0").setAdminUp(false).setType(InterfaceType.PHYSICAL).build();
+    ib.setName("eth1").setAdminUp(true).setType(InterfaceType.PHYSICAL).build();
     ib.setName("eth2")
-        .setActive(true)
+        .setAdminUp(true)
         .setType(InterfaceType.AGGREGATED)
         .setDependencies(
             ImmutableSet.of(
@@ -686,9 +686,9 @@ public class BatfishTest {
                 new Dependency("eth0", DependencyType.AGGREGATE)))
         .build();
 
-    ib.setName("eth3").setActive(false).setType(InterfaceType.PHYSICAL).build();
+    ib.setName("eth3").setAdminUp(false).setType(InterfaceType.PHYSICAL).build();
     ib.setName("eth4")
-        .setActive(true)
+        .setAdminUp(true)
         .setType(InterfaceType.AGGREGATED)
         .setDependencies(
             ImmutableSet.of(

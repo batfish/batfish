@@ -55,7 +55,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
             .setHostname(HOSTNAME)
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    _ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true).setName(IFACENAME);
+    _ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setName(IFACENAME);
     _configs = ImmutableMap.of(HOSTNAME, config);
     _headerSpaceToBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     _transformationToTransitions =

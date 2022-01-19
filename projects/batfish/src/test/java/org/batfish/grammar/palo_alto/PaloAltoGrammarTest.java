@@ -45,6 +45,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isLineUp;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
@@ -1556,9 +1557,11 @@ public final class PaloAltoGrammarTest {
 
     // Confirm link status is extracted
     assertThat(c, hasInterface(eth1_1, isActive()));
-    assertThat(c, hasInterface(eth1_2, not(isActive())));
+    // palo alto does not turn off admin down interfaces
+    assertThat(c, hasInterface(eth1_2, allOf(not(isActive()), isLineUp(true))));
     assertThat(c, hasInterface(eth1_3, isActive()));
-    assertThat(c, hasInterface(eth1_3_11, not(isActive())));
+    // non-physical interface has no line up static
+    assertThat(c, hasInterface(eth1_3_11, allOf(not(isActive()), isLineUp(nullValue()))));
 
     // Confirm tag extraction for units
     assertThat(c, hasInterface(eth1_3_11, hasEncapsulationVlan(11)));

@@ -132,8 +132,7 @@ public final class FixedPointTopologyTest {
     Vrf s1VniVrf = vb.setOwner(_s1).setName("vrf1").build();
     Vrf s2Vrf = vb.setOwner(_s2).setName(Configuration.DEFAULT_VRF_NAME).build();
     Vrf s2VniVrf = vb.setOwner(_s2).setName("vrf1").build();
-    Interface.Builder l3Builder =
-        Interface.builder().setType(InterfaceType.PHYSICAL).setActive(true);
+    Interface.Builder l3Builder = Interface.builder().setType(InterfaceType.PHYSICAL);
     l3Builder.setName(E1_NAME).setAddresses(H1_ADDRESS).setOwner(_h1).setVrf(h1Vrf).build();
     l3Builder.setName(E2_NAME).setAddresses(H2_ADDRESS).setOwner(_h2).setVrf(h2Vrf).build();
     l3Builder.setName(E12_NAME).setAddresses(S1_ADDRESS).setOwner(_s1).setVrf(s1Vrf).build();
@@ -141,7 +140,6 @@ public final class FixedPointTopologyTest {
     Interface.Builder l2Builder =
         Interface.builder()
             .setType(InterfaceType.PHYSICAL)
-            .setActive(true)
             .setAccessVlan(VLAN)
             .setSwitchport(true)
             .setSwitchportMode(SwitchportMode.ACCESS);
@@ -268,7 +266,7 @@ public final class FixedPointTopologyTest {
             .setVrf(vrf1)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("11.12.13.1"), 24))
             .build();
-    tunnel1.setInterfaceType(InterfaceType.TUNNEL);
+    tunnel1.updateInterfaceType(InterfaceType.TUNNEL);
     Interface iface2 =
         nf.interfaceBuilder()
             .setName("Interface2")
@@ -283,7 +281,7 @@ public final class FixedPointTopologyTest {
             .setVrf(vrf2)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("11.12.13.2"), 24))
             .build();
-    tunnel2.setInterfaceType(InterfaceType.TUNNEL);
+    tunnel2.updateInterfaceType(InterfaceType.TUNNEL);
 
     IpsecStaticPeerConfig ipsecPeerConfig1 =
         IpsecStaticPeerConfig.builder()

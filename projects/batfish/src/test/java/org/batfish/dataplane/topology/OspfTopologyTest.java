@@ -104,14 +104,14 @@ public class OspfTopologyTest {
             .setVrf(vrf1)
             .setOwner(c1)
             .setOspfSettings(ospf.setProcess("1").build())
-            .setActive(false)
+            .setAdminUp(false)
             .setName("i14")
             .build();
     oab.addInterfaces(ImmutableList.of(i12.getName(), i13.getName(), i14.getName()))
         .setOspfProcess(proc1)
         .build();
 
-    ib.setActive(true);
+    ib.setAdminUp(true);
 
     // R2
     Configuration c2 = cb.setHostname("r2").build();

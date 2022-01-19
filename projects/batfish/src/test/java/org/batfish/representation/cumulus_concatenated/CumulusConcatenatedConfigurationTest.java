@@ -519,7 +519,7 @@ public class CumulusConcatenatedConfigurationTest {
                             .setOwner(c)
                             .setType(InterfaceType.PHYSICAL)
                             .build()));
-    c.getAllInterfaces().get(iface3.getName()).setActive(false);
+    c.getAllInterfaces().get(iface3.getName()).adminDown();
 
     vsConfig.initPostUpRoutes(c);
 

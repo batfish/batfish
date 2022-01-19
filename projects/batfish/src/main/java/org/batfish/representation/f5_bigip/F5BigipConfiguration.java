@@ -1472,7 +1472,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setType(InterfaceType.PHYSICAL)
             .build();
     Double speed = iface.getSpeed();
-    newIface.setActive(!Boolean.TRUE.equals(iface.getDisabled()));
+    if (Boolean.TRUE.equals(iface.getDisabled())) {
+      newIface.adminDown();
+    }
     newIface.setSpeed(speed);
     newIface.setBandwidth(firstNonNull(iface.getBandwidth(), speed, Interface.DEFAULT_BANDWIDTH));
     // Assume all interfaces are in default VRF for now

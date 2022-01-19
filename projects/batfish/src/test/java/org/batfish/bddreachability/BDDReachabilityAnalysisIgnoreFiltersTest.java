@@ -90,7 +90,6 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
         nf.interfaceBuilder()
             .setOwner(c1)
             .setVrf(vrf1)
-            .setActive(true)
             .setAddress(NODE1_ADDR)
             .setOutgoingTransformation(
                 when(matchSrc(NAT_MATCH_IP))
@@ -113,7 +112,6 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     nf.interfaceBuilder()
         .setOwner(c2)
         .setVrf(vrf2)
-        .setActive(true)
         .setAddress(NODE2_ADDR)
         .setIncomingFilter(incomingFilter)
         .build();

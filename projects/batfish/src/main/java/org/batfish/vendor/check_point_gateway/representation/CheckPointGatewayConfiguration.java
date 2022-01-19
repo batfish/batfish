@@ -823,12 +823,13 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   void convertInterface(Interface iface, Vrf vrf) {
     String ifaceName = iface.getName();
+    InterfaceType type = getInterfaceType(iface);
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
             .setOwner(_c)
             .setVrf(vrf)
-            .setType(getInterfaceType(iface));
+            .setType(type);
 
     Optional<Integer> parentBondingGroupOpt = getParentBondingGroupNumber(iface);
     if (parentBondingGroupOpt.isPresent()) {
@@ -842,7 +843,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     } else {
       newIface
           .setAddress(iface.getAddress())
-          .setActive(iface.getState())
+          .setAdminUp(iface.getState())
           .setMtu(iface.getMtuEffective());
     }
 
@@ -885,7 +886,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                         "Bonding group mode active-backup is not yet supported in Batfish."
                             + " Deactivating interface %s.",
                         ifaceName));
-                newIface.setActive(false);
+                newIface.setAdminUp(false);
               }
             });
 

@@ -52,6 +52,7 @@ public class SonicConversions {
 
     for (String portName : ports.keySet()) {
       Port port = ports.get(portName);
+      boolean active = port.getAdminStatusUp().orElse(true); // default is active
       Interface.Builder ib =
           Interface.builder()
               .setName(portName)
@@ -65,7 +66,7 @@ public class SonicConversions {
                   port.getSpeed()
                       .map(speed -> speed * SPEED_CONVERSION_FACTOR)
                       .orElse(null)) // TODO: default speed
-              .setActive(port.getAdminStatusUp().orElse(true)); // default is active
+              .setAdminUp(active);
 
       if (interfaces.containsKey(portName)) {
         L3Interface l3Interface = interfaces.get(portName);
@@ -136,7 +137,6 @@ public class SonicConversions {
             .setVrf(vrf)
             .setType(InterfaceType.VLAN)
             .setVlan(vlanId)
-            .setActive(true)
             .setAddress(vlanInterfaces.get(vlanName).getAddress())
             .setDhcpRelayAddresses(convertDhcpServers(vlan.getDhcpServers(), w))
             .build();

@@ -1433,7 +1433,6 @@ public class ForwardingAnalysisImplTest {
     Configuration c2 = _cb.setHostname("c2").build();
     Vrf v1 = _vb.setName("v1").setOwner(c1).build();
     Vrf v2 = _vb.setName("v2").setOwner(c2).build();
-    _ib.setActive(true);
     Interface i1 =
         _ib.setAddresses(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setName("i1")

@@ -112,7 +112,7 @@ public final class SessionInstrumentationTest {
     {
       _fw = cb.setHostname(FW).build();
       Vrf vrf = nf.vrfBuilder().setOwner(_fw).setName(FW_VRF).build();
-      Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_fw).setVrf(vrf);
+      Interface.Builder ib = nf.interfaceBuilder().setOwner(_fw).setVrf(vrf);
       _fwI1 = ib.setName(FW_I1).build();
     }
 
@@ -120,7 +120,7 @@ public final class SessionInstrumentationTest {
     {
       _source1 = cb.setHostname(SOURCE1).build();
       Vrf vrf = nf.vrfBuilder().setOwner(_source1).build();
-      Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_source1).setVrf(vrf);
+      Interface.Builder ib = nf.interfaceBuilder().setOwner(_source1).setVrf(vrf);
       ib.setName(SOURCE1_IFACE).build();
     }
 
@@ -128,7 +128,7 @@ public final class SessionInstrumentationTest {
     {
       _source2 = cb.setHostname(SOURCE2).build();
       Vrf vrf = nf.vrfBuilder().setOwner(_source2).build();
-      Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_source2).setVrf(vrf);
+      Interface.Builder ib = nf.interfaceBuilder().setOwner(_source2).setVrf(vrf);
       ib.setName(SOURCE2_IFACE).build();
     }
 

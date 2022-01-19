@@ -1,5 +1,7 @@
 package org.batfish.question.interfaceproperties;
 
+import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
+import static org.batfish.datamodel.InterfaceType.LOGICAL;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
@@ -10,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -26,6 +29,7 @@ import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NameInterfaceSpecifier;
 import org.batfish.specifier.NameNodeSpecifier;
+import org.batfish.specifier.NameRegexInterfaceSpecifier;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,19 +54,27 @@ public class InterfacePropertiesAnswererTest {
   public void getProperties() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
-    Interface iface1 = Interface.builder().setName("iface1").setOwner(conf1).build();
-    iface1.setDescription("desc desc desc");
-    iface1.setActive(false);
+    Interface.builder()
+        .setName("iface1")
+        .setOwner(conf1)
+        .setDescription("desc desc desc")
+        .setAdminUp(false)
+        .build();
+    Interface.builder().setName("iface2").setOwner(conf1).setDescription("blah blah blah").build();
+    Interface.builder()
+        .setName("iface3")
+        .setType(LOGICAL)
+        .setOwner(conf1)
+        .setDescription("desc3")
+        .build();
 
-    Interface iface2 = Interface.builder().setName("iface2").setOwner(conf1).build();
-    iface2.setDescription("blah blah blah");
-
-    conf1.getAllInterfaces().putAll(ImmutableMap.of("iface1", iface1, "iface2", iface2));
-
-    String property1 = InterfacePropertySpecifier.DESCRIPTION;
-    String property2 = InterfacePropertySpecifier.ACTIVE;
+    String propDescription = InterfacePropertySpecifier.DESCRIPTION;
+    String propActive = InterfacePropertySpecifier.ACTIVE;
+    String propAdminUp = InterfacePropertySpecifier.ADMIN_UP;
+    String propInactiveReason = InterfacePropertySpecifier.INACTIVE_REASON;
     InterfacePropertySpecifier propertySpecifier =
-        new InterfacePropertySpecifier(ImmutableSet.of(property1, property2));
+        new InterfacePropertySpecifier(
+            ImmutableSet.of(propDescription, propActive, propAdminUp, propInactiveReason));
 
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node1", conf1)).build();
@@ -72,28 +84,39 @@ public class InterfacePropertiesAnswererTest {
             propertySpecifier,
             ctxt,
             new NameNodeSpecifier("node1"),
-            new NameInterfaceSpecifier("iface1"),
+            new NameRegexInterfaceSpecifier(Pattern.compile("iface1|iface3")),
             new TableMetadata(
                     InterfacePropertiesAnswerer.createColumnMetadata(propertySpecifier),
                     (String) null)
                 .toColumnMap());
 
-    // we should have exactly one row1 with two properties; iface2 should have been filtered out
-    Row expectedRow =
+    // we should have exactly two rows with four properties; iface2 should have been filtered out
+    Row expectedRow1 =
         Row.builder()
             .put(InterfacePropertiesAnswerer.COL_INTERFACE, NodeInterfacePair.of("node1", "iface1"))
-            .put(property2, false)
-            .put(property1, "desc desc desc")
+            .put(propActive, false)
+            .put(propAdminUp, false)
+            .put(propDescription, "desc desc desc")
+            .put(propInactiveReason, ADMIN_DOWN.description())
+            .build();
+    Row expectedRow2 =
+        Row.builder()
+            .put(InterfacePropertiesAnswerer.COL_INTERFACE, NodeInterfacePair.of("node1", "iface3"))
+            .put(propActive, true)
+            .put(propAdminUp, true)
+            .put(propDescription, "desc3")
+            .put(propInactiveReason, "")
             .build();
 
-    assertThat(propertyRows, equalTo(ImmutableMultiset.of(expectedRow)));
+    assertThat(propertyRows, equalTo(ImmutableMultiset.of(expectedRow1, expectedRow2)));
   }
 
   @Test
   public void getPropertiesExcludeShutInterfaces() {
     Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
-    Interface active = Interface.builder().setName("active").setOwner(conf).setActive(true).build();
-    Interface shut = Interface.builder().setName("shut").setOwner(conf).setActive(false).build();
+    Interface active =
+        Interface.builder().setName("active").setOwner(conf).setAdminUp(true).build();
+    Interface shut = Interface.builder().setName("shut").setOwner(conf).setAdminUp(false).build();
     conf.getAllInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
 
     String property = InterfacePropertySpecifier.DESCRIPTION;

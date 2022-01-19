@@ -51,7 +51,7 @@ public final class DifferentialReachabilityAnswererTest {
             .setHostname(hostname)
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(node).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(node).setVrf(vrf).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(node).setVrf(vrf);
     ib.setName(i0Name).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     ib.setName(i1Name).setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24")).build();
     return node;
@@ -64,7 +64,7 @@ public final class DifferentialReachabilityAnswererTest {
     String i1Name = "i1";
 
     Configuration snapshotConfig = getResolveStartLocationsConfig(hostname, i0Name, i1Name);
-    snapshotConfig.getAllInterfaces().get(i0Name).setActive(false); // fail i0
+    snapshotConfig.getAllInterfaces().get(i0Name).adminDown(); // fail i0
 
     Configuration referenceConfig = getResolveStartLocationsConfig(hostname, i0Name, i1Name);
 

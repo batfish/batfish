@@ -608,7 +608,7 @@ public class VirtualRouterTest {
         .setLocalAs(2L)
         .build();
 
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder();
     ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")).setOwner(c1).setVrf(vrf1).build();
     ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/30")).setOwner(c2).setVrf(vrf2).build();
 

@@ -60,12 +60,10 @@ public class InterfaceWithConnectedIpsSpecifierTest {
             .setName("iface11")
             .setOwner(node1)
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-            .setActive(true)
             .build();
     Interface iface12 =
         Interface.builder()
             .setName("iface12")
-            .setActive(true)
             .setOwner(node1)
             .setAddress(ConcreteInterfaceAddress.parse("2.3.4.5/24"))
             .build();
@@ -75,7 +73,6 @@ public class InterfaceWithConnectedIpsSpecifierTest {
     Interface iface2 =
         Interface.builder()
             .setName("iface2")
-            .setActive(true)
             .setOwner(node2)
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.5/30"))
             .build();

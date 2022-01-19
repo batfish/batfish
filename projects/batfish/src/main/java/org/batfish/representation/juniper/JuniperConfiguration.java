@@ -1739,8 +1739,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (iface.getRedundantParentInterface() != null) {
       newIface.setChannelGroup(iface.getRedundantParentInterface());
     }
-
-    newIface.setActive(iface.getActive());
+    if (!iface.getActive()) {
+      newIface.adminDown();
+    }
     newIface.setBandwidth(iface.getBandwidth());
     if (iface.getMtu() != null) {
       newIface.setMtu(iface.getMtu());
@@ -1864,7 +1865,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setAddress(iface.getPrimaryAddress());
     }
     newIface.setAllAddresses(iface.getAllAddresses());
-    newIface.setActive(iface.getActive());
+    if (!iface.getActive()) {
+      newIface.adminDown();
+    }
     EthernetSwitching es = iface.getEthernetSwitching();
     if (_indirectAccessPorts.containsKey(name)) {
       newIface.setSwitchport(true);
