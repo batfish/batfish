@@ -981,9 +981,8 @@ public final class Interface extends ComparableStructure<String> {
    * Update interface type. Resets values for {@link #getBlacklisted()} and {@link #getLineUp()} to
    * defaults for {@code interfaceType}.
    *
-   * <p>Should only be called from constructor or test code.
+   * <p>Should only be called on init or during conversion.
    */
-  @VisibleForTesting
   public void updateInterfaceType(InterfaceType interfaceType) {
     _interfaceType = interfaceType;
     if (hasLineStatus()) {
@@ -1992,9 +1991,9 @@ public final class Interface extends ComparableStructure<String> {
 
   /**
    * Blacklist an interface because input data suggests it is down for maintenance, after which
-   * {@link #getActive()}, {@link #getLineUp()}, and {@link #getBlacklisted()} will return {@code
-   * false}. {@link #getInactiveReason()} will return {@link InactiveReason#BLACKLISTED} afterwards
-   * if {@link #getAdminUp()} was {@code true}.
+   * {@link #getActive()} and {@link #getLineUp()} will return {@code false}&#59; {@link
+   * #getBlacklisted()} will return {@code true}&#59; and {@link #getInactiveReason()} will return
+   * {@link InactiveReason#BLACKLISTED} if {@link #getAdminUp()} was {@code true}.
    *
    * <p>Should only be called after conversion.
    *
