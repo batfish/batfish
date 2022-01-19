@@ -7,6 +7,11 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+ri_class_of_service
+:
+   s_class_of_service
+;
+
 ri_common
 :
    apply
@@ -61,7 +66,6 @@ ri_null
    (
       BRIDGE_DOMAINS
       | CHASSIS
-      | CLASS_OF_SERVICE
       | EVENT_OPTIONS
       | PROVIDER_TUNNEL
       | SERVICES
@@ -214,6 +218,11 @@ ro_interface_routes
 ro_martians
 :
    MARTIANS null_filler
+;
+
+ro_maximum_prefixes
+:
+  MAXIMUM_PREFIXES null_filler
 ;
 
 ro_null
@@ -755,6 +764,7 @@ s_routing_options
       | ro_instance_import
       | ro_interface_routes
       | ro_martians
+      | ro_maximum_prefixes
       | ro_null
       | ro_resolution
       | ro_rib

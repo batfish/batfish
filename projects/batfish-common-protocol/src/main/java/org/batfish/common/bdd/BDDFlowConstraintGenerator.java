@@ -181,14 +181,14 @@ public final class BDDFlowConstraintGenerator {
   }
 
   @VisibleForTesting
-  static BDD isPrivateIp(IpSpaceToBDD ip) {
-    return BDDOps.orNull(
+  static BDD isPrivateIp(BDDOps ops, IpSpaceToBDD ip) {
+    return ops.or(
         ip.toBDD(PRIVATE_SUBNET_10), ip.toBDD(PRIVATE_SUBNET_172), ip.toBDD(PRIVATE_SUBNET_192));
   }
 
   @VisibleForTesting
-  static BDD isDocumentationIp(IpSpaceToBDD ip) {
-    return BDDOps.orNull(
+  static BDD isDocumentationIp(BDDOps ops, IpSpaceToBDD ip) {
+    return ops.or(
         ip.toBDD(RESERVED_DOCUMENTATION_192),
         ip.toBDD(RESERVED_DOCUMENTATION_198),
         ip.toBDD(RESERVED_DOCUMENTATION_203));
@@ -206,13 +206,13 @@ public final class BDDFlowConstraintGenerator {
   }
 
   private List<BDD> computeIpConstraints() {
-    BDD srcIpPrivate = isPrivateIp(_bddPacket.getSrcIpSpaceToBDD());
-    BDD dstIpPrivate = isPrivateIp(_bddPacket.getDstIpSpaceToBDD());
+    BDD srcIpPrivate = isPrivateIp(_bddOps, _bddPacket.getSrcIpSpaceToBDD());
+    BDD dstIpPrivate = isPrivateIp(_bddOps, _bddPacket.getDstIpSpaceToBDD());
 
     return ImmutableList.<BDD>builder()
         // 0. Try to not use documentation IPs if that is possible.
-        .add(isDocumentationIp(_bddPacket.getSrcIpSpaceToBDD()).not())
-        .add(isDocumentationIp(_bddPacket.getDstIpSpaceToBDD()).not())
+        .add(isDocumentationIp(_bddOps, _bddPacket.getSrcIpSpaceToBDD()).not())
+        .add(isDocumentationIp(_bddOps, _bddPacket.getDstIpSpaceToBDD()).not())
         // First, try to nudge src and dst IP apart. E.g., if one is private the other should be
         // public.
         .add(_bddOps.and(srcIpPrivate, dstIpPrivate.not()))

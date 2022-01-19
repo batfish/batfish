@@ -156,6 +156,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
@@ -351,6 +352,7 @@ import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
+import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -376,6 +378,7 @@ import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
+import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
@@ -417,11 +420,11 @@ public final class FlatJuniperGrammarTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
-    Flow.Builder fb = Flow.builder();
-    fb.setIngressNode("node");
-    fb.setSrcIp(Ip.parse(sourceAddress));
-    fb.setDstIp(Ip.parse(destinationAddress));
-    return fb.build();
+    return createFlow(Ip.parse(sourceAddress), Ip.parse(destinationAddress));
+  }
+
+  private static Flow createFlow(Ip src, Ip dst) {
+    return Flow.builder().setIngressNode("node").setSrcIp(src).setDstIp(dst).build();
   }
 
   private static Flow createFlow(IpProtocol protocol, int port) {
@@ -2563,6 +2566,20 @@ public final class FlatJuniperGrammarTest {
         config.getDefaultVrf().getOspfProcesses().get(DEFAULT_VRF_NAME).getAreas().containsKey(1L));
   }
 
+  /** Test that we warn on uknown IPs as interfaces */
+  @Test
+  public void testOspfUnknownInterfaceIp() throws IOException {
+    String hostname = "ospf-unknown-interface-ip";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname,
+            containsString("Could not find interface with ip address: 1.1.1.1")));
+  }
+
   @Test
   public void testOspfInterfaceDisable() {
     // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.
@@ -2843,19 +2860,28 @@ public final class FlatJuniperGrammarTest {
     String iface3 = "ge-0/0/3";
     assertThat(ifaces, hasKeys(iface0, iface1, iface2, iface3));
 
+    OspfInterfaceSettings iface0unit0 =
+        ifaces.get(iface0).getUnits().get(iface0 + ".0").getOspfSettings();
+    OspfInterfaceSettings iface1unit0 =
+        ifaces.get(iface1).getUnits().get(iface1 + ".0").getOspfSettings();
+    OspfInterfaceSettings iface2unit0 =
+        ifaces.get(iface2).getUnits().get(iface2 + ".0").getOspfSettings();
+    OspfInterfaceSettings iface3unit0 =
+        ifaces.get(iface3).getUnits().get(iface3 + ".0").getOspfSettings();
+
     // Confirm explicitly set hello and dead intervals show up in the VS model
     // Also confirm intervals that are not set show up as nulls in the VS model
-    assertThat(ifaces.get(iface0).getOspfDeadInterval(), nullValue());
-    assertThat(ifaces.get(iface0).getOspfHelloInterval(), equalTo(11));
+    assertThat(iface0unit0.getOspfDeadInterval(), nullValue());
+    assertThat(iface0unit0.getOspfHelloInterval(), equalTo(11));
 
-    assertThat(ifaces.get(iface1).getOspfDeadInterval(), equalTo(22));
-    assertThat(ifaces.get(iface1).getOspfHelloInterval(), equalTo(2));
+    assertThat(iface1unit0.getOspfDeadInterval(), equalTo(22));
+    assertThat(iface1unit0.getOspfHelloInterval(), equalTo(2));
 
-    assertThat(ifaces.get(iface2).getOspfDeadInterval(), equalTo(44));
-    assertThat(ifaces.get(iface2).getOspfHelloInterval(), nullValue());
+    assertThat(iface2unit0.getOspfDeadInterval(), equalTo(44));
+    assertThat(iface2unit0.getOspfHelloInterval(), nullValue());
 
-    assertThat(ifaces.get(iface3).getOspfDeadInterval(), nullValue());
-    assertThat(ifaces.get(iface3).getOspfHelloInterval(), nullValue());
+    // not added to OSPF
+    assertThat(iface3unit0, nullValue());
   }
 
   @Test
@@ -2980,6 +3006,34 @@ public final class FlatJuniperGrammarTest {
 
     // verify vlan assignment
     assertThat(irb0.getVlan(), equalTo(5));
+  }
+
+  @Test
+  public void testFirewallFilterDscp() {
+    String hostname = "firewall-filter-dscp";
+    Configuration c = parseConfig(hostname);
+
+    Flow.Builder flowBuilder = Flow.builder().setIngressNode(c.getHostname());
+
+    // Test custom alias
+    assertThat(
+        c, hasIpAccessList("FILTER1", accepts(flowBuilder.setDscp(0b001000).build(), null, c)));
+    assertThat(
+        c, hasIpAccessList("FILTER1", rejects(flowBuilder.setDscp(0b111111).build(), null, c)));
+
+    // Test builtin alias
+    assertThat(
+        c,
+        hasIpAccessList(
+            "FILTER2",
+            accepts(flowBuilder.setDscp(DscpUtil.defaultValue("cs1").get()).build(), null, c)));
+    assertThat(
+        c, hasIpAccessList("FILTER2", rejects(flowBuilder.setDscp(0b111111).build(), null, c)));
+
+    // Test constant value
+    assertThat(c, hasIpAccessList("FILTER3", accepts(flowBuilder.setDscp(3).build(), null, c)));
+    assertThat(
+        c, hasIpAccessList("FILTER3", rejects(flowBuilder.setDscp(0b111111).build(), null, c)));
   }
 
   @Test
@@ -3338,6 +3392,28 @@ public final class FlatJuniperGrammarTest {
                     IpsecPeerConfigMatchers.hasSourceInterface("ge-0/0/3.0"),
                     IpsecPeerConfigMatchers.hasLocalAddress(Ip.parse("198.51.100.2")),
                     IpsecPeerConfigMatchers.hasTunnelInterface(equalTo("st0.0"))))));
+  }
+
+  @Test
+  public void testAddress() {
+    Configuration c = parseConfig("firewall-address");
+
+    assertThat(c.getIpAccessLists(), hasKeys("FILTER"));
+    IpAccessList filter = c.getIpAccessLists().get("FILTER");
+    Ip allowed1 = Ip.parse("1.0.0.0");
+    Ip allowed2 = Ip.parse("2.0.0.0");
+    Ip rejected = Ip.parse("3.3.3.3");
+
+    // Both addresses permitted, same or different rules
+    assertThat(filter, accepts(createFlow(allowed1, allowed1), null, c));
+    assertThat(filter, accepts(createFlow(allowed2, allowed2), null, c));
+    assertThat(filter, accepts(createFlow(allowed1, allowed2), null, c));
+    // Allowed if EITHER is allowed.
+    assertThat(filter, accepts(createFlow(allowed1, rejected), null, c));
+    assertThat(filter, accepts(createFlow(rejected, allowed1), null, c));
+    assertThat(filter, accepts(createFlow(rejected, allowed2), null, c));
+    // Rejected if BOTH rejected
+    assertThat(filter, rejects(createFlow(rejected, rejected), null, c));
   }
 
   @Test
@@ -6047,6 +6123,7 @@ public final class FlatJuniperGrammarTest {
             .get("ge-0/0/0")
             .getUnits()
             .get("ge-0/0/0.0")
+            .getEffectiveOspfSettings()
             .getOspfNeighbors(),
         contains(new InterfaceOspfNeighbor(Ip.parse("1.0.0.1"))));
 
@@ -6066,6 +6143,7 @@ public final class FlatJuniperGrammarTest {
             .get("ge-0/0/1")
             .getUnits()
             .get("ge-0/0/1.0")
+            .getEffectiveOspfSettings()
             .getOspfNeighbors(),
         contains(neighbor));
   }
@@ -6260,24 +6338,63 @@ public final class FlatJuniperGrammarTest {
             "et-0/0/0.0", hasAllowedVlans(equalTo(IntegerSpace.of(Range.closed(1, 4094))))));
   }
 
-  /**
-   * Test that interfaces inherit OSPF properties from the virtual master interface inside a routing
-   * instance
-   */
+  /** Test that interfaces inherit OSPF settings inside a routing instance. */
   @Test
-  public void testOspfInterfaceAllInRoutingInstanceInheritance() {
+  public void testOspfInterfaceAll() {
     String hostname = "ospf-area-interface-all";
     Configuration c = parseConfig(hostname);
-    List<String> ifaces = ImmutableList.of("ge-0/0/0.0", "ge-0/0/1.0");
-    for (String iface : ifaces) {
-      assertThat(c, hasInterface(iface, hasOspfCost(equalTo(111))));
-      assertThat(
-          c.getAllInterfaces().get(iface).getOspfSettings().getNetworkType(),
-          equalTo(OspfNetworkType.POINT_TO_POINT));
-      assertThat(
-          c.getAllInterfaces().get(iface).getOspfSettings().getHelloInterval(), equalTo(222));
-      assertThat(c.getAllInterfaces().get(iface).getOspfSettings().getDeadInterval(), equalTo(333));
-    }
+
+    // ge-0/0/0.0 does not inherit from "all" (cost 1 is default for xe)
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(1))));
+
+    // ge-0/0/1.0 does not inherit from "all"
+    // has its own hello-interval
+    assertThat(c, hasInterface("ge-0/0/1.0", hasOspfCost(equalTo(1))));
+    assertThat(
+        c.getAllInterfaces().get("ge-0/0/1.0").getOspfSettings().getHelloInterval(), equalTo(20));
+
+    // ge-0/0/2.0 inherits from "all"
+    assertThat(c, hasInterface("ge-0/0/2.0", hasOspfCost(equalTo(111))));
+    assertThat(
+        c.getAllInterfaces().get("ge-0/0/2.0").getOspfSettings().getNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(
+        c.getAllInterfaces().get("ge-0/0/2.0").getOspfSettings().getHelloInterval(), equalTo(222));
+    assertThat(
+        c.getAllInterfaces().get("ge-0/0/2.0").getOspfSettings().getDeadInterval(), equalTo(333));
+
+    // ge-0/0/3.0 does not inherit from "all" (different routing instance)
+    assertThat(c, hasInterface("ge-0/0/3.0", hasOspfCost(equalTo(1))));
+  }
+
+  /** Test that using the physical interface in OSPF context maps things to unit 0 */
+  @Test
+  public void testOspfImplicitUnit0() {
+    String hostname = "ospf-implicit-unit0";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(110))));
+  }
+
+  @Test
+  public void testOspfAreaInterfaceAllDuplicateError() {
+    _thrown.expect(BatfishException.class);
+    _thrown.expect(
+        hasStackTrace(
+            allOf(
+                containsString("WillNotCommitException"),
+                containsString("Interface \"all\" assigned to multiple areas"))));
+    parseConfig("ospf-area-interface-all-duplicate-error");
+  }
+
+  @Test
+  public void testOspfAreaInterfaceDuplicateError() {
+    _thrown.expect(BatfishException.class);
+    _thrown.expect(
+        hasStackTrace(
+            allOf(
+                containsString("WillNotCommitException"),
+                containsString("Interface \"ge-0/0/0.0\" assigned to multiple areas"))));
+    parseConfig("ospf-area-interface-duplicate-error");
   }
 
   @Test
@@ -6456,5 +6573,62 @@ public final class FlatJuniperGrammarTest {
   public void testIgnoredProtocols() {
     // don't crash
     parseJuniperConfig("ignored-protocols");
+  }
+
+  @Test
+  public void testMaximumPrefixes() throws IOException {
+    String hostname = "maximum-prefixes";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning("configs/" + hostname, equalTo("Batfish does not limit maximum-prefixes")));
+  }
+
+  @Test
+  public void testIgnoredSystem() {
+    // don't crash
+    parseJuniperConfig("ignored-system");
+  }
+
+  @Test
+  public void testIgnoredClassOfService() {
+    // don't crash
+    parseJuniperConfig("ignored-class-of-service");
+  }
+
+  @Test
+  public void testClassOfServiceCodePointAliases() throws IOException {
+    String hostname = "class-of-service-code-point-aliases";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(filename).getParseWarnings(),
+        containsInAnyOrder(
+            hasComment(
+                "200000 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0."),
+            hasComment(
+                "1010101 is not a legal code-point. Must be of form xxxxxx, where x is 1 or 0.")));
+
+    assertThat(
+        ((JuniperConfiguration)
+                batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname))
+            .getMasterLogicalSystem()
+            .getDscpAliases(),
+        equalTo(ImmutableMap.of("my1", 3)));
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, CLASS_OF_SERVICE_CODE_POINT_ALIAS, "my1", contains(4)));
+
+    assertThat(ccae, hasNumReferrers(filename, CLASS_OF_SERVICE_CODE_POINT_ALIAS, "my1", 1));
   }
 }

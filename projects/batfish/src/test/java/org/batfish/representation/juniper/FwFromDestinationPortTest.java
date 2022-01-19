@@ -16,7 +16,7 @@ public class FwFromDestinationPortTest {
     assertEquals(
         from.toHeaderspace(),
         HeaderSpace.builder()
-            .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+            .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
             .setDstPorts(new SubRange(1, 2))
             .build());
   }

@@ -1,0 +1,14 @@
+#
+set system host-name ignored-class-of-service
+#
+# the following (and some other) commands are ignored
+# TODO: no definition/reference tracking is done for anything that follows class-of-service (e.g., interfaces)
+set class-of-service classifiers dscp match-dscp forwarding-class ef loss-priority low code-points ef
+set class-of-service drop-profiles red-low interpolate fill-level 75
+set class-of-service forwarding-classes queue 0 be
+set class-of-service restricted-queues forwarding-class be 0
+set class-of-service traffic-control-profiles bfin-cos-8q-100 scheduler-map bfin-cos-8q
+set class-of-service interfaces ge-0/0/7 unit 512 output-traffic-control-profile bfin-cos-8q-2
+set class-of-service routing-instances all classifiers exp match-exp
+set class-of-service rewrite-rules dscp mark-dscp forwarding-class q1 loss-priority low code-point cs2
+

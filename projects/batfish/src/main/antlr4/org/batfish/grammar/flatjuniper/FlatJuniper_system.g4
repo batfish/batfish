@@ -128,6 +128,7 @@ sy_null
       | COMPRESS_CONFIGURATION_FILES
       | DDOS_PROTECTION
       | DOMAIN_SEARCH
+      | DUMP_ON_PANIC
       | EXTENSIONS
       | INTERNET_OPTIONS
       | LICENSE
@@ -216,6 +217,7 @@ sysh_null
 :
    (
       ALLOW_DUPLICATES
+      | AUTHORIZATION
       | ANY
       | CHANGE_LOG
       | DAEMON

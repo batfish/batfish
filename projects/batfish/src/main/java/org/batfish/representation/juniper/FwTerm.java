@@ -9,9 +9,11 @@ import javax.annotation.Nullable;
 public final class FwTerm implements Serializable {
 
   enum Field {
+    ADDRESS,
     DESTINATION,
     DESTINATION_EXCEPT,
     DESTINATION_PORT,
+    DSCP,
     FRAGMENT_OFFSET,
     FRAGMENT_OFFSET_EXCEPT,
     ICMP_CODE,

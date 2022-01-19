@@ -133,7 +133,6 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
-import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -188,8 +187,8 @@ import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
-import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.Interface.VlanTaggingMode;
+import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -1242,11 +1241,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface vsIface,
       @Nullable OspfProcess proc,
       @Nullable Long areaNum) {
-    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
-
-    ospfSettings.setEnabled(!firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
-    ospfSettings.setPassive(vsIface.getOspfPassive());
-    Integer ospfCost = vsIface.getOspfCost();
+    org.batfish.datamodel.ospf.OspfInterfaceSettings.Builder ospfSettings =
+        org.batfish.datamodel.ospf.OspfInterfaceSettings.builder();
+    OspfInterfaceSettings vsOspfSettings = vsIface.getEffectiveOspfSettings();
+    if (vsOspfSettings == null) {
+      return;
+    }
+    ospfSettings.setEnabled(!firstNonNull(vsOspfSettings.getOspfDisable(), Boolean.FALSE));
+    ospfSettings.setPassive(vsOspfSettings.getOspfPassive());
+    Integer ospfCost = vsOspfSettings.getOspfCost();
     if (ospfCost == null && iface.isLoopback()) {
       ospfCost = 0;
     }
@@ -1255,19 +1258,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (proc != null) {
       ospfSettings.setProcess(proc.getProcessId());
     }
-    ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface));
-    ospfSettings.setHelloInterval(toOspfHelloInterval(vsIface));
+    ospfSettings.setDeadInterval(toOspfDeadInterval(vsOspfSettings));
+    ospfSettings.setHelloInterval(toOspfHelloInterval(vsOspfSettings));
     // TODO infer interface type based on physical interface: "the software
     // chooses the correct
     // interface type...you should never have to set the interface type" (see
     // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
-    ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceTypeOrDefault()));
+    ospfSettings.setNetworkType(toOspfNetworkType(vsOspfSettings.getOspfInterfaceTypeOrDefault()));
 
-    if (vsIface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
+    if (vsOspfSettings.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       // neighbors only for NBMA mode:
       // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/neighbor-edit-protocols-ospf.html
       ospfSettings.setNbmaNeighbors(
-          vsIface.getOspfNeighbors().stream()
+          vsOspfSettings.getOspfNeighbors().stream()
               .map(InterfaceOspfNeighbor::getIp)
               .collect(ImmutableSet.toImmutableSet()));
     }
@@ -1283,16 +1286,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * for more details.
    */
   @VisibleForTesting
-  static int toOspfDeadInterval(Interface iface) {
-    Integer deadInterval = iface.getOspfDeadInterval();
+  static int toOspfDeadInterval(OspfInterfaceSettings vsOspfSettings) {
+    Integer deadInterval = vsOspfSettings.getOspfDeadInterval();
     if (deadInterval != null) {
       return deadInterval;
     }
-    Integer helloInterval = iface.getOspfHelloInterval();
+    Integer helloInterval = vsOspfSettings.getOspfHelloInterval();
     if (helloInterval != null) {
       return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
-    if (iface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
+    if (vsOspfSettings.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_DEAD_INTERVAL;
     }
     return DEFAULT_DEAD_INTERVAL;
@@ -1305,12 +1308,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * for more details.
    */
   @VisibleForTesting
-  static int toOspfHelloInterval(Interface iface) {
-    Integer helloInterval = iface.getOspfHelloInterval();
+  static int toOspfHelloInterval(OspfInterfaceSettings vsOspfSettings) {
+    Integer helloInterval = vsOspfSettings.getOspfHelloInterval();
     if (helloInterval != null) {
       return helloInterval;
     }
-    if (iface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
+    if (vsOspfSettings.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_HELLO_INTERVAL;
     }
     return DEFAULT_HELLO_INTERVAL;
@@ -1494,10 +1497,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface iface,
       String vrfName) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces(vrfName).get(interfaceName);
-    Ip ospfArea = iface.getOspfArea();
-    if (ospfArea == null) {
+    OspfInterfaceSettings ospfInterfaceSettings = iface.getEffectiveOspfSettings();
+    if (ospfInterfaceSettings == null) {
       return;
     }
+    Ip ospfArea = ospfInterfaceSettings.getOspfArea();
     if (newIface.getConcreteAddress() == null) {
       _w.redFlag(
           String.format(
@@ -1743,7 +1747,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setMtu(iface.getMtu());
     }
     newIface.setNativeVlan(iface.getNativeVlan());
-    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
+    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance().getName()));
     return newIface;
   }
 
@@ -1771,7 +1775,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setMtu(mtu);
     }
     newIface.setVrrpGroups(convertVrrpGroups(iface.getName(), iface.getVrrpGroups()));
-    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
+    newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance().getName()));
     newIface.setAdditionalArpIps(
         AclIpSpace.union(
             iface.getAdditionalArpIps().stream().map(Ip::toIpSpace).collect(Collectors.toList())));
@@ -1995,7 +1999,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   @Nullable
-  private OspfNetworkType toOspfNetworkType(Interface.OspfInterfaceType type) {
+  private OspfNetworkType toOspfNetworkType(OspfInterfaceSettings.OspfInterfaceType type) {
     switch (type) {
       case BROADCAST:
         return OspfNetworkType.BROADCAST;
@@ -2029,7 +2033,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(name))
             .map(Zone::getName)
             .orElse(null);
-    String routingInstance = iface.getRoutingInstance();
+    String routingInstance = iface.getRoutingInstance().getName();
 
     List<NatRuleSet> ruleSets =
         orderedRuleSetList.stream()
@@ -2224,7 +2228,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(ifaceName))
             .map(Zone::getName)
             .orElse(null);
-    String routingInstance = iface.getRoutingInstance();
+    String routingInstance = iface.getRoutingInstance().getName();
 
     /*
      * Precedence of rule set is by fromLocation: interface > zone > routing instance
@@ -3666,6 +3670,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.BGP_GROUP,
         JuniperStructureUsage.BGP_ALLOW,
         JuniperStructureUsage.BGP_NEIGHBOR);
+    markConcreteStructure(
+        JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS,
+        JuniperStructureUsage.FIREWALL_FILTER_DSCP);
     markConcreteStructure(
         JuniperStructureType.COMMUNITY,
         JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY,

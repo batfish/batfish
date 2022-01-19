@@ -300,6 +300,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1844,6 +1845,8 @@ public final class CiscoNxosGrammarTest {
                 new org.batfish.datamodel.tracking.TrackInterface("port-channel1"),
                 "100",
                 TrackRoute.of(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(HMM), "v1"),
+                "101",
+                TrackTrue.instance(),
                 "200",
                 TrackRoute.of(Prefix.strict("192.0.2.2/32"), ImmutableSet.of(), DEFAULT_VRF_NAME),
                 "500",
@@ -1858,14 +1861,15 @@ public final class CiscoNxosGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    assertThat(c.getTrackingGroups(), anEmptyMap());
+    assertThat(c.getTrackingGroups(), hasKeys("1", "500"));
     assertThat(
         ccae,
         hasRedFlagWarning(
             hostname,
             containsString(
                 String.format(
-                    "Interface track mode %s is not yet supported and will be ignored.",
+                    "Interface track mode %s is not yet supported and will be treated as always"
+                        + " succeeding.",
                     Mode.IP_ROUTING))));
     assertThat(
         ccae,
@@ -1873,7 +1877,8 @@ public final class CiscoNxosGrammarTest {
             hostname,
             containsString(
                 String.format(
-                    "Interface track mode %s is not yet supported and will be ignored.",
+                    "Interface track mode %s is not yet supported and will be treated as always"
+                        + " succeeding.",
                     Mode.IPV6_ROUTING))));
   }
 
@@ -2855,6 +2860,7 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/13",
             "Ethernet1/14",
             "Ethernet1/15",
+            "Ethernet1/16",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -2926,26 +2932,32 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/5");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
-      assertThat(iface.getNativeVlan(), equalTo(2));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 5))));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), nullValue());
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/6");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
-      assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
+      assertThat(iface.getNativeVlan(), equalTo(2));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 5))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/7");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4))));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/8");
+      assertThat(iface, isActive());
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
+      assertThat(iface.getNativeVlan(), equalTo(1));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4))));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/9");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
@@ -2954,46 +2966,46 @@ public final class CiscoNxosGrammarTest {
           equalTo(IntegerSpace.unionOf(Range.singleton(1), Range.closed(3, 5))));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/9");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/10");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/10");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/11");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/11");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/12");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/12");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/13");
       assertThat(iface, isActive());
       assertThat(
           iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.DOT1Q_TUNNEL));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/13");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/14");
       assertThat(iface, isActive());
       assertThat(
           iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.FEX_FABRIC));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/14");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/15");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 5))));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/15");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/16");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.MONITOR));
     }
@@ -3024,6 +3036,7 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/13",
             "Ethernet1/14",
             "Ethernet1/15",
+            "Ethernet1/16",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -3094,26 +3107,32 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/5");
       assertThat(iface.getShutdown(), nullValue());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
-      assertThat(iface.getNativeVlan(), equalTo(2));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(25));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/6");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
-      assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
+      assertThat(iface.getNativeVlan(), equalTo(2));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/7");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4))));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/8");
+      assertThat(iface.getShutdown(), nullValue());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getNativeVlan(), equalTo(1));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4))));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/9");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
@@ -3122,44 +3141,44 @@ public final class CiscoNxosGrammarTest {
           equalTo(IntegerSpace.unionOf(Range.singleton(1), Range.closed(3, 3967))));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/9");
+      Interface iface = vc.getInterfaces().get("Ethernet1/10");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/10");
+      Interface iface = vc.getInterfaces().get("Ethernet1/11");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/11");
+      Interface iface = vc.getInterfaces().get("Ethernet1/12");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/12");
+      Interface iface = vc.getInterfaces().get("Ethernet1/13");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.DOT1Q_TUNNEL));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/13");
+      Interface iface = vc.getInterfaces().get("Ethernet1/14");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.FEX_FABRIC));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/14");
+      Interface iface = vc.getInterfaces().get("Ethernet1/15");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/15");
+      Interface iface = vc.getInterfaces().get("Ethernet1/16");
       assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.MONITOR));
       assertTrue(iface.getSwitchportMonitor());

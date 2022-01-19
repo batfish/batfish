@@ -228,6 +228,7 @@ import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
@@ -1315,18 +1316,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .filter(_tracks::containsKey)
             .collect(ImmutableSet.toImmutableSet());
     _tracks.forEach(
-        (num, track) ->
-            toTrackMethod(track, _w)
-                .ifPresent(
-                    m -> {
-                      _c.getTrackingGroups().put(num.toString(), m);
-                      if (negatedTracks.contains(num)) {
-                        _c.getTrackingGroups()
-                            .put(
-                                generatedNegatedTrackMethodId(num.toString()),
-                                TrackMethodReference.negated(num.toString()));
-                      }
-                    }));
+        (num, track) -> {
+          _c.getTrackingGroups().put(num.toString(), toTrackMethod(track, _w));
+          if (negatedTracks.contains(num)) {
+            _c.getTrackingGroups()
+                .put(
+                    generatedNegatedTrackMethodId(num.toString()),
+                    TrackMethodReference.negated(num.toString()));
+          }
+        });
   }
 
   private void convertIpPrefixLists() {
@@ -1957,28 +1955,27 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
-  private static @Nonnull Optional<org.batfish.datamodel.tracking.TrackMethod> toTrackMethod(
+  private static @Nonnull org.batfish.datamodel.tracking.TrackMethod toTrackMethod(
       @Nonnull Track track, @Nonnull Warnings w) {
     if (track instanceof TrackInterface) {
       TrackInterface trackInterface = (TrackInterface) track;
       if (trackInterface.getMode() == Mode.LINE_PROTOCOL) {
-        return Optional.of(
-            new org.batfish.datamodel.tracking.TrackInterface(trackInterface.getInterface()));
+        return new org.batfish.datamodel.tracking.TrackInterface(trackInterface.getInterface());
       }
       w.redFlag(
           String.format(
-              "Interface track mode %s is not yet supported and will be ignored.",
+              "Interface track mode %s is not yet supported and will be treated as always"
+                  + " succeeding.",
               trackInterface.getMode()));
     } else if (track instanceof TrackIpRoute) {
       TrackIpRoute trackIpRoute = (TrackIpRoute) track;
-      return Optional.of(
-          TrackRoute.of(
-              trackIpRoute.getPrefix(),
-              trackIpRoute.getHmm() ? ImmutableSet.of(RoutingProtocol.HMM) : ImmutableSet.of(),
-              firstNonNull(trackIpRoute.getVrf(), DEFAULT_VRF_NAME)));
+      return TrackRoute.of(
+          trackIpRoute.getPrefix(),
+          trackIpRoute.getHmm() ? ImmutableSet.of(RoutingProtocol.HMM) : ImmutableSet.of(),
+          firstNonNull(trackIpRoute.getVrf(), DEFAULT_VRF_NAME));
     }
-    // Warnings for unsupported track methods should be handled by parse warnings
-    return Optional.empty();
+    // unhandled cases
+    return TrackTrue.instance();
   }
 
   private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(
@@ -2106,7 +2103,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setSwitchportMode(switchportMode.toSwitchportMode());
     switch (switchportMode) {
       case ACCESS:
-        newIfaceBuilder.setAccessVlan(iface.getAccessVlan());
+        Integer accessVlan = iface.getAccessVlan();
+        if (accessVlan != null && _vlans.containsKey(accessVlan)) {
+          newIfaceBuilder.setAccessVlan(accessVlan);
+        }
         break;
 
       case NONE:

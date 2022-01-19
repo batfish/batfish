@@ -319,7 +319,7 @@ class PacketPolicyToBdd {
       BDDPacket bddPacket = _ipAccessListToBdd.getBDDPacket();
       IpSpaceToBDD dst = bddPacket.getDstIpSpaceToBDD();
       BDDOps ops = new BDDOps(bddPacket.getFactory());
-      return ops.orAll(
+      return ops.or(
           expr.getInterfaceNames().stream()
               .map(_ipsRoutedOutInterfaces::getIpsRoutedOutInterface)
               .map(dst::visit)

@@ -3,6 +3,8 @@
 version 7.0(3)I7(6) Bios:version 07.65
 switchname nxos_interface_show_all_2
 !
+vlan 17
+!
 interface Ethernet1/2
   lacp port-priority 32768
   lacp rate normal

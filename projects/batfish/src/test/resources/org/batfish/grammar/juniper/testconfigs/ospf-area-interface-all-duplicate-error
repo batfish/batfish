@@ -1,0 +1,6 @@
+#
+set system host-name ospf-area-interface-all-duplicate-error
+#
+set protocols ospf area 0 interface all
+set protocols ospf area 1 interface all
+#

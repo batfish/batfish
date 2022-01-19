@@ -1,0 +1,16 @@
+#
+set system host-name ospf-implicit-unit0
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/31
+#
+# This command puts ge-0/0/0.0 into the default routing instance
+# unit '0' does not need to be explicit
+set protocols ospf area 0 interface ge-0/0/0 metric 110
+#
+#root# show protocols ospf
+#area 0.0.0.0 {
+#    interface ge-0/0/0.0 {
+#        metric 110;
+#    }
+#}
+

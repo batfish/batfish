@@ -28,9 +28,9 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Key;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -96,7 +96,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             String iface,
             @Nullable String inIface,
             @Nullable NodeInterfacePair lastHop) {
-          return _pkt.getFactory().one();
+          return _factory.one();
         }
 
         @Nonnull
@@ -106,11 +106,12 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             String iface,
             @Nullable String inIface,
             @Nullable NodeInterfacePair lastHop) {
-          return _pkt.getFactory().one();
+          return _factory.one();
         }
       };
 
   private final BDDPacket _pkt = new BDDPacket();
+  private final BDDFactory _factory = _pkt.getFactory();
   private final HeaderSpaceToBDD _toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
 
   private LastHopOutgoingInterfaceManager _lastHopMgr;
@@ -327,14 +328,14 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
     Prefix destPrefix = Prefix.parse("1.0.0.0/8");
     BDD tcp = _pkt.getIpProtocol().value(IpProtocol.TCP);
     BDD outBdd =
-        BDDOps.andNull(
+        _factory.andAll(
             dstBdd(destPrefix), // dst IP constraint
             srcBdd(sourcePrefix),
             dstPortBdd(1),
             srcPortBdd(2),
             tcp,
             // everything below will be erased
-            _pkt.getFactory().ithVar(0), // unallocated variable
+            _factory.ithVar(0), // unallocated variable
             _lastHopMgr.getLastHopOutgoingInterfaceBdd(R1, R1I1, FW, FWI1),
             _fwSrcMgr.getSourceInterfaceBDD(FWI1),
             _pkt.getTcpCwr(),
@@ -342,7 +343,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             _pkt.getEcn().value(0));
 
     BDD sessionFlows =
-        BDDOps.andNull(srcBdd(destPrefix), dstBdd(sourcePrefix), dstPortBdd(2), srcPortBdd(1), tcp);
+        _factory.andAll(
+            srcBdd(destPrefix), dstBdd(sourcePrefix), dstPortBdd(2), srcPortBdd(1), tcp);
 
     BDDReachabilityAnalysisSessionFactory sessionFactory =
         new BDDReachabilityAnalysisSessionFactory(
@@ -404,7 +406,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     BDDReverseTransformationRanges transformationRanges =
         new MockBDDReverseTransformationRanges(
-            _pkt.getFactory().zero(),
+            _factory.zero(),
             ImmutableMap.of(
                 // incoming transformation ranges
                 new Key(FW, FWI1, INCOMING, FWI1, NEXT_HOP_R1I1),
@@ -651,7 +653,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     BDDReverseTransformationRanges transformationRanges =
         new MockBDDReverseTransformationRanges(
-            _pkt.getFactory().zero(),
+            _factory.zero(),
             ImmutableMap.of(
                 // incoming transformation ranges
                 new Key(FW, FWI1, INCOMING, FWI1, NEXT_HOP_R1I1),

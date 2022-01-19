@@ -309,10 +309,17 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParsePort_invalid() {
+  public void testParsePort_invalid_max() {
     _thrown.expect(ParserRuntimeException.class);
     _thrown.expectMessage("Invalid port number");
     ParserUtils.getAst(getRunner().run("tcp/808080"));
+  }
+
+  @Test
+  public void testParsePort_invalid_min() {
+    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expectMessage("Invalid port number");
+    ParserUtils.getAst(getRunner().run("tcp/0"));
   }
 
   @Test
@@ -342,6 +349,13 @@ public class ParserAppTest {
     _thrown.expect(ParserRuntimeException.class);
     _thrown.expectMessage("Invalid port range");
     ParserUtils.getAst(getRunner().run("tcp/82 - 80"));
+  }
+
+  @Test
+  public void testParsePortRange_invalid4() {
+    _thrown.expect(ParserRuntimeException.class);
+    _thrown.expectMessage("Invalid port number: 0");
+    ParserUtils.getAst(getRunner().run("tcp/0 - 80"));
   }
 
   @Test

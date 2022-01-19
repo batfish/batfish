@@ -3,12 +3,14 @@ package org.batfish.job;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTrack;
 import static org.batfish.job.ConvertConfigurationJob.finalizeConfiguration;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -37,11 +39,14 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.job.ConvertConfigurationJob.CollectIpSpaceReferences;
 import org.junit.Rule;
@@ -271,5 +276,62 @@ public final class ConvertConfigurationJobTest {
             hasText(
                 "Removing invalid static route on node 'foo' with undefined next hop vrf"
                     + " 'missing'")));
+  }
+
+  @Test
+  public void testRemoveInvalidTrackReferences() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("foo")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+    StaticRoute srMissing =
+        StaticRoute.builder()
+            .setNextHop(NextHopDiscard.instance())
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .setTrack("missing")
+            .build();
+    StaticRoute srPresent =
+        StaticRoute.builder()
+            .setNextHop(NextHopDiscard.instance())
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .setTrack("present")
+            .build();
+    HsrpGroup hsrpGroup =
+        HsrpGroup.builder()
+            .setGroupNumber(1)
+            .setTrackActions(
+                ImmutableSortedMap.of(
+                    "missing", new DecrementPriority(1), "present", new DecrementPriority(1)))
+            .build();
+    Interface.builder()
+        .setName("i1")
+        .setVrf(v)
+        .setOwner(c)
+        .setHsrpGroups(ImmutableMap.of(1, hsrpGroup))
+        .build();
+    v.setStaticRoutes(ImmutableSortedSet.of(srMissing, srPresent));
+    c.getTrackingGroups().put("present", TrackTrue.instance());
+
+    Warnings w = new Warnings(false, true, false);
+    finalizeConfiguration(c, w);
+
+    assertThat(
+        c.getAllInterfaces().get("i1").getHsrpGroups().get(1).getTrackActions(),
+        hasKeys("present"));
+    assertThat(v.getStaticRoutes(), containsInAnyOrder(hasTrack(nullValue()), hasTrack("present")));
+
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText("Removing reference to undefined track 'missing' in HSRP group 1 on 'foo[i1]'"),
+            hasText(
+                "Removing reference to undefined track 'missing' on static route for prefix"
+                    + " 0.0.0.0/0 in vrf 'default'")));
   }
 }

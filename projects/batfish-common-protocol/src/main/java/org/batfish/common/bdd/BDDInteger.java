@@ -394,11 +394,7 @@ public class BDDInteger {
         _hasVariablesOnly,
         "getVars can only be called on a BDDInteger with hasVariablesOnly() true");
     if (_vars == null) {
-      _vars =
-          _bitvec.length == 0
-              ? _factory.one() // empty set
-              : BDDOps.andNull(_bitvec);
-      assert _vars != null;
+      _vars = _factory.andAll(_bitvec);
     }
     return _vars;
   }

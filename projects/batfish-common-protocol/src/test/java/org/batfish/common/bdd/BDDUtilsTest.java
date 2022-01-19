@@ -1,6 +1,5 @@
 package org.batfish.common.bdd;
 
-import static org.batfish.common.bdd.BDDOps.andNull;
 import static org.batfish.common.bdd.BDDUtils.swap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -45,17 +44,19 @@ public class BDDUtilsTest {
     Ip ip2 = Ip.parse("2.2.2.2");
 
     BDD orig =
-        andNull(
-            dstIp.value(ip1.asLong()),
-            dstPort.value(5),
-            srcIp.value(ip2.asLong()),
-            srcPort.value(7));
+        pkt.getFactory()
+            .andAll(
+                dstIp.value(ip1.asLong()),
+                dstPort.value(5),
+                srcIp.value(ip2.asLong()),
+                srcPort.value(7));
     BDD swapped =
-        andNull(
-            srcIp.value(ip1.asLong()),
-            srcPort.value(5),
-            dstIp.value(ip2.asLong()),
-            dstPort.value(7));
+        pkt.getFactory()
+            .andAll(
+                srcIp.value(ip1.asLong()),
+                srcPort.value(5),
+                dstIp.value(ip2.asLong()),
+                dstPort.value(7));
     assertThat(swap(orig, dstIp, srcIp, dstPort, srcPort), equalTo(swapped));
   }
 }

@@ -1,6 +1,5 @@
 package org.batfish.common.bdd;
 
-import static org.batfish.common.bdd.BDDOps.orNull;
 import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
@@ -40,7 +39,8 @@ public class BDDSourceManagerTest {
   private static final Set<String> IFACES_1_2 = ImmutableSet.of(IFACE1, IFACE2);
   private static final Set<String> ALL_IFACES = ImmutableSet.of(IFACE1, IFACE2, IFACE3, IFACE4);
 
-  private BDDPacket _pkt = new BDDPacket();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDDOps _ops = new BDDOps(_pkt.getFactory());
 
   @Test
   public void test() {
@@ -57,7 +57,7 @@ public class BDDSourceManagerTest {
   public void testSane() {
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(_pkt, IFACES_1_2);
     BDD noSource =
-        orNull(
+        _ops.or(
                 mgr.getOriginatingFromDeviceBDD(),
                 mgr.getSourceInterfaceBDD(IFACE1),
                 mgr.getSourceInterfaceBDD(IFACE2))
