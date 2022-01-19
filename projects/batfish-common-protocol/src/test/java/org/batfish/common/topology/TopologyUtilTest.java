@@ -851,16 +851,16 @@ public final class TopologyUtilTest {
     _ib.setOwner(n2).setVrf(v2);
     _ib.setDependencies(ImmutableList.of()).setEncapsulationVlan(null);
     Interface vlanA = _ib.setName(iaName).build();
-    vlanA.setInterfaceType(InterfaceType.VLAN);
+    vlanA.updateInterfaceType(InterfaceType.VLAN);
     vlanA.setVlan(iaVlan);
     Interface vlanB = _ib.setName(ibName).build();
-    vlanB.setInterfaceType(InterfaceType.VLAN);
+    vlanB.updateInterfaceType(InterfaceType.VLAN);
     vlanB.setVlan(ibVlan);
     Interface vlanC = _ib.setName(icName).build();
-    vlanC.setInterfaceType(InterfaceType.VLAN);
+    vlanC.updateInterfaceType(InterfaceType.VLAN);
     vlanC.setVlan(icVlan);
     Interface vlanD = _ib.setName(idName).build();
-    vlanD.setInterfaceType(InterfaceType.VLAN);
+    vlanD.updateInterfaceType(InterfaceType.VLAN);
     vlanD.setVlan(null);
     _ib.setName(iTrunkParentName).build();
     Interface trunk =

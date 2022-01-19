@@ -4,7 +4,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
+import static org.batfish.datamodel.InactiveReason.BLACKLISTED;
 import static org.batfish.datamodel.InactiveReason.LINE_DOWN;
+import static org.batfish.datamodel.InactiveReason.PHYSICAL_NEIGHBOR_DOWN;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -66,7 +68,7 @@ public final class Interface extends ComparableStructure<String> {
     private IpAccessList _incomingFilter;
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
-    private transient @Nullable Boolean _lineUp;
+    private @Nullable Boolean _lineUp;
     private @Nullable Integer _mlagId;
     private @Nullable Integer _mtu;
     private @Nullable String _name;
@@ -596,6 +598,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_ALLOWED_VLANS = "allowedVlans";
   private static final String PROP_AUTOSTATE = "autostate";
   private static final String PROP_BANDWIDTH = "bandwidth";
+  private static final String PROP_BLACKLISTED = "blacklisted";
   private static final String PROP_CHANNEL_GROUP = "channelGroup";
   private static final String PROP_CHANNEL_GROUP_MEMBERS = "channelGroupMembers";
   private static final String PROP_CRYPTO_MAP = "cryptoMap";
@@ -879,6 +882,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _autoState;
   @Nullable private Double _bandwidth;
+  private @Nullable Boolean _blacklisted;
   private String _channelGroup;
   private SortedSet<String> _channelGroupMembers;
   private String _cryptoMap;
@@ -964,16 +968,31 @@ public final class Interface extends ComparableStructure<String> {
     _dependencies = ImmutableSet.of();
     _dhcpRelayAddresses = ImmutableList.of();
     _hsrpGroups = ImmutableSortedMap.of();
-    _interfaceType = interfaceType;
-    if (hasLineStatus()) {
-      _lineUp = true;
-    }
+    updateInterfaceType(interfaceType);
     _mtu = DEFAULT_MTU;
     _owner = owner;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = ImmutableSortedMap.of();
+  }
+
+  /**
+   * Update interface type. Resets values for {@link #getBlacklisted()} and {@link #getLineUp()} to
+   * defaults for {@code interfaceType}.
+   *
+   * <p>Should only be called from constructor or test code.
+   */
+  @VisibleForTesting
+  public void updateInterfaceType(InterfaceType interfaceType) {
+    _interfaceType = interfaceType;
+    if (hasLineStatus()) {
+      _lineUp = true;
+      _blacklisted = false;
+    } else {
+      _lineUp = null;
+      _blacklisted = null;
+    }
   }
 
   // TODO: add missing fields, clean up, implement hashCode
@@ -1162,6 +1181,11 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable
   public Double getBandwidth() {
     return _bandwidth;
+  }
+
+  @JsonProperty(PROP_BLACKLISTED)
+  public @Nullable Boolean getBlacklisted() {
+    return _blacklisted;
   }
 
   @JsonProperty(PROP_LINE_UP)
@@ -1627,6 +1651,11 @@ public final class Interface extends ComparableStructure<String> {
     _bandwidth = bandwidth;
   }
 
+  @JsonProperty(PROP_BLACKLISTED)
+  private void setBlacklisted(@Nullable Boolean blacklisted) {
+    _blacklisted = blacklisted;
+  }
+
   @JsonProperty(PROP_CHANNEL_GROUP)
   public void setChannelGroup(String channelGroup) {
     _channelGroup = channelGroup;
@@ -1736,7 +1765,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_INTERFACE_TYPE)
-  public void setInterfaceType(InterfaceType it) {
+  private void setInterfaceType(InterfaceType it) {
     _interfaceType = it;
   }
 
@@ -1955,19 +1984,47 @@ public final class Interface extends ComparableStructure<String> {
    */
   public void adminDown() {
     checkState(_adminUp, "Cannot administratively disable an interface that is already admin down");
+    checkState(_active, "Cannot admin down an inactive interface");
     _adminUp = false;
     _active = false;
     _inactiveReason = ADMIN_DOWN;
   }
 
   /**
-   * Nark this interface as disconnected, after which {@link #getActive()} and {@link #getLineUp()}
+   * Blacklist an interface because input data suggests it is down for maintenance, after which
+   * {@link #getActive()}, {@link #getLineUp()}, and {@link #getBlacklisted()} will return {@code
+   * false}. {@link #getInactiveReason()} will return {@link InactiveReason#BLACKLISTED} afterwards
+   * if {@link #getAdminUp()} was {@code true}.
+   *
+   * <p>Should only be called after conversion.
+   *
+   * @throws IllegalStateException if this interface is already blacklisted, is already line down,
+   *     or not of a type that has line status.
+   */
+  public void blacklist() {
+    checkState(
+        hasLineStatus(),
+        "Cannot blacklist an interface of type '%s' that has no line status",
+        _interfaceType);
+    checkState(!_blacklisted, "Cannot blacklist an interface that is already blacklisted");
+    checkState(_lineUp, "Cannot blacklist an interface that is already line down");
+    _active = false;
+    _blacklisted = true;
+    _lineUp = false;
+    if (_adminUp) {
+      _inactiveReason = BLACKLISTED;
+    }
+  }
+
+  /**
+   * Mark this interface as disconnected, after which {@link #getActive()} and {@link #getLineUp()}
    * will return {@code false}. Set inactive reason to {@link InactiveReason#LINE_DOWN} if this
    * interface was not already inactive.
    *
    * <p>Should only be called after conversion.
    *
-   * @throws IllegalStateException if this interface is already disconnected.
+   * @throws IllegalStateException if this interface is already disconnected, or not of a type that
+   *     has line status.
    */
   public void disconnect() {
     checkState(
@@ -1989,23 +2046,34 @@ public final class Interface extends ComparableStructure<String> {
    * <p>Calling with {@link InactiveReason#ADMIN_DOWN} is equivalent to calling {@link
    * #adminDown()}.
    *
+   * <p>Calling with {@link InactiveReason#BLACKLISTED} is equivalent to calling {@link
+   * #blacklist()}.
+   *
    * <p>Calling with {@link InactiveReason#LINE_DOWN} is equivalent to calling {@link
    * #disconnect()}.
    *
    * <p>Should only be called after conversion.
    *
-   * @throws IllegalStateException if this interface is already inactive.
+   * @throws IllegalStateException in default cases not enumerated above if interface is already
+   *     inactive. For cases enumerated above, see respective javadocs.
    */
   public void deactivate(InactiveReason inactiveReason) {
-    checkState(_active, "Cannot deactivate an inactive interface");
     switch (inactiveReason) {
       case ADMIN_DOWN:
         adminDown();
         break;
+      case BLACKLISTED:
+        blacklist();
+        break;
       case LINE_DOWN:
         disconnect();
         break;
+      case PHYSICAL_NEIGHBOR_DOWN:
+        disconnect();
+        _inactiveReason = PHYSICAL_NEIGHBOR_DOWN;
+        break;
       default:
+        checkState(_active, "Cannot deactivate an inactive interface");
         _active = false;
         _inactiveReason = inactiveReason;
         break;

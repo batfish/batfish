@@ -68,6 +68,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsAdminUp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsAutoState;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsBlacklisted;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsLineUp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
@@ -552,6 +553,28 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> isAdminUp(
       @Nonnull Matcher<? super Boolean> subMatcher) {
     return new IsAdminUp(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface's blacklisted flag is true. */
+  public static @Nonnull Matcher<Interface> isBlacklisted() {
+    return new IsBlacklisted(equalTo(true));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided blacklisted flag matches the interface's
+   * blacklisted flag.
+   */
+  public static @Nonnull Matcher<Interface> isBlacklisted(boolean expectedBlacklisted) {
+    return new IsBlacklisted(equalTo(expectedBlacklisted));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * blacklisted flag.
+   */
+  public static @Nonnull Matcher<Interface> isBlacklisted(
+      @Nonnull Matcher<? super Boolean> subMatcher) {
+    return new IsBlacklisted(subMatcher);
   }
 
   /** Provides a matcher that matches if the interface's lineUp flag is true. */

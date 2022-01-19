@@ -549,6 +549,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class IsBlacklisted extends FeatureMatcher<Interface, Boolean> {
+    IsBlacklisted(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with lineUp:", "lineUp");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getBlacklisted();
+    }
+  }
+
   static final class IsLineUp extends FeatureMatcher<Interface, Boolean> {
     IsLineUp(@Nonnull Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "an Interface with lineUp:", "lineUp");

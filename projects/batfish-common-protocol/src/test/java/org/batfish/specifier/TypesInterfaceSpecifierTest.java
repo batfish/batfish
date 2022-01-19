@@ -45,31 +45,31 @@ public class TypesInterfaceSpecifierTest {
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf);
 
     AGGREGATED = ib.build();
-    AGGREGATED.setInterfaceType(InterfaceType.AGGREGATED);
+    AGGREGATED.updateInterfaceType(InterfaceType.AGGREGATED);
 
     LOOPBACK = ib.build();
-    LOOPBACK.setInterfaceType(InterfaceType.LOOPBACK);
+    LOOPBACK.updateInterfaceType(InterfaceType.LOOPBACK);
 
     NULL = ib.build();
-    NULL.setInterfaceType(InterfaceType.NULL);
+    NULL.updateInterfaceType(InterfaceType.NULL);
 
     PHYSICAL = ib.build();
-    PHYSICAL.setInterfaceType(InterfaceType.PHYSICAL);
+    PHYSICAL.updateInterfaceType(InterfaceType.PHYSICAL);
 
     REDUNDANT = ib.build();
-    REDUNDANT.setInterfaceType(InterfaceType.REDUNDANT);
+    REDUNDANT.updateInterfaceType(InterfaceType.REDUNDANT);
 
     TUNNEL = ib.build();
-    TUNNEL.setInterfaceType(InterfaceType.TUNNEL);
+    TUNNEL.updateInterfaceType(InterfaceType.TUNNEL);
 
     UNKNOWN = ib.build();
-    UNKNOWN.setInterfaceType(InterfaceType.UNKNOWN);
+    UNKNOWN.updateInterfaceType(InterfaceType.UNKNOWN);
 
     VLAN = ib.build();
-    VLAN.setInterfaceType(InterfaceType.VLAN);
+    VLAN.updateInterfaceType(InterfaceType.VLAN);
 
     VPN = ib.build();
-    VPN.setInterfaceType(InterfaceType.VPN);
+    VPN.updateInterfaceType(InterfaceType.VPN);
 
     CTXT =
         MockSpecifierContext.builder()

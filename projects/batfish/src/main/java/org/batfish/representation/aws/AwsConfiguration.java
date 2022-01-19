@@ -357,7 +357,7 @@ public class AwsConfiguration extends VendorConfiguration {
             cfgNode,
             LinkLocalAddress.of(LINK_LOCAL_IP),
             "To AWS services");
-    outInterface.setInterfaceType(InterfaceType.PHYSICAL);
+    outInterface.updateInterfaceType(InterfaceType.PHYSICAL);
 
     Set<Prefix> awsServicesPrefixes = AwsPrefixes.getAwsServicesPrefixes();
 

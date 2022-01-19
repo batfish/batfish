@@ -520,7 +520,7 @@ public final class Utils {
             vrf.getName(),
             LinkLocalAddress.of(LINK_LOCAL_IP),
             "To AWS backbone");
-    toBackbone.setInterfaceType(InterfaceType.PHYSICAL);
+    toBackbone.updateInterfaceType(InterfaceType.PHYSICAL);
     BgpProcess bgpProcess = makeBgpProcess(LINK_LOCAL_IP, vrf);
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(BACKBONE_FACING_INTERFACE_NAME)

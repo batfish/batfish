@@ -326,7 +326,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
     Interface iface = _ib.setAdminUp(false).build();
-    iface.setInterfaceType(InterfaceType.VLAN);
+    iface.updateInterfaceType(InterfaceType.VLAN);
     iface.setSwitchport(false);
     iface.setVlan(vlan);
 
@@ -344,7 +344,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
     Interface iface = _ib.build();
-    iface.setInterfaceType(InterfaceType.VLAN);
+    iface.updateInterfaceType(InterfaceType.VLAN);
     iface.setSwitchport(false);
     iface.setVlan(vlan);
 

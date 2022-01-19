@@ -1869,8 +1869,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .filter(Optional::isPresent)
         .map(Optional::get)
         .filter(Interface::hasLineStatus)
-        .filter(Interface::getLineUp)
-        .forEach(Interface::disconnect);
+        .forEach(Interface::blacklist);
   }
 
   @VisibleForTesting
@@ -1897,11 +1896,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 if (iface.getActive()
                     && (MANAGEMENT_INTERFACES.matcher(iface.getName()).find()
                         || MANAGEMENT_VRFS.matcher(iface.getVrfName()).find())) {
-                  if (iface.hasLineStatus() && iface.getLineUp()) {
-                    iface.disconnect();
-                  } else {
-                    iface.deactivate(IGNORE_MGMT);
-                  }
+                  // Intentionally avoid touching line status, since we really just want to ensure
+                  // no L2+.
+                  iface.deactivate(IGNORE_MGMT);
                 }
               }
             });
@@ -2046,8 +2043,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NetworkId networkId = snapshot.getNetwork();
     SnapshotId snapshotId = snapshot.getSnapshot();
 
-    disconnectAdminDownInterfaces(configurations.values());
-
+    // Start of blacklisting. Nothing should touch line status until after blacklisting is done.
     SortedSet<String> blacklistedNodes = _storage.loadNodeBlacklist(networkId, snapshotId);
     if (blacklistedNodes != null) {
       processInterfaceBlacklist(nodeToInterfaceBlacklist(blacklistedNodes, nc), nc);
@@ -2057,6 +2053,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (runtimeData != null) {
       processInterfaceBlacklist(runtimeData.getBlacklistedInterfaces(), nc);
     }
+    // End of blacklisting.
+
+    // Currently NOP
+    // TODO: decide whether/when to correlate adminUp and lineUp
+    disconnectAdminDownInterfaces(configurations.values());
+
     if (_settings.ignoreManagementInterfaces()) {
       processManagementInterfaces(configurations);
     }
@@ -2095,7 +2097,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       for (Interface i : c.getAllInterfaces().values()) {
         if (!i.getAdminUp() && i.hasLineStatus() && i.getLineUp()) {
-          i.disconnect();
+          // TODO: decide whether/when to correlate adminUp and lineUp
+          // i.disconnect();
+          assert Boolean.TRUE;
         }
       }
     }

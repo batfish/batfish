@@ -34,12 +34,13 @@
           "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E7,
+          "blacklisted" : false,
           "declaredNames" : [
             "Ethernet0/0"
           ],
           "hmm" : false,
           "inactiveReason" : "ADMIN_DOWN",
-          "lineUp" : false,
+          "lineUp" : true,
           "mtu" : 1500,
           "proxyArp" : true,
           "ripEnabled" : false,
@@ -89,6 +90,7 @@
           "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E9,
+          "blacklisted" : false,
           "declaredNames" : [
             "GigabitEthernet0/0"
           ],
@@ -155,6 +157,7 @@
           "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E9,
+          "blacklisted" : false,
           "declaredNames" : [
             "GigabitEthernet1/0"
           ],

@@ -26,6 +26,7 @@
           "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E9,
+          "blacklisted" : false,
           "declaredNames" : [
             "GigabitEthernet2/0"
           ],
@@ -83,6 +84,7 @@
           "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E9,
+          "blacklisted" : false,
           "declaredNames" : [
             "GigabitEthernet3/0"
           ],

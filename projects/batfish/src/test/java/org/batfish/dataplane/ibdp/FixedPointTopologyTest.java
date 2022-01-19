@@ -266,7 +266,7 @@ public final class FixedPointTopologyTest {
             .setVrf(vrf1)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("11.12.13.1"), 24))
             .build();
-    tunnel1.setInterfaceType(InterfaceType.TUNNEL);
+    tunnel1.updateInterfaceType(InterfaceType.TUNNEL);
     Interface iface2 =
         nf.interfaceBuilder()
             .setName("Interface2")
@@ -281,7 +281,7 @@ public final class FixedPointTopologyTest {
             .setVrf(vrf2)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("11.12.13.2"), 24))
             .build();
-    tunnel2.setInterfaceType(InterfaceType.TUNNEL);
+    tunnel2.updateInterfaceType(InterfaceType.TUNNEL);
 
     IpsecStaticPeerConfig ipsecPeerConfig1 =
         IpsecStaticPeerConfig.builder()

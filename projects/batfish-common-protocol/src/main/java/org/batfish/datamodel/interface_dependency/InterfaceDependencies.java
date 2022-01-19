@@ -1,12 +1,13 @@
 package org.batfish.datamodel.interface_dependency;
 
 import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
+import static org.batfish.datamodel.InactiveReason.AGGREGATE_NEIGHBOR_DOWN;
 import static org.batfish.datamodel.InactiveReason.BIND_DOWN;
 import static org.batfish.datamodel.InactiveReason.LACP_FAILURE;
-import static org.batfish.datamodel.InactiveReason.LINE_DOWN;
 import static org.batfish.datamodel.InactiveReason.NO_ACTIVE_MEMBERS;
 import static org.batfish.datamodel.InactiveReason.NO_MEMBERS;
 import static org.batfish.datamodel.InactiveReason.PARENT_DOWN;
+import static org.batfish.datamodel.InactiveReason.PHYSICAL_NEIGHBOR_DOWN;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 
@@ -45,6 +46,9 @@ public class InterfaceDependencies {
   /**
    * Compute the interfaces that should be deactivated because they depend on one or more missing or
    * inactive interfaces.
+   *
+   * <p>In general, treate interfaces of type {@link InterfaceType#UNKNOWN} the same as {@link
+   * InterfaceType#PHYSICAL}.
    */
   public static Map<NodeInterfacePair, InactiveReason> getInterfacesToDeactivate(
       Map<String, Configuration> configs, Layer1Topologies layer1Topologies) {
@@ -86,6 +90,7 @@ public class InterfaceDependencies {
         // add edges for type-specific dependencies
         switch (iface.getInterfaceType()) {
           case PHYSICAL:
+          case UNKNOWN:
             {
               // non-local dependencies
               @Nullable NodeInterfacePair neighbor = getL1Neighbor(iface);
@@ -355,26 +360,15 @@ public class InterfaceDependencies {
                       .getInterfaceType();
               switch (tgtType) {
                 case AGGREGATED:
-                  // Down due to single logical neighbor that is down (see initialize()).
-                  // Note that AGGREGATE-case deactivation should trigger (if applicable) before
-                  // BIND
-                  // case because all physical interface deactivations are queued first. So this
-                  // case
-                  // is only reachable if each side has at least one member interface that is up.
-                  // TODO: Seems like you should only lose an L3 edge, not an L1 edge. But if you do
-                  //       lose an L1 edge, best guess is LACP failures.
-                  deactivate.accept(tgtIface, LACP_FAILURE);
-                  break;
                 case REDUNDANT:
                   // Down due to single logical neighbor that is down (see initialize()).
-                  // Note that AGGREGATE-case deactivation should trigger (if applicable) before
-                  // BIND
-                  // case because all physical interface deactivations are queued first. So this
-                  // case
-                  // is only reachable if each side has at least one member interface that is up.
-                  // TODO: Seems like you should only lose an L3 edge, not an L1 edge. But if you do
-                  //       lose an L1 edge, best guess is line down.
-                  deactivate.accept(tgtIface, LINE_DOWN);
+                  // Note that AGGREGATE case deactivation should trigger (if applicable) before
+                  // BIND case because all physical interface deactivations are queued first. So
+                  // this case is only reachable if each side has at least one member interface that
+                  // is up. This could happen if L1 is provided and at least one membmer interface
+                  // has an active neighbor, or L1 was not provided (so we shouldn't deactivate
+                  // member interfaces for not having neighbors).
+                  deactivate.accept(tgtIface, AGGREGATE_NEIGHBOR_DOWN);
                   break;
                 case AGGREGATE_CHILD:
                 case REDUNDANT_CHILD:
@@ -382,8 +376,9 @@ public class InterfaceDependencies {
                   deactivate.accept(tgtIface, PARENT_DOWN);
                   break;
                 case PHYSICAL:
+                case UNKNOWN:
                   // Down due to down neighbor
-                  deactivate.accept(tgtIface, LINE_DOWN);
+                  deactivate.accept(tgtIface, PHYSICAL_NEIGHBOR_DOWN);
                   break;
                 case TUNNEL:
                   deactivate.accept(tgtIface, BIND_DOWN);

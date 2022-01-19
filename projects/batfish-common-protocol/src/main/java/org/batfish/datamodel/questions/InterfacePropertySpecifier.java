@@ -59,7 +59,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String INACTIVE_REASON = "Inactive_Reason";
   public static final String INCOMING_FILTER_NAME = "Incoming_Filter_Name";
   public static final String INTERFACE_TYPE = "Interface_Type";
-  public static final String LINE_UP = "Line_Up";
   public static final String MLAG_ID = "MLAG_ID";
   public static final String MTU = "MTU";
   public static final String NATIVE_VLAN = "Native_VLAN";
@@ -78,14 +77,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String VRF = "VRF";
   public static final String VRRP_GROUPS = "VRRP_Groups";
   public static final String ZONE_NAME = "Zone_Name";
-
-  private static boolean getBlacklisted(@Nonnull Interface i) {
-    return i.hasLineStatus() && !i.getLineUp();
-  }
-
-  private static boolean getLineUp(@Nonnull Interface i) {
-    return i.hasLineStatus() && !i.getLineUp();
-  }
 
   private static @Nullable String getInactiveReason(@Nonnull Interface i) {
     InactiveReason reason = i.getInactiveReason();
@@ -157,9 +148,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               BLACKLISTED,
               new PropertyDescriptor<>(
-                  // TODO: Decide on better semantics and update implementation (should probably not
-                  //       be equivalent to lineUp)
-                  InterfacePropertySpecifier::getBlacklisted,
+                  Interface::getBlacklisted,
                   Schema.BOOLEAN,
                   "Whether the interface is considered down for maintenance"))
           .put(
@@ -221,13 +210,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               INTERFACE_TYPE,
               new PropertyDescriptor<>(
                   Interface::getInterfaceType, Schema.STRING, "Interface type"))
-          .put(
-              LINE_UP,
-              new PropertyDescriptor<>(
-                  Interface::getLineUp,
-                  Schema.BOOLEAN,
-                  "Whether the interface is and powered on and connected to another line up"
-                      + " interface"))
           .put(
               MLAG_ID,
               new PropertyDescriptor<>(

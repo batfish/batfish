@@ -71,12 +71,10 @@ public class InterfacePropertiesAnswererTest {
     String propDescription = InterfacePropertySpecifier.DESCRIPTION;
     String propActive = InterfacePropertySpecifier.ACTIVE;
     String propAdminUp = InterfacePropertySpecifier.ADMIN_UP;
-    String propLineUp = InterfacePropertySpecifier.LINE_UP;
     String propInactiveReason = InterfacePropertySpecifier.INACTIVE_REASON;
     InterfacePropertySpecifier propertySpecifier =
         new InterfacePropertySpecifier(
-            ImmutableSet.of(
-                propDescription, propActive, propAdminUp, propLineUp, propInactiveReason));
+            ImmutableSet.of(propDescription, propActive, propAdminUp, propInactiveReason));
 
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node1", conf1)).build();
@@ -100,7 +98,6 @@ public class InterfacePropertiesAnswererTest {
             .put(propAdminUp, false)
             .put(propDescription, "desc desc desc")
             .put(propInactiveReason, ADMIN_DOWN.description())
-            .put(propLineUp, true)
             .build();
     Row expectedRow2 =
         Row.builder()
@@ -109,7 +106,6 @@ public class InterfacePropertiesAnswererTest {
             .put(propAdminUp, true)
             .put(propDescription, "desc3")
             .put(propInactiveReason, "")
-            .put(propLineUp, null)
             .build();
 
     assertThat(propertyRows, equalTo(ImmutableMultiset.of(expectedRow1, expectedRow2)));
