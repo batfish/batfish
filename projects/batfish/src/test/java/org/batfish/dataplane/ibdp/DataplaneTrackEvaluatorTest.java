@@ -17,8 +17,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Test;
 
@@ -69,19 +71,10 @@ public final class DataplaneTrackEvaluatorTest {
   public void testVisitTrackMethodReference() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
-    Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    Interface.builder().setName("i1").setOwner(c).setVrf(c.getDefaultVrf()).setActive(true).build();
-    Interface.builder()
-        .setName("i2")
-        .setOwner(c)
-        .setVrf(c.getDefaultVrf())
-        .setActive(false)
-        .build();
-    TrackInterface tiUp = new TrackInterface("i1");
-    c.setTrackingGroups(ImmutableMap.of("1", tiUp));
+    TrackMethod base = TrackTrue.instance();
+    c.setTrackingGroups(ImmutableMap.of("1", base));
     DataplaneTrackEvaluator e = new DataplaneTrackEvaluator(c, new Rib());
 
-    assertTrue(e.visit(tiUp));
     assertTrue(e.visit(TrackMethodReference.of("1")));
   }
 
@@ -89,18 +82,17 @@ public final class DataplaneTrackEvaluatorTest {
   public void testVisitNegatedTrackMethod() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
-    Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    Interface.builder().setName("i1").setOwner(c).setVrf(c.getDefaultVrf()).setActive(true).build();
-    Interface.builder()
-        .setName("i2")
-        .setOwner(c)
-        .setVrf(c.getDefaultVrf())
-        .setActive(false)
-        .build();
-    TrackInterface tiUp = new TrackInterface("i1");
     DataplaneTrackEvaluator e = new DataplaneTrackEvaluator(c, new Rib());
 
-    assertTrue(e.visit(tiUp));
-    assertFalse(e.visit(NegatedTrackMethod.of(tiUp)));
+    assertFalse(e.visit(NegatedTrackMethod.of(TrackTrue.instance())));
+  }
+
+  @Test
+  public void testVisitTrackTrue() {
+    Configuration c =
+        Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
+    DataplaneTrackEvaluator evaluator = new DataplaneTrackEvaluator(c, new Rib());
+
+    assertTrue(evaluator.visit(TrackTrue.instance()));
   }
 }

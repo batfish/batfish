@@ -13,4 +13,6 @@ public interface GenericTrackMethodVisitor<R> {
   R visitTrackMethodReference(TrackMethodReference trackMethodReference);
 
   R visitTrackRoute(TrackRoute trackRoute);
+
+  R visitTrackTrue(TrackTrue trackTrue);
 }

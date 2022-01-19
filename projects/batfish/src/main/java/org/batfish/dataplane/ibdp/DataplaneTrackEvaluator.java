@@ -14,6 +14,7 @@ import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.tracking.TrackTrue;
 
 /**
  * Evaluator for a {@link org.batfish.datamodel.tracking.TrackMethod} given knowledge of the routes
@@ -58,6 +59,11 @@ public class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<Boolea
       return routesForPrefix.stream()
           .anyMatch(r -> trackRoute.getProtocols().contains(r.getRoute().getProtocol()));
     }
+  }
+
+  @Override
+  public Boolean visitTrackTrue(TrackTrue trackTrue) {
+    return _staticEvaluator.visit(trackTrue);
   }
 
   private final @Nonnull Configuration _configuration;

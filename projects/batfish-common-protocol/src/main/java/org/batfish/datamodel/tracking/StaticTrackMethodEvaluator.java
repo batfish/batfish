@@ -48,5 +48,10 @@ public class StaticTrackMethodEvaluator implements GenericTrackMethodVisitor<Boo
     throw new UnsupportedOperationException("Unsupported method for HSRP priority evaluation");
   }
 
+  @Override
+  public Boolean visitTrackTrue(TrackTrue trackTrue) {
+    return true;
+  }
+
   @Nonnull private final Configuration _configuration;
 }

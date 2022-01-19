@@ -175,25 +175,6 @@ public final class HsrpGroup implements Serializable {
     _trackActions = trackActions;
   }
 
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof HsrpGroup)) {
-      return false;
-    }
-    HsrpGroup rhs = (HsrpGroup) obj;
-    return Objects.equals(_authentication, rhs._authentication)
-        && _groupNumber == rhs._groupNumber
-        && _helloTime == rhs._helloTime
-        && _holdTime == rhs._holdTime
-        && Objects.equals(_ips, rhs._ips)
-        && _preempt == rhs._preempt
-        && _priority == rhs._priority
-        && _trackActions.equals(rhs._trackActions);
-  }
-
   /** SHA256-hashed authentication string */
   @JsonProperty(PROP_AUTHENTICATION)
   public @Nullable String getAuthentication() {
@@ -248,6 +229,37 @@ public final class HsrpGroup implements Serializable {
   @JsonProperty(PROP_TRACK_ACTIONS)
   public @Nonnull SortedMap<String, TrackAction> getTrackActions() {
     return _trackActions;
+  }
+
+  public @Nonnull Builder toBuilder() {
+    return builder()
+        .setAuthentication(_authentication)
+        .setGroupNumber(_groupNumber)
+        .setHelloTime(_helloTime)
+        .setHoldTime(_holdTime)
+        .setIps(_ips)
+        .setPreempt(_preempt)
+        .setPriority(_priority)
+        .setTrackActions(_trackActions);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof HsrpGroup)) {
+      return false;
+    }
+    HsrpGroup rhs = (HsrpGroup) obj;
+    return Objects.equals(_authentication, rhs._authentication)
+        && _groupNumber == rhs._groupNumber
+        && _helloTime == rhs._helloTime
+        && _holdTime == rhs._holdTime
+        && Objects.equals(_ips, rhs._ips)
+        && _preempt == rhs._preempt
+        && _priority == rhs._priority
+        && _trackActions.equals(rhs._trackActions);
   }
 
   @Override
