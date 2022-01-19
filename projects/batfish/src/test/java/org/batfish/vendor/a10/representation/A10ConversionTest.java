@@ -163,7 +163,8 @@ public class A10ConversionTest {
     // Make sure all types are handled
     for (VirtualServerPort.Type type : VirtualServerPort.Type.values()) {
       // Should not throw
-      toProtocol(new VirtualServerPort(1, type, 0)).get();
+      Optional<IpProtocol> protocol = toProtocol(new VirtualServerPort(1, type, 0));
+      assertTrue(protocol.isPresent());
     }
   }
 
