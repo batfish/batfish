@@ -9,6 +9,7 @@ import org.batfish.datamodel.Flow;
 class Breadcrumb {
   private final @Nonnull String _node;
   private final @Nonnull String _vrf;
+  // Semantics: only populated if the device matches against ingress interface
   private final @Nullable String _ingressInterface;
   private final @Nonnull Flow _flow;
 
