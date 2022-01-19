@@ -6,6 +6,7 @@ import static com.google.common.base.Predicates.not;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
+import static org.batfish.datamodel.InactiveReason.INCOMPLETE;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -2115,7 +2116,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                                 .build())));
       }
     }
-    newIface.setActive(iface.getActive());
+    newIface.setAdminUp(iface.getActive());
     newIface.setDescription(iface.getComment());
     newIface.setChannelGroup(iface.getAggregateGroup());
 
@@ -3140,6 +3141,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _c.setDomainName(_domain);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
+    _c.setDisconnectAdminDownInterfaces(false);
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
 
@@ -3204,7 +3206,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         oraphnedInterfaces++;
         if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
           // This is a child interface. Just shut it down.
-          iface.setActive(false);
+          iface.deactivate(INCOMPLETE);
           _w.redFlag(
               String.format(
                   "Interface %s is not in a virtual-router, placing in %s and shutting it down.",

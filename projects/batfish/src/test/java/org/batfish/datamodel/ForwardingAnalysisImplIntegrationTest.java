@@ -71,7 +71,6 @@ public class ForwardingAnalysisImplIntegrationTest {
         nf.interfaceBuilder()
             .setOwner(c)
             .setVrf(vrf)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
             .build();
 

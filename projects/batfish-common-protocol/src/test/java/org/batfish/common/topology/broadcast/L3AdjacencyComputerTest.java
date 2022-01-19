@@ -293,11 +293,11 @@ public class L3AdjacencyComputerTest {
     assertTrue(
         "physical should be created",
         shouldCreatePhysicalInterface(
-            nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setActive(true).build()));
+            nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setAdminUp(true).build()));
     assertFalse(
         "physical but shutdown should not be created",
         shouldCreatePhysicalInterface(
-            nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setActive(false).build()));
+            nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setAdminUp(false).build()));
     assertFalse(
         "physical, active but aggregated should not be created",
         shouldCreatePhysicalInterface(
@@ -305,7 +305,7 @@ public class L3AdjacencyComputerTest {
                 .setOwner(c)
                 .setType(PHYSICAL)
                 .setChannelGroup("Port-Channel1")
-                .setActive(true)
+                .setAdminUp(true)
                 .build()));
     assertFalse(
         "logical should not be created",
@@ -313,14 +313,18 @@ public class L3AdjacencyComputerTest {
     assertFalse(
         "vlan should not be created",
         shouldCreatePhysicalInterface(
-            nf.interfaceBuilder().setOwner(c).setType(InterfaceType.VLAN).setActive(true).build()));
+            nf.interfaceBuilder()
+                .setOwner(c)
+                .setType(InterfaceType.VLAN)
+                .setAdminUp(true)
+                .build()));
     assertTrue(
         "aggregate,active should be created",
         shouldCreatePhysicalInterface(
             nf.interfaceBuilder()
                 .setOwner(c)
                 .setType(InterfaceType.AGGREGATED)
-                .setActive(true)
+                .setAdminUp(true)
                 .build()));
     assertFalse(
         "aggregate but shutdown should not be created",
@@ -328,7 +332,7 @@ public class L3AdjacencyComputerTest {
             nf.interfaceBuilder()
                 .setOwner(c)
                 .setType(InterfaceType.AGGREGATED)
-                .setActive(false)
+                .setAdminUp(false)
                 .build()));
     assertFalse(
         "aggregate child should not be created",
@@ -336,7 +340,7 @@ public class L3AdjacencyComputerTest {
             nf.interfaceBuilder()
                 .setOwner(c)
                 .setType(InterfaceType.AGGREGATE_CHILD)
-                .setActive(true)
+                .setAdminUp(true)
                 .build()));
   }
 
@@ -352,7 +356,7 @@ public class L3AdjacencyComputerTest {
                 .setType(PHYSICAL)
                 .setSwitchport(false)
                 .setAddress(CONCRETE)
-                .setActive(true)
+                .setAdminUp(true)
                 .build()));
     assertTrue(
         "l3 with LLA should be created",
@@ -362,7 +366,7 @@ public class L3AdjacencyComputerTest {
                 .setType(PHYSICAL)
                 .setSwitchport(false)
                 .setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1")))
-                .setActive(true)
+                .setAdminUp(true)
                 .build()));
     assertFalse(
         "l3 with no addresses should not be created",
@@ -371,7 +375,7 @@ public class L3AdjacencyComputerTest {
                 .setOwner(c)
                 .setType(PHYSICAL)
                 .setSwitchport(false)
-                .setActive(true)
+                .setAdminUp(true)
                 .build()));
     assertFalse(
         "l3 shutdown should not be created",
@@ -381,7 +385,7 @@ public class L3AdjacencyComputerTest {
                 .setType(PHYSICAL)
                 .setSwitchport(false)
                 .setAddress(CONCRETE)
-                .setActive(false)
+                .setAdminUp(false)
                 .build()));
     assertFalse(
         "l3 loopback should not be created",
@@ -391,7 +395,7 @@ public class L3AdjacencyComputerTest {
                 .setType(LOOPBACK)
                 .setSwitchport(false)
                 .setAddress(CONCRETE)
-                .setActive(true)
+                .setAdminUp(true)
                 .build()));
     assertFalse(
         "l3 in weird l3/switchport mode should not be created",
@@ -402,7 +406,7 @@ public class L3AdjacencyComputerTest {
                 .setSwitchport(true)
                 .setSwitchportMode(SwitchportMode.ACCESS)
                 .setAddress(CONCRETE)
-                .setActive(true)
+                .setAdminUp(true)
                 .build()));
   }
 
@@ -730,7 +734,6 @@ public class L3AdjacencyComputerTest {
         .setOwner(c1)
         .setName("i1")
         .setType(PHYSICAL)
-        .setActive(true)
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.1/24"))
         .build();
     Configuration c2 = nf.configurationBuilder().setHostname("c2").build();
@@ -738,7 +741,6 @@ public class L3AdjacencyComputerTest {
         .setOwner(c2)
         .setName("i2")
         .setType(PHYSICAL)
-        .setActive(true)
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.2/24"))
         .build();
     Configuration c3 = nf.configurationBuilder().setHostname("c3").build();
@@ -746,7 +748,6 @@ public class L3AdjacencyComputerTest {
         .setOwner(c3)
         .setName("i3")
         .setType(PHYSICAL)
-        .setActive(true)
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.3/24"))
         .build();
     return ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);

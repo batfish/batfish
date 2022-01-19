@@ -375,7 +375,6 @@ public final class VxlanTopologyUtils {
                     .setVrf(vrf)
                     .setAdditionalArpIps(l3vni.getSourceAddress().toIpSpace())
                     .setAddresses(LinkLocalAddress.of(TENANT_VNI_INTERFACE_LINK_LOCAL_ADDRESS))
-                    .setActive(true)
                     .setProxyArp(false)
                     .setType(TUNNEL)
                     .setSwitchportMode(SwitchportMode.NONE)

@@ -299,7 +299,6 @@ public class VyosConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder().setName(name).setOwner(_c).build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
-    newIface.setActive(true); // TODO: may have to change
     newIface.setBandwidth(iface.getBandwidth());
     newIface.setDescription(iface.getDescription());
     InterfaceAddress address = iface.getAddress();

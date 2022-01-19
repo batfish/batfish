@@ -599,7 +599,7 @@ public final class CompletionMetadataUtilsTest {
     Interface.builder()
         .setName("i4")
         .setOwner(c4)
-        .setActive(true)
+        .setAdminUp(true)
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
         .build();
 
@@ -648,7 +648,7 @@ public final class CompletionMetadataUtilsTest {
           Interface.builder()
               .setName("i1")
               .setOwner(c)
-              .setActive(true)
+              .setAdminUp(true)
               .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
               .build();
       Location loc1 = new InterfaceLocation("n1", i1.getName());
@@ -664,7 +664,7 @@ public final class CompletionMetadataUtilsTest {
           Interface.builder()
               .setName("i2")
               .setOwner(c)
-              .setActive(false)
+              .setAdminUp(false)
               .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
               .build();
       Location loc2 = new InterfaceLinkLocation("n1", i2.getName());
@@ -674,7 +674,7 @@ public final class CompletionMetadataUtilsTest {
 
     {
       // no address
-      Interface i3 = Interface.builder().setName("i3").setOwner(c).setActive(true).build();
+      Interface i3 = Interface.builder().setName("i3").setOwner(c).setAdminUp(true).build();
       Location loc3 = new InterfaceLocation("n1", i3.getName());
 
       assertFalse(isTracerouteSource(loc3, configurations));

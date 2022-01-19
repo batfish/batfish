@@ -159,10 +159,10 @@ public final class SearchFiltersTest {
                 REJECT_ALL_ACL.getName(),
                 REJECT_ALL_ACL));
 
-    Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_config);
+    Builder ib = nf.interfaceBuilder().setAdminUp(true).setOwner(_config);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
-    ib.setName("inactiveIface").setActive(false).build();
+    ib.setName("inactiveIface").setAdminUp(false).build();
 
     _batfish = new MockBatfish(_config);
     _configContext = getConfigContextWithParams(DEFAULT_PARAMS);
@@ -391,11 +391,11 @@ public final class SearchFiltersTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     c.getIpAccessLists().put(denyAllSourcesAcl.getName(), denyAllSourcesAcl);
 
-    Builder ib = nf.interfaceBuilder().setActive(true).setOwner(c);
+    Builder ib = nf.interfaceBuilder().setAdminUp(true).setOwner(c);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
     // Inactive interfaces should not be considered possible sources
-    ib.setName("inactiveIface").setActive(false).build();
+    ib.setName("inactiveIface").setAdminUp(false).build();
 
     IBatfish bf = new MockBatfish(c);
     NonDiffConfigContext configContext =
@@ -427,10 +427,10 @@ public final class SearchFiltersTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     c.getIpAccessLists().put(denyAllButIface2.getName(), denyAllButIface2);
 
-    Builder ib = nf.interfaceBuilder().setActive(true).setOwner(c);
+    Builder ib = nf.interfaceBuilder().setAdminUp(true).setOwner(c);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
-    ib.setName("inactiveIface").setActive(false).build();
+    ib.setName("inactiveIface").setAdminUp(false).build();
 
     IBatfish bf = new MockBatfish(c);
     NonDiffConfigContext configContext =

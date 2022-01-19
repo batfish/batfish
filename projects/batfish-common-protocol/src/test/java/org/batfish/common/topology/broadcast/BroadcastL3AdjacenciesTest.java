@@ -26,7 +26,6 @@ public class BroadcastL3AdjacenciesTest {
         nf.interfaceBuilder()
             .setOwner(c1)
             .setType(PHYSICAL)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.1/24"))
             .build();
     NodeInterfacePair n1 = NodeInterfacePair.of(i1);
@@ -35,7 +34,6 @@ public class BroadcastL3AdjacenciesTest {
         nf.interfaceBuilder()
             .setOwner(c2)
             .setType(PHYSICAL)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.2/24"))
             .build();
     NodeInterfacePair n2 = NodeInterfacePair.of(i2);
@@ -44,7 +42,6 @@ public class BroadcastL3AdjacenciesTest {
         nf.interfaceBuilder()
             .setOwner(c3)
             .setType(PHYSICAL)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.3/24"))
             .build();
     NodeInterfacePair n3 = NodeInterfacePair.of(i3);

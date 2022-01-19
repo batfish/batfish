@@ -29,7 +29,7 @@ public final class CompareFiltersTest {
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    Interface iface = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true).build();
+    Interface iface = nf.interfaceBuilder().setOwner(c).setVrf(vrf).build();
     nf.aclBuilder()
         .setOwner(c)
         .setName("test")

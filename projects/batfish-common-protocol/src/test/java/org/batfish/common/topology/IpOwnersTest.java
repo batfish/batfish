@@ -82,7 +82,7 @@ public class IpOwnersTest {
         _ib.setOwner(c1)
             .setVrf(vrf1)
             .setAddress(ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength()))
-            .setActive(false)
+            .setAdminUp(false)
             .build();
 
     // Test with only active IPs.
@@ -167,7 +167,7 @@ public class IpOwnersTest {
                     .build(),
                 Interface.builder()
                     .setAddress(ConcreteInterfaceAddress.create(inactiveIp, networkBits))
-                    .setActive(false)
+                    .setAdminUp(false)
                     .setName(inactiveName)
                     .setVrf(vrf)
                     .build()));
@@ -241,7 +241,7 @@ public class IpOwnersTest {
           Interface.builder()
               .setName("name")
               .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-              .setActive(false)
+              .setAdminUp(false)
               .build();
       Ip ip1 = Ip.parse("1.1.1.1");
       i.setHsrpGroups(
@@ -257,7 +257,8 @@ public class IpOwnersTest {
           Interface.builder()
               .setName("name")
               .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-              .setBlacklisted(true)
+              .setAdminUp(false)
+              .setLineUp(false)
               .build();
       Ip ip1 = Ip.parse("1.1.1.1");
       i.setHsrpGroups(
@@ -425,14 +426,14 @@ public class IpOwnersTest {
         .setOwner(c1)
         .setName("i1tracked")
         .setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
-        .setActive(true)
+        .setAdminUp(true)
         .build();
     // Tracked by track "2"
     Interface.builder()
         .setOwner(c1)
         .setName("i1trackedAlso")
         .setAddress(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
-        .setActive(false)
+        .setAdminUp(false)
         .build();
 
     // Only track 2 is triggered, so only track 2 decrement is applied
@@ -545,7 +546,7 @@ public class IpOwnersTest {
                           .setSourceAddress(sourceAddress)
                           .setVirtualAddresses("name", ip1)
                           .build()))
-              .setActive(false)
+              .setAdminUp(false)
               .build();
       extractVrrp(groups, i);
       assertTrue(groups.isEmpty());
@@ -566,7 +567,8 @@ public class IpOwnersTest {
                           .setSourceAddress(sourceAddress)
                           .setVirtualAddresses("name", ip1)
                           .build()))
-              .setBlacklisted(true)
+              .setAdminUp(false)
+              .setLineUp(false)
               .build();
       extractVrrp(groups, i);
       assertTrue(groups.isEmpty());

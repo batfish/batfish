@@ -288,7 +288,7 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setName(iface.getName())
             .setVrf(vrf)
             .setDescription(iface.getDescription())
-            .setActive(iface.getStatusEffective())
+            .setAdminUp(iface.getStatusEffective())
             .setMtu(iface.getMtuEffective())
             .setSpeed(toSpeed(iface.getSpeedEffective()))
             .setType(type);

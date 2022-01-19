@@ -51,7 +51,7 @@ public class LocationInfoUtilsTest {
             .setHostname("a")
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setActive(true).setVrf(vrf);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setAdminUp(true).setVrf(vrf);
     Interface i = ib.setName("i").setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/29")).build();
 
     // i has no LocationInfo -- will use default VI logic
@@ -99,7 +99,7 @@ public class LocationInfoUtilsTest {
             .setHostname("a")
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setActive(true).setVrf(vrf);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setAdminUp(true).setVrf(vrf);
     Interface i = ib.setName("i").build();
 
     // i has LocationInfo -- will subtract snapshotOwnedIps
@@ -149,8 +149,8 @@ public class LocationInfoUtilsTest {
             .setHostname("a")
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setActive(true).setVrf(vrf);
-    Interface i3 = ib.setName("i3").setActive(false).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setAdminUp(true).setVrf(vrf);
+    Interface i3 = ib.setName("i3").setAdminUp(false).build();
 
     // i3 has LocationInfo but is inactive
     InterfaceLocation iface3 = interfaceLocation(i3);

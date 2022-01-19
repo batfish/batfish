@@ -101,7 +101,7 @@ public class NetworkFactoryTest {
     Interface iface =
         nf.interfaceBuilder()
             .setOwner(c)
-            .setActive(false)
+            .setAdminUp(false)
             .setVrf(vrf)
             .setOspfSettings(
                 OspfInterfaceSettings.defaultSettingsBuilder()

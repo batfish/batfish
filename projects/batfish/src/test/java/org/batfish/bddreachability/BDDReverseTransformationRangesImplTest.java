@@ -55,7 +55,7 @@ public class BDDReverseTransformationRangesImplTest {
             .setHostname(HOSTNAME)
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    _ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
+    _ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf);
     _configs = ImmutableMap.of(HOSTNAME, config);
     _headerSpaceToBDD = new HeaderSpaceToBDD(_bddPacket, ImmutableMap.of());
     _lastHopManager = new LastHopOutgoingInterfaceManager(_bddPacket, _configs, ImmutableSet.of());

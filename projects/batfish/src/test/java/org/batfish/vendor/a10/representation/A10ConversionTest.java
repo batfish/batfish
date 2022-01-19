@@ -891,7 +891,6 @@ public class A10ConversionTest {
                 .setName(ifaceName)
                 .setType(InterfaceType.PHYSICAL)
                 .setAddress(ConcreteInterfaceAddress.create(interfaceAddress, 24))
-                .setActive(true)
                 .build());
     Ip remoteIp = Ip.parse("10.0.0.2");
     {

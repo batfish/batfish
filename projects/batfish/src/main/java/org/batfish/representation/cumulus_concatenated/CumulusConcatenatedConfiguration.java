@@ -204,7 +204,9 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
                 return;
               }
               boolean isDisabled = Boolean.FALSE.equals(portSettings.getDisabled());
-              viIface.setActive(!isDisabled);
+              if (isDisabled) {
+                viIface.adminDown();
+              }
 
               if (portSettings.getSpeed() != null) {
                 double speed = portSettings.getSpeed() * SPEED_CONVERSION_FACTOR;
@@ -254,7 +256,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       viIface.setDescription(iface.getAlias());
     }
     if (iface.getShutdown()) {
-      viIface.setActive(false);
+      viIface.adminDown();
     }
 
     // ip addresses
@@ -342,7 +344,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   @VisibleForTesting
   static void populateLoopbackProperties(
       @Nullable InterfacesInterface vsLoopback, org.batfish.datamodel.Interface viLoopback) {
-    viLoopback.setInterfaceType(InterfaceType.LOOPBACK);
+    viLoopback.updateInterfaceType(InterfaceType.LOOPBACK);
     if (vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null) {
       // Just assume CLAG is correctly configured and comes up
       viLoopback.setAllAddresses(
@@ -357,8 +359,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
 
   private static void populateVlanInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
-    viIface.setInterfaceType(InterfaceType.VLAN);
-    viIface.setActive(true);
+    viIface.updateInterfaceType(InterfaceType.VLAN);
     viIface.setVlan(iface.getVlanId());
     viIface.setDescription(iface.getDescription());
 
@@ -377,8 +378,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   /** properties for VRF loopback interfaces */
   private void populateVrfInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
-    viIface.setInterfaceType(InterfaceType.LOOPBACK);
-    viIface.setActive(true);
+    viIface.updateInterfaceType(InterfaceType.LOOPBACK);
     // this loopback should be in its own vrf
     viIface.setVrf(getOrCreateVrf(c, iface.getName()));
   }
@@ -386,7 +386,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   private void populateSubInterfaceProperties(
       Configuration c, InterfacesInterface iface, String superInterfaceName) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
-    viIface.setInterfaceType(
+    viIface.updateInterfaceType(
         isPhysicalInterfaceType(superInterfaceName)
             ? InterfaceType.LOGICAL
             : InterfaceType.AGGREGATE_CHILD);
@@ -398,14 +398,14 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
 
   private void populatePhysicalInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
-    viIface.setInterfaceType(InterfaceType.PHYSICAL);
+    viIface.updateInterfaceType(InterfaceType.PHYSICAL);
     populateBridgeSettings(iface, viIface);
     viIface.setDescription(iface.getDescription());
   }
 
   private void populateBondInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
-    viIface.setInterfaceType(InterfaceType.AGGREGATED);
+    viIface.updateInterfaceType(InterfaceType.AGGREGATED);
     Set<String> slaves = firstNonNull(iface.getBondSlaves(), ImmutableSet.of());
     slaves.forEach(slave -> c.getAllInterfaces().get(slave).setChannelGroup(iface.getName()));
     viIface.setChannelGroupMembers(slaves);
@@ -413,7 +413,6 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
         slaves.stream()
             .map(slave -> new Dependency(slave, DependencyType.AGGREGATE))
             .collect(ImmutableSet.toImmutableSet()));
-    viIface.setActive(true);
     populateBridgeSettings(iface, viIface);
     viIface.setMlagId(iface.getClagId());
   }
@@ -429,7 +428,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     }
 
     if (VLAN_INTERFACE_PATTERN.matcher(i.getName()).matches()) {
-      i.setInterfaceType(InterfaceType.VLAN);
+      i.updateInterfaceType(InterfaceType.VLAN);
       return;
     }
 
@@ -437,10 +436,10 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       // Physical interface or subinterface.
       Matcher parentMatcher = SUBINTERFACE_PATTERN.matcher(i.getName());
       if (parentMatcher.matches()) {
-        i.setInterfaceType(InterfaceType.LOGICAL);
+        i.updateInterfaceType(InterfaceType.LOGICAL);
         return;
       }
-      i.setInterfaceType(InterfaceType.PHYSICAL);
+      i.updateInterfaceType(InterfaceType.PHYSICAL);
       return;
     }
 
@@ -448,10 +447,10 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       // Aggregate interface or subinterface.
       Matcher parentMatcher = SUBINTERFACE_PATTERN.matcher(i.getName());
       if (parentMatcher.matches()) {
-        i.setInterfaceType(InterfaceType.AGGREGATE_CHILD);
+        i.updateInterfaceType(InterfaceType.AGGREGATE_CHILD);
         return;
       }
-      i.setInterfaceType(InterfaceType.AGGREGATED);
+      i.updateInterfaceType(InterfaceType.AGGREGATED);
       return;
     }
 

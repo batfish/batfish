@@ -65,6 +65,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as1border1",
         "interfaces" : {
@@ -74,13 +75,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -99,16 +104,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "1.0.1.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -139,16 +147,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.12.11.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.12.11.1/24",
             "proxyArp" : true,
@@ -168,16 +179,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "1.1.1.1/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -1693,6 +1707,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as1border2",
         "interfaces" : {
@@ -1702,13 +1717,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -1727,16 +1746,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.13.22.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.13.22.1/24",
             "proxyArp" : true,
@@ -1756,16 +1778,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "1.0.2.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -1796,16 +1821,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.14.22.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.14.22.1/24",
             "proxyArp" : true,
@@ -1825,16 +1853,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "1.2.2.2/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -3274,6 +3305,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as1core1",
         "interfaces" : {
@@ -3283,13 +3315,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -3308,16 +3344,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "1.0.2.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -3348,16 +3387,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "1.0.1.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -3388,16 +3430,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "1.10.1.1/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -3807,6 +3852,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as2border1",
         "interfaces" : {
@@ -3816,13 +3862,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -3841,17 +3891,20 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.12.11.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "INSIDE_TO_AS1",
             "prefix" : "10.12.11.2/24",
@@ -3872,16 +3925,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.12.11.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -3912,16 +3968,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.12.12.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -3952,16 +4011,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.1.1.1/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -5532,6 +5594,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as2border2",
         "interfaces" : {
@@ -5541,13 +5604,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -5566,17 +5633,20 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.23.21.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "INSIDE_TO_AS3",
             "prefix" : "10.23.21.2/24",
@@ -5597,16 +5667,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.12.22.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -5637,16 +5710,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.12.21.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -5677,16 +5753,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.1.1.2/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -7122,6 +7201,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as2core1",
         "interfaces" : {
@@ -7131,13 +7211,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -7156,16 +7240,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.12.11.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -7196,16 +7283,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.12.21.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -7236,17 +7326,20 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.23.11.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
             "incomingFilter" : "blocktelnet",
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -7277,17 +7370,20 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.23.12.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet3/0"
             ],
             "hmm" : false,
             "incomingFilter" : "blocktelnet",
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -7318,16 +7414,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.1.2.1/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -7885,6 +7984,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as2core2",
         "interfaces" : {
@@ -7894,13 +7994,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -7919,16 +8023,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.12.22.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1800,
             "ospfSettings" : {
               "area" : 1,
@@ -7959,16 +8066,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.12.12.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1600,
             "ospfSettings" : {
               "area" : 1,
@@ -7999,16 +8109,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.23.22.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1700,
             "ospfSettings" : {
               "area" : 1,
@@ -8039,16 +8152,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.23.21.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet3/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -8079,16 +8195,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.1.2.2/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -8570,6 +8689,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as2dept1",
         "interfaces" : {
@@ -8579,13 +8699,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -8604,16 +8728,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.34.101.4/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.34.101.4/24",
             "proxyArp" : true,
@@ -8633,16 +8760,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.34.201.4/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.34.201.4/24",
             "proxyArp" : true,
@@ -8662,17 +8792,20 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.128.0.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.128.0.1/24",
             "proxyArp" : true,
@@ -8692,17 +8825,20 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.128.1.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet3/0"
             ],
             "hmm" : false,
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.128.1.1/24",
             "proxyArp" : true,
@@ -8722,16 +8858,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.1.1.2/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.1.1.2/32",
             "proxyArp" : true,
@@ -9857,6 +9996,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as2dist1",
         "interfaces" : {
@@ -9866,13 +10006,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -9891,16 +10035,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.23.11.3/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -9931,16 +10078,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.23.21.3/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -9971,16 +10121,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.34.101.3/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.34.101.3/24",
             "proxyArp" : true,
@@ -10000,16 +10153,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.1.3.1/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -10881,6 +11037,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as2dist2",
         "interfaces" : {
@@ -10890,13 +11047,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -10915,16 +11076,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.23.22.3/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -10955,16 +11119,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.23.12.3/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -10995,16 +11162,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.34.201.3/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "2.34.201.3/24",
             "proxyArp" : true,
@@ -11024,16 +11194,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.1.3.2/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -11939,6 +12112,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as3border1",
         "interfaces" : {
@@ -11948,13 +12122,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -11973,16 +12151,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "3.0.1.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -12013,16 +12194,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.23.21.3/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.23.21.3/24",
             "proxyArp" : true,
@@ -12042,16 +12226,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "3.1.1.1/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -13462,6 +13649,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as3border2",
         "interfaces" : {
@@ -13471,13 +13659,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -13496,16 +13688,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "10.13.22.3/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "10.13.22.3/24",
             "proxyArp" : true,
@@ -13525,16 +13720,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "3.0.2.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -13565,16 +13763,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "3.2.2.2/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -14847,6 +15048,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "disconnectAdminDownInterfaces" : true,
         "domainName" : "lab.local",
         "humanName" : "as3core1",
         "interfaces" : {
@@ -14856,13 +15058,17 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : false,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
+            "blacklisted" : false,
             "declaredNames" : [
               "Ethernet0/0"
             ],
             "hmm" : false,
+            "inactiveReason" : "ADMIN_DOWN",
+            "lineUp" : true,
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -14881,16 +15087,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "3.0.2.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -14921,16 +15130,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "3.0.1.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet1/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -14961,16 +15173,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "90.90.90.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet2/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "90.90.90.1/24",
             "proxyArp" : true,
@@ -14990,16 +15205,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "90.90.90.2/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "GigabitEthernet3/0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "prefix" : "90.90.90.2/24",
             "proxyArp" : true,
@@ -15019,16 +15237,19 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "3.10.1.1/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "Loopback0"
             ],
             "hmm" : false,
+            "lineUp" : true,
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 1,
@@ -15472,6 +15693,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "HOST",
+        "disconnectAdminDownInterfaces" : true,
         "interfaces" : {
           "eth0" : {
             "name" : "eth0",
@@ -15479,17 +15701,20 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.128.0.101/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "eth0"
             ],
             "hmm" : false,
             "incomingFilter" : "filter::INPUT",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "filter::OUTPUT",
             "prefix" : "2.128.0.101/24",
@@ -15813,6 +16038,7 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "HOST",
+        "disconnectAdminDownInterfaces" : true,
         "interfaces" : {
           "eth0" : {
             "name" : "eth0",
@@ -15820,17 +16046,20 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "adminUp" : true,
             "allPrefixes" : [
               "2.128.1.101/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
+            "blacklisted" : false,
             "declaredNames" : [
               "eth0"
             ],
             "hmm" : false,
             "incomingFilter" : "filter::INPUT",
+            "lineUp" : true,
             "mtu" : 1500,
             "outgoingFilter" : "filter::OUTPUT",
             "prefix" : "2.128.1.101/24",

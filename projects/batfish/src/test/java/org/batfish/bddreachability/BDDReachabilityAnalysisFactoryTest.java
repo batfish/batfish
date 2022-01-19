@@ -530,12 +530,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Vrf vrf = nf.vrfBuilder().setOwner(loopbackConfig).build();
 
     ConcreteInterfaceAddress loopbackAddress = ConcreteInterfaceAddress.parse("1.2.3.4/32");
-    nf.interfaceBuilder()
-        .setActive(true)
-        .setOwner(loopbackConfig)
-        .setVrf(vrf)
-        .setAddress(loopbackAddress)
-        .build();
+    nf.interfaceBuilder().setOwner(loopbackConfig).setVrf(vrf).setAddress(loopbackAddress).build();
     configs.put(loopbackConfig.getHostname(), loopbackConfig);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
@@ -588,7 +583,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setAddress(ConcreteInterfaceAddress.create(ip, 32))
-            .setActive(true)
             .build();
 
     // when interface is active and not blacklisted, its Ip belongs to the VRF
@@ -605,16 +599,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     // when interface is inactive, it doesn't own any IPs
     {
-      iface.setActive(false);
-      BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
-      Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
-          ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
-      assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
-    }
-
-    // when interface is blacklisted, it doesn't own any IPs
-    {
-      iface.blacklist();
+      iface.adminDown();
       BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
       Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
           ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
@@ -637,7 +622,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setOwner(config)
             .setVrf(vrf)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/8"))
             .setIncomingFilter(
                 nf.aclBuilder()
@@ -698,7 +682,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setOwner(config)
             .setVrf(vrf)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/8"))
             .setIncomingFilter(
                 nf.aclBuilder()
@@ -761,7 +744,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setOwner(config)
             .setVrf(vrf)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
@@ -830,7 +812,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setOwner(config)
             .setVrf(vrf)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
             .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
@@ -965,7 +946,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setOwner(config)
             .setVrf(vrf)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
             .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
@@ -1188,7 +1168,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
     nf.interfaceBuilder()
         .setOwner(config)
         .setVrf(vrf)
-        .setActive(true)
         .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
         .setOutgoingTransformation(
             always().apply(assignSourceIp(srcNatPoolIp, srcNatPoolIp)).build())
@@ -1229,7 +1208,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
     nf.interfaceBuilder()
         .setOwner(config)
         .setVrf(vrf)
-        .setActive(true)
         .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
         .setOutgoingTransformation(always().apply(assignSourcePort(10000, 10000)).build())
         .setIncomingTransformation(always().apply(assignDestinationPort(30000, 30000)).build())
@@ -1275,7 +1253,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setOwner(config)
             .setVrf(vrf)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
             .setOutgoingTransformation(
                 when(matchDst(new IpSpaceReference(ipSpaceName)))
@@ -1349,7 +1326,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                             new Return(new FibLookup(new LiteralVrfName(vrf2.getName())))))),
                 new Return(Drop.instance()))));
 
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf);
     Interface ingressIface =
         ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     ingressIface.setPacketPolicy(packetPolicyName);
@@ -1513,7 +1490,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .build();
     ingressVrf.setStaticRoutes(ImmutableSortedSet.of(ingressVrfNextVrfRoute));
 
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(ingressNode).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(ingressNode);
     ib.setName(INGRESS_IFACE)
         .setVrf(ingressVrf)
         .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
@@ -1674,7 +1651,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                             new Return(new FibLookup(new LiteralVrfName(vrf.getName())))))),
                 new Return(Drop.instance()))));
 
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf);
     Interface ingressIface =
         ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24")).build();
     ingressIface.setPacketPolicy(packetPolicyName);
@@ -1727,7 +1704,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf);
     Interface iface1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     ib.setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24")).build();
 
@@ -1978,7 +1955,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setVrf(vrf)
             .setOwner(n1)
-            .setActive(true)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
             .setIncomingFilter(nf.aclBuilder().setOwner(n1).setLines(ACCEPT_ALL).build())
             .setPacketPolicy(pbr.getName())

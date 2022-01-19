@@ -80,7 +80,7 @@ public class BDDSourceManagerTest {
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
     ib.setName(IFACE3).build();
-    ib.setName(IFACE4).setActive(false).build();
+    ib.setName(IFACE4).setAdminUp(false).build();
 
     // an ACL that can only match with an IFACE2 or iface3
     IpAccessList.builder()
@@ -177,7 +177,7 @@ public class BDDSourceManagerTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
     ib.setName(IFACE3)
@@ -202,7 +202,7 @@ public class BDDSourceManagerTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setActive(true);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
     ib.setName(IFACE3).build();

@@ -93,7 +93,7 @@ public class OspfProcessTest {
                 OspfInterfaceSettings.defaultSettingsBuilder()
                     .setAreaName(area1.getAreaNumber())
                     .build())
-            .setActive(false)
+            .setAdminUp(false)
             .build();
     area1.addInterface("eth2");
     Interface i3 =
@@ -104,7 +104,7 @@ public class OspfProcessTest {
                     .setAreaName(area1.getAreaNumber())
                     .setPassive(true)
                     .build())
-            .setActive(true)
+            .setAdminUp(true)
             .build();
     area1.addInterface("eth3");
 

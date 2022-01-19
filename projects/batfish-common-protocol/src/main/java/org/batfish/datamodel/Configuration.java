@@ -69,10 +69,12 @@ public final class Configuration implements Serializable {
     private String _domainName;
     private LineAction _defaultCrossZoneAction;
     private LineAction _defaultInboundAction;
+    private boolean _disconnectAdminDownInterfaces;
     private boolean _mainRibEnforceResolvability;
 
     private Builder(@Nullable Supplier<String> hostnameGenerator) {
       _hostnameGenerator = hostnameGenerator;
+      _disconnectAdminDownInterfaces = true;
     }
 
     public Configuration build() {
@@ -91,6 +93,7 @@ public final class Configuration implements Serializable {
       configuration.setDeviceModel(_deviceModel);
       configuration.setDomainName(_domainName);
       configuration.setMainRibEnforceResolvability(_mainRibEnforceResolvability);
+      configuration.setDisconnectAdminDownInterfaces(_disconnectAdminDownInterfaces);
       return configuration;
     }
 
@@ -133,6 +136,12 @@ public final class Configuration implements Serializable {
       return this;
     }
 
+    public @Nonnull Builder setDisconnectAdminDownInterfaces(
+        boolean disconnectAdminDownInterfaces) {
+      _disconnectAdminDownInterfaces = disconnectAdminDownInterfaces;
+      return this;
+    }
+
     public @Nonnull Builder setMainRibEnforceResolvability(boolean mainRibEnforceResolvability) {
       _mainRibEnforceResolvability = mainRibEnforceResolvability;
       return this;
@@ -154,6 +163,8 @@ public final class Configuration implements Serializable {
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
   private static final String PROP_DEVICE_MODEL = "deviceModel";
   private static final String PROP_DEVICE_TYPE = "deviceType";
+  private static final String PROP_DISCONNECT_ADMIN_DOWN_INTERFACES =
+      "disconnectAdminDownInterfaces";
   private static final String PROP_DNS_SERVERS = "dnsServers";
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
   private static final String PROP_DOMAIN_NAME = "domainName";
@@ -214,6 +225,8 @@ public final class Configuration implements Serializable {
 
   private DeviceModel _deviceModel;
   private DeviceType _deviceType;
+
+  private boolean _disconnectAdminDownInterfaces;
 
   private Set<String> _dnsServers;
 
@@ -323,6 +336,7 @@ public final class Configuration implements Serializable {
     _communitySetMatchExprs = new HashMap<>();
     _communitySets = new HashMap<>();
     _configurationFormat = configurationFormat;
+    _disconnectAdminDownInterfaces = true;
     _dnsServers = new TreeSet<>();
     _domainName = null;
     _generatedReferenceBooks = new TreeMap<>();
@@ -616,6 +630,12 @@ public final class Configuration implements Serializable {
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
+  /** Whether administratively disconnected interfaces are always automatically line down. */
+  @JsonProperty(PROP_DISCONNECT_ADMIN_DOWN_INTERFACES)
+  public boolean getDisconnectAdminDownInterfaces() {
+    return _disconnectAdminDownInterfaces;
+  }
+
   /** Dictionary of all IPV6 access-lists for this node. */
   @JsonProperty(PROP_IP6_ACCESS_LISTS)
   public Map<String, Ip6AccessList> getIp6AccessLists() {
@@ -856,6 +876,11 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_DEVICE_TYPE)
   public void setDeviceType(DeviceType deviceType) {
     _deviceType = deviceType;
+  }
+
+  @JsonProperty(PROP_DISCONNECT_ADMIN_DOWN_INTERFACES)
+  public void setDisconnectAdminDownInterfaces(boolean disconnectAdminDownInterfaces) {
+    _disconnectAdminDownInterfaces = disconnectAdminDownInterfaces;
   }
 
   @JsonProperty(PROP_DNS_SERVERS)

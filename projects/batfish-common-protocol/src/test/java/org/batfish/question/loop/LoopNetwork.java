@@ -34,7 +34,6 @@ public class LoopNetwork {
     ConcreteInterfaceAddress c2Addr = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     Interface i1 =
         nf.interfaceBuilder()
-            .setActive(true)
             .setOwner(c1)
             .setVrf(v1)
             .setAddress(c1Addr)
@@ -53,7 +52,6 @@ public class LoopNetwork {
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
     Interface i2 =
         nf.interfaceBuilder()
-            .setActive(true)
             .setOwner(c2)
             .setVrf(v2)
             .setAddress(c2Addr)

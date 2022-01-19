@@ -1579,7 +1579,9 @@ public final class AsaConfiguration extends VendorConfiguration {
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
-    newIface.setActive(iface.getActive());
+    if (!newIface.getActive()) {
+      newIface.adminDown();
+    }
     if (iface.getChannelGroup() != null) {
       // to handle nameif in setting channel group, get the alias from the interface if possible
       newIface.setChannelGroup(getNewInterfaceName(iface.getChannelGroup()));

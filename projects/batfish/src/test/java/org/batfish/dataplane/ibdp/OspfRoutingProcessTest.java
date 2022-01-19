@@ -154,12 +154,12 @@ public class OspfRoutingProcessTest {
             .setType(InterfaceType.PHYSICAL)
             .setBandwidth(1e8);
     Interface inactiveIface =
-        ib.setActive(false)
+        ib.setAdminUp(false)
             .setName(INACTIVE_IFACE_NAME)
             .setAddresses(INACTIVE_ADDR)
             .setOspfSettings(ospf.setCost(10).build())
             .build();
-    ib.setActive(true);
+    ib.setAdminUp(true);
     Interface activeIface =
         ib.setName(ACTIVE_IFACE_NAME)
             .setAddresses(ACTIVE_ADDR_1, ACTIVE_ADDR_2, ACTIVE_ADDR_3_SUMMARIZED)
@@ -1180,7 +1180,7 @@ public class OspfRoutingProcessTest {
 
     Interface activeIface =
         nf.interfaceBuilder()
-            .setActive(true)
+            .setAdminUp(true)
             .setVrf(vrf)
             .setOwner(_c)
             .setType(InterfaceType.PHYSICAL)

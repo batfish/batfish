@@ -1,13 +1,18 @@
 package org.batfish.datamodel.interface_dependencies;
 
 import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
+import static org.batfish.datamodel.InactiveReason.AGGREGATE_NEIGHBOR_DOWN;
+import static org.batfish.datamodel.InactiveReason.BIND_DOWN;
+import static org.batfish.datamodel.InactiveReason.LACP_FAILURE;
+import static org.batfish.datamodel.InactiveReason.NO_ACTIVE_MEMBERS;
+import static org.batfish.datamodel.InactiveReason.PARENT_DOWN;
+import static org.batfish.datamodel.InactiveReason.PHYSICAL_NEIGHBOR_DOWN;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 import static org.batfish.datamodel.interface_dependency.InterfaceDependencies.getInterfacesToDeactivate;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -61,13 +66,13 @@ public class InterfaceDependenciesTest {
     Layer1Topologies layer1Topologies =
         layer1Topologies(new Layer1Topology(l1Edge(i1, i2)), Layer1Topology.EMPTY);
 
-    // i2 is inactive and i1 and i2 are in the same p2p broadcast domain, so deactivate i1.
-    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), anEmptyMap());
 
-    i2.setActive(false);
+    i2.adminDown();
     // i2 is inactive and i1 and i2 are in the same p2p broadcast domain, so deactivate i1.
     assertThat(
-        getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(i1)));
+        getInterfacesToDeactivate(configs, layer1Topologies),
+        equalTo(ImmutableMap.of(NodeInterfacePair.of(i1), PHYSICAL_NEIGHBOR_DOWN)));
   }
 
   @Test
@@ -96,15 +101,15 @@ public class InterfaceDependenciesTest {
 
     Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
 
-    i1.setActive(false);
+    i1.adminDown();
     // only i1 is inactive, so i3 is up
-    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), empty());
+    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), anEmptyMap());
 
-    i2.setActive(false);
+    i2.adminDown();
     // i1 and i2 are inactive, so i3 is down
     assertThat(
         getInterfacesToDeactivate(configs, Layer1Topologies.empty()),
-        contains(NodeInterfacePair.of(i3)));
+        equalTo(ImmutableMap.of(NodeInterfacePair.of(i3), NO_ACTIVE_MEMBERS)));
   }
 
   @Test
@@ -130,17 +135,62 @@ public class InterfaceDependenciesTest {
     Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
 
     // only i1 is active, so i2 is up
-    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), empty());
+    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), anEmptyMap());
 
-    i1.setActive(false);
+    i1.adminDown();
     // i1 and i2 are inactive, so i3 is down
     assertThat(
         getInterfacesToDeactivate(configs, Layer1Topologies.empty()),
-        contains(NodeInterfacePair.of(i2)));
+        equalTo(ImmutableMap.of(NodeInterfacePair.of(i2), PARENT_DOWN)));
   }
 
   @Test
-  public void testGetInterfacesToDeactivate_missing_bind() {
+  public void testGetInterfacesToDeactivate_missing_bind_physical_unknown() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.setHostname("n1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+
+    // i2 has a BIND dependency on i1 and on a missing interface
+    Interface i1 = nf.interfaceBuilder().setOwner(n1).setVrf(v1).build();
+    Interface i2 =
+        nf.interfaceBuilder()
+            .setOwner(n1)
+            .setType(InterfaceType.PHYSICAL)
+            .setVrf(v1)
+            .setDependencies(
+                ImmutableList.of(
+                    new Dependency(i1.getName(), BIND), new Dependency("missing", BIND)))
+            .build();
+    Interface i3 =
+        nf.interfaceBuilder()
+            .setOwner(n1)
+            .setType(InterfaceType.UNKNOWN)
+            .setVrf(v1)
+            .setDependencies(
+                ImmutableList.of(
+                    new Dependency(i1.getName(), BIND), new Dependency("missing", BIND)))
+            .build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(Layer1Topology.EMPTY, Layer1Topology.EMPTY);
+
+    // i2 and i3 are down due to missing BIND dependency
+    assertThat(
+        getInterfacesToDeactivate(configs, layer1Topologies),
+        equalTo(
+            ImmutableMap.of(
+                NodeInterfacePair.of(i2),
+                PHYSICAL_NEIGHBOR_DOWN,
+                NodeInterfacePair.of(i3),
+                PHYSICAL_NEIGHBOR_DOWN)));
+  }
+
+  @Test
+  public void testGetInterfacesToDeactivate_missing_bind_aggregated_redundant() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -154,6 +204,56 @@ public class InterfaceDependenciesTest {
         nf.interfaceBuilder()
             .setOwner(n1)
             .setVrf(v1)
+            .setType(InterfaceType.AGGREGATED)
+            .setDependencies(
+                ImmutableList.of(
+                    new Dependency(i1.getName(), BIND),
+                    new Dependency("missing", BIND),
+                    new Dependency(i1.getName(), AGGREGATE)))
+            .build();
+    Interface i3 =
+        nf.interfaceBuilder()
+            .setOwner(n1)
+            .setVrf(v1)
+            .setType(InterfaceType.REDUNDANT)
+            .setDependencies(
+                ImmutableList.of(
+                    new Dependency(i1.getName(), BIND),
+                    new Dependency("missing", BIND),
+                    new Dependency(i1.getName(), AGGREGATE)))
+            .build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(Layer1Topology.EMPTY, Layer1Topology.EMPTY);
+
+    // i2 and i3 are down due to missing BIND dependency
+    assertThat(
+        getInterfacesToDeactivate(configs, layer1Topologies),
+        equalTo(
+            ImmutableMap.of(
+                NodeInterfacePair.of(i2),
+                AGGREGATE_NEIGHBOR_DOWN,
+                NodeInterfacePair.of(i3),
+                AGGREGATE_NEIGHBOR_DOWN)));
+  }
+
+  @Test
+  public void testGetInterfacesToDeactivate_missing_bind_tunnel() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.setHostname("n1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+
+    // i2 has a BIND dependency on i1 and on a missing interface
+    Interface i1 = nf.interfaceBuilder().setOwner(n1).setVrf(v1).build();
+    Interface i2 =
+        nf.interfaceBuilder()
+            .setOwner(n1)
+            .setVrf(v1)
+            .setType(InterfaceType.TUNNEL)
             .setDependencies(
                 ImmutableList.of(
                     new Dependency(i1.getName(), BIND), new Dependency("missing", BIND)))
@@ -163,9 +263,10 @@ public class InterfaceDependenciesTest {
     Layer1Topologies layer1Topologies =
         layer1Topologies(Layer1Topology.EMPTY, Layer1Topology.EMPTY);
 
-    // i2 is down due to missing BIND dependency
+    // i2 and i3 are down due to missing BIND dependency
     assertThat(
-        getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(i2)));
+        getInterfacesToDeactivate(configs, layer1Topologies),
+        equalTo(ImmutableMap.of(NodeInterfacePair.of(i2), BIND_DOWN)));
   }
 
   @Test
@@ -192,11 +293,11 @@ public class InterfaceDependenciesTest {
     // both AGGREGATE deps are missing, so deactivate
     assertThat(
         getInterfacesToDeactivate(configs, Layer1Topologies.empty()),
-        contains(NodeInterfacePair.of(i1)));
+        equalTo(ImmutableMap.of(NodeInterfacePair.of(i1), NO_ACTIVE_MEMBERS)));
 
     nf.interfaceBuilder().setOwner(n1).setVrf(v1).setName("missing1").build();
     // one of the AGGREGATE deps is present (and active), so don't deactivate
-    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), empty());
+    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), anEmptyMap());
   }
 
   /**
@@ -296,32 +397,40 @@ public class InterfaceDependenciesTest {
             new Layer1Topology(l1Edge(pc1, pc2)));
 
     // m1 is inactive, so m2 becomes inactive too
-    m1.setActive(false);
+    m1.adminDown();
     assertThat(
-        getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(m2)));
+        getInterfacesToDeactivate(configs, layer1Topologies),
+        equalTo(ImmutableMap.of(NodeInterfacePair.of(m2), PHYSICAL_NEIGHBOR_DOWN)));
 
     // m4 is inactive so m3 becomes inactive too. that brings down the port-channels and their
     // subinterfaces
-    m4.setActive(false);
+    m4.adminDown();
     assertThat(
         getInterfacesToDeactivate(configs, layer1Topologies),
-        containsInAnyOrder(
-            NodeInterfacePair.of(m2),
-            NodeInterfacePair.of(m3),
-            NodeInterfacePair.of(pc1),
-            NodeInterfacePair.of(pc1_1),
-            NodeInterfacePair.of(pc2),
-            NodeInterfacePair.of(pc2_1)));
+        equalTo(
+            ImmutableMap.of(
+                NodeInterfacePair.of(m2), PHYSICAL_NEIGHBOR_DOWN,
+                NodeInterfacePair.of(m3), PHYSICAL_NEIGHBOR_DOWN,
+                NodeInterfacePair.of(pc1), NO_ACTIVE_MEMBERS,
+                NodeInterfacePair.of(pc1_1), PARENT_DOWN,
+                NodeInterfacePair.of(pc2), NO_ACTIVE_MEMBERS,
+                NodeInterfacePair.of(pc2_1), PARENT_DOWN)));
 
     // now member interfaces are active but one of the port-channels is inactive.
     // deactivate the other port-channel and both subinterfaces
-    m1.setActive(true);
-    m4.setActive(true);
-    pc1.setActive(false);
+    m1.activate();
+    m4.activate();
+    pc1.adminDown();
     assertThat(
         getInterfacesToDeactivate(configs, layer1Topologies),
-        containsInAnyOrder(
-            NodeInterfacePair.of(pc1_1), NodeInterfacePair.of(pc2), NodeInterfacePair.of(pc2_1)));
+        equalTo(
+            ImmutableMap.of(
+                NodeInterfacePair.of(pc1_1),
+                PARENT_DOWN,
+                NodeInterfacePair.of(pc2),
+                AGGREGATE_NEIGHBOR_DOWN,
+                NodeInterfacePair.of(pc2_1),
+                PARENT_DOWN)));
   }
 
   /**
@@ -373,7 +482,8 @@ public class InterfaceDependenciesTest {
 
     // pc1 deactivated because it has no neighbor (and it should)
     assertThat(
-        getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(pc1)));
+        getInterfacesToDeactivate(configs, layer1Topologies),
+        equalTo(ImmutableMap.of(NodeInterfacePair.of(pc1), LACP_FAILURE)));
   }
 
   /**
@@ -433,7 +543,7 @@ public class InterfaceDependenciesTest {
             new Layer1Topology(l1Edge(m1, m2)),
             new Layer1Topology(l1Edge(m1, m2), l1Edge(m1, pc2), l1Edge(pc1, m2), l1Edge(pc1, pc2)));
 
-    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), anEmptyMap());
   }
 
   /** An LACP interface without a neighbor can be active if it's on the network boundary. */
@@ -466,7 +576,7 @@ public class InterfaceDependenciesTest {
     Layer1Topologies layer1Topologies = Layer1Topologies.empty();
 
     // pc1 is still active because it's on the network boundary
-    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), anEmptyMap());
   }
 
   /**
@@ -561,7 +671,7 @@ public class InterfaceDependenciesTest {
             new Layer1Topology(l1Edge(n1pc, n2pc), l1Edge(n1pc, n3pc)));
 
     // nothing is deactivated, even though n1pc has an ambiguous neighbor, since it looks like a VPC
-    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), anEmptyMap());
   }
 
   /** Test robustness to {@link Layer1Topologies#INVALID_INTERFACE} in the l1 topology. */
@@ -588,6 +698,6 @@ public class InterfaceDependenciesTest {
             Layer1Topology.EMPTY);
 
     // pc1 is still active because it's on the network boundary
-    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), anEmptyMap());
   }
 }

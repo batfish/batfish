@@ -70,7 +70,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
             .setHostname(NODE)
             .build();
     Vrf v = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
-    _ib = nf.interfaceBuilder().setOwner(c).setVrf(v).setName(INTERFACE).setActive(true);
+    _ib = nf.interfaceBuilder().setOwner(c).setVrf(v).setName(INTERFACE);
     _configurations = ImmutableMap.of(c.getHostname(), c);
     _vnb = testBuilder().setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP);
     _specifierContext =
@@ -280,7 +280,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
-    Interface iface = _ib.setActive(false).build();
+    Interface iface = _ib.setAdminUp(false).build();
     iface.setSwitchport(true);
     iface.setSwitchportMode(SwitchportMode.ACCESS);
     iface.setAccessVlan(vlan);
@@ -311,7 +311,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
-    Interface iface = _ib.setActive(false).build();
+    Interface iface = _ib.setAdminUp(false).build();
     iface.setSwitchport(false);
 
     tryAddInterfaceToVlans(
@@ -325,8 +325,8 @@ public final class SwitchedVlanPropertiesAnswererTest {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
-    Interface iface = _ib.setActive(false).build();
-    iface.setInterfaceType(InterfaceType.VLAN);
+    Interface iface = _ib.setAdminUp(false).build();
+    iface.updateInterfaceType(InterfaceType.VLAN);
     iface.setSwitchport(false);
     iface.setVlan(vlan);
 
@@ -344,7 +344,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
     Interface iface = _ib.build();
-    iface.setInterfaceType(InterfaceType.VLAN);
+    iface.updateInterfaceType(InterfaceType.VLAN);
     iface.setSwitchport(false);
     iface.setVlan(vlan);
 

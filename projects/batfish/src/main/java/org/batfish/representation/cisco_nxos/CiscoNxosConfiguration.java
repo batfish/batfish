@@ -4,6 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.BumTransportMethod.MULTICAST_GROUP;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
+import static org.batfish.datamodel.InactiveReason.INVALID;
+import static org.batfish.datamodel.InactiveReason.VRF_DOWN;
 import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -1636,8 +1638,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .filter(
             iface ->
                 iface.getInterfaceType() == InterfaceType.VLAN
+                    && iface.getActive()
                     && !_vlans.containsKey(iface.getVlan()))
-        .forEach(iface -> iface.setActive(false));
+        .forEach(
+            iface -> {
+              _w.redFlag(
+                  String.format(
+                      "Disabling interface '%s' because it refers to an undefined vlan",
+                      iface.getName()));
+              iface.deactivate(INVALID);
+            });
   }
 
   public @Nullable String getBannerExec() {
@@ -2045,12 +2055,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   + " administratively active arbitrarily",
               ifaceName));
     }
-
-    newIfaceBuilder.setActive(
-        !iface.getShutdownEffective(
+    boolean shutdownEffective =
+        iface.getShutdownEffective(
             _systemDefaultSwitchport,
             _systemDefaultSwitchportShutdown,
-            _nonSwitchportDefaultShutdown));
+            _nonSwitchportDefaultShutdown);
+    CiscoNxosInterfaceType type = iface.getType();
+    InterfaceType viType = toInterfaceType(type, parent != null);
+
+    newIfaceBuilder.setType(viType).setAdminUp(!shutdownEffective);
 
     newIfaceBuilder.setDescription(iface.getDescription());
 
@@ -2155,10 +2168,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       newIfaceBuilder.setAutoState(iface.getAutostate());
     }
 
-    CiscoNxosInterfaceType type = iface.getType();
-    InterfaceType viType = toInterfaceType(type, parent != null);
-    newIfaceBuilder.setType(viType);
-
     Optional<InterfaceRuntimeData> runtimeData =
         Optional.ofNullable(_hostname)
             .map(h -> _runtimeData.getRuntimeData(h))
@@ -2240,11 +2249,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
     if (vrf == null) {
       // Non-existent VRF set; disable and leave in default VRF
-      newIface.setActive(false);
+      _w.redFlag(
+          String.format(
+              "Disabling interface '%s' because it is a member of an undefined vrf",
+              iface.getName()));
+      newIface.deactivate(INVALID);
       vrf = _c.getVrfs().get(DEFAULT_VRF_NAME);
     } else if (_vrfs.get(vrfName).getShutdown()) {
       // VRF is shutdown; disable
-      newIface.setActive(false);
+      newIface.deactivate(VRF_DOWN);
     }
     newIface.setVrf(vrf);
 

@@ -81,7 +81,7 @@ public final class VrrpPropertiesAnswererTest {
             .setName("iface1")
             .setOwner(conf1)
             .setVrrpGroups(ImmutableSortedMap.of(0, group1))
-            .setActive(true)
+            .setAdminUp(true)
             .build();
 
     // inactive interface with VRRP group
@@ -90,12 +90,12 @@ public final class VrrpPropertiesAnswererTest {
             .setName("iface2")
             .setOwner(conf1)
             .setVrrpGroups(ImmutableSortedMap.of(0, group2))
-            .setActive(false)
+            .setAdminUp(false)
             .build();
 
     // active interface without VRRP group
     Interface iface3 =
-        Interface.builder().setName("iface3").setOwner(conf1).setActive(true).build();
+        Interface.builder().setName("iface3").setOwner(conf1).setAdminUp(true).build();
 
     conf1
         .getAllInterfaces()
@@ -140,7 +140,7 @@ public final class VrrpPropertiesAnswererTest {
             .setName("iface")
             .setOwner(conf)
             .setVrrpGroups(ImmutableSortedMap.of(0, group))
-            .setActive(true)
+            .setAdminUp(true)
             .build();
 
     conf.getAllInterfaces().putAll(ImmutableMap.of(iface.getName(), iface));
