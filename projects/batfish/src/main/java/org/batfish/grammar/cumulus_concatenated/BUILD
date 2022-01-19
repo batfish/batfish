@@ -19,7 +19,6 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_ports",
         "//projects/batfish/src/main/java/org/batfish/grammar/frr",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus_concatenated",
-        "//projects/batfish/src/main/java/org/batfish/representation/frr",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",
