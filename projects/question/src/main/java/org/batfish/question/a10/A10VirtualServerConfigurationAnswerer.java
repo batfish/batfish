@@ -180,7 +180,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
    * Returns if this server is active based on whether the member, server, and server port are
    * enabled.
    */
-  private static String getServerActive(
+  public static String getServerActive(
       ServiceGroupMember member, @Nullable Server server, Type type) {
     if (server == null) {
       return "inactive";
@@ -195,7 +195,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
         : "inactive";
   }
 
-  private static String getServerTarget(@Nullable Server server) {
+  public static String getServerTarget(@Nullable Server server) {
     if (server == null) {
       return "Undefined";
     }
