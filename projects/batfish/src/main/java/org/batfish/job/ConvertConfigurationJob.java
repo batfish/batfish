@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addTenantVniInterfaces;
 import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
@@ -75,6 +76,8 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
@@ -84,6 +87,7 @@ import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier;
+import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.batfish.main.Batfish;
@@ -123,7 +127,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    */
   private static <T> ImmutableMap<String, T> verifyAndToImmutableMap(
       @Nullable Map<String, T> map, Function<T, String> keyFn, Warnings w) {
-    return verifyAndToImmutableMap(map, keyFn, w, Comparator.naturalOrder());
+    return verifyAndToImmutableMap(map, keyFn, w, naturalOrder());
   }
 
   /**
@@ -433,6 +437,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyInterfaces(c, w);
     verifyVrrpGroups(c, w);
     removeInvalidStaticRoutes(c, w);
+    removeUndefinedTrackReferences(c, w);
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
@@ -476,6 +481,72 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
     removeInvalidAcls(c, w);
+  }
+
+  /** Remove and warn on undefined track references. */
+  private static void removeUndefinedTrackReferences(Configuration c, Warnings w) {
+    removeUndefinedHsrpTrackReferences(c, w);
+    removeUndefinedStaticRouteTrackReferences(c, w);
+  }
+
+  private static void removeUndefinedStaticRouteTrackReferences(Configuration c, Warnings w) {
+    for (Vrf v : c.getVrfs().values()) {
+      boolean modified = false;
+      ImmutableSortedSet.Builder<StaticRoute> routes = ImmutableSortedSet.naturalOrder();
+      for (StaticRoute sr : v.getStaticRoutes()) {
+        String track = sr.getTrack();
+        if (track != null && !c.getTrackingGroups().containsKey(track)) {
+          modified = true;
+          w.redFlag(
+              String.format(
+                  "Removing reference to undefined track '%s' on static route for prefix %s in vrf"
+                      + " '%s'",
+                  track, sr.getNetwork(), v.getName()));
+          routes.add(sr.toBuilder().setTrack(null).build());
+        } else {
+          routes.add(sr);
+        }
+      }
+      if (modified) {
+        v.setStaticRoutes(routes.build());
+      }
+    }
+  }
+
+  private static void removeUndefinedHsrpTrackReferences(Configuration c, Warnings w) {
+    for (Interface i : c.getAllInterfaces().values()) {
+      boolean groupsModified = false;
+      ImmutableMap.Builder<Integer, HsrpGroup> newGroups = ImmutableMap.builder();
+      for (Entry<Integer, HsrpGroup> groupById : i.getHsrpGroups().entrySet()) {
+        int id = groupById.getKey();
+        ImmutableSortedMap.Builder<String, TrackAction> newActions =
+            ImmutableSortedMap.naturalOrder();
+        HsrpGroup group = groupById.getValue();
+        boolean tracksModified = false;
+        for (Entry<String, TrackAction> actionByTrack : group.getTrackActions().entrySet()) {
+          String track = actionByTrack.getKey();
+          if (!c.getTrackingGroups().containsKey(track)) {
+            tracksModified = true;
+            groupsModified = true;
+            w.redFlag(
+                String.format(
+                    "Removing reference to undefined track '%s' in HSRP group %d on '%s'",
+                    track, id, NodeInterfacePair.of(i)));
+          } else {
+            newActions.put(track, actionByTrack.getValue());
+          }
+        }
+        if (tracksModified) {
+          HsrpGroup newGroup = group.toBuilder().setTrackActions(newActions.build()).build();
+          newGroups.put(id, newGroup);
+        } else {
+          newGroups.put(id, group);
+        }
+      }
+      if (groupsModified) {
+        i.setHsrpGroups(newGroups.build());
+      }
+    }
   }
 
   private static void removeInvalidStaticRoutes(Configuration c, Warnings w) {

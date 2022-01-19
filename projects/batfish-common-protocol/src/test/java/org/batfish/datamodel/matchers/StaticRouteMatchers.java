@@ -38,5 +38,32 @@ public final class StaticRouteMatchers {
     }
   }
 
+  private static final class HasTrack extends FeatureMatcher<StaticRoute, String> {
+    HasTrack(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "A StaticRoute with track:", "track");
+    }
+
+    @Override
+    protected String featureValueOf(StaticRoute actual) {
+      return actual.getTrack();
+    }
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches {@link
+   * StaticRoute#getTrack()}.
+   */
+  public static @Nonnull Matcher<StaticRoute> hasTrack(Matcher<? super String> subMatcher) {
+    return new HasTrack(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the {@link StaticRoute#getTrack()} is equal to {@code
+   * expectedTrack}.
+   */
+  public static @Nonnull Matcher<StaticRoute> hasTrack(String expectedTrack) {
+    return hasTrack(equalTo(expectedTrack));
+  }
+
   private StaticRouteMatchers() {}
 }
