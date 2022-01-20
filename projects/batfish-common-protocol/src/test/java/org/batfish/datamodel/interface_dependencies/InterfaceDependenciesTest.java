@@ -418,8 +418,8 @@ public class InterfaceDependenciesTest {
 
     // now member interfaces are active but one of the port-channels is inactive.
     // deactivate the other port-channel and both subinterfaces
-    m1.activate();
-    m4.activate();
+    m1.activateForTest();
+    m4.activateForTest();
     pc1.adminDown();
     assertThat(
         getInterfacesToDeactivate(configs, layer1Topologies),

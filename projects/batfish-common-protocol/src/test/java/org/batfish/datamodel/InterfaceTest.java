@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isBlacklisted;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isLineUp;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -58,7 +59,7 @@ public class InterfaceTest {
             isActive(),
             isAdminUp(),
             isLineUp(nullValue()),
-            hasInactiveReason(null),
+            hasInactiveReason(nullValue()),
             isBlacklisted(nullValue())));
     assertThat(
         Interface.builder().setName("foo").setType(LOGICAL).setAdminUp(false).build(),
@@ -71,7 +72,12 @@ public class InterfaceTest {
     // line status
     assertThat(
         Interface.builder().setName("foo").setType(PHYSICAL).build(),
-        allOf(isActive(), isAdminUp(), isLineUp(), hasInactiveReason(null), isBlacklisted(false)));
+        allOf(
+            isActive(),
+            isAdminUp(),
+            isLineUp(),
+            hasInactiveReason(nullValue()),
+            isBlacklisted(false)));
     assertThat(
         Interface.builder().setName("foo").setType(PHYSICAL).setAdminUp(false).build(),
         allOf(isActive(false), isAdminUp(false), isLineUp(true), hasInactiveReason(ADMIN_DOWN)));
@@ -431,6 +437,55 @@ public class InterfaceTest {
       assertThat(
           i,
           allOf(isActive(false), isAdminUp(false), isLineUp(false), hasInactiveReason(ADMIN_DOWN)));
+    }
+  }
+
+  @Test
+  public void activateForTest() {
+    {
+      // physical
+      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).setAdminUp(false).build();
+      i.blacklist();
+      assertThat(
+          i,
+          allOf(
+              isActive(false),
+              isAdminUp(false),
+              isLineUp(false),
+              isBlacklisted(),
+              hasInactiveReason(not(nullValue()))));
+
+      i.activateForTest();
+      assertThat(
+          i,
+          allOf(
+              isActive(),
+              isAdminUp(),
+              isLineUp(),
+              isBlacklisted(false),
+              hasInactiveReason(nullValue())));
+    }
+    {
+      // non-physical
+      Interface i = Interface.builder().setName("foo").setType(LOGICAL).setAdminUp(false).build();
+      assertThat(
+          i,
+          allOf(
+              isActive(false),
+              isAdminUp(false),
+              isLineUp(nullValue()),
+              isBlacklisted(nullValue()),
+              hasInactiveReason(not(nullValue()))));
+
+      i.activateForTest();
+      assertThat(
+          i,
+          allOf(
+              isActive(),
+              isAdminUp(),
+              isLineUp(nullValue()),
+              isBlacklisted(nullValue()),
+              hasInactiveReason(nullValue())));
     }
   }
 

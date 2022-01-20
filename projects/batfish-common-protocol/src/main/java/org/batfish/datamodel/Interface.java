@@ -2103,7 +2103,7 @@ public final class Interface extends ComparableStructure<String> {
    *
    * <p>Calling with {@link InactiveReason#FORCED_LINE_DOWN} is equivalent to calling {@link
    * #disconnect(InactiveReason)} with argument {@link InactiveReason#FORCED_LINE_DOWN} (to be used
-   * only in tests).
+   * only internally or in tests).
    *
    * <p>Calling with {@link InactiveReason#NODE_DOWN} is equivalent to calling {@link #nodeDown()}.
    *
@@ -2158,7 +2158,7 @@ public final class Interface extends ComparableStructure<String> {
    * @throws IllegalStateException if this interface is already active.
    */
   @VisibleForTesting
-  public void activate() {
+  public void activateForTest() {
     checkState(!_active, "Cannot activate an active interface");
     _active = true;
     _adminUp = true;
