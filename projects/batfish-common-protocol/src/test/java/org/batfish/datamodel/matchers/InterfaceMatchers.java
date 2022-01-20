@@ -607,6 +607,15 @@ public final class InterfaceMatchers {
     return new HasInactiveReason(equalTo(expectedInactiveReason));
   }
 
+  /**
+   * Provides a matcher that matches if the inactiveReason is matched by the provided {@code
+   * subMatcher}.
+   */
+  public static @Nonnull Matcher<Interface> hasInactiveReason(
+      Matcher<? super InactiveReason> subMatcher) {
+    return new HasInactiveReason(subMatcher);
+  }
+
   /** A matcher that matches if the interface's autoState flag is {@code true}. */
   public static @Nonnull Matcher<Interface> isAutoState() {
     return isAutoState(true);
