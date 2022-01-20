@@ -2092,23 +2092,29 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /**
-   * Deactivate this active interface, after which {@link #getActive()} will return {@code false}
-   * and {@link #getInactiveReason()} will return {@code inactiveReason}.
+   * Deactivate this active interface, after which:
    *
-   * <p>Calling with {@link InactiveReason#ADMIN_DOWN} is equivalent to calling {@link
-   * #adminDown()}.
+   * <ul>
+   *   <li>{@link #getActive()} will return {@code false}.
+   *   <li>{@link #getInactiveReason()} will return {@code inactiveReason} in default cases not
+   *       enumerated below. For enumerated cases, see respective javdocs.
+   * </ul>
    *
-   * <p>Calling with {@link InactiveReason#BLACKLISTED} is equivalent to calling {@link
-   * #blacklist()}.
+   * <p>Special cases:
    *
-   * <p>Calling with {@link InactiveReason#FORCED_LINE_DOWN} is equivalent to calling {@link
-   * #disconnect(InactiveReason)} with argument {@link InactiveReason#FORCED_LINE_DOWN} (to be used
-   * only internally or in tests).
-   *
-   * <p>Calling with {@link InactiveReason#NODE_DOWN} is equivalent to calling {@link #nodeDown()}.
-   *
-   * <p>Calling with {@link InactiveReason#PHYSICAL_NEIGHBOR_DOWN} is equivalent to calling {@link
-   * #physicalNeighborDown()}.
+   * <ul>
+   *   <li>Calling with {@link InactiveReason#ADMIN_DOWN} is equivalent to calling {@link
+   *       #adminDown()}.
+   *   <li>Calling with {@link InactiveReason#BLACKLISTED} is equivalent to calling {@link
+   *       #blacklist()}.
+   *   <li>Calling with {@link InactiveReason#FORCED_LINE_DOWN} is equivalent to calling {@link
+   *       #disconnect(InactiveReason)} with argument {@link InactiveReason#FORCED_LINE_DOWN} (to be
+   *       used only internally or in tests).
+   *   <li>Calling with {@link InactiveReason#NODE_DOWN} is equivalent to calling {@link
+   *       #nodeDown()}.
+   *   <li>Calling with {@link InactiveReason#PHYSICAL_NEIGHBOR_DOWN} is equivalent to calling
+   *       {@link #physicalNeighborDown()}.
+   * </ul>
    *
    * <p>Should only be called after conversion.
    *
