@@ -1873,20 +1873,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @VisibleForTesting
-  static Set<NodeInterfacePair> nodeToInterfaceBlacklist(
-      SortedSet<String> blacklistNodes, NetworkConfigurations configurations) {
-    return blacklistNodes.stream()
-        // Get all valid/present node configs
-        .map(configurations::get)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        // All interfaces in each config
-        .flatMap(c -> c.getAllInterfaces().values().stream())
-        .map(NodeInterfacePair::of)
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
-  @VisibleForTesting
   static void processManagementInterfaces(Map<String, Configuration> configurations) {
     configurations
         .values()
@@ -2046,7 +2032,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Start of blacklisting. Nothing should touch line status until after blacklisting is done.
     SortedSet<String> blacklistedNodes = _storage.loadNodeBlacklist(networkId, snapshotId);
     if (blacklistedNodes != null) {
-      processInterfaceBlacklist(nodeToInterfaceBlacklist(blacklistedNodes, nc), nc);
+      processNodeBlacklist(blacklistedNodes, nc);
     }
     // If interface blacklist was provided, it was converted to runtime data file by WorkMgr
     SnapshotRuntimeData runtimeData = _storage.loadRuntimeData(networkId, snapshotId);
@@ -2090,7 +2076,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     disableUnusableVlanInterfaces(configurations);
   }
 
-  private void disconnectAdminDownInterfaces(Collection<Configuration> configurations) {
+  @VisibleForTesting
+  static void processNodeBlacklist(Set<String> blacklistedNodes, NetworkConfigurations nc) {
+    blacklistedNodes.stream()
+        // Get all valid/present node configs
+        .map(nc::get)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        // All interfaces in each config
+        .flatMap(c -> c.getAllInterfaces().values().stream())
+        // Disable the interface
+        .forEach(Interface::nodeDown);
+  }
+
+  private static void disconnectAdminDownInterfaces(Collection<Configuration> configurations) {
     for (Configuration c : configurations) {
       if (!c.getDisconnectAdminDownInterfaces()) {
         continue;

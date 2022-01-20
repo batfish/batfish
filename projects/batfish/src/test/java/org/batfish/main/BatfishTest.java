@@ -6,11 +6,17 @@ import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.common.util.Resources.readResourceBytes;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.InactiveReason.NODE_DOWN;
+import static org.batfish.datamodel.LineAction.PERMIT;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInactiveReason;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isBlacklisted;
 import static org.batfish.main.Batfish.makeSonicFilePairs;
 import static org.batfish.main.Batfish.mergeInternetAndIspNodes;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
+import static org.batfish.main.Batfish.processNodeBlacklist;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -71,6 +77,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
@@ -612,10 +619,7 @@ public class BatfishTest {
   public void testPostProcessInterfaceDependenciesBind() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
-        nf.configurationBuilder()
-            .setHostname("c1")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
+        nf.configurationBuilder().setHostname("c1").setConfigurationFormat(CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
@@ -647,10 +651,7 @@ public class BatfishTest {
   public void testPostProcessInterfaceDependenciesMissing() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
-        nf.configurationBuilder()
-            .setHostname("c1")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
+        nf.configurationBuilder().setHostname("c1").setConfigurationFormat(CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
     ib.setName("eth1")
@@ -667,10 +668,7 @@ public class BatfishTest {
   public void testPostProcessInterfaceDependenciesAggregate() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
-        nf.configurationBuilder()
-            .setHostname("c1")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
+        nf.configurationBuilder().setHostname("c1").setConfigurationFormat(CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf);
@@ -766,7 +764,7 @@ public class BatfishTest {
   @Test
   public void testMergeInternetAndIspNodes() {
     Map<String, Configuration> snapshotConfigs = new HashMap<>();
-    Configuration config = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
+    Configuration config = new Configuration("node1", CISCO_IOS);
     snapshotConfigs.put(config.getHostname(), config);
 
     Set<Layer1Edge> snapshotEdges = new HashSet<>();
@@ -907,5 +905,54 @@ public class BatfishTest {
                   "Unexpected packaging: File appears by itself; SONiC files must have their"
                       + " counterpart in the same directory.")));
     }
+  }
+
+  @Test
+  public void testProcessNodeBlacklist() {
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(CISCO_IOS)
+            .setDefaultInboundAction(PERMIT)
+            .setDefaultCrossZoneAction(PERMIT)
+            .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(CISCO_IOS)
+            .setDefaultInboundAction(PERMIT)
+            .setDefaultCrossZoneAction(PERMIT)
+            .build();
+    Vrf v1 = Vrf.builder().setName("v1").setOwner(c1).build();
+    Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
+    Interface i1 =
+        Interface.builder()
+            .setName("i1")
+            .setOwner(c1)
+            .setVrf(v1)
+            .setType(InterfaceType.PHYSICAL)
+            .build();
+    Interface i2 =
+        Interface.builder()
+            .setName("i2")
+            .setOwner(c2)
+            .setVrf(v2)
+            .setType(InterfaceType.PHYSICAL)
+            .build();
+
+    assertThat(i1, hasInactiveReason(nullValue()));
+    assertThat(i2, hasInactiveReason(nullValue()));
+
+    NetworkConfigurations nc =
+        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    processNodeBlacklist(ImmutableSet.of("c1"), nc);
+
+    // only i1 should be node down
+    assertThat(i1, hasInactiveReason(NODE_DOWN));
+    assertThat(i2, hasInactiveReason(nullValue()));
+
+    // blacklisting a node should not blacklist an interface
+    assertThat(i1, isBlacklisted(false));
+    assertThat(i2, isBlacklisted(false));
   }
 }

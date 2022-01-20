@@ -2,8 +2,9 @@ package org.batfish.datamodel;
 
 import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
 import static org.batfish.datamodel.InactiveReason.BLACKLISTED;
+import static org.batfish.datamodel.InactiveReason.FORCED_LINE_DOWN;
 import static org.batfish.datamodel.InactiveReason.IGNORE_MGMT;
-import static org.batfish.datamodel.InactiveReason.LINE_DOWN;
+import static org.batfish.datamodel.InactiveReason.NODE_DOWN;
 import static org.batfish.datamodel.InactiveReason.PARENT_DOWN;
 import static org.batfish.datamodel.InactiveReason.PHYSICAL_NEIGHBOR_DOWN;
 import static org.batfish.datamodel.Interface.computeCiscoInterfaceType;
@@ -76,7 +77,11 @@ public class InterfaceTest {
         allOf(isActive(false), isAdminUp(false), isLineUp(true), hasInactiveReason(ADMIN_DOWN)));
     assertThat(
         Interface.builder().setName("foo").setType(PHYSICAL).setLineUp(false).build(),
-        allOf(isActive(false), isAdminUp(true), isLineUp(false), hasInactiveReason(LINE_DOWN)));
+        allOf(
+            isActive(false),
+            isAdminUp(true),
+            isLineUp(false),
+            hasInactiveReason(FORCED_LINE_DOWN)));
     assertThat(
         Interface.builder()
             .setName("foo")
@@ -138,17 +143,31 @@ public class InterfaceTest {
               isBlacklisted()));
     }
     {
-      // special case: LINE_DOWN
+      // special case: FORCED_LINE_DOWN
       Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, isActive());
-      i.deactivate(LINE_DOWN);
+      i.deactivate(FORCED_LINE_DOWN);
       assertThat(
           i,
           allOf(
               isActive(false),
               isAdminUp(),
               isLineUp(false),
-              hasInactiveReason(LINE_DOWN),
+              hasInactiveReason(FORCED_LINE_DOWN),
+              isBlacklisted(false)));
+    }
+    {
+      // special case: NODE_DOWN
+      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      assertThat(i, isActive());
+      i.deactivate(NODE_DOWN);
+      assertThat(
+          i,
+          allOf(
+              isActive(false),
+              isAdminUp(),
+              isLineUp(false),
+              hasInactiveReason(NODE_DOWN),
               isBlacklisted(false)));
     }
     {
@@ -248,6 +267,29 @@ public class InterfaceTest {
               hasInactiveReason(ADMIN_DOWN)));
     }
     {
+      // node down, then blacklist
+      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
+      i.nodeDown();
+      assertThat(
+          i,
+          allOf(
+              isActive(false),
+              isAdminUp(true),
+              isLineUp(false),
+              isBlacklisted(false),
+              hasInactiveReason(NODE_DOWN)));
+      i.blacklist();
+      assertThat(
+          i,
+          allOf(
+              isActive(false),
+              isAdminUp(true),
+              isLineUp(false),
+              isBlacklisted(),
+              hasInactiveReason(NODE_DOWN)));
+    }
+    {
       // deactivate, then blacklist
       Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
@@ -268,7 +310,7 @@ public class InterfaceTest {
               isAdminUp(true),
               isLineUp(false),
               isBlacklisted(),
-              hasInactiveReason(BLACKLISTED)));
+              hasInactiveReason(IGNORE_MGMT)));
     }
   }
 
@@ -279,16 +321,6 @@ public class InterfaceTest {
 
     _thrown.expect(IllegalStateException.class);
     _thrown.expectMessage("Cannot blacklist an interface that is already blacklisted");
-    i.blacklist();
-  }
-
-  @Test
-  public void testBlacklistInvalidLineDown() {
-    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
-    i.disconnect();
-
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot blacklist an interface that is already line down");
     i.blacklist();
   }
 
@@ -308,9 +340,11 @@ public class InterfaceTest {
       // disconnect
       Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
-      i.disconnect();
+      i.disconnect(FORCED_LINE_DOWN);
       assertThat(
-          i, allOf(isActive(false), isAdminUp(), isLineUp(false), hasInactiveReason(LINE_DOWN)));
+          i,
+          allOf(
+              isActive(false), isAdminUp(), isLineUp(false), hasInactiveReason(FORCED_LINE_DOWN)));
     }
     {
       // admin down, then disconnect
@@ -318,7 +352,7 @@ public class InterfaceTest {
       i.adminDown();
       assertThat(
           i, allOf(isActive(false), isAdminUp(false), isLineUp(), hasInactiveReason(ADMIN_DOWN)));
-      i.disconnect();
+      i.disconnect(FORCED_LINE_DOWN);
       assertThat(
           i,
           allOf(isActive(false), isAdminUp(false), isLineUp(false), hasInactiveReason(ADMIN_DOWN)));
@@ -329,7 +363,7 @@ public class InterfaceTest {
       i.deactivate(InactiveReason.IGNORE_MGMT);
       assertThat(
           i, allOf(isActive(false), isAdminUp(), isLineUp(), hasInactiveReason(IGNORE_MGMT)));
-      i.disconnect();
+      i.disconnect(FORCED_LINE_DOWN);
       assertThat(
           i, allOf(isActive(false), isAdminUp(), isLineUp(false), hasInactiveReason(IGNORE_MGMT)));
     }
@@ -338,11 +372,11 @@ public class InterfaceTest {
   @Test
   public void testDisconnectInvalidTwice() {
     Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
-    i.disconnect();
+    i.disconnect(FORCED_LINE_DOWN);
 
     _thrown.expect(IllegalStateException.class);
     _thrown.expectMessage("Cannot disconnect a disconnected interface");
-    i.disconnect();
+    i.disconnect(FORCED_LINE_DOWN);
   }
 
   @Test
@@ -352,7 +386,52 @@ public class InterfaceTest {
     _thrown.expect(IllegalStateException.class);
     _thrown.expectMessage(
         "Cannot disconnect an interface of type 'LOGICAL' that has no line status");
-    i.disconnect();
+    i.disconnect(FORCED_LINE_DOWN);
+  }
+
+  @Test
+  public void testPhysicalNeighborDown() {
+    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+    assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
+    i.physicalNeighborDown();
+    assertThat(
+        i,
+        allOf(
+            isActive(false),
+            isAdminUp(),
+            isLineUp(false),
+            hasInactiveReason(PHYSICAL_NEIGHBOR_DOWN)));
+  }
+
+  @Test
+  public void testNodeDown() {
+    // physical
+    {
+      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
+      i.nodeDown();
+      assertThat(
+          i, allOf(isActive(false), isAdminUp(), isLineUp(false), hasInactiveReason(NODE_DOWN)));
+    }
+    // non-physical
+    {
+      Interface i = Interface.builder().setName("foo").setType(LOGICAL).build();
+      assertThat(i, allOf(isActive(), isAdminUp(), isLineUp(nullValue())));
+      i.nodeDown();
+      assertThat(
+          i,
+          allOf(isActive(false), isAdminUp(), isLineUp(nullValue()), hasInactiveReason(NODE_DOWN)));
+    }
+    // admin down, then node down
+    {
+      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
+      i.adminDown();
+      i.nodeDown();
+      assertThat(
+          i,
+          allOf(isActive(false), isAdminUp(false), isLineUp(false), hasInactiveReason(ADMIN_DOWN)));
+    }
   }
 
   @Test

@@ -5,7 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
 import static org.batfish.datamodel.InactiveReason.BLACKLISTED;
-import static org.batfish.datamodel.InactiveReason.LINE_DOWN;
+import static org.batfish.datamodel.InactiveReason.FORCED_LINE_DOWN;
+import static org.batfish.datamodel.InactiveReason.NODE_DOWN;
 import static org.batfish.datamodel.InactiveReason.PHYSICAL_NEIGHBOR_DOWN;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -207,7 +208,7 @@ public final class Interface extends ComparableStructure<String> {
         iface.adminDown();
       }
       if (iface.hasLineStatus() && Boolean.FALSE.equals(_lineUp)) {
-        iface.disconnect();
+        iface.disconnect(FORCED_LINE_DOWN);
       }
     }
 
@@ -1972,9 +1973,13 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /**
-   * Administratively disable this active interface, after which {@link #getActive()} and {@link
-   * #getAdminUp()} will return {@code false}. and {@link #getInactiveReason()} will return
-   * InactiveReason#ADMIN_DOWN}.
+   * Administratively disable this active interface, after which:
+   *
+   * <ul>
+   *   <li>{@link #getActive()} will return {@code false}.
+   *   <li>{@link #getAdminUp()} will return {@code false}.
+   *   <li>{@link #getInactiveReason()} will return InactiveReason#ADMIN_DOWN}.
+   * </ul>
    *
    * <p>Should only be called during conversion.
    *
@@ -1990,15 +1995,20 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /**
-   * Blacklist an interface because input data suggests it is down for maintenance, after which
-   * {@link #getActive()} and {@link #getLineUp()} will return {@code false}&#59; {@link
-   * #getBlacklisted()} will return {@code true}&#59; and {@link #getInactiveReason()} will return
-   * {@link InactiveReason#BLACKLISTED} if {@link #getAdminUp()} was {@code true}.
+   * Blacklist an interface because input data suggests it is down for maintenance, after which:
+   *
+   * <ul>
+   *   <li>{@link #getActive()} will return {@code false}.
+   *   <li>{@link #getLineUp()} will return {@code false}.
+   *   <li>{@link #getBlacklisted()} will return {@code true}.
+   *   <li>{@link #getInactiveReason()} will return {@link InactiveReason#BLACKLISTED} if this
+   *       interface was not already inactive.
+   * </ul>
    *
    * <p>Should only be called after conversion.
    *
-   * @throws IllegalStateException if this interface is already blacklisted, is already line down,
-   *     or not of a type that has line status.
+   * @throws IllegalStateException if this interface is already blacklisted or is not of a type that
+   *     has line status.
    */
   public void blacklist() {
     checkState(
@@ -2006,26 +2016,29 @@ public final class Interface extends ComparableStructure<String> {
         "Cannot blacklist an interface of type '%s' that has no line status",
         _interfaceType);
     checkState(!_blacklisted, "Cannot blacklist an interface that is already blacklisted");
-    checkState(_lineUp, "Cannot blacklist an interface that is already line down");
+    if (_active) {
+      _inactiveReason = BLACKLISTED;
+    }
     _active = false;
     _blacklisted = true;
     _lineUp = false;
-    if (_adminUp) {
-      _inactiveReason = BLACKLISTED;
-    }
   }
 
   /**
-   * Mark this interface as disconnected, after which {@link #getActive()} and {@link #getLineUp()}
-   * will return {@code false}. Set inactive reason to {@link InactiveReason#LINE_DOWN} if this
-   * interface was not already inactive.
+   * Disconnect this interface, after which:
    *
-   * <p>Should only be called after conversion.
+   * <ul>
+   *   <li>{@link #getActive()} will return {@code false}.
+   *   <li>{@link #getLineUp()} will return {@code false}.
+   *   <li>{@link #getInactiveReason()} will return {@code inactiveReason} if this interface was not
+   *       already inactive.
+   * </ul>
    *
    * @throws IllegalStateException if this interface is already disconnected, or not of a type that
    *     has line status.
    */
-  public void disconnect() {
+  @VisibleForTesting
+  void disconnect(InactiveReason inactiveReason) {
     checkState(
         hasLineStatus(),
         "Cannot disconnect an interface of type '%s' that has no line status",
@@ -2034,7 +2047,47 @@ public final class Interface extends ComparableStructure<String> {
     _lineUp = false;
     if (_active) {
       _active = false;
-      _inactiveReason = LINE_DOWN;
+      _inactiveReason = inactiveReason;
+    }
+  }
+
+  /**
+   * Disconnect this physical interface because its physical neighbor is down, after which:
+   *
+   * <ul>
+   *   <li>{@link #getActive()} will return {@code false}.
+   *   <li>{@link #getLineUp()} will return {@code false}.
+   *   <li>{@link #getInactiveReason()} will return {@link InactiveReason#PHYSICAL_NEIGHBOR_DOWN}.
+   * </ul>
+   *
+   * <p>Should only be called after conversion.
+   *
+   * @throws IllegalStateException if this interface is already disconnected, or not of a type that
+   *     has line status.
+   */
+  public void physicalNeighborDown() {
+    disconnect(PHYSICAL_NEIGHBOR_DOWN);
+  }
+
+  /**
+   * Disable this interface because the node that owns it is down, after which:
+   *
+   * <ul>
+   *   <li>{@link #getActive()} will return {@code false}.
+   *   <li>{@link #getLineUp()} will return {@code false} if this is a physical interface.
+   *   <li>{@link #getInactiveReason()} will return {@link InactiveReason#NODE_DOWN} if this
+   *       interface is not already inactive.
+   * </ul>
+   *
+   * <p>Should only be called after conversion.
+   */
+  public void nodeDown() {
+    if (_active) {
+      _inactiveReason = NODE_DOWN;
+    }
+    _active = false;
+    if (hasLineStatus()) {
+      _lineUp = false;
     }
   }
 
@@ -2048,8 +2101,14 @@ public final class Interface extends ComparableStructure<String> {
    * <p>Calling with {@link InactiveReason#BLACKLISTED} is equivalent to calling {@link
    * #blacklist()}.
    *
-   * <p>Calling with {@link InactiveReason#LINE_DOWN} is equivalent to calling {@link
-   * #disconnect()}.
+   * <p>Calling with {@link InactiveReason#FORCED_LINE_DOWN} is equivalent to calling {@link
+   * #disconnect(InactiveReason)} with argument {@link InactiveReason#FORCED_LINE_DOWN} (to be used
+   * only in tests).
+   *
+   * <p>Calling with {@link InactiveReason#NODE_DOWN} is equivalent to calling {@link #nodeDown()}.
+   *
+   * <p>Calling with {@link InactiveReason#PHYSICAL_NEIGHBOR_DOWN} is equivalent to calling {@link
+   * #physicalNeighborDown()}.
    *
    * <p>Should only be called after conversion.
    *
@@ -2064,12 +2123,14 @@ public final class Interface extends ComparableStructure<String> {
       case BLACKLISTED:
         blacklist();
         break;
-      case LINE_DOWN:
-        disconnect();
+      case FORCED_LINE_DOWN:
+        disconnect(FORCED_LINE_DOWN);
         break;
       case PHYSICAL_NEIGHBOR_DOWN:
-        disconnect();
-        _inactiveReason = PHYSICAL_NEIGHBOR_DOWN;
+        physicalNeighborDown();
+        break;
+      case NODE_DOWN:
+        nodeDown();
         break;
       default:
         checkState(_active, "Cannot deactivate an inactive interface");
@@ -2080,7 +2141,17 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /**
-   * Activate this inactive interface and clear inactive reason.
+   * Activate this inactive interface, after which:
+   *
+   * <ul>
+   *   <li>{@link #getActive()} will return {@code true}.
+   *   <li>{@link #getAdminUp()} will return {@code true}.
+   *   <li>{@link #getBlacklisted()} will return {@code false} if this is a physical interface, else
+   *       {@code null}.
+   *   <li>{@link #getLineUp()} will return {@code true} if this is a physical interface, else
+   *       {@code null}.
+   *   <li>{@link #getInactiveReason()} will return {@code null}.
+   * </ul>
    *
    * <p>Should only be called from test code.
    *
@@ -2094,6 +2165,7 @@ public final class Interface extends ComparableStructure<String> {
     _inactiveReason = null;
     if (hasLineStatus()) {
       _lineUp = true;
+      _blacklisted = false;
     }
   }
 }
