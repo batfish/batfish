@@ -3,7 +3,6 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
-import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -21,6 +20,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
+import org.batfish.datamodel.acl.SourcesReferencedOnDevice;
 
 /**
  * Manages BDD variables to track a packet's source: which interface it entered the node through, if
@@ -108,15 +108,6 @@ public final class BDDSourceManager {
     return forSourcesInternal(pkt, ImmutableSet.of(), ImmutableSet.of());
   }
 
-  public static BDDSourceManager forIpAccessList(
-      BDDPacket pkt, Configuration config, IpAccessList acl) {
-    return forIpAccessList(
-        pkt,
-        Sets.union(ImmutableSet.of(SOURCE_ORIGINATING_FROM_DEVICE), config.activeInterfaceNames()),
-        config.getIpAccessLists(),
-        acl);
-  }
-
   public static BDDSourceManager forSources(
       BDDPacket pkt, Set<String> activeSources, Set<String> referencedSources) {
     return forSourcesInternal(
@@ -154,36 +145,23 @@ public final class BDDSourceManager {
                     .addAll(entry.getValue().activeInterfaceNames())
                     .build());
 
-    Map<String, Set<String>> referencedSources =
+    Map<String, Set<String>> activeAndReferenced =
         toImmutableMap(
             configs.entrySet(),
             Entry::getKey,
             entry -> {
               Configuration config = entry.getValue();
-              Set<String> active = activeSources.get(config.getHostname());
 
               if (initializeSessions
                   && config.getAllInterfaces().values().stream()
                       .filter(Interface::getActive)
                       .anyMatch(iface -> iface.getFirewallSessionInterfaceInfo() != null)) {
                 // This node may initialize sessions -- have to track all active sources
-                return active;
+                return activeSources.get(config.getHostname());
               }
 
-              return referencedSources(
-                      config.getIpAccessLists(), config.getIpAccessLists().keySet())
-                  .stream()
-                  .filter(active::contains)
-                  .collect(ImmutableSet.toImmutableSet());
+              return SourcesReferencedOnDevice.activeReferencedSources(config);
             });
-
-    Map<String, Set<String>> activeAndReferenced =
-        toImmutableMap(
-            activeSources,
-            Entry::getKey,
-            activeEntry ->
-                Sets.intersection(
-                    activeEntry.getValue(), referencedSources.get(activeEntry.getKey())));
 
     Map<String, Set<String>> activeButNotReferenced =
         toImmutableMap(
@@ -191,7 +169,7 @@ public final class BDDSourceManager {
             Entry::getKey,
             activeEntry ->
                 Sets.difference(
-                    activeEntry.getValue(), referencedSources.get(activeEntry.getKey())));
+                    activeEntry.getValue(), activeAndReferenced.get(activeEntry.getKey())));
 
     Map<String, Set<String>> valuesToTrack =
         toImmutableMap(
@@ -212,19 +190,6 @@ public final class BDDSourceManager {
         Entry::getKey,
         entry ->
             new BDDSourceManager(entry.getValue(), activeButNotReferenced.get(entry.getKey())));
-  }
-
-  /**
-   * Create a {@link BDDSourceManager} for a specified {@link IpAccessList}. To minimize the number
-   * of {@link BDD} bits used, it will only track interfaces referenced by the ACL.
-   */
-  public static BDDSourceManager forIpAccessList(
-      BDDPacket pkt,
-      Set<String> activeInterfaces,
-      Map<String, IpAccessList> namedAcls,
-      IpAccessList acl) {
-    Set<String> referencedSources = referencedSources(namedAcls, acl);
-    return forSources(pkt, activeInterfaces, referencedSources);
   }
 
   /**
