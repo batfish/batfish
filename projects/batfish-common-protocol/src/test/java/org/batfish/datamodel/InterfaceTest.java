@@ -441,7 +441,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void activateForTest() {
+  public void testActivateForTest() {
     {
       // physical
       Interface i = Interface.builder().setName("foo").setType(PHYSICAL).setAdminUp(false).build();
