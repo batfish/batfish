@@ -11,6 +11,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_HE
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NBMA_DEAD_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NBMA_HELLO_INTERVAL;
+import static org.batfish.representation.juniper.JuniperConfiguration.FIRST_LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
 import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
@@ -873,5 +874,60 @@ public class JuniperConfigurationTest {
         traceableStatement.getTraceElement(),
         equalTo(
             toTraceableStatement(ImmutableList.of(), "psterm", "ps", "file").getTraceElement()));
+  }
+
+  @Test
+  public void testInferBgpLocalIp_lo0() {
+    // we are not adding any interfaces to vs._c, so all test cases below hit the l0-based inference
+
+    {
+      // lo0 does not exist
+      JuniperConfiguration vsC = createConfig();
+      vsC.getMasterLogicalSystem().setDefaultAddressSelection(true);
+      assertThat(
+          vsC.inferBgpLocalIp(Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.1/31")),
+          nullValue());
+    }
+
+    {
+      // lo0 with legal (not 127.0.0.1) address
+      JuniperConfiguration vsC = createConfig();
+      vsC.getMasterLogicalSystem().setDefaultAddressSelection(true);
+
+      Interface lo0 = new Interface(FIRST_LOOPBACK_INTERFACE_NAME);
+      lo0.setRoutingInstance(vsC.getMasterLogicalSystem().getDefaultRoutingInstance());
+      lo0.setPrimaryAddress(ConcreteInterfaceAddress.parse("192.168.1.1/32"));
+      vsC.getMasterLogicalSystem()
+          .getDefaultRoutingInstance()
+          .getInterfaces()
+          .put(lo0.getName(), lo0);
+
+      // neighbor in default VRF
+      assertThat(
+          vsC.inferBgpLocalIp(Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.1/31")),
+          equalTo(Ip.parse("192.168.1.1")));
+
+      // neighbor in a different VRF
+      assertThat(vsC.inferBgpLocalIp("other", Prefix.parse("1.1.1.1/31")), nullValue());
+    }
+
+    {
+      // lo0 with 127.0.0.1
+      JuniperConfiguration vsC = createConfig();
+      vsC.getMasterLogicalSystem().setDefaultAddressSelection(true);
+
+      Interface lo0 = new Interface(FIRST_LOOPBACK_INTERFACE_NAME);
+      lo0.setRoutingInstance(vsC.getMasterLogicalSystem().getDefaultRoutingInstance());
+      lo0.setPrimaryAddress(ConcreteInterfaceAddress.parse("127.0.0.1/32"));
+      vsC.getMasterLogicalSystem()
+          .getDefaultRoutingInstance()
+          .getInterfaces()
+          .put(lo0.getName(), lo0);
+
+      // neighbor in default VRF
+      assertThat(
+          vsC.inferBgpLocalIp(Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.1/31")),
+          nullValue());
+    }
   }
 }
