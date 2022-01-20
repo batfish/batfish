@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.NetworkSnapshot;
@@ -672,7 +673,7 @@ public class EdgesAnswererTest {
     Topology layer3Topology =
         new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
 
-    Multiset<Row> rows =
+    List<Row> rows =
         getLayer3Edges(_configurations, _includeNodes, _includeRemoteNodes, layer3Topology);
 
     assertThat(
@@ -693,6 +694,95 @@ public class EdgesAnswererTest {
                     COL_REMOTE_IPS,
                     equalTo(ImmutableSet.of(Ip.parse("2.2.2.2"))),
                     Schema.set(Schema.IP)))));
+  }
+
+  @Test
+  public void testLayer3Order() {
+    Topology layer3Topology =
+        new Topology(
+            ImmutableSortedSet.of(
+                Edge.of("host1", "int1", "host2", "int2"),
+                Edge.of("host1", "int1", "host2", "int3"),
+                Edge.of("host1", "int10", "host2", "int2"),
+                Edge.of("host1", "int10", "host2", "int3")));
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration host1 = cb.setHostname("host1").build();
+    host1.setInterfaces(
+        ImmutableSortedMap.of(
+            "int1",
+            Interface.builder()
+                .setName("int1")
+                .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
+                .build(),
+            "int10",
+            Interface.builder()
+                .setName("int10")
+                .setAddress(ConcreteInterfaceAddress.create(Ip.parse("10.10.10.10"), 24))
+                .build()));
+
+    Configuration host2 = cb.setHostname("host2").build();
+    host2.setInterfaces(
+        ImmutableSortedMap.of(
+            "int2",
+            Interface.builder()
+                .setName("int2")
+                .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
+                .build(),
+            "int3",
+            Interface.builder()
+                .setName("int3")
+                .setAddress(ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), 24))
+                .build()));
+
+    SortedMap<String, Configuration> configurations =
+        ImmutableSortedMap.of("host1", host1, "host2", host2);
+
+    List<Row> rows =
+        getLayer3Edges(configurations, _includeNodes, _includeRemoteNodes, layer3Topology);
+
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host2", "int2")),
+                    Schema.INTERFACE)),
+            allOf(
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host1", "int1")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host2", "int3")),
+                    Schema.INTERFACE)),
+            allOf(
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host1", "int10")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host2", "int2")),
+                    Schema.INTERFACE)),
+            allOf(
+                hasColumn(
+                    COL_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host1", "int10")),
+                    Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("host2", "int3")),
+                    Schema.INTERFACE))));
   }
 
   @Test
