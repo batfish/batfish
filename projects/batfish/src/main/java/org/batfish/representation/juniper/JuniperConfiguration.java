@@ -344,7 +344,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Maximum IS-IS route cost if wide-metrics-only is not set */
   @VisibleForTesting static final int MAX_ISIS_COST_WITHOUT_WIDE_METRICS = 63;
 
-  private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
+  @VisibleForTesting static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
   private static String communityRegexToJavaRegex(String regex) {
     String out = regex;
@@ -732,26 +732,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // inherit update-source
       Ip localIp = ig.getLocalAddress();
       if (localIp == null) {
-        // assign the ip of the interface that is likely connected to this
-        // peer
-        outerloop:
-        for (org.batfish.datamodel.Interface iface : _c.getAllInterfaces(vrfName).values()) {
-          for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
-            if (address.getPrefix().containsPrefix(prefix)) {
-              localIp = address.getIp();
-              break outerloop;
-            }
-          }
-        }
-      }
-      if (localIp == null && _masterLogicalSystem.getDefaultAddressSelection()) {
-        initFirstLoopbackInterface();
-        if (_lo0 != null) {
-          ConcreteInterfaceAddress lo0Unit0Address = _lo0.getPrimaryAddress();
-          if (lo0Unit0Address != null) {
-            localIp = lo0Unit0Address.getIp();
-          }
-        }
+        localIp = inferBgpLocalIp(vrfName, prefix);
       }
       if (localIp == null) {
         if (ig.getDynamic()) {
@@ -779,6 +760,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
     proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
 
     return proc;
+  }
+
+  @VisibleForTesting
+  @Nullable
+  Ip inferBgpLocalIp(String neighborVrfName, Prefix neighborPrefix) {
+    // assign the ip of the interface that is likely connected to this peer
+    for (org.batfish.datamodel.Interface iface : _c.getAllInterfaces(neighborVrfName).values()) {
+      for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
+        if (address.getPrefix().containsPrefix(neighborPrefix)) {
+          return address.getIp();
+        }
+      }
+    }
+
+    // Use lo0 as long as it is in the same VRF
+    // Also, do not use 127.0.0.1
+    // https://www.juniper.net/documentation/us/en/software/junos/transport-ip/topics/ref/statement/default-address-selection-edit-system.html
+    if (_masterLogicalSystem.getDefaultAddressSelection()) {
+      initFirstLoopbackInterface();
+      if (_lo0 != null && _lo0.getRoutingInstance().getName().equals(neighborVrfName)) {
+        ConcreteInterfaceAddress lo0Unit0Address = _lo0.getPrimaryAddress();
+        if (lo0Unit0Address != null && !lo0Unit0Address.getIp().equals(Ip.parse("127.0.0.1"))) {
+          return lo0Unit0Address.getIp();
+        }
+      }
+    }
+    return null;
   }
 
   /**
