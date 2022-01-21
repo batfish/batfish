@@ -15,6 +15,8 @@ import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PO
 import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
 import static org.batfish.vendor.a10.representation.A10Conversion.convertAccessList;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
+import static org.batfish.vendor.a10.representation.A10Conversion.findHaSourceAddress;
+import static org.batfish.vendor.a10.representation.A10Conversion.findVrrpAEnabledSourceAddress;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIps;
@@ -29,14 +31,11 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServ
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerKernelRoutes;
-import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchExpr;
 import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
-import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
-import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
-import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAEnabledAppliesToInterface;
+import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroup;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.batfish.vendor.a10.representation.StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE;
 
@@ -508,10 +507,10 @@ public final class A10Configuration extends VendorConfiguration {
    */
   private void convertVrrpAEnabled() {
     // Overview:
-    // - Add a VrrpGroup for each enabled vrid on each L3 interface owning a subnet containing
-    //   any vrrp-a peer-group ip
+    // - Add a VrrpGroup for each enabled vrid on the first found L3 interface owning a subnet
+    //   containing any vrrp-a peer-group ip
     //   - abort if no peer-group ips are set
-    // - Add a VrrpGroup for each enabled vrid on all L3 interfaces with a primary
+    // - Each VrrpGroup should assign the addresses to every OTHER L3 interface with a primary
     //   ConcreteInterfaceAddress.
     // - Each created VrrpGroup contains all the virtual addresses the device should own when it is
     //   master for the corresponding vrid.
@@ -519,6 +518,24 @@ public final class A10Configuration extends VendorConfiguration {
     Set<Ip> peerIps = _vrrpA.getPeerGroup();
     if (peerIps.isEmpty()) {
       _w.redFlag("Batfish does not support vrrp-a without at least one peer-group peer-ip");
+      return;
+    }
+    ConcreteInterfaceAddress sourceAddress = null;
+    org.batfish.datamodel.Interface peerInterface = null;
+    for (org.batfish.datamodel.Interface iface : _c.getAllInterfaces().values()) {
+      Optional<ConcreteInterfaceAddress> maybeSourceAddress =
+          findVrrpAEnabledSourceAddress(iface, peerIps);
+      if (maybeSourceAddress.isPresent()) {
+        sourceAddress = maybeSourceAddress.get();
+        peerInterface = iface;
+        break;
+      }
+    }
+    if (peerInterface == null) {
+      _w.redFlag(
+          String.format(
+              "Could not find any interface in a subnet containing any of the peer IPs: %s",
+              peerIps));
       return;
     }
     // vrid -> virtual addresses
@@ -543,18 +560,35 @@ public final class A10Configuration extends VendorConfiguration {
         .allMatch(vrid -> vrid == 0 || _vrrpA.getVrids().containsKey(vrid));
     // Create VrrpGroup builders for each vrid. We cannot make final VrrpGroups because we are
     // missing source address, which varies per interface.
-    ImmutableMap.Builder<Integer, VrrpGroup.Builder> vrrpGroupBuildersBuilder =
-        ImmutableMap.builder();
+    ImmutableSortedMap.Builder<Integer, VrrpGroup> vrrpGroupsBuilder =
+        ImmutableSortedMap.naturalOrder();
+
+    // Addresses should be assigned to all non-loopback L3 interfaces other than the peer interface.
+    final org.batfish.datamodel.Interface finalPeerInterface = peerInterface;
+    List<String> ipOwnerInterfaces =
+        _c.getAllInterfaces().values().stream()
+            .filter(
+                i ->
+                    i != finalPeerInterface
+                        && i.getInterfaceType() != InterfaceType.LOOPBACK
+                        && !i.getAllConcreteAddresses().isEmpty())
+            .map(org.batfish.datamodel.Interface::getName)
+            .collect(ImmutableList.toImmutableList());
+
+    final ConcreteInterfaceAddress finalSourceAddress = sourceAddress;
     virtualAddressesByEnabledVrid
         .asMap()
         .forEach(
             (vrid, virtualAddresses) ->
-                vrrpGroupBuildersBuilder.put(
-                    vrid, toVrrpGroupBuilder(_vrrpA.getVrids().get(vrid), virtualAddresses)));
-    // Create and assign the final VRRP groups on each interface with a concrete IPv4 address.
-    _c.getAllInterfaces().values().stream()
-        .filter(i -> vrrpAEnabledAppliesToInterface(i, peerIps))
-        .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
+                vrrpGroupsBuilder.put(
+                    vrid,
+                    toVrrpGroup(
+                        _vrrpA.getVrids().get(vrid),
+                        finalSourceAddress,
+                        virtualAddresses,
+                        ipOwnerInterfaces)));
+    // Assign the VRRP groups to the peer interface
+    peerInterface.setVrrpGroups(vrrpGroupsBuilder.build());
   }
 
   /** Convert ha configuration for ACOSv2. */
@@ -574,14 +608,37 @@ public final class A10Configuration extends VendorConfiguration {
   private void convertHaEnabled() {
     // Overview:
     // - Add a VrrpGroup for each enabled ha-group on the L3 interface owning subnet containing
-    //   conn-mirror ip
+    //   conn-mirror ip (the HA heartbeat interface)
     //   - abort if no conn-mirror ip is set
     // - Each created VrrpGroup contains all the virtual addresses the device should own when it is
     //   master for the corresponding vrid (using ha group id as vrid).
+    // - Each created VrrpGroup should set the owned IPs on all L3 interfaces EXCEPT the heartbeat
+    //   interface.
     assert _ha != null;
     Ip connMirror = _ha.getConnMirror();
     if (connMirror == null) {
       _w.redFlag("Batfish does not support ha without explicit conn-mirror");
+      return;
+    }
+
+    // Find the ha heartbeat interface and source IP
+    org.batfish.datamodel.Interface heartbeatInterface = null;
+    ConcreteInterfaceAddress sourceAddress = null;
+    for (org.batfish.datamodel.Interface iface : _c.getAllInterfaces().values()) {
+      Optional<ConcreteInterfaceAddress> maybeSourceAddress =
+          findHaSourceAddress(iface, connMirror);
+      if (maybeSourceAddress.isPresent()) {
+        heartbeatInterface = iface;
+        sourceAddress = maybeSourceAddress.get();
+        break;
+      }
+    }
+    if (heartbeatInterface == null) {
+      // Abort, since we couldn't find the heartbeat interface.
+      _w.redFlag(
+          String.format(
+              "Could not find any interface with address in subnet of ha conn-mirror IP %s",
+              connMirror));
       return;
     }
     // ha group id -> virtual addresses
@@ -601,20 +658,34 @@ public final class A10Configuration extends VendorConfiguration {
             });
     SetMultimap<Integer, Ip> virtualAddressesByEnabledHaGroup =
         virtualAddressesByEnabledHaGroupBuilder.build();
-    // Create VrrpGroup builders for each ha group. We cannot make final VrrpGroups because we are
-    // missing source address, which varies per interface.
-    ImmutableMap.Builder<Integer, VrrpGroup.Builder> vrrpGroupBuildersBuilder =
-        ImmutableMap.builder();
+
+    // Addresses should be assigned to all non-loopback L3 interfaces other than the heartbeat
+    // interface
+    final org.batfish.datamodel.Interface finalHeartbeatInterface = heartbeatInterface;
+    List<String> ipOwnerInterfaces =
+        _c.getAllInterfaces().values().stream()
+            .filter(
+                i ->
+                    i != finalHeartbeatInterface
+                        && i.getInterfaceType() != InterfaceType.LOOPBACK
+                        && !i.getAllConcreteAddresses().isEmpty())
+            .map(org.batfish.datamodel.Interface::getName)
+            .collect(ImmutableList.toImmutableList());
+
+    // Create VrrpGroups for each ha group, with addresses assigned to all other L3 interfaces..
+    ImmutableSortedMap.Builder<Integer, VrrpGroup> vrrpGroupsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    final ConcreteInterfaceAddress finalSourceAddress = sourceAddress;
     virtualAddressesByEnabledHaGroup
         .asMap()
         .forEach(
             (haGroupId, virtualAddresses) ->
-                vrrpGroupBuildersBuilder.put(
-                    haGroupId, toVrrpGroupBuilder(haGroupId, _ha, virtualAddresses)));
-    // Create and assign the final VRRP groups on each interface with a concrete IPv4 address.
-    _c.getAllInterfaces().values().stream()
-        .filter(i -> haAppliesToInterface(i, connMirror))
-        .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
+                vrrpGroupsBuilder.put(
+                    haGroupId,
+                    toVrrpGroup(
+                        haGroupId, _ha, finalSourceAddress, virtualAddresses, ipOwnerInterfaces)));
+    // Assign the VRRP groups to the heartbeat interface
+    heartbeatInterface.setVrrpGroups(vrrpGroupsBuilder.build());
   }
 
   private void convertAccessLists() {

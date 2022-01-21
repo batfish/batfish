@@ -25,6 +25,7 @@ interface ethernet 1
 interface ethernet 2
   mtu 1500
   enable
+  ip address 10.0.2.1 /24
 !
 
 ip nat pool pool1 1.0.0.1 1.0.0.2 netmask /24 vrid 1

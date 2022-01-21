@@ -1,0 +1,49 @@
+!BATFISH_FORMAT: a10_acos
+hostname r2
+!
+
+vrrp-a common
+  device-id 1
+  set-id 2
+  enable
+!
+
+vrrp-a peer-group
+  peer 192.0.2.1
+!
+
+vrrp-a vrid 1
+  floating-ip 10.3.0.1
+  blade-parameters
+    priority 100
+!
+
+vlan 4094
+ tagged ethernet 1
+ router-interface ve 4094
+!
+
+interface ve 4094
+  ip address 192.0.2.2 /30
+!
+
+interface ethernet 1
+  mtu 1500
+  enable
+!
+
+interface ethernet 2
+  mtu 1500
+  enable
+  ip address 10.0.2.1 /24
+!
+
+ip nat pool pool1 10.2.0.1 10.2.0.1 netmask /32 vrid 1
+
+slb virtual-server vs1 10.1.0.1
+  enable
+  vrid 1
+  port 443 tcp
+    enable
+  !
+!
