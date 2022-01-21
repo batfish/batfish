@@ -19,9 +19,8 @@ import static org.batfish.vendor.a10.representation.TraceElements.traceElementFo
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Iterables;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +29,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
+import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -481,38 +480,60 @@ public class A10Conversion {
     return Optional.ofNullable(virtualServer.getVrid()).orElse(0);
   }
 
-  @VisibleForTesting
-  static final String RECEIVING_INTERFACE_PLACEHOOLDER = "~RECEIVING_INTERFACE_PLACEHOLDER~";
-
   /**
-   * Create a {@link VrrpGroup.Builder} from the configuration for a {@code vrrp-a vrid} and a set
-   * of virtual addresses.
+   * Create a {@link VrrpGroup} from the configuration for a {@code vrrp-a vrid}, the source
+   * address, the virtual addresses to assign, and the interfaces on which all virtual addresses
+   * should be assigned.
    */
-  static @Nonnull VrrpGroup.Builder toVrrpGroupBuilder(
-      @Nullable VrrpAVrid vridConfig, Iterable<Ip> virtualAddresses) {
+  static @Nonnull VrrpGroup toVrrpGroup(
+      @Nullable VrrpAVrid vridConfig,
+      ConcreteInterfaceAddress sourceAddress,
+      Iterable<Ip> virtualAddresses,
+      Collection<String> ipOwnerInterfaces) {
+    Map<String, Set<Ip>> virtualAddressesMap =
+        ipOwnerInterfaces.stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Function.identity(), n -> ImmutableSet.copyOf(virtualAddresses)));
     if (vridConfig == null) {
       return VrrpGroup.builder()
           .setPreempt(DEFAULT_VRRP_A_PREEMPT)
           .setPriority(DEFAULT_VRRP_A_PRIORITY)
-          .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, virtualAddresses);
+          .setSourceAddress(sourceAddress)
+          .setVirtualAddresses(virtualAddressesMap)
+          .build();
     } else {
       return VrrpGroup.builder()
           .setPreempt(getVrrpAVridPreempt(vridConfig))
           .setPriority(getVrrpAVridPriority(vridConfig))
-          .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, virtualAddresses);
+          .setSourceAddress(sourceAddress)
+          .setVirtualAddresses(virtualAddressesMap)
+          .build();
     }
   }
 
   /**
-   * Create a {@link VrrpGroup.Builder} from the configuration for a particular {@code ha group}
-   * from the ha configuration and a set of virtual addresses.
+   * Create a {@link VrrpGroup} from the configuration for a particular {@code ha group} from the ha
+   * configuration, the source address, the virtual addresses to assign, and the interfaces on which
+   * all virtual addresses should be assigned.
    */
-  static @Nonnull VrrpGroup.Builder toVrrpGroupBuilder(
-      int haGroupId, Ha ha, Iterable<Ip> virtualAddresses) {
+  static @Nonnull VrrpGroup toVrrpGroup(
+      int haGroupId,
+      Ha ha,
+      ConcreteInterfaceAddress sourceAddress,
+      Iterable<Ip> virtualAddresses,
+      Collection<String> ipOwnerInterfaces) {
+    Map<String, Set<Ip>> virtualAddressesMap =
+        ipOwnerInterfaces.stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Function.identity(), n -> ImmutableSet.copyOf(virtualAddresses)));
     return VrrpGroup.builder()
         .setPreempt(getHaPreemptionEnable(ha))
         .setPriority(getHaGroupPriority(ha.getGroups().get(haGroupId)))
-        .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, virtualAddresses);
+        .setVirtualAddresses(virtualAddressesMap)
+        .setSourceAddress(sourceAddress)
+        .build();
   }
 
   private static int getHaGroupPriority(HaGroup haGroup) {
@@ -534,42 +555,17 @@ public class A10Conversion {
   }
 
   /**
-   * Convert a map of {@link VrrpGroup.Builder}s to a map of {@link VrrpGroup}s by assigning the
-   * primary {@link ConcreteInterfaceAddress} of the given interface as the source-address.
+   * Returns the source IP to be used for vrrp-a peerings if the specified VI interface should have
+   * VRRP configuration associated with it when vrrp-a is enabled, or else {@link Optional#empty()}.
    */
-  static @Nonnull SortedMap<Integer, VrrpGroup> toVrrpGroups(
-      org.batfish.datamodel.Interface iface, Map<Integer, VrrpGroup.Builder> vrrpGroupBuilders) {
-    ConcreteInterfaceAddress sourceAddress = iface.getConcreteAddress();
-    assert sourceAddress != null;
-    ImmutableSortedMap.Builder<Integer, VrrpGroup> builder = ImmutableSortedMap.naturalOrder();
-    vrrpGroupBuilders.forEach(
-        (vrid, vrrpGroupBuilder) ->
-            // TODO: implement vrrp over sync interface
-            builder.put(
-                vrid,
-                vrrpGroupBuilder
-                    .setSourceAddress(sourceAddress)
-                    .setVirtualAddresses(
-                        iface.getName(),
-                        Iterables.getOnlyElement(vrrpGroupBuilder.getVirtualAddresses().values()))
-                    .build()));
-    return builder.build();
-  }
-
-  /**
-   * Returns a boolean indicating if the specified VI interface should have VRRP configuration
-   * associated with it when vrrp-a is enabled.
-   */
-  static boolean vrrpAEnabledAppliesToInterface(
+  static @Nonnull Optional<ConcreteInterfaceAddress> findVrrpAEnabledSourceAddress(
       org.batfish.datamodel.Interface iface, Set<Ip> peerIps) {
     if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
-      return false;
+      return Optional.empty();
     }
-    return iface.getAllAddresses().stream()
-        .filter(ConcreteInterfaceAddress.class::isInstance)
-        .map(ConcreteInterfaceAddress.class::cast)
-        .map(ConcreteInterfaceAddress::getPrefix)
-        .anyMatch(prefix -> peerIps.stream().anyMatch(prefix::containsIp));
+    return iface.getAllConcreteAddresses().stream()
+        .filter(address -> peerIps.stream().anyMatch(address.getPrefix()::containsIp))
+        .findFirst();
   }
 
   /**
@@ -584,18 +580,17 @@ public class A10Conversion {
   }
 
   /**
-   * Returns a boolean indicating if the specified VI interface should have VRRP configuration
-   * associated with it when ha is enabled.
+   * Returns the source IP to be used for HA if the specified VI interface should have VRRP
+   * configuration associated with it when ha is enabled, or else {@link Optional#empty()}.
    */
-  static boolean haAppliesToInterface(org.batfish.datamodel.Interface iface, Ip connMirrorIp) {
+  static @Nonnull Optional<ConcreteInterfaceAddress> findHaSourceAddress(
+      org.batfish.datamodel.Interface iface, Ip connMirrorIp) {
     if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
-      return false;
+      return Optional.empty();
     }
-    return iface.getAllAddresses().stream()
-        .filter(ConcreteInterfaceAddress.class::isInstance)
-        .map(ConcreteInterfaceAddress.class::cast)
-        .map(ConcreteInterfaceAddress::getPrefix)
-        .anyMatch(prefix -> prefix.containsIp(connMirrorIp));
+    return iface.getAllConcreteAddresses().stream()
+        .filter(address -> address.getPrefix().containsIp(connMirrorIp))
+        .findFirst();
   }
 
   /** Convert the BGP process and associated routing policies, and attach them to the config. */

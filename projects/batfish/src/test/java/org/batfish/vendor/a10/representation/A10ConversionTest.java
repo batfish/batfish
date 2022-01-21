@@ -34,26 +34,24 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
-import static org.batfish.vendor.a10.representation.A10Conversion.RECEIVING_INTERFACE_PLACEHOOLDER;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeUpdateSource;
 import static org.batfish.vendor.a10.representation.A10Conversion.convertAccessList;
 import static org.batfish.vendor.a10.representation.A10Conversion.createAndAttachBgpNeighbor;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
+import static org.batfish.vendor.a10.representation.A10Conversion.findHaSourceAddress;
+import static org.batfish.vendor.a10.representation.A10Conversion.findVrrpAEnabledSourceAddress;
 import static org.batfish.vendor.a10.representation.A10Conversion.getInterfaceEnabledEffective;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
-import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
 import static org.batfish.vendor.a10.representation.A10Conversion.toKernelRoute;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchExpr;
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
-import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
-import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
+import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpADisabledAppliesToInterface;
-import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAEnabledAppliesToInterface;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForAccessList;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForDestAddressAny;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForProtocol;
@@ -424,16 +422,18 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testToVrrpGroupBuilder() {
+  public void testToVrrpGroup() {
     Ip ip = Ip.parse("1.1.1.1");
+    ConcreteInterfaceAddress sourceAddress = ConcreteInterfaceAddress.parse("10.0.0.1/30");
     // null vrid config (must be vrid 0)
     assertThat(
-        toVrrpGroupBuilder(null, ImmutableSet.of(ip)).build(),
+        toVrrpGroup(null, sourceAddress, ImmutableSet.of(ip), ImmutableList.of("foo")),
         equalTo(
             VrrpGroup.builder()
                 .setPreempt(DEFAULT_VRRP_A_PREEMPT)
                 .setPriority(DEFAULT_VRRP_A_PRIORITY)
-                .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, ImmutableSet.of(ip))
+                .setSourceAddress(sourceAddress)
+                .setVirtualAddresses("foo", ImmutableSet.of(ip))
                 .build()));
 
     // non-null vrid config
@@ -442,40 +442,14 @@ public class A10ConversionTest {
     vridConfig.getOrCreateBladeParameters().setPriority(5);
 
     assertThat(
-        toVrrpGroupBuilder(vridConfig, ImmutableSet.of(ip)).build(),
+        toVrrpGroup(vridConfig, sourceAddress, ImmutableSet.of(ip), ImmutableList.of("foo")),
         equalTo(
             VrrpGroup.builder()
                 .setPreempt(false)
                 .setPriority(5)
-                .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, ImmutableSet.of(ip))
+                .setSourceAddress(sourceAddress)
+                .setVirtualAddresses("foo", ImmutableSet.of(ip))
                 .build()));
-  }
-
-  @Test
-  public void testToVrrpGroups() {
-    Map<Integer, VrrpGroup.Builder> vrrpGroupBuilders =
-        ImmutableMap.of(
-            1,
-            VrrpGroup.builder()
-                .setPriority(5)
-                .setPreempt(true)
-                .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, Ip.parse("1.1.1.1")));
-    ConcreteInterfaceAddress sourceAddress =
-        ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24);
-    org.batfish.datamodel.Interface iface =
-        org.batfish.datamodel.Interface.builder().setName("foo").setAddress(sourceAddress).build();
-
-    assertThat(
-        toVrrpGroups(iface, vrrpGroupBuilders),
-        equalTo(
-            ImmutableMap.of(
-                1,
-                VrrpGroup.builder()
-                    .setPriority(5)
-                    .setPreempt(true)
-                    .setVirtualAddresses(iface.getName(), Ip.parse("1.1.1.1"))
-                    .setSourceAddress(sourceAddress)
-                    .build())));
   }
 
   @Test
@@ -509,73 +483,81 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testVrrpAEnabledAppliesToInterface() {
+  public void testFindVrrpAEnabledSourceAddress() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
         org.batfish.datamodel.Interface.builder().setName("placeholder");
     Set<Ip> peerIps = ImmutableSet.of(Ip.parse("10.10.10.11"));
     // No concrete address
-    assertFalse(
-        vrrpAEnabledAppliesToInterface(
-            ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build(), peerIps));
+    assertThat(
+        findVrrpAEnabledSourceAddress(
+            ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build(), peerIps),
+        equalTo(Optional.empty()));
     // Loopback interface
-    assertFalse(
-        vrrpAEnabledAppliesToInterface(
+    assertThat(
+        findVrrpAEnabledSourceAddress(
             ifaceBuilder
                 .setType(InterfaceType.LOOPBACK)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
                 .build(),
-            peerIps));
+            peerIps),
+        equalTo(Optional.empty()));
     // subnet does not contain a peerIp
-    assertFalse(
-        vrrpAEnabledAppliesToInterface(
+    assertThat(
+        findVrrpAEnabledSourceAddress(
             ifaceBuilder
                 .setType(InterfaceType.AGGREGATED)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build(),
-            peerIps));
+            peerIps),
+        equalTo(Optional.empty()));
 
-    assertTrue(
-        vrrpAEnabledAppliesToInterface(
+    assertThat(
+        findVrrpAEnabledSourceAddress(
             ifaceBuilder
                 .setType(InterfaceType.PHYSICAL)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
                 .build(),
-            peerIps));
+            peerIps),
+        equalTo(Optional.of(ConcreteInterfaceAddress.parse("10.10.10.10/24"))));
   }
 
   @Test
-  public void testHaAppliesToInterface() {
+  public void testFindHaSourceAddress() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
         org.batfish.datamodel.Interface.builder().setName("placeholder");
     Ip connMirror = Ip.parse("10.10.10.11");
     // No concrete address
-    assertFalse(
-        haAppliesToInterface(
-            ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build(), connMirror));
+    assertThat(
+        findHaSourceAddress(
+            ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build(), connMirror),
+        equalTo(Optional.empty()));
     // Loopback interface
-    assertFalse(
-        haAppliesToInterface(
+    assertThat(
+        findHaSourceAddress(
             ifaceBuilder
                 .setType(InterfaceType.LOOPBACK)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
                 .build(),
-            connMirror));
+            connMirror),
+        equalTo(Optional.empty()));
     // subnet does not contain a peerIp
-    assertFalse(
-        haAppliesToInterface(
+    assertThat(
+        findHaSourceAddress(
             ifaceBuilder
                 .setType(InterfaceType.AGGREGATED)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build(),
-            connMirror));
+            connMirror),
+        equalTo(Optional.empty()));
 
-    assertTrue(
-        haAppliesToInterface(
+    assertThat(
+        findHaSourceAddress(
             ifaceBuilder
                 .setType(InterfaceType.PHYSICAL)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
                 .build(),
-            connMirror));
+            connMirror),
+        equalTo(Optional.of(ConcreteInterfaceAddress.parse("10.10.10.10/24"))));
   }
 
   @Test
