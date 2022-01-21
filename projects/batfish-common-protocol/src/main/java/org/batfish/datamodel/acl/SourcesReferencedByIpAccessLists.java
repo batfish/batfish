@@ -28,7 +28,7 @@ public final class SourcesReferencedByIpAccessLists {
     private final Map<String, Supplier<Void>> _namedAclThunks;
 
     ReferenceSourcesVisitor(Map<String, IpAccessList> namedAcls) {
-      /**
+      /*
        * Thunks used to include sources (on demand) referenced by ACLs referenced by PermittedByAcl
        * match exprs. NonRecursiveSupplier detects cyclic references and throws an exception rather
        * than going into an infinite loop.

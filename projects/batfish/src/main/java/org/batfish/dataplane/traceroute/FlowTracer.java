@@ -79,7 +79,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.acl.Evaluator;
-import org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists;
+import org.batfish.datamodel.acl.SourcesReferencedOnDevice;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ArpErrorStep;
@@ -275,16 +275,15 @@ class FlowTracer {
 
   static Function<String, Set<String>> createBreadcrumbInterfaces(
       TracerouteEngineImplContext tracerouteContext) {
-    LoadingCache<String, Set<String>> interfacesReferencedByAcls =
+    LoadingCache<String, Set<String>> interfacesMatchedAgainst =
         Caffeine.newBuilder()
             .build(
                 hostname -> {
                   Configuration c = tracerouteContext.getConfigurations().get(hostname);
                   assert c != null;
-                  return SourcesReferencedByIpAccessLists.referencedSources(
-                      c.getIpAccessLists(), c.getIpAccessLists().keySet());
+                  return SourcesReferencedOnDevice.activeReferencedSources(c);
                 });
-    return interfacesReferencedByAcls::get;
+    return interfacesMatchedAgainst::get;
   }
 
   /** Creates an initial {@link FlowTracer} for a new traceroute. */
