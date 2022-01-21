@@ -1,0 +1,38 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname r1
+!
+
+!!! Interface configuration
+vlan 4094
+ tagged ethernet 1
+ router-interface ve 4094
+!
+
+interface ve 4094
+  ip address 192.0.2.1 /30
+!
+
+interface ethernet 1
+!
+
+interface ethernet 2
+  ip address 10.0.1.1 /24
+!
+
+!!! ha configuration
+ha id 1 set-id 1
+ha group 1 priority 200
+ha conn-mirror ip 192.0.2.2
+ha interface ethernet 1 both vlan 4094
+ha interface ethernet 1 router-interface no-heartbeat
+
+!!! Other configuration referencing ha
+slb virtual-server vs1 10.1.0.1
+   ha-group 1
+   port 22 tcp
+!
+
+ip nat pool pool1 10.2.0.1 10.2.0.1 netmask /32  ha-group-id 1
+
+floating-ip 10.3.0.1 ha-group 1

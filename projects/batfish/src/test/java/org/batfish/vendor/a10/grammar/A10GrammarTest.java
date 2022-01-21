@@ -80,6 +80,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
@@ -1471,7 +1472,7 @@ public class A10GrammarTest {
                       .setPreempt(true)
                       .setPriority(DEFAULT_VRRP_A_PRIORITY)
                       .setVirtualAddresses(
-                          i.getName(),
+                          i2Name,
                           ImmutableSet.of(
                               Ip.parse("1.0.0.1"),
                               Ip.parse("1.0.0.2"),
@@ -1488,9 +1489,14 @@ public class A10GrammarTest {
       org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i2Name);
       assertThat(i.getVrrpGroups(), anEmptyMap());
       // Should not contain virtual addresses
-      assertThat(i.getAllAddresses(), empty());
+      assertThat(i.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.0.2.1/24")));
       // Should not contain address metadata
-      assertThat(i.getAddressMetadata(), anEmptyMap());
+      assertThat(
+          i.getAddressMetadata(),
+          equalTo(
+              ImmutableMap.of(
+                  ConcreteInterfaceAddress.parse("10.0.2.1/24"),
+                  ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build())));
     }
   }
 
@@ -2180,7 +2186,7 @@ public class A10GrammarTest {
                       .setPreempt(false)
                       .setPriority(200)
                       .setVirtualAddresses(
-                          i.getName(),
+                          i2Name,
                           ImmutableSet.of(
                               Ip.parse("10.0.2.1"),
                               Ip.parse("10.0.3.1"),
@@ -2197,9 +2203,14 @@ public class A10GrammarTest {
       org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i2Name);
       assertThat(i.getVrrpGroups(), anEmptyMap());
       // Should not contain virtual addresses
-      assertThat(i.getAllAddresses(), empty());
-      // Should not contain address metadata
-      assertThat(i.getAddressMetadata(), anEmptyMap());
+      assertThat(i.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.10.0.1/24")));
+      // Should only contain metadata for its assigned address
+      assertThat(
+          i.getAddressMetadata(),
+          equalTo(
+              ImmutableMap.of(
+                  ConcreteInterfaceAddress.parse("10.10.0.1/24"),
+                  ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build())));
     }
     // TODO: something with ethernet 3 / vlan 4094?
 
