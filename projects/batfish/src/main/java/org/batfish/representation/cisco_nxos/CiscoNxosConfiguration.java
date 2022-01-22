@@ -931,10 +931,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newBgpProcess.setRedistributionPolicy(redistPolicyName);
   }
 
+  private static @Nullable ConcreteInterfaceAddress findFirstConcreteAddress(Interface iface) {
+    return Stream.concat(
+            iface.getAddress() != null ? Stream.of(iface.getAddress()) : Stream.of(),
+            iface.getSecondaryAddresses().stream())
+        .map(InterfaceAddressWithAttributes::getAddress)
+        .filter(ConcreteInterfaceAddress.class::isInstance)
+        .map(ConcreteInterfaceAddress.class::cast)
+        .findFirst()
+        .orElse(null);
+  }
+
   private static void convertHsrp(
       InterfaceHsrp hsrp,
       org.batfish.datamodel.Interface.Builder newIfaceBuilder,
-      Set<Integer> trackMethodIds) {
+      Set<Integer> trackMethodIds,
+      @Nullable ConcreteInterfaceAddress sourceAddress) {
     Optional.ofNullable(hsrp.getVersion())
         .map(Object::toString)
         .ifPresent(newIfaceBuilder::setHsrpVersion);
@@ -943,7 +955,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey,
-                    hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue(), trackMethodIds))));
+                    hsrpGroupEntry ->
+                        toHsrpGroup(hsrpGroupEntry.getValue(), trackMethodIds, sourceAddress))));
   }
 
   private void convertDomainName() {
@@ -1979,7 +1992,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(
-      HsrpGroupIpv4 group, Set<Integer> trackMethodIds) {
+      HsrpGroupIpv4 group,
+      Set<Integer> trackMethodIds,
+      @Nullable ConcreteInterfaceAddress sourceAddress) {
     Optional<Ip> groupIp = Optional.ofNullable(group.getIp());
     Set<Ip> groupIpSecondary = group.getIpSecondaries();
     ImmutableSet.Builder<Ip> hsrpIps = ImmutableSet.builder();
@@ -1988,8 +2003,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     org.batfish.datamodel.hsrp.HsrpGroup.Builder builder =
         org.batfish.datamodel.hsrp.HsrpGroup.builder()
-            .setGroupNumber(group.getGroup())
-            .setIps(hsrpIps.build())
+            .setSourceAddress(sourceAddress)
+            .setVirtualAddresses(hsrpIps.build())
             .setPreempt(group.getPreempt());
     if (group.getHelloIntervalMs() != null) {
       builder.setHelloTime(group.getHelloIntervalMs());
@@ -2233,7 +2248,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     if (iface.getHsrp() != null) {
-      convertHsrp(iface.getHsrp(), newIfaceBuilder, _tracks.keySet());
+      convertHsrp(
+          iface.getHsrp(), newIfaceBuilder, _tracks.keySet(), findFirstConcreteAddress(iface));
     }
 
     // PBR policy

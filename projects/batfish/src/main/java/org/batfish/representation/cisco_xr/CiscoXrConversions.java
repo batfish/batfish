@@ -1026,7 +1026,9 @@ public class CiscoXrConversions {
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(
-      HsrpGroup hsrpGroup, Set<String> trackMethodIds) {
+      HsrpGroup hsrpGroup,
+      Set<String> trackMethodIds,
+      @Nullable ConcreteInterfaceAddress sourceAddress) {
     Ip groupIp = hsrpGroup.getIp();
     // TODO: make and use vendor class for source track actions
     // HSRP track uses negated value of referenced TrackMethod
@@ -1044,8 +1046,8 @@ public class CiscoXrConversions {
         .setAuthentication(hsrpGroup.getAuthentication())
         .setHelloTime(hsrpGroup.getHelloTime())
         .setHoldTime(hsrpGroup.getHoldTime())
-        .setIps(groupIp == null ? ImmutableSet.of() : ImmutableSet.of(groupIp))
-        .setGroupNumber(hsrpGroup.getGroupNumber())
+        .setVirtualAddresses(groupIp == null ? ImmutableSet.of() : ImmutableSet.of(groupIp))
+        .setSourceAddress(sourceAddress)
         .setPreempt(hsrpGroup.getPreempt())
         .setPriority(hsrpGroup.getPriority())
         .setTrackActions(trackActions)

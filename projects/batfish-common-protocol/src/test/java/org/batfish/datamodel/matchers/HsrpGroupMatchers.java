@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.TrackAction;
@@ -54,7 +55,7 @@ public final class HsrpGroupMatchers {
 
     @Override
     protected Set<Ip> featureValueOf(HsrpGroup actual) {
-      return actual.getIps();
+      return actual.getVirtualAddresses();
     }
   }
 
@@ -77,6 +78,18 @@ public final class HsrpGroupMatchers {
     @Override
     protected Integer featureValueOf(HsrpGroup actual) {
       return actual.getPriority();
+    }
+  }
+
+  private static final class HasSourceAddress
+      extends FeatureMatcher<HsrpGroup, ConcreteInterfaceAddress> {
+    public HasSourceAddress(@Nonnull Matcher<? super ConcreteInterfaceAddress> subMatcher) {
+      super(subMatcher, "An HsrpGroup with sourceAddress:", "sourceAddress");
+    }
+
+    @Override
+    protected ConcreteInterfaceAddress featureValueOf(HsrpGroup actual) {
+      return actual.getSourceAddress();
     }
   }
 
@@ -138,6 +151,24 @@ public final class HsrpGroupMatchers {
    */
   public static @Nonnull Matcher<HsrpGroup> hasPriority(int expectedPriority) {
     return new HasPriority(equalTo(expectedPriority));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link HsrpGroup}'s source address is matched by the
+   * provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<HsrpGroup> hasSourceAddress(
+      Matcher<? super ConcreteInterfaceAddress> subMatcher) {
+    return new HasSourceAddress(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link HsrpGroup}'s source address is {@code
+   * expectedSourceAddress}.
+   */
+  public static @Nonnull Matcher<HsrpGroup> hasSourceAddress(
+      ConcreteInterfaceAddress expectedSourceAddress) {
+    return hasSourceAddress(equalTo(expectedSourceAddress));
   }
 
   /**
