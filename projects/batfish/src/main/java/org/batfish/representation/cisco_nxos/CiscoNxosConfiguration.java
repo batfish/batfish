@@ -931,7 +931,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newBgpProcess.setRedistributionPolicy(redistPolicyName);
   }
 
-  private static @Nullable ConcreteInterfaceAddress findHsrpSourceAddress(Interface iface) {
+  private static @Nullable ConcreteInterfaceAddress findFirstConcreteAddress(Interface iface) {
     return Stream.concat(
             iface.getAddress() != null ? Stream.of(iface.getAddress()) : Stream.of(),
             iface.getSecondaryAddresses().stream())
@@ -2248,7 +2248,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     if (iface.getHsrp() != null) {
-      convertHsrp(iface.getHsrp(), newIfaceBuilder, _tracks.keySet(), findHsrpSourceAddress(iface));
+      convertHsrp(
+          iface.getHsrp(), newIfaceBuilder, _tracks.keySet(), findFirstConcreteAddress(iface));
     }
 
     // PBR policy
