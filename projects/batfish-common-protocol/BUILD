@@ -143,6 +143,9 @@ junit_tests(
         "src/test/java/**/*Test.java",
     ]),
     resources = ["//projects/batfish-common-protocol/src/test/resources"],
+    runtime_deps = [
+        "@maven//:javax_xml_bind_jaxb_api",
+    ],
     deps = [
         ":common",
         ":common_testlib",
