@@ -932,7 +932,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private static @Nullable ConcreteInterfaceAddress findHsrpSourceAddress(Interface iface) {
-    return Stream.concat(Stream.of(iface.getAddress()), iface.getSecondaryAddresses().stream())
+    return Stream.concat(
+            iface.getAddress() != null ? Stream.of(iface.getAddress()) : Stream.of(),
+            iface.getSecondaryAddresses().stream())
         .map(InterfaceAddressWithAttributes::getAddress)
         .filter(ConcreteInterfaceAddress.class::isInstance)
         .map(ConcreteInterfaceAddress.class::cast)
