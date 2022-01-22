@@ -473,7 +473,7 @@ public final class IpOwners {
   }
 
   /**
-   * Partitions the input set of HSPR/VRRP candidates into subsets where all candidates are in the
+   * Partitions the input set of HSRP/VRRP candidates into subsets where all candidates are in the
    * same broadcast domain. This disambiguates VRRP groups that have the same IP and group ID
    */
   @VisibleForTesting

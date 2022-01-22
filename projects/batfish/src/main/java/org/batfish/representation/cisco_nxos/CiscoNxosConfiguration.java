@@ -931,6 +931,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newBgpProcess.setRedistributionPolicy(redistPolicyName);
   }
 
+  private static @Nullable ConcreteInterfaceAddress findHsrpSourceAddress(Interface iface) {
+    return Stream.concat(Stream.of(iface.getAddress()), iface.getSecondaryAddresses().stream())
+        .map(InterfaceAddressWithAttributes::getAddress)
+        .filter(ConcreteInterfaceAddress.class::isInstance)
+        .map(ConcreteInterfaceAddress.class::cast)
+        .findFirst()
+        .orElse(null);
+  }
+
   private static void convertHsrp(
       InterfaceHsrp hsrp,
       org.batfish.datamodel.Interface.Builder newIfaceBuilder,
@@ -2141,7 +2150,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           if (addrWithAttr.getAddress() instanceof ConcreteInterfaceAddress) {
             // convert any connected route metadata
             addressMetadata.put(
-                addrWithAttr.getAddress(),
+                (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
                 ConnectedRouteMetadata.builder()
                     .setAdmin(addrWithAttr.getRoutePreference())
                     .setGenerateLocalRoute(true)
@@ -2153,12 +2162,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             iface.getSecondaryAddresses().stream()
                 .map(InterfaceAddressWithAttributes::getAddress)
                 .collect(ImmutableSet.toImmutableSet()));
-        iface
-            .getSecondaryAddresses()
+        iface.getSecondaryAddresses().stream()
+            .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
             .forEach(
                 addr ->
                     addressMetadata.put(
-                        addr.getAddress(),
+                        (ConcreteInterfaceAddress) addr.getAddress(),
                         ConnectedRouteMetadata.builder()
                             .setAdmin(addr.getRoutePreference())
                             .setGenerateLocalRoute(true)
@@ -2237,11 +2246,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     if (iface.getHsrp() != null) {
-      convertHsrp(
-          iface.getHsrp(),
-          newIfaceBuilder,
-          _tracks.keySet(),
-          iface.getAddress() != null ? iface.getAddress().getAddress() : null);
+      convertHsrp(iface.getHsrp(), newIfaceBuilder, _tracks.keySet(), findHsrpSourceAddress(iface));
     }
 
     // PBR policy
