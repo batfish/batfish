@@ -20,6 +20,7 @@ VALID_TAGS = {
     "dataplane",  # need dataplane computation
     "eigrp",  # EIGRP related
     "evpn",  # EVPN related
+    "hsrp",  # HSRP related
     "hygiene",  # hygiene type check on configs
     "ipsec",  # IPSec related
     "isis",  # isis related
@@ -35,7 +36,7 @@ VALID_TAGS = {
     "topology",  # produces some type of topology
     "traceroute",  # traceroute
     "vip",  # VIP related (load balancing)
-    "vrrp",  # VLAN related
+    "vrrp",  # VRRP related
     "vlan",  # VLAN related
     "vxlan",  # VXLAN related
 }
