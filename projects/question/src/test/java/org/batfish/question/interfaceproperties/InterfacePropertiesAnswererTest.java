@@ -179,7 +179,7 @@ public class InterfacePropertiesAnswererTest {
 
   @Test
   public void testHsrpGroups() {
-    _ib.setHsrpGroups(ImmutableMap.of(1, HsrpGroup.builder().setGroupNumber(1).build())).build();
+    _ib.setHsrpGroups(ImmutableMap.of(1, HsrpGroup.builder().build())).build();
     String property = InterfacePropertySpecifier.HSRP_GROUPS;
 
     assertThat(getActualValue(property, Schema.set(Schema.STRING)), equalTo(ImmutableSet.of("1")));

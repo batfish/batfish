@@ -37,6 +37,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.toAsPathMat
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toBgpAggregate;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunitySetExpr;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.toHsrpGroup;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Proposal;
@@ -1112,11 +1113,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newIface.setChannelGroup(String.format("Bundle-Ether%d", iface.getBundleId()));
     }
     newIface.setCryptoMap(iface.getCryptoMap());
-    newIface.setHsrpGroups(
-        CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(),
-            Entry::getKey,
-            e -> CiscoXrConversions.toHsrpGroup(e.getValue(), _trackingGroups.keySet())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(firstNonNull(iface.getSpeed(), Interface.getDefaultSpeed(iface.getName())));
@@ -1183,6 +1179,13 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       // subinterface settings
       newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
     }
+    newIface.setHsrpGroups(
+        CollectionUtil.toImmutableMap(
+            iface.getHsrpGroups(),
+            Entry::getKey,
+            e ->
+                toHsrpGroup(
+                    e.getValue(), _trackingGroups.keySet(), newIface.getConcreteAddress())));
 
     EigrpProcess eigrpProcess = null;
     if (iface.getAddress() != null) {

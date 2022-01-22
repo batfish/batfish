@@ -304,7 +304,6 @@ public final class ConvertConfigurationJobTest {
             .build();
     HsrpGroup hsrpGroup =
         HsrpGroup.builder()
-            .setGroupNumber(1)
             .setTrackActions(
                 ImmutableSortedMap.of(
                     "missing", new DecrementPriority(1), "present", new DecrementPriority(1)))

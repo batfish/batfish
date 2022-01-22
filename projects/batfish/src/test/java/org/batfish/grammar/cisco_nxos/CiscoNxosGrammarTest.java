@@ -2232,6 +2232,8 @@ public final class CiscoNxosGrammarTest {
                           Ip.parse("192.0.2.1"), Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1"))),
                   hasPreempt(),
                   hasPriority(105),
+                  HsrpGroupMatchers.hasSourceAddress(
+                      ConcreteInterfaceAddress.parse("192.0.2.2/24")),
                   hasTrackActions(
                       equalTo(
                           ImmutableSortedMap.of(

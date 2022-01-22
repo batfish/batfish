@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.tracking.TrackAction;
@@ -23,49 +24,36 @@ import org.batfish.datamodel.tracking.TrackAction;
 public final class HsrpGroup implements Serializable {
 
   public static final class Builder {
-
-    private String _authentication;
-
-    private Integer _groupNumber;
-
+    private @Nullable String _authentication;
     private int _helloTime;
-
     private int _holdTime;
-
-    private Set<Ip> _ips;
-
     private boolean _preempt;
-
     private int _priority;
-
-    private SortedMap<String, TrackAction> _trackActions;
+    private @Nonnull SortedMap<String, TrackAction> _trackActions;
+    private @Nullable ConcreteInterfaceAddress _sourceAddress;
+    private @Nonnull Set<Ip> _virtualAddresses;
 
     private Builder() {
       _holdTime = DEFAULT_HOLD_TIME;
       _priority = DEFAULT_PRIORITY;
-      _ips = ImmutableSet.of();
       _trackActions = ImmutableSortedMap.of();
+      _virtualAddresses = ImmutableSet.of();
     }
 
     public @Nonnull HsrpGroup build() {
       return new HsrpGroup(
           _authentication,
-          requireNonNull(_groupNumber, "Must set HSRP group number via setGroupNumber"),
           _helloTime,
           _holdTime,
-          _ips,
           _preempt,
           _priority,
-          _trackActions);
+          _sourceAddress,
+          _trackActions,
+          _virtualAddresses);
     }
 
     public @Nonnull Builder setAuthentication(@Nullable String authentication) {
       _authentication = authentication;
-      return this;
-    }
-
-    public @Nonnull Builder setGroupNumber(int groupNumber) {
-      _groupNumber = groupNumber;
       return this;
     }
 
@@ -79,11 +67,6 @@ public final class HsrpGroup implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setIps(@Nonnull Set<Ip> ips) {
-      _ips = ips;
-      return this;
-    }
-
     public @Nonnull Builder setPreempt(boolean preempt) {
       _preempt = preempt;
       return this;
@@ -94,25 +77,34 @@ public final class HsrpGroup implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setTrackActions(@Nonnull SortedMap<String, TrackAction> trackActions) {
+    public @Nonnull Builder setSourceAddress(@Nullable ConcreteInterfaceAddress sourceAddress) {
+      _sourceAddress = sourceAddress;
+      return this;
+    }
+
+    public @Nonnull Builder setTrackActions(SortedMap<String, TrackAction> trackActions) {
       _trackActions = ImmutableSortedMap.copyOf(trackActions);
+      return this;
+    }
+
+    public @Nonnull Builder setVirtualAddresses(Set<Ip> virtualAddresses) {
+      _virtualAddresses = virtualAddresses;
       return this;
     }
   }
 
   public static final int DEFAULT_HELLO_TIME = 3000; // 3 seconds
-
   public static final int DEFAULT_HOLD_TIME = 10000; // 10 seconds
-
   public static final int DEFAULT_PRIORITY = 100;
+
   private static final String PROP_AUTHENTICATION = "authentication";
-  private static final String PROP_GROUP_NUMBER = "groupNumber";
   private static final String PROP_HELLO_TIME = "helloTime";
   private static final String PROP_HOLD_TIME = "holdTime";
-  private static final String PROP_IPS = "ips";
   private static final String PROP_PREEMPT = "preempt";
   private static final String PROP_PRIORITY = "priority";
+  private static final String PROP_SOURCE_ADDRESS = "sourceAddress";
   private static final String PROP_TRACK_ACTIONS = "trackActions";
+  private static final String PROP_VIRTUAL_ADDRESSES = "virtualAddresses";
 
   public static @Nonnull Builder builder() {
     return new Builder();
@@ -120,58 +112,50 @@ public final class HsrpGroup implements Serializable {
 
   @JsonCreator
   private static @Nonnull HsrpGroup create(
-      @JsonProperty(PROP_AUTHENTICATION) String authentication,
-      @JsonProperty(PROP_GROUP_NUMBER) Integer groupNumber,
-      @JsonProperty(PROP_HELLO_TIME) Integer helloTime,
-      @JsonProperty(PROP_HOLD_TIME) Integer holdTime,
-      @JsonProperty(PROP_IPS) Set<Ip> ips,
-      @JsonProperty(PROP_PREEMPT) Boolean preempt,
-      @JsonProperty(PROP_PRIORITY) Integer priority,
-      @JsonProperty(PROP_TRACK_ACTIONS) SortedMap<String, TrackAction> trackActions) {
+      @JsonProperty(PROP_AUTHENTICATION) @Nullable String authentication,
+      @JsonProperty(PROP_HELLO_TIME) @Nullable Integer helloTime,
+      @JsonProperty(PROP_HOLD_TIME) @Nullable Integer holdTime,
+      @JsonProperty(PROP_PREEMPT) @Nullable Boolean preempt,
+      @JsonProperty(PROP_PRIORITY) @Nullable Integer priority,
+      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable ConcreteInterfaceAddress sourceAddress,
+      @JsonProperty(PROP_TRACK_ACTIONS) @Nullable SortedMap<String, TrackAction> trackActions,
+      @JsonProperty(PROP_VIRTUAL_ADDRESSES) @Nullable Set<Ip> virtualAddresses) {
     return new HsrpGroup(
         authentication,
-        requireNonNull(
-            groupNumber, String.format("Missing required property: %s", PROP_GROUP_NUMBER)),
         requireNonNull(helloTime, String.format("Missing required property: %s", PROP_HELLO_TIME)),
         requireNonNull(holdTime, String.format("Missing required property: %s", PROP_HOLD_TIME)),
-        firstNonNull(ips, ImmutableSet.of()),
         requireNonNull(preempt, String.format("Missing required property: %s", PROP_PREEMPT)),
         requireNonNull(priority, String.format("Missing required property: %s", PROP_PRIORITY)),
-        trackActions != null ? ImmutableSortedMap.copyOf(trackActions) : ImmutableSortedMap.of());
+        sourceAddress,
+        trackActions != null ? ImmutableSortedMap.copyOf(trackActions) : ImmutableSortedMap.of(),
+        firstNonNull(virtualAddresses, ImmutableSet.of()));
   }
 
   private final String _authentication;
-
-  private final int _groupNumber;
-
   private final int _helloTime;
-
   private final int _holdTime;
-
-  private final Set<Ip> _ips;
-
+  private final Set<Ip> _virtualAddresses;
   private final boolean _preempt;
-
   private final int _priority;
-
+  private final @Nullable ConcreteInterfaceAddress _sourceAddress;
   private final SortedMap<String, TrackAction> _trackActions;
 
   private HsrpGroup(
       @Nullable String authentication,
-      int groupNumber,
       int helloTime,
       int holdTime,
-      @Nonnull Set<Ip> ips,
       boolean preempt,
       int priority,
-      @Nonnull SortedMap<String, TrackAction> trackActions) {
+      @Nullable ConcreteInterfaceAddress sourceAddress,
+      SortedMap<String, TrackAction> trackActions,
+      Set<Ip> virtualAddresses) {
     _authentication = authentication;
-    _groupNumber = groupNumber;
     _helloTime = helloTime;
     _holdTime = holdTime;
-    _ips = ImmutableSortedSet.copyOf(ips);
+    _virtualAddresses = ImmutableSortedSet.copyOf(virtualAddresses);
     _preempt = preempt;
     _priority = priority;
+    _sourceAddress = sourceAddress;
     _trackActions = trackActions;
   }
 
@@ -179,12 +163,6 @@ public final class HsrpGroup implements Serializable {
   @JsonProperty(PROP_AUTHENTICATION)
   public @Nullable String getAuthentication() {
     return _authentication;
-  }
-
-  /** The shared number identifying the HSRP group in which this interface is a participant */
-  @JsonProperty(PROP_GROUP_NUMBER)
-  public int getGroupNumber() {
-    return _groupNumber;
   }
 
   /** The interval in milliseconds between hello messages */
@@ -202,12 +180,6 @@ public final class HsrpGroup implements Serializable {
     return _holdTime;
   }
 
-  /** The HSRP standby IP addresses to assume when this is the active router in the group */
-  @JsonProperty(PROP_IPS)
-  public @Nonnull Set<Ip> getIps() {
-    return _ips;
-  }
-
   /** Whether this router should preempt the active router when its priority is higher */
   @JsonProperty(PROP_PREEMPT)
   public boolean getPreempt() {
@@ -218,6 +190,18 @@ public final class HsrpGroup implements Serializable {
   @JsonProperty(PROP_PRIORITY)
   public int getPriority() {
     return _priority;
+  }
+
+  /** The address from which HSRP control traffic is sent. */
+  @JsonProperty(PROP_SOURCE_ADDRESS)
+  public @Nullable ConcreteInterfaceAddress getSourceAddress() {
+    return _sourceAddress;
+  }
+
+  /** The HSRP standby IP addresses to assume when this is the active router in the group */
+  @JsonProperty(PROP_VIRTUAL_ADDRESSES)
+  public @Nonnull Set<Ip> getVirtualAddresses() {
+    return _virtualAddresses;
   }
 
   /**
@@ -234,13 +218,12 @@ public final class HsrpGroup implements Serializable {
   public @Nonnull Builder toBuilder() {
     return builder()
         .setAuthentication(_authentication)
-        .setGroupNumber(_groupNumber)
         .setHelloTime(_helloTime)
         .setHoldTime(_holdTime)
-        .setIps(_ips)
         .setPreempt(_preempt)
         .setPriority(_priority)
-        .setTrackActions(_trackActions);
+        .setTrackActions(_trackActions)
+        .setVirtualAddresses(_virtualAddresses);
   }
 
   @Override
@@ -253,12 +236,12 @@ public final class HsrpGroup implements Serializable {
     }
     HsrpGroup rhs = (HsrpGroup) obj;
     return Objects.equals(_authentication, rhs._authentication)
-        && _groupNumber == rhs._groupNumber
         && _helloTime == rhs._helloTime
         && _holdTime == rhs._holdTime
-        && Objects.equals(_ips, rhs._ips)
         && _preempt == rhs._preempt
         && _priority == rhs._priority
+        && Objects.equals(_sourceAddress, rhs._sourceAddress)
+        && _virtualAddresses.equals(rhs._virtualAddresses)
         && _trackActions.equals(rhs._trackActions);
   }
 
@@ -266,13 +249,13 @@ public final class HsrpGroup implements Serializable {
   public int hashCode() {
     return Objects.hash(
         _authentication,
-        _groupNumber,
         _helloTime,
         _holdTime,
-        _ips,
         _preempt,
         _priority,
-        _trackActions);
+        _sourceAddress,
+        _trackActions,
+        _virtualAddresses);
   }
 
   @Override
@@ -280,13 +263,13 @@ public final class HsrpGroup implements Serializable {
     return toStringHelper(getClass())
         .omitNullValues()
         .add(PROP_AUTHENTICATION, _authentication)
-        .add(PROP_GROUP_NUMBER, _groupNumber)
         .add(PROP_HELLO_TIME, _helloTime)
         .add(PROP_HOLD_TIME, _holdTime)
-        .add(PROP_IPS, _ips)
         .add(PROP_PREEMPT, _preempt)
         .add(PROP_PRIORITY, _priority)
+        .add(PROP_SOURCE_ADDRESS, _sourceAddress)
         .add(PROP_TRACK_ACTIONS, _trackActions)
+        .add(PROP_VIRTUAL_ADDRESSES, _virtualAddresses)
         .toString();
   }
 }

@@ -5,12 +5,10 @@ import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
@@ -18,7 +16,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -229,7 +226,8 @@ public final class IpOwners {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     // vrid -> sync interface -> interface to own IPs if sync interface wins election -> IPs
     Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups = new HashMap<>();
-    Table<Ip, Integer, Set<Interface>> hsrpGroups = HashBasedTable.create();
+    // group -> interface -> IPs to own if interface wins election
+    Map<Integer, Map<NodeInterfacePair, Set<Ip>>> hsrpGroups = new HashMap<>();
     allInterfaces.forEach(
         (hostname, interfaces) ->
             interfaces.forEach(
@@ -250,7 +248,7 @@ public final class IpOwners {
                                   .add(i.getName()));
                 }));
     processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies, nc);
-    processHsrpGroups(ipOwners, hsrpGroups);
+    processHsrpGroups(ipOwners, hsrpGroups, l3Adjacencies, nc);
 
     // freeze
     return toImmutableMap(
@@ -263,34 +261,57 @@ public final class IpOwners {
                 hostIpOwnersEntry -> ImmutableSet.copyOf(hostIpOwnersEntry.getValue())));
   }
 
-  /** extract HSRP info from a given interface and add it to the {@code hsrpGroups} table */
+  /**
+   * Extract HSRP info from a given interface and add it to the {@code hsrpGroups}.
+   *
+   * @param hsrpGroups Output map: groupid -> interface -> IPs to own if interface wins election
+   */
   @VisibleForTesting
-  static void extractHsrp(Table<Ip, Integer, Set<Interface>> hsrpGroups, Interface i) {
+  static void extractHsrp(Map<Integer, Map<NodeInterfacePair, Set<Ip>>> hsrpGroups, Interface i) {
     // Inactive interfaces could never win a HSRP election
     if (!i.getActive()) {
       return;
     }
     // collect hsrp info
     i.getHsrpGroups()
-        .values()
         .forEach(
-            g -> {
-              Set<Ip> ips = g.getIps();
-              int groupNum = g.getGroupNumber();
+            (groupNum, hsrpGroup) -> {
+              Set<Ip> ips = hsrpGroup.getVirtualAddresses();
+              /*
+               * Invalid HSRP configuration. The HSRP group has no source IP address that
+               * would be used for VRRP election. This interface could never win the
+               * election, so is not a candidate.
+               */
+              if (hsrpGroup.getSourceAddress() == null) {
+                /*
+                 * Invalid VRRP configuration. The VRRP has no source IP address that
+                 * would be used for VRRP election. This interface could never win the
+                 * election, so is not a candidate.
+                 */
+                return;
+              }
               if (ips.isEmpty()) {
+                /*
+                 * Invalid HSRP configuration. The HSRP group has no virtual IP addresses set, so
+                 * should not participate in HSRP election. This interface could never win the
+                 * election, so is not a candidate.
+                 *
+                 * TODO: Technically according to
+                 *       https://datatracker.ietf.org/doc/html/rfc2281#section-5.1 the virtual IP
+                 *       (there is only one primary IP communicatd via an HSRP packet) may be
+                 *       learned from the active router via a HELLO message, but we do not support
+                 *       this mode of operation.
+                 */
                 return;
               }
               ips.forEach(
                   ip -> {
-                    Set<Interface> candidates = hsrpGroups.get(ip, groupNum);
+                    Map<NodeInterfacePair, Set<Ip>> candidates = hsrpGroups.get(groupNum);
                     if (candidates == null) {
-                      candidates = Collections.newSetFromMap(new IdentityHashMap<>());
-                      hsrpGroups.put(ip, groupNum, candidates);
+                      candidates = new HashMap<>();
+                      hsrpGroups.put(groupNum, candidates);
                     }
-                    if (i.getConcreteAddress() != null) {
-                      // Only interfaces that have IP addresses are considered valid.
-                      candidates.add(i);
-                    }
+                    candidates.put(NodeInterfacePair.of(i), hsrpGroup.getVirtualAddresses());
                   });
             });
   }
@@ -301,36 +322,45 @@ public final class IpOwners {
    */
   @VisibleForTesting
   static void processHsrpGroups(
-      Map<Ip, Map<String, Set<String>>> ipOwners, Table<Ip, Integer, Set<Interface>> hsrpGroups) {
-    hsrpGroups
-        .cellSet()
-        .forEach(
-            cell -> {
-              Ip ip = cell.getRowKey();
-              assert ip != null;
-              Integer groupNum = cell.getColumnKey();
-              assert groupNum != null;
-              Set<Interface> candidates = cell.getValue();
-              assert candidates != null;
-              if (candidates.isEmpty()) {
-                // No interfaces can actually be the master for this group.
-                return;
-              }
-              /*
-               * Compare priorities first. If tied, break tie based on highest interface IP.
-               */
-              Interface hsrpMaster =
-                  Collections.max(
-                      candidates,
-                      Comparator.comparingInt(
-                              (Interface i) ->
-                                  computeHsrpPriority(i, i.getHsrpGroups().get(groupNum)))
-                          .thenComparing(i -> i.getConcreteAddress().getIp()));
-              ipOwners
-                  .computeIfAbsent(ip, k -> new HashMap<>())
-                  .computeIfAbsent(hsrpMaster.getOwner().getHostname(), k -> new HashSet<>())
-                  .add(hsrpMaster.getName());
-            });
+      Map<Ip, Map<String, Set<String>>> ipOwners,
+      Map<Integer, Map<NodeInterfacePair, Set<Ip>>> hsrpGroups,
+      L3Adjacencies l3Adjacencies,
+      NetworkConfigurations nc) {
+    hsrpGroups.forEach(
+        (groupNum, ipSpaceByCandidate) -> {
+          assert groupNum != null;
+          Set<NodeInterfacePair> candidates = ipSpaceByCandidate.keySet();
+
+          List<List<NodeInterfacePair>> candidatePartitions =
+              partitionCandidates(candidates, l3Adjacencies);
+
+          candidatePartitions.forEach(
+              cp -> {
+                List<Interface> partitionInterfaces =
+                    cp.stream()
+                        .map(nip -> nc.getInterface(nip.getHostname(), nip.getInterface()).get())
+                        .collect(ImmutableList.toImmutableList());
+                /*
+                 * Compare priorities first, then highest interface IP, then hostname, then interface name.
+                 */
+                NodeInterfacePair hsrpMaster =
+                    NodeInterfacePair.of(
+                        Collections.max(
+                            partitionInterfaces,
+                            Comparator.comparingInt(
+                                    (Interface o) -> o.getHsrpGroups().get(groupNum).getPriority())
+                                .thenComparing(o -> o.getConcreteAddress().getIp())
+                                .thenComparing(o -> NodeInterfacePair.of(o))));
+                ipSpaceByCandidate
+                    .get(hsrpMaster)
+                    .forEach(
+                        ip ->
+                            ipOwners
+                                .computeIfAbsent(ip, k -> new HashMap<>())
+                                .computeIfAbsent(hsrpMaster.getHostname(), k -> new HashSet<>())
+                                .add(hsrpMaster.getInterface()));
+              });
+        });
   }
 
   /** Compute HSRP priority for a given HSRP group and the interface it is associated with. */
@@ -352,7 +382,7 @@ public final class IpOwners {
   }
 
   /**
-   * extract VRRP info from a given interface and add it to the {@code vrrpGroups} table.
+   * Extract VRRP info from a given interface and add it to the {@code vrrpGroups}.
    *
    * @param vrrpGroups Output map: vrid -> sync interface -> interface to own IPs if sync interface
    *     wins election -> IPs
@@ -377,9 +407,9 @@ public final class IpOwners {
               }
               if (vrrpGroup.getVirtualAddresses().isEmpty()) {
                 /*
-                 * Invalid VRRP configuration. The VRRP has no virtual IP addresses set, so should
-                 * not participate in  VRRP election. This interface could never win the election,
-                 * so is not a candidate.
+                 * Invalid VRRP configuration. The VRRP group has no virtual IP addresses set, so
+                 * should not participate in VRRP election. This interface could never win the
+                 * election, so is not a candidate.
                  */
                 return;
               }
@@ -389,8 +419,7 @@ public final class IpOwners {
                 candidates = new HashMap<>();
                 vrrpGroups.put(vrid, candidates);
               }
-              candidates.put(
-                  NodeInterfacePair.of(i), i.getVrrpGroups().get(vrid).getVirtualAddresses());
+              candidates.put(NodeInterfacePair.of(i), vrrpGroup.getVirtualAddresses());
             });
   }
 
@@ -409,7 +438,7 @@ public final class IpOwners {
           Set<NodeInterfacePair> candidates = ipSpaceByCandidate.keySet();
 
           List<List<NodeInterfacePair>> candidatePartitions =
-              partitionVrrpCandidates(candidates, l3Adjacencies);
+              partitionCandidates(candidates, l3Adjacencies);
 
           candidatePartitions.forEach(
               cp -> {
@@ -444,11 +473,11 @@ public final class IpOwners {
   }
 
   /**
-   * Partitions the input set of VRRP candidates into subsets where all candidates are in the same
-   * broadcast domain. This disambiguates VRRP groups that have the same IP and group ID
+   * Partitions the input set of HSRP/VRRP candidates into subsets where all candidates are in the
+   * same broadcast domain. This disambiguates VRRP groups that have the same IP and group ID
    */
   @VisibleForTesting
-  static List<List<NodeInterfacePair>> partitionVrrpCandidates(
+  static List<List<NodeInterfacePair>> partitionCandidates(
       Set<NodeInterfacePair> candidates, L3Adjacencies l3Adjacencies) {
     Map<NodeInterfacePair, List<NodeInterfacePair>> partitions = new HashMap<>();
     for (NodeInterfacePair cni : candidates) {
