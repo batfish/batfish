@@ -1,0 +1,54 @@
+{
+  "class" : "org.batfish.question.hsrpproperties.HsrpPropertiesQuestion",
+  "excludeShutInterfaces" : true,
+  "interfaces" : "i1",
+  "nodes" : "n1",
+  "virtualAddresses" : "1.1.1.1",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns configuration settings of HSRP groups.",
+    "instanceName" : "qname",
+    "longDescription" : "Lists information about HSRP groups on interfaces.",
+    "orderedVariableNames" : [
+      "nodes",
+      "interfaces",
+      "virtualAddresses",
+      "excludeShutInterfaces"
+    ],
+    "tags" : [
+      "configuration",
+      "hsrp"
+    ],
+    "variables" : {
+      "excludeShutInterfaces" : {
+        "description" : "Exclude interfaces that are shutdown",
+        "displayName" : "Exclude Shut Interfaces",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : true
+      },
+      "interfaces" : {
+        "description" : "Include interfaces matching this specifier",
+        "displayName" : "Interfaces",
+        "optional" : true,
+        "type" : "interfacesSpec",
+        "value" : "i1"
+      },
+      "nodes" : {
+        "description" : "Include nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "n1"
+      },
+      "virtualAddresses" : {
+        "description" : "Include only groups with at least one virtual address matching this specifier",
+        "displayName" : "Virtual Addresses",
+        "optional" : true,
+        "type" : "ipSpaceSpec",
+        "value" : "1.1.1.1"
+      }
+    }
+  }
+}
