@@ -45,6 +45,9 @@ test -raw tests/questions/experimental/findMatchingFilterLines.ref validate-temp
 # validate loopbackMultipathConsistency
 test -raw tests/questions/experimental/loopbackMultipathConsistency.ref validate-template loopbackMultipathConsistency maxTraces=1
 
+# validate hsrpProperties
+test -raw tests/questions/experimental/hsrpProperties.ref validate-template hsrpProperties excludeShutInterfaces=true, interfaces="i1", nodes="n1", virtualAddresses="1.1.1.1"
+
 # validate interfaceMtu
 test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtu comparator='>', interfaces='Gig.*', mtuBytes=0, nodes='as1core2'
 
