@@ -1,5 +1,7 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -28,7 +30,12 @@ import org.batfish.datamodel.packet_policy.StatementVisitor;
 import org.batfish.datamodel.packet_policy.TrueExpr;
 import org.batfish.datamodel.transformation.Transformation;
 
-/** Find all the sources referenced by configuration on a device. */
+/**
+ * Find all the sources referenced by {@link AclLineMatchExpr} configuration on a device.
+ *
+ * <p>Here, sources means any interface referenced with a {@link MatchSrcInterface} or the device
+ * itself ({@link OriginatingFromDevice}).
+ */
 public final class SourcesReferencedOnDevice {
 
   /**
@@ -36,7 +43,9 @@ public final class SourcesReferencedOnDevice {
    * interfaces.
    */
   public static Set<String> activeReferencedSources(Configuration c) {
-    return Sets.intersection(allReferencedSources(c), c.activeInterfaceNames());
+    return Sets.intersection(
+        allReferencedSources(c),
+        Sets.union(ImmutableSet.of(SOURCE_ORIGINATING_FROM_DEVICE), c.activeInterfaceNames()));
   }
 
   /**

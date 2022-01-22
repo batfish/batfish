@@ -1,7 +1,9 @@
 package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedOnDevice.activeReferencedSources;
 import static org.batfish.datamodel.acl.SourcesReferencedOnDevice.allReferencedSources;
 import static org.batfish.datamodel.acl.SourcesReferencedOnDevice.collectPacketPolicyReferences;
@@ -45,7 +47,9 @@ public class SourcesReferencedOnDeviceTest {
         .setVrf(c.getDefaultVrf())
         .setName("in-incoming-trans") // so one is active
         .setType(InterfaceType.LOGICAL)
-        .setIncomingTransformation(when(matchSrcInterface("in-incoming-trans")).build())
+        .setIncomingTransformation(
+            when(and(matchSrcInterface("in-incoming-trans"), OriginatingFromDevice.INSTANCE))
+                .build())
         .setOutgoingTransformation(when(matchSrcInterface("in-outgoing-trans")).build())
         .build();
     PacketPolicy p =
@@ -59,8 +63,15 @@ public class SourcesReferencedOnDeviceTest {
     c.setPacketPolicies(ImmutableMap.of(p.getName(), p));
     assertThat(
         allReferencedSources(c),
-        containsInAnyOrder("in-acl", "in-incoming-trans", "in-outgoing-trans", "in-packet-policy"));
-    assertThat(activeReferencedSources(c), containsInAnyOrder("in-incoming-trans"));
+        containsInAnyOrder(
+            "in-acl",
+            "in-incoming-trans",
+            "in-outgoing-trans",
+            "in-packet-policy",
+            SOURCE_ORIGINATING_FROM_DEVICE));
+    assertThat(
+        activeReferencedSources(c),
+        containsInAnyOrder("in-incoming-trans", SOURCE_ORIGINATING_FROM_DEVICE));
   }
 
   @Test
