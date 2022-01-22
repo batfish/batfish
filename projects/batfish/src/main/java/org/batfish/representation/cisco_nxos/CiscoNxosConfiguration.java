@@ -2141,7 +2141,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           if (addrWithAttr.getAddress() instanceof ConcreteInterfaceAddress) {
             // convert any connected route metadata
             addressMetadata.put(
-                (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
+                addrWithAttr.getAddress(),
                 ConnectedRouteMetadata.builder()
                     .setAdmin(addrWithAttr.getRoutePreference())
                     .setGenerateLocalRoute(true)
@@ -2153,12 +2153,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             iface.getSecondaryAddresses().stream()
                 .map(InterfaceAddressWithAttributes::getAddress)
                 .collect(ImmutableSet.toImmutableSet()));
-        iface.getSecondaryAddresses().stream()
-            .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
+        iface
+            .getSecondaryAddresses()
             .forEach(
                 addr ->
                     addressMetadata.put(
-                        (ConcreteInterfaceAddress) addr.getAddress(),
+                        addr.getAddress(),
                         ConnectedRouteMetadata.builder()
                             .setAdmin(addr.getRoutePreference())
                             .setGenerateLocalRoute(true)
