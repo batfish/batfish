@@ -1587,11 +1587,6 @@ public final class AsaConfiguration extends VendorConfiguration {
       newIface.setChannelGroup(getNewInterfaceName(iface.getChannelGroup()));
     }
     newIface.setCryptoMap(iface.getCryptoMap());
-    newIface.setHsrpGroups(
-        CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(),
-            Entry::getKey,
-            e -> AsaConversions.toHsrpGroup(e.getValue(), _trackingGroups.keySet())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(
@@ -1623,6 +1618,13 @@ public final class AsaConfiguration extends VendorConfiguration {
     }
     allPrefixes.addAll(iface.getSecondaryAddresses());
     newIface.setAllAddresses(allPrefixes.build());
+    newIface.setHsrpGroups(
+        CollectionUtil.toImmutableMap(
+            iface.getHsrpGroups(),
+            Entry::getKey,
+            e ->
+                AsaConversions.toHsrpGroup(
+                    e.getValue(), _trackingGroups.keySet(), newIface.getConcreteAddress())));
 
     EigrpProcess eigrpProcess = null;
     if (iface.getAddress() != null) {

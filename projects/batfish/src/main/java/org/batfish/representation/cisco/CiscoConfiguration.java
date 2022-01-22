@@ -33,6 +33,7 @@ import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpPro
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.toBgpAggregate;
+import static org.batfish.representation.cisco.CiscoConversions.toHsrpGroup;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
@@ -1374,11 +1375,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
-    newIface.setHsrpGroups(
-        CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(),
-            Entry::getKey,
-            e -> CiscoConversions.toHsrpGroup(e.getValue(), _trackingGroups.keySet())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(
@@ -1580,7 +1576,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setPacketPolicy(routingPolicyName);
     }
 
-    // For IOS and XR, FirewallSessionInterfaceInfo is created once for all NAT interfaces.
+    newIface.setHsrpGroups(
+        CollectionUtil.toImmutableMap(
+            iface.getHsrpGroups(),
+            Entry::getKey,
+            e ->
+                toHsrpGroup(
+                    e.getValue(), _trackingGroups.keySet(), newIface.getConcreteAddress())));
+
+    // For IOS, FirewallSessionInterfaceInfo is created once for all NAT interfaces.
     return newIface;
   }
 

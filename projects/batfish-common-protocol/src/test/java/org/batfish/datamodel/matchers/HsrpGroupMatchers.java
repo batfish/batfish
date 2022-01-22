@@ -54,7 +54,7 @@ public final class HsrpGroupMatchers {
 
     @Override
     protected Set<Ip> featureValueOf(HsrpGroup actual) {
-      return actual.getIps();
+      return actual.getVirtualAddresses();
     }
   }
 
