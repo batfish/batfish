@@ -1625,6 +1625,13 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testServerV2Parsing() {
+    A10Configuration c = parseVendorConfig("server-v2");
+    assertThat(c.getServers(), hasKeys("SERVER2"));
+    assertThat(c.getServers().get("SERVER2").getHealthCheckDisable(), equalTo(true));
+  }
+
+  @Test
   public void testServerExtraction() {
     String hostname = "server";
     A10Configuration c = parseVendorConfig(hostname);

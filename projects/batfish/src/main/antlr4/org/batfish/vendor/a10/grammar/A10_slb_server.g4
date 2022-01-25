@@ -21,6 +21,7 @@ sss_definition
    | sssd_enable
    | sssd_health_check
    | sssd_health_check_disable
+   | sssd_no
    | sssd_port
    | sssd_stats_data_disable
    | sssd_stats_data_enable
@@ -36,6 +37,7 @@ sssd_enable: ENABLE NEWLINE;
 
 sssd_health_check: HEALTH_CHECK health_check_name NEWLINE;
 
+// 4.x
 sssd_health_check_disable: HEALTH_CHECK_DISABLE NEWLINE;
 
 sssd_stats_data_disable: STATS_DATA_DISABLE NEWLINE;
@@ -47,6 +49,11 @@ sssd_template: TEMPLATE sssdt_server;
 sssdt_server: SERVER template_name NEWLINE;
 
 sssd_weight: WEIGHT connection_weight NEWLINE;
+
+// 2.x
+sssd_no: NO sssdno_health_check;
+
+sssdno_health_check: HEALTH_CHECK NEWLINE;
 
 sssd_port: PORT port_number tcp_or_udp (RANGE port_range_value)? NEWLINE sssdp_definition*;
 
