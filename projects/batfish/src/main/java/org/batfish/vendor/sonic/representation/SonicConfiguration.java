@@ -10,6 +10,7 @@ import static org.batfish.vendor.sonic.representation.SonicConversions.convertVl
 import static org.batfish.vendor.sonic.representation.SonicStructureType.fromFrrStructureType;
 import static org.batfish.vendor.sonic.representation.SonicStructureUsage.fromFrrStructureUsage;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   // If MGMT_VRF is not explicitly defined, we use this name.
   // TODO: confirm device behavior
-  static final String DEFAULT_MGMT_VRF_NAME = "vrf_global";
+  @VisibleForTesting public static final String DEFAULT_MGMT_VRF_NAME = "vrf_global";
 
   private @Nullable String _hostname;
   private ConfigDb _configDb; // set via the extractor
@@ -66,9 +67,11 @@ public class SonicConfiguration extends FrrVendorConfiguration {
         .getMgmtVrfs()
         .keySet()
         .forEach(vrfName -> Vrf.builder().setName(vrfName).setOwner(c).build());
-
-    // warn about multiple management VRFs
-    if (_configDb.getMgmtVrfs().size() > 1) {
+    if (_configDb.getMgmtVrfs().isEmpty()) {
+      // Create a management VRF with the default name.
+      Vrf.builder().setName(DEFAULT_MGMT_VRF_NAME).setOwner(c).build();
+    } else if (_configDb.getMgmtVrfs().size() > 1) {
+      // warn about multiple management VRFs
       _w.redFlag(
           String.format(
               "Multiple management VRFs defined.  Putting management ports in VRF '%s'",
