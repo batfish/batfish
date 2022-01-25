@@ -74,6 +74,7 @@ import org.batfish.vendor.a10.grammar.A10Parser.Non_default_vridContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_floating_ipContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Snha_preemption_enableContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Sssdno_health_checkContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ssvs_ha_groupContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Trunk_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Uint8Context;
@@ -1806,6 +1807,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssd_health_check_disable(A10Parser.Sssd_health_check_disableContext ctx) {
+    _currentServer.setHealthCheckDisable(true);
+  }
+
+  @Override
+  public void exitSssdno_health_check(Sssdno_health_checkContext ctx) {
     _currentServer.setHealthCheckDisable(true);
   }
 

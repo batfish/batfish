@@ -1,0 +1,7 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2-P12-SP3, build 3 (Jul-12-2018,01:14)
+hostname server-v2
+!
+slb server SERVER2 10.0.0.102
+  no health-check
+!
