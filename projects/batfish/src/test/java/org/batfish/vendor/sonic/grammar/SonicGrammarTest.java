@@ -15,7 +15,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
+import static org.batfish.vendor.sonic.representation.SonicConfiguration.DEFAULT_MGMT_VRF_NAME;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -155,6 +157,36 @@ public class SonicGrammarTest {
     assertThat(
         Iterables.getOnlyElement(c.getAllInterfaces().values()),
         allOf(hasName("eth0"), hasVrfName("vrf_global_not_default"), hasAddress("1.1.1.1/24")));
+  }
+
+  /**
+   * Test that management interfaces are created and put in the default management VRF when none is
+   * configured.
+   */
+  @Test
+  public void testMgmtNoVrf() throws IOException {
+    Batfish batfish = getBatfish("mgmt-novrf", "device/frr.conf", "device/config_db.json");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("mgmt");
+    vc.setWarnings(new Warnings());
+
+    assertEquals(
+        ImmutableMap.of("localhost", new DeviceMetadata("mgmt")),
+        vc.getConfigDb().getDeviceMetadata());
+    assertEquals(
+        ImmutableMap.of("eth0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+        vc.getConfigDb().getMgmtInterfaces());
+    assertEquals(
+        ImmutableMap.of("eth0", Port.builder().setAdminStatusUp(true).build()),
+        vc.getConfigDb().getMgmtPorts());
+    assertThat(vc.getConfigDb().getMgmtVrfs(), anEmptyMap());
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertThat(
+        Iterables.getOnlyElement(c.getAllInterfaces().values()),
+        allOf(hasName("eth0"), hasVrfName(DEFAULT_MGMT_VRF_NAME), hasAddress("1.1.1.1/24")));
   }
 
   @Test
