@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
@@ -1093,6 +1094,11 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     return _hmm == other._hmm;
+  }
+
+  @Override
+  public @Nonnull String toString() {
+    return NodeInterfacePair.of(this).toString();
   }
 
   /** Number of access VLAN when switchport mode is ACCESS. */
