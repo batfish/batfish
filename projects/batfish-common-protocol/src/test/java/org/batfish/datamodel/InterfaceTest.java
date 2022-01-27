@@ -539,7 +539,12 @@ public class InterfaceTest {
   @Test
   public void testEquals() {
     // TODO: more thorough testing
-    Interface.Builder b = Interface.builder().setName("ifaceName");
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Interface.Builder b = Interface.builder().setOwner(c).setName("ifaceName");
     new EqualsTester()
         .addEqualityGroup(b.build(), b.build())
         .addEqualityGroup(b.setHmm(true).build())
