@@ -10,7 +10,8 @@ ss_service_group: SERVICE_GROUP service_group_name tcp_or_udp? NEWLINE sssg_defi
 
 sssg_definition
 :
-   sssgd_health_check
+   sssgd_extended_stats_null
+   | sssgd_health_check
    | sssgd_health_check_disable
    | sssgd_member
    | sssgd_method
@@ -21,6 +22,8 @@ sssg_definition
    | sssgd_stats_data_enable
    | sssgd_template
 ;
+
+sssgd_extended_stats_null: EXTENDED_STATS NEWLINE;
 
 sssgd_health_check: HEALTH_CHECK health_check_name NEWLINE;
 

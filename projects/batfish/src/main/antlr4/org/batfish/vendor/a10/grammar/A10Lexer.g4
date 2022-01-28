@@ -84,6 +84,7 @@ ENABLE: 'enable';
 ETHERNET: 'ethernet';
 EXPECT: 'expect';
 EXTENDED: 'extended';
+EXTENDED_STATS: 'extended-stats';
 EXTERNAL
 :
   'external'
