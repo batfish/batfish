@@ -12,7 +12,7 @@ sns_server: SERVER slb_server_name slb_server_target? NEWLINE;
 ss_server: SERVER slb_server_name slb_server_target? NEWLINE sss_definition*;
 
 // TODO support other target types, like hostname or interface
-slb_server_target: ip_address;
+slb_server_target: ip_address | ipv6_address;
 
 sss_definition
 :

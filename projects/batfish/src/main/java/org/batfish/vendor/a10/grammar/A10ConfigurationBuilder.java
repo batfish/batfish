@@ -1741,11 +1741,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
 
     // TODO enforce no target reuse
-    ServerTarget target = toServerTarget(ctx.slb_server_target());
+    Optional<ServerTarget> target = toServerTarget(ctx.slb_server_target());
     _c.defineStructure(SERVER, name, ctx);
-    _currentServer = _c.getServers().computeIfAbsent(name, n -> new Server(n, target));
-    // Make sure target is up-to-date
-    _currentServer.setTarget(target);
+    if (target.isPresent()) {
+      _currentServer = _c.getServers().computeIfAbsent(name, n -> new Server(n, target.get()));
+      // Make sure target is up-to-date
+      _currentServer.setTarget(target.get());
+    } else {
+      // dummy for internal fields
+      _currentServer = new Server("~dummy~", new ServerTargetAddress(Ip.ZERO));
+    }
   }
 
   @Override
@@ -1758,7 +1763,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     Server removedServer = _c.getServers().remove(name);
     if (removedServer != null && ctx.slb_server_target() != null) {
       // Ensure that specified target is correct; if it isn't, server should not be deleted.
-      ServerTarget target = toServerTarget(ctx.slb_server_target());
+      Optional<ServerTarget> maybeTarget = toServerTarget(ctx.slb_server_target());
+      if (!maybeTarget.isPresent()) {
+        // The server was a dummy, no need to clean up.
+        return;
+      }
+      ServerTarget target = maybeTarget.get();
       if (!target.equals(removedServer.getTarget())) {
         _c.getServers().put(name, removedServer);
         removedServer = null;
@@ -1770,9 +1780,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Nonnull
-  ServerTarget toServerTarget(A10Parser.Slb_server_targetContext ctx) {
-    assert ctx.ip_address() != null;
-    return new ServerTargetAddress(toIp(ctx.ip_address()));
+  Optional<ServerTarget> toServerTarget(A10Parser.Slb_server_targetContext ctx) {
+    if (ctx.ip_address() != null) {
+      return Optional.of(new ServerTargetAddress(toIp(ctx.ip_address())));
+    }
+    assert ctx.ipv6_address() != null;
+    return Optional.empty();
   }
 
   @Override

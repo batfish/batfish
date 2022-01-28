@@ -24,6 +24,10 @@ slb server SERVER2 10.0.0.102
   port 80 tcp
     weight 999
 !
+! IPv6 server is ignored but doesn't crash
+slb server SERVER-IPV6 2001:DB8::
+  disable
+!
 ! Server name has a unicode dash \u2013
 slb server SERVER–3 10.0.0.3
   disable
