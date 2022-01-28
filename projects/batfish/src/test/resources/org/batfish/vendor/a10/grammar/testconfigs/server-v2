@@ -2,6 +2,29 @@
 !version 2.7.2-P12-SP3, build 3 (Jul-12-2018,01:14)
 hostname server-v2
 !
+health monitor HC
+!
+slb service-group SG tcp
+  method round-robin-strict
+  health-check HC
+  priority 2
+  member M1 8080
+    disable
+    priority 2
+  member M2 8080
+  member M3 8080
+    disable
+  member M4 8080
+    priority 2
+!
+slb server M1 10.0.0.1
+  port 8080 tcp
+slb server M2 10.0.0.2
+  port 8080 tcp
+slb server M3 10.0.0.3
+  port 8080 tcp
+slb server M4 10.0.0.4
+  port 8080 tcp
 slb server SERVER2 10.0.0.102
   no health-check
 !

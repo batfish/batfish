@@ -13,6 +13,7 @@ public class ServiceGroup implements Serializable {
     LEAST_CONNECTION,
     LEAST_REQUEST,
     ROUND_ROBIN,
+    ROUND_ROBIN_STRICT,
     SERVICE_LEAST_CONNECTION,
   }
 
@@ -90,6 +91,14 @@ public class ServiceGroup implements Serializable {
     _minActiveMember = minActiveMember;
   }
 
+  public @Nullable String getTemplatePort() {
+    return _templatePort;
+  }
+
+  public void setTemplatePort(@Nullable String templatePort) {
+    _templatePort = templatePort;
+  }
+
   public ServiceGroup(String name, ServerPort.Type type) {
     _name = name;
     _type = type;
@@ -104,4 +113,5 @@ public class ServiceGroup implements Serializable {
   @Nullable private Integer _minActiveMember;
   @Nonnull private final ServerPort.Type _type;
   @Nullable private Boolean _statsDataEnable;
+  @Nullable private String _templatePort;
 }

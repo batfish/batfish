@@ -1,0 +1,12 @@
+!BATFISH_FORMAT: a10_acos
+hostname slb_template_port
+!
+health monitor HEALTH_CHECK_NAME
+!
+slb template port CONN_LIMIT
+    conn-limit 100
+!
+slb service-group SG tcp
+    template port CONN_LIMIT
+    health-check HEALTH_CHECK
+!

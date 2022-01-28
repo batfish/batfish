@@ -1627,7 +1627,7 @@ public class A10GrammarTest {
   @Test
   public void testServerV2Parsing() {
     A10Configuration c = parseVendorConfig("server-v2");
-    assertThat(c.getServers(), hasKeys("SERVER2"));
+    assertThat(c.getServers(), hasKeys("M1", "M2", "M3", "M4", "SERVER2"));
     assertThat(c.getServers().get("SERVER2").getHealthCheckDisable(), equalTo(true));
   }
 
@@ -1865,6 +1865,13 @@ public class A10GrammarTest {
                     "Cannot reference non-existent health monitor UNDEFINED for service-group"
                         + " SG1"),
                 hasComment("New service-group must have a protocol specified."))));
+  }
+
+  @Test
+  public void testTemplatePort() throws IOException {
+    A10Configuration c = parseVendorConfig("slb_template_port");
+    assertThat(c.getServiceGroups(), hasKeys("SG"));
+    assertThat(c.getServiceGroups().get("SG").getTemplatePort(), equalTo("CONN_LIMIT"));
   }
 
   /**

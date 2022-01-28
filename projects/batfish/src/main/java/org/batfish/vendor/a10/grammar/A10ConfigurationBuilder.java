@@ -75,6 +75,7 @@ import org.batfish.vendor.a10.grammar.A10Parser.S_floating_ipContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Snha_preemption_enableContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Sssdno_health_checkContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Sssgdt_portContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ssvs_ha_groupContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Trunk_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Uint8Context;
@@ -1242,9 +1243,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       return ServiceGroup.Method.LEAST_REQUEST;
     } else if (ctx.SERVICE_LEAST_CONNECTION() != null) {
       return ServiceGroup.Method.SERVICE_LEAST_CONNECTION;
+    } else if (ctx.ROUND_ROBIN() != null) {
+      return ServiceGroup.Method.ROUND_ROBIN;
     }
-    assert ctx.ROUND_ROBIN() != null;
-    return ServiceGroup.Method.ROUND_ROBIN;
+    assert ctx.ROUND_ROBIN_STRICT() != null;
+    return ServiceGroup.Method.ROUND_ROBIN_STRICT;
   }
 
   @Override
@@ -1269,6 +1272,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSssgd_stats_data_enable(A10Parser.Sssgd_stats_data_enableContext ctx) {
     _currentServiceGroup.setStatsDataEnable(true);
+  }
+
+  @Override
+  public void exitSssgdt_port(Sssgdt_portContext ctx) {
+    toString(ctx, ctx.name).ifPresent(_currentServiceGroup::setTemplatePort);
   }
 
   @Override

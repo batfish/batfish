@@ -237,6 +237,7 @@ REMOTE_AS: 'remote-as';
 RETRY: 'retry';
 ROLE: 'role';
 ROUND_ROBIN: 'round-robin';
+ROUND_ROBIN_STRICT: 'round-robin-strict';
 ROUTE: 'route';
 ROUTE_REFRESH: 'route-refresh';
 ROUTER: 'router';
