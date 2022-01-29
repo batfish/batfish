@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspConfigurationException;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
@@ -54,7 +56,8 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nullable
   @Override
-  public ConversionContext loadConversionContext(NetworkSnapshot snapshot) {
+  public ConversionContext loadConversionContext(NetworkSnapshot snapshot)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -73,7 +76,8 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nullable
   @Override
-  public IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
+  public IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot)
+      throws IspConfigurationException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -96,13 +100,15 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nonnull
   @Override
-  public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId) {
+  public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Nonnull
   @Override
-  public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId) {
+  public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -112,18 +118,20 @@ public class TestStorageProvider implements StorageProvider {
       ConvertConfigurationAnswerElement convertAnswerElement,
       Layer1Topology synthesizedLayer1Topology,
       NetworkId network,
-      SnapshotId snapshot) {
+      SnapshotId snapshot)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public void storeConversionContext(
-      ConversionContext conversionContext, NetworkSnapshot snapshot) {
+  public void storeConversionContext(ConversionContext conversionContext, NetworkSnapshot snapshot)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public String loadQuestion(NetworkId network, QuestionId analysis, AnalysisId question) {
+  public String loadQuestion(NetworkId network, QuestionId analysis, AnalysisId question)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -134,7 +142,8 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public void storeQuestion(
-      String questionStr, NetworkId network, QuestionId question, AnalysisId analysis) {
+      String questionStr, NetworkId network, QuestionId question, AnalysisId analysis)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -145,24 +154,28 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public void storeAnswer(
-      NetworkId network, SnapshotId snapshot, String answerStr, AnswerId answerId) {
+      NetworkId network, SnapshotId snapshot, String answerStr, AnswerId answerId)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public void storeAnswerMetadata(
-      NetworkId network, SnapshotId snapshot, AnswerMetadata answerMetadata, AnswerId answerId) {
+      NetworkId network, SnapshotId snapshot, AnswerMetadata answerMetadata, AnswerId answerId)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public String loadAnswer(NetworkId network, SnapshotId snapshot, AnswerId answerId) {
+  public String loadAnswer(NetworkId network, SnapshotId snapshot, AnswerId answerId)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public AnswerMetadata loadAnswerMetadata(
-      NetworkId network, SnapshotId snapshot, AnswerId answerId) {
+      NetworkId network, SnapshotId snapshot, AnswerId answerId)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -173,7 +186,8 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public String loadQuestionClassId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -184,34 +198,39 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public void storeAnalysisMetadata(
-      AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId) {
+      AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId) {
+  public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public void storeSnapshotMetadata(
-      SnapshotMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId) {
+      SnapshotMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId) {
+  public String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
   public void storeNodeRoles(
-      NetworkId network, NodeRolesData nodeRolesData, NodeRolesId nodeRolesId) {
+      NetworkId network, NodeRolesData nodeRolesData, NodeRolesId nodeRolesId) throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public String loadNodeRoles(NetworkId network, NodeRolesId nodeRolesId) {
+  public String loadNodeRoles(NetworkId network, NodeRolesId nodeRolesId)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -224,54 +243,63 @@ public class TestStorageProvider implements StorageProvider {
   public void initNetwork(NetworkId networkId) {}
 
   @Override
-  public void deleteAnswerMetadata(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
+  public void deleteAnswerMetadata(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId)
+      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public InputStream loadNetworkBlob(NetworkId networkId, String key) {
+  public InputStream loadNetworkBlob(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeNetworkBlob(InputStream inputStream, NetworkId networkId, String key) {
+  public void storeNetworkBlob(InputStream inputStream, NetworkId networkId, String key)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public InputStream loadNetworkObject(NetworkId networkId, String key) {
+  public InputStream loadNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key) {
+  public void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void deleteNetworkObject(NetworkId networkId, String key) {
+  public void deleteNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public InputStream loadSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key) {
+  public InputStream loadSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void storeSnapshotObject(
-      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key) {
+      InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void deleteSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key) {
+  public void deleteSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public InputStream loadSnapshotInputObject(
-      NetworkId networkId, SnapshotId snapshotId, String key) {
+  public InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -282,122 +310,134 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
-      NetworkId networkId, SnapshotId snapshotId) {
+      NetworkId networkId, SnapshotId snapshotId) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public @Nonnull List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
-      NetworkId networkId, SnapshotId snapshotId) {
+      NetworkId networkId, SnapshotId snapshotId) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) {
+  public String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public String loadInitialTopology(NetworkId networkId, SnapshotId snapshotId) {
+  public String loadInitialTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeInitialTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId) {
+  public void storeInitialTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void storePojoTopology(
-      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId) {
+      org.batfish.datamodel.pojo.Topology topology, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeWorkLog(
-      String logOutput, NetworkId network, SnapshotId snapshot, String workId) {
+  public void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void storeWorkJson(
-      String jsonOutput, NetworkId network, SnapshotId snapshot, String workId) {
+      String jsonOutput, NetworkId network, SnapshotId snapshot, String workId) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public CompletionMetadata loadCompletionMetadata(NetworkId networkId, SnapshotId snapshotId) {
+  public CompletionMetadata loadCompletionMetadata(NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void storeCompletionMetadata(
-      CompletionMetadata completionMetadata, NetworkId networkId, SnapshotId snapshotId) {
+      CompletionMetadata completionMetadata, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public BgpTopology loadBgpTopology(NetworkSnapshot networkSnapshot) {
+  public BgpTopology loadBgpTopology(NetworkSnapshot networkSnapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot) {
+  public EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot) {
+  public Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) {
+  public Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public @Nonnull L3Adjacencies loadL3Adjacencies(NetworkSnapshot networkSnapshot) {
+  public @Nonnull L3Adjacencies loadL3Adjacencies(NetworkSnapshot networkSnapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OspfTopology loadOspfTopology(NetworkSnapshot networkSnapshot) {
+  public OspfTopology loadOspfTopology(NetworkSnapshot networkSnapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public VxlanTopology loadVxlanTopology(NetworkSnapshot networkSnapshot) {
+  public VxlanTopology loadVxlanTopology(NetworkSnapshot networkSnapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeBgpTopology(BgpTopology bgpTopology, NetworkSnapshot networkSnapshot) {
+  public void storeBgpTopology(BgpTopology bgpTopology, NetworkSnapshot networkSnapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeEigrpTopology(EigrpTopology eigrpTopology, NetworkSnapshot networkSnapshot) {
+  public void storeEigrpTopology(EigrpTopology eigrpTopology, NetworkSnapshot networkSnapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeLayer3Topology(Topology layer3Topology, NetworkSnapshot networkSnapshot) {
+  public void storeLayer3Topology(Topology layer3Topology, NetworkSnapshot networkSnapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeL3Adjacencies(L3Adjacencies adjacencies, NetworkSnapshot networkSnapshot) {
+  public void storeL3Adjacencies(L3Adjacencies adjacencies, NetworkSnapshot networkSnapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeOspfTopology(OspfTopology ospfTopology, NetworkSnapshot networkSnapshot) {
+  public void storeOspfTopology(OspfTopology ospfTopology, NetworkSnapshot networkSnapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeVxlanTopology(VxlanTopology vxlanTopology, NetworkSnapshot networkSnapshot) {
+  public void storeVxlanTopology(VxlanTopology vxlanTopology, NetworkSnapshot networkSnapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
