@@ -19,29 +19,34 @@ import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
 public class ConfigAtomicPredicates {
 
   private final Configuration _configuration;
-  private final Set<CommunityVar> _allCommunities;
 
   /**
-   * In order to track community literals and regexes in the BDD-based analysis, we compute a set of
-   * "atomic predicates" for them.
+   * Atomic predicates for community literals and regexes that appear in the given configuration.
    */
   private final RegexAtomicPredicates<CommunityVar> _communityAtomicPredicates;
 
-  /**
-   * We also compute a set of atomic predicates for the AS-path regexes that appear in the given
-   * configuration.
-   */
+  /** Atomic predicates for the AS-path regexes that appear in the given configuration. */
   private final RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
 
+  /**
+   * Compute atomic predicates for the given router's configuration.
+   *
+   * @param batfish the batfish object
+   * @param snapshot the current snapshot
+   * @param router the name of the router whose configuration is being analyzed
+   */
   public ConfigAtomicPredicates(IBatfish batfish, NetworkSnapshot snapshot, String router) {
     this(batfish, snapshot, router, null, null);
   }
 
   /**
-   * Create a graph, specifying an additional set of community literals/regexes and AS-path regexes
-   * to be tracked. This is used by the BDD-based analyses to support user-defined constraints on
-   * symbolic route analysis (e.g., the user is interested only in routes tagged with a particular
-   * community).
+   * Compute atomic predicates for the given router's configuration.
+   *
+   * @param batfish the batfish object
+   * @param snapshot the current snapshot
+   * @param router the name of the router whose configuration is being analyzed
+   * @param communities additional community regexes to track, from user-defined constraints
+   * @param asPathRegexes additional as-path regexes to track, from user-defined constraints
    */
   public ConfigAtomicPredicates(
       IBatfish batfish,
@@ -51,21 +56,48 @@ public class ConfigAtomicPredicates {
       @Nullable Set<String> asPathRegexes) {
     _configuration = batfish.loadConfigurations(snapshot).get(router);
 
-    _allCommunities = new HashSet<>();
-    initAllCommunities(communities);
-    // compute atomic predicates for the BDD-based analysis
-    Set<CommunityVar> comms = _allCommunities.stream().collect(ImmutableSet.toImmutableSet());
     _communityAtomicPredicates =
-        new RegexAtomicPredicates<>(comms, CommunityVar.ALL_STANDARD_COMMUNITIES);
+        new RegexAtomicPredicates<>(
+            findAllCommunities(communities), CommunityVar.ALL_STANDARD_COMMUNITIES);
     _asPathRegexAtomicPredicates =
         new RegexAtomicPredicates<>(
             findAllAsPathRegexes(asPathRegexes), SymbolicAsPathRegex.ALL_AS_PATHS);
   }
 
   /**
-   * Identifies all of the AS-path regexes in the given configurations. An optional set of
-   * additional AS-path regexes is also included, which is used to support user-specified AS-path
-   * constraints for symbolic analysis.
+   * Identifies all of the community literals and regexes in the given configurations. An optional
+   * set of additional community literals and regexes is also included, which is used to support
+   * user-specified community constraints for symbolic analysis.
+   */
+  private Set<CommunityVar> findAllCommunities(@Nullable Set<CommunityVar> communities) {
+    Set<CommunityVar> allCommunities = findAllCommunities();
+    if (communities != null) {
+      allCommunities.addAll(communities);
+    }
+    return allCommunities;
+  }
+
+  /**
+   * Finds all community literals and regexes in the configuration by walking over all of its route
+   * policies
+   */
+  private Set<CommunityVar> findAllCommunities() {
+    Set<CommunityVar> comms = new HashSet<>();
+    Configuration conf = _configuration;
+
+    // walk through every statement of every route policy
+    for (RoutingPolicy pol : conf.getRoutingPolicies().values()) {
+      for (Statement stmt : pol.getStatements()) {
+        comms.addAll(stmt.accept(new RoutePolicyStatementVarCollector(), conf));
+      }
+    }
+    return comms;
+  }
+
+  /**
+   * Identifies all of the AS-path regexes in the given configuration. An optional set of additional
+   * AS-path regexes is also included, which is used to support user-specified AS-path constraints
+   * for symbolic analysis.
    */
   private Set<SymbolicAsPathRegex> findAllAsPathRegexes(@Nullable Set<String> asPathRegexes) {
     ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
@@ -78,43 +110,6 @@ public class ConfigAtomicPredicates {
               .collect(ImmutableSet.toImmutableSet()));
     }
     return builder.build();
-  }
-
-  public RegexAtomicPredicates<CommunityVar> getCommunityAtomicPredicates() {
-    return _communityAtomicPredicates;
-  }
-
-  public RegexAtomicPredicates<SymbolicAsPathRegex> getAsPathRegexAtomicPredicates() {
-    return _asPathRegexAtomicPredicates;
-  }
-
-  /**
-   * Identifies all of the community literals and regexes in the given configurations. An optional
-   * set of additional community literals and regexes is also included, which is used to support
-   * user-specified community constraints for symbolic analysis.
-   */
-  private void initAllCommunities(@Nullable Set<CommunityVar> communities) {
-    _allCommunities.addAll(findAllCommunities());
-    if (communities != null) {
-      _allCommunities.addAll(communities);
-    }
-  }
-
-  /*
-   * Finds all uniquely mentioned community matches
-   * in the configuration by walking over all of its route policies
-   */
-  public Set<CommunityVar> findAllCommunities() {
-    Set<CommunityVar> comms = new HashSet<>();
-    Configuration conf = _configuration;
-
-    // walk through every statement of every route policy
-    for (RoutingPolicy pol : conf.getRoutingPolicies().values()) {
-      for (Statement stmt : pol.getStatements()) {
-        comms.addAll(stmt.accept(new RoutePolicyStatementVarCollector(), conf));
-      }
-    }
-    return comms;
   }
 
   /**
@@ -136,5 +131,13 @@ public class ConfigAtomicPredicates {
 
   public Configuration getConfiguration() {
     return _configuration;
+  }
+
+  public RegexAtomicPredicates<CommunityVar> getCommunityAtomicPredicates() {
+    return _communityAtomicPredicates;
+  }
+
+  public RegexAtomicPredicates<SymbolicAsPathRegex> getAsPathRegexAtomicPredicates() {
+    return _asPathRegexAtomicPredicates;
   }
 }
