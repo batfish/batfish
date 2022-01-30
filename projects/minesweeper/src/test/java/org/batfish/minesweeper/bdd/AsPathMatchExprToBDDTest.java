@@ -47,16 +47,16 @@ public class AsPathMatchExprToBDDTest {
     IBatfish batfish =
         new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
-    ConfigAtomicPredicates g =
+    ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             batfish, batfish.getSnapshot(), HOSTNAME, null, ImmutableSet.of(ASPATH1, ASPATH2));
-    TransferBDD transferBDD = new TransferBDD(g, _baseConfig, ImmutableList.of());
-    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), g);
+    TransferBDD transferBDD = new TransferBDD(configAPs, _baseConfig, ImmutableList.of());
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
     _matchExprToBDD = new AsPathMatchExprToBDD();
 
     Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
-        g.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+        configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
     BDD[] asPathAPs = bddRoute.getAsPathRegexAtomicPredicates();
     _asPath1BDD = asPathAPs[regexMap.get(new SymbolicAsPathRegex(ASPATH1)).iterator().next()];
     _asPath2BDD = asPathAPs[regexMap.get(new SymbolicAsPathRegex(ASPATH2)).iterator().next()];

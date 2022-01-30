@@ -133,15 +133,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    *
    * @param fullModel a full model of the symbolic route constraints
    * @param r the symbolic route
-   * @param g the Graph, which provides information about the community atomic predicates
+   * @param configAPs an object that provides information about the community atomic predicates
    * @return a set of communities
    */
   static Set<Community> satAssignmentToCommunities(
-      BDD fullModel, BDDRoute r, ConfigAtomicPredicates g) {
+      BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
     BDD[] aps = r.getCommunityAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
-        g.getCommunityAtomicPredicates().getAtomicPredicateAutomata();
+        configAPs.getCommunityAtomicPredicates().getAtomicPredicateAutomata();
 
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
     for (int i = 0; i < aps.length; i++) {
@@ -176,18 +176,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    *
    * @param fullModel a full model of the symbolic route constraints
    * @param r the symbolic route
-   * @param g the Graph, which provides information about the AS-path regex atomic predicates
+   * @param configAPs an object provides information about the AS-path regex atomic predicates
    * @return an AsPath
    */
-  static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, ConfigAtomicPredicates g) {
+  static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
     BDD[] aps = r.getAsPathRegexAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
-        g.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
+        configAPs.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
 
     // find all atomic predicates that are required to be true in the given model
     List<Integer> trueAPs =
-        IntStream.range(0, g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
+        IntStream.range(0, configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
             .filter(i -> aps[i].andSat(fullModel))
             .boxed()
             .collect(Collectors.toList());
@@ -235,17 +235,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * concrete input route that is consistent with the assignment.
    *
    * @param fullModel the satisfying assignment
-   * @param g the Graph, which provides information about the community atomic predicates
+   * @param configAPs an object that provides information about the community atomic predicates
    * @return a route
    */
-  private static Bgpv4Route satAssignmentToInputRoute(BDD fullModel, ConfigAtomicPredicates g) {
+  private static Bgpv4Route satAssignmentToInputRoute(
+      BDD fullModel, ConfigAtomicPredicates configAPs) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP);
 
-    BDDRoute r = new BDDRoute(fullModel.getFactory(), g);
+    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 
     Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
     long len = r.getPrefixLength().satAssignmentToLong(fullModel);
@@ -258,10 +259,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     builder.setProtocol(r.getProtocolHistory().getValueFromAssignment(fullModel));
 
-    Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
+    Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
     builder.setCommunities(communities);
 
-    AsPath asPath = satAssignmentToAsPath(fullModel, r, g);
+    AsPath asPath = satAssignmentToAsPath(fullModel, r, configAPs);
     builder.setAsPath(asPath);
 
     // Note: this is the only part of the method that relies on the fact that we are solving for the
@@ -277,8 +278,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   // that is consistent with the constraints.  The protocol defaults to BGP if it is consistent with
   // the constraints.  The same approach could be used to provide default values for other fields in
   // the future.
-  private BDD constraintsToModel(BDD constraints, ConfigAtomicPredicates g) {
-    BDDRoute route = new BDDRoute(constraints.getFactory(), g);
+  private BDD constraintsToModel(BDD constraints, ConfigAtomicPredicates configAPs) {
+    BDDRoute route = new BDDRoute(constraints.getFactory(), configAPs);
     // set the protocol field to BGP if it is consistent with the constraints
     BDD isBGP = route.getProtocolHistory().getConstraintForValue(RoutingProtocol.BGP);
     BDD augmentedConstraints = constraints.and(isBGP);
@@ -296,18 +297,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param constraints intersection of the input and output constraints provided as part of the
    *     question and the constraints on a solution that come from the symbolic route analysis
    * @param policy the route policy that was analyzed
-   * @param g the Graph, which provides information about the community and as-path atomic
+   * @param configAPs an object that provides information about the community and as-path atomic
    *     predicates
    * @return an optional answer, which includes a concrete input route and (if the desired action is
    *     PERMIT) concrete output route
    */
   private Optional<Row> constraintsToResult(
-      BDD constraints, RoutingPolicy policy, ConfigAtomicPredicates g) {
+      BDD constraints, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD fullModel = constraintsToModel(constraints, g);
-      Bgpv4Route inRoute = satAssignmentToInputRoute(fullModel, g);
+      BDD fullModel = constraintsToModel(constraints, configAPs);
+      Bgpv4Route inRoute = satAssignmentToInputRoute(fullModel, configAPs);
       Row result = TestRoutePoliciesAnswerer.rowResultFor(policy, inRoute, _direction);
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
@@ -443,7 +444,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   // given set of BgpRouteConstraints.  The way to represent next-hop constraints depends on whether
   // r is an input or output route, so the outputRoute flag distinguishes these cases.
   private BDD routeConstraintsToBDD(
-      BgpRouteConstraints constraints, BDDRoute r, boolean outputRoute, ConfigAtomicPredicates g) {
+      BgpRouteConstraints constraints,
+      BDDRoute r,
+      boolean outputRoute,
+      ConfigAtomicPredicates configAPs) {
 
     // make sure the model we end up getting corresponds to a valid route
     BDD result = r.bgpWellFormednessConstraints();
@@ -456,14 +460,14 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         regexConstraintsToBDD(
             constraints.getCommunities(),
             CommunityVar::from,
-            g.getCommunityAtomicPredicates(),
+            configAPs.getCommunityAtomicPredicates(),
             r.getCommunityAtomicPredicates(),
             r.getFactory()));
     result.andWith(
         regexConstraintsToBDD(
             constraints.getAsPath(),
             SymbolicAsPathRegex::new,
-            g.getAsPathRegexAtomicPredicates(),
+            configAPs.getAsPathRegexAtomicPredicates(),
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
     result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
@@ -476,13 +480,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * Search a particular route policy for behaviors of interest.
    *
    * @param policy the routing policy
-   * @param g a Graph object providing information about the policy's owner configuration
+   * @param configAPs an object providing the atomic predicates for the policy's owner configuration
    * @return an optional result, if a behavior of interest was found
    */
-  private Optional<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates g) {
+  private Optional<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     TransferReturn result;
     try {
-      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
+      TransferBDD tbdd = new TransferBDD(configAPs, policy.getOwner(), policy.getStatements());
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(
@@ -497,16 +501,16 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD intersection;
     BDD inConstraints =
         routeConstraintsToBDD(
-            _inputConstraints, new BDDRoute(outputRoute.getFactory(), g), false, g);
+            _inputConstraints, new BDDRoute(outputRoute.getFactory(), configAPs), false, configAPs);
     if (_action == PERMIT) {
       // incorporate the constraints on the output route as well
-      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, true, g);
+      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, true, configAPs);
       intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
     } else {
       intersection = acceptedAnnouncements.not().and(inConstraints);
     }
 
-    return constraintsToResult(intersection, policy, g);
+    return constraintsToResult(intersection, policy, configAPs);
   }
 
   /**
@@ -518,7 +522,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   private Stream<Row> searchPoliciesForNode(
       String node, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
-    ConfigAtomicPredicates g =
+    ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             _batfish,
             snapshot,
@@ -529,7 +533,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _asPathRegexes);
 
     return policies.stream()
-        .map(policy -> searchPolicy(policy, g))
+        .map(policy -> searchPolicy(policy, configAPs))
         .filter(Optional::isPresent)
         .map(Optional::get);
   }

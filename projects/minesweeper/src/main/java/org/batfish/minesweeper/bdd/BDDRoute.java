@@ -116,11 +116,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * A constructor that obtains the number of atomic predicates for community and AS-path regexes
    * from a given {@link ConfigAtomicPredicates} object.
    */
-  public BDDRoute(BDDFactory factory, ConfigAtomicPredicates g) {
+  public BDDRoute(BDDFactory factory, ConfigAtomicPredicates aps) {
     this(
         factory,
-        g.getCommunityAtomicPredicates().getNumAtomicPredicates(),
-        g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+        aps.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+        aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
   }
 
   /**

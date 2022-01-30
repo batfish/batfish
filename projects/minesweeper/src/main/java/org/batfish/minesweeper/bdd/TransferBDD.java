@@ -119,24 +119,24 @@ public class TransferBDD {
 
   private final BDDFactory _factory;
 
-  public TransferBDD(ConfigAtomicPredicates g, Configuration conf, List<Statement> statements) {
-    this(g, conf, statements, Environment.useOutputAttributesFor(conf));
+  public TransferBDD(ConfigAtomicPredicates aps, Configuration conf, List<Statement> statements) {
+    this(aps, conf, statements, Environment.useOutputAttributesFor(conf));
   }
 
   @VisibleForTesting
   TransferBDD(
-      ConfigAtomicPredicates g,
+      ConfigAtomicPredicates aps,
       Configuration conf,
       List<Statement> statements,
       boolean useOutputAttributes) {
-    _configAtomicPredicates = g;
+    _configAtomicPredicates = aps;
     _conf = conf;
     _statements = statements;
 
     _factory = JFactory.init(100000, 10000);
     _factory.setCacheRatio(64);
 
-    _originalRoute = new BDDRoute(_factory, g);
+    _originalRoute = new BDDRoute(_factory, aps);
     _communityAtomicPredicates =
         _configAtomicPredicates.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     _asPathRegexAtomicPredicates =

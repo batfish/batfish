@@ -122,7 +122,7 @@ public class TransferBDDTest {
   private RoutingPolicy.Builder _policyBuilder;
   private IBatfish _batfish;
   private Configuration _baseConfig;
-  private ConfigAtomicPredicates _g;
+  private ConfigAtomicPredicates _configAPs;
 
   @Rule public ExpectedException _exception = ExpectedException.none();
 
@@ -188,9 +188,9 @@ public class TransferBDDTest {
   public void testCaptureAll() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -206,9 +206,9 @@ public class TransferBDDTest {
   public void testCaptureNone() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -223,8 +223,8 @@ public class TransferBDDTest {
   @Test
   public void testEmptyPolicy() {
 
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -243,9 +243,9 @@ public class TransferBDDTest {
                 ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -274,9 +274,9 @@ public class TransferBDDTest {
                 Statements.ExitAccept.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -300,9 +300,9 @@ public class TransferBDDTest {
                 Statements.ExitAccept.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -318,9 +318,9 @@ public class TransferBDDTest {
     _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferResult result = tbdd.compute(ImmutableSet.of());
     TransferReturn ret = result.getReturnValue();
     BDD acceptedAnnouncements = ret.getSecond();
@@ -344,9 +344,9 @@ public class TransferBDDTest {
     _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferResult result = tbdd.compute(ImmutableSet.of());
     TransferReturn ret = result.getReturnValue();
     BDD acceptedAnnouncements = ret.getSecond();
@@ -379,9 +379,9 @@ public class TransferBDDTest {
     _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -408,9 +408,9 @@ public class TransferBDDTest {
     _policyBuilder.addStatement(Statements.SetDefaultActionAccept.toStaticStatement());
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -437,9 +437,9 @@ public class TransferBDDTest {
                 Statements.ExitAccept.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -483,9 +483,9 @@ public class TransferBDDTest {
                 Statements.ReturnFalse.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferResult result = tbdd.compute(ImmutableSet.of());
     TransferReturn ret = result.getReturnValue();
 
@@ -529,13 +529,14 @@ public class TransferBDDTest {
                     Statements.ReturnFalse.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     // indenting the parameter ensures that this will not be considered a top-level call,
     // so a default exit reject will not be added, and route updates on paths that return
     // false will not be removed
-    TransferParam p = new TransferParam(new BDDRoute(tbdd.getFactory(), _g), false).indent();
+    TransferParam p =
+        new TransferParam(new BDDRoute(tbdd.getFactory(), _configAPs), false).indent();
     TransferResult result = tbdd.compute(stmts, p);
     TransferReturn ret = result.getReturnValue();
 
@@ -578,9 +579,9 @@ public class TransferBDDTest {
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement())))));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -604,9 +605,9 @@ public class TransferBDDTest {
                     BooleanExprs.FALSE,
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -624,9 +625,9 @@ public class TransferBDDTest {
                     MatchIpv4.instance(),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -645,9 +646,9 @@ public class TransferBDDTest {
                     MatchIpv6.instance(),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -670,9 +671,9 @@ public class TransferBDDTest {
                             new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -713,9 +714,9 @@ public class TransferBDDTest {
 
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -755,9 +756,9 @@ public class TransferBDDTest {
 
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -795,9 +796,9 @@ public class TransferBDDTest {
 
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -825,9 +826,9 @@ public class TransferBDDTest {
             new Conjunction(ImmutableList.of()),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -852,9 +853,9 @@ public class TransferBDDTest {
                             new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -901,9 +902,9 @@ public class TransferBDDTest {
 
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -932,9 +933,9 @@ public class TransferBDDTest {
             new Disjunction(ImmutableList.of()),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -955,9 +956,9 @@ public class TransferBDDTest {
                         new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -983,9 +984,9 @@ public class TransferBDDTest {
                     new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1017,9 +1018,9 @@ public class TransferBDDTest {
                             new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1041,9 +1042,9 @@ public class TransferBDDTest {
             matchPrefixSet(ImmutableList.of()),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1069,9 +1070,9 @@ public class TransferBDDTest {
             new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(name)),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1093,9 +1094,9 @@ public class TransferBDDTest {
             .addStatement(new SetLocalPreference(new LiteralLong(42)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1117,9 +1118,9 @@ public class TransferBDDTest {
             .addStatement(new SetMetric(new LiteralLong(50)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1139,9 +1140,9 @@ public class TransferBDDTest {
             .addStatement(new SetTag(new LiteralLong(42)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1165,9 +1166,9 @@ public class TransferBDDTest {
                     new MatchTag(IntComparator.EQ, new LiteralLong(42)),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1188,10 +1189,10 @@ public class TransferBDDTest {
                     new MatchTag(IntComparator.EQ, new LiteralLong(42)),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     // the analysis will use the original route for matching
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1203,7 +1204,7 @@ public class TransferBDDTest {
     assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
 
     // now do the analysis again but use the output attributes for matching
-    tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), true);
+    tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements(), true);
     result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     acceptedAnnouncements = result.getSecond();
     outAnnouncements = result.getFirst();
@@ -1225,9 +1226,9 @@ public class TransferBDDTest {
                     new MatchTag(IntComparator.LT, new LiteralLong(2)),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1249,9 +1250,9 @@ public class TransferBDDTest {
                         ImmutableList.of(PrefixRange.fromPrefix(Prefix.parse("1.0.0.0/8")))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1277,8 +1278,8 @@ public class TransferBDDTest {
                         ImmutableList.of(PrefixRange.fromPrefix(Prefix.parse("1.0.0.0/8")))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
 
     // when matching on the next-hop IP, we require the prefix length to be 32
     _exception.expect(UnsupportedOperationException.class);
@@ -1291,9 +1292,9 @@ public class TransferBDDTest {
         .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1312,9 +1313,9 @@ public class TransferBDDTest {
         .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1332,8 +1333,8 @@ public class TransferBDDTest {
   public void testUnsupportedSetNextHop() {
     _policyBuilder.addStatement(new SetNextHop(SelfNextHop.getInstance()));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
 
     _exception.expect(UnsupportedOperationException.class);
     tbdd.compute(ImmutableSet.of());
@@ -1348,9 +1349,9 @@ public class TransferBDDTest {
                     new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.OSPF),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1377,9 +1378,9 @@ public class TransferBDDTest {
                     ImmutableList.of(new StaticStatement(Statements.SetDefaultActionAccept))))
             .addStatement(new StaticStatement(Statements.DefaultAction))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1400,9 +1401,9 @@ public class TransferBDDTest {
                     ImmutableList.of(new StaticStatement(Statements.SetDefaultActionAccept))))
             .addStatement(new StaticStatement(Statements.DefaultAction))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1431,9 +1432,9 @@ public class TransferBDDTest {
                         new StaticStatement(Statements.ExitReject))))
             .addStatement(new StaticStatement(Statements.DefaultAction))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1454,9 +1455,9 @@ public class TransferBDDTest {
                     ImmutableList.of(new SetDefaultTag(new LiteralLong(0L))),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1472,9 +1473,9 @@ public class TransferBDDTest {
             .addStatement(new BufferedStatement(new SetLocalPreference(new LiteralLong(42))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1504,19 +1505,20 @@ public class TransferBDDTest {
             new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_NAME)),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _g);
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     // get the unique atomic predicate that corresponds to " 40$"
     Integer ap =
-        _g.getAsPathRegexAtomicPredicates()
+        _configAPs
+            .getAsPathRegexAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(new SymbolicAsPathRegex(" 40$"))
             .iterator()
@@ -1538,20 +1540,20 @@ public class TransferBDDTest {
                         new RegexAsPathSetElem(" 40$"), new RegexAsPathSetElem("^$")))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _g);
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
-    assertEquals(3, _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+    assertEquals(3, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
     Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
-        _g.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
     // get the unique atomic predicates that correspond to " 40$" and "^$"
     Integer ap1 = regexMap.get(new SymbolicAsPathRegex(" 40$")).iterator().next();
     Integer ap2 = regexMap.get(new SymbolicAsPathRegex("^$")).iterator().next();
@@ -1572,20 +1574,20 @@ public class TransferBDDTest {
                     ImmutableList.of(AsPathMatchRegex.of(" 40$"), AsPathMatchRegex.of("^$")))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _g);
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
-    assertEquals(3, _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+    assertEquals(3, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
     Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
-        _g.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
     // get the unique atomic predicates that correspond to " 40$" and "^$"
     Integer ap1 = regexMap.get(new SymbolicAsPathRegex(" 40$")).iterator().next();
     Integer ap2 = regexMap.get(new SymbolicAsPathRegex("^$")).iterator().next();
@@ -1608,7 +1610,7 @@ public class TransferBDDTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    _g =
+    _configAPs =
         new ConfigAtomicPredicates(
             _batfish,
             _batfish.getSnapshot(),
@@ -1617,19 +1619,20 @@ public class TransferBDDTest {
             ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("3:33"))),
             null);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
 
     // each atomic predicate for community 4:44 has the 0 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates()
+        _configAPs
+            .getCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
@@ -1639,7 +1642,8 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 3:33 is unchanged
     for (int ap :
-        _g.getCommunityAtomicPredicates()
+        _configAPs
+            .getCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
@@ -1659,7 +1663,7 @@ public class TransferBDDTest {
                         new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("4:44"))))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g =
+    _configAPs =
         new ConfigAtomicPredicates(
             _batfish,
             _batfish.getSnapshot(),
@@ -1668,7 +1672,7 @@ public class TransferBDDTest {
             ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("3:33"))),
             null);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1676,11 +1680,12 @@ public class TransferBDDTest {
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
 
-    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates()
+        _configAPs
+            .getCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
@@ -1688,7 +1693,8 @@ public class TransferBDDTest {
     }
     // each atomic predicate for community 3:33 is unchanged
     for (int ap :
-        _g.getCommunityAtomicPredicates()
+        _configAPs
+            .getCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
@@ -1706,9 +1712,9 @@ public class TransferBDDTest {
                     new LiteralCommunitySet(CommunitySet.of(ExtendedCommunity.parse("0:4:44")))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1718,7 +1724,8 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates()
+        _configAPs
+            .getCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
       assertEquals(
@@ -1735,9 +1742,9 @@ public class TransferBDDTest {
                     new LiteralCommunitySet(CommunitySet.of(LargeCommunity.of(10, 20, 30)))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1747,7 +1754,8 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates()
+        _configAPs
+            .getCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from(LargeCommunity.of(10, 20, 30)))) {
       assertEquals(
@@ -1769,9 +1777,9 @@ public class TransferBDDTest {
                                 new LiteralInt(40), new LiteralInt(40))))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1780,10 +1788,10 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     Map<CommunityVar, Set<Integer>> regexAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     Set<Integer> aps3040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("30:40")));
     Set<Integer> aps4040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("40:40")));
-    for (int i = 0; i < _g.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
+    for (int i = 0; i < _configAPs.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
 
       // each atomic predicate for 30:40 or 40:40 has the 1 BDD; all others have the 0 BDD
       assertEquals(
@@ -1807,19 +1815,22 @@ public class TransferBDDTest {
                                 new IntComparison(IntComparator.EQ, new LiteralInt(30))))),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = anyRoute.getCommunityAtomicPredicates();
 
     // get the atomic predicates that correspond to ^30:
     Set<Integer> ap30 =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from("^30:"));
+        _configAPs
+            .getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from("^30:"));
 
     BDD expectedBDD =
         tbdd.getFactory().orAll(ap30.stream().map(i -> aps[i]).collect(Collectors.toList()));
@@ -1846,21 +1857,27 @@ public class TransferBDDTest {
                                             IntComparator.EQ, new LiteralInt(20))))))),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = anyRoute.getCommunityAtomicPredicates();
 
     // only the APs that belong to both ^30: and :20$ should be allowed
     Set<Integer> ap30 =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from("^30:"));
+        _configAPs
+            .getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from("^30:"));
     Set<Integer> ap20 =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(":20$"));
+        _configAPs
+            .getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(":20$"));
 
     Set<Integer> intersection = new HashSet<>(ap30);
     intersection.retainAll(ap20);
@@ -1889,19 +1906,22 @@ public class TransferBDDTest {
                         InputCommunities.instance(), new HasCommunity(new CommunityIs(comm))),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     // the analysis will use the original route for matching
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = anyRoute.getCommunityAtomicPredicates();
     // get the atomic predicates that correspond to 30:40
     Set<Integer> ap3040 =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(comm));
+        _configAPs
+            .getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm));
 
     // the original route must have the community 30:40
     BDD expectedBDD =
@@ -1911,13 +1931,13 @@ public class TransferBDDTest {
     assertEquals(expected, outAnnouncements);
 
     // now do the analysis again but use the output attributes for matching
-    tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), true);
+    tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements(), true);
     result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     acceptedAnnouncements = result.getSecond();
     outAnnouncements = result.getFirst();
     // the original route is now unconstrained
     assertTrue(acceptedAnnouncements.isOne());
-    for (int i = 0; i < _g.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
+    for (int i = 0; i < _configAPs.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
       // each atomic predicate for 30:40 has the 1 BDD; all others have their original values
       assertEquals(
           ap3040.contains(i) ? outAnnouncements.getFactory().one() : aps[i],
@@ -1947,9 +1967,9 @@ public class TransferBDDTest {
 
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -1988,9 +2008,9 @@ public class TransferBDDTest {
 
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -2036,9 +2056,9 @@ public class TransferBDDTest {
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(
             calledPolicyName2, calledPolicy2, calledPolicyName, calledPolicy, POLICY_NAME, policy));
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -2076,9 +2096,9 @@ public class TransferBDDTest {
 
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
 
     BDD acceptedAnnouncements = result.getSecond();
@@ -2102,9 +2122,9 @@ public class TransferBDDTest {
                         new StaticStatement(Statements.ExitAccept))))
             .build();
 
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -2160,22 +2180,22 @@ public class TransferBDDTest {
   public void testUseOutputAttributes() {
     // useOutputAttributes is false for CISCO_IOS
     setup(ConfigurationFormat.CISCO_IOS);
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
     assertFalse(tbdd.getUseOutputAttributes());
 
     // useOutputAttributes is true for JUNIPER
     setup(ConfigurationFormat.JUNIPER);
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-    tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    tbdd = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
     assertTrue(tbdd.getUseOutputAttributes());
   }
 
   @Test
   public void testDistinctBDDFactories() {
-    _g = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-    TransferBDD tbdd1 = new TransferBDD(_g, _baseConfig, ImmutableList.of());
-    TransferBDD tbdd2 = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    TransferBDD tbdd1 = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
+    TransferBDD tbdd2 = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
     assertNotSame(tbdd1.getFactory(), tbdd2.getFactory());
   }
 }
