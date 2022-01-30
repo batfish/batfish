@@ -17,7 +17,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
-import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,9 +47,9 @@ public class AsPathMatchExprToBDDTest {
     IBatfish batfish =
         new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
-    Graph g =
-        new Graph(
-            batfish, batfish.getSnapshot(), null, null, null, ImmutableSet.of(ASPATH1, ASPATH2));
+    ConfigAtomicPredicates g =
+        new ConfigAtomicPredicates(
+            batfish, batfish.getSnapshot(), HOSTNAME, null, ImmutableSet.of(ASPATH1, ASPATH2));
     TransferBDD transferBDD = new TransferBDD(g, _baseConfig, ImmutableList.of());
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), g);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);

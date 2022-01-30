@@ -53,7 +53,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
@@ -136,7 +136,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param g the Graph, which provides information about the community atomic predicates
    * @return a set of communities
    */
-  static Set<Community> satAssignmentToCommunities(BDD fullModel, BDDRoute r, Graph g) {
+  static Set<Community> satAssignmentToCommunities(
+      BDD fullModel, BDDRoute r, ConfigAtomicPredicates g) {
 
     BDD[] aps = r.getCommunityAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
@@ -178,7 +179,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param g the Graph, which provides information about the AS-path regex atomic predicates
    * @return an AsPath
    */
-  static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, Graph g) {
+  static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, ConfigAtomicPredicates g) {
 
     BDD[] aps = r.getAsPathRegexAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
@@ -237,7 +238,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param g the Graph, which provides information about the community atomic predicates
    * @return a route
    */
-  private static Bgpv4Route satAssignmentToInputRoute(BDD fullModel, Graph g) {
+  private static Bgpv4Route satAssignmentToInputRoute(BDD fullModel, ConfigAtomicPredicates g) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
@@ -276,7 +277,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   // that is consistent with the constraints.  The protocol defaults to BGP if it is consistent with
   // the constraints.  The same approach could be used to provide default values for other fields in
   // the future.
-  private BDD constraintsToModel(BDD constraints, Graph g) {
+  private BDD constraintsToModel(BDD constraints, ConfigAtomicPredicates g) {
     BDDRoute route = new BDDRoute(constraints.getFactory(), g);
     // set the protocol field to BGP if it is consistent with the constraints
     BDD isBGP = route.getProtocolHistory().getConstraintForValue(RoutingProtocol.BGP);
@@ -300,7 +301,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @return an optional answer, which includes a concrete input route and (if the desired action is
    *     PERMIT) concrete output route
    */
-  private Optional<Row> constraintsToResult(BDD constraints, RoutingPolicy policy, Graph g) {
+  private Optional<Row> constraintsToResult(
+      BDD constraints, RoutingPolicy policy, ConfigAtomicPredicates g) {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
@@ -441,7 +443,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   // given set of BgpRouteConstraints.  The way to represent next-hop constraints depends on whether
   // r is an input or output route, so the outputRoute flag distinguishes these cases.
   private BDD routeConstraintsToBDD(
-      BgpRouteConstraints constraints, BDDRoute r, boolean outputRoute, Graph g) {
+      BgpRouteConstraints constraints, BDDRoute r, boolean outputRoute, ConfigAtomicPredicates g) {
 
     // make sure the model we end up getting corresponds to a valid route
     BDD result = r.bgpWellFormednessConstraints();
@@ -477,7 +479,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param g a Graph object providing information about the policy's owner configuration
    * @return an optional result, if a behavior of interest was found
    */
-  private Optional<Row> searchPolicy(RoutingPolicy policy, Graph g) {
+  private Optional<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates g) {
     TransferReturn result;
     try {
       TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
@@ -516,12 +518,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   private Stream<Row> searchPoliciesForNode(
       String node, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
-    Graph g =
-        new Graph(
+    ConfigAtomicPredicates g =
+        new ConfigAtomicPredicates(
             _batfish,
             snapshot,
-            null,
-            ImmutableSet.of(node),
+            node,
             _communityRegexes.stream()
                 .map(CommunityVar::from)
                 .collect(ImmutableSet.toImmutableSet()),

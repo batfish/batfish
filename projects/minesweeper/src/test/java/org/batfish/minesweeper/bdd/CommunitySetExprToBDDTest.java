@@ -27,7 +27,7 @@ import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ public class CommunitySetExprToBDDTest {
   private static final String HOSTNAME = "hostname";
   private IBatfish _batfish;
   private Configuration _baseConfig;
-  private Graph _g;
+  private ConfigAtomicPredicates _g;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunitySetExprToBDD _communitySetExprToBDD;
 
@@ -53,11 +53,10 @@ public class CommunitySetExprToBDDTest {
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
     _g =
-        new Graph(
+        new ConfigAtomicPredicates(
             _batfish,
             _batfish.getSnapshot(),
-            null,
-            null,
+            HOSTNAME,
             ImmutableSet.of(
                 CommunityVar.from("^20:"),
                 CommunityVar.from(":30$"),
