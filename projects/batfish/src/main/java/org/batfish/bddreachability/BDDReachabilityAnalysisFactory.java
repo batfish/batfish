@@ -71,9 +71,14 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.VrfForwardingBehavior;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
+import org.batfish.datamodel.packet_policy.ApplyFilter;
+import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.If;
+import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.StatementVisitor;
 import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
@@ -610,7 +615,7 @@ public final class BDDReachabilityAnalysisFactory {
                 case NULL_ROUTED:
                   return new Edge(DropNullRoute.INSTANCE, Query.INSTANCE);
                 default:
-                  throw new BatfishException("Unknown FlowDisposition " + action.toString());
+                  throw new BatfishException("Unknown FlowDisposition " + action);
               }
             });
   }
@@ -1641,7 +1646,15 @@ public final class BDDReachabilityAnalysisFactory {
     }
   }
 
-  class RangeComputer implements TransformationStepVisitor<Void> {
+  /**
+   * Computes the set of values into which the various parts of a packet may be transformed.
+   *
+   * <p>For example, {@code rangeComputer.getIpRanges().get(DESTINATION)} will return all
+   * post-transformation destination IPs, if destination NAT is present in the network.
+   *
+   * <p>In networks without NAT, the returned maps will be empty.
+   */
+  class RangeComputer implements TransformationStepVisitor<Void>, StatementVisitor<Void> {
     private final Map<IpField, BDD> _ipRanges;
     private final Map<PortField, BDD> _portRanges;
 
@@ -1731,6 +1744,31 @@ public final class BDDReachabilityAnalysisFactory {
       applyAny.getSteps().forEach(step -> step.accept(this));
       return null;
     }
+
+    @Override
+    public Void visitApplyFilter(ApplyFilter applyFilter) {
+      // Filter does not contain transformation
+      return null;
+    }
+
+    @Override
+    public Void visitApplyTransformation(ApplyTransformation transformation) {
+      visitTransformationSteps(transformation.getTransformation(), this);
+      return null;
+    }
+
+    @Override
+    public Void visitIf(If ifStmt) {
+      // ifStmt.getMatchCondition() does not contain transformation
+      ifStmt.getTrueStatements().forEach(this::visit);
+      return null;
+    }
+
+    @Override
+    public Void visitReturn(Return returnStmt) {
+      // Return does not contain transformation
+      return null;
+    }
   }
 
   private RangeComputer computeTransformationRanges() {
@@ -1741,23 +1779,30 @@ public final class BDDReachabilityAnalysisFactory {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       RangeComputer rangeComputer = new RangeComputer();
-      _configs
-          .values()
-          .forEach(
-              configuration ->
-                  configuration
-                      .activeInterfaces()
-                      .forEach(
-                          iface -> {
-                            visitTransformationSteps(
-                                iface.getIncomingTransformation(), rangeComputer);
-                            visitTransformationSteps(
-                                iface.getOutgoingTransformation(), rangeComputer);
-                          }));
+      _configs.values().forEach(c -> computeTransformationRanges(c, rangeComputer));
       return rangeComputer;
     } finally {
       span.finish();
     }
+  }
+
+  /** Compute the ranges for a single {@link Configuration}. */
+  private void computeTransformationRanges(Configuration c, RangeComputer rangeComputer) {
+    // Transformations can live in interfaces.
+    c.activeInterfaces()
+        .forEach(
+            iface -> {
+              visitTransformationSteps(iface.getIncomingTransformation(), rangeComputer);
+              visitTransformationSteps(iface.getOutgoingTransformation(), rangeComputer);
+            });
+    // Transformations can live in packet policies. Packet policies can be large and reused across
+    // interfaces, so only visit each once.
+    c.activeInterfaces()
+        .map(i -> Optional.ofNullable(i.getPacketPolicyName()).map(c.getPacketPolicies()::get))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .distinct()
+        .forEach(policy -> policy.getStatements().forEach(rangeComputer::visit));
   }
 
   Map<StateExpr, BDD> rootConstraints(
