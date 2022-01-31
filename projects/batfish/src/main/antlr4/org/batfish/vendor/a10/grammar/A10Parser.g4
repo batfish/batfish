@@ -14,6 +14,7 @@ import
   A10_router_bgp,
   A10_slb_server,
   A10_slb_service_group,
+  A10_slb_template,
   A10_slb_virtual_server,
   A10_trunk,
   A10_vlan,
@@ -62,4 +63,9 @@ s_router: ROUTER sr_bgp;
 
 s_slb: SLB ss;
 
-ss: ss_server | ss_service_group | ss_virtual_server;
+ss:
+   ss_server
+ | ss_service_group
+ | ss_template
+ | ss_virtual_server
+;

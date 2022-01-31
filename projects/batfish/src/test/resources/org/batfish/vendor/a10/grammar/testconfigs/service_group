@@ -18,6 +18,7 @@ health monitor HEALTH_CHECK_NAME
 slb service-group SG1 tcp
 !
 slb service-group SG2 tcp
+  extended-stats
   health-check HEALTH_CHECK_NAME
   min-active-member 1
   persist-scoring global

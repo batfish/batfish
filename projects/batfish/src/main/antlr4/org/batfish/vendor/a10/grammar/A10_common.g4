@@ -56,6 +56,8 @@ ip_address: IP_ADDRESS | SUBNET_MASK;
 
 ip_slash_prefix: IP_SLASH_PREFIX;
 
+ipv6_address: IPV6_ADDRESS;
+
 subnet_mask: SUBNET_MASK;
 
 null_rest_of_line: ~NEWLINE* NEWLINE;
