@@ -2,8 +2,8 @@ package org.batfish.datamodel.routing_policy.as_path;
 
 import com.google.common.collect.Range;
 import java.util.List;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
+import org.batfish.common.util.PatternProvider;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.routing_policy.expr.IntMatchExprEvaluator;
@@ -35,7 +35,9 @@ public final class AsPathMatchExprEvaluator implements AsPathMatchExprVisitor<Bo
   @Override
   public Boolean visitAsPathMatchRegex(AsPathMatchRegex asPathMatchRegex, AsPath arg) {
     // TODO: optimize
-    return Pattern.compile(asPathMatchRegex.getRegex()).matcher(arg.getAsPathString()).find();
+    return PatternProvider.fromString(asPathMatchRegex.getRegex())
+        .matcher(arg.getAsPathString())
+        .find();
   }
 
   @Override
