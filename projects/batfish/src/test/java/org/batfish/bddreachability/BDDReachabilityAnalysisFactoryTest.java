@@ -98,6 +98,7 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
+import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
@@ -1165,10 +1166,20 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
     Ip srcNatPoolIp = Ip.parse("5.5.5.5");
     Ip dstNatPoolIp = Ip.parse("6.6.6.6");
+    Ip packetPolicyDstNatIp = Ip.parse("7.7.7.7");
+    PacketPolicy policyWithTrans =
+        new PacketPolicy(
+            "policyWithTrans",
+            ImmutableList.of(
+                new ApplyTransformation(
+                    always().apply(assignDestinationIp(packetPolicyDstNatIp)).build())),
+            new Return(Drop.instance()));
+    config.setPacketPolicies(ImmutableMap.of(policyWithTrans.getName(), policyWithTrans));
     nf.interfaceBuilder()
         .setOwner(config)
         .setVrf(vrf)
         .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
+        .setPacketPolicy(policyWithTrans.getName())
         .setOutgoingTransformation(
             always().apply(assignSourceIp(srcNatPoolIp, srcNatPoolIp)).build())
         .setIncomingTransformation(
@@ -1184,9 +1195,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(factory.computeFinalHeaderSpaceBdd(one), equalTo(one));
     BDD dstIp1 = _pkt.getDstIp().value(1);
     BDD dstNatPoolIpBdd = _pkt.getDstIp().value(dstNatPoolIp.asLong());
+    BDD packetPolicyDstNatIpBdd = _pkt.getDstIp().value(packetPolicyDstNatIp.asLong());
     BDD srcIp1 = _pkt.getSrcIp().value(1);
     BDD srcNatPoolIpBdd = _pkt.getSrcIp().value(srcNatPoolIp.asLong());
-    assertThat(factory.computeFinalHeaderSpaceBdd(dstIp1), equalTo(dstIp1.or(dstNatPoolIpBdd)));
+    assertThat(
+        factory.computeFinalHeaderSpaceBdd(dstIp1),
+        equalTo(dstIp1.or(dstNatPoolIpBdd).or(packetPolicyDstNatIpBdd)));
     assertThat(factory.computeFinalHeaderSpaceBdd(srcIp1), equalTo(srcIp1.or(srcNatPoolIpBdd)));
     assertThat(
         factory.computeFinalHeaderSpaceBdd(dstIp1.and(srcIp1)),
@@ -1195,7 +1209,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 .and(srcIp1)
                 .or(dstIp1.and(srcNatPoolIpBdd))
                 .or(dstNatPoolIpBdd.and(srcIp1))
-                .or(dstNatPoolIpBdd.and(srcNatPoolIpBdd))));
+                .or(dstNatPoolIpBdd.and(srcNatPoolIpBdd))
+                .or(packetPolicyDstNatIpBdd.and(srcIp1))
+                .or(packetPolicyDstNatIpBdd.and(srcNatPoolIpBdd))));
   }
 
   @Test
