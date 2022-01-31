@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -41,6 +43,7 @@ import org.batfish.datamodel.tracking.TrackMethod;
 
 /** A utility class for working with IPs owned by network devices. */
 public final class IpOwners {
+  private static final Logger LOGGER = LogManager.getLogger(IpOwners.class);
 
   /**
    * Mapping from a IP to hostname to set of interfaces that own that IP (including inactive
@@ -340,6 +343,12 @@ public final class IpOwners {
                     cp.stream()
                         .map(nip -> nc.getInterface(nip.getHostname(), nip.getInterface()).get())
                         .collect(ImmutableList.toImmutableList());
+                if (partitionInterfaces.size() != 2) {
+                  LOGGER.warn(
+                      "HSRP group {} election is not among 2 devices, which is rare: {}",
+                      groupNum,
+                      partitionInterfaces);
+                }
                 /*
                  * Compare priorities first, then highest interface IP, then hostname, then interface name.
                  */
@@ -351,6 +360,11 @@ public final class IpOwners {
                                     (Interface o) -> o.getHsrpGroups().get(groupNum).getPriority())
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
+                LOGGER.debug(
+                    "{} elected HSRP master for groupNum {} among candidates {}",
+                    hsrpMaster,
+                    groupNum,
+                    partitionInterfaces);
                 ipSpaceByCandidate
                     .get(hsrpMaster)
                     .forEach(
@@ -446,6 +460,12 @@ public final class IpOwners {
                     cp.stream()
                         .map(nip -> nc.getInterface(nip.getHostname(), nip.getInterface()).get())
                         .collect(ImmutableList.toImmutableList());
+                if (partitionInterfaces.size() != 2) {
+                  LOGGER.warn(
+                      "VRRP vrid {} election is not among 2 devices, which is rare: {}",
+                      vrid,
+                      partitionInterfaces);
+                }
                 /*
                  * Compare priorities first, then highest interface IP, then hostname, then interface name.
                  */
@@ -457,6 +477,11 @@ public final class IpOwners {
                                     (Interface o) -> o.getVrrpGroups().get(vrid).getPriority())
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
+                LOGGER.debug(
+                    "{} elected VRRP master for vrid {} among candidates {}",
+                    vrrpMaster,
+                    vrid,
+                    partitionInterfaces);
                 ipSpaceByCandidate
                     .get(vrrpMaster)
                     .forEach(
