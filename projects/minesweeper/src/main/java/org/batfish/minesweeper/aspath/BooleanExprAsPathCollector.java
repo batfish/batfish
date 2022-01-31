@@ -10,7 +10,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
@@ -19,7 +18,6 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
@@ -119,13 +117,7 @@ public class BooleanExprAsPathCollector
   public Set<SymbolicAsPathRegex> visitMatchLegacyAsPath(
       LegacyMatchAsPath legacyMatchAsPath, Configuration arg) {
     AsPathSetExpr expr = legacyMatchAsPath.getExpr();
-    if (expr instanceof ExplicitAsPathSet) {
-      ExplicitAsPathSet explicitAsPathSet = (ExplicitAsPathSet) expr;
-      return explicitAsPathSet.getElems().stream()
-          .map(AsPathSetElem::regex)
-          .map(SymbolicAsPathRegex::new)
-          .collect(ImmutableSet.toImmutableSet());
-    } else if (expr instanceof NamedAsPathSet) {
+    if (expr instanceof NamedAsPathSet) {
       NamedAsPathSet namedSet = (NamedAsPathSet) expr;
       AsPathAccessList list = arg.getAsPathAccessLists().get(namedSet.getName());
       // conversion to VI should guarantee list is not null

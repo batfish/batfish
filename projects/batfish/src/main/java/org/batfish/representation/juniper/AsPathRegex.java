@@ -30,6 +30,7 @@ import org.parboiled.support.ParsingResult;
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
 public class AsPathRegex extends BaseParser<String> {
+  private static final String MAYBE_SEPARATOR = "(^| )";
 
   Rule TopLevel() {
     return Sequence(Optional('^'), FirstOf(NullAsPath(), AsPath()), Optional('$'), EOI);
@@ -104,7 +105,7 @@ public class AsPathRegex extends BaseParser<String> {
 
   @SuppressSubnodes
   Rule T_Dot() {
-    return Sequence(Ch('.'), push(" \\d+"));
+    return Sequence(Ch('.'), push(MAYBE_SEPARATOR + "\\d+"));
   }
 
   // BareOr, with () around it. BareOr does all the stack manipulation.
@@ -131,10 +132,10 @@ public class AsPathRegex extends BaseParser<String> {
     return CharRange('0', '9');
   }
 
-  // Like Number(), but pushes the preceding space added in ExplicitAsPathSet when used as an ASN.
+  // Like Number(), but requires either start of string or preceding space.
   @SuppressSubnodes
   Rule ASN() {
-    return Sequence(Number(), push(' ' + pop()));
+    return Sequence(Number(), push(MAYBE_SEPARATOR + pop()));
   }
 
   // A decimal number.
@@ -145,7 +146,8 @@ public class AsPathRegex extends BaseParser<String> {
 
   @SuppressSubnodes
   Rule BareAsnRange() {
-    return Sequence(Sequence(ASN(), '-', ASN()), push(rangeToOr(pop(1), pop())));
+    return Sequence(
+        Sequence(Number(), '-', Number()), push(MAYBE_SEPARATOR + rangeToOr(pop(1), pop())));
   }
 
   Rule BareOr() {
@@ -172,11 +174,11 @@ public class AsPathRegex extends BaseParser<String> {
 
   // Must be package-private to be accessible to generated parser.
   static String rangeToOr(String lowAsn, String highAsn) {
-    long start = Long.parseLong(lowAsn.substring(1)); // needed to remove leading space from ASN().
-    long end = Long.parseLong(highAsn.substring(1)); // needed to remove leading space from ASN().
+    long start = Long.parseLong(lowAsn);
+    long end = Long.parseLong(highAsn);
     checkArgument(start <= end, "Invalid range %s-%s", start, end);
     String bigOr =
-        LongStream.range(start, end + 1).mapToObj(l -> " " + l).collect(Collectors.joining("|"));
+        LongStream.range(start, end + 1).mapToObj(Long::toString).collect(Collectors.joining("|"));
     return "(" + bigOr + ')';
   }
 
