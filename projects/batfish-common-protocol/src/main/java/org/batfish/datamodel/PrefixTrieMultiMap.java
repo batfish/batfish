@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.graph.Traverser;
 import java.io.Serializable;
@@ -280,7 +281,8 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     }
 
     Stream<Map.Entry<Prefix, Set<T>>> getOverlappingEntries(RangeSet<Ip> ips) {
-      RangeSet<Ip> matchingIps = ips.subRangeSet(_prefix.asRange());
+      RangeSet<Ip> matchingIps =
+          ips.subRangeSet(Range.closed(_prefix.getStartIp(), _prefix.getEndIp()));
       if (matchingIps.isEmpty()) {
         return Stream.of();
       }

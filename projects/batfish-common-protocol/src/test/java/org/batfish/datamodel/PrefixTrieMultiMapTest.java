@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.testing.EqualsTester;
 import java.util.ArrayList;
@@ -519,6 +520,6 @@ public class PrefixTrieMultiMapTest {
   }
 
   private static RangeSet<Ip> toRangeSet(Prefix prefix) {
-    return ImmutableRangeSet.of(prefix.asRange());
+    return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
   }
 }

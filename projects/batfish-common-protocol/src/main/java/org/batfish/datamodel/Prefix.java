@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Range;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Optional;
@@ -244,11 +243,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
       Ip broadcastIp = getEndIp();
       return Ip.create(broadcastIp.asLong() - 1);
     }
-  }
-
-  /** Returns the range of IPs contained in this prefix. */
-  public Range<Ip> asRange() {
-    return Range.closed(getStartIp(), getEndIp());
   }
 
   @Override
