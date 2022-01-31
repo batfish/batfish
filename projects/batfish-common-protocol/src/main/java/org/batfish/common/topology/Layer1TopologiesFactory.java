@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.Configuration;
@@ -78,8 +79,13 @@ public final class Layer1TopologiesFactory {
     for (Layer1Node original : topology.getGraph().nodes()) {
       Layer1Node canonical = canonicalizeUserNode(original, configurations, missingDevices);
       if (!canonical.equals(original)) {
-        LOGGER.info("Replacing provided {} with canonical {}", original, canonical);
         replacements.put(original, canonical);
+        // Reduce log level when we are only changing case.
+        Level level =
+            canonical.getInterfaceName().equalsIgnoreCase(original.getInterfaceName())
+                ? Level.DEBUG
+                : Level.INFO;
+        LOGGER.log(level, "Replacing provided {} with canonical {}", original, canonical);
       }
     }
     if (replacements.isEmpty()) {
