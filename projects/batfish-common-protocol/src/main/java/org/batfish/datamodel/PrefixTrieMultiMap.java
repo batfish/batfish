@@ -8,9 +8,13 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import com.google.common.graph.Traverser;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -275,6 +279,23 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
           && ((_left != null && _left.intersectsPrefixRange(prefixRange))
               || (_right != null && _right.intersectsPrefixRange(prefixRange)));
     }
+
+    Stream<Map.Entry<Prefix, Set<T>>> getOverlappingEntries(RangeSet<Ip> ips) {
+      RangeSet<Ip> matchingIps =
+          ips.subRangeSet(Range.closed(_prefix.getStartIp(), _prefix.getEndIp()));
+      if (matchingIps.isEmpty()) {
+        return Stream.of();
+      }
+      Stream<Map.Entry<Prefix, Set<T>>> elementsHere =
+          _elements.isEmpty() ? Stream.of() : Stream.of(Maps.immutableEntry(_prefix, _elements));
+      return Stream.concat(
+          // recurse lazily
+          Stream.of(_left, _right)
+              .filter(Objects::nonNull)
+              .flatMap(child -> child.getOverlappingEntries(matchingIps)),
+          // post-order
+          elementsHere);
+    }
   }
 
   private @Nullable Node<T> _root;
@@ -416,6 +437,19 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     Node<T> node = longestMatchNonEmptyNode(Prefix.create(address, maxPrefixLength));
     assert node == null || !node._elements.isEmpty();
     return node == null ? ImmutableSet.of() : ImmutableSet.copyOf(node._elements);
+  }
+
+  /**
+   * Return all values whose keys intersect with the input {@link RangeSet}. Values are returned as
+   * a {@link Stream} in post-order, so if prefix p1 contains p2, values for p2 will be returned
+   * before values for p1.
+   */
+  @Nonnull
+  public Stream<Map.Entry<Prefix, Set<T>>> getOverlappingEntries(RangeSet<Ip> ips) {
+    if (_root == null) {
+      return Stream.of();
+    }
+    return _root.getOverlappingEntries(ips);
   }
 
   /**
