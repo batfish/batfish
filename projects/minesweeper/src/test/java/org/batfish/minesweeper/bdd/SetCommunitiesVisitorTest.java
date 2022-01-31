@@ -26,7 +26,7 @@ import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +35,7 @@ public class SetCommunitiesVisitorTest {
   private static final String HOSTNAME = "hostname";
   private IBatfish _batfish;
   private Configuration _baseConfig;
-  private Graph _g;
+  private ConfigAtomicPredicates _configAPs;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private SetCommunitiesVisitor _scVisitor;
 
@@ -51,19 +51,18 @@ public class SetCommunitiesVisitorTest {
 
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
-    _g =
-        new Graph(
+    _configAPs =
+        new ConfigAtomicPredicates(
             _batfish,
             _batfish.getSnapshot(),
-            null,
-            null,
+            HOSTNAME,
             ImmutableSet.of(
                 CommunityVar.from(StandardCommunity.parse("20:30")),
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
 
-    TransferBDD transferBDD = new TransferBDD(_g, _baseConfig, ImmutableList.of());
-    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _g);
+    TransferBDD transferBDD = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _scVisitor = new SetCommunitiesVisitor();
@@ -80,7 +79,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunityExprsSet(ces, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }
@@ -99,7 +98,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunitySetDifference(csd, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }
@@ -117,7 +116,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunitySetExprReference(cser, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }
@@ -134,7 +133,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunitySetReference(csr, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }
@@ -152,7 +151,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunitySetUnion(csu, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(
             ImmutableSet.<Integer>builder()
@@ -185,7 +184,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitLiteralCommunitySet(lcs, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }

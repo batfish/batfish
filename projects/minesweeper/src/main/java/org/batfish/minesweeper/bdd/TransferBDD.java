@@ -85,7 +85,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
@@ -107,7 +107,7 @@ public class TransferBDD {
 
   private final Configuration _conf;
 
-  private final Graph _graph;
+  private final ConfigAtomicPredicates _configAtomicPredicates;
 
   private Set<Prefix> _ignoredNetworks;
 
@@ -119,24 +119,28 @@ public class TransferBDD {
 
   private final BDDFactory _factory;
 
-  public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
-    this(g, conf, statements, Environment.useOutputAttributesFor(conf));
+  public TransferBDD(ConfigAtomicPredicates aps, Configuration conf, List<Statement> statements) {
+    this(aps, conf, statements, Environment.useOutputAttributesFor(conf));
   }
 
   @VisibleForTesting
   TransferBDD(
-      Graph g, Configuration conf, List<Statement> statements, boolean useOutputAttributes) {
-    _graph = g;
+      ConfigAtomicPredicates aps,
+      Configuration conf,
+      List<Statement> statements,
+      boolean useOutputAttributes) {
+    _configAtomicPredicates = aps;
     _conf = conf;
     _statements = statements;
 
     _factory = JFactory.init(100000, 10000);
     _factory.setCacheRatio(64);
 
-    _originalRoute = new BDDRoute(_factory, g);
-    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    _originalRoute = new BDDRoute(_factory, aps);
+    _communityAtomicPredicates =
+        _configAtomicPredicates.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     _asPathRegexAtomicPredicates =
-        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+        _configAtomicPredicates.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
     _useOutputAttributes = useOutputAttributes;
   }
 
@@ -820,8 +824,8 @@ public class TransferBDD {
     BDDRoute ret =
         new BDDRoute(
             _factory,
-            _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(),
-            _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+            _configAtomicPredicates.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+            _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
     BDDInteger x;
     BDDInteger y;
@@ -861,13 +865,17 @@ public class TransferBDD {
     BDD[] retCommAPs = ret.getCommunityAtomicPredicates();
     BDD[] r1CommAPs = r1.getCommunityAtomicPredicates();
     BDD[] r2CommAPs = r2.getCommunityAtomicPredicates();
-    for (int i = 0; i < _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
+    for (int i = 0;
+        i < _configAtomicPredicates.getCommunityAtomicPredicates().getNumAtomicPredicates();
+        i++) {
       retCommAPs[i] = ite(guard, r1CommAPs[i], r2CommAPs[i]);
     }
     BDD[] retAsPathRegexAPs = ret.getAsPathRegexAtomicPredicates();
     BDD[] r1AsPathRegexAPs = r1.getAsPathRegexAtomicPredicates();
     BDD[] r2AsPathRegexAPs = r2.getAsPathRegexAtomicPredicates();
-    for (int i = 0; i < _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
+    for (int i = 0;
+        i < _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates();
+        i++) {
       retAsPathRegexAPs[i] = ite(guard, r1AsPathRegexAPs[i], r2AsPathRegexAPs[i]);
     }
 
@@ -1135,8 +1143,8 @@ public class TransferBDD {
     BDDRoute rec =
         new BDDRoute(
             _factory,
-            _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(),
-            _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+            _configAtomicPredicates.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+            _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
     rec.getLocalPref().setValue(0);
     rec.getAdminDist().setValue(0);
     rec.getPrefixLength().setValue(0);
@@ -1162,7 +1170,7 @@ public class TransferBDD {
    */
   public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
-    BDDRoute o = new BDDRoute(_factory, _graph);
+    BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
     TransferParam p = new TransferParam(o, false);
     TransferResult result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();
@@ -1183,8 +1191,8 @@ public class TransferBDD {
     return _factory;
   }
 
-  public Graph getGraph() {
-    return _graph;
+  public ConfigAtomicPredicates getGraph() {
+    return _configAtomicPredicates;
   }
 
   public boolean getUseOutputAttributes() {

@@ -28,7 +28,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprRef
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ public class CommunitySetMatchExprToBDDTest {
   private static final String HOSTNAME = "hostname";
   private IBatfish _batfish;
   private Configuration _baseConfig;
-  private Graph _g;
+  private ConfigAtomicPredicates _configAPs;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunitySetMatchExprToBDD _communitySetMatchExprToBDD;
 
@@ -53,20 +53,19 @@ public class CommunitySetMatchExprToBDDTest {
 
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
-    _g =
-        new Graph(
+    _configAPs =
+        new ConfigAtomicPredicates(
             _batfish,
             _batfish.getSnapshot(),
-            null,
-            null,
+            HOSTNAME,
             ImmutableSet.of(
                 CommunityVar.from("^20:"),
                 CommunityVar.from(":30$"),
                 CommunityVar.from(StandardCommunity.parse("20:30")),
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
-    TransferBDD transferBDD = new TransferBDD(_g, _baseConfig, ImmutableList.of());
-    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _g);
+    TransferBDD transferBDD = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _communitySetMatchExprToBDD = new CommunitySetMatchExprToBDD();
@@ -176,7 +175,7 @@ public class CommunitySetMatchExprToBDDTest {
   private BDD cvarToBDD(CommunityVar cvar) {
     BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
     Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     return _arg.getTransferBDD()
         .getFactory()
         .orAll(
