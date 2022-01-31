@@ -9,9 +9,9 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.junit.Test;
 
 /** Tests of {@link PsFromAsPath}. */
@@ -43,7 +43,7 @@ public class PsFromAsPathTest {
     Warnings w = new Warnings(true, true, true);
     BooleanExpr ret = PsFromAsPath.toBooleanExpr(regex, w);
 
-    assertThat(ret, instanceOf(LegacyMatchAsPath.class));
+    assertThat(ret, instanceOf(MatchAsPath.class));
     assertThat(w.getRedFlagWarnings(), empty());
   }
 }

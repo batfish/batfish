@@ -12,18 +12,17 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
@@ -59,8 +58,8 @@ public class BooleanExprAsPathCollectorTest {
     Conjunction c =
         new Conjunction(
             ImmutableList.of(
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH1))),
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH2)))));
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
 
     Set<SymbolicAsPathRegex> result = _collector.visitConjunction(c, _baseConfig);
 
@@ -76,8 +75,8 @@ public class BooleanExprAsPathCollectorTest {
     ConjunctionChain cc =
         new ConjunctionChain(
             ImmutableList.of(
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH1))),
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH2)))));
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
 
     Set<SymbolicAsPathRegex> result = _collector.visitConjunctionChain(cc, _baseConfig);
 
@@ -93,8 +92,8 @@ public class BooleanExprAsPathCollectorTest {
     Disjunction d =
         new Disjunction(
             ImmutableList.of(
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH1))),
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH2)))));
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
 
     Set<SymbolicAsPathRegex> result = _collector.visitDisjunction(d, _baseConfig);
 
@@ -110,8 +109,8 @@ public class BooleanExprAsPathCollectorTest {
     FirstMatchChain fmc =
         new FirstMatchChain(
             ImmutableList.of(
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH1))),
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH2)))));
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
 
     Set<SymbolicAsPathRegex> result = _collector.visitFirstMatchChain(fmc, _baseConfig);
 
@@ -129,22 +128,6 @@ public class BooleanExprAsPathCollectorTest {
     Set<SymbolicAsPathRegex> result = _collector.visitMatchAsPath(matchAsPath, _baseConfig);
 
     Set<SymbolicAsPathRegex> expected = ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1));
-
-    assertEquals(expected, result);
-  }
-
-  @Test
-  public void testVisitMatchLegacyAsPathExplicit() {
-
-    LegacyMatchAsPath matchAsPath =
-        new LegacyMatchAsPath(
-            new ExplicitAsPathSet(
-                new RegexAsPathSetElem(ASPATH1), new RegexAsPathSetElem(ASPATH2)));
-
-    Set<SymbolicAsPathRegex> result = _collector.visitMatchLegacyAsPath(matchAsPath, _baseConfig);
-
-    Set<SymbolicAsPathRegex> expected =
-        ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2));
 
     assertEquals(expected, result);
   }
@@ -178,9 +161,10 @@ public class BooleanExprAsPathCollectorTest {
 
     Not n =
         new Not(
-            new LegacyMatchAsPath(
-                new ExplicitAsPathSet(
-                    new RegexAsPathSetElem(ASPATH1), new RegexAsPathSetElem(ASPATH2))));
+            MatchAsPath.of(
+                InputAsPath.instance(),
+                AsPathMatchAny.of(
+                    ImmutableList.of(AsPathMatchRegex.of(ASPATH1), AsPathMatchRegex.of(ASPATH2)))));
 
     Set<SymbolicAsPathRegex> result = _collector.visitNot(n, _baseConfig);
 
@@ -197,21 +181,21 @@ public class BooleanExprAsPathCollectorTest {
     String asPath4 = "^40 50$";
 
     WithEnvironmentExpr wee = new WithEnvironmentExpr();
-    wee.setExpr(new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH1))));
+    wee.setExpr(MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)));
     wee.setPreStatements(
         ImmutableList.of(
             new If(
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(ASPATH2))),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2)),
                 ImmutableList.of())));
     wee.setPostStatements(
         ImmutableList.of(
             new If(
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(asPath3))),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(asPath3)),
                 ImmutableList.of())));
     wee.setPostTrueStatements(
         ImmutableList.of(
             new If(
-                new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(asPath4))),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(asPath4)),
                 ImmutableList.of())));
 
     Set<SymbolicAsPathRegex> result = _collector.visitWithEnvironmentExpr(wee, _baseConfig);

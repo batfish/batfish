@@ -71,7 +71,6 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
@@ -89,7 +88,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
@@ -1525,40 +1523,6 @@ public class TransferBDDTest {
             .next();
 
     BDD expectedBDD = aps[ap];
-    assertEquals(expectedBDD, acceptedAnnouncements);
-
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRouteWithAPs), outAnnouncements);
-  }
-
-  @Test
-  public void testMatchExplicitAsPath() {
-    _policyBuilder.addStatement(
-        new If(
-            new LegacyMatchAsPath(
-                new ExplicitAsPathSet(
-                    ImmutableList.of(
-                        new RegexAsPathSetElem(" 40$"), new RegexAsPathSetElem("^$")))),
-            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
-    RoutingPolicy policy = _policyBuilder.build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, _baseConfig, policy.getStatements());
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
-
-    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
-
-    assertEquals(3, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
-
-    Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
-        _configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
-    // get the unique atomic predicates that correspond to " 40$" and "^$"
-    Integer ap1 = regexMap.get(new SymbolicAsPathRegex(" 40$")).iterator().next();
-    Integer ap2 = regexMap.get(new SymbolicAsPathRegex("^$")).iterator().next();
-
-    BDD expectedBDD = aps[ap1].or(aps[ap2]);
     assertEquals(expectedBDD, acceptedAnnouncements);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRouteWithAPs), outAnnouncements);

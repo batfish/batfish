@@ -16,8 +16,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.junit.Test;
 
 /**
@@ -49,14 +50,14 @@ public class AsPathRegexTest {
 
   private static void assertMatchResult(boolean expected, String regex, AsPath path) {
     String javaRegex = AsPathRegex.convertToJavaRegex(regex);
-    ExplicitAsPathSet set = new ExplicitAsPathSet(new RegexAsPathSetElem(javaRegex));
+    MatchAsPath set = MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(javaRegex));
     Environment testEnvironment = buildEnvironment(path);
     String expectedMsg = expected ? "should match" : "should not match";
     assertThat(
         String.format(
             "%s [converted to %s] %s %s (with string repr %s)",
             regex, javaRegex, expectedMsg, path, path.getAsPathString()),
-        set.matches(testEnvironment),
+        set.evaluate(testEnvironment).getBooleanValue(),
         is(expected));
   }
 
