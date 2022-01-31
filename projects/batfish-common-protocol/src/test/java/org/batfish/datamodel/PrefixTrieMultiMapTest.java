@@ -8,16 +8,20 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.RangeSet;
 import com.google.common.testing.EqualsTester;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -477,5 +481,44 @@ public class PrefixTrieMultiMapTest {
     assertTrue(
         map.intersectsPrefixSpace(
             new PrefixSpace(new PrefixRange(Prefix.strict("128.0.0.0/12"), new SubRange(14, 18)))));
+  }
+
+  @Test
+  public void testGetOverlappingEntries() {
+    PrefixTrieMultiMap<Prefix> trie = new PrefixTrieMultiMap<>();
+
+    Prefix p111 = Prefix.parse("1.1.1.0/24");
+    Prefix p123 = Prefix.parse("1.2.3.0/24");
+    Prefix p1234 = Prefix.parse("1.2.3.4/32");
+    Prefix p222 = Prefix.parse("2.2.2.0/24");
+
+    trie.put(p111, p111);
+    trie.put(p123, p123);
+    trie.put(p1234, p1234);
+    trie.put(p222, p222);
+
+    // for this test, getOverlappingEntries should always return entries whose value is a singleton
+    // set containing the key. call it, check that invariant, and then return the keys.
+    Function<String, Set<Prefix>> getOverlappingKeys =
+        (prefixStr) -> {
+          Prefix prefix = Prefix.parse(prefixStr);
+          return trie.getOverlappingEntries(toRangeSet(prefix))
+              .map(
+                  entry -> {
+                    assertThat(entry.getValue(), equalTo(ImmutableSet.of(entry.getKey())));
+                    return entry.getKey();
+                  })
+              .collect(ImmutableSet.toImmutableSet());
+        };
+
+    assertEquals(ImmutableSet.of(p123, p1234), getOverlappingKeys.apply("1.2.0.0/16"));
+    assertEquals(ImmutableSet.of(p111), getOverlappingKeys.apply("1.1.0.0/16"));
+    assertEquals(ImmutableSet.of(p111), getOverlappingKeys.apply("1.1.1.1/32"));
+    assertEquals(ImmutableSet.of(p123, p1234), getOverlappingKeys.apply("1.2.3.4/32"));
+    assertEquals(ImmutableSet.of(p123), getOverlappingKeys.apply("1.2.3.5/32"));
+  }
+
+  private static RangeSet<Ip> toRangeSet(Prefix prefix) {
+    return ImmutableRangeSet.of(prefix.asRange());
   }
 }
