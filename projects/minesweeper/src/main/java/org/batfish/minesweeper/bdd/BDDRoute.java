@@ -18,7 +18,7 @@ import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.OspfType;
 
@@ -114,13 +114,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   /**
    * A constructor that obtains the number of atomic predicates for community and AS-path regexes
-   * from a given {@link org.batfish.minesweeper.Graph} object.
+   * from a given {@link ConfigAtomicPredicates} object.
    */
-  public BDDRoute(BDDFactory factory, Graph g) {
+  public BDDRoute(BDDFactory factory, ConfigAtomicPredicates aps) {
     this(
         factory,
-        g.getCommunityAtomicPredicates().getNumAtomicPredicates(),
-        g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+        aps.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+        aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
   }
 
   /**
