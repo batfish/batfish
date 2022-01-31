@@ -75,6 +75,7 @@ import org.batfish.vendor.a10.grammar.A10Parser.S_floating_ipContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Snha_preemption_enableContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Sssdno_health_checkContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Sssgdt_portContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ssvs_ha_groupContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Trunk_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Uint8Context;
@@ -1242,9 +1243,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       return ServiceGroup.Method.LEAST_REQUEST;
     } else if (ctx.SERVICE_LEAST_CONNECTION() != null) {
       return ServiceGroup.Method.SERVICE_LEAST_CONNECTION;
+    } else if (ctx.ROUND_ROBIN() != null) {
+      return ServiceGroup.Method.ROUND_ROBIN;
     }
-    assert ctx.ROUND_ROBIN() != null;
-    return ServiceGroup.Method.ROUND_ROBIN;
+    assert ctx.ROUND_ROBIN_STRICT() != null;
+    return ServiceGroup.Method.ROUND_ROBIN_STRICT;
   }
 
   @Override
@@ -1269,6 +1272,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSssgd_stats_data_enable(A10Parser.Sssgd_stats_data_enableContext ctx) {
     _currentServiceGroup.setStatsDataEnable(true);
+  }
+
+  @Override
+  public void exitSssgdt_port(Sssgdt_portContext ctx) {
+    toString(ctx, ctx.name).ifPresent(_currentServiceGroup::setTemplatePort);
   }
 
   @Override
@@ -1733,11 +1741,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
 
     // TODO enforce no target reuse
-    ServerTarget target = toServerTarget(ctx.slb_server_target());
+    Optional<ServerTarget> target = toServerTarget(ctx.slb_server_target());
     _c.defineStructure(SERVER, name, ctx);
-    _currentServer = _c.getServers().computeIfAbsent(name, n -> new Server(n, target));
-    // Make sure target is up-to-date
-    _currentServer.setTarget(target);
+    if (target.isPresent()) {
+      _currentServer = _c.getServers().computeIfAbsent(name, n -> new Server(n, target.get()));
+      // Make sure target is up-to-date
+      _currentServer.setTarget(target.get());
+    } else {
+      // dummy for internal fields
+      _currentServer = new Server("~dummy~", new ServerTargetAddress(Ip.ZERO));
+    }
   }
 
   @Override
@@ -1750,7 +1763,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     Server removedServer = _c.getServers().remove(name);
     if (removedServer != null && ctx.slb_server_target() != null) {
       // Ensure that specified target is correct; if it isn't, server should not be deleted.
-      ServerTarget target = toServerTarget(ctx.slb_server_target());
+      Optional<ServerTarget> maybeTarget = toServerTarget(ctx.slb_server_target());
+      if (!maybeTarget.isPresent()) {
+        // The server was a dummy, no need to clean up.
+        return;
+      }
+      ServerTarget target = maybeTarget.get();
       if (!target.equals(removedServer.getTarget())) {
         _c.getServers().put(name, removedServer);
         removedServer = null;
@@ -1762,9 +1780,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Nonnull
-  ServerTarget toServerTarget(A10Parser.Slb_server_targetContext ctx) {
-    assert ctx.ip_address() != null;
-    return new ServerTargetAddress(toIp(ctx.ip_address()));
+  Optional<ServerTarget> toServerTarget(A10Parser.Slb_server_targetContext ctx) {
+    if (ctx.ip_address() != null) {
+      return Optional.of(new ServerTargetAddress(toIp(ctx.ip_address())));
+    }
+    assert ctx.ipv6_address() != null;
+    return Optional.empty();
   }
 
   @Override
