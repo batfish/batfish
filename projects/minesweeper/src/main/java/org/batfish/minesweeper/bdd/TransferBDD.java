@@ -37,7 +37,6 @@ import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -47,7 +46,6 @@ import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
@@ -912,14 +910,6 @@ public class TransferBDD {
       AsPathAccessList accessList = conf.getAsPathAccessLists().get(namedAsPathSet.getName());
       p.debug("Named As Path Set: " + namedAsPathSet.getName());
       return matchAsPathAccessList(accessList, other);
-    } else if (e instanceof ExplicitAsPathSet) {
-      ExplicitAsPathSet explicitAsPathSet = (ExplicitAsPathSet) e;
-      Set<SymbolicAsPathRegex> asPathRegexes =
-          explicitAsPathSet.getElems().stream()
-              .map(AsPathSetElem::regex)
-              .map(SymbolicAsPathRegex::new)
-              .collect(ImmutableSet.toImmutableSet());
-      return asPathRegexesToBDD(asPathRegexes, other);
     }
     // TODO: handle other kinds of AsPathSetExprs
     throw new BatfishException("Unhandled match as-path expression " + e);

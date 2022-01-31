@@ -5,16 +5,16 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 
 /** Represents a "from as-path" line in a {@link PsTerm} */
 public final class PsFromAsPath extends PsFrom {
 
-  private String _asPathName;
+  private final String _asPathName;
 
   public PsFromAsPath(String asPathName) {
     _asPathName = asPathName;
@@ -34,7 +34,7 @@ public final class PsFromAsPath extends PsFrom {
     }
     try {
       String javaRegex = AsPathRegex.convertToJavaRegex(asPath.getRegex());
-      return new LegacyMatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(javaRegex)));
+      return MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(javaRegex));
     } catch (Exception e) {
       w.redFlag(
           String.format(
