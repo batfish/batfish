@@ -18,6 +18,7 @@ import
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
   CiscoNxos_ipv6_prefix_list,
+  CiscoNxos_lacp,
   CiscoNxos_line,
   CiscoNxos_logging,
   CiscoNxos_mac,
@@ -65,6 +66,7 @@ statement
   | s_ip
   | s_ipv6
   | s_key
+  | s_lacp
   | s_line
   | s_logging
   | s_mac
