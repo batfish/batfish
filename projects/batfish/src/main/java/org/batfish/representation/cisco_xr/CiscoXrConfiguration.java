@@ -8,7 +8,6 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
-import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
@@ -37,7 +36,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.toAsPathMat
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toBgpAggregate;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunitySetExpr;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.toHsrpGroup;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Proposal;
@@ -81,7 +79,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -163,7 +160,6 @@ import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
-import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.vendor_family.cisco_xr.Aaa;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthenticationLogin;
@@ -1113,7 +1109,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newIface.setChannelGroup(String.format("Bundle-Ether%d", iface.getBundleId()));
     }
     newIface.setCryptoMap(iface.getCryptoMap());
-    newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(firstNonNull(iface.getSpeed(), Interface.getDefaultSpeed(iface.getName())));
     newIface.setBandwidth(
@@ -1179,13 +1174,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       // subinterface settings
       newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
     }
-    newIface.setHsrpGroups(
-        CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(),
-            Entry::getKey,
-            e ->
-                toHsrpGroup(
-                    e.getValue(), _trackingGroups.keySet(), newIface.getConcreteAddress())));
 
     EigrpProcess eigrpProcess = null;
     if (iface.getAddress() != null) {
@@ -2020,16 +2008,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // copy tracking groups
     c.getTrackingGroups().putAll(_trackingGroups);
-    // create negated tracking groups
-    _interfaces.values().stream()
-        .flatMap(i -> i.getHsrpGroups().values().stream())
-        .flatMap(group -> group.getTrackActions().keySet().stream())
-        .distinct()
-        .filter(_trackingGroups::containsKey)
-        .forEach(
-            id ->
-                c.getTrackingGroups()
-                    .put(generatedNegatedTrackMethodId(id), TrackMethodReference.negated(id)));
 
     // apply vrrp settings to interfaces
     applyVrrp(c);

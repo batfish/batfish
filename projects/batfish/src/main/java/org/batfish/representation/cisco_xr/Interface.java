@@ -3,10 +3,8 @@ package org.batfish.representation.cisco_xr;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -134,10 +132,6 @@ public class Interface implements Serializable {
 
   private @Nullable Integer _encapsulationVlan;
 
-  private Map<Integer, HsrpGroup> _hsrpGroups;
-
-  private String _hsrpVersion;
-
   private String _incomingFilter;
 
   @Nullable private Long _isisCost;
@@ -214,7 +208,6 @@ public class Interface implements Serializable {
     _autoState = true;
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
-    _hsrpGroups = new TreeMap<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _name = name;
     _secondaryAddresses = new LinkedHashSet<>();
@@ -282,14 +275,6 @@ public class Interface implements Serializable {
 
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
-  }
-
-  public Map<Integer, HsrpGroup> getHsrpGroups() {
-    return _hsrpGroups;
-  }
-
-  public String getHsrpVersion() {
-    return _hsrpVersion;
   }
 
   public String getIncomingFilter() {
@@ -520,9 +505,5 @@ public class Interface implements Serializable {
 
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
-  }
-
-  public void setHsrpVersion(String hsrpVersion) {
-    _hsrpVersion = hsrpVersion;
   }
 }

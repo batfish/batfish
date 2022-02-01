@@ -196,66 +196,6 @@ if_flow_sampler
    NO? FLOW_SAMPLER variable EGRESS? NEWLINE
 ;
 
-if_hsrp
-:
-   HSRP group = uint_legacy NEWLINE
-   (
-      if_hsrp_ip_address
-      | if_hsrp_null
-      | if_hsrp_preempt
-      | if_hsrp_priority
-      | if_hsrp_track
-   )*
-;
-
-if_hsrp_ip_address
-:
-   IP ip = IP_ADDRESS SECONDARY? NEWLINE
-;
-
-if_hsrp_null
-:
-   NO?
-   (
-      AUTHENTICATION
-      | MAC_ADDRESS
-      | NAME
-      | TIMERS
-   ) null_rest_of_line
-;
-
-if_hsrp_preempt
-:
-   NO? PREEMPT null_rest_of_line
-;
-
-if_hsrp_priority
-:
-   NO? PRIORITY value = uint_legacy null_rest_of_line
-;
-
-if_hsrp_track
-:
-   NO? TRACK null_rest_of_line
-;
-
-if_hsrp6
-:
-   HSRP group = uint_legacy IPV6 NEWLINE
-   (
-      if_hsrp6_ip_address
-      | if_hsrp_null
-      | if_hsrp_preempt
-      | if_hsrp_priority
-      | if_hsrp_track
-   )*
-;
-
-if_hsrp6_ip_address
-:
-   IP ip = IPV6_ADDRESS NEWLINE
-;
-
 if_ip_authentication
 :
    IP AUTHENTICATION
@@ -667,16 +607,6 @@ if_null_block
       | HARDWARE
       | HISTORY
       | HOLD_QUEUE
-      |
-      (
-         HSRP
-         (
-            BFD
-            | DELAY
-            | USE_BIA
-            | VERSION
-         )
-      )
       | IGNORE
       | INGRESS
       |
@@ -1175,76 +1105,6 @@ if_shutdown
    ) FORCE? LAN? NEWLINE
 ;
 
-if_standby
-:
-  NO? STANDBY
-  (
-    standby_group
-    | standby_version
-  ) NEWLINE
-;
-
-standby_group
-:
-  group = uint_legacy
-  (
-    standby_group_authentication
-    | standby_group_ip
-    | standby_group_preempt
-    | standby_group_priority
-    | standby_group_timers
-    | standby_group_track
-  )
-;
-
-standby_group_authentication
-:
-  AUTHENTICATION auth = variable
-;
-
-standby_group_ip
-:
-  IP ip = IP_ADDRESS
-;
-
-standby_group_preempt
-:
-  PREEMPT standby_group_preempt_delay?
-;
-
-standby_group_preempt_delay
-:
-  DELAY
-  (
-     MINIMUM min_secs = uint_legacy
-     | RELOAD reload_secs = uint_legacy
-     | SYNC sync_secs = uint_legacy
-  )+
-;
-
-standby_group_priority
-:
-  PRIORITY priority = uint_legacy
-;
-
-standby_group_timers
-:
-  TIMERS
-  (
-     MSEC hello_ms = uint_legacy
-     | hello_sec = uint_legacy
-  )
-  (
-     MSEC hold_ms = uint_legacy
-     | hold_sec = uint_legacy
-  )
-;
-
-standby_group_track
-:
-  TRACK group = uint_legacy track_action
-;
-
 track_action
 :
   track_action_decrement
@@ -1253,11 +1113,6 @@ track_action
 track_action_decrement
 :
   DECREMENT subtrahend = uint_legacy
-;
-
-standby_version
-:
-  VERSION version = variable_permissive
 ;
 
 if_switchport
@@ -1363,33 +1218,6 @@ if_vlan
 if_vrf
 :
    VRF name = vrf_name NEWLINE
-;
-
-if_vrrp
-:
-   VRRP groupnum = uint_legacy
-   (
-      ifvrrp_authentication
-      | ifvrrp_description
-      | ifvrrp_ip
-      | ifvrrp_ip_secondary
-      | ifvrrp_ipv6
-      | ifvrrp_preempt
-      | ifvrrp_priority
-   )
-;
-
-if_vrrpno
-:
-   NO VRRP groupnum = uint_legacy
-   (
-      ifvrrpno_preempt
-   )
-;
-
-ifvrrpno_preempt
-:
-   PREEMPT NEWLINE
 ;
 
 ifdhcp_null
@@ -1553,45 +1381,6 @@ iftunnel_source
    ) NEWLINE
 ;
 
-ifvrrp_authentication
-:
-   AUTHENTICATION TEXT text = variable_permissive NEWLINE
-;
-
-ifvrrp_description
-:
-   description_line
-;
-
-ifvrrp_ip
-:
-   IP ip = IP_ADDRESS NEWLINE
-;
-
-ifvrrp_ip_secondary
-:
-   IP ip = IP_ADDRESS SECONDARY NEWLINE
-;
-
-ifvrrp_ipv6
-:
-   IPV6 ip = IPV6_ADDRESS NEWLINE
-;
-
-ifvrrp_preempt
-:
-   PREEMPT DELAY
-   (
-      MINIMUM
-      | RELOAD
-   ) uint_legacy NEWLINE
-;
-
-ifvrrp_priority
-:
-   PRIORITY priority = uint_legacy NEWLINE
-;
-
 s_interface
 :
    INTERFACE PRECONFIGURE? iname = interface_name
@@ -1619,8 +1408,6 @@ if_inner
    | if_encapsulation
    | if_flow
    | if_flow_sampler
-   | if_hsrp
-   | if_hsrp6
    | if_ip_proxy_arp
    | if_ip_verify
    | if_ip_authentication
@@ -1665,7 +1452,6 @@ if_inner
    | if_speed_auto
    | if_speed_ios
    | if_speed_ios_dot11radio
-   | if_standby
    | if_switchport
    | if_switchport_access
    | if_switchport_mode
@@ -1678,8 +1464,6 @@ if_inner
    | if_tunnel
    | if_vlan
    | if_vrf
-   | if_vrrp
-   | if_vrrpno
    // do not rearrange items below
  
    | if_null_single

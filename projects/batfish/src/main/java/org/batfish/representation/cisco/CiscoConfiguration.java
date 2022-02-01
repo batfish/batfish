@@ -3008,7 +3008,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         CiscoStructureUsage.ROUTER_STATIC_ROUTE,
-        CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
         CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
         CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE,

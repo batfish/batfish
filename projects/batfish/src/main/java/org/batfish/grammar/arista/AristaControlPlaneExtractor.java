@@ -146,7 +146,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_PIM_RP_ADDRESS_ACCESS_LIST;
-import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_ENTRY_AUTO_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
@@ -845,10 +844,6 @@ import org.batfish.grammar.arista.AristaParser.Uint32Context;
 import org.batfish.grammar.arista.AristaParser.Uint8Context;
 import org.batfish.grammar.arista.AristaParser.VariableContext;
 import org.batfish.grammar.arista.AristaParser.Variable_access_listContext;
-import org.batfish.grammar.arista.AristaParser.Viaf_vrrpContext;
-import org.batfish.grammar.arista.AristaParser.Viafv_addressContext;
-import org.batfish.grammar.arista.AristaParser.Viafv_preemptContext;
-import org.batfish.grammar.arista.AristaParser.Viafv_priorityContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_stateContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_trunkContext;
@@ -860,7 +855,6 @@ import org.batfish.grammar.arista.AristaParser.Vlan_stateContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_trunkContext;
 import org.batfish.grammar.arista.AristaParser.Vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
-import org.batfish.grammar.arista.AristaParser.Vrrp_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.arista.AccessListAddressSpecifier;
@@ -1218,11 +1212,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private String _currentVrf;
 
-  private VrrpGroup _currentVrrpGroup;
-
   private Integer _currentVrrpGroupNum;
-
-  private String _currentVrrpInterface;
 
   private final ConfigurationFormat _format;
 
@@ -4139,24 +4129,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (!_no) {
       _configuration.getTacacsServers().add(hostname);
     }
-  }
-
-  @Override
-  public void enterViaf_vrrp(Viaf_vrrpContext ctx) {
-    int groupNum = toInteger(ctx.groupnum);
-    _currentVrrpGroup =
-        _configuration
-            .getVrrpGroups()
-            .computeIfAbsent(_currentVrrpInterface, name -> new VrrpInterface())
-            .getVrrpGroups()
-            .computeIfAbsent(groupNum, VrrpGroup::new);
-  }
-
-  @Override
-  public void enterVrrp_interface(Vrrp_interfaceContext ctx) {
-    _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.referenceStructure(
-        INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -7254,35 +7226,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitViaf_vrrp(Viaf_vrrpContext ctx) {
-    _currentVrrpGroup = null;
-  }
-
-  @Override
-  public void exitViafv_address(Viafv_addressContext ctx) {
-    Ip address = toIp(ctx.address);
-    _currentVrrpGroup.setVirtualAddress(address);
-  }
-
-  @Override
-  public void exitViafv_preempt(Viafv_preemptContext ctx) {
-    _currentVrrpGroup.setPreempt(true);
-  }
-
-  @Override
-  public void exitViafv_priority(Viafv_priorityContext ctx) {
-    int priority = toInteger(ctx.priority);
-    _currentVrrpGroup.setPriority(priority);
-  }
-
-  @Override
   public void exitVrfd_description(Vrfd_descriptionContext ctx) {
     currentVrf().setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void exitVrrp_interface(Vrrp_interfaceContext ctx) {
-    _currentVrrpInterface = null;
   }
 
   @Override

@@ -6,23 +6,23 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
-router_hsrp_stanza
+router_hsrp
 :
-   ROUTER HSRP NEWLINE router_hsrp_if+
+   HSRP NEWLINE
+   router_hsrp_if*
 ;
 
 router_hsrp_if
 :
-   INTERFACE interface_name NEWLINE router_hsrp_if_af+
+   INTERFACE interface_name NEWLINE
+   router_hsrp_if_af*
 ;
 
 router_hsrp_if_af
 :
-   ADDRESS_FAMILY
-   (
-      IPV4
-      | IPV6
-   ) NEWLINE HSRP uint_legacy? NEWLINE router_hsrp_if_af_tail+
+   ADDRESS_FAMILY (IPV4 | IPV6) NEWLINE
+   HSRP uint_legacy? NEWLINE
+   router_hsrp_if_af_tail*
 ;
 
 router_hsrp_if_af_tail

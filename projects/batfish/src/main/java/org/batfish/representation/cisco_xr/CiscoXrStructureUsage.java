@@ -65,7 +65,6 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   INTERFACE_PIM_NEIGHBOR_FILTER("interface ip pim neighbor-filter"),
   INTERFACE_SELF_REF("interface"),
   INTERFACE_SERVICE_POLICY("interface service-policy"),
-  INTERFACE_STANDBY_TRACK("interface standby track"),
   IP_DOMAIN_LOOKUP_INTERFACE("ip domain lookup interface"),
   IP_ROUTE_NHINT("ip route next-hop interface"),
   IP_TACACS_SOURCE_INTERFACE("ip tacacs source-interface"),
