@@ -976,13 +976,7 @@ public final class AutoCompleteUtils {
                           .collect(ImmutableList.toImmutableList()));
                 })
             .filter(e -> !e.getValue().isEmpty())
-            .map(
-                e ->
-                    AutocompleteSuggestion.builder()
-                        .setText(e.getKey().toString())
-                        .setDescription(toDescription(e.getValue()))
-                        .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
-                        .build())
+            .map(e -> toAutocompleteSuggestion(e.getKey(), e.getValue()))
             .collect(ImmutableList.toImmutableList());
 
     return new ImmutableList.Builder<AutocompleteSuggestion>()
@@ -990,20 +984,19 @@ public final class AutoCompleteUtils {
             ipMatches.entrySet().stream()
                 .map(
                     entry ->
-                        AutocompleteSuggestion.builder()
-                            .setText(entry.getKey().toString()) // IP address string
-                            .setDescription(toDescription(entry.getValue()))
-                            .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
-                            .build())
+                        toAutocompleteSuggestion(entry.getKey(), entry.getValue().getRelevances()))
                 .collect(ImmutableList.toImmutableList()))
         .addAll(relevanceMatches)
         .build();
   }
 
-  @Nullable
-  @VisibleForTesting
-  static String toDescription(IpCompletionMetadata ipCompletionMetadata) {
-    return toDescription(ipCompletionMetadata.getRelevances());
+  public static AutocompleteSuggestion toAutocompleteSuggestion(
+      Ip ip, List<IpCompletionRelevance> relevances) {
+    return AutocompleteSuggestion.builder()
+        .setText(ip.toString())
+        .setDescription(toDescription(relevances))
+        .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
+        .build();
   }
 
   @Nullable
