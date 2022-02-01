@@ -79,6 +79,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DOMAIN_L
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_AF_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_PASSIVE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FLOW_MONITOR_MAP_EXPORTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.HSRP_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.HSRP_TRACK_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_INGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_SAMPLER_EGRESS;
@@ -520,6 +522,13 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Flow_monitor_map_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Fmm_exporterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hash_commentContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Host_nameContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrpContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrp_addressContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrp_preemptContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrp_priorityContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrp_trackContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp_ifContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp_if_af4Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_autostateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bandwidthContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bundle_idContext;
@@ -762,6 +771,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_reflector_client_bgp_tai
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_tag_from_0Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_bgp_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_hsrpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_isis_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rovc_noContext;
@@ -920,6 +930,10 @@ import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtExpr;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtReference;
+import org.batfish.representation.cisco_xr.HsrpAddressFamily;
+import org.batfish.representation.cisco_xr.HsrpAddressFamily.Type;
+import org.batfish.representation.cisco_xr.HsrpGroup;
+import org.batfish.representation.cisco_xr.HsrpInterface;
 import org.batfish.representation.cisco_xr.InlineAsPathSet;
 import org.batfish.representation.cisco_xr.InlineExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.Interface;
@@ -1266,6 +1280,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Nullable private String _currentEigrpInterface;
   @Nullable private EigrpProcess _currentEigrpProcess;
   private ExtcommunitySetRt _currentExtcommunitySetRt;
+  private HsrpAddressFamily _currentHsrpAddressFamily;
+  private HsrpGroup _currentHsrpGroup;
+  private HsrpInterface _currentHsrpInterface;
   private List<Interface> _currentInterfaces;
   private Ipv4AccessList _currentIpv4Acl;
   private Ipv4AccessListLine.Builder _currentIpv4AclLine;
@@ -2508,6 +2525,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
     popPeer();
+  }
+
+  @Override
+  public void enterRouter_hsrp(Router_hsrpContext ctx) {
+    // creates the HSRP settings object,
+    _configuration.getOrCreateHsrp();
   }
 
   @Override
@@ -8521,6 +8544,67 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitHash_comment(Hash_commentContext ctx) {
     String text = ctx.RAW_TEXT().getText();
     addStatement(new RoutePolicyComment(text));
+  }
+
+  @Override
+  public void enterHsrp_if(Hsrp_ifContext ctx) {
+    String name = toInterfaceName(ctx.name);
+    assert _configuration.getHsrp() != null;
+    _currentHsrpInterface = _configuration.getHsrp().getOrCreateInterface(name);
+    _configuration.referenceStructure(
+        INTERFACE, name, HSRP_INTERFACE, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitHsrp_if(Hsrp_ifContext ctx) {
+    _currentHsrpInterface = null;
+  }
+
+  @Override
+  public void enterHsrp_if_af4(Hsrp_if_af4Context ctx) {
+    _currentHsrpAddressFamily = _currentHsrpInterface.getOrCreateAddressFamily(Type.IPV4);
+  }
+
+  @Override
+  public void exitHsrp_if_af4(Hsrp_if_af4Context ctx) {
+    _currentHsrpAddressFamily = null;
+  }
+
+  @Override
+  public void enterHsrp4_hsrp(Hsrp4_hsrpContext ctx) {
+    int groupNum = toInteger(ctx.group_num);
+    _currentHsrpGroup = _currentHsrpAddressFamily.getOrCreateGroup(groupNum);
+  }
+
+  @Override
+  public void exitHsrp4_hsrp(Hsrp4_hsrpContext ctx) {
+    _currentHsrpGroup = null;
+  }
+
+  @Override
+  public void exitHsrp4_hsrp_address(Hsrp4_hsrp_addressContext ctx) {
+    Ip addr = toIp(ctx.addr);
+    _currentHsrpGroup.setAddress(addr);
+  }
+
+  @Override
+  public void exitHsrp4_hsrp_preempt(Hsrp4_hsrp_preemptContext ctx) {
+    _currentHsrpGroup.setPreempt(true);
+  }
+
+  @Override
+  public void exitHsrp4_hsrp_priority(Hsrp4_hsrp_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    _currentHsrpGroup.setPriority(priority);
+  }
+
+  @Override
+  public void exitHsrp4_hsrp_track(Hsrp4_hsrp_trackContext ctx) {
+    String name = getCanonicalInterfaceName(ctx.name.getText());
+    Integer decrement = (ctx.decrement_priority != null) ? toInteger(ctx.decrement_priority) : null;
+    _currentHsrpGroup.setInterfaceTrack(name, decrement);
+    _configuration.referenceStructure(
+        INTERFACE, name, HSRP_TRACK_INTERFACE, ctx.name.getStart().getLine());
   }
 
   @Override

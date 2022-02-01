@@ -382,6 +382,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private String _hostname;
   private String _rawHostname;
 
+  private @Nullable Hsrp _hsrp;
+
   private final Map<String, Interface> _interfaces;
 
   private final Map<String, IpsecProfile> _ipsecProfiles;
@@ -589,6 +591,17 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   @Override
   public String getHostname() {
     return _hostname;
+  }
+
+  public @Nullable Hsrp getHsrp() {
+    return _hsrp;
+  }
+
+  public @Nonnull Hsrp getOrCreateHsrp() {
+    if (_hsrp == null) {
+      _hsrp = new Hsrp();
+    }
+    return _hsrp;
   }
 
   public Map<String, Interface> getInterfaces() {

@@ -244,6 +244,11 @@ import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterTy
 import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
+import org.batfish.representation.cisco_xr.Hsrp;
+import org.batfish.representation.cisco_xr.HsrpAddressFamily;
+import org.batfish.representation.cisco_xr.HsrpAddressFamily.Type;
+import org.batfish.representation.cisco_xr.HsrpGroup;
+import org.batfish.representation.cisco_xr.HsrpInterface;
 import org.batfish.representation.cisco_xr.InlineAsPathSet;
 import org.batfish.representation.cisco_xr.IosRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.Ipv4AccessList;
@@ -2069,6 +2074,31 @@ public final class XrGrammarTest {
   public void testHostNameDomain() {
     Configuration c = parseConfig("xr-hostname.domain");
     assertThat(c.getHumanName(), equalTo("xr-hostname.domain"));
+  }
+
+  @Test
+  public void testHsrp() {
+    CiscoXrConfiguration config = parseVendorConfig("hsrp");
+    assertThat(config.getHsrp(), notNullValue());
+    Hsrp hsrp = config.getHsrp();
+    assertThat(hsrp.getInterfaces(), hasKeys("Bundle-Ether30.37"));
+
+    HsrpInterface iface = hsrp.getInterface("Bundle-Ether30.37");
+    assertThat(iface, notNullValue());
+    assertThat(iface.getAddressFamilies(), hasKeys(Type.IPV4));
+    HsrpAddressFamily af = iface.getAddressFamily(Type.IPV4);
+    assertThat(af, notNullValue());
+    assertThat(af.getGroups(), hasKeys(37));
+    HsrpGroup group = af.getGroup(37);
+    assertThat(group, notNullValue());
+    assertThat(group.getAddress(), equalTo(Ip.parse("10.0.30.37")));
+    assertThat(group.getPreempt(), equalTo(true));
+    assertThat(group.getPriority(), equalTo(137));
+    assertThat(group.getInterfaceTracks(), hasKeys("Bundle-Ether10", "Bundle-Ether11"));
+    assertThat(
+        group.getInterfaceTracks().get("Bundle-Ether10").getDecrementPriority(), nullValue());
+    assertThat(
+        group.getInterfaceTracks().get("Bundle-Ether11").getDecrementPriority(), equalTo(37));
   }
 
   @Test
