@@ -3,8 +3,10 @@ package org.batfish.common.topology.broadcast;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -391,6 +393,35 @@ public class L3AdjacencyComputer {
                 ret.put(hub.getId(), hub);
               });
     }
+
+    // Log if at least one L2 interface is mentioned in L1 and at least one L2 interface is attached
+    // to global hub.
+    Set<NodeInterfacePair> l2AttachedToGlobalHub =
+        interfacesAttachedToGlobalHub.stream()
+            .filter(
+                nip ->
+                    Optional.ofNullable(configs.get(nip.getHostname()))
+                        .map(c -> c.getAllInterfaces().get(nip.getInterface()))
+                        .map(Interface::getSwitchport)
+                        .orElse(false))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+    Set<NodeInterfacePair> l2MentionedInL1 =
+        physicalInterfacesMentionedInL1.stream()
+            .filter(
+                nip ->
+                    Optional.ofNullable(configs.get(nip.getHostname()))
+                        .map(c -> c.getAllInterfaces().get(nip.getInterface()))
+                        .map(Interface::getSwitchport)
+                        .orElse(false))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+    if (!l2AttachedToGlobalHub.isEmpty() && !l2MentionedInL1.isEmpty()) {
+      LOGGER.warn(
+          "Surprised that some L2 interfaces are mentioned in L1 ({}) but not all ({}): {} are not",
+          l2MentionedInL1.size(),
+          l2AttachedToGlobalHub.size(),
+          l2AttachedToGlobalHub);
+    }
+
     return ret.build();
   }
 
