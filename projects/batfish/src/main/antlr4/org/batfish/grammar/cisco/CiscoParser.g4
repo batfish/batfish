@@ -1,7 +1,30 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_nat, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common,
+Cisco_aaa,
+Cisco_acl,
+Cisco_bgp,
+Cisco_cable,
+Cisco_crypto,
+Cisco_callhome,
+Cisco_eigrp,
+Cisco_ignored,
+Cisco_interface,
+Cisco_isis,
+Cisco_line,
+Cisco_logging,
+Cisco_mpls,
+Cisco_nat,
+Cisco_ntp,
+Cisco_ospf,
+Cisco_pim,
+Cisco_qos,
+Cisco_rip,
+Cisco_routemap,
+Cisco_snmp,
+Cisco_static,
+Cisco_zone;
 
 
 options {
@@ -2820,14 +2843,6 @@ s_route
    ROUTE route_tail
 ;
 
-s_router_vrrp
-:
-   NO? ROUTER VRRP NEWLINE
-   (
-      vrrp_interface
-   )*
-;
-
 s_sccp
 :
    NO? SCCP null_rest_of_line
@@ -3418,7 +3433,6 @@ stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
    | router_bgp_stanza
-   | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
    | rsvp_stanza
@@ -3552,7 +3566,6 @@ stanza
    | s_router_ospfv3
    | s_router_rip
    | s_router_static
-   | s_router_vrrp
    | s_sccp
    | s_service
    | s_service_policy_global
@@ -3921,14 +3934,6 @@ ts_null
    ) null_rest_of_line
 ;
 
-vi_address_family
-:
-   NO? ADDRESS_FAMILY IPV4 NEWLINE
-   (
-      viaf_vrrp
-   )*
-;
-
 u
 :
    u_encrypted_password
@@ -4036,44 +4041,6 @@ vc_null
       | VOICE_SERVICE
       | WATCHDOG
    ) null_rest_of_line
-;
-
-viaf_vrrp
-:
-   NO? VRRP groupnum = dec NEWLINE
-   (
-      viafv_address
-      | viafv_null
-      | viafv_preempt
-      | viafv_priority
-   )*
-;
-
-viafv_address
-:
-   ADDRESS address = IP_ADDRESS NEWLINE
-;
-
-viafv_null
-:
-   NO?
-   (
-      TIMERS
-      | TRACK
-   ) null_rest_of_line
-;
-
-viafv_preempt
-:
-   PREEMPT
-   (
-      DELAY delay = dec
-   ) NEWLINE
-;
-
-viafv_priority
-:
-   PRIORITY priority = dec NEWLINE
 ;
 
 vlan_vn_segment
@@ -4511,14 +4478,6 @@ vrfd_rd
 vrfd_route_target
 :
    ROUTE_TARGET type = both_export_import rt = route_target NEWLINE
-;
-
-vrrp_interface
-:
-   NO? INTERFACE iface = interface_name NEWLINE
-   (
-      vi_address_family
-   )* NEWLINE?
 ;
 
 wccp_id

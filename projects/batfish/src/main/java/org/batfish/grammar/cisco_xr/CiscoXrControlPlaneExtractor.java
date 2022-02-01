@@ -1,7 +1,6 @@
 package org.batfish.grammar.cisco_xr;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
@@ -101,7 +100,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SERVICE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_STANDBY_TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPV4_ACCESS_LIST_LINE_SELF_REF;
@@ -282,7 +280,6 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.ClassicMetric;
@@ -551,7 +548,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_shutdownContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_spanning_treeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_speed_iosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_st_portfastContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_standbyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchportContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_accessContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_modeContext;
@@ -560,7 +556,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_trunk_encapsulat
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vlanContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vrfContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_vrrpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifdhcpr_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifigmp_access_groupContext;
@@ -573,10 +568,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Iftunnel_destinationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Iftunnel_modeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Iftunnel_protectionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Iftunnel_sourceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifvrrp_authenticationContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifvrrp_ipContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifvrrp_preemptContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifvrrp_priorityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ike_encryptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inherit_peer_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inherit_peer_session_bgp_tailContext;
@@ -761,7 +752,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instanceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_nullContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rorri_protocolContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_nexthopContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_nameContext;
@@ -853,14 +843,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ss_trap_sourceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssc_access_controlContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssc_use_ipv4_aclContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssh_serverContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_groupContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_authenticationContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_ipContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_preemptContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_priorityContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_timersContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_trackContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_versionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.SubrangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Summary_address_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Suppressed_iis_stanzaContext;
@@ -938,7 +920,6 @@ import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtExpr;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtReference;
-import org.batfish.representation.cisco_xr.HsrpGroup;
 import org.batfish.representation.cisco_xr.InlineAsPathSet;
 import org.batfish.representation.cisco_xr.InlineExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.Interface;
@@ -1326,7 +1307,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private User _currentUser;
   private String _currentVrf;
   private VrrpGroup _currentVrrpGroup;
-  private Integer _currentVrrpGroupNum;
   private String _currentVrrpInterface;
   private final @Nonnull BgpPeerGroup _dummyPeerGroup = new MasterBgpPeerGroup();
   private final ConfigurationFormat _format;
@@ -1340,7 +1320,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private final Warnings _w;
   @Nonnull private final SilentSyntaxCollection _silentSyntax;
   private NetworkObjectGroup _currentNetworkObjectGroup;
-  private Integer _currentHsrpGroup;
   private String _currentTrackingGroup;
   /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
    * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
@@ -2156,109 +2135,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _no = ctx.NO() != null;
   }
 
-  @Override
-  public void enterIf_standby(If_standbyContext ctx) {
-    _no = ctx.NO() != null;
-  }
-
-  @Override
-  public void exitIf_standby(If_standbyContext ctx) {
-    _no = false;
-  }
-
-  @Override
-  public void enterStandby_group(Standby_groupContext ctx) {
-    int group = toInteger(ctx.group);
-    _currentHsrpGroup = group;
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new));
-  }
-
-  @Override
-  public void exitStandby_group(Standby_groupContext ctx) {
-    _currentHsrpGroup = null;
-  }
-
-  @Override
-  public void exitStandby_version(Standby_versionContext ctx) {
-    if (!_no) {
-      _currentInterfaces.forEach(i -> i.setHsrpVersion(ctx.version.getText()));
-    } else {
-      _currentInterfaces.forEach(i -> i.setHsrpVersion(null));
-    }
-  }
-
-  @Override
-  public void exitStandby_group_authentication(Standby_group_authenticationContext ctx) {
-    String rawAuthenticationString = ctx.auth.getText();
-    _currentInterfaces.forEach(
-        i ->
-            i.getHsrpGroups()
-                .get(_currentHsrpGroup)
-                .setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
-  }
-
-  @Override
-  public void exitStandby_group_ip(Standby_group_ipContext ctx) {
-    Ip ip = toIp(ctx.ip);
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setIp(ip));
-  }
-
-  @Override
-  public void exitStandby_group_preempt(Standby_group_preemptContext ctx) {
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPreempt(!_no));
-  }
-
-  @Override
-  public void exitStandby_group_priority(Standby_group_priorityContext ctx) {
-    int priority =
-        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPriority(priority));
-  }
-
-  @Override
-  public void exitStandby_group_timers(Standby_group_timersContext ctx) {
-    int helloTime;
-    int holdTime;
-    if (_no) {
-      helloTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME;
-      holdTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME;
-    } else {
-      helloTime =
-          ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
-      holdTime = ctx.hold_ms != null ? toInteger(ctx.hold_ms) : (toInteger(ctx.hold_sec) * 1000);
-    }
-    _currentInterfaces.forEach(
-        i -> {
-          HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
-          hsrpGroup.setHelloTime(helloTime);
-          hsrpGroup.setHoldTime(holdTime);
-        });
-  }
-
-  @Override
-  public void exitStandby_group_track(Standby_group_trackContext ctx) {
-    String trackingGroup = ctx.group.getText();
-    _configuration.referenceStructure(
-        TRACK, trackingGroup, INTERFACE_STANDBY_TRACK, ctx.group.start.getLine());
-    TrackAction trackAction = toTrackAction(ctx.track_action());
-    if (trackAction == null) {
-      return;
-    }
-    _currentInterfaces.stream()
-        .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
-        .forEach(
-            trackActions -> {
-              if (_no) {
-                // 'no' version of command only operates if rest of line matches existing setting
-                if (trackAction.equals(trackActions.get(trackingGroup))) {
-                  trackActions.remove(trackingGroup);
-                }
-              } else {
-                trackActions.put(trackingGroup, trackAction);
-              }
-            });
-  }
-
   private @Nullable TrackAction toTrackAction(Track_actionContext ctx) {
     if (ctx.track_action_decrement() != null) {
       int subtrahend = toInteger(ctx.track_action_decrement().subtrahend);
@@ -2266,11 +2142,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       return convProblem(TrackAction.class, ctx, null);
     }
-  }
-
-  @Override
-  public void enterIf_vrrp(If_vrrpContext ctx) {
-    _currentVrrpGroupNum = toInteger(ctx.groupnum);
   }
 
   @Override
@@ -4419,11 +4290,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIf_vrrp(If_vrrpContext ctx) {
-    _currentVrrpGroupNum = null;
-  }
-
-  @Override
   public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip address = toIp(ctx.address);
@@ -4521,66 +4387,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       for (Interface iface : _currentInterfaces) {
         iface.getTunnelInitIfNull().setSourceInterfaceName(null);
       }
-    }
-  }
-
-  @Override
-  public void exitIfvrrp_authentication(Ifvrrp_authenticationContext ctx) {
-    String hashedAuthenticationText =
-        CommonUtil.sha256Digest(ctx.text.getText() + CommonUtil.salt());
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setAuthenticationTextHash(hashedAuthenticationText);
-    }
-  }
-
-  @Override
-  public void exitIfvrrp_ip(Ifvrrp_ipContext ctx) {
-    Ip ip = toIp(ctx.ip);
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setVirtualAddress(ip);
-    }
-  }
-
-  @Override
-  public void exitIfvrrp_preempt(Ifvrrp_preemptContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setPreempt(true);
-    }
-  }
-
-  @Override
-  public void exitIfvrrp_priority(Ifvrrp_priorityContext ctx) {
-    int priority = toInteger(ctx.priority);
-    for (Interface iface : _currentInterfaces) {
-      String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup =
-          _configuration
-              .getVrrpGroups()
-              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-              .getVrrpGroups()
-              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
-      vrrpGroup.setPriority(priority);
     }
   }
 
@@ -8863,16 +8669,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitSet_path_selection_rp_stanza(Set_path_selection_rp_stanzaContext ctx) {
     todo(ctx);
-  }
-
-  @Nonnull
-  private RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
-    long dec = toLong(ctx.uint_legacy());
-    if (ctx.IP_ADDRESS() != null) {
-      checkArgument(dec <= 0xFFFFL, "Invalid route distinguisher %s", ctx.getText());
-      return RouteDistinguisher.from(toIp(ctx.IP_ADDRESS()), (int) dec);
-    }
-    return RouteDistinguisher.from(toAsNum(ctx.bgp_asn()), dec);
   }
 
   @Nonnull

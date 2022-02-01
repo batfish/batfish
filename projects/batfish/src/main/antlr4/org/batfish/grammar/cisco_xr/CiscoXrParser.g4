@@ -34,7 +34,9 @@ CiscoXr_rpl,
 CiscoXr_snmp,
 CiscoXr_static,
 CiscoXr_tftp,
-CiscoXr_vrf;
+CiscoXr_vrf,
+CiscoXr_vrrp
+;
 
 
 options {
@@ -206,10 +208,12 @@ s_router
 :
   ROUTER
   (
-    router_igmp
+    router_hsrp
+    | router_igmp
     | router_mld
     | router_msdp
     | router_pim
+    | router_vrrp
   )
 ;
 
@@ -813,14 +817,6 @@ s_radius_server
    )+
 ;
 
-s_router_vrrp
-:
-   NO? ROUTER VRRP NEWLINE
-   (
-      vrrp_interface
-   )*
-;
-
 s_service
 :
    NO? SERVICE
@@ -1073,7 +1069,6 @@ stanza
    | prefix_set_stanza
    | route_policy_stanza
    | router_bgp_stanza
-   | router_hsrp_stanza
    | router_isis_stanza
    | rsvp_stanza
    | s_aaa
@@ -1107,7 +1102,6 @@ stanza
    | s_router_ospfv3
    | s_router_rip
    | s_router_static
-   | s_router_vrrp
    | s_service
    | s_service_policy_global
    | s_snmp_server
@@ -1258,14 +1252,6 @@ ts_null
    ) null_rest_of_line
 ;
 
-vi_address_family
-:
-   NO? ADDRESS_FAMILY IPV4 NEWLINE
-   (
-      viaf_vrrp
-   )*
-;
-
 u
 :
    u_encrypted_password
@@ -1337,50 +1323,4 @@ up_cisco_xr_tail
       | NT_ENCRYPTED
       | PBKDF2
    )?
-;
-
-viaf_vrrp
-:
-   NO? VRRP groupnum = uint_legacy NEWLINE
-   (
-      viafv_address
-      | viafv_null
-      | viafv_preempt
-      | viafv_priority
-   )*
-;
-
-viafv_address
-:
-   ADDRESS address = IP_ADDRESS NEWLINE
-;
-
-viafv_null
-:
-   NO?
-   (
-      TIMERS
-      | TRACK
-   ) null_rest_of_line
-;
-
-viafv_preempt
-:
-   PREEMPT
-   (
-      DELAY delay = uint_legacy
-   ) NEWLINE
-;
-
-viafv_priority
-:
-   PRIORITY priority = uint_legacy NEWLINE
-;
-
-vrrp_interface
-:
-   NO? INTERFACE iface = interface_name NEWLINE
-   (
-      vi_address_family
-   )* NEWLINE?
 ;
