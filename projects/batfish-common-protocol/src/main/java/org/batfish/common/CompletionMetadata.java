@@ -2,12 +2,9 @@ package org.batfish.common;
 
 import static com.google.common.base.Functions.constant;
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.function.Function.identity;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -22,7 +19,6 @@ import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.specifier.Location;
 
 /** Grouping of various snapshot properties used for autocomplete */
 @ParametersAreNonnullByDefault
@@ -142,27 +138,6 @@ public final class CompletionMetadata implements Serializable {
     }
   }
 
-  /**
-   * Address books and groups do not belong here as they are network-wide. Leaving these properties
-   * in place to be able to de-serialize old data. Should be removed at some point.
-   */
-  @Deprecated private static final String PROP_ADDRESS_BOOKS = "addressBooks";
-
-  @Deprecated private static final String PROP_ADDRESS_GROUPS = "addressGroups";
-  private static final String PROP_FILTER_NAMES = "filterNames";
-  private static final String PROP_INTERFACES = "interfaces";
-  private static final String PROP_IPS = "ips";
-  private static final String PROP_LOCATIONS = "locations";
-  // deprecated location information
-  private static final String PROP_SOURCE_LOCATIONS = "locationInfo";
-  private static final String PROP_MLAG_IDS = "mlagIds";
-  private static final String PROP_NODES = "nodes";
-  private static final String PROP_PREFIXES = "prefixes";
-  private static final String PROP_ROUTING_POLICY_NAMES = "routingPolicyNames";
-  private static final String PROP_STRUCTURE_NAMES = "structureNames";
-  private static final String PROP_VRFS = "vrfs";
-  private static final String PROP_ZONES = "zones";
-
   private final Set<String> _filterNames;
 
   private final Set<NodeInterfacePair> _interfaces;
@@ -191,47 +166,6 @@ public final class CompletionMetadata implements Serializable {
 
   public static final CompletionMetadata EMPTY = builder().build();
 
-  @JsonCreator
-  private static @Nonnull CompletionMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_ADDRESS_BOOKS) Set<String> addressBooks,
-      @Nullable @JsonProperty(PROP_ADDRESS_GROUPS) Set<String> addressGroups,
-      @Nullable @JsonProperty(PROP_FILTER_NAMES) Set<String> filterNames,
-      @Nullable @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
-      @Nullable @JsonProperty(PROP_IPS) Map<Ip, IpCompletionMetadata> ips,
-      @Nullable @JsonProperty(PROP_LOCATIONS) Set<LocationCompletionMetadata> locations,
-      // deprecated; included for backward compatibility Nov 9, 2020
-      @Nullable @JsonProperty(PROP_SOURCE_LOCATIONS) Set<Location> sourceLocations,
-      @Nullable @JsonProperty(PROP_MLAG_IDS) Set<String> mlagIds,
-      @Nullable @JsonProperty(PROP_NODES) Map<String, NodeCompletionMetadata> nodes,
-      @Nullable @JsonProperty(PROP_PREFIXES) Set<String> prefixes,
-      @Nullable @JsonProperty(PROP_ROUTING_POLICY_NAMES) Set<String> routingPolicyNames,
-      @Nullable @JsonProperty(PROP_STRUCTURE_NAMES) Set<String> structureNames,
-      @Nullable @JsonProperty(PROP_VRFS) Set<String> vrfs,
-      @Nullable @JsonProperty(PROP_ZONES) Set<String> zones) {
-    checkArgument(
-        locations == null || sourceLocations == null,
-        "At most one of %s or %s must be present",
-        PROP_LOCATIONS,
-        PROP_SOURCE_LOCATIONS);
-    return new CompletionMetadata(
-        firstNonNull(filterNames, ImmutableSet.of()),
-        firstNonNull(interfaces, ImmutableSet.of()),
-        firstNonNull(ips, ImmutableMap.of()),
-        firstNonNull(
-            locations,
-            firstNonNull(sourceLocations, ImmutableSet.<Location>of()).stream()
-                .map(loc -> new LocationCompletionMetadata(loc, true))
-                .collect(ImmutableSet.toImmutableSet()),
-            ImmutableSet.of()),
-        firstNonNull(mlagIds, ImmutableSet.of()),
-        firstNonNull(nodes, ImmutableMap.of()),
-        firstNonNull(prefixes, ImmutableSet.of()),
-        firstNonNull(routingPolicyNames, ImmutableSet.of()),
-        firstNonNull(structureNames, ImmutableSet.of()),
-        firstNonNull(vrfs, ImmutableSet.of()),
-        firstNonNull(zones, ImmutableSet.of()));
-  }
-
   public CompletionMetadata(
       Set<String> filterNames,
       Set<NodeInterfacePair> interfaces,
@@ -257,68 +191,57 @@ public final class CompletionMetadata implements Serializable {
     _zones = zones;
   }
 
-  @JsonProperty(PROP_FILTER_NAMES)
   @Nonnull
   public Set<String> getFilterNames() {
     return _filterNames;
   }
 
-  @JsonProperty(PROP_INTERFACES)
   @Nonnull
   public Set<NodeInterfacePair> getInterfaces() {
     return _interfaces;
   }
 
-  @JsonProperty(PROP_IPS)
   @Nonnull
   public Map<Ip, IpCompletionMetadata> getIps() {
     return _ips;
   }
 
-  @JsonProperty(PROP_LOCATIONS)
   @Nonnull
   public Set<LocationCompletionMetadata> getLocations() {
     return _locations;
   }
 
   /** Returns the full set of MLAG domain ids in the snapshot */
-  @JsonProperty(PROP_MLAG_IDS)
   @Nonnull
   public Set<String> getMlagIds() {
     return _mlagIds;
   }
 
-  @JsonProperty(PROP_NODES)
   @Nonnull
   public Map<String, NodeCompletionMetadata> getNodes() {
     return _nodes;
   }
 
-  @JsonProperty(PROP_PREFIXES)
   @Nonnull
   public Set<String> getPrefixes() {
     return _prefixes;
   }
 
-  @JsonProperty(PROP_ROUTING_POLICY_NAMES)
   @Nonnull
   public Set<String> getRoutingPolicyNames() {
     return _routingPolicyNames;
   }
 
-  @JsonProperty(PROP_STRUCTURE_NAMES)
   @Nonnull
   public Set<String> getStructureNames() {
     return _structureNames;
   }
 
-  @JsonProperty(PROP_VRFS)
   @Nonnull
   public Set<String> getVrfs() {
     return _vrfs;
   }
 
-  @JsonProperty(PROP_ZONES)
   @Nonnull
   public Set<String> getZones() {
     return _zones;
@@ -365,17 +288,17 @@ public final class CompletionMetadata implements Serializable {
   @Override
   public String toString() {
     return toStringHelper(getClass())
-        .add(PROP_FILTER_NAMES, _filterNames)
-        .add(PROP_INTERFACES, _interfaces)
-        .add(PROP_IPS, _ips)
-        .add(PROP_LOCATIONS, _locations)
-        .add(PROP_MLAG_IDS, _mlagIds)
-        .add(PROP_NODES, _nodes)
-        .add(PROP_PREFIXES, _prefixes)
-        .add(PROP_ROUTING_POLICY_NAMES, _routingPolicyNames)
-        .add(PROP_STRUCTURE_NAMES, _structureNames)
-        .add(PROP_VRFS, _vrfs)
-        .add(PROP_ZONES, _zones)
+        .add("filterNames", _filterNames)
+        .add("interfaces", _interfaces)
+        .add("ips", _ips)
+        .add("locations", _locations)
+        .add("mlagIds", _mlagIds)
+        .add("nodes", _nodes)
+        .add("prefixes", _prefixes)
+        .add("routingPolicyNames", _routingPolicyNames)
+        .add("structureNames", _structureNames)
+        .add("vrfs", _vrfs)
+        .add("zones", _zones)
         .toString();
   }
 }
