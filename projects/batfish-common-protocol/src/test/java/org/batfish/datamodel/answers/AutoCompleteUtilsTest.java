@@ -60,6 +60,7 @@ import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfSessionStatus;
@@ -895,13 +896,11 @@ public class AutoCompleteUtilsTest {
   /** Tests that metadata based suggestions are included */
   @Test
   public void testIpSpaceIncludeMetadataMatches() {
-    CompletionMetadata completionMetadata =
-        CompletionMetadata.builder()
-            .setIps(
-                ImmutableMap.of(
-                    Ip.parse("1.1.1.1"),
-                    new IpCompletionMetadata(new IpCompletionRelevance("display", "tag"))))
-            .build();
+    PrefixTrieMultiMap<IpCompletionMetadata> trie = new PrefixTrieMultiMap<>();
+    trie.put(
+        Ip.parse("1.1.1.1").toPrefix(),
+        new IpCompletionMetadata(new IpCompletionRelevance("display", "tag")));
+    CompletionMetadata completionMetadata = CompletionMetadata.builder().setIps(trie).build();
 
     // Just the valid function names in alphabetical order
     assertThat(
@@ -923,13 +922,12 @@ public class AutoCompleteUtilsTest {
   /** Tests that IPs that match based on both metadata and grammar are included only once */
   @Test
   public void testIpSpaceIncludeOnce() {
-    CompletionMetadata completionMetadata =
-        CompletionMetadata.builder()
-            .setIps(
-                ImmutableMap.of(
-                    Ip.parse("1.1.1.1"),
-                    new IpCompletionMetadata(new IpCompletionRelevance("display", "tag"))))
-            .build();
+    PrefixTrieMultiMap<IpCompletionMetadata> trie = new PrefixTrieMultiMap<>();
+    trie.put(
+        Ip.parse("1.1.1.1").toPrefix(),
+        new IpCompletionMetadata(new IpCompletionRelevance("display", "tag")));
+
+    CompletionMetadata completionMetadata = CompletionMetadata.builder().setIps(trie).build();
 
     // Just the valid function names in alphabetical order
     assertThat(
@@ -1519,17 +1517,13 @@ public class AutoCompleteUtilsTest {
   public void testIpStringAutocomplete_ordering() {
     List<IpCompletionRelevance> relevances2 =
         ImmutableList.of(new IpCompletionRelevance("display", "42"));
-    Map<Ip, IpCompletionMetadata> metadata =
-        ImmutableMap.of(
-            Ip.parse("1.1.1.1"),
-            new IpCompletionMetadata(relevances2),
-            Ip.parse("2.2.2.2"),
-            new IpCompletionMetadata(),
-            Ip.parse("3.3.3.3"),
-            new IpCompletionMetadata());
+    PrefixTrieMultiMap<IpCompletionMetadata> trie = new PrefixTrieMultiMap<>();
+    trie.put(Ip.parse("1.1.1.1").toPrefix(), new IpCompletionMetadata(relevances2));
+    trie.put(Ip.parse("2.2.2.2").toPrefix(), new IpCompletionMetadata());
+    trie.put(Ip.parse("3.3.3.3").toPrefix(), new IpCompletionMetadata());
 
     assertThat(
-        ipStringAutoComplete("2", metadata),
+        ipStringAutoComplete("2", trie),
         equalTo(
             ImmutableList.of(
                 new AutocompleteSuggestion("2.2.2.2", false),
@@ -1542,11 +1536,11 @@ public class AutoCompleteUtilsTest {
     IpCompletionRelevance match = new IpCompletionRelevance("match", "match");
     IpCompletionRelevance other = new IpCompletionRelevance("other", "other");
 
+    PrefixTrieMultiMap<IpCompletionMetadata> trie = new PrefixTrieMultiMap<>();
+    trie.put(
+        Ip.parse("1.1.1.1").toPrefix(), new IpCompletionMetadata(ImmutableList.of(match, other)));
     assertThat(
-        ipStringAutoComplete(
-            "mat",
-            ImmutableMap.of(
-                Ip.parse("1.1.1.1"), new IpCompletionMetadata(ImmutableList.of(match, other)))),
+        ipStringAutoComplete("mat", trie),
         equalTo(
             ImmutableList.of(new AutocompleteSuggestion("1.1.1.1", false, match.getDisplay()))));
   }
@@ -1554,15 +1548,12 @@ public class AutoCompleteUtilsTest {
   /** Test that multiword queries match relevant IPs */
   @Test
   public void testIpStringAutocomplete_multipleWordsMatcIp() {
-    Map<Ip, IpCompletionMetadata> metadata =
-        ImmutableMap.of(
-            Ip.parse("1.1.2.2"),
-            new IpCompletionMetadata(),
-            Ip.parse("2.2.2.2"),
-            new IpCompletionMetadata());
+    PrefixTrieMultiMap<IpCompletionMetadata> trie = new PrefixTrieMultiMap<>();
+    trie.put(Ip.parse("1.1.2.2").toPrefix(), new IpCompletionMetadata());
+    trie.put(Ip.parse("2.2.2.2").toPrefix(), new IpCompletionMetadata());
 
     assertThat(
-        ipStringAutoComplete("1 2", metadata),
+        ipStringAutoComplete("1 2", trie),
         equalTo(ImmutableList.of(new AutocompleteSuggestion("1.1.2.2", false))));
   }
 

@@ -18,6 +18,7 @@ import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Grouping of various snapshot properties used for autocomplete */
@@ -31,7 +32,7 @@ public final class CompletionMetadata implements Serializable {
 
     private Set<NodeInterfacePair> _interfaces;
 
-    private Map<Ip, IpCompletionMetadata> _ips;
+    private PrefixTrieMultiMap<IpCompletionMetadata> _ips;
 
     private Set<LocationCompletionMetadata> _locations;
 
@@ -56,7 +57,7 @@ public final class CompletionMetadata implements Serializable {
       return new CompletionMetadata(
           firstNonNull(_filterNames, ImmutableSet.of()),
           firstNonNull(_interfaces, ImmutableSet.of()),
-          firstNonNull(_ips, ImmutableMap.of()),
+          firstNonNull(_ips, new PrefixTrieMultiMap<>()),
           firstNonNull(_locations, ImmutableSet.of()),
           firstNonNull(_mlagIds, ImmutableSet.of()),
           firstNonNull(_nodes, ImmutableMap.of()),
@@ -78,14 +79,14 @@ public final class CompletionMetadata implements Serializable {
     }
 
     public @Nonnull Builder setIps(Set<Ip> ips) {
-      setIps(
-          ips.stream()
-              .collect(ImmutableMap.toImmutableMap(identity(), ip -> new IpCompletionMetadata())));
+      PrefixTrieMultiMap<IpCompletionMetadata> trie = new PrefixTrieMultiMap<>();
+      ips.forEach(ip -> trie.put(ip.toPrefix(), new IpCompletionMetadata()));
+      setIps(trie);
       return this;
     }
 
-    public @Nonnull Builder setIps(Map<Ip, IpCompletionMetadata> ips) {
-      _ips = ImmutableMap.copyOf(ips);
+    public @Nonnull Builder setIps(PrefixTrieMultiMap<IpCompletionMetadata> ips) {
+      _ips = ips;
       return this;
     }
 
@@ -142,7 +143,7 @@ public final class CompletionMetadata implements Serializable {
 
   private final Set<NodeInterfacePair> _interfaces;
 
-  private final Map<Ip, IpCompletionMetadata> _ips;
+  private final PrefixTrieMultiMap<IpCompletionMetadata> _ips;
 
   private final Set<LocationCompletionMetadata> _locations;
 
@@ -169,7 +170,7 @@ public final class CompletionMetadata implements Serializable {
   public CompletionMetadata(
       Set<String> filterNames,
       Set<NodeInterfacePair> interfaces,
-      Map<Ip, IpCompletionMetadata> ips,
+      PrefixTrieMultiMap<IpCompletionMetadata> ips,
       Set<LocationCompletionMetadata> locations,
       Set<String> mlagIds,
       Map<String, NodeCompletionMetadata> nodes,
@@ -202,7 +203,7 @@ public final class CompletionMetadata implements Serializable {
   }
 
   @Nonnull
-  public Map<Ip, IpCompletionMetadata> getIps() {
+  public PrefixTrieMultiMap<IpCompletionMetadata> getIps() {
     return _ips;
   }
 
