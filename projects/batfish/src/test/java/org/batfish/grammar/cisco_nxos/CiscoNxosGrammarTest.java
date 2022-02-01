@@ -5186,6 +5186,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testLacpParsing() throws IOException {
+    parseConfig("nxos_lacp");
+    // Don't crash.
+  }
+
+  @Test
   public void testLineParsing() throws IOException {
     parseConfig("nxos_line");
     // Don't crash.
