@@ -1146,8 +1146,7 @@ public class FileBasedStorage implements StorageProvider {
     if (!Files.exists(completionMetadataPath)) {
       return CompletionMetadata.EMPTY;
     }
-    return BatfishObjectMapper.mapper()
-        .readValue(completionMetadataPath.toFile(), CompletionMetadata.class);
+    return deserializeObject(completionMetadataPath, CompletionMetadata.class);
   }
 
   @Override
@@ -1156,7 +1155,7 @@ public class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path completionMetadataPath = getSnapshotCompletionMetadataPath(networkId, snapshotId);
     mkdirs(completionMetadataPath.getParent());
-    writeJsonFile(completionMetadataPath, completionMetadata);
+    serializeObject(completionMetadata, completionMetadataPath);
   }
 
   private @Nonnull Path getSnapshotCompletionMetadataPath(
