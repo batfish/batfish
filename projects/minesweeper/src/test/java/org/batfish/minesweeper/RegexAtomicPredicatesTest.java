@@ -76,13 +76,13 @@ public class RegexAtomicPredicatesTest {
 
     assertEquals(asPathAPs.getNumAtomicPredicates(), 5);
 
-    Automaton a1 = new RegExp("^$").toAutomaton();
+    Automaton a1 = new RegExp("^^$").toAutomaton();
     // starts with 5 and ends with 4
-    Automaton a2 = new RegExp("^5 ((0|[1-9][0-9]*) )*4$").toAutomaton();
+    Automaton a2 = new RegExp("^^5 ((0|[1-9][0-9]*) )*4$").toAutomaton();
     // ends with 4 but does not start with 5
-    Automaton a3 = new RegExp("^([0-4]|[6-9]|[1-9][0-9]+) ((0|[1-9][0-9]*) )*4$").toAutomaton();
+    Automaton a3 = new RegExp("^^([0-4]|[6-9]|[1-9][0-9]+) ((0|[1-9][0-9]*) )*4$").toAutomaton();
     // starts with 5 but does not end with 4
-    Automaton a4 = new RegExp("^5( (0|[1-9][0-9]*))* ([0-3]|[5-9]|[1-9][0-9]+)$").toAutomaton();
+    Automaton a4 = new RegExp("^^5( (0|[1-9][0-9]*))* ([0-3]|[5-9]|[1-9][0-9]+)$").toAutomaton();
 
     assertEquals(asPathAPs.getAtomicPredicateAutomata().size(), 5);
     assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a1));
