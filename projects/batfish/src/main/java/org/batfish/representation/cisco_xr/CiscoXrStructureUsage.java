@@ -41,6 +41,8 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   FAILOVER_LAN_INTERFACE("failover lan interface"),
   FAILOVER_LINK_INTERFACE("failover link interface"),
   FLOW_MONITOR_MAP_EXPORTER("flow monitor-map exporter"),
+  HSRP_INTERFACE("router hsrp interface"),
+  HSRP_TRACK_INTERFACE("router hsrp track interface"),
   INTERFACE_BFD_TEMPLATE("interface bfd template"),
   INTERFACE_FLOW_IPV4_MONITOR_EGRESS("interface flow ipv4 monitor egress"),
   INTERFACE_FLOW_IPV4_MONITOR_INGRESS("interface flow ipv4 monitor ingress"),
