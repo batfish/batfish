@@ -14,18 +14,26 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
 
   @Nonnull private static final String AS_NUM_REGEX = "(0|[1-9][0-9]*)";
 
-  // a regex that represents the language of AS paths: a space-separated list of
-  // AS numbers, starting and ending with the ^ (start-of-string) and $ (end-of-string)
-  // tokens respectively.
-  // Note: in general an AS path is a list of *sets* of AS numbers.  but the format of
-  // regexes over sets is apparently vendor-dependent.  for now we do not support them.
+  /**
+   * A regex that represents the language of AS paths: a space-separated list of AS numbers,
+   * starting and ending with the ^ (start-of-string) and $ (end-of-string) tokens respectively. For
+   * non-empty AS-path regexes we require two ^ characters at the front. This is because of the way
+   * that Juniper AS-path regexes are translated to Java. For example, "^80$" is translated to "^(^|
+   * )80$". Because the automaton library treats ^ as a regular character we have to deal with the
+   * fact that there can be two of them at the front. We will therefore arrange that there are
+   * _always_ two of them at the front, regardless of what the original Java regex looks like (see
+   * toAutomaton below), so we can properly compare regexes to one another.
+   *
+   * <p>Note: in general an AS path is a list of *sets* of AS numbers. but the format of regexes
+   * over sets is apparently vendor-dependent. for now we do not support them.
+   */
   @Nonnull
   private static final String AS_PATH_REGEX =
       // the empty AS-path
-      "^$"
+      "^^$"
           + "|"
           // non-empty AS-paths
-          + "^"
+          + "^^"
           + "("
           + AS_NUM_REGEX
           + " "
@@ -35,11 +43,12 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
 
   /**
    * When converting an AS path regex to an automaton (see toAutomaton()), we intersect with this
-   * automaton, which represents the language of AS paths. Doing so serves two purposes. First, it
-   * is necessary for correctness of the symbolic analysis. For example, a regex like ".*" does not
-   * actually match any possible string since AS paths cannot be arbitrary strings. Second, it
-   * ensures that when we solve for AS paths that match regexes, we will get examples that are
-   * sensible and also able to be parsed by Batfish.
+   * automaton, which represents the language of AS paths. Doing so serves several purposes. First,
+   * it is necessary for correctness of the symbolic analysis. For example, a regex like ".*" does
+   * not actually match any possible string since AS paths cannot be arbitrary strings. Second, it
+   * addresses the issue of different formats for Java regexes mentioned above. Third, it ensures
+   * that when we solve for AS paths that match regexes, we will get examples that are sensible and
+   * also able to be parsed by Batfish.
    */
   @Nonnull static final Automaton AS_PATH_FSM = new RegExp(AS_PATH_REGEX).toAutomaton();
 

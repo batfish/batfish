@@ -207,11 +207,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     // As-path regex automata should only accept strings with this property;
     // see SymbolicAsPathRegex::toAutomaton
     checkState(
-        asPathStr.startsWith("^") && asPathStr.endsWith("$"),
+        asPathStr.startsWith("^^") && asPathStr.endsWith("$"),
         "AS-path example %s has an unexpected format",
         asPathStr);
-    // strip off the leading ^ and trailing $
-    asPathStr = asPathStr.substring(1, asPathStr.length() - 1);
+    // strip off the leading ^^ and trailing $
+    asPathStr = asPathStr.substring(2, asPathStr.length() - 1);
     // the string is a space-separated list of numbers; convert them to a list of numbers
     List<Long> asns;
     if (asPathStr.isEmpty()) {
