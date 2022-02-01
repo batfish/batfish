@@ -3297,7 +3297,6 @@ public final class AsaConfiguration extends VendorConfiguration {
         AsaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
         AsaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         AsaStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
-        AsaStructureUsage.ROUTER_VRRP_INTERFACE,
         AsaStructureUsage.SERVICE_POLICY_INTERFACE,
         AsaStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
         AsaStructureUsage.SNMP_SERVER_TRAP_SOURCE,

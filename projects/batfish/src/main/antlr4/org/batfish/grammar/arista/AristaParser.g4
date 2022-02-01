@@ -2833,16 +2833,7 @@ s_router
     | s_router_ospfv3
     | s_router_pim
     | s_router_rip
-    | s_router_vrrp
   )
-;
-
-s_router_vrrp
-:
-   VRRP NEWLINE
-   (
-      vrrp_interface
-   )*
 ;
 
 s_sccp
@@ -3626,14 +3617,6 @@ ts_null
    ) null_rest_of_line
 ;
 
-vi_address_family
-:
-   NO? ADDRESS_FAMILY IPV4 NEWLINE
-   (
-      viaf_vrrp
-   )*
-;
-
 u
 :
    u_encrypted_password
@@ -3731,44 +3714,6 @@ ur_null
    ) null_rest_of_line
 ;
 
-viaf_vrrp
-:
-   NO? VRRP groupnum = dec NEWLINE
-   (
-      viafv_address
-      | viafv_null
-      | viafv_preempt
-      | viafv_priority
-   )*
-;
-
-viafv_address
-:
-   ADDRESS address = IP_ADDRESS NEWLINE
-;
-
-viafv_null
-:
-   NO?
-   (
-      TIMERS
-      | TRACK
-   ) null_rest_of_line
-;
-
-viafv_preempt
-:
-   PREEMPT
-   (
-      DELAY delay = dec
-   ) NEWLINE
-;
-
-viafv_priority
-:
-   PRIORITY priority = dec NEWLINE
-;
-
 vpc_null
 :
    NO?
@@ -3839,14 +3784,6 @@ vrfd_description
 vrfd_rd
 :
    RD (AUTO | rd = route_distinguisher) NEWLINE
-;
-
-vrrp_interface
-:
-   NO? INTERFACE iface = interface_name NEWLINE
-   (
-      vi_address_family
-   )* NEWLINE?
 ;
 
 wccp_id

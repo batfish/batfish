@@ -232,7 +232,6 @@ import static org.batfish.representation.cisco_asa.AsaStructureUsage.PROTOCOL_OB
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
-import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_INTERFACE;
@@ -982,10 +981,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Variable_access_listContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Variable_community_listContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Variable_group_idContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Variable_permissiveContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Viaf_vrrpContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Viafv_addressContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Viafv_preemptContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Vlan_idContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Vrf_block_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Vrfd_address_familyContext;
@@ -996,7 +991,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Vrfd_af_route_targetContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Vrfd_rdContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Vrfd_route_targetContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Wccp_idContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Zp_service_policy_inspectContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1391,11 +1385,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Nullable private VrfAddressFamily _currentVrfAddressFamily;
 
-  private VrrpGroup _currentVrrpGroup;
-
   private Integer _currentVrrpGroupNum;
-
-  private String _currentVrrpInterface;
 
   private final @Nonnull BgpPeerGroup _dummyPeerGroup = new MasterBgpPeerGroup();
 
@@ -3646,26 +3636,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void enterViaf_vrrp(Viaf_vrrpContext ctx) {
-    int groupNum = toInteger(ctx.groupnum);
-    _currentVrrpGroup =
-        _configuration
-            .getVrrpGroups()
-            .computeIfAbsent(_currentVrrpInterface, name -> new VrrpInterface())
-            .getVrrpGroups()
-            .computeIfAbsent(groupNum, VrrpGroup::new);
-  }
-
-  @Override
   public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     enterBgpVrfAndPushNewPeer(ctx.name.getText());
-  }
-
-  @Override
-  public void enterVrrp_interface(Vrrp_interfaceContext ctx) {
-    _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.referenceStructure(
-        INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -9033,28 +9005,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitViaf_vrrp(Viaf_vrrpContext ctx) {
-    _currentVrrpGroup = null;
-  }
-
-  @Override
-  public void exitViafv_address(Viafv_addressContext ctx) {
-    Ip address = toIp(ctx.address);
-    _currentVrrpGroup.setVirtualAddress(address);
-  }
-
-  @Override
-  public void exitViafv_preempt(Viafv_preemptContext ctx) {
-    _currentVrrpGroup.setPreempt(true);
-  }
-
-  @Override
-  public void exitViafv_priority(Viafv_priorityContext ctx) {
-    int priority = toInteger(ctx.priority);
-    _currentVrrpGroup.setPriority(priority);
-  }
-
-  @Override
   public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     popPeer();
@@ -9082,11 +9032,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   @Override
   public void exitVrfd_description(Vrfd_descriptionContext ctx) {
     currentVrf().setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void exitVrrp_interface(Vrrp_interfaceContext ctx) {
-    _currentVrrpInterface = null;
   }
 
   @Override

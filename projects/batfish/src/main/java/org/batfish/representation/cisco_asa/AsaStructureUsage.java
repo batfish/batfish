@@ -192,7 +192,6 @@ public enum AsaStructureUsage implements StructureUsage {
   ROUTE_MAP_MATCH_IPV6_PREFIX_LIST("route-map match ipv6 prefix-list"),
   ROUTE_MAP_SET_COMMUNITY("route-map set community list"),
   ROUTER_ISIS_DISTRIBUTE_LIST_ACL("router isis distribute-list acl"),
-  ROUTER_VRRP_INTERFACE("router vrrp interface"),
   SECURITY_ZONE_PAIR_SELF_REF("zone-pair security self-reference"),
   SERVICE_OBJECT_GROUP_GROUP_OBJECT("object-group service group-object"),
   SERVICE_OBJECT_GROUP_SERVICE_OBJECT("object-group service service-object object"),

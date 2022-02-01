@@ -248,7 +248,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_R
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_STATIC_ROUTE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_CLAUSE_PREV_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
@@ -1004,10 +1003,6 @@ import org.batfish.grammar.cisco.CiscoParser.VariableContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_group_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_permissiveContext;
-import org.batfish.grammar.cisco.CiscoParser.Viaf_vrrpContext;
-import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
-import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_export_nonvpnContext;
@@ -1017,7 +1012,6 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_route_targetContext;
-import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1446,11 +1440,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nullable private VrfAddressFamily _currentVrfAddressFamily;
 
-  private VrrpGroup _currentVrrpGroup;
-
   private Integer _currentVrrpGroupNum;
-
-  private String _currentVrrpInterface;
 
   private final @Nonnull BgpPeerGroup _dummyPeerGroup = new MasterBgpPeerGroup();
 
@@ -3590,24 +3580,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!_no) {
       _configuration.getTacacsServers().add(hostname);
     }
-  }
-
-  @Override
-  public void enterViaf_vrrp(Viaf_vrrpContext ctx) {
-    int groupNum = toInteger(ctx.groupnum);
-    _currentVrrpGroup =
-        _configuration
-            .getVrrpGroups()
-            .computeIfAbsent(_currentVrrpInterface, name -> new VrrpInterface())
-            .getVrrpGroups()
-            .computeIfAbsent(groupNum, VrrpGroup::new);
-  }
-
-  @Override
-  public void enterVrrp_interface(Vrrp_interfaceContext ctx) {
-    _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.referenceStructure(
-        INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -9201,28 +9173,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitViaf_vrrp(Viaf_vrrpContext ctx) {
-    _currentVrrpGroup = null;
-  }
-
-  @Override
-  public void exitViafv_address(Viafv_addressContext ctx) {
-    Ip address = toIp(ctx.address);
-    _currentVrrpGroup.setVirtualAddress(address);
-  }
-
-  @Override
-  public void exitViafv_preempt(Viafv_preemptContext ctx) {
-    _currentVrrpGroup.setPreempt(true);
-  }
-
-  @Override
-  public void exitViafv_priority(Viafv_priorityContext ctx) {
-    int priority = toInteger(ctx.priority);
-    _currentVrrpGroup.setPriority(priority);
-  }
-
-  @Override
   public void exitVrfd_af_export_nonvpn(Vrfd_af_export_nonvpnContext ctx) {
     warn(ctx, "Export into non-vpnv4/6-address-family RIBs is not currently supported");
     _configuration.referenceStructure(
@@ -9244,11 +9194,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitVrfd_description(Vrfd_descriptionContext ctx) {
     currentVrf().setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void exitVrrp_interface(Vrrp_interfaceContext ctx) {
-    _currentVrrpInterface = null;
   }
 
   @Override
