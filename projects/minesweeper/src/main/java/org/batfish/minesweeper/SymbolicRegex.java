@@ -10,7 +10,7 @@ public abstract class SymbolicRegex {
   @Nonnull protected final String _regex;
 
   public SymbolicRegex(String regex) {
-    _regex = regex;
+    _regex = toAutomatonRegex(regex);
   }
 
   @Nonnull
@@ -25,4 +25,12 @@ public abstract class SymbolicRegex {
    * @return the automaton
    */
   public abstract Automaton toAutomaton();
+
+  // modify the given regex to conform to the grammar of the Automaton library that we use to
+  // analyze regexes
+  @Nonnull
+  private String toAutomatonRegex(String regex) {
+    // the Automaton library does not support the character class \d
+    return regex.replace("\\d", "[0-9]");
+  }
 }

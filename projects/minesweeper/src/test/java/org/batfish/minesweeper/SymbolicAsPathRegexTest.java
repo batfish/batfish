@@ -14,7 +14,7 @@ public class SymbolicAsPathRegexTest {
   private static final String UNDERSCORE = "(,|{|}|^|$| )";
 
   @Test
-  public void testToAutomaton() {
+  public void testToAutomatonRegex() {
 
     SymbolicAsPathRegex r1 = new SymbolicAsPathRegex("^40$");
     SymbolicAsPathRegex r2 = new SymbolicAsPathRegex("^$");
@@ -26,12 +26,28 @@ public class SymbolicAsPathRegexTest {
     SymbolicAsPathRegex r5 =
         new SymbolicAsPathRegex(UNDERSCORE + "40" + UNDERSCORE + "50" + UNDERSCORE);
 
-    assertThat(r1.toAutomaton(), equalTo(new RegExp("^40$").toAutomaton()));
-    assertThat(r2.toAutomaton(), equalTo(new RegExp("^$").toAutomaton()));
-    assertThat(r3.toAutomaton(), equalTo(new RegExp("^((0|[1-9][0-9]*) )*40$").toAutomaton()));
-    assertThat(r4.toAutomaton(), equalTo(new RegExp("^40( (0|[1-9][0-9]*))*$").toAutomaton()));
+    assertThat(r1.toAutomaton(), equalTo(new RegExp("^^40$").toAutomaton()));
+    assertThat(r2.toAutomaton(), equalTo(new RegExp("^^$").toAutomaton()));
+    assertThat(r3.toAutomaton(), equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40$").toAutomaton()));
+    assertThat(r4.toAutomaton(), equalTo(new RegExp("^^40( (0|[1-9][0-9]*))*$").toAutomaton()));
     assertThat(
         r5.toAutomaton(),
-        equalTo(new RegExp("^((0|[1-9][0-9]*) )*40 50( (0|[1-9][0-9]*))*$").toAutomaton()));
+        equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40 50( (0|[1-9][0-9]*))*$").toAutomaton()));
+  }
+
+  @Test
+  public void testToAutomatonJuniper() {
+
+    SymbolicAsPathRegex r1 = new SymbolicAsPathRegex("^(^| )40$");
+    SymbolicAsPathRegex r2 = new SymbolicAsPathRegex("^$");
+    // .*40$
+    SymbolicAsPathRegex r3 = new SymbolicAsPathRegex("^((^| )\\d+)*(^| )40$");
+    // ^40.*
+    SymbolicAsPathRegex r4 = new SymbolicAsPathRegex("^(^| )40((^| )\\d+)*$");
+
+    assertThat(r1.toAutomaton(), equalTo(new RegExp("^^40$").toAutomaton()));
+    assertThat(r2.toAutomaton(), equalTo(new RegExp("^^$").toAutomaton()));
+    assertThat(r3.toAutomaton(), equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40$").toAutomaton()));
+    assertThat(r4.toAutomaton(), equalTo(new RegExp("^^40( (0|[1-9][0-9]*))*$").toAutomaton()));
   }
 }
