@@ -1774,6 +1774,8 @@ PREFIX_PEER_WAIT: 'prefix-peer-wait';
 
 PREPEND: 'prepend';
 
+PRIMARY: 'primary';
+
 PRIORITY: 'priority';
 
 PRIORITY_FLOW_CONTROL: 'priority-flow-control';
@@ -2227,8 +2229,10 @@ SYSTEM
       pushMode(M_Word);
     }
   }
-
 ;
+
+SYSTEM_MAC: 'system-mac';
+SYSTEM_PRIORITY: 'system-priority';
 
 TABLE_MAP
 :
