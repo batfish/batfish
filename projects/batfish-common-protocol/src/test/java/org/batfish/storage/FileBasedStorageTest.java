@@ -61,6 +61,7 @@ import org.batfish.common.util.UnzipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -571,11 +572,14 @@ public final class FileBasedStorageTest {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
+    PrefixTrieMultiMap<IpCompletionMetadata> ipMetadata = new PrefixTrieMultiMap<>();
+    ipMetadata.put(Ip.parse("1.1.1.1").toPrefix(), new IpCompletionMetadata());
+
     CompletionMetadata completionMetadata =
         new CompletionMetadata(
             ImmutableSet.of("filter1"),
             ImmutableSet.of(NodeInterfacePair.of("node", "iface")),
-            ImmutableMap.of(Ip.parse("1.1.1.1"), new IpCompletionMetadata()),
+            ipMetadata,
             ImmutableSet.of(
                 new LocationCompletionMetadata(new InterfaceLocation("node", "iface"), true)),
             ImmutableSet.of("mlag"),
