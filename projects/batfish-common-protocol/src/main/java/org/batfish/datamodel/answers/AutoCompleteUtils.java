@@ -8,7 +8,10 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import com.google.common.collect.Streams;
 import com.google.re2j.Pattern;
 import com.google.re2j.PatternSyntaxException;
@@ -36,6 +39,8 @@ import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -927,30 +932,49 @@ public final class AutoCompleteUtils {
    */
   @Nonnull
   public static ImmutableList<AutocompleteSuggestion> ipStringAutoComplete(
-      @Nullable String query, Map<Ip, IpCompletionMetadata> ips) {
+      @Nullable String query, PrefixTrieMultiMap<IpCompletionMetadata> ips) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
 
     // when the query has multiple words, each of those words should match
     String[] subQueries = testQuery.split("\\s+");
 
-    // find matching IPs
-    Set<Ip> ipMatches =
-        ips.keySet().stream()
-            .filter(e -> Arrays.stream(subQueries).allMatch(sq -> e.toString().contains(sq)))
-            .collect(ImmutableSet.toImmutableSet());
+    RangeSet<Ip> allIps =
+        ImmutableRangeSet.of(Range.closed(Prefix.ZERO.getStartIp(), Prefix.ZERO.getEndIp()));
+
+    // find matching IP entries
+    Map<Ip, IpCompletionMetadata> ipMatches =
+        ips.getOverlappingEntries(allIps)
+            .filter(e -> e.getKey().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH)
+            .filter(
+                e -> {
+                  String ipStr = e.getKey().getStartIp().toString();
+                  return Arrays.stream(subQueries).allMatch(ipStr::contains);
+                })
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    e -> e.getKey().getStartIp(),
+                    // invariant: value set is non-empty. could have multiple elements, but this
+                    // code will only use one.
+                    e -> e.getValue().iterator().next()));
 
     // find relevance matches
     List<AutocompleteSuggestion> relevanceMatches =
-        ips.entrySet().stream()
-            .filter(e -> !ipMatches.contains(e.getKey()))
-            .map(
+        ips.getOverlappingEntries(allIps)
+            .filter(
                 e ->
-                    new SimpleEntry<>(
-                        e.getKey(),
-                        e.getValue().getRelevances().stream()
-                            .filter(r -> r.matches(subQueries, e.getKey()))
-                            .collect(ImmutableList.toImmutableList())))
+                    e.getKey().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH
+                        && !ipMatches.containsKey(e.getKey().getStartIp()))
+            .map(
+                e -> {
+                  Ip ip = e.getKey().getStartIp();
+                  return new SimpleEntry<>(
+                      ip,
+                      e.getValue().stream()
+                          .flatMap(metadata -> metadata.getRelevances().stream())
+                          .filter(r -> r.matches(subQueries, ip))
+                          .collect(ImmutableList.toImmutableList()));
+                })
             .filter(e -> !e.getValue().isEmpty())
             .map(
                 e ->
@@ -963,12 +987,12 @@ public final class AutoCompleteUtils {
 
     return new ImmutableList.Builder<AutocompleteSuggestion>()
         .addAll(
-            ipMatches.stream()
+            ipMatches.entrySet().stream()
                 .map(
-                    ip ->
+                    entry ->
                         AutocompleteSuggestion.builder()
-                            .setText(ip.toString())
-                            .setDescription(toDescription(ips.get(ip)))
+                            .setText(entry.getKey().toString()) // IP address string
+                            .setDescription(toDescription(entry.getValue()))
                             .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
                             .build())
                 .collect(ImmutableList.toImmutableList()))
