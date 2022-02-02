@@ -71,6 +71,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -1479,13 +1480,13 @@ public final class TopologyUtilTest {
             ImmutableMap.of("node", Configuration.builder().setHostname("node").build()));
 
     assertThat(
-        computeIpInterfaceOwners(nodeInterfaces, true, null, nc),
+        computeIpInterfaceOwners(nodeInterfaces, true, null, nc, StaticTrackMethodEvaluator::new),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
 
     assertThat(
-        computeIpInterfaceOwners(nodeInterfaces, false, null, nc),
+        computeIpInterfaceOwners(nodeInterfaces, false, null, nc, StaticTrackMethodEvaluator::new),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"),

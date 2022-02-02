@@ -28,6 +28,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BdpOscillationException;
@@ -44,6 +45,7 @@ import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
@@ -55,6 +57,8 @@ import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
@@ -87,12 +91,14 @@ final class IncrementalBdpEngine {
   private PartialDataplane nextDataplane(
       TopologyContext currentTopologyContext,
       SortedMap<String, Node> nodes,
-      List<VirtualRouter> vrs) {
+      List<VirtualRouter> vrs,
+      IpOwners currentIpOwners) {
     LOGGER.info("Updating dataplane");
     computeFibs(vrs);
 
     return PartialDataplane.builder()
         .setNodes(nodes)
+        .setIpOwners(currentIpOwners)
         .setLayer3Topology(currentTopologyContext.getLayer3Topology())
         .setL3Adjacencies(currentTopologyContext.getL3Adjacencies())
         .build();
@@ -243,9 +249,12 @@ final class IncrementalBdpEngine {
       LOGGER.info("Computing Data Plane using iBDP");
 
       // TODO: switch to topologies and owners from TopologyProvider
-      IpOwners ipOwners = new IpOwners(configurations, initialTopologyContext.getL3Adjacencies());
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners = ipOwners.getIpVrfOwners();
-      Map<String, Map<String, Set<Ip>>> activeInterfaceOwners = ipOwners.getInterfaceOwners(true);
+      IpOwners currentIpOwners =
+          new IpOwners(
+              configurations,
+              initialTopologyContext.getL3Adjacencies(),
+              StaticTrackMethodEvaluator::new);
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners = currentIpOwners.getIpVrfOwners();
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =
@@ -267,8 +276,7 @@ final class IncrementalBdpEngine {
        */
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
-      computeIgpDataPlane(
-          nodes, vrs, initialTopologyContext, ipVrfOwners, activeInterfaceOwners, answerElement);
+      computeIgpDataPlane(nodes, vrs, initialTopologyContext, ipVrfOwners, answerElement);
 
       LOGGER.info("Initialize virtual routers before topology fixed point");
       Span initializationSpan =
@@ -294,7 +302,8 @@ final class IncrementalBdpEngine {
               .setTunnelTopology(TunnelTopology.EMPTY)
               .setVxlanTopology(VxlanTopology.EMPTY)
               .build();
-      PartialDataplane currentDataplane = nextDataplane(priorTopologyContext, nodes, vrs);
+      PartialDataplane currentDataplane =
+          nextDataplane(priorTopologyContext, nodes, vrs, currentIpOwners);
 
       TopologyContext currentTopologyContext =
           nextTopologyContext(
@@ -314,14 +323,20 @@ final class IncrementalBdpEngine {
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(
-                  nodes, vrs, answerElement, currentTopologyContext, networkConfigurations);
+                  nodes,
+                  vrs,
+                  answerElement,
+                  currentTopologyContext,
+                  initialTopologyContext.getLayer3Topology(),
+                  currentIpOwners.getInterfaceOwners(true),
+                  networkConfigurations);
           if (isOscillating) {
             // If we are oscillating here, network has no stable solution.
             LOGGER.error("Network has no stable solution");
             throw new BdpOscillationException("Network has no stable solution");
           }
 
-          currentDataplane = nextDataplane(currentTopologyContext, nodes, vrs);
+          currentDataplane = nextDataplane(currentTopologyContext, nodes, vrs, currentIpOwners);
           TopologyContext nextTopologyContext =
               nextTopologyContext(
                   currentTopologyContext,
@@ -331,6 +346,11 @@ final class IncrementalBdpEngine {
                   ipVrfOwners);
           converged = currentTopologyContext.equals(nextTopologyContext);
           currentTopologyContext = nextTopologyContext;
+          currentIpOwners =
+              new IpOwners(
+                  configurations,
+                  currentTopologyContext.getL3Adjacencies(),
+                  dataplaneTrackMethodEvaluatorProvider(currentDataplane));
         } finally {
           iterSpan.finish();
         }
@@ -358,6 +378,14 @@ final class IncrementalBdpEngine {
     } finally {
       span.finish();
     }
+  }
+
+  @SuppressWarnings("unused")
+  private static @Nonnull TrackMethodEvaluatorProvider dataplaneTrackMethodEvaluatorProvider(
+      DataPlane dataplane) {
+    // TODO: Implement data plane track method evaluator capable of tracking reachability and return
+    //       provider for it here.
+    return StaticTrackMethodEvaluator::new;
   }
 
   /**
@@ -594,7 +622,6 @@ final class IncrementalBdpEngine {
       List<VirtualRouter> vrs,
       TopologyContext topologyContext,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
-      Map<String, Map<String, Set<Ip>>> interfaceOwners,
       IncrementalBdpAnswerElement ae) {
     Span span = GlobalTracer.get().buildSpan("Compute IGP").start();
     LOGGER.info("Compute IGP");
@@ -611,8 +638,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Initialize for IGP computation");
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializeSpan)) {
         assert innerScope != null; // avoid unused warning
-        vrs.parallelStream()
-            .forEach(vr -> vr.initForIgpComputation(topologyContext, ipVrfOwners, interfaceOwners));
+        vrs.parallelStream().forEach(vr -> vr.initForIgpComputation(topologyContext, ipVrfOwners));
       } finally {
         initializeSpan.finish();
       }
@@ -660,7 +686,19 @@ final class IncrementalBdpEngine {
       List<VirtualRouter> vrs,
       IncrementalBdpAnswerElement ae,
       TopologyContext topologyContext,
+      Topology initialLayer3Topology,
+      Map<String, Map<String, Set<Ip>>> interfaceOwners,
       NetworkConfigurations networkConfigurations) {
+    LOGGER.info("Compute HMM routes");
+    Span hmmSpan = GlobalTracer.get().buildSpan("Compute HMM routes").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(hmmSpan)) {
+      assert scope != null; // avoid unused warning
+      vrs.parallelStream()
+          .forEach(vr -> vr.computeHmmRoutes(initialLayer3Topology, interfaceOwners));
+    } finally {
+      hmmSpan.finish();
+    }
+
     LOGGER.info("Compute EGP");
     Span span = GlobalTracer.get().buildSpan("Compute EGP").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {

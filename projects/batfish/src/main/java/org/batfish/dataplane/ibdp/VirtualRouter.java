@@ -15,6 +15,7 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -27,6 +28,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -185,6 +187,8 @@ public final class VirtualRouter {
   /** Routes in main RIB to redistribute into IS-IS */
   RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _routesForIsisRedistribution;
 
+  private @Nonnull List<HmmRoute> _hmmRoutes;
+
   IsisLevelRib _isisL1Rib;
   IsisLevelRib _isisL2Rib;
   private IsisLevelRib _isisL1StagingRib;
@@ -286,6 +290,7 @@ public final class VirtualRouter {
     }
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
     _trackEvaluator = new DataplaneTrackEvaluator(_c, _mainRib);
+    _hmmRoutes = ImmutableList.of();
   }
 
   @VisibleForTesting
@@ -327,11 +332,8 @@ public final class VirtualRouter {
    */
   @VisibleForTesting
   void initForIgpComputation(
-      TopologyContext topologyContext,
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
-      Map<String, Map<String, Set<Ip>>> interfaceOwners) {
+      TopologyContext topologyContext, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
     initConnectedRib();
-    initHmmRoutes(topologyContext, interfaceOwners);
     initKernelRib(ipVrfOwners);
     initLocalRib();
     initStaticRibs();
@@ -367,17 +369,20 @@ public final class VirtualRouter {
     initBaseRipRoutes();
   }
 
-  /** Initialize HMM routes, and import them into independent RIB. */
-  private void initHmmRoutes(
-      TopologyContext topologyContext, Map<String, Map<String, Set<Ip>>> interfaceOwners) {
-    Topology l3 = topologyContext.getLayer3Topology();
+  /** Cmopute HMM routes, and import them into independent RIB. */
+  void computeHmmRoutes(
+      Topology initialLayer3Topology, Map<String, Map<String, Set<Ip>>> interfaceOwners) {
+    RibDelta.Builder<HmmRoute> delta = RibDelta.builder();
+    _hmmRoutes.forEach(oldHmmRoute -> delta.remove(oldHmmRoute, Reason.WITHDRAW));
+    ImmutableList.Builder<HmmRoute> newHmmRoutes = ImmutableList.builder();
     _c.getAllInterfaces(_vrf.getName())
         .forEach(
             (ifaceName, iface) -> {
               if (!iface.getHmm()) {
                 return;
               }
-              Set<NodeInterfacePair> neighbors = l3.getNeighbors(NodeInterfacePair.of(iface));
+              Set<NodeInterfacePair> neighbors =
+                  initialLayer3Topology.getNeighbors(NodeInterfacePair.of(iface));
               for (NodeInterfacePair neighbor : neighbors) {
                 Set<Ip> neighborIps =
                     interfaceOwners
@@ -392,10 +397,22 @@ public final class VirtualRouter {
                                 // TODO: set custom administrative distance
                                 .setNextHop(NextHopInterface.of(iface.getName()))
                                 .build())
-                    .map(this::<AbstractRoute>annotateRoute)
-                    .forEach(_independentRib::mergeRoute);
+                    .forEach(delta::add);
               }
             });
+    delta
+        .build()
+        .getActions()
+        .forEach(
+            action -> {
+              if (action.isWithdrawn()) {
+                _independentRib.removeRoute(annotateRoute(action.getRoute()));
+              } else {
+                newHmmRoutes.add(action.getRoute());
+                _independentRib.mergeRoute(annotateRoute(action.getRoute()));
+              }
+            });
+    _hmmRoutes = newHmmRoutes.build();
   }
 
   /** Apply a rib group to a given source rib (which belongs to this VRF) */

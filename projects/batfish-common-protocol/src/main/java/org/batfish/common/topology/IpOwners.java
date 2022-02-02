@@ -35,11 +35,14 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
+import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
 import org.batfish.datamodel.tracking.HsrpPriorityEvaluator;
 import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 
 /** A utility class for working with IPs owned by network devices. */
 public final class IpOwners {
@@ -73,7 +76,20 @@ public final class IpOwners {
   /** Mapping from an IP to hostname to set of VRFs that own that IP. */
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
+  /** Same as 3-arg constructor with 3rd arg {@code StaticTrackMethodEvaluator::new}. */
   public IpOwners(Map<String, Configuration> configurations, L3Adjacencies l3Adjacencies) {
+    this(configurations, l3Adjacencies, StaticTrackMethodEvaluator::new);
+  }
+
+  /**
+   * Construct an {@link IpOwners} based on information in {@code configurations} and {@code
+   * l3Adjacencies}. The {@code trackMethodEvaluatorProvider} is used to compute HSRP/VRRP
+   * priorities.
+   */
+  public IpOwners(
+      Map<String, Configuration> configurations,
+      L3Adjacencies l3Adjacencies,
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     /* Mapping from a hostname to a set of all (including inactive) interfaces that node owns */
     Map<String, Set<Interface>> allInterfaces =
         ImmutableMap.copyOf(computeNodeInterfaces(configurations));
@@ -82,11 +98,19 @@ public final class IpOwners {
       _allDeviceOwnedIps =
           ImmutableMap.copyOf(
               computeIpInterfaceOwners(
-                  allInterfaces, false, l3Adjacencies, NetworkConfigurations.of(configurations)));
+                  allInterfaces,
+                  false,
+                  l3Adjacencies,
+                  NetworkConfigurations.of(configurations),
+                  trackMethodEvaluatorProvider));
       _activeDeviceOwnedIps =
           ImmutableMap.copyOf(
               computeIpInterfaceOwners(
-                  allInterfaces, true, l3Adjacencies, NetworkConfigurations.of(configurations)));
+                  allInterfaces,
+                  true,
+                  l3Adjacencies,
+                  NetworkConfigurations.of(configurations),
+                  trackMethodEvaluatorProvider));
     }
 
     {
@@ -225,7 +249,8 @@ public final class IpOwners {
       Map<String, Set<Interface>> allInterfaces,
       boolean excludeInactive,
       L3Adjacencies l3Adjacencies,
-      NetworkConfigurations nc) {
+      NetworkConfigurations nc,
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     // vrid -> sync interface -> interface to own IPs if sync interface wins election -> IPs
     Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups = new HashMap<>();
@@ -250,8 +275,8 @@ public final class IpOwners {
                                   .computeIfAbsent(hostname, k -> new HashSet<>())
                                   .add(i.getName()));
                 }));
-    processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies, nc);
-    processHsrpGroups(ipOwners, hsrpGroups, l3Adjacencies, nc);
+    processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies, nc, trackMethodEvaluatorProvider);
+    processHsrpGroups(ipOwners, hsrpGroups, l3Adjacencies, nc, trackMethodEvaluatorProvider);
 
     // freeze
     return toImmutableMap(
@@ -328,7 +353,8 @@ public final class IpOwners {
       Map<Ip, Map<String, Set<String>>> ipOwners,
       Map<Integer, Map<NodeInterfacePair, Set<Ip>>> hsrpGroups,
       L3Adjacencies l3Adjacencies,
-      NetworkConfigurations nc) {
+      NetworkConfigurations nc,
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     hsrpGroups.forEach(
         (groupNum, ipSpaceByCandidate) -> {
           assert groupNum != null;
@@ -357,7 +383,11 @@ public final class IpOwners {
                         Collections.max(
                             partitionInterfaces,
                             Comparator.comparingInt(
-                                    (Interface o) -> o.getHsrpGroups().get(groupNum).getPriority())
+                                    (Interface o) ->
+                                        computeHsrpPriority(
+                                            o,
+                                            o.getHsrpGroups().get(groupNum),
+                                            trackMethodEvaluatorProvider))
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
                 LOGGER.debug(
@@ -378,21 +408,34 @@ public final class IpOwners {
   }
 
   /** Compute HSRP priority for a given HSRP group and the interface it is associated with. */
-  static int computeHsrpPriority(@Nonnull Interface iface, @Nonnull HsrpGroup group) {
+  static int computeHsrpPriority(
+      @Nonnull Interface iface,
+      @Nonnull HsrpGroup group,
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     Configuration c = iface.getOwner();
     Map<String, TrackMethod> trackMethods = c.getTrackingGroups();
-    StaticTrackMethodEvaluator trackMethodEvaluator = new StaticTrackMethodEvaluator(c);
+    GenericTrackMethodVisitor<Boolean> trackMethodEvaluator =
+        trackMethodEvaluatorProvider.getProvider(c);
     HsrpPriorityEvaluator hsrpEvaluator = new HsrpPriorityEvaluator(group.getPriority());
     group
         .getTrackActions()
         .forEach(
             (trackName, action) -> {
               TrackMethod trackMethod = trackMethods.get(trackName);
-              if (trackMethod != null && (trackMethod.accept(trackMethodEvaluator))) {
+              if (trackMethod != null && trackMethod.accept(trackMethodEvaluator)) {
                 action.accept(hsrpEvaluator);
               }
             });
     return hsrpEvaluator.getPriority();
+  }
+
+  /** Compute HSRP priority for a given VRRP group and the interface it is associated with. */
+  static int computeVrrpPriority(
+      @Nonnull Interface iface,
+      @Nonnull VrrpGroup group,
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
+    // TODO: implement
+    return group.getPriority();
   }
 
   /**
@@ -445,7 +488,8 @@ public final class IpOwners {
       Map<Ip, Map<String, Set<String>>> ipOwners,
       Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups,
       L3Adjacencies l3Adjacencies,
-      NetworkConfigurations nc) {
+      NetworkConfigurations nc,
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     vrrpGroups.forEach(
         (vrid, ipSpaceByCandidate) -> {
           assert vrid != null;
@@ -474,7 +518,11 @@ public final class IpOwners {
                         Collections.max(
                             partitionInterfaces,
                             Comparator.comparingInt(
-                                    (Interface o) -> o.getVrrpGroups().get(vrid).getPriority())
+                                    (Interface o) ->
+                                        computeVrrpPriority(
+                                            o,
+                                            o.getVrrpGroups().get(vrid),
+                                            trackMethodEvaluatorProvider))
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
                 LOGGER.debug(

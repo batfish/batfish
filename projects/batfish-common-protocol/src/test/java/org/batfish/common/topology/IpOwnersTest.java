@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
@@ -46,7 +47,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
+import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -334,7 +337,8 @@ public class IpOwnersTest {
         ipOwners,
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
-        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)));
+        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
+        StaticTrackMethodEvaluator::new);
     assertThat(ipOwners, hasKeys(ip1, ip22));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));
@@ -405,8 +409,63 @@ public class IpOwnersTest {
 
     // Expect c2/i2 to win
     // Since priority is identical, highest IP address wins
-    processHsrpGroups(ipOwners, groups, GlobalBroadcastNoPointToPoint.instance(), nc);
+    processHsrpGroups(
+        ipOwners,
+        groups,
+        GlobalBroadcastNoPointToPoint.instance(),
+        nc,
+        StaticTrackMethodEvaluator::new);
     assertThat(ipOwners.get(hsrpIp).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
+  }
+
+  @Test
+  public void testHsrpPriorityApplied() {
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf v1 = Vrf.builder().setName("v1").setOwner(c1).build();
+    Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
+    Interface i1 = Interface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
+    Interface i2 = Interface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
+    c1.setTrackingGroups(ImmutableMap.of("1", TrackTrue.instance()));
+    HsrpGroup i1HsrpGroup =
+        HsrpGroup.builder()
+            .setPriority(100)
+            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(10)))
+            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.101/24"))
+            .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
+            .build();
+    HsrpGroup i2HsrpGroup =
+        HsrpGroup.builder()
+            .setPriority(100)
+            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.102/24"))
+            .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
+            .build();
+    i1.setHsrpGroups(ImmutableMap.of(1, i1HsrpGroup));
+    i2.setHsrpGroups(ImmutableMap.of(1, i2HsrpGroup));
+    IpOwners ipOwners =
+        new IpOwners(ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
+
+    // i2 should win, since i1 decrements priority unconditionally.
+    assertThat(
+        ipOwners
+            .getInterfaceOwners(true)
+            .getOrDefault("c1", ImmutableMap.of())
+            .getOrDefault("i1", ImmutableSet.of()),
+        not(hasItem(Ip.parse("10.10.10.1"))));
+    assertThat(
+        ipOwners
+            .getInterfaceOwners(true)
+            .getOrDefault("c2", ImmutableMap.of())
+            .getOrDefault("i2", ImmutableSet.of()),
+        hasItem(Ip.parse("10.10.10.1")));
   }
 
   @Test
@@ -461,7 +520,9 @@ public class IpOwnersTest {
         .build();
 
     // Only track 2 is triggered, so only track 2 decrement is applied
-    assertThat(computeHsrpPriority(i1, hsrpGroup), equalTo(basePriority - track2Decrement));
+    assertThat(
+        computeHsrpPriority(i1, hsrpGroup, StaticTrackMethodEvaluator::new),
+        equalTo(basePriority - track2Decrement));
   }
 
   @Test
@@ -493,7 +554,8 @@ public class IpOwnersTest {
     c1.setTrackingGroups(ImmutableMap.of());
     // If VI model doesn't have references to undefined track groups we shouldn't crash
     // Also skip applying track action if that happens
-    assertThat(computeHsrpPriority(i1, hsrpGroup), equalTo(basePriority));
+    assertThat(
+        computeHsrpPriority(i1, hsrpGroup, StaticTrackMethodEvaluator::new), equalTo(basePriority));
   }
 
   @Test
@@ -632,7 +694,8 @@ public class IpOwnersTest {
         ipOwners,
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
-        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)));
+        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
+        StaticTrackMethodEvaluator::new);
     assertThat(ipOwners, hasKeys(ip1, ip22, ip3));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));
