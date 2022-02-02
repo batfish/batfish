@@ -357,7 +357,8 @@ public final class IpOwners {
                         Collections.max(
                             partitionInterfaces,
                             Comparator.comparingInt(
-                                    (Interface o) -> o.getHsrpGroups().get(groupNum).getPriority())
+                                    (Interface o) ->
+                                        computeHsrpPriority(o, o.getHsrpGroups().get(groupNum)))
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
                 LOGGER.debug(
