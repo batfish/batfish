@@ -56,6 +56,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.primitives.Ints;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -165,6 +166,7 @@ import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco_xr.CiscoXrFamily;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
+import org.batfish.representation.cisco_xr.HsrpAddressFamily.Type;
 import org.batfish.representation.cisco_xr.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -277,8 +279,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           .build();
 
   static final boolean DEFAULT_VRRP_PREEMPT = true;
-
   static final int DEFAULT_VRRP_PRIORITY = 100;
+  static final int DEFAULT_HSRP_PRIORITY = 100;
+  static final boolean DEFAULT_HSRP_PREEMPT = false;
 
   public static final String MANAGEMENT_VRF_NAME = "management";
 
@@ -1104,6 +1107,42 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
 
+  private org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(
+      HsrpGroup group, @Nullable ConcreteInterfaceAddress sourceAddress) {
+    org.batfish.datamodel.hsrp.HsrpGroup.Builder ret =
+        org.batfish.datamodel.hsrp.HsrpGroup.builder();
+    ret.setPreempt(firstNonNull(group.getPreempt(), DEFAULT_HSRP_PREEMPT));
+    ret.setPriority(firstNonNull(group.getPriority(), DEFAULT_HSRP_PRIORITY));
+    ret.setSourceAddress(sourceAddress);
+    if (group.getAddress() != null) {
+      ret.setVirtualAddresses(ImmutableSet.of(group.getAddress()));
+    }
+    // TODO: auth, timers, tracks.
+    return ret.build();
+  }
+
+  private Map<Integer, org.batfish.datamodel.hsrp.HsrpGroup> toHsrpGroups(
+      String ifaceName, @Nullable ConcreteInterfaceAddress sourceAddress) {
+    if (_hsrp == null) {
+      return ImmutableMap.of();
+    }
+    HsrpInterface hsrpIface = _hsrp.getInterface(ifaceName);
+    if (hsrpIface == null) {
+      return ImmutableMap.of();
+    }
+
+    HsrpAddressFamily v4 = hsrpIface.getAddressFamily(Type.IPV4);
+    if (v4 == null) {
+      return ImmutableMap.of();
+    }
+
+    return v4.getGroups().values().stream()
+        .map(
+            group ->
+                new SimpleImmutableEntry<>(group.getNumber(), toHsrpGroup(group, sourceAddress)))
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
@@ -1186,6 +1225,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
       // subinterface settings
       newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
+
+      // HSRP source address is primary address.
+      newIface.setHsrpGroups(toHsrpGroups(ifaceName, iface.getAddress()));
+      // todo: HSRP version
     }
 
     EigrpProcess eigrpProcess = null;

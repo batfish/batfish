@@ -1,6 +1,16 @@
 !RANCID-CONTENT-TYPE: cisco-xr
 hostname hsrp
 !
+interface Bundle-Ether30
+ mtu 9216
+!
+interface Bundle-Ether30.37
+ ipv4 address 10.0.30.1 255.255.255.0
+ encapsulation dot1q 37
+!
+interface TenGigE0/1
+ bundle id 30 mode active
+!
 router hsrp
  interface Bundle-Ether30.37
   address-family ipv4
@@ -13,6 +23,7 @@ router hsrp
     track Bundle-Ether11 37
     bfd fast-detect
    !
+   hsrp 38
   !
  !
 !

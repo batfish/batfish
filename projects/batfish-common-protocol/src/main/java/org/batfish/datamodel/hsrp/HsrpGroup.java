@@ -34,6 +34,7 @@ public final class HsrpGroup implements Serializable {
     private @Nonnull Set<Ip> _virtualAddresses;
 
     private Builder() {
+      _helloTime = DEFAULT_HELLO_TIME;
       _holdTime = DEFAULT_HOLD_TIME;
       _priority = DEFAULT_PRIORITY;
       _trackActions = ImmutableSortedMap.of();
