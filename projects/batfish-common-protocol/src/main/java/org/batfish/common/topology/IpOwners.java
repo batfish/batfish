@@ -399,11 +399,13 @@ public final class IpOwners {
   }
 
   /** Compute priority for a given HSRP group and the interface it is associated with. */
+  @VisibleForTesting
   static int computeHsrpPriority(@Nonnull Interface iface, @Nonnull HsrpGroup group) {
     return computePriority(iface, group.getPriority(), group.getTrackActions());
   }
 
   /** Compute priority for a given VRRP group and the interface it is associated with. */
+  @VisibleForTesting
   static int computeVrrpPriority(@Nonnull Interface iface, @Nonnull VrrpGroup group) {
     return computePriority(iface, group.getPriority(), group.getTrackActions());
   }
