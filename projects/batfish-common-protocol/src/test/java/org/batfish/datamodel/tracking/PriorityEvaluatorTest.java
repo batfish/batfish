@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.Test;
 
-/** Tests of {@link HsrpPriorityEvaluator} */
-public class HsrpPriorityEvaluatorTest {
+/** Tests of {@link PriorityEvaluator} */
+public class PriorityEvaluatorTest {
 
   @Test
   public void testVisitDecrementPriority() {
@@ -15,19 +15,19 @@ public class HsrpPriorityEvaluatorTest {
     DecrementPriority decrementNegative200 = new DecrementPriority(-200);
 
     {
-      HsrpPriorityEvaluator evaluator = new HsrpPriorityEvaluator(100);
+      PriorityEvaluator evaluator = new PriorityEvaluator(100);
       evaluator.visitDecrementPriority(decrement25);
       assertThat(evaluator.getPriority(), equalTo(75));
     }
 
     // Final priority must be between 0 and 255
     {
-      HsrpPriorityEvaluator evaluator = new HsrpPriorityEvaluator(100);
+      PriorityEvaluator evaluator = new PriorityEvaluator(100);
       evaluator.visitDecrementPriority(decrement125);
       assertThat(evaluator.getPriority(), equalTo(0));
     }
     {
-      HsrpPriorityEvaluator evaluator = new HsrpPriorityEvaluator(100);
+      PriorityEvaluator evaluator = new PriorityEvaluator(100);
       evaluator.visitDecrementPriority(decrementNegative200);
       assertThat(evaluator.getPriority(), equalTo(255));
     }
@@ -35,7 +35,7 @@ public class HsrpPriorityEvaluatorTest {
 
   @Test
   public void testVisitDecrementPriorityCumulative() {
-    HsrpPriorityEvaluator evaluator = new HsrpPriorityEvaluator(250);
+    PriorityEvaluator evaluator = new PriorityEvaluator(250);
     DecrementPriority decrement25 = new DecrementPriority(25);
     DecrementPriority decrement125 = new DecrementPriority(125);
 

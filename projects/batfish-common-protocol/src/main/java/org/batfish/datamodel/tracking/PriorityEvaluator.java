@@ -1,15 +1,15 @@
 package org.batfish.datamodel.tracking;
 
 /**
- * Evaluates the action of a {@link TrackAction} on a given HSRP {@code priority}. Visiting an
+ * Evaluates the action of a {@link TrackAction} on a given HSRP/VRRP {@code priority}. Visiting an
  * action updates evaluator's priority value according to the action.
  */
-public class HsrpPriorityEvaluator implements GenericTrackActionVisitor {
+public class PriorityEvaluator implements GenericTrackActionVisitor {
 
   public final int MAX_PRIORITY = 255;
   public final int MIN_PRIORITY = 0;
 
-  public HsrpPriorityEvaluator(int priority) {
+  public PriorityEvaluator(int priority) {
     _priority = priority;
   }
 
