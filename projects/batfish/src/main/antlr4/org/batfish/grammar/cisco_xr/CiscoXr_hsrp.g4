@@ -6,6 +6,9 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
+//0-255 (v1) or 0-4095 (v2) depending on version
+hsrp_group_num: uint16;
+
 router_hsrp
 :
    HSRP NEWLINE
@@ -31,7 +34,7 @@ hsrp_if_af4
 
 hsrp4_hsrp
 :
-   HSRP group_num=uint8
+   HSRP group_num=hsrp_group_num
    (
      hsrp4_hsrp_block
      // Single line hsrp group config below this.

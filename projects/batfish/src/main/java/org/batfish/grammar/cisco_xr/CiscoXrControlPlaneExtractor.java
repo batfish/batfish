@@ -527,6 +527,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrp_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrp_preemptContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrp_priorityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp4_hsrp_trackContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp_group_numContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp_ifContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hsrp_if_af4Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_autostateContext;
@@ -1091,6 +1092,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private static final IntegerSpace AS_PATH_LENGTH_RANGE = IntegerSpace.of(Range.closed(0, 2047));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
   private static final IntegerSpace EIGRP_ASN_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+  //  private static final IntegerSpace HSRP_GROUP_NUM_RANGE_V1 = IntegerSpace.of(Range.closed(0,
+  // 255));
+  private static final IntegerSpace HSRP_GROUP_NUM_RANGE_V2 =
+      IntegerSpace.of(Range.closed(0, 4095));
   private static final IntegerSpace LOGGING_BUFFER_SIZE_RANGE =
       IntegerSpace.of(Range.closed(2097152, 125000000));
   private static final IntegerSpace OSPF_METRIC_RANGE = IntegerSpace.of(Range.closed(1, 16777214));
@@ -1175,6 +1180,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Nonnull
   private Optional<Integer> toInteger(ParserRuleContext messageCtx, Vlan_idContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "VLAN ID");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Hsrp_group_numContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, HSRP_GROUP_NUM_RANGE_V2, "HSRP group");
   }
 
   private static String toInterfaceName(Interface_nameContext ctx) {
@@ -8572,8 +8582,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterHsrp4_hsrp(Hsrp4_hsrpContext ctx) {
-    int groupNum = toInteger(ctx.group_num);
-    _currentHsrpGroup = _currentHsrpAddressFamily.getOrCreateGroup(groupNum);
+    Optional<Integer> groupNum = toInteger(ctx, ctx.group_num);
+    if (groupNum.isPresent()) {
+      _currentHsrpGroup = _currentHsrpAddressFamily.getOrCreateGroup(groupNum.get());
+    } else {
+      // Dummy group.
+      _currentHsrpGroup = new HsrpGroup(-1);
+    }
   }
 
   @Override
