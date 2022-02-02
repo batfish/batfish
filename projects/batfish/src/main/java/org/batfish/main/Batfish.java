@@ -2145,7 +2145,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new CompletionMetadata(
         getFilterNames(configurations),
         getInterfaces(configurations),
-        getIps(configurations),
+        getIps(configurations, getTopologyProvider().getIpOwners(snapshot)),
         getLocationCompletionMetadata(getLocationInfo(snapshot), configurations),
         getMlagIds(configurations),
         getNodes(configurations),

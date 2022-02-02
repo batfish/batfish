@@ -4,7 +4,6 @@ import static org.batfish.common.util.CompletionMetadataUtils.WELL_KNOWN_IPS;
 import static org.batfish.common.util.CompletionMetadataUtils.addressGroupDisplayString;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
-import static org.batfish.common.util.CompletionMetadataUtils.getIps;
 import static org.batfish.common.util.CompletionMetadataUtils.getLocationCompletionMetadata;
 import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
@@ -14,7 +13,9 @@ import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.common.util.CompletionMetadataUtils.interfaceDisplayString;
+import static org.batfish.common.util.CompletionMetadataUtils.interfaceLinkDisplayString;
 import static org.batfish.common.util.CompletionMetadataUtils.isTracerouteSource;
+import static org.batfish.common.util.CompletionMetadataUtils.unownedSubnetHostIps;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -23,9 +24,12 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,6 +56,7 @@ import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
@@ -111,10 +116,11 @@ public final class CompletionMetadataUtilsTest {
     Configuration cfg = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     Configuration cfgHuman = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     cfgHuman.setHumanName("human");
-    Interface iface = Interface.builder().setName("iface").build();
+    Interface iface = Interface.builder().setOwner(cfg).setName("iface1").build();
+    Interface ifaceHuman = Interface.builder().setOwner(cfgHuman).setName("iface2").build();
 
-    assertThat(interfaceDisplayString(cfg, iface), equalTo("host[iface]"));
-    assertThat(interfaceDisplayString(cfgHuman, iface), equalTo("host[iface] (human)"));
+    assertThat(interfaceDisplayString(iface), equalTo("host[iface1]"));
+    assertThat(interfaceDisplayString(ifaceHuman), equalTo("host[iface2] (human)"));
   }
 
   @Test
@@ -166,9 +172,9 @@ public final class CompletionMetadataUtilsTest {
     String address2 = ip2 + "/24";
     String address3 = ip3 + "/20";
 
-    InterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
-    InterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.parse(address2);
-    InterfaceAddress interfaceAddress3 = ConcreteInterfaceAddress.parse(address3);
+    ConcreteInterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
+    ConcreteInterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.parse(address2);
+    ConcreteInterfaceAddress interfaceAddress3 = ConcreteInterfaceAddress.parse(address3);
 
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1, int2);
@@ -181,31 +187,59 @@ public final class CompletionMetadataUtilsTest {
 
     configs.put(nodeName, config);
 
+    RangeSet<Ip> ownedIps =
+        ImmutableRangeSet.<Ip>builder()
+            .add(Range.singleton(interfaceAddress1.getIp()))
+            .add(Range.singleton(interfaceAddress2.getIp()))
+            .add(Range.singleton(interfaceAddress3.getIp()))
+            .build();
+
     PrefixTrieMultiMap<IpCompletionMetadata> trie = new PrefixTrieMultiMap<>();
     trie.put(
         ip1.toPrefix(),
         new IpCompletionMetadata(
             new IpCompletionRelevance(
-                interfaceDisplayString(config, iface1), config.getHostname(), iface1.getName())));
+                interfaceDisplayString(iface1), config.getHostname(), iface1.getName())));
+    trie.put(
+        interfaceAddress1.getPrefix(),
+        new IpCompletionMetadata(
+            unownedSubnetHostIps(interfaceAddress1.getPrefix(), ownedIps),
+            ImmutableList.of(
+                new IpCompletionRelevance(
+                    interfaceLinkDisplayString(iface1), config.getHostname(), iface1.getName()))));
     trie.put(
         ip2.toPrefix(),
         new IpCompletionMetadata(
             ImmutableList.of(
                 new IpCompletionRelevance(
-                    interfaceDisplayString(config, iface1), config.getHostname(), iface1.getName()),
+                    interfaceDisplayString(iface1), config.getHostname(), iface1.getName()),
                 new IpCompletionRelevance(
-                    interfaceDisplayString(config, iface2),
-                    config.getHostname(),
-                    iface2.getName()))));
+                    interfaceDisplayString(iface2), config.getHostname(), iface2.getName()))));
+    trie.put(
+        interfaceAddress2.getPrefix(),
+        new IpCompletionMetadata(
+            unownedSubnetHostIps(interfaceAddress2.getPrefix(), ownedIps),
+            ImmutableList.of(
+                new IpCompletionRelevance(
+                    interfaceLinkDisplayString(iface1), config.getHostname(), iface1.getName()),
+                new IpCompletionRelevance(
+                    interfaceLinkDisplayString(iface2), config.getHostname(), iface2.getName()))));
     trie.put(
         ip3.toPrefix(),
         new IpCompletionMetadata(
             new IpCompletionRelevance(
-                interfaceDisplayString(config, iface2), config.getHostname(), iface2.getName())));
+                interfaceDisplayString(iface2), config.getHostname(), iface2.getName())));
+    trie.put(
+        interfaceAddress3.getPrefix(),
+        new IpCompletionMetadata(
+            unownedSubnetHostIps(interfaceAddress3.getPrefix(), ownedIps),
+            ImmutableList.of(
+                new IpCompletionRelevance(
+                    interfaceLinkDisplayString(iface2), config.getHostname(), iface2.getName()))));
     createWellKnownIpCompletion(WELL_KNOWN_IPS)
         .forEach((ip, metadata) -> trie.put(ip.toPrefix(), metadata));
 
-    assertThat(getIps(configs), equalTo(trie));
+    assertThat(CompletionMetadataUtils.getIps(configs, ownedIps), equalTo(trie));
   }
 
   @Test
@@ -280,7 +314,7 @@ public final class CompletionMetadataUtilsTest {
                 "ag1")));
     createWellKnownIpCompletion(WELL_KNOWN_IPS)
         .forEach((ip, metadata) -> trie.put(ip.toPrefix(), metadata));
-    assertThat(getIps(configs), equalTo(trie));
+    assertThat(CompletionMetadataUtils.getIps(configs, ImmutableRangeSet.of()), equalTo(trie));
   }
 
   /** Test that the well-known IPs are added only if they otherwise don't exist in the snapshot */
@@ -301,19 +335,31 @@ public final class CompletionMetadataUtilsTest {
 
     configs.put(nodeName, config);
 
+    ImmutableRangeSet<Ip> ownedIps = ImmutableRangeSet.of(Range.closed(ip1, ip1));
+
     // we should get 8.8.8.8 from the config data and rest from well-known ips
     PrefixTrieMultiMap<IpCompletionMetadata> trie = new PrefixTrieMultiMap<>();
+    Prefix prefix = Prefix.parse(address1);
     trie.put(
-        ip1.toPrefix(),
+        prefix, // 8.8.8.0/24
+        new IpCompletionMetadata(
+            unownedSubnetHostIps(prefix, ownedIps),
+            ImmutableList.of(
+                new IpCompletionRelevance(
+                    interfaceLinkDisplayString(iface1), config.getHostname(), iface1.getName()))));
+    trie.put(
+        ip1.toPrefix(), // 8.8.8.8
         new IpCompletionMetadata(
             new IpCompletionRelevance(
-                interfaceDisplayString(config, iface1), config.getHostname(), iface1.getName())));
+                interfaceDisplayString(iface1), config.getHostname(), iface1.getName())));
     createWellKnownIpCompletion(
             WELL_KNOWN_IPS.entrySet().stream()
                 .filter(e -> !e.getKey().equals(ip1))
                 .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)))
         .forEach((ip, metadata) -> trie.put(ip.toPrefix(), metadata));
-    assertThat(getIps(configs), equalTo(trie));
+    PrefixTrieMultiMap<IpCompletionMetadata> ips =
+        CompletionMetadataUtils.getIps(configs, ownedIps);
+    assertThat(ips, equalTo(trie));
   }
 
   @Test
