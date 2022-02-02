@@ -12,6 +12,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
@@ -31,6 +32,17 @@ public final class IpSpaceToRangeSet implements GenericIpSpaceVisitor<RangeSet<I
 
   public static RangeSet<Ip> toRangeSet(IpSpace ipSpace) {
     return ipSpace.accept(INSTANCE);
+  }
+
+  public static RangeSet<Ip> toRangeSet(IpWildcard wildcard) {
+    if (wildcard.isPrefix()) {
+      return toRangeSet(wildcard.toPrefix());
+    }
+    throw new UnsupportedOperationException("Converting IpWildcard to RangeSet is unsupported");
+  }
+
+  public static RangeSet<Ip> toRangeSet(Prefix prefix) {
+    return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
   }
 
   @Override
@@ -71,18 +83,22 @@ public final class IpSpaceToRangeSet implements GenericIpSpaceVisitor<RangeSet<I
 
   @Override
   public RangeSet<Ip> visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
-    throw new UnsupportedOperationException("Converting IpWildcard to RangeSet is unsupported");
+    return toRangeSet(ipWildcardIpSpace.getIpWildcard());
   }
 
   @Override
   public RangeSet<Ip> visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    throw new UnsupportedOperationException("Converting IpWildcardSet to RangeSet is unsupported");
+    RangeSet<Ip> result = TreeRangeSet.create();
+    ipWildcardSetIpSpace.getWhitelist().stream()
+        .forEach(wc -> result.addAll(wc.toIpSpace().accept(this)));
+    ipWildcardSetIpSpace.getBlacklist().stream()
+        .forEach(wc -> result.removeAll(wc.toIpSpace().accept(this)));
+    return result;
   }
 
   @Override
   public RangeSet<Ip> visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    Prefix prefix = prefixIpSpace.getPrefix();
-    return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
+    return toRangeSet(prefixIpSpace.getPrefix());
   }
 
   @Override
