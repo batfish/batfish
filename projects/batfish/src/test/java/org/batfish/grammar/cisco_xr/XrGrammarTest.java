@@ -15,6 +15,7 @@ import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -25,7 +26,12 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLi
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasIps;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPreempt;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPriority;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasSourceAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
@@ -2077,7 +2083,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testHsrp() {
+  public void testHsrpExtraction() {
     CiscoXrConfiguration config = parseVendorConfig("hsrp");
     assertThat(config.getHsrp(), notNullValue());
     Hsrp hsrp = config.getHsrp();
@@ -2099,6 +2105,22 @@ public final class XrGrammarTest {
         group.getInterfaceTracks().get("Bundle-Ether10").getDecrementPriority(), nullValue());
     assertThat(
         group.getInterfaceTracks().get("Bundle-Ether11").getDecrementPriority(), equalTo(37));
+  }
+
+  @Test
+  public void testHsrpConversion() {
+    Configuration c = parseConfig("hsrp");
+    assertThat(
+        c,
+        hasInterface(
+            "Bundle-Ether30.37",
+            hasHsrpGroup(
+                37,
+                allOf(
+                    hasIps(contains(Ip.parse("10.0.30.37"))),
+                    hasPreempt(),
+                    hasPriority(137),
+                    hasSourceAddress(ConcreteInterfaceAddress.parse("10.0.30.1/24"))))));
   }
 
   @Test
