@@ -70,21 +70,17 @@ public final class CompletionMetadataUtils {
   }
 
   @VisibleForTesting
-  static String interfaceDisplayString(Configuration configuration, Interface iface) {
-    String suffix =
-        configuration.getHumanName() == null
-            ? ""
-            : String.format(" (%s)", configuration.getHumanName());
-    return String.format("%s[%s]%s", configuration.getHostname(), iface.getName(), suffix);
+  static String interfaceDisplayString(Interface iface) {
+    String deviceHumanName = iface.getOwner().getHumanName();
+    String suffix = deviceHumanName == null ? "" : String.format(" (%s)", deviceHumanName);
+    return NodeInterfacePair.of(iface) + suffix;
   }
 
   @VisibleForTesting
-  static String interfaceLinkDisplayString(Configuration configuration, Interface iface) {
-    String suffix =
-        configuration.getHumanName() == null
-            ? ""
-            : String.format(" (%s)", configuration.getHumanName());
-    return String.format("@enter(%s[%s])%s", configuration.getHostname(), iface.getName(), suffix);
+  static String interfaceLinkDisplayString(Interface iface) {
+    String deviceHumanName = iface.getOwner().getHumanName();
+    String suffix = deviceHumanName == null ? "" : String.format(" (%s)", deviceHumanName);
+    return String.format("@enter(%s)%s", NodeInterfacePair.of(iface), suffix);
   }
 
   static RangeSet<Ip> computeOwnedIps(IpOwners ipOwners) {
@@ -174,7 +170,7 @@ public final class CompletionMetadataUtils {
       Ip ip) {
     IpCompletionRelevance relevance =
         new IpCompletionRelevance(
-            interfaceDisplayString(configuration, iface),
+            interfaceDisplayString(iface),
             configuration.getHumanName(),
             configuration.getHostname(),
             iface.getName());
@@ -218,7 +214,7 @@ public final class CompletionMetadataUtils {
     // add the relevance for this interface
     IpCompletionRelevance relevance =
         new IpCompletionRelevance(
-            interfaceLinkDisplayString(configuration, iface),
+            interfaceLinkDisplayString(iface),
             configuration.getHumanName(),
             configuration.getHostname(),
             iface.getName());

@@ -116,10 +116,11 @@ public final class CompletionMetadataUtilsTest {
     Configuration cfg = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     Configuration cfgHuman = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     cfgHuman.setHumanName("human");
-    Interface iface = Interface.builder().setName("iface").build();
+    Interface iface = Interface.builder().setOwner(cfg).setName("iface1").build();
+    Interface ifaceHuman = Interface.builder().setOwner(cfgHuman).setName("iface2").build();
 
-    assertThat(interfaceDisplayString(cfg, iface), equalTo("host[iface]"));
-    assertThat(interfaceDisplayString(cfgHuman, iface), equalTo("host[iface] (human)"));
+    assertThat(interfaceDisplayString(iface), equalTo("host[iface1]"));
+    assertThat(interfaceDisplayString(ifaceHuman), equalTo("host[iface2] (human)"));
   }
 
   @Test
@@ -198,53 +199,43 @@ public final class CompletionMetadataUtilsTest {
         ip1.toPrefix(),
         new IpCompletionMetadata(
             new IpCompletionRelevance(
-                interfaceDisplayString(config, iface1), config.getHostname(), iface1.getName())));
+                interfaceDisplayString(iface1), config.getHostname(), iface1.getName())));
     trie.put(
         interfaceAddress1.getPrefix(),
         new IpCompletionMetadata(
             unownedSubnetHostIps(interfaceAddress1.getPrefix(), ownedIps),
             ImmutableList.of(
                 new IpCompletionRelevance(
-                    interfaceLinkDisplayString(config, iface1),
-                    config.getHostname(),
-                    iface1.getName()))));
+                    interfaceLinkDisplayString(iface1), config.getHostname(), iface1.getName()))));
     trie.put(
         ip2.toPrefix(),
         new IpCompletionMetadata(
             ImmutableList.of(
                 new IpCompletionRelevance(
-                    interfaceDisplayString(config, iface1), config.getHostname(), iface1.getName()),
+                    interfaceDisplayString(iface1), config.getHostname(), iface1.getName()),
                 new IpCompletionRelevance(
-                    interfaceDisplayString(config, iface2),
-                    config.getHostname(),
-                    iface2.getName()))));
+                    interfaceDisplayString(iface2), config.getHostname(), iface2.getName()))));
     trie.put(
         interfaceAddress2.getPrefix(),
         new IpCompletionMetadata(
             unownedSubnetHostIps(interfaceAddress2.getPrefix(), ownedIps),
             ImmutableList.of(
                 new IpCompletionRelevance(
-                    interfaceLinkDisplayString(config, iface1),
-                    config.getHostname(),
-                    iface1.getName()),
+                    interfaceLinkDisplayString(iface1), config.getHostname(), iface1.getName()),
                 new IpCompletionRelevance(
-                    interfaceLinkDisplayString(config, iface2),
-                    config.getHostname(),
-                    iface2.getName()))));
+                    interfaceLinkDisplayString(iface2), config.getHostname(), iface2.getName()))));
     trie.put(
         ip3.toPrefix(),
         new IpCompletionMetadata(
             new IpCompletionRelevance(
-                interfaceDisplayString(config, iface2), config.getHostname(), iface2.getName())));
+                interfaceDisplayString(iface2), config.getHostname(), iface2.getName())));
     trie.put(
         interfaceAddress3.getPrefix(),
         new IpCompletionMetadata(
             unownedSubnetHostIps(interfaceAddress3.getPrefix(), ownedIps),
             ImmutableList.of(
                 new IpCompletionRelevance(
-                    interfaceLinkDisplayString(config, iface2),
-                    config.getHostname(),
-                    iface2.getName()))));
+                    interfaceLinkDisplayString(iface2), config.getHostname(), iface2.getName()))));
     createWellKnownIpCompletion(WELL_KNOWN_IPS)
         .forEach((ip, metadata) -> trie.put(ip.toPrefix(), metadata));
 
@@ -355,14 +346,12 @@ public final class CompletionMetadataUtilsTest {
             unownedSubnetHostIps(prefix, ownedIps),
             ImmutableList.of(
                 new IpCompletionRelevance(
-                    interfaceLinkDisplayString(config, iface1),
-                    config.getHostname(),
-                    iface1.getName()))));
+                    interfaceLinkDisplayString(iface1), config.getHostname(), iface1.getName()))));
     trie.put(
         ip1.toPrefix(), // 8.8.8.8
         new IpCompletionMetadata(
             new IpCompletionRelevance(
-                interfaceDisplayString(config, iface1), config.getHostname(), iface1.getName())));
+                interfaceDisplayString(iface1), config.getHostname(), iface1.getName())));
     createWellKnownIpCompletion(
             WELL_KNOWN_IPS.entrySet().stream()
                 .filter(e -> !e.getKey().equals(ip1))
