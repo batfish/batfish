@@ -18,22 +18,22 @@ public final class Layer1TopologiesFactoryTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().setHostname("c").build();
     nf.interfaceBuilder().setOwner(c).setName("i").setType(PHYSICAL).build();
-    nf.interfaceBuilder().setOwner(c).setName("i2").setType(PHYSICAL).build();
+    nf.interfaceBuilder().setOwner(c).setName("I2").setType(PHYSICAL).build();
     Layer1Topology l1 =
         new Layer1Topology(
             // both c[I] and c[I2] will be canonicalized
-            new Layer1Edge("c", "I", "c", "I2"),
+            new Layer1Edge("c", "I", "c", "i2"),
             // c[I] canonicalized, but d does not exist.
-            new Layer1Edge("c", "I", "d", "i"));
+            new Layer1Edge("c", "I", "d", "iJk"));
     Layer1Topologies topologies =
         Layer1TopologiesFactory.create(l1, Layer1Topology.EMPTY, ImmutableMap.of("c", c));
 
     assertThat(
-        "c[i] and c[i2] are canonicalized, but nonexistent d[i] is left alone",
+        "c[i] and c[I2] are canonicalized, but nonexistent d[iJk] is just lowercased",
         topologies.getUserProvidedL1(),
         equalTo(
             new Layer1Topology(
-                new Layer1Edge("c", "i", "c", "i2"), new Layer1Edge("c", "i", "d", "i"))));
+                new Layer1Edge("c", "i", "c", "I2"), new Layer1Edge("c", "i", "d", "ijk"))));
   }
 
   @Test
