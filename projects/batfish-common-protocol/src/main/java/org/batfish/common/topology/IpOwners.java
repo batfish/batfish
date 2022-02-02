@@ -35,10 +35,12 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
-import org.batfish.datamodel.tracking.HsrpPriorityEvaluator;
+import org.batfish.datamodel.tracking.PriorityEvaluator;
 import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackMethod;
 
 /** A utility class for working with IPs owned by network devices. */
@@ -378,22 +380,34 @@ public final class IpOwners {
         });
   }
 
-  /** Compute HSRP priority for a given HSRP group and the interface it is associated with. */
-  static int computeHsrpPriority(@Nonnull Interface iface, @Nonnull HsrpGroup group) {
+  private static int computePriority(
+      @Nonnull Interface iface,
+      int initialPriority,
+      @Nonnull Map<String, TrackAction> trackActions) {
     Configuration c = iface.getOwner();
     Map<String, TrackMethod> trackMethods = c.getTrackingGroups();
     StaticTrackMethodEvaluator trackMethodEvaluator = new StaticTrackMethodEvaluator(c);
-    HsrpPriorityEvaluator hsrpEvaluator = new HsrpPriorityEvaluator(group.getPriority());
-    group
-        .getTrackActions()
-        .forEach(
-            (trackName, action) -> {
-              TrackMethod trackMethod = trackMethods.get(trackName);
-              if (trackMethod != null && (trackMethod.accept(trackMethodEvaluator))) {
-                action.accept(hsrpEvaluator);
-              }
-            });
-    return hsrpEvaluator.getPriority();
+    PriorityEvaluator evaluator = new PriorityEvaluator(initialPriority);
+    trackActions.forEach(
+        (trackName, action) -> {
+          TrackMethod trackMethod = trackMethods.get(trackName);
+          if (trackMethod != null && (trackMethod.accept(trackMethodEvaluator))) {
+            action.accept(evaluator);
+          }
+        });
+    return evaluator.getPriority();
+  }
+
+  /** Compute priority for a given HSRP group and the interface it is associated with. */
+  @VisibleForTesting
+  static int computeHsrpPriority(@Nonnull Interface iface, @Nonnull HsrpGroup group) {
+    return computePriority(iface, group.getPriority(), group.getTrackActions());
+  }
+
+  /** Compute priority for a given VRRP group and the interface it is associated with. */
+  @VisibleForTesting
+  static int computeVrrpPriority(@Nonnull Interface iface, @Nonnull VrrpGroup group) {
+    return computePriority(iface, group.getPriority(), group.getTrackActions());
   }
 
   /**
@@ -475,7 +489,8 @@ public final class IpOwners {
                         Collections.max(
                             partitionInterfaces,
                             Comparator.comparingInt(
-                                    (Interface o) -> o.getVrrpGroups().get(vrid).getPriority())
+                                    (Interface o) ->
+                                        computeVrrpPriority(o, o.getVrrpGroups().get(vrid)))
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
                 LOGGER.debug(
