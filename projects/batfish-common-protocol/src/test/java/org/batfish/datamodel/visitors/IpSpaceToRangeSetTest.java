@@ -11,6 +11,8 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.junit.Test;
@@ -26,6 +28,34 @@ public final class IpSpaceToRangeSetTest {
   public void testIp() {
     Ip ip = Ip.parse("1.2.3.4");
     assertEquals(ImmutableRangeSet.of(Range.closed(ip, ip)), toRangeSet(ip.toIpSpace()));
+  }
+
+  @Test
+  public void testIpWildcard() {
+    Prefix prefix = Prefix.parse("1.2.3.0/24");
+    assertEquals(
+        ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp())),
+        toRangeSet(IpWildcard.create(prefix).toIpSpace()));
+  }
+
+  @Test
+  public void testIpWildcardSet() {
+    Prefix p10 = Prefix.parse("10.0.0.0/8");
+    Prefix p20 = Prefix.parse("20.0.0.0/8");
+    Ip ip10 = Ip.parse("10.10.10.10");
+    Ip ip20 = Ip.parse("20.20.20.20");
+    assertEquals(
+        ImmutableRangeSet.builder()
+            .add(Range.closedOpen(p10.getStartIp(), ip10))
+            .add(Range.openClosed(ip10, p10.getEndIp()))
+            .add(Range.closedOpen(p20.getStartIp(), ip20))
+            .add(Range.openClosed(ip20, p20.getEndIp()))
+            .build(),
+        toRangeSet(
+            IpWildcardSetIpSpace.builder()
+                .including(IpWildcard.create(p10), IpWildcard.create(p20))
+                .excluding(IpWildcard.create(ip10), IpWildcard.create(ip20))
+                .build()));
   }
 
   @Test
