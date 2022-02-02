@@ -1,11 +1,9 @@
 package org.batfish.common.autocomplete;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeSet;
+import com.google.common.collect.RangeSet;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,31 +11,31 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Ip;
 
 /** Metadata about an Ip needed for autocomplete. */
 @ParametersAreNonnullByDefault
 public final class IpCompletionMetadata implements Serializable {
-
-  private static final String PROP_RELEVANCES = "relevances";
+  @Nullable private final RangeSet<Ip> _ipSubset;
 
   @Nonnull private final List<IpCompletionRelevance> _relevances;
 
   public IpCompletionMetadata() {
-    this(ImmutableList.of());
+    this(null, ImmutableList.of());
   }
 
   public IpCompletionMetadata(IpCompletionRelevance relevance) {
-    this(ImmutableList.of(relevance));
+    this(null, ImmutableList.of(relevance));
   }
 
   public IpCompletionMetadata(List<IpCompletionRelevance> relevances) {
-    _relevances = new LinkedList<>(relevances);
+    this(null, relevances);
   }
 
-  @JsonCreator
-  private static IpCompletionMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_RELEVANCES) List<IpCompletionRelevance> relevances) {
-    return new IpCompletionMetadata(firstNonNull(relevances, ImmutableList.of()));
+  public IpCompletionMetadata(
+      @Nullable RangeSet<Ip> ipSubset, List<IpCompletionRelevance> relevances) {
+    _ipSubset = ipSubset == null ? null : ImmutableRangeSet.copyOf(ipSubset);
+    _relevances = new LinkedList<>(relevances);
   }
 
   /** Add another relevance with the specified display and match tags. */
@@ -56,12 +54,12 @@ public final class IpCompletionMetadata implements Serializable {
       return false;
     }
     IpCompletionMetadata that = (IpCompletionMetadata) o;
-    return _relevances.equals(that._relevances);
+    return Objects.equals(_ipSubset, that._ipSubset) && _relevances.equals(that._relevances);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_relevances);
+    return Objects.hash(_ipSubset, _relevances);
   }
 
   @Override
@@ -69,8 +67,15 @@ public final class IpCompletionMetadata implements Serializable {
     return MoreObjects.toStringHelper(this).add("_relevances", _relevances).toString();
   }
 
+  /**
+   * A {@link RangeSet} of IPs that have the same relevances. Taken to be the subset of the related
+   * Ip or Prefix. If {@code null}, all IPs in the full set have the same relevances.
+   */
+  public @Nullable RangeSet<Ip> getIpSubset() {
+    return _ipSubset;
+  }
+
   /** List of reasons why this IP is relevant */
-  @JsonProperty(PROP_RELEVANCES)
   @Nonnull
   public List<IpCompletionRelevance> getRelevances() {
     return ImmutableList.copyOf(_relevances);

@@ -1,8 +1,13 @@
 package org.batfish.common.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -13,6 +18,7 @@ import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -71,8 +77,38 @@ public final class CompletionMetadataUtils {
     return String.format("%s[%s]%s", configuration.getHostname(), iface.getName(), suffix);
   }
 
+  @VisibleForTesting
+  static String interfaceLinkDisplayString(Configuration configuration, Interface iface) {
+    String suffix =
+        configuration.getHumanName() == null
+            ? ""
+            : String.format(" (%s)", configuration.getHumanName());
+    return String.format("@enter(%s[%s])%s", configuration.getHostname(), iface.getName(), suffix);
+  }
+
+  static RangeSet<Ip> computeOwnedIps(IpOwners ipOwners) {
+    ImmutableRangeSet.Builder<Ip> ownedIps = ImmutableRangeSet.builder();
+    ipOwners.getInterfaceOwners(false).values().stream()
+        .flatMap(m -> m.values().stream())
+        .flatMap(s -> s.stream())
+        .forEach(ip -> ownedIps.add(Range.closed(ip, ip)));
+    return ownedIps.build();
+  }
+
+  static RangeSet<Ip> unownedSubnetHostIps(Prefix prefix, RangeSet<Ip> ownedIps) {
+    TreeRangeSet<Ip> result = TreeRangeSet.create();
+    result.add(Range.closed(prefix.getFirstHostIp(), prefix.getLastHostIp()));
+    result.removeAll(ownedIps);
+    return ImmutableRangeSet.copyOf(result);
+  }
+
   public static PrefixTrieMultiMap<IpCompletionMetadata> getIps(
-      Map<String, Configuration> configurations) {
+      Map<String, Configuration> configurations, IpOwners ipOwners) {
+    return getIps(configurations, computeOwnedIps(ipOwners));
+  }
+
+  public static PrefixTrieMultiMap<IpCompletionMetadata> getIps(
+      Map<String, Configuration> configurations, RangeSet<Ip> ownedIps) {
     PrefixTrieMultiMap<IpCompletionMetadata> ips = new PrefixTrieMultiMap<>();
     configurations
         .values()
@@ -82,26 +118,20 @@ public final class CompletionMetadataUtils {
                   .getAllInterfaces()
                   .values()
                   .forEach(
-                      iface ->
-                          iface.getAllConcreteAddresses().stream()
-                              .map(interfaceAddress -> interfaceAddress.getIp())
-                              .forEach(
-                                  ip -> {
-                                    IpCompletionRelevance relevance =
-                                        new IpCompletionRelevance(
-                                            interfaceDisplayString(configuration, iface),
-                                            configuration.getHumanName(),
-                                            configuration.getHostname(),
-                                            iface.getName());
-                                    Set<IpCompletionMetadata> metadata = ips.get(ip.toPrefix());
-                                    assert metadata.size() < 2
-                                        : "cannot have more than 1 IpCompletionMetadata per Ip";
-                                    if (metadata.isEmpty()) {
-                                      ips.put(ip.toPrefix(), new IpCompletionMetadata(relevance));
-                                    } else {
-                                      metadata.iterator().next().addRelevance(relevance);
-                                    }
-                                  }));
+                      iface -> {
+                        iface.getAllConcreteAddresses().stream()
+                            .forEach(
+                                interfaceAddress -> {
+                                  addInterfaceIp(
+                                      ips, configuration, iface, interfaceAddress.getIp());
+                                  addConnectedSubnet(
+                                      ips,
+                                      configuration,
+                                      iface,
+                                      interfaceAddress.getPrefix(),
+                                      ownedIps);
+                                });
+                      });
 
               configuration
                   .getGeneratedReferenceBooks()
@@ -133,6 +163,64 @@ public final class CompletionMetadataUtils {
           }
         });
     return ips;
+  }
+
+  private static void addInterfaceIp(
+      PrefixTrieMultiMap<IpCompletionMetadata> ips,
+      Configuration configuration,
+      Interface iface,
+      Ip ip) {
+    IpCompletionRelevance relevance =
+        new IpCompletionRelevance(
+            interfaceDisplayString(configuration, iface),
+            configuration.getHumanName(),
+            configuration.getHostname(),
+            iface.getName());
+    Set<IpCompletionMetadata> metadata = ips.get(ip.toPrefix());
+    assert metadata.size() < 2 : "cannot have more than 1 IpCompletionMetadata per Ip";
+    if (metadata.isEmpty()) {
+      ips.put(ip.toPrefix(), new IpCompletionMetadata(relevance));
+    } else {
+      metadata.iterator().next().addRelevance(relevance);
+    }
+  }
+
+  private static void addConnectedSubnet(
+      PrefixTrieMultiMap<IpCompletionMetadata> trie,
+      Configuration configuration,
+      Interface iface,
+      Prefix prefix,
+      RangeSet<Ip> ownedIps) {
+    // short-circuit when there are no unownedSubnetHostIps. But if the entry is in the trie, there
+    // must be some (and we don't need to compute them again).
+    Set<IpCompletionMetadata> metadataSet = trie.get(prefix);
+
+    // note: this invariant may change in the future, e.g. if we want different exclusions for the
+    // same prefix
+    assert metadataSet.size() < 2 : "cannot have more than 1 IpCompletionMetadata per Prefix";
+
+    // extract the metadata object for this prefix
+    IpCompletionMetadata metadata;
+    if (metadataSet.isEmpty()) {
+      // add a new metadata object (if needed)
+      RangeSet<Ip> ips = unownedSubnetHostIps(prefix, ownedIps);
+      if (ips.isEmpty()) {
+        return;
+      }
+      metadata = new IpCompletionMetadata(ips, ImmutableList.of());
+      trie.put(prefix, metadata);
+    } else {
+      metadata = metadataSet.iterator().next();
+    }
+
+    // add the relevance for this interface
+    IpCompletionRelevance relevance =
+        new IpCompletionRelevance(
+            interfaceLinkDisplayString(configuration, iface),
+            configuration.getHumanName(),
+            configuration.getHostname(),
+            iface.getName());
+    metadata.addRelevance(relevance);
   }
 
   @VisibleForTesting
