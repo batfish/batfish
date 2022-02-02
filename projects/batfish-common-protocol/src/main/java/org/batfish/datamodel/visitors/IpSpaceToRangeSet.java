@@ -65,7 +65,8 @@ public final class IpSpaceToRangeSet implements GenericIpSpaceVisitor<RangeSet<I
 
   @Override
   public RangeSet<Ip> visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException("Converting IpWildcard to RangeSet is unsupported");
+    throw new UnsupportedOperationException(
+        "Converting IpSpaceReference to RangeSet is unsupported");
   }
 
   @Override
