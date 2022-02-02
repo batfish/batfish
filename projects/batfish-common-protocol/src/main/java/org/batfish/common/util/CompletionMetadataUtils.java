@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -87,12 +88,13 @@ public final class CompletionMetadataUtils {
   }
 
   static RangeSet<Ip> computeOwnedIps(IpOwners ipOwners) {
-    ImmutableRangeSet.Builder<Ip> ownedIps = ImmutableRangeSet.builder();
+    TreeRangeSet<Ip> ownedIps = TreeRangeSet.create();
     ipOwners.getInterfaceOwners(false).values().stream()
         .flatMap(m -> m.values().stream())
-        .flatMap(s -> s.stream())
-        .forEach(ip -> ownedIps.add(Range.closed(ip, ip)));
-    return ownedIps.build();
+        .flatMap(Collection::stream)
+        .map(Range::singleton)
+        .forEach(ownedIps::add);
+    return ImmutableRangeSet.copyOf(ownedIps);
   }
 
   static RangeSet<Ip> unownedSubnetHostIps(Prefix prefix, RangeSet<Ip> ownedIps) {
