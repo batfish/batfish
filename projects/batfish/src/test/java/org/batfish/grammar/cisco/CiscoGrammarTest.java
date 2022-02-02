@@ -4088,6 +4088,12 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testCryptoMapPfsDhGroupParsing() {
+    // don't crash
+    parseCiscoConfig("ios-crypto-map-pfs-dh-group", ConfigurationFormat.CISCO_IOS);
+  }
+
+  @Test
   public void testCryptoMapsAndTunnelsToIpsecPeerConfigs() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
