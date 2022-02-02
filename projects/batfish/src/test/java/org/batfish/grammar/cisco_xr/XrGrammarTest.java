@@ -2094,17 +2094,27 @@ public final class XrGrammarTest {
     assertThat(iface.getAddressFamilies(), hasKeys(Type.IPV4));
     HsrpAddressFamily af = iface.getAddressFamily(Type.IPV4);
     assertThat(af, notNullValue());
-    assertThat(af.getGroups(), hasKeys(37));
-    HsrpGroup group = af.getGroup(37);
-    assertThat(group, notNullValue());
-    assertThat(group.getAddress(), equalTo(Ip.parse("10.0.30.37")));
-    assertThat(group.getPreempt(), equalTo(true));
-    assertThat(group.getPriority(), equalTo(137));
-    assertThat(group.getInterfaceTracks(), hasKeys("Bundle-Ether10", "Bundle-Ether11"));
-    assertThat(
-        group.getInterfaceTracks().get("Bundle-Ether10").getDecrementPriority(), nullValue());
-    assertThat(
-        group.getInterfaceTracks().get("Bundle-Ether11").getDecrementPriority(), equalTo(37));
+    assertThat(af.getGroups(), hasKeys(37, 38));
+    {
+      HsrpGroup group = af.getGroup(37);
+      assertThat(group, notNullValue());
+      assertThat(group.getAddress(), equalTo(Ip.parse("10.0.30.37")));
+      assertThat(group.getPreempt(), equalTo(true));
+      assertThat(group.getPriority(), equalTo(137));
+      assertThat(group.getInterfaceTracks(), hasKeys("Bundle-Ether10", "Bundle-Ether11"));
+      assertThat(
+          group.getInterfaceTracks().get("Bundle-Ether10").getDecrementPriority(), nullValue());
+      assertThat(
+          group.getInterfaceTracks().get("Bundle-Ether11").getDecrementPriority(), equalTo(37));
+    }
+    {
+      HsrpGroup group = af.getGroup(38);
+      assertThat(group, notNullValue());
+      assertThat(group.getAddress(), nullValue());
+      assertThat(group.getPreempt(), nullValue());
+      assertThat(group.getPriority(), nullValue());
+      assertThat(group.getInterfaceTracks(), anEmptyMap());
+    }
   }
 
   @Test
@@ -2114,13 +2124,21 @@ public final class XrGrammarTest {
         c,
         hasInterface(
             "Bundle-Ether30.37",
-            hasHsrpGroup(
-                37,
-                allOf(
-                    hasIps(contains(Ip.parse("10.0.30.37"))),
-                    hasPreempt(),
-                    hasPriority(137),
-                    hasSourceAddress(ConcreteInterfaceAddress.parse("10.0.30.1/24"))))));
+            allOf(
+                hasHsrpGroup(
+                    37,
+                    allOf(
+                        hasIps(contains(Ip.parse("10.0.30.37"))),
+                        hasPreempt(),
+                        hasPriority(137),
+                        hasSourceAddress(ConcreteInterfaceAddress.parse("10.0.30.1/24")))),
+                hasHsrpGroup(
+                    38,
+                    allOf(
+                        hasIps(empty()),
+                        hasPreempt(false),
+                        hasPriority(100),
+                        hasSourceAddress(ConcreteInterfaceAddress.parse("10.0.30.1/24")))))));
   }
 
   @Test

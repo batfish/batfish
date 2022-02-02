@@ -23,6 +23,7 @@ router hsrp
     track Bundle-Ether11 37
     bfd fast-detect
    !
+   hsrp 38
   !
  !
 !

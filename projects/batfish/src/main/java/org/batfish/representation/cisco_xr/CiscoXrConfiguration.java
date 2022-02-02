@@ -279,8 +279,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           .build();
 
   static final boolean DEFAULT_VRRP_PREEMPT = true;
-
   static final int DEFAULT_VRRP_PRIORITY = 100;
+  static final int DEFAULT_HSRP_PRIORITY = 100;
+  static final boolean DEFAULT_HSRP_PREEMPT = false;
 
   public static final String MANAGEMENT_VRF_NAME = "management";
 
@@ -1110,8 +1111,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       HsrpGroup group, @Nullable ConcreteInterfaceAddress sourceAddress) {
     org.batfish.datamodel.hsrp.HsrpGroup.Builder ret =
         org.batfish.datamodel.hsrp.HsrpGroup.builder();
-    ret.setPreempt(firstNonNull(group.getPreempt(), false));
-    ret.setPriority(firstNonNull(group.getPriority(), 100));
+    ret.setPreempt(firstNonNull(group.getPreempt(), DEFAULT_HSRP_PREEMPT));
+    ret.setPriority(firstNonNull(group.getPriority(), DEFAULT_HSRP_PRIORITY));
     ret.setSourceAddress(sourceAddress);
     if (group.getAddress() != null) {
       ret.setVirtualAddresses(ImmutableSet.of(group.getAddress()));
