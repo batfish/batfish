@@ -13,6 +13,7 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -100,9 +101,15 @@ public final class PartialDataplane implements DataPlane {
 
   public static class Builder {
 
+    @Nullable private IpOwners _ipOwners;
     @Nullable private Map<String, Node> _nodes;
     @Nullable private Topology _layer3Topology;
     @Nullable private L3Adjacencies _l3Adjacencies;
+
+    public @Nonnull Builder setIpOwners(@Nonnull IpOwners ipOwners) {
+      _ipOwners = ipOwners;
+      return this;
+    }
 
     public Builder setNodes(@Nonnull Map<String, Node> nodes) {
       _nodes = ImmutableMap.copyOf(nodes);
@@ -148,7 +155,7 @@ public final class PartialDataplane implements DataPlane {
     Map<String, Configuration> configs = computeConfigurations(nodes);
     _fibs = computeFibs(nodes);
     _forwardingAnalysis =
-        computeForwardingAnalysis(_fibs, configs, builder._layer3Topology, builder._l3Adjacencies);
+        computeForwardingAnalysis(_fibs, configs, builder._layer3Topology, builder._ipOwners);
     _layer2VniSettings = DataplaneUtil.computeLayer2VniSettings(nodes);
     _layer3VniSettings = DataplaneUtil.computeLayer3VniSettings(nodes);
     _l3Adjacencies = builder._l3Adjacencies;

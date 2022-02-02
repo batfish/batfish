@@ -1,4 +1,4 @@
-package org.batfish.dataplane;
+package org.batfish.dataplane.ibdp;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

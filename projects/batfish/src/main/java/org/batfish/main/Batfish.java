@@ -11,7 +11,6 @@ import static org.batfish.bddreachability.BDDReachabilityUtils.constructFlows;
 import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
-import static org.batfish.common.util.CompletionMetadataUtils.getIps;
 import static org.batfish.common.util.CompletionMetadataUtils.getLocationCompletionMetadata;
 import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
@@ -186,7 +185,7 @@ import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.dataplane.TracerouteEngineImpl;
+import org.batfish.dataplane.ibdp.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -912,7 +911,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
     return computeLocationInfo(
-        getTopologyProvider().getIpOwners(snapshot), loadConfigurations(snapshot));
+        getTopologyProvider().getInitialIpOwners(snapshot), loadConfigurations(snapshot));
   }
 
   private void disableUnusableVlanInterfaces(Map<String, Configuration> configurations) {

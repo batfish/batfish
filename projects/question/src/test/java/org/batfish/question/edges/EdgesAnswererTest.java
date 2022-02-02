@@ -1009,7 +1009,7 @@ public class EdgesAnswererTest {
 
     @Nonnull
     @Override
-    public IpOwners getIpOwners(NetworkSnapshot snapshot) {
+    public IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 

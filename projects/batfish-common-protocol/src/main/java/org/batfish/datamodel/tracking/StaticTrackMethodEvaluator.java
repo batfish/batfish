@@ -9,8 +9,8 @@ import org.batfish.datamodel.Interface;
  * {@link Configuration}. Visiting the method returns {@code true} if the {@link TrackMethod} would
  * be triggered and execute associated {@link TrackAction}s and {@code false} otherwise.
  *
- * <p>For {@link TrackMethod}s requiring data plane information for evaluation, throws {@link
- * UnsupportedOperationException}.
+ * <p>For {@link TrackMethod}s requiring data plane information for evaluation, returns {@code
+ * false}.
  */
 public class StaticTrackMethodEvaluator implements GenericTrackMethodVisitor<Boolean> {
   public StaticTrackMethodEvaluator(Configuration configuration) {
@@ -45,7 +45,7 @@ public class StaticTrackMethodEvaluator implements GenericTrackMethodVisitor<Boo
 
   @Override
   public Boolean visitTrackRoute(TrackRoute trackRoute) {
-    throw new UnsupportedOperationException("Unsupported method for HSRP priority evaluation");
+    return false;
   }
 
   @Override

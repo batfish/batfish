@@ -21,7 +21,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
-import org.batfish.dataplane.TracerouteEngineImpl;
+import org.batfish.dataplane.ibdp.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;

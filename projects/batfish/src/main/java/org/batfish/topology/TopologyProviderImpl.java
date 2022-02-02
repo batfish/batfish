@@ -23,6 +23,7 @@ import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.StaticIpOwners;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
@@ -47,8 +48,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public @Nonnull IpOwners getIpOwners(NetworkSnapshot snapshot) {
-    return IP_OWNERS.get(snapshot, this::computeIpOwners);
+  public @Nonnull IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
+    return IP_OWNERS.get(snapshot, this::computeInitialIpOwners);
   }
 
   @Override
@@ -194,11 +195,12 @@ public final class TopologyProviderImpl implements TopologyProvider {
                     "Snapshot '" + snapshot + "' has not been parsed/serialized"));
   }
 
-  private @Nonnull IpOwners computeIpOwners(NetworkSnapshot snapshot) {
-    Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeIpOwners").start();
+  private @Nonnull IpOwners computeInitialIpOwners(NetworkSnapshot snapshot) {
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialIpOwners").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return new IpOwners(getConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
+      return new StaticIpOwners(getConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
     } finally {
       span.finish();
     }

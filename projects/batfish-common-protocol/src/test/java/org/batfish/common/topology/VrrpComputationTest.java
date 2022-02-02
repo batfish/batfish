@@ -93,7 +93,7 @@ public class VrrpComputationTest {
     Map<String, Configuration> configs = setupVrrpTestCase(false);
 
     Map<Ip, Set<String>> owners =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
+        new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
 
     assertThat(owners.get(_virtInterfaceAddr), contains("n2"));
   }
@@ -107,7 +107,7 @@ public class VrrpComputationTest {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
     Map<Ip, Set<String>> owners =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
+        new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
 
     // Ensure node that has higher interface IP wins
     assertThat(owners.get(_virtInterfaceAddr), contains("n2"));
@@ -118,7 +118,8 @@ public class VrrpComputationTest {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
     Map<Ip, Map<String, Set<String>>> interfaceOwners =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getAllDeviceOwnedIps();
+        new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance())
+            .getAllDeviceOwnedIps();
 
     assertThat(
         interfaceOwners,

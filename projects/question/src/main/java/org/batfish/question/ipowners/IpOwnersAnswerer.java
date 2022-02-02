@@ -44,7 +44,7 @@ class IpOwnersAnswerer extends Answerer {
     IpOwnersQuestion question = (IpOwnersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     Map<Ip, Set<String>> ipNodeOwners =
-        _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(false);
+        _batfish.getTopologyProvider().getInitialIpOwners(snapshot).getNodeOwners(false);
     Map<String, Set<Interface>> interfaces = computeNodeInterfaces(configurations);
 
     TableAnswerElement answerElement = new TableAnswerElement(getTableMetadata());

@@ -9,12 +9,21 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
@@ -26,6 +35,7 @@ import org.junit.Test;
 
 /** Test of {@link DataplaneTrackEvaluator}. */
 public final class DataplaneTrackEvaluatorTest {
+
   @Test
   public void testVisitTrackInterface() {
     Configuration c =
@@ -45,7 +55,8 @@ public final class DataplaneTrackEvaluatorTest {
         .build();
     TrackInterface tiUp = new TrackInterface("i1");
     TrackInterface tiDown = new TrackInterface("i2");
-    DataplaneTrackEvaluator e = new DataplaneTrackEvaluator(c, new Rib());
+    DataplaneTrackEvaluator e =
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), new DummyTracerouteEngine());
 
     assertTrue(e.visit(tiUp));
     assertFalse(e.visit(tiDown));
@@ -64,7 +75,9 @@ public final class DataplaneTrackEvaluatorTest {
         TrackRoute.of(prefix, ImmutableSet.of(CONNECTED), DEFAULT_VRF_NAME);
     TrackRoute trPrefixMismatch = TrackRoute.of(Prefix.ZERO, ImmutableSet.of(), DEFAULT_VRF_NAME);
     TrackRoute trProtocolMismatch = TrackRoute.of(prefix, ImmutableSet.of(HMM), DEFAULT_VRF_NAME);
-    DataplaneTrackEvaluator e = new DataplaneTrackEvaluator(c, rib);
+    DataplaneTrackEvaluator e =
+        new DataplaneTrackEvaluator(
+            c, ImmutableMap.of(DEFAULT_VRF_NAME, rib), new DummyTracerouteEngine());
 
     assertTrue(e.visit(trMatchWithoutProtocol));
     assertTrue(e.visit(trMatchWithProtocol));
@@ -78,7 +91,8 @@ public final class DataplaneTrackEvaluatorTest {
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     TrackMethod base = TrackTrue.instance();
     c.setTrackingGroups(ImmutableMap.of("1", base));
-    DataplaneTrackEvaluator e = new DataplaneTrackEvaluator(c, new Rib());
+    DataplaneTrackEvaluator e =
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), new DummyTracerouteEngine());
 
     assertTrue(e.visit(TrackMethodReference.of("1")));
   }
@@ -87,7 +101,8 @@ public final class DataplaneTrackEvaluatorTest {
   public void testVisitNegatedTrackMethod() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
-    DataplaneTrackEvaluator e = new DataplaneTrackEvaluator(c, new Rib());
+    DataplaneTrackEvaluator e =
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), new DummyTracerouteEngine());
 
     assertFalse(e.visit(NegatedTrackMethod.of(TrackTrue.instance())));
   }
@@ -96,8 +111,24 @@ public final class DataplaneTrackEvaluatorTest {
   public void testVisitTrackTrue() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
-    DataplaneTrackEvaluator evaluator = new DataplaneTrackEvaluator(c, new Rib());
+    DataplaneTrackEvaluator evaluator =
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), new DummyTracerouteEngine());
 
     assertTrue(evaluator.visit(TrackTrue.instance()));
+  }
+
+  private static final class DummyTracerouteEngine implements TracerouteEngine {
+
+    @Override
+    public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
+        Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
+      return null;
+    }
+
+    @Override
+    public Map<Flow, TraceDag> computeTraceDags(
+        Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
+      return null;
+    }
   }
 }

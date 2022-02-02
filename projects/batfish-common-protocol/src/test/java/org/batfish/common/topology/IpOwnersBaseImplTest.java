@@ -1,17 +1,17 @@
 package org.batfish.common.topology;
 
-import static org.batfish.common.topology.IpOwners.computeHsrpPriority;
-import static org.batfish.common.topology.IpOwners.computeInterfaceHostSubnetIps;
-import static org.batfish.common.topology.IpOwners.computeInterfaceOwners;
-import static org.batfish.common.topology.IpOwners.computeIpIfaceOwners;
-import static org.batfish.common.topology.IpOwners.computeIpVrfOwners;
-import static org.batfish.common.topology.IpOwners.computeNodeOwners;
-import static org.batfish.common.topology.IpOwners.computeVrrpPriority;
-import static org.batfish.common.topology.IpOwners.extractHsrp;
-import static org.batfish.common.topology.IpOwners.extractVrrp;
-import static org.batfish.common.topology.IpOwners.partitionCandidates;
-import static org.batfish.common.topology.IpOwners.processHsrpGroups;
-import static org.batfish.common.topology.IpOwners.processVrrpGroups;
+import static org.batfish.common.topology.IpOwnersBaseImpl.computeHsrpPriority;
+import static org.batfish.common.topology.IpOwnersBaseImpl.computeInterfaceHostSubnetIps;
+import static org.batfish.common.topology.IpOwnersBaseImpl.computeInterfaceOwners;
+import static org.batfish.common.topology.IpOwnersBaseImpl.computeIpIfaceOwners;
+import static org.batfish.common.topology.IpOwnersBaseImpl.computeIpVrfOwners;
+import static org.batfish.common.topology.IpOwnersBaseImpl.computeNodeOwners;
+import static org.batfish.common.topology.IpOwnersBaseImpl.computeVrrpPriority;
+import static org.batfish.common.topology.IpOwnersBaseImpl.extractHsrp;
+import static org.batfish.common.topology.IpOwnersBaseImpl.extractVrrp;
+import static org.batfish.common.topology.IpOwnersBaseImpl.partitionCandidates;
+import static org.batfish.common.topology.IpOwnersBaseImpl.processHsrpGroups;
+import static org.batfish.common.topology.IpOwnersBaseImpl.processVrrpGroups;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.Matchers.allOf;
@@ -48,12 +48,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
+import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests of {@link IpOwners}. */
-public class IpOwnersTest {
+/** Tests of {@link IpOwnersBaseImpl}. */
+public class IpOwnersBaseImplTest {
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
   private Vrf.Builder _vb;
@@ -336,7 +337,8 @@ public class IpOwnersTest {
         ipOwners,
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
-        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)));
+        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
+        StaticTrackMethodEvaluator::new);
     assertThat(ipOwners, hasKeys(ip1, ip22));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));
@@ -407,7 +409,12 @@ public class IpOwnersTest {
 
     // Expect c2/i2 to win
     // Since priority is identical, highest IP address wins
-    processHsrpGroups(ipOwners, groups, GlobalBroadcastNoPointToPoint.instance(), nc);
+    processHsrpGroups(
+        ipOwners,
+        groups,
+        GlobalBroadcastNoPointToPoint.instance(),
+        nc,
+        StaticTrackMethodEvaluator::new);
     assertThat(ipOwners.get(hsrpIp).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
   }
 
@@ -445,8 +452,10 @@ public class IpOwnersTest {
             .build();
     i1.setHsrpGroups(ImmutableMap.of(1, i1HsrpGroup));
     i2.setHsrpGroups(ImmutableMap.of(1, i2HsrpGroup));
+    // StaticIpOwners sufficient to test this functionality without loss of generality
     IpOwners ipOwners =
-        new IpOwners(ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
+        new StaticIpOwners(
+            ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
 
     // i2 should win, since i1 decrements priority unconditionally.
     assertThat(
@@ -497,8 +506,10 @@ public class IpOwnersTest {
             .build();
     i1.setVrrpGroups(ImmutableSortedMap.of(1, i1VrrpGroup));
     i2.setVrrpGroups(ImmutableSortedMap.of(1, i2VrrpGroup));
+    // StaticIpOwners sufficient to test this functionality without loss of generality
     IpOwners ipOwners =
-        new IpOwners(ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
+        new StaticIpOwners(
+            ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
 
     // i2 should win, since i1 decrements priority unconditionally.
     assertThat(
@@ -556,7 +567,9 @@ public class IpOwnersTest {
             TrackTrue.instance()));
 
     // Only track 2 is triggered, so only track 2 decrement is applied
-    assertThat(computeHsrpPriority(i1, hsrpGroup), equalTo(basePriority - track2Decrement));
+    assertThat(
+        computeHsrpPriority(i1, hsrpGroup, StaticTrackMethodEvaluator::new),
+        equalTo(basePriority - track2Decrement));
   }
 
   @Test
@@ -600,7 +613,9 @@ public class IpOwnersTest {
             TrackTrue.instance()));
 
     // Only track 2 is triggered, so only track 2 decrement is applied
-    assertThat(computeVrrpPriority(i1, vrrpGroup), equalTo(basePriority - track2Decrement));
+    assertThat(
+        computeVrrpPriority(i1, vrrpGroup, StaticTrackMethodEvaluator::new),
+        equalTo(basePriority - track2Decrement));
   }
 
   @Test
@@ -739,7 +754,8 @@ public class IpOwnersTest {
         ipOwners,
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
-        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)));
+        NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
+        StaticTrackMethodEvaluator::new);
     assertThat(ipOwners, hasKeys(ip1, ip22, ip3));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));

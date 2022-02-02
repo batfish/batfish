@@ -20,6 +20,7 @@ import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.StaticIpOwners;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -73,8 +74,9 @@ public class IBatfishTestAdapter implements IBatfish {
 
     @Nonnull
     @Override
-    public IpOwners getIpOwners(NetworkSnapshot snapshot) {
-      return new IpOwners(_batfish.loadConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
+    public IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
+      return new StaticIpOwners(
+          _batfish.loadConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
     }
 
     @Override

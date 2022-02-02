@@ -136,7 +136,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.dataplane.TracerouteEngineImpl;
+import org.batfish.dataplane.ibdp.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.hamcrest.Matchers;

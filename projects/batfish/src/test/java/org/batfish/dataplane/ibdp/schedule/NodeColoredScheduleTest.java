@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
-import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.StaticIpOwners;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -188,7 +188,7 @@ public class NodeColoredScheduleTest {
     BgpTopology bgpTopology =
         initBgpTopology(
             _configurations,
-            new IpOwners(_configurations, GlobalBroadcastNoPointToPoint.instance())
+            new StaticIpOwners(_configurations, GlobalBroadcastNoPointToPoint.instance())
                 .getIpVrfOwners(),
             false,
             null);

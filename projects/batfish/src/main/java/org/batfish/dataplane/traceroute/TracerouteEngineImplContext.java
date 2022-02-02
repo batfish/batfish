@@ -35,10 +35,11 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.dataplane.ibdp.TracerouteEngineImpl;
 
 /**
- * An implementation of {@link org.batfish.dataplane.TracerouteEngineImpl#computeTraces(Set,
- * boolean)} and the context (data) needed for it.
+ * An implementation of {@link TracerouteEngineImpl#computeTraces(Set, boolean)} and the context
+ * (data) needed for it.
  *
  * <p>In particular, it contains all context about the network that is valid for all the flows
  * (since computeTraces computes traces for a set of flows). Each flow is traced concurrently, and
