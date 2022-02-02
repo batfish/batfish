@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
@@ -47,6 +48,7 @@ import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -407,6 +409,56 @@ public class IpOwnersTest {
     // Since priority is identical, highest IP address wins
     processHsrpGroups(ipOwners, groups, GlobalBroadcastNoPointToPoint.instance(), nc);
     assertThat(ipOwners.get(hsrpIp).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
+  }
+
+  @Test
+  public void testHsrpPriorityApplied() {
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf v1 = Vrf.builder().setName("v1").setOwner(c1).build();
+    Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
+    Interface i1 = Interface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
+    Interface i2 = Interface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
+    c1.setTrackingGroups(ImmutableMap.of("1", TrackTrue.instance()));
+    HsrpGroup i1HsrpGroup =
+        HsrpGroup.builder()
+            .setPriority(100)
+            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(10)))
+            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.101/24"))
+            .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
+            .build();
+    HsrpGroup i2HsrpGroup =
+        HsrpGroup.builder()
+            .setPriority(100)
+            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.102/24"))
+            .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
+            .build();
+    i1.setHsrpGroups(ImmutableMap.of(1, i1HsrpGroup));
+    i2.setHsrpGroups(ImmutableMap.of(1, i2HsrpGroup));
+    IpOwners ipOwners =
+        new IpOwners(ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
+
+    // i2 should win, since i1 decrements priority unconditionally.
+    assertThat(
+        ipOwners
+            .getInterfaceOwners(true)
+            .getOrDefault("c1", ImmutableMap.of())
+            .getOrDefault("i1", ImmutableSet.of()),
+        not(hasItem(Ip.parse("10.10.10.1"))));
+    assertThat(
+        ipOwners
+            .getInterfaceOwners(true)
+            .getOrDefault("c2", ImmutableMap.of())
+            .getOrDefault("i2", ImmutableSet.of()),
+        hasItem(Ip.parse("10.10.10.1")));
   }
 
   @Test
