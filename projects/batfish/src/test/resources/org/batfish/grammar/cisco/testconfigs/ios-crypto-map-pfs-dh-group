@@ -1,0 +1,15 @@
+!
+hostname ios-crypto-map-pfs-dh-group
+!
+crypto map mymap 10 ipsec-isakmp
+ set pfs group1
+ set pfs group14
+ set pfs group15
+ set pfs group16
+ set pfs group19
+ set pfs group2
+ set pfs group20
+ set pfs group21
+ set pfs group24
+ set pfs group5
+!

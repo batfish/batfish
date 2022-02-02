@@ -9376,6 +9376,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return DiffieHellmanGroup.GROUP19;
     } else if (ctx.GROUP2() != null) {
       return DiffieHellmanGroup.GROUP2;
+    } else if (ctx.GROUP20() != null) {
+      return DiffieHellmanGroup.GROUP20;
     } else if (ctx.GROUP21() != null) {
       return DiffieHellmanGroup.GROUP21;
     } else if (ctx.GROUP24() != null) {
