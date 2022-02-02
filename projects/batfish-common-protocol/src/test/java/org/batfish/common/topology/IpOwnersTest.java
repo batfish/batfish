@@ -6,6 +6,7 @@ import static org.batfish.common.topology.IpOwners.computeInterfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpIfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpVrfOwners;
 import static org.batfish.common.topology.IpOwners.computeNodeOwners;
+import static org.batfish.common.topology.IpOwners.computeVrrpPriority;
 import static org.batfish.common.topology.IpOwners.extractHsrp;
 import static org.batfish.common.topology.IpOwners.extractVrrp;
 import static org.batfish.common.topology.IpOwners.partitionCandidates;
@@ -47,7 +48,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
-import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackTrue;
 import org.junit.Before;
 import org.junit.Test;
@@ -432,13 +432,15 @@ public class IpOwnersTest {
         HsrpGroup.builder()
             .setPriority(100)
             .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(10)))
-            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.101/24"))
+            // higher ip would win in a tie
+            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.100/24"))
             .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();
     HsrpGroup i2HsrpGroup =
         HsrpGroup.builder()
             .setPriority(100)
-            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.102/24"))
+            // lower ip would lose in a tie
+            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.50/24"))
             .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();
     i1.setHsrpGroups(ImmutableMap.of(1, i1HsrpGroup));
@@ -462,10 +464,63 @@ public class IpOwnersTest {
   }
 
   @Test
+  public void testVrrpPriorityApplied() {
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf v1 = Vrf.builder().setName("v1").setOwner(c1).build();
+    Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
+    Interface i1 = Interface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
+    Interface i2 = Interface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
+    c1.setTrackingGroups(ImmutableMap.of("1", TrackTrue.instance()));
+    VrrpGroup i1VrrpGroup =
+        VrrpGroup.builder()
+            .setPriority(100)
+            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(10)))
+            // higher ip would win in a tie
+            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.100/24"))
+            .addVirtualAddress("i1", Ip.parse("10.10.10.1"))
+            .build();
+    VrrpGroup i2VrrpGroup =
+        VrrpGroup.builder()
+            .setPriority(100)
+            // lower ip would lose in a tie
+            .setSourceAddress(ConcreteInterfaceAddress.parse("10.10.10.50/24"))
+            .addVirtualAddress("i2", Ip.parse("10.10.10.1"))
+            .build();
+    i1.setVrrpGroups(ImmutableSortedMap.of(1, i1VrrpGroup));
+    i2.setVrrpGroups(ImmutableSortedMap.of(1, i2VrrpGroup));
+    IpOwners ipOwners =
+        new IpOwners(ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
+
+    // i2 should win, since i1 decrements priority unconditionally.
+    assertThat(
+        ipOwners
+            .getInterfaceOwners(true)
+            .getOrDefault("c1", ImmutableMap.of())
+            .getOrDefault("i1", ImmutableSet.of()),
+        not(hasItem(Ip.parse("10.10.10.1"))));
+    assertThat(
+        ipOwners
+            .getInterfaceOwners(true)
+            .getOrDefault("c2", ImmutableMap.of())
+            .getOrDefault("i2", ImmutableSet.of()),
+        hasItem(Ip.parse("10.10.10.1")));
+  }
+
+  @Test
   public void testComputeHsrpPriority() {
     int basePriority = 100;
-    int track1Decrement = 50;
-    int track2Decrement = 25;
+    int track1Decrement = 50; // never applied
+    int track2Decrement = 25; // always applied
+    int track3Decrement = 10; // not applied, since track method undefined
 
     Configuration c1 =
         Configuration.builder()
@@ -477,10 +532,12 @@ public class IpOwnersTest {
             .setPriority(basePriority)
             .setTrackActions(
                 ImmutableSortedMap.of(
-                    "1",
+                    "1", // never applied
                     new DecrementPriority(track1Decrement),
-                    "2",
-                    new DecrementPriority(track2Decrement)))
+                    "2", // always applied
+                    new DecrementPriority(track2Decrement),
+                    "3", // undefined
+                    new DecrementPriority(track3Decrement)))
             .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();
     Interface i1 =
@@ -493,45 +550,39 @@ public class IpOwnersTest {
 
     c1.setTrackingGroups(
         ImmutableMap.of(
-            "1",
-            NegatedTrackMethod.of(new TrackInterface("i1tracked")),
-            "2",
-            NegatedTrackMethod.of(new TrackInterface("i1trackedAlso"))));
-    // Tracked by track "1"
-    Interface.builder()
-        .setOwner(c1)
-        .setName("i1tracked")
-        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
-        .setAdminUp(true)
-        .build();
-    // Tracked by track "2"
-    Interface.builder()
-        .setOwner(c1)
-        .setName("i1trackedAlso")
-        .setAddress(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
-        .setAdminUp(false)
-        .build();
+            "1", // never succeeds
+            NegatedTrackMethod.of(TrackTrue.instance()),
+            "2", // always succeeds
+            TrackTrue.instance()));
 
     // Only track 2 is triggered, so only track 2 decrement is applied
     assertThat(computeHsrpPriority(i1, hsrpGroup), equalTo(basePriority - track2Decrement));
   }
 
   @Test
-  public void testComputeHsrpPriorityUndefinedTrack() {
+  public void testComputeVrrpPriority() {
     int basePriority = 100;
-    int track1Decrement = 50;
+    int track1Decrement = 50; // never applied
+    int track2Decrement = 25; // always applied
+    int track3Decrement = 10; // not applied, since track method undefined
 
     Configuration c1 =
         Configuration.builder()
             .setHostname("c1")
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
-    HsrpGroup hsrpGroup =
-        HsrpGroup.builder()
+    VrrpGroup vrrpGroup =
+        VrrpGroup.builder()
             .setPriority(basePriority)
-            // Reference to undefined track method
-            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(track1Decrement)))
-            .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
+            .setTrackActions(
+                ImmutableMap.of(
+                    "1", // never applied
+                    new DecrementPriority(track1Decrement),
+                    "2", // always applied
+                    new DecrementPriority(track2Decrement),
+                    "3", // undefined
+                    new DecrementPriority(track3Decrement)))
+            .addVirtualAddress("i1", Ip.parse("10.10.10.1"))
             .build();
     Interface i1 =
         Interface.builder()
@@ -539,13 +590,17 @@ public class IpOwnersTest {
             .setName("i1")
             .setAddress(ConcreteInterfaceAddress.parse("10.10.10.2/24"))
             .build();
-    i1.setHsrpGroups(ImmutableMap.of(1, hsrpGroup));
+    i1.setVrrpGroups(ImmutableSortedMap.of(1, vrrpGroup));
 
-    // Empty map of tracking methods
-    c1.setTrackingGroups(ImmutableMap.of());
-    // If VI model doesn't have references to undefined track groups we shouldn't crash
-    // Also skip applying track action if that happens
-    assertThat(computeHsrpPriority(i1, hsrpGroup), equalTo(basePriority));
+    c1.setTrackingGroups(
+        ImmutableMap.of(
+            "1", // never succeeds
+            NegatedTrackMethod.of(TrackTrue.instance()),
+            "2", // always succeeds
+            TrackTrue.instance()));
+
+    // Only track 2 is triggered, so only track 2 decrement is applied
+    assertThat(computeVrrpPriority(i1, vrrpGroup), equalTo(basePriority - track2Decrement));
   }
 
   @Test
