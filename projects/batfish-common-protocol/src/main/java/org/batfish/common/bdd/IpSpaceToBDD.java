@@ -46,15 +46,13 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   private final Map<String, Supplier<BDD>> _namedIpSpaceBDDs;
 
-  private final BDD _one;
-
-  private final BDD _zero;
+  // Temporary ArrayLists used to optimize some internal computations.
+  private final List<BDD> _trues = new ArrayList<>(Prefix.MAX_PREFIX_LENGTH);
+  private final List<BDD> _falses = new ArrayList<>(Prefix.MAX_PREFIX_LENGTH);
 
   public IpSpaceToBDD(BDDInteger var) {
     _bddInteger = var;
     _factory = var.getFactory();
-    _one = _factory.one();
-    _zero = _factory.zero();
     _bddOps = new BDDOps(_factory);
     _namedIpSpaceBDDs = ImmutableMap.of();
   }
@@ -62,8 +60,6 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   public IpSpaceToBDD(BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
     _bddInteger = var;
     _factory = var.getFactory();
-    _one = _factory.one();
-    _zero = _factory.zero();
     _bddOps = new BDDOps(_factory);
     _namedIpSpaceBDDs =
         toImmutableMap(
@@ -86,24 +82,18 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
    */
   private BDD firstBitsEqual(Ip ip, int length) {
     long b = ip.asLong();
-    BDD acc = _one;
     BDD[] bitBDDs = _bddInteger.getBitvec();
+    _trues.clear();
+    _falses.clear();
     for (int i = length - 1; i >= 0; i--) {
       boolean bitValue = Ip.getBitAtPosition(b, i);
       if (bitValue) {
-        acc = acc.and(bitBDDs[i]);
+        _trues.add(bitBDDs[i]);
       } else {
-        acc = acc.diff(bitBDDs[i]);
+        _falses.add(bitBDDs[i]);
       }
     }
-    return acc;
-  }
-
-  /*
-   * Does the 32 bit integer match the prefix using lpm?
-   */
-  private BDD isRelevantFor(Prefix p) {
-    return firstBitsEqual(p.getStartIp(), p.getPrefixLength());
+    return _bddOps.and(_trues).diffWith(_bddOps.or(_falses));
   }
 
   public BDD toBDD(Ip ip) {
@@ -113,20 +103,21 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   public BDD toBDD(IpWildcard ipWildcard) {
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcardMask();
-    BDD acc = _one;
     BDD[] bitBDDs = _bddInteger.getBitvec();
+    _trues.clear();
+    _falses.clear();
     for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
       boolean significant = !Ip.getBitAtPosition(wildcard, i);
       if (significant) {
         boolean bitValue = Ip.getBitAtPosition(ip, i);
         if (bitValue) {
-          acc = acc.and(bitBDDs[i]);
+          _trues.add(bitBDDs[i]);
         } else {
-          acc = acc.diff(bitBDDs[i]);
+          _falses.add(bitBDDs[i]);
         }
       }
     }
-    return acc;
+    return _bddOps.and(_trues).diffWith(_bddOps.or(_falses));
   }
 
   @Override
@@ -143,7 +134,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
-    return _zero;
+    return _factory.zero();
   }
 
   @Override
@@ -181,7 +172,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
                 .map((IpWildcard wc) -> visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
-    return whitelist.diff(blacklist);
+    return whitelist.diffWith(blacklist);
   }
 
   @Override
@@ -190,11 +181,11 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   }
 
   public BDD toBDD(Prefix prefix) {
-    return isRelevantFor(prefix);
+    return firstBitsEqual(prefix.getStartIp(), prefix.getPrefixLength());
   }
 
   @Override
   public BDD visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
-    return _one;
+    return _factory.one();
   }
 }
