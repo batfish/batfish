@@ -75,6 +75,8 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -147,6 +149,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr extends AbstractCoordinator {
+  private static final Logger LOGGER = LogManager.getLogger(WorkMgr.class);
 
   private static final Set<String> IGNORED_PATHS =
       ImmutableSet.<String>builder()
@@ -2009,6 +2012,7 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public void uploadSnapshot(
       String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
+    LOGGER.info("Beginning snapshot upload to {}/{}", networkName, snapshotName);
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(networkName);
     checkArgument(networkIdOpt.isPresent(), "Missing network: '%s'", networkName);
     NetworkId networkId = networkIdOpt.get();
