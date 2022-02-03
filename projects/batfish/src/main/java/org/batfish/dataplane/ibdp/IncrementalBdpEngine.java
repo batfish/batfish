@@ -46,7 +46,6 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
@@ -60,7 +59,6 @@ import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
-import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEvaluatorProvider;
@@ -421,14 +419,6 @@ final class IncrementalBdpEngine {
     TracerouteEngine tr =
         new TracerouteEngineImpl(dp, topologyContext.getLayer3Topology(), configurations);
     return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(ribs, tr);
-  }
-
-  @SuppressWarnings("unused")
-  private static @Nonnull TrackMethodEvaluatorProvider dataplaneTrackMethodEvaluatorProvider(
-      DataPlane dataplane) {
-    // TODO: Implement data plane track method evaluator capable of tracking reachability and return
-    //       provider for it here.
-    return PreDataPlaneTrackMethodEvaluator::new;
   }
 
   /**
