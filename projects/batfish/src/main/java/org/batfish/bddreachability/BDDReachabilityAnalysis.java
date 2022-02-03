@@ -120,8 +120,8 @@ public class BDDReachabilityAnalysis {
       assert scope != null; // avoid unused warning
       assert span != null; // avoid unused warning
       Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>();
-      BDD one = _bddPacket.getFactory().one();
-      _ingressLocationStates.forEach(state -> forwardReachableStates.put(state, one));
+      _ingressLocationStates.forEach(
+          state -> forwardReachableStates.put(state, _bddPacket.getFactory().one()));
       BDDReachabilityUtils.forwardFixpoint(_forwardEdgeTable, forwardReachableStates);
       return ImmutableMap.copyOf(forwardReachableStates);
     } finally {
