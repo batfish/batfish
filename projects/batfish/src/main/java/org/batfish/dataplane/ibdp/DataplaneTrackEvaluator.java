@@ -55,7 +55,7 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
       Map<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribByVrf,
       TracerouteEngine tracerouteEngine) {
     _configuration = configuration;
-    _staticEvaluator = new PreDataPlaneTrackMethodEvaluator(configuration);
+    _preDataPlaneTrackMethodEvaluator = new PreDataPlaneTrackMethodEvaluator(configuration);
     _ribByVrf = ribByVrf;
     _tracerouteEngine = tracerouteEngine;
   }
@@ -67,7 +67,7 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
 
   @Override
   public Boolean visitTrackInterface(TrackInterface trackInterface) {
-    return _staticEvaluator.visit(trackInterface);
+    return _preDataPlaneTrackMethodEvaluator.visit(trackInterface);
   }
 
   @Override
@@ -91,12 +91,12 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
 
   @Override
   public Boolean visitTrackTrue(TrackTrue trackTrue) {
-    return _staticEvaluator.visit(trackTrue);
+    return _preDataPlaneTrackMethodEvaluator.visit(trackTrue);
   }
 
   private final @Nonnull Configuration _configuration;
   private final @Nonnull Map<String, GenericRib<AnnotatedRoute<AbstractRoute>>> _ribByVrf;
-  private final @Nonnull PreDataPlaneTrackMethodEvaluator _staticEvaluator;
+  private final @Nonnull PreDataPlaneTrackMethodEvaluator _preDataPlaneTrackMethodEvaluator;
 
   // TODO: support track reachability
   @SuppressWarnings("unused")
