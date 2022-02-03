@@ -37,6 +37,8 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -56,6 +58,15 @@ public final class JFactory extends BDDFactory {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
   private static final boolean CACHESTATS = false;
+
+  /** A cache of BDDImpls that have been freed and may now be reused. */
+  private final Queue<BDDImpl> _bddReuse = new LinkedList<>();
+
+  /** The limit on the size of {@link #_bddReuse}. */
+  private static final int BDD_REUSE_LIMIT = 1024;
+
+  /** The number of BDDImpl objects reused since the last garbage collection. */
+  private long reusedBDDs;
 
   /**
    * Whether to flush (clear completely) the cache when live BDD nodes are garbage collected. If
@@ -80,7 +91,9 @@ public final class JFactory extends BDDFactory {
     return f;
   }
 
+  /** The total number of BDDs ever created. */
   private long madeBDDs;
+  /** The total number of BDDs ever freed. */
   private long freedBDDs;
 
   @Override
@@ -91,7 +104,15 @@ public final class JFactory extends BDDFactory {
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
     madeBDDs++;
-    return new BDDImpl(id);
+    BDDImpl ret = _bddReuse.poll();
+    if (ret == null) {
+      ret = new BDDImpl(id);
+    } else {
+      reusedBDDs++;
+      ret._index = id;
+      bdd_addref(id);
+    }
+    return ret;
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
@@ -417,6 +438,9 @@ public final class JFactory extends BDDFactory {
       bdd_delref(_index);
       _index = INVALID_BDD;
       ++freedBDDs;
+      if (_bddReuse.size() < BDD_REUSE_LIMIT) {
+        _bddReuse.offer(this);
+      }
     }
   }
 
@@ -3698,6 +3722,8 @@ public final class JFactory extends BDDFactory {
     {
       gcstats.nodes = bddnodesize;
       gcstats.freenodes = bddfreenum;
+      gcstats.reusednodes = reusedBDDs;
+      reusedBDDs = 0;
       gcstats.time = c2 - c1;
       gcstats.sumtime = gbcclock;
       gcstats.num = gbcollectnum;

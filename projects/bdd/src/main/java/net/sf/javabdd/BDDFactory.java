@@ -628,6 +628,7 @@ public abstract class BDDFactory {
   public static class GCStats {
     public int nodes;
     public int freenodes;
+    public long reusednodes;
     public long time;
     public long sumtime;
     public int num;
@@ -643,7 +644,9 @@ public abstract class BDDFactory {
       sb.append(nodes);
       sb.append(" nodes / ");
       sb.append(freenodes);
-      sb.append(" free");
+      sb.append(" free ");
+      sb.append(reusednodes);
+      sb.append(" reused since last gc");
 
       sb.append(" / ");
       sb.append((float) time / (float) 1000);
