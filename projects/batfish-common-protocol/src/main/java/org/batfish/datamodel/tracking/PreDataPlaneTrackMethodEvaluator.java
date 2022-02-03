@@ -12,8 +12,8 @@ import org.batfish.datamodel.Interface;
  * <p>For {@link TrackMethod}s requiring data plane information for evaluation, returns {@code
  * false}.
  */
-public class StaticTrackMethodEvaluator implements GenericTrackMethodVisitor<Boolean> {
-  public StaticTrackMethodEvaluator(Configuration configuration) {
+public class PreDataPlaneTrackMethodEvaluator implements TrackMethodEvaluator {
+  public PreDataPlaneTrackMethodEvaluator(Configuration configuration) {
     _configuration = configuration;
   }
 

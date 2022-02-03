@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -122,13 +123,13 @@ public final class DataplaneTrackEvaluatorTest {
     @Override
     public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
         Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
-      return null;
+      return ImmutableSortedMap.of();
     }
 
     @Override
     public Map<Flow, TraceDag> computeTraceDags(
         Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
-      return null;
+      return ImmutableMap.of();
     }
   }
 }

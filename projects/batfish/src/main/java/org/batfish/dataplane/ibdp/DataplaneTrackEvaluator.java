@@ -9,11 +9,11 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
-import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackRoute;
@@ -24,11 +24,11 @@ import org.batfish.datamodel.tracking.TrackTrue;
  * contents of a {@link Configuration}, its associated RIBs, and a {@link TracerouteEngine} that can
  * perform reachabilty checks.
  *
- * <p>Delegates to {@link StaticTrackMethodEvaluator} when only the contents of the {@link
+ * <p>Delegates to {@link PreDataPlaneTrackMethodEvaluator} when only the contents of the {@link
  * Configuration} are needed for evaluation.
  */
 @ParametersAreNonnullByDefault
-public final class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<Boolean> {
+public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
 
   @FunctionalInterface
   public interface DataPlaneTrackMethodEvaluatorProvider extends TrackMethodEvaluatorProvider {
@@ -55,7 +55,7 @@ public final class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<
       Map<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribByVrf,
       TracerouteEngine tracerouteEngine) {
     _configuration = configuration;
-    _staticEvaluator = new StaticTrackMethodEvaluator(configuration);
+    _staticEvaluator = new PreDataPlaneTrackMethodEvaluator(configuration);
     _ribByVrf = ribByVrf;
     _tracerouteEngine = tracerouteEngine;
   }
@@ -96,7 +96,7 @@ public final class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<
 
   private final @Nonnull Configuration _configuration;
   private final @Nonnull Map<String, GenericRib<AnnotatedRoute<AbstractRoute>>> _ribByVrf;
-  private final @Nonnull StaticTrackMethodEvaluator _staticEvaluator;
+  private final @Nonnull PreDataPlaneTrackMethodEvaluator _staticEvaluator;
 
   // TODO: support track reachability
   @SuppressWarnings("unused")

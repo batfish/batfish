@@ -44,6 +44,8 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.topology.IpOwnersBaseImpl;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
@@ -89,6 +91,8 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -548,11 +552,13 @@ public class IncrementalDataPlanePluginTest {
             // TODO: parametrize settings with different schedules
             new IncrementalDataPlaneSettings());
     Topology topology = new Topology(Collections.emptySortedSet());
+    TopologyContext topologyContext = TopologyContext.builder().setLayer3Topology(topology).build();
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(
             configs,
-            TopologyContext.builder().setLayer3Topology(topology).build(),
-            Collections.emptySet());
+            topologyContext,
+            Collections.emptySet(),
+            new TestIpOwners(configs, topologyContext.getL3Adjacencies()));
 
     // generating fibs should not crash
     dp._dataPlane.getFibs();
@@ -580,8 +586,13 @@ public class IncrementalDataPlanePluginTest {
     vrf.getStaticRoutes().add(sr);
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
+    TopologyContext topologyContext = TopologyContext.builder().build();
     ComputeDataPlaneResult dp =
-        engine.computeDataPlane(configs, TopologyContext.builder().build(), Collections.emptySet());
+        engine.computeDataPlane(
+            configs,
+            topologyContext,
+            Collections.emptySet(),
+            new TestIpOwners(configs, topologyContext.getL3Adjacencies()));
 
     // generating fibs should not crash
     assertThat(
@@ -1130,5 +1141,12 @@ public class IncrementalDataPlanePluginTest {
     DataPlane deserializedDataPlane = SerializationUtils.clone(batfish.loadDataPlane(snapshot));
 
     assertNotNull(deserializedDataPlane.getForwardingAnalysis());
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(
+        Map<String, Configuration> configurations, L3Adjacencies initialL3Adjacencies) {
+      super(configurations, initialL3Adjacencies, PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

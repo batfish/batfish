@@ -40,7 +40,6 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.topology.StaticIpOwners;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
@@ -60,9 +59,10 @@ import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
-import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.vxlan.VxlanTopology;
+import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEvaluatorProvider;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
@@ -244,15 +244,14 @@ final class IncrementalBdpEngine {
   ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations,
       TopologyContext initialTopologyContext,
-      Set<BgpAdvertisement> externalAdverts) {
+      Set<BgpAdvertisement> externalAdverts,
+      IpOwners initialIpOwners) {
     Span span = GlobalTracer.get().buildSpan("Compute Data Plane").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
       LOGGER.info("Computing Data Plane using iBDP");
 
-      IpOwners initialIpOwners =
-          new StaticIpOwners(configurations, initialTopologyContext.getL3Adjacencies());
       Map<Ip, Map<String, Set<String>>> initialIpVrfOwners = initialIpOwners.getIpVrfOwners();
       Map<String, Map<String, Set<Ip>>> initialActiveInterfaceOwners =
           initialIpOwners.getInterfaceOwners(true);
@@ -429,7 +428,7 @@ final class IncrementalBdpEngine {
       DataPlane dataplane) {
     // TODO: Implement data plane track method evaluator capable of tracking reachability and return
     //       provider for it here.
-    return StaticTrackMethodEvaluator::new;
+    return PreDataPlaneTrackMethodEvaluator::new;
   }
 
   /**
@@ -709,7 +708,8 @@ final class IncrementalBdpEngine {
                 vr -> {
                   importRib(vr.getMainRib(), vr._independentRib);
                   // Use static evaluator since we don't have dataplane yet
-                  vr.activateStaticRoutes(new StaticTrackMethodEvaluator(vr.getConfiguration()));
+                  vr.activateStaticRoutes(
+                      new PreDataPlaneTrackMethodEvaluator(vr.getConfiguration()));
                 });
       } finally {
         staticSpan.finish();

@@ -35,7 +35,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.L3Adjacencies;
-import org.batfish.common.topology.StaticIpOwners;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -137,9 +136,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
     L3Adjacencies l3Adjacencies = _batfish.getTopologyProvider().getInitialL3Adjacencies(snapshot);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-        new StaticIpOwners(
-                configurations, _batfish.getTopologyProvider().getInitialL3Adjacencies(snapshot))
-            .getIpVrfOwners();
+        _batfish.getTopologyProvider().getInitialIpOwners(snapshot).getIpVrfOwners();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipVrfOwners, true, l3Adjacencies)
             .getGraph();

@@ -12,7 +12,7 @@ import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEv
  * or partial data plane.{@link DataPlaneTrackMethodEvaluatorProvider}.
  */
 @ParametersAreNonnullByDefault
-public final class DataPlaneIpOwners extends IpOwnersBaseImpl {
+final class DataPlaneIpOwners extends IpOwnersBaseImpl {
 
   /**
    * Construct a {@link DataPlaneIpOwners} from configurations, data-plane-based {@link

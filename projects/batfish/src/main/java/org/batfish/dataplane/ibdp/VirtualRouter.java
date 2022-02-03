@@ -107,8 +107,8 @@ import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.RibExpr;
-import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethodEvaluator;
 import org.batfish.datamodel.visitors.RibExprVisitor;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -581,7 +581,7 @@ public final class VirtualRouter {
    *
    * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
-  void activateStaticRoutes(GenericTrackMethodVisitor<Boolean> trackMethodEvaluator) {
+  void activateStaticRoutes(TrackMethodEvaluator trackMethodEvaluator) {
     for (StaticRoute sr : _staticConditionalRib.getTypedRoutes()) {
       if (shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
@@ -595,7 +595,7 @@ public final class VirtualRouter {
   }
 
   private boolean shouldActivateConditionalStaticRoute(
-      GenericTrackMethodVisitor<Boolean> trackMethodEvaluator, StaticRoute sr) {
+      TrackMethodEvaluator trackMethodEvaluator, StaticRoute sr) {
     if (!shouldActivateConditionalStaticRouteNextHop(sr)) {
       return false;
     }
@@ -692,8 +692,7 @@ public final class VirtualRouter {
    * Evaluates the {@link TrackMethod} indexed by {@code trackName} and returns {@code true} iff the
    * track succeeds.
    */
-  private boolean evaluateTrack(
-      GenericTrackMethodVisitor<Boolean> trackMethodEvaluator, String trackName) {
+  private boolean evaluateTrack(TrackMethodEvaluator trackMethodEvaluator, String trackName) {
     TrackMethod method = _c.getTrackingGroups().get(trackName);
     assert method != null;
     return trackMethodEvaluator.visit(method);

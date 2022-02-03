@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
-import org.batfish.common.topology.StaticIpOwners;
+import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -36,6 +36,7 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.dataplane.ibdp.Node;
 import org.batfish.dataplane.ibdp.TestUtils;
 import org.batfish.dataplane.ibdp.TopologyContext;
@@ -187,11 +188,7 @@ public class NodeColoredScheduleTest {
   public void testTwoNodesConnectedDirectlyViaBGP() {
     BgpTopology bgpTopology =
         initBgpTopology(
-            _configurations,
-            new StaticIpOwners(_configurations, GlobalBroadcastNoPointToPoint.instance())
-                .getIpVrfOwners(),
-            false,
-            null);
+            _configurations, new TestIpOwners(_configurations).getIpVrfOwners(), false, null);
     ImmutableMap<String, Node> nodes =
         _configurations.entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> new Node(e.getValue())));
@@ -225,5 +222,14 @@ public class NodeColoredScheduleTest {
         ImmutableList.copyOf(schedule.getAllRemaining());
     // 2 colors because of edge in the OSPF topology
     assertThat(coloredNodes, hasSize(2));
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(Map<String, Configuration> configurations) {
+      super(
+          configurations,
+          GlobalBroadcastNoPointToPoint.instance(),
+          PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

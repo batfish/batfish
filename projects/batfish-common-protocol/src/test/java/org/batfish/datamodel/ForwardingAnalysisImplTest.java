@@ -51,7 +51,8 @@ import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.common.topology.StaticIpOwners;
+import org.batfish.common.topology.IpOwnersBaseImpl;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -133,8 +134,7 @@ public class ForwardingAnalysisImplTest {
             c2.getHostname(),
             ImmutableMap.of(vrf2.getName(), ImmutableMap.of(i2.getName(), ipsRoutedOutI2)));
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance())
-            .getInterfaceOwners(false);
+        new TestIpOwners(configs).getInterfaceOwners(false);
     Map<String, Map<String, IpSpace>> result =
         computeArpReplies(configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
 
@@ -261,8 +261,7 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance())
-            .getInterfaceOwners(false);
+        new TestIpOwners(configs).getInterfaceOwners(false);
     Map<String, IpSpace> ownedIpsByVrf =
         computeOwnedIpsByVrf(
             config.getActiveInterfaces(), interfaceOwnedIps.get(config.getHostname()));
@@ -335,8 +334,7 @@ public class ForwardingAnalysisImplTest {
             .build();
 
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance())
-            .getInterfaceOwners(false);
+        new TestIpOwners(configs).getInterfaceOwners(false);
     IpSpace p1IpSpace = IpWildcard.create(P1).toIpSpace();
     IpSpace i1ArpReplies =
         computeInterfaceArpReplies(
@@ -512,10 +510,7 @@ public class ForwardingAnalysisImplTest {
             .including(IpWildcard.create(P1), IpWildcard.create(P2))
             .build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new StaticIpOwners(
-                ImmutableMap.of(config.getHostname(), config),
-                GlobalBroadcastNoPointToPoint.instance())
-            .getInterfaceOwners(false);
+        new TestIpOwners(ImmutableMap.of(config.getHostname(), config)).getInterfaceOwners(false);
     Map<String, IpSpace> ownedIpsByVrf =
         computeOwnedIpsByVrf(
             config.getActiveInterfaces(), interfaceOwnedIps.get(config.getHostname()));
@@ -565,8 +560,7 @@ public class ForwardingAnalysisImplTest {
         ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength());
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance())
-            .getInterfaceOwners(false);
+        new TestIpOwners(configs).getInterfaceOwners(false);
     IpSpace result = computeIpsAssignedToThisInterfaceForArpReplies(i, interfaceOwnedIps);
 
     assertThat(result, containsIp(P1.getFirstHostIp()));
@@ -1409,7 +1403,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, Fib>> fibs =
         ImmutableMap.of(n1.getHostname(), ImmutableMap.of(v1.getName(), fib1));
 
-    IpOwners ipOwners = new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
+    IpOwners ipOwners = new TestIpOwners(configs);
 
     ForwardingAnalysis fa =
         new ForwardingAnalysisImpl(
@@ -1498,7 +1492,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
 
-    IpOwners ipOwners = new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
+    IpOwners ipOwners = new TestIpOwners(configs);
     ForwardingAnalysis analysis =
         new ForwardingAnalysisImpl(
             configs, fibs, Topology.EMPTY, computeLocationInfo(ipOwners, configs), ipOwners);
@@ -1548,6 +1542,15 @@ public class ForwardingAnalysisImplTest {
     @Override
     public String toString() {
       return String.format("TestIpSpace%d", _num);
+    }
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(Map<String, Configuration> configurations) {
+      super(
+          configurations,
+          GlobalBroadcastNoPointToPoint.instance(),
+          PreDataPlaneTrackMethodEvaluator::new);
     }
   }
 }

@@ -48,7 +48,11 @@ public final class IncrementalDataPlanePlugin extends DataPlanePlugin {
             .build();
 
     ComputeDataPlaneResult answer =
-        _engine.computeDataPlane(configurations, topologyContext, externalAdverts);
+        _engine.computeDataPlane(
+            configurations,
+            topologyContext,
+            externalAdverts,
+            topologyProvider.getInitialIpOwners(snapshot));
     _logger.infof(
         "Generated data-plane for snapshot:%s; iterations:%s",
         snapshot.getSnapshot(),

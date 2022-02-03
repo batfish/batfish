@@ -9,5 +9,5 @@ import org.batfish.datamodel.Configuration;
 @ParametersAreNonnullByDefault
 public interface TrackMethodEvaluatorProvider {
   @Nonnull
-  GenericTrackMethodVisitor<Boolean> forConfiguration(Configuration c);
+  TrackMethodEvaluator forConfiguration(Configuration c);
 }

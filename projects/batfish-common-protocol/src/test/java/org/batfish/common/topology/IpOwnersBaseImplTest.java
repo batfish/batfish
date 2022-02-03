@@ -48,7 +48,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
-import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackTrue;
 import org.junit.Before;
 import org.junit.Test;
@@ -338,7 +338,7 @@ public class IpOwnersBaseImplTest {
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
         NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
-        StaticTrackMethodEvaluator::new);
+        PreDataPlaneTrackMethodEvaluator::new);
     assertThat(ipOwners, hasKeys(ip1, ip22));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));
@@ -414,7 +414,7 @@ public class IpOwnersBaseImplTest {
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
         nc,
-        StaticTrackMethodEvaluator::new);
+        PreDataPlaneTrackMethodEvaluator::new);
     assertThat(ipOwners.get(hsrpIp).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
   }
 
@@ -452,10 +452,8 @@ public class IpOwnersBaseImplTest {
             .build();
     i1.setHsrpGroups(ImmutableMap.of(1, i1HsrpGroup));
     i2.setHsrpGroups(ImmutableMap.of(1, i2HsrpGroup));
-    // StaticIpOwners sufficient to test this functionality without loss of generality
-    IpOwners ipOwners =
-        new StaticIpOwners(
-            ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
+
+    IpOwners ipOwners = new TestIpOwners(ImmutableMap.of("c1", c1, "c2", c2));
 
     // i2 should win, since i1 decrements priority unconditionally.
     assertThat(
@@ -506,10 +504,8 @@ public class IpOwnersBaseImplTest {
             .build();
     i1.setVrrpGroups(ImmutableSortedMap.of(1, i1VrrpGroup));
     i2.setVrrpGroups(ImmutableSortedMap.of(1, i2VrrpGroup));
-    // StaticIpOwners sufficient to test this functionality without loss of generality
-    IpOwners ipOwners =
-        new StaticIpOwners(
-            ImmutableMap.of("c1", c1, "c2", c2), GlobalBroadcastNoPointToPoint.instance());
+
+    IpOwners ipOwners = new TestIpOwners(ImmutableMap.of("c1", c1, "c2", c2));
 
     // i2 should win, since i1 decrements priority unconditionally.
     assertThat(
@@ -568,7 +564,7 @@ public class IpOwnersBaseImplTest {
 
     // Only track 2 is triggered, so only track 2 decrement is applied
     assertThat(
-        computeHsrpPriority(i1, hsrpGroup, StaticTrackMethodEvaluator::new),
+        computeHsrpPriority(i1, hsrpGroup, PreDataPlaneTrackMethodEvaluator::new),
         equalTo(basePriority - track2Decrement));
   }
 
@@ -614,7 +610,7 @@ public class IpOwnersBaseImplTest {
 
     // Only track 2 is triggered, so only track 2 decrement is applied
     assertThat(
-        computeVrrpPriority(i1, vrrpGroup, StaticTrackMethodEvaluator::new),
+        computeVrrpPriority(i1, vrrpGroup, PreDataPlaneTrackMethodEvaluator::new),
         equalTo(basePriority - track2Decrement));
   }
 
@@ -755,7 +751,7 @@ public class IpOwnersBaseImplTest {
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
         NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
-        StaticTrackMethodEvaluator::new);
+        PreDataPlaneTrackMethodEvaluator::new);
     assertThat(ipOwners, hasKeys(ip1, ip22, ip3));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));
@@ -835,5 +831,14 @@ public class IpOwnersBaseImplTest {
     assertThat(
         computeNodeOwners(deviceOwnedIps),
         equalTo(ImmutableMap.of(Ip.ZERO, ImmutableSet.of("c1", "c2"))));
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(Map<String, Configuration> configurations) {
+      super(
+          configurations,
+          GlobalBroadcastNoPointToPoint.instance(),
+          PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

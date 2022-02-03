@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,6 +49,60 @@ import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 /** Base implementation for {@link IpOwners}. */
 @ParametersAreNonnullByDefault
 public abstract class IpOwnersBaseImpl implements IpOwners {
+
+  /**
+   * Compute IP owners based on information in configurations, layer-3 adjencies, and a provider for
+   * methods to evaluate track methods affecting HSRP/VRRP priorities.
+   *
+   * <p>{@link L3Adjacencies} are needed to compute partitions for HSRP/VRRP elections.
+   *
+   * <p>{@link TrackMethodEvaluatorProvider} should provide a an evaluator for a configuration that
+   * is capable of evaluating tracks via information consistent with the provided {@link
+   * L3Adjacencies}.
+   *
+   * <p>A pre-dataplane evaluator provider should be paired with initial l3 adjacencies, while a
+   * dataplane-based evaluator should be paired with dataplane-based l3 adjacencies.
+   */
+  protected IpOwnersBaseImpl(
+      Map<String, Configuration> configurations,
+      L3Adjacencies l3Adjacencies,
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
+    /* Mapping from a hostname to a set of all (including inactive) interfaces that node owns */
+    Map<String, Set<Interface>> allInterfaces =
+        ImmutableMap.copyOf(computeNodeInterfaces(configurations));
+
+    {
+      _allDeviceOwnedIps =
+          ImmutableMap.copyOf(
+              computeIpInterfaceOwners(
+                  allInterfaces,
+                  false,
+                  l3Adjacencies,
+                  NetworkConfigurations.of(configurations),
+                  trackMethodEvaluatorProvider));
+      _activeDeviceOwnedIps =
+          ImmutableMap.copyOf(
+              computeIpInterfaceOwners(
+                  allInterfaces,
+                  true,
+                  l3Adjacencies,
+                  NetworkConfigurations.of(configurations),
+                  trackMethodEvaluatorProvider));
+    }
+
+    {
+      Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners =
+          computeIpIfaceOwners(allInterfaces, _activeDeviceOwnedIps);
+      _ipVrfOwners = computeIpVrfOwners(ipIfaceOwners);
+      _hostToVrfToInterfaceToIpSpace = computeIfaceOwnedIpSpaces(ipIfaceOwners);
+    }
+
+    {
+      _hostToInterfaceToIpSpace = computeInterfaceOwnedIpSpaces(_hostToVrfToInterfaceToIpSpace);
+      _allInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, false);
+    }
+  }
+
   @Override
   public final @Nonnull Map<Ip, Map<String, Set<String>>> getActiveDeviceOwnedIps() {
     return _activeDeviceOwnedIps;
@@ -109,57 +162,8 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _allDeviceOwnedIps,
-        _activeDeviceOwnedIps,
-        _hostToInterfaceToIpSpace,
-        _hostToVrfToInterfaceToIpSpace,
-        _allInterfaceHostIps,
-        _ipVrfOwners);
-  }
-
-  /**
-   * Compute IP owners based on information in configurations, layer-3 adjencies, and a provider for
-   * methods to evaluate track methods affecting HSRP/VRRP priorities.
-   */
-  protected IpOwnersBaseImpl(
-      Map<String, Configuration> configurations,
-      L3Adjacencies l3Adjacencies,
-      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
-    /* Mapping from a hostname to a set of all (including inactive) interfaces that node owns */
-    Map<String, Set<Interface>> allInterfaces =
-        ImmutableMap.copyOf(computeNodeInterfaces(configurations));
-
-    {
-      _allDeviceOwnedIps =
-          ImmutableMap.copyOf(
-              computeIpInterfaceOwners(
-                  allInterfaces,
-                  false,
-                  l3Adjacencies,
-                  NetworkConfigurations.of(configurations),
-                  trackMethodEvaluatorProvider));
-      _activeDeviceOwnedIps =
-          ImmutableMap.copyOf(
-              computeIpInterfaceOwners(
-                  allInterfaces,
-                  true,
-                  l3Adjacencies,
-                  NetworkConfigurations.of(configurations),
-                  trackMethodEvaluatorProvider));
-    }
-
-    {
-      Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners =
-          computeIpIfaceOwners(allInterfaces, _activeDeviceOwnedIps);
-      _ipVrfOwners = computeIpVrfOwners(ipIfaceOwners);
-      _hostToVrfToInterfaceToIpSpace = computeIfaceOwnedIpSpaces(ipIfaceOwners);
-    }
-
-    {
-      _hostToInterfaceToIpSpace = computeInterfaceOwnedIpSpaces(_hostToVrfToInterfaceToIpSpace);
-      _allInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, false);
-    }
+    // no real use case for avoiding collisions
+    return 0;
   }
 
   @VisibleForTesting
@@ -647,7 +651,7 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
    *
    * @see Prefix#toHostIpSpace()
    */
-  private final @Nonnull ap<String, Map<String, IpSpace>> _allInterfaceHostIps;
+  private final @Nonnull Map<String, Map<String, IpSpace>> _allInterfaceHostIps;
 
   /** Mapping from an IP to hostname to set of VRFs that own that IP. */
   private final @Nonnull Map<Ip, Map<String, Set<String>>> _ipVrfOwners;

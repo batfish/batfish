@@ -1,9 +1,12 @@
-package org.batfish.common.topology;
+package org.batfish.topology;
 
 import java.util.Map;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.IpOwnersBaseImpl;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 
 /**
  * {@Link IpOwners} implementation using only pre-dataplane information, i.e. configs and initial
@@ -22,9 +25,9 @@ import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
  * </ul>
  */
 @ParametersAreNonnullByDefault
-public final class StaticIpOwners extends IpOwnersBaseImpl {
+final class PreDataPlaneIpOwners extends IpOwnersBaseImpl {
 
-  public StaticIpOwners(Map<String, Configuration> configurations, L3Adjacencies l3Adjacencies) {
-    super(configurations, l3Adjacencies, StaticTrackMethodEvaluator::new);
+  PreDataPlaneIpOwners(Map<String, Configuration> configurations, L3Adjacencies l3Adjacencies) {
+    super(configurations, l3Adjacencies, PreDataPlaneTrackMethodEvaluator::new);
   }
 }

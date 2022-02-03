@@ -35,7 +35,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.dataplane.ibdp.TracerouteEngineImpl;
+import org.batfish.dataplane.TracerouteEngineImpl;
 
 /**
  * An implementation of {@link TracerouteEngineImpl#computeTraces(Set, boolean)} and the context

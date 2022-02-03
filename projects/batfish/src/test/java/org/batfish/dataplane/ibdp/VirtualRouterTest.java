@@ -36,7 +36,7 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
-import org.batfish.common.topology.StaticIpOwners;
+import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
@@ -93,7 +93,8 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackMethodEvaluator;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -214,8 +215,8 @@ public class VirtualRouterTest {
   }
 
   /**
-   * Test that {@link VirtualRouter#activateStaticRoutes()} removes a route if a route to its
-   * next-hop IP disappears.
+   * Test that {@link VirtualRouter#activateStaticRoutes(TrackMethodEvaluator)} ()} removes a route
+   * if a route to its next-hop IP disappears.
    */
   @Test
   public void testActivateStaticRoutesRemoval() {
@@ -238,11 +239,11 @@ public class VirtualRouterTest {
     // Initial activation
     vr.initConnectedRib();
     vr.initStaticRibs();
-    vr.activateStaticRoutes(new StaticTrackMethodEvaluator(vr.getConfiguration()));
+    vr.activateStaticRoutes(new PreDataPlaneTrackMethodEvaluator(vr.getConfiguration()));
 
     // Test: remove baseRoute, rerun activation
     vr.getMainRib().removeRoute(new AnnotatedRoute<>(baseRoute, DEFAULT_VRF_NAME));
-    vr.activateStaticRoutes(new StaticTrackMethodEvaluator(vr.getConfiguration()));
+    vr.activateStaticRoutes(new PreDataPlaneTrackMethodEvaluator(vr.getConfiguration()));
 
     // Assert dependent route is not there
     assertThat(vr.getMainRib().getRoutes(), not(hasItem(dependentRoute)));
@@ -655,11 +656,7 @@ public class VirtualRouterTest {
 
     // Re-run with non-empty topology
     BgpTopology bgpTopology2 =
-        initBgpTopology(
-            configs,
-            new StaticIpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getIpVrfOwners(),
-            false,
-            null);
+        initBgpTopology(configs, new TestIpOwners(configs).getIpVrfOwners(), false, null);
     for (Node n : nodes.values()) {
       n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME)
           .initForEgpComputationWithNewTopology(
@@ -974,10 +971,18 @@ public class VirtualRouterTest {
 
     // Now init connected routes. This should cause a change in the main RIB.
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-        new StaticIpOwners(ImmutableMap.of(c.getHostname(), c), emptyTopology.getL3Adjacencies())
-            .getIpVrfOwners();
+        new TestIpOwners(ImmutableMap.of(c.getHostname(), c)).getIpVrfOwners();
     vr.initForIgpComputation(emptyTopology, ipVrfOwners, ImmutableMap.of());
 
     assertNotEquals(vrInitialHashcode, vr.computeIterationHashCode());
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(Map<String, Configuration> configurations) {
+      super(
+          configurations,
+          GlobalBroadcastNoPointToPoint.instance(),
+          PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

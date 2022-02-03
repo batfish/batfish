@@ -23,7 +23,6 @@ import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.StaticIpOwners;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
@@ -200,7 +199,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialIpOwners").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return new StaticIpOwners(getConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
+      return new PreDataPlaneIpOwners(
+          getConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
     } finally {
       span.finish();
     }
