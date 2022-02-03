@@ -284,13 +284,7 @@ final class IncrementalBdpEngine {
        */
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
-      computeIgpDataPlane(
-          nodes,
-          vrs,
-          initialTopologyContext,
-          initialIpVrfOwners,
-          initialActiveInterfaceOwners,
-          answerElement);
+      computeIgpDataPlane(nodes, vrs, initialTopologyContext, initialIpVrfOwners, answerElement);
 
       LOGGER.info("Initialize virtual routers before topology fixed point");
       Span initializationSpan =
@@ -357,6 +351,8 @@ final class IncrementalBdpEngine {
                   vrs,
                   answerElement,
                   currentTopologyContext,
+                  initialTopologyContext.getLayer3Topology(),
+                  currentIpOwners.getInterfaceOwners(true),
                   networkConfigurations,
                   currentTrackMethodEvaluatorProvider);
           if (isOscillating) {
@@ -765,7 +761,6 @@ final class IncrementalBdpEngine {
       List<VirtualRouter> vrs,
       TopologyContext topologyContext,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
-      Map<String, Map<String, Set<Ip>>> interfaceOwners,
       IncrementalBdpAnswerElement ae) {
     Span span = GlobalTracer.get().buildSpan("Compute IGP").start();
     LOGGER.info("Compute IGP");
@@ -782,8 +777,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Initialize for IGP computation");
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializeSpan)) {
         assert innerScope != null; // avoid unused warning
-        vrs.parallelStream()
-            .forEach(vr -> vr.initForIgpComputation(topologyContext, ipVrfOwners, interfaceOwners));
+        vrs.parallelStream().forEach(vr -> vr.initForIgpComputation(topologyContext, ipVrfOwners));
       } finally {
         initializeSpan.finish();
       }
@@ -833,8 +827,20 @@ final class IncrementalBdpEngine {
       List<VirtualRouter> vrs,
       IncrementalBdpAnswerElement ae,
       TopologyContext topologyContext,
+      Topology initialLayer3Topology,
+      Map<String, Map<String, Set<Ip>>> interfaceOwners,
       NetworkConfigurations networkConfigurations,
       DataPlaneTrackMethodEvaluatorProvider provider) {
+    LOGGER.info("Compute HMM routes");
+    Span hmmSpan = GlobalTracer.get().buildSpan("Compute HMM routes").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(hmmSpan)) {
+      assert scope != null; // avoid unused warning
+      vrs.parallelStream()
+          .forEach(vr -> vr.computeHmmRoutes(initialLayer3Topology, interfaceOwners));
+    } finally {
+      hmmSpan.finish();
+    }
+
     LOGGER.info("Compute EGP");
     Span span = GlobalTracer.get().buildSpan("Compute EGP").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {

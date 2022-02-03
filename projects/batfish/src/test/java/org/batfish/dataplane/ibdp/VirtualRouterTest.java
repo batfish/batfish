@@ -972,7 +972,7 @@ public class VirtualRouterTest {
     // Now init connected routes. This should cause a change in the main RIB.
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
         new TestIpOwners(ImmutableMap.of(c.getHostname(), c)).getIpVrfOwners();
-    vr.initForIgpComputation(emptyTopology, ipVrfOwners, ImmutableMap.of());
+    vr.initForIgpComputation(emptyTopology, ipVrfOwners);
 
     assertNotEquals(vrInitialHashcode, vr.computeIterationHashCode());
   }
