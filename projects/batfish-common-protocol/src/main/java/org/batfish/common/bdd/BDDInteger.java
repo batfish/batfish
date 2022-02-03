@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
@@ -19,6 +20,10 @@ public class BDDInteger {
   private final BDD[] _bitvec;
   private final long _maxVal;
 
+  // Temporary ArrayLists used to optimize some internal computations.
+  private final List<BDD> _trues;
+  private final List<BDD> _falses;
+
   /** Certain API calls are only valid when this BDD has only variables in it. */
   private boolean _hasVariablesOnly;
 
@@ -33,6 +38,8 @@ public class BDDInteger {
     _bitvec = new BDD[length];
     _maxVal = 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - length);
     _hasVariablesOnly = false;
+    _trues = new ArrayList<>(length);
+    _falses = new ArrayList<>(length);
   }
 
   public BDDInteger(BDDInteger other) {
@@ -198,21 +205,17 @@ public class BDDInteger {
     checkArgument(val >= 0, "value is negative");
     checkArgument(val <= _maxVal, "value %s is out of range [0, %s]", val, _maxVal);
     long currentVal = val;
-    BDD[] bits = new BDD[_bitvec.length];
+    _trues.clear();
+    _falses.clear();
     for (int i = _bitvec.length - 1; i >= 0; i--) {
-      BDD b = _bitvec[i];
       if ((currentVal & 1) != 0) {
-        bits[i] = b.id();
+        _trues.add(_bitvec[i]);
       } else {
-        bits[i] = b.not();
+        _falses.add(_bitvec[i]);
       }
       currentVal >>= 1;
     }
-    BDD ret = _factory.andAll(bits);
-    for (BDD b : bits) {
-      b.free();
-    }
-    return ret;
+    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
   }
 
   // Helper function to compute leq on the last N bits of the input value.

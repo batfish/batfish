@@ -62,7 +62,7 @@ public final class BDDOps {
           result = or(lineBddsWithCurrentAction);
         } else {
           // permitted by the rest of the acl and not matched by any of the deny lines.
-          result = result.diff(or(lineBddsWithCurrentAction));
+          result = result.diffWith(or(lineBddsWithCurrentAction));
         }
         currentAction = lineAction;
         lineBddsWithCurrentAction.clear();
@@ -78,7 +78,7 @@ public final class BDDOps {
       lineBddsWithCurrentAction.add(result);
       result = or(lineBddsWithCurrentAction);
     } else {
-      result = result.diff(or(lineBddsWithCurrentAction));
+      result = result.diffWith(or(lineBddsWithCurrentAction));
     }
     return result;
   }
