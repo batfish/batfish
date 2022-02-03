@@ -32,6 +32,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,8 +62,13 @@ import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
+import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEvaluatorProvider;
@@ -417,21 +423,52 @@ final class IncrementalBdpEngine {
    * Returns map: hostname of config with at least one {@link TrackRoute} -> {@link TrackRoute}s in
    * that config.
    */
-  private @Nonnull Map<String, Collection<TrackRoute>> collectTrackRoutes(
+  private static @Nonnull Map<String, Collection<TrackRoute>> collectTrackRoutes(
       Map<String, Configuration> configurations) {
     ImmutableMap.Builder<String, Collection<TrackRoute>> builder = ImmutableMap.builder();
     configurations.forEach(
         (hostname, c) -> {
           Collection<TrackRoute> trackRoutes =
               c.getTrackingGroups().values().stream()
-                  .filter(TrackRoute.class::isInstance)
-                  .map(TrackRoute.class::cast)
+                  .flatMap(TRACK_ROUTE_COLLECTOR::visit)
                   .collect(ImmutableList.toImmutableList());
           if (!trackRoutes.isEmpty()) {
             builder.put(hostname, trackRoutes);
           }
         });
     return builder.build();
+  }
+
+  private static final TrackRouteCollector TRACK_ROUTE_COLLECTOR = new TrackRouteCollector();
+
+  private static final class TrackRouteCollector
+      implements GenericTrackMethodVisitor<Stream<TrackRoute>> {
+
+    @Override
+    public Stream<TrackRoute> visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod) {
+      return visit(negatedTrackMethod.getTrackMethod());
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackInterface(TrackInterface trackInterface) {
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackMethodReference(TrackMethodReference trackMethodReference) {
+      // target will be found elsewhere
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackRoute(TrackRoute trackRoute) {
+      return Stream.of(trackRoute);
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackTrue(TrackTrue trackTrue) {
+      return Stream.of();
+    }
   }
 
   /**
