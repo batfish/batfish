@@ -15,10 +15,13 @@ import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanTopologyToLaye
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,7 +51,6 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -59,6 +62,7 @@ import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEvaluatorProvider;
@@ -318,9 +322,15 @@ final class IncrementalBdpEngine {
               initialTopologyContext,
               networkConfigurations,
               initialIpVrfOwners);
+      Map<String, Collection<TrackRoute>> trackRoutesByHostname =
+          collectTrackRoutes(configurations);
       DataPlaneTrackMethodEvaluatorProvider currentTrackMethodEvaluatorProvider =
           nextTrackMethodEvaluatorProvider(
-              currentDataplane, nodes, currentTopologyContext, configurations);
+              currentDataplane,
+              nodes,
+              currentTopologyContext,
+              configurations,
+              trackRoutesByHostname);
       DataPlaneIpOwners currentIpOwners =
           new DataPlaneIpOwners(
               configurations,
@@ -359,7 +369,11 @@ final class IncrementalBdpEngine {
                   currentIpOwners.getIpVrfOwners());
           currentTrackMethodEvaluatorProvider =
               nextTrackMethodEvaluatorProvider(
-                  currentDataplane, nodes, nextTopologyContext, configurations);
+                  currentDataplane,
+                  nodes,
+                  nextTopologyContext,
+                  configurations,
+                  trackRoutesByHostname);
           DataPlaneIpOwners nextIpOwners =
               new DataPlaneIpOwners(
                   configurations,
@@ -399,26 +413,82 @@ final class IncrementalBdpEngine {
     }
   }
 
+  /**
+   * Returns map: hostname of config with at least one {@link TrackRoute} -> {@link TrackRoute}s in
+   * that config.
+   */
+  private @Nonnull Map<String, Collection<TrackRoute>> collectTrackRoutes(
+      Map<String, Configuration> configurations) {
+    ImmutableMap.Builder<String, Collection<TrackRoute>> builder = ImmutableMap.builder();
+    configurations.forEach(
+        (hostname, c) -> {
+          Collection<TrackRoute> trackRoutes =
+              c.getTrackingGroups().values().stream()
+                  .filter(TrackRoute.class::isInstance)
+                  .map(TrackRoute.class::cast)
+                  .collect(ImmutableList.toImmutableList());
+          if (!trackRoutes.isEmpty()) {
+            builder.put(hostname, trackRoutes);
+          }
+        });
+    return builder.build();
+  }
+
+  /**
+   * Create a provider for data-plane-based track evaluation, which depends in general on the
+   * contents of FIBs and RIBs.
+   *
+   * <p>Evaluation is currently performed in the following places:
+   *
+   * <ul>
+   *   <li>Constructor of {@link DataPlaneIpOwners}. This happens between iterations, so is thread
+   *       safe with respect to RIBs and FIBs.
+   *   <li>{@link VirtualRouter#activateStaticRoutes}. This happens during evaluation of a parallel
+   *       stream over all {@link VirtualRouter}s that modifies RIBs. In order to achieve
+   *       thread-safety in the case where a {@link org.batfish.datamodel.tracking.TrackRoute}
+   *       depends on information in a different VRF than that containing the static route, the
+   *       evaulator must have an immutable view of the RIB being inspected. So we should depend on
+   *       the routes from the beginning of the iteration (note we are only able to supply FIBs from
+   *       the beginning of an iteration anyway). Since saving routes of a VRF can be expensive, we
+   *       instead pre-evaluate the {@link org.batfish.datamodel.tracking.TrackRoute}s now.
+   * </ul>
+   */
   private static @Nonnull DataPlaneTrackMethodEvaluatorProvider nextTrackMethodEvaluatorProvider(
       PartialDataplane dp,
       Map<String, Node> nodes,
       TopologyContext topologyContext,
-      Map<String, Configuration> configurations) {
-    Map<String, Map<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        new HashMap<>(nodes.size());
-    nodes.forEach(
-        (hostname, node) -> {
-          node.getVirtualRouters()
-              .forEach(
-                  vr -> {
-                    ribs.computeIfAbsent(
-                            hostname, h -> new HashMap<>(node.getVirtualRouters().size()))
-                        .put(vr.getName(), vr.getMainRib());
-                  });
-        });
+      Map<String, Configuration> configurations,
+      Map<String, Collection<TrackRoute>> trackRoutesByHostname) {
+    ImmutableMap.Builder<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname =
+        ImmutableMap.builder();
+    trackRoutesByHostname.forEach(
+        (hostname, trackRoutes) ->
+            trackRouteResultsByHostname.put(
+                hostname,
+                trackRoutes.stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(
+                            Function.identity(),
+                            trackRoute -> evaluateTrackRoute(trackRoute, nodes.get(hostname))))));
     TracerouteEngine tr =
         new TracerouteEngineImpl(dp, topologyContext.getLayer3Topology(), configurations);
-    return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(ribs, tr);
+    return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
+        trackRouteResultsByHostname.build(), tr);
+  }
+
+  @VisibleForTesting
+  static boolean evaluateTrackRoute(TrackRoute trackRoute, Node node) {
+    Set<AnnotatedRoute<AbstractRoute>> routesForPrefix =
+        node.getVirtualRouter(trackRoute.getVrf())
+            .get()
+            .getMainRib()
+            .getRoutes(trackRoute.getPrefix());
+    if (trackRoute.getProtocols().isEmpty()) {
+      return !routesForPrefix.isEmpty();
+    } else {
+      return routesForPrefix.stream()
+          .anyMatch(r -> trackRoute.getProtocols().contains(r.getRoute().getProtocol()));
+    }
   }
 
   /**

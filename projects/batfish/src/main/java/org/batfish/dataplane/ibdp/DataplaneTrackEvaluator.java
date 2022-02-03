@@ -1,14 +1,11 @@
 package org.batfish.dataplane.ibdp;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.plugin.TracerouteEngine;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -32,7 +29,6 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
 
   @FunctionalInterface
   public interface DataPlaneTrackMethodEvaluatorProvider extends TrackMethodEvaluatorProvider {
-
     @Override
     @Nonnull
     DataplaneTrackEvaluator forConfiguration(Configuration c);
@@ -43,21 +39,13 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
    * engine.
    */
   public static @Nonnull DataPlaneTrackMethodEvaluatorProvider createTrackMethodEvaluatorProvider(
-      Map<String, Map<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs,
+      Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname,
       TracerouteEngine tracerouteEngine) {
     return configuration ->
         new DataplaneTrackEvaluator(
-            configuration, ribs.get(configuration.getHostname()), tracerouteEngine);
-  }
-
-  public DataplaneTrackEvaluator(
-      Configuration configuration,
-      Map<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribByVrf,
-      TracerouteEngine tracerouteEngine) {
-    _configuration = configuration;
-    _preDataPlaneTrackMethodEvaluator = new PreDataPlaneTrackMethodEvaluator(configuration);
-    _ribByVrf = ribByVrf;
-    _tracerouteEngine = tracerouteEngine;
+            configuration,
+            tracerouteEngine,
+            trackRouteResultsByHostname.get(configuration.getHostname()));
   }
 
   @Override
@@ -79,14 +67,7 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
 
   @Override
   public Boolean visitTrackRoute(TrackRoute trackRoute) {
-    Set<AnnotatedRoute<AbstractRoute>> routesForPrefix =
-        _ribByVrf.get(trackRoute.getVrf()).getRoutes(trackRoute.getPrefix());
-    if (trackRoute.getProtocols().isEmpty()) {
-      return !routesForPrefix.isEmpty();
-    } else {
-      return routesForPrefix.stream()
-          .anyMatch(r -> trackRoute.getProtocols().contains(r.getRoute().getProtocol()));
-    }
+    return _trackRouteResults.get(trackRoute);
   }
 
   @Override
@@ -95,10 +76,21 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
   }
 
   private final @Nonnull Configuration _configuration;
-  private final @Nonnull Map<String, GenericRib<AnnotatedRoute<AbstractRoute>>> _ribByVrf;
+  private final @Nonnull Map<TrackRoute, Boolean> _trackRouteResults;
   private final @Nonnull PreDataPlaneTrackMethodEvaluator _preDataPlaneTrackMethodEvaluator;
 
   // TODO: support track reachability
   @SuppressWarnings("unused")
   private final @Nonnull TracerouteEngine _tracerouteEngine;
+
+  @VisibleForTesting
+  DataplaneTrackEvaluator(
+      Configuration configuration,
+      TracerouteEngine tracerouteEngine,
+      Map<TrackRoute, Boolean> trackRouteResults) {
+    _configuration = configuration;
+    _preDataPlaneTrackMethodEvaluator = new PreDataPlaneTrackMethodEvaluator(configuration);
+    _tracerouteEngine = tracerouteEngine;
+    _trackRouteResults = trackRouteResults;
+  }
 }
