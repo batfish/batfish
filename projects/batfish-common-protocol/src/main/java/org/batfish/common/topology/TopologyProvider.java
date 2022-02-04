@@ -59,7 +59,7 @@ public interface TopologyProvider {
    * NetworkSnapshot}
    */
   @Nonnull
-  IpOwners getIpOwners(NetworkSnapshot snapshot);
+  IpOwners getInitialIpOwners(NetworkSnapshot snapshot);
 
   /**
    * Computes the {@link Layer1Topology} with respect to logical layer-1 edges for a given {@link

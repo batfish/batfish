@@ -108,7 +108,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.RibExpr;
 import org.batfish.datamodel.tracking.TrackMethod;
-import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.tracking.TrackMethodEvaluator;
 import org.batfish.datamodel.visitors.RibExprVisitor;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -248,7 +248,6 @@ public final class VirtualRouter {
   final Vrf _vrf;
 
   @Nonnull private final RibExprEvaluator _ribExprEvaluator;
-  @Nonnull private final DataplaneTrackEvaluator _trackEvaluator;
 
   @Nonnull
   private final ResolutionRestriction<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
@@ -285,7 +284,6 @@ public final class VirtualRouter {
               _vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY, _prefixTracer);
     }
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
-    _trackEvaluator = new DataplaneTrackEvaluator(_c, _mainRib);
   }
 
   @VisibleForTesting
@@ -583,9 +581,9 @@ public final class VirtualRouter {
    *
    * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
-  void activateStaticRoutes() {
+  void activateStaticRoutes(TrackMethodEvaluator trackMethodEvaluator) {
     for (StaticRoute sr : _staticConditionalRib.getTypedRoutes()) {
-      if (shouldActivateConditionalStaticRoute(sr)) {
+      if (shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
         /*
@@ -596,11 +594,12 @@ public final class VirtualRouter {
     }
   }
 
-  private boolean shouldActivateConditionalStaticRoute(StaticRoute sr) {
+  private boolean shouldActivateConditionalStaticRoute(
+      TrackMethodEvaluator trackMethodEvaluator, StaticRoute sr) {
     if (!shouldActivateConditionalStaticRouteNextHop(sr)) {
       return false;
     }
-    if (sr.getTrack() != null && !evaluateTrack(sr.getTrack())) {
+    if (sr.getTrack() != null && !evaluateTrack(trackMethodEvaluator, sr.getTrack())) {
       // Required track failed
       return false;
     }
@@ -693,16 +692,10 @@ public final class VirtualRouter {
    * Evaluates the {@link TrackMethod} indexed by {@code trackName} and returns {@code true} iff the
    * track succeeds.
    */
-  private boolean evaluateTrack(String trackName) {
+  private boolean evaluateTrack(TrackMethodEvaluator trackMethodEvaluator, String trackName) {
     TrackMethod method = _c.getTrackingGroups().get(trackName);
     assert method != null;
-    if (method instanceof TrackRoute && !((TrackRoute) method).getVrf().equals(_vrf.getName())) {
-      // TODO: Support tracking a route in a different VRF
-      //       This change will be complicated, because in the current implementation this method is
-      //       called while other VRFs' main RIBs are being updated.
-      return false;
-    }
-    return _trackEvaluator.visit(method);
+    return trackMethodEvaluator.visit(method);
   }
 
   /** Compute the FIB from the main RIB */

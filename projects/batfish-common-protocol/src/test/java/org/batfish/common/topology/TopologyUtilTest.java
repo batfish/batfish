@@ -3,7 +3,7 @@ package org.batfish.common.topology;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableSortedSet.of;
 import static org.batfish.common.matchers.Layer2TopologyMatchers.inSameBroadcastDomain;
-import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
+import static org.batfish.common.topology.IpOwnersBaseImpl.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.computeInitialTunnelTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2SelfEdges;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
@@ -71,6 +71,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -1463,7 +1464,7 @@ public final class TopologyUtilTest {
 
   /**
    * Tests that inactive and blacklisted interfaces are properly included or excluded from the
-   * output of {@link IpOwners#computeIpInterfaceOwners}
+   * output of {@link IpOwnersBaseImpl#computeIpInterfaceOwners}
    */
   @Test
   public void testIpInterfaceOwnersActiveInclusion() {
@@ -1479,13 +1480,15 @@ public final class TopologyUtilTest {
             ImmutableMap.of("node", Configuration.builder().setHostname("node").build()));
 
     assertThat(
-        computeIpInterfaceOwners(nodeInterfaces, true, null, nc),
+        computeIpInterfaceOwners(
+            nodeInterfaces, true, null, nc, PreDataPlaneTrackMethodEvaluator::new),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
 
     assertThat(
-        computeIpInterfaceOwners(nodeInterfaces, false, null, nc),
+        computeIpInterfaceOwners(
+            nodeInterfaces, false, null, nc, PreDataPlaneTrackMethodEvaluator::new),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"),

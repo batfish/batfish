@@ -17,9 +17,12 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nullable;
+import org.batfish.common.topology.IpOwnersBaseImpl;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -62,6 +65,7 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -378,16 +382,19 @@ public class OspfTest {
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setLayer3Topology(topology)
+            .setOspfTopology(
+                computeOspfTopology(NetworkConfigurations.of(configurations), topology))
+            .build();
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
             engine.computeDataPlane(
                     configurations,
-                    TopologyContext.builder()
-                        .setLayer3Topology(topology)
-                        .setOspfTopology(
-                            computeOspfTopology(NetworkConfigurations.of(configurations), topology))
-                        .build(),
-                    Collections.emptySet())
+                    topologyContext,
+                    Collections.emptySet(),
+                    new TestIpOwners(configurations, topologyContext.getL3Adjacencies()))
                 ._dataPlane;
 
     return IncrementalBdpEngine.getRoutes(dp);
@@ -615,16 +622,19 @@ public class OspfTest {
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setLayer3Topology(topology)
+            .setOspfTopology(
+                computeOspfTopology(NetworkConfigurations.of(configurations), topology))
+            .build();
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
             engine.computeDataPlane(
                     configurations,
-                    TopologyContext.builder()
-                        .setLayer3Topology(topology)
-                        .setOspfTopology(
-                            computeOspfTopology(NetworkConfigurations.of(configurations), topology))
-                        .build(),
-                    Collections.emptySet())
+                    topologyContext,
+                    Collections.emptySet(),
+                    new TestIpOwners(configurations, topologyContext.getL3Adjacencies()))
                 ._dataPlane;
 
     return IncrementalBdpEngine.getRoutes(dp);
@@ -1349,5 +1359,12 @@ public class OspfTest {
     assertRoute(
         routes, OSPF, "listener", Prefix.parse("192.168.61.4/32"), 11, Ip.parse("14.2.0.2"));
     assertNoRoute(routes, "listener", Prefix.parse("192.168.61.0/24"));
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(
+        Map<String, Configuration> configurations, L3Adjacencies initialL3Adjacencies) {
+      super(configurations, initialL3Adjacencies, PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

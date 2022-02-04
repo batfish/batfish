@@ -606,7 +606,7 @@ public class AristaGrammarTest {
     assertTrue(
         configurations.values().stream().allMatch(c -> c.getConfigurationFormat() == ARISTA));
     Map<Ip, Map<String, Set<String>>> ipOwners =
-        batfish.getTopologyProvider().getIpOwners(batfish.getSnapshot()).getIpVrfOwners();
+        batfish.getTopologyProvider().getInitialIpOwners(batfish.getSnapshot()).getIpVrfOwners();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, null).getGraph();
 

@@ -22,8 +22,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Sets;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.topology.IpOwnersBaseImpl;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -45,6 +48,7 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.isis.IsisTopology;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -169,14 +173,17 @@ public class IsisTest {
         ImmutableSortedMap.of(r1.getHostname(), r1, r2.getHostname(), r2);
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setLayer3Topology(topology)
+            .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
+            .build();
     return (IbdpResult)
         engine.computeDataPlane(
             configurations,
-            TopologyContext.builder()
-                .setLayer3Topology(topology)
-                .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
-                .build(),
-            Collections.emptySet());
+            topologyContext,
+            Collections.emptySet(),
+            new TestIpOwners(configurations, topologyContext.getL3Adjacencies()));
   }
 
   @Test
@@ -453,14 +460,17 @@ public class IsisTest {
             r5);
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setLayer3Topology(topology)
+            .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
+            .build();
     return (IbdpResult)
         engine.computeDataPlane(
             configurations,
-            TopologyContext.builder()
-                .setLayer3Topology(topology)
-                .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
-                .build(),
-            Collections.emptySet());
+            topologyContext,
+            Collections.emptySet(),
+            new TestIpOwners(configurations, topologyContext.getL3Adjacencies()));
   }
 
   @Test
@@ -642,14 +652,17 @@ public class IsisTest {
             r1.getHostname(), r1, r2.getHostname(), r2, r3.getHostname(), r3, r4.getHostname(), r4);
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setLayer3Topology(topology)
+            .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
+            .build();
     return (IncrementalDataPlane)
         engine.computeDataPlane(
                 configurations,
-                TopologyContext.builder()
-                    .setLayer3Topology(topology)
-                    .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
-                    .build(),
-                Collections.emptySet())
+                topologyContext,
+                Collections.emptySet(),
+                new TestIpOwners(configurations, topologyContext.getL3Adjacencies()))
             ._dataPlane;
   }
 
@@ -738,5 +751,12 @@ public class IsisTest {
     assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.3.3.100/32"), 10L);
     assertRoute(routes, ISIS_L1, R4, Prefix.parse("10.3.3.100/32"), 10L);
     assertRoute(routes, ISIS_L1, R5, Prefix.parse("10.3.3.100/32"), 10L);
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(
+        Map<String, Configuration> configurations, L3Adjacencies initialL3Adjacencies) {
+      super(configurations, initialL3Adjacencies, PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

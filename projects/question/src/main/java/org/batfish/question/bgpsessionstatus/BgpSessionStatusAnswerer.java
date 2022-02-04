@@ -138,7 +138,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-        topologyProvider.getIpOwners(snapshot).getIpVrfOwners();
+        topologyProvider.getInitialIpOwners(snapshot).getIpVrfOwners();
     L3Adjacencies adjacencies = topologyProvider.getL3Adjacencies(snapshot);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipVrfOwners, true, adjacencies).getGraph();
