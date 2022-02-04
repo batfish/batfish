@@ -150,7 +150,8 @@ public enum JunosApplication implements Application {
   JUNOS_SQLNET_V1,
   JUNOS_SQLNET_V2,
   JUNOS_SSH,
-  JUNOS_STUN,
+  JUNOS_STUN_TCP,
+  JUNOS_STUN_UDP,
   JUNOS_SUN_RPC_ANY_TCP,
   JUNOS_SUN_RPC_ANY_UDP,
   JUNOS_SUN_RPC_MOUNTD_TCP,
@@ -702,6 +703,20 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_NBDS:
+        {
+          portRangeStart = NamedPort.NETBIOS_DGM.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_NBNAME:
+        {
+          portRangeStart = NamedPort.NETBIOS_NS.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
       case JUNOS_NETBIOS_SESSION:
         {
           portRangeStart = NamedPort.NETBIOS_SSN.number();
@@ -803,6 +818,21 @@ public enum JunosApplication implements Application {
         {
           portRangeStart = NamedPort.SSH.number();
           ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_STUN_TCP:
+        {
+          portRangeStart = NamedPort.STUN.number();
+          portRangeEnd = portRangeStart + 1;
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+      case JUNOS_STUN_UDP:
+        {
+          portRangeStart = NamedPort.STUN.number();
+          portRangeEnd = portRangeStart + 1;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
@@ -1034,6 +1064,13 @@ public enum JunosApplication implements Application {
           ipProtocol = IpProtocol.UDP;
           portRangeStart = NamedPort.SUNRPC.number();
           // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_TFTP:
+        {
+          portRangeStart = NamedPort.TFTP.number();
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 

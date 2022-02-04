@@ -136,6 +136,8 @@ set security policies global policy policy-name match application junos-sqlnet-v
 set security policies global policy policy-name match application junos-sqlnet-v2
 set security policies global policy policy-name match application junos-ssh
 set security policies global policy policy-name match application junos-stun
+set security policies global policy policy-name match application junos-stun-tcp
+set security policies global policy policy-name match application junos-stun-udp
 set security policies global policy policy-name match application junos-sun-rpc
 set security policies global policy policy-name match application junos-sun-rpc-any
 set security policies global policy policy-name match application junos-sun-rpc-any-tcp
