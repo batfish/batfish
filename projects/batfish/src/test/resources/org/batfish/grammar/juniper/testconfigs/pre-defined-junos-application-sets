@@ -8,6 +8,7 @@ set security policies global policy policy-name match application junos-ms-rpc-i
 set security policies global policy policy-name match application junos-ms-rpc-msexchange
 set security policies global policy policy-name match application junos-ms-rpc-wmic
 set security policies global policy policy-name match application junos-routing-inbound
+set security policies global policy policy-name match application junos-sun-stun
 set security policies global policy policy-name match application junos-sun-rpc
 set security policies global policy policy-name match application junos-sun-rpc-any
 set security policies global policy policy-name match application junos-sun-rpc-mountd

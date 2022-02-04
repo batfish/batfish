@@ -1271,6 +1271,10 @@ JUNOS_SSH: 'junos-ssh';
 
 JUNOS_STUN: 'junos-stun';
 
+JUNOS_STUN_TCP: 'junos-stun-tcp';
+
+JUNOS_STUN_UDP: 'junos-stun-udp';
+
 JUNOS_SUN_RPC: 'junos-sun-rpc';
 
 JUNOS_SUN_RPC_ANY: 'junos-sun-rpc-any';

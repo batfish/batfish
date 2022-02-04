@@ -25,6 +25,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
   JUNOS_MS_RPC_MSEXCHANGE,
   JUNOS_MS_RPC_WMIC,
   JUNOS_ROUTING_INBOUND,
+  JUNOS_STUN,
   JUNOS_SUN_RPC,
   JUNOS_SUN_RPC_ANY,
   JUNOS_SUN_RPC_MOUNTD,
@@ -137,6 +138,13 @@ public enum JunosApplicationSet implements ApplicationSetMember {
                   JunosApplication.JUNOS_RIP,
                   JunosApplication.JUNOS_LDP_TCP,
                   JunosApplication.JUNOS_LDP_UDP);
+          break;
+        }
+
+      case JUNOS_STUN:
+        {
+          applications =
+              Arrays.asList(JunosApplication.JUNOS_STUN_TCP, JunosApplication.JUNOS_STUN_UDP);
           break;
         }
 

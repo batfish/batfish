@@ -150,7 +150,8 @@ public enum JunosApplication implements Application {
   JUNOS_SQLNET_V1,
   JUNOS_SQLNET_V2,
   JUNOS_SSH,
-  JUNOS_STUN,
+  JUNOS_STUN_TCP,
+  JUNOS_STUN_UDP,
   JUNOS_SUN_RPC_ANY_TCP,
   JUNOS_SUN_RPC_ANY_UDP,
   JUNOS_SUN_RPC_MOUNTD_TCP,
@@ -817,6 +818,21 @@ public enum JunosApplication implements Application {
         {
           portRangeStart = NamedPort.SSH.number();
           ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_STUN_TCP:
+        {
+          portRangeStart = NamedPort.STUN.number();
+          portRangeEnd = portRangeStart + 1;
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+      case JUNOS_STUN_UDP:
+        {
+          portRangeStart = NamedPort.STUN.number();
+          portRangeEnd = portRangeStart + 1;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 

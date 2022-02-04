@@ -330,6 +330,7 @@ public enum NamedPort {
   /** SQL Service. */
   SQLSRV(156),
   SSH(22),
+  STUN(3478),
   /** Email message submission. */
   SUBMISSION(587),
   SUNRPC(111),
