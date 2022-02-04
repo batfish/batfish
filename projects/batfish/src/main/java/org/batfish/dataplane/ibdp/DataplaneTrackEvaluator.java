@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
@@ -19,8 +18,8 @@ import org.batfish.datamodel.tracking.TrackTrue;
 
 /**
  * Evaluator for a {@link org.batfish.datamodel.tracking.TrackMethod} given knowledge of the
- * contents of a {@link Configuration}, its associated RIBs, and a {@link TracerouteEngine} that can
- * perform reachabilty checks.
+ * contents of a {@link Configuration} and the results of dataplane-based tracking checks at a given
+ * point in time.
  *
  * <p>Delegates to {@link PreDataPlaneTrackMethodEvaluator} when only the contents of the {@link
  * Configuration} are needed for evaluation.
@@ -36,8 +35,8 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
   }
 
   /**
-   * Create a provider for {@link DataplaneTrackEvaluator}s given a fixed dataplane and traceroute
-   * engine.
+   * Create a provider for {@link DataplaneTrackEvaluator}s given current results for all
+   * dataplane-based tracking checks..
    */
   public static @Nonnull DataPlaneTrackMethodEvaluatorProvider createTrackMethodEvaluatorProvider(
       Map<String, Map<TrackReachability, Boolean>> trackReachabilityResultsByHostname,
