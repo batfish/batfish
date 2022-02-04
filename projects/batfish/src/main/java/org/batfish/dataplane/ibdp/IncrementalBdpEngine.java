@@ -322,13 +322,14 @@ final class IncrementalBdpEngine {
               initialIpVrfOwners);
       Map<String, Collection<TrackRoute>> trackRoutesByHostname =
           collectTrackRoutes(configurations);
+      Map<String, Map<TrackRoute, Boolean>> currentTrackRouteResultsByHostname =
+          nextTrackRoutesByHostname(trackRoutesByHostname, nodes);
       DataPlaneTrackMethodEvaluatorProvider currentTrackMethodEvaluatorProvider =
           nextTrackMethodEvaluatorProvider(
               currentDataplane,
-              nodes,
               currentTopologyContext,
               configurations,
-              trackRoutesByHostname);
+              currentTrackRouteResultsByHostname);
       DataPlaneIpOwners currentIpOwners =
           new DataPlaneIpOwners(
               configurations,
@@ -367,13 +368,14 @@ final class IncrementalBdpEngine {
                   initialTopologyContext,
                   networkConfigurations,
                   currentIpOwners.getIpVrfOwners());
+          Map<String, Map<TrackRoute, Boolean>> nextTrackRouteResultsByHostname =
+              nextTrackRoutesByHostname(trackRoutesByHostname, nodes);
           currentTrackMethodEvaluatorProvider =
               nextTrackMethodEvaluatorProvider(
                   currentDataplane,
-                  nodes,
                   nextTopologyContext,
                   configurations,
-                  trackRoutesByHostname);
+                  nextTrackRouteResultsByHostname);
           DataPlaneIpOwners nextIpOwners =
               new DataPlaneIpOwners(
                   configurations,
@@ -381,8 +383,10 @@ final class IncrementalBdpEngine {
                   currentTrackMethodEvaluatorProvider);
           converged =
               currentTopologyContext.equals(nextTopologyContext)
+                  && currentTrackRouteResultsByHostname.equals(nextTrackRouteResultsByHostname)
                   && currentIpOwners.equals(nextIpOwners);
           currentTopologyContext = nextTopologyContext;
+          currentTrackRouteResultsByHostname = nextTrackRouteResultsByHostname;
           currentIpOwners = nextIpOwners;
         } finally {
           iterSpan.finish();
@@ -411,6 +415,22 @@ final class IncrementalBdpEngine {
     } finally {
       span.finish();
     }
+  }
+
+  private @Nonnull Map<String, Map<TrackRoute, Boolean>> nextTrackRoutesByHostname(
+      Map<String, Collection<TrackRoute>> trackRoutesByHostname, SortedMap<String, Node> nodes) {
+    ImmutableMap.Builder<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname =
+        ImmutableMap.builder();
+    trackRoutesByHostname.forEach(
+        (hostname, trackRoutes) ->
+            trackRouteResultsByHostname.put(
+                hostname,
+                trackRoutes.stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(
+                            Function.identity(),
+                            trackRoute -> evaluateTrackRoute(trackRoute, nodes.get(hostname))))));
+    return trackRouteResultsByHostname.build();
   }
 
   /**
@@ -481,30 +501,18 @@ final class IncrementalBdpEngine {
    *       evaulator must have an immutable view of the RIB being inspected. So we should depend on
    *       the routes from the beginning of the iteration (note we are only able to supply FIBs from
    *       the beginning of an iteration anyway). Since saving routes of a VRF can be expensive, we
-   *       instead pre-evaluate the {@link org.batfish.datamodel.tracking.TrackRoute}s now.
+   *       instead use pre-evaluated {@link org.batfish.datamodel.tracking.TrackRoute} results here.
    * </ul>
    */
   private static @Nonnull DataPlaneTrackMethodEvaluatorProvider nextTrackMethodEvaluatorProvider(
       PartialDataplane dp,
-      Map<String, Node> nodes,
       TopologyContext topologyContext,
       Map<String, Configuration> configurations,
-      Map<String, Collection<TrackRoute>> trackRoutesByHostname) {
-    ImmutableMap.Builder<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname =
-        ImmutableMap.builder();
-    trackRoutesByHostname.forEach(
-        (hostname, trackRoutes) ->
-            trackRouteResultsByHostname.put(
-                hostname,
-                trackRoutes.stream()
-                    .collect(
-                        ImmutableMap.toImmutableMap(
-                            Function.identity(),
-                            trackRoute -> evaluateTrackRoute(trackRoute, nodes.get(hostname))))));
+      Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname) {
     TracerouteEngine tr =
         new TracerouteEngineImpl(dp, topologyContext.getLayer3Topology(), configurations);
     return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
-        trackRouteResultsByHostname.build(), tr);
+        trackRouteResultsByHostname, tr);
   }
 
   @VisibleForTesting
