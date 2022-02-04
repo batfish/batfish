@@ -126,8 +126,9 @@ public final class TrackReachabilityUtils {
   /**
    * Returns the potential source IPs and corresponding originating VRFs for flows with the given
    * {@code dstIp} originating on the given {@link Configuration} with the given {@code fibs}
-   * indexed by vrf, to be resolved in the given {@code initialSenderVrf}, Concretely, finds LPM
-   * routes for {@code dstIp} and returns the IPs and VRFs of those routes' forwarding interfaces.
+   * indexed by vrf, with the destination IP initially resolved in the given {@code
+   * initialSenderVrf}, Concretely, finds LPM routes for {@code dstIp} and returns the IPs and VRFs
+   * of those routes' forwarding interfaces.
    */
   private static @Nonnull Stream<Entry<Ip, String>> getPotentialSrcIpsAndVrfs(
       Ip dstIp, String initialSenderVrf, Map<String, Fib> fibs, Configuration c) {

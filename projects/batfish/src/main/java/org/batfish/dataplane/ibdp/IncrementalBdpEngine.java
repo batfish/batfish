@@ -16,7 +16,6 @@ import static org.batfish.dataplane.ibdp.TrackReachabilityUtils.evaluateTrackRea
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.Scope;
@@ -458,7 +457,7 @@ final class IncrementalBdpEngine {
           Collection<TrackReachability> trackReachabilities =
               c.getTrackingGroups().values().stream()
                   .flatMap(TRACK_REACHABILITY_COLLECTOR::visit)
-                  .collect(ImmutableList.toImmutableList());
+                  .collect(ImmutableSet.toImmutableSet());
           if (!trackReachabilities.isEmpty()) {
             builder.put(hostname, trackReachabilities);
           }
@@ -518,7 +517,7 @@ final class IncrementalBdpEngine {
           Collection<TrackRoute> trackRoutes =
               c.getTrackingGroups().values().stream()
                   .flatMap(TRACK_ROUTE_COLLECTOR::visit)
-                  .collect(ImmutableList.toImmutableList());
+                  .collect(ImmutableSet.toImmutableSet());
           if (!trackRoutes.isEmpty()) {
             builder.put(hostname, trackRoutes);
           }
@@ -579,7 +578,7 @@ final class IncrementalBdpEngine {
    *       evaulator must have an immutable view of the RIB being inspected. So we should depend on
    *       the routes from the beginning of the iteration (note we are only able to supply FIBs from
    *       the beginning of an iteration anyway). Since saving routes of a VRF can be expensive, we
-   *       instead use pre-evaluated {@link org.batfish.datamodel.tracking.TrackRoute} {@link
+   *       instead use pre-evaluated {@link org.batfish.datamodel.tracking.TrackRoute} and {@link
    *       org.batfish.datamodel.tracking.TrackReachability} results here.
    * </ul>
    */
