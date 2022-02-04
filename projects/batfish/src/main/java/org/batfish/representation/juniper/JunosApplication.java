@@ -702,6 +702,20 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_NBDS:
+        {
+          portRangeStart = NamedPort.NETBIOS_DGM.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_NBNAME:
+        {
+          portRangeStart = NamedPort.NETBIOS_NS.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
       case JUNOS_NETBIOS_SESSION:
         {
           portRangeStart = NamedPort.NETBIOS_SSN.number();
@@ -1034,6 +1048,13 @@ public enum JunosApplication implements Application {
           ipProtocol = IpProtocol.UDP;
           portRangeStart = NamedPort.SUNRPC.number();
           // TODO: rpc-program-number
+          break;
+        }
+
+      case JUNOS_TFTP:
+        {
+          portRangeStart = NamedPort.TFTP.number();
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
