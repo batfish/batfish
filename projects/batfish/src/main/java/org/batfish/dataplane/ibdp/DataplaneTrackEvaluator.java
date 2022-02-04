@@ -13,6 +13,7 @@ import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.tracking.TrackMethodReference;
+import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.tracking.TrackTrue;
 
@@ -39,12 +40,12 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
    * engine.
    */
   public static @Nonnull DataPlaneTrackMethodEvaluatorProvider createTrackMethodEvaluatorProvider(
-      Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname,
-      TracerouteEngine tracerouteEngine) {
+      Map<String, Map<TrackReachability, Boolean>> trackReachabilityResultsByHostname,
+      Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname) {
     return configuration ->
         new DataplaneTrackEvaluator(
             configuration,
-            tracerouteEngine,
+            trackReachabilityResultsByHostname.get(configuration.getHostname()),
             trackRouteResultsByHostname.get(configuration.getHostname()));
   }
 
@@ -66,6 +67,11 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
   }
 
   @Override
+  public Boolean visitTrackReachability(TrackReachability trackReachability) {
+    return _trackReachabilityResults.get(trackReachability);
+  }
+
+  @Override
   public Boolean visitTrackRoute(TrackRoute trackRoute) {
     return _trackRouteResults.get(trackRoute);
   }
@@ -76,21 +82,18 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
   }
 
   private final @Nonnull Configuration _configuration;
+  private final @Nonnull Map<TrackReachability, Boolean> _trackReachabilityResults;
   private final @Nonnull Map<TrackRoute, Boolean> _trackRouteResults;
   private final @Nonnull PreDataPlaneTrackMethodEvaluator _preDataPlaneTrackMethodEvaluator;
-
-  // TODO: support track reachability
-  @SuppressWarnings("unused")
-  private final @Nonnull TracerouteEngine _tracerouteEngine;
 
   @VisibleForTesting
   DataplaneTrackEvaluator(
       Configuration configuration,
-      TracerouteEngine tracerouteEngine,
+      Map<TrackReachability, Boolean> trackReachabilityResults,
       Map<TrackRoute, Boolean> trackRouteResults) {
     _configuration = configuration;
     _preDataPlaneTrackMethodEvaluator = new PreDataPlaneTrackMethodEvaluator(configuration);
-    _tracerouteEngine = tracerouteEngine;
+    _trackReachabilityResults = trackReachabilityResults;
     _trackRouteResults = trackRouteResults;
   }
 }

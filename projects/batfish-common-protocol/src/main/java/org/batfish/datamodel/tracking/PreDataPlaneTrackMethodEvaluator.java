@@ -44,6 +44,11 @@ public class PreDataPlaneTrackMethodEvaluator implements TrackMethodEvaluator {
   }
 
   @Override
+  public Boolean visitTrackReachability(TrackReachability trackReachability) {
+    return false;
+  }
+
+  @Override
   public Boolean visitTrackRoute(TrackRoute trackRoute) {
     return false;
   }

@@ -7,24 +7,16 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import org.batfish.common.plugin.TracerouteEngine;
-import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackMethodReference;
+import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.tracking.TrackTrue;
 import org.junit.Test;
@@ -52,10 +44,23 @@ public final class DataplaneTrackEvaluatorTest {
     TrackInterface tiUp = new TrackInterface("i1");
     TrackInterface tiDown = new TrackInterface("i2");
     DataplaneTrackEvaluator e =
-        new DataplaneTrackEvaluator(c, new DummyTracerouteEngine(), ImmutableMap.of());
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
     assertTrue(e.visit(tiUp));
     assertFalse(e.visit(tiDown));
+  }
+
+  @Test
+  public void testTrackReachability() {
+    Configuration c =
+        Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
+    // contents don't matter
+    TrackReachability trackReachability =
+        TrackReachability.of(Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME);
+    DataplaneTrackEvaluator e =
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(trackReachability, true), ImmutableMap.of());
+
+    assertTrue(e.visit(trackReachability));
   }
 
   @Test
@@ -65,8 +70,7 @@ public final class DataplaneTrackEvaluatorTest {
     // contents don't matter
     TrackRoute trackRoute = TrackRoute.of(Prefix.ZERO, ImmutableSet.of(), "bar");
     DataplaneTrackEvaluator e =
-        new DataplaneTrackEvaluator(
-            c, new DummyTracerouteEngine(), ImmutableMap.of(trackRoute, true));
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of(trackRoute, true));
 
     assertTrue(e.visit(trackRoute));
   }
@@ -78,7 +82,7 @@ public final class DataplaneTrackEvaluatorTest {
     TrackMethod base = TrackTrue.instance();
     c.setTrackingGroups(ImmutableMap.of("1", base));
     DataplaneTrackEvaluator e =
-        new DataplaneTrackEvaluator(c, new DummyTracerouteEngine(), ImmutableMap.of());
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
     assertTrue(e.visit(TrackMethodReference.of("1")));
   }
@@ -88,7 +92,7 @@ public final class DataplaneTrackEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     DataplaneTrackEvaluator e =
-        new DataplaneTrackEvaluator(c, new DummyTracerouteEngine(), ImmutableMap.of());
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
     assertFalse(e.visit(NegatedTrackMethod.of(TrackTrue.instance())));
   }
@@ -98,23 +102,8 @@ public final class DataplaneTrackEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     DataplaneTrackEvaluator evaluator =
-        new DataplaneTrackEvaluator(c, new DummyTracerouteEngine(), ImmutableMap.of());
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
     assertTrue(evaluator.visit(TrackTrue.instance()));
-  }
-
-  private static final class DummyTracerouteEngine implements TracerouteEngine {
-
-    @Override
-    public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
-        Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
-      return ImmutableSortedMap.of();
-    }
-
-    @Override
-    public Map<Flow, TraceDag> computeTraceDags(
-        Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
-      return ImmutableMap.of();
-    }
   }
 }
