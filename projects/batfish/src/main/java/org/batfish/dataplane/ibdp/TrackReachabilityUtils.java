@@ -43,7 +43,6 @@ public final class TrackReachabilityUtils {
       Map<String, Fib> fibsByVrf,
       TracerouteEngine tracerouteEngine) {
     Ip dstIp = trackReachability.getDestinationIp();
-    String vrf = trackReachability.getSourceVrf();
     // TODO: support manual srcIp specified in track
     return getPotentialSrcIpsAndVrfs(dstIp, trackReachability.getSourceVrf(), fibsByVrf, c)
         .anyMatch(
