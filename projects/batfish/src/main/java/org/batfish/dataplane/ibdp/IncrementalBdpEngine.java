@@ -8,12 +8,11 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.IpsecUtil.retainReachableIpsecEdges;
 import static org.batfish.common.util.IpsecUtil.toEdgeSet;
 import static org.batfish.common.util.StreamUtil.toListInRandomOrder;
-import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
-import static org.batfish.datamodel.bgp.BgpTopologyUtils.getPotentialSrcIps;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanTopologyToLayer3Edges;
+import static org.batfish.dataplane.ibdp.TrackReachabilityUtils.evaluateTrackReachability;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -28,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -55,11 +53,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.Fib;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
@@ -67,7 +61,6 @@ import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
@@ -605,61 +598,11 @@ final class IncrementalBdpEngine {
                                 evaluateTrackReachability(
                                     trackReachability,
                                     nodes.get(hostname).getConfiguration(),
-                                    dp.getFibs()
-                                        .get(hostname)
-                                        .get(trackReachability.getSourceVrf()),
+                                    dp.getFibs().get(hostname),
                                     tr)))));
 
     return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
         trackReachabilityResultsByHostname.build(), trackRouteResultsByHostname.build());
-  }
-
-  private static boolean evaluateTrackReachability(
-      TrackReachability trackReachability,
-      Configuration c,
-      Fib fib,
-      TracerouteEngine tracerouteEngine) {
-    Ip dstIp = trackReachability.getDestinationIp();
-    String vrf = trackReachability.getSourceVrf();
-    // TODO: support manual srcIp
-    Set<Ip> sourceIpsToTry = getPotentialSrcIps(dstIp, fib, c);
-    for (Ip srcIpToTry : sourceIpsToTry) {
-      Flow flow =
-          Flow.builder()
-              .setSrcIp(srcIpToTry)
-              .setDstIp(dstIp)
-              .setIngressNode(c.getHostname())
-              .setIngressVrf(vrf)
-              // TODO: support other flow types
-              .setIpProtocol(IpProtocol.ICMP)
-              .setIcmpType(IcmpType.ECHO_REQUEST)
-              .setIcmpCode(0)
-              .build();
-      Map<Flow, List<TraceAndReverseFlow>> tracerouteResult =
-          tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
-      List<TraceAndReverseFlow> traceAndReverseFlows = tracerouteResult.get(flow);
-      if (traceAndReverseFlows != null
-          && traceAndReverseFlows.stream()
-              .filter(IncrementalBdpEngine::isSuccessfulFlow)
-              .map(
-                  // Go backward direction
-                  tr -> {
-                    assert tr.getReverseFlow() != null; // guaranteed by isSuccessfulFlow
-                    return tracerouteEngine
-                        .computeTracesAndReverseFlows(ImmutableSet.of(tr.getReverseFlow()), false)
-                        .get(tr.getReverseFlow());
-                  })
-              .filter(Objects::nonNull)
-              .flatMap(List::stream)
-              .anyMatch(IncrementalBdpEngine::isSuccessfulFlow)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private static boolean isSuccessfulFlow(TraceAndReverseFlow tr) {
-    return tr.getTrace().getDisposition() == ACCEPTED && tr.getReverseFlow() != null;
   }
 
   @VisibleForTesting
