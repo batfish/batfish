@@ -1,11 +1,13 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.RoutingProtocol.CONNECTED;
 import static org.batfish.datamodel.RoutingProtocol.HMM;
 import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.evaluateTrackRoute;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -21,15 +23,19 @@ import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Test;
@@ -59,7 +65,75 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testComputeDataPlane_track() {
+  public void testComputeDataPlane_trackReachability() {
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf v1 = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
+    Vrf v2 = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c2).build();
+    Interface.builder()
+        .setName("i1")
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+        .setVrf(v1)
+        .setOwner(c1)
+        .build();
+    Interface.builder()
+        .setName("i2")
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.0.2/24"))
+        .setVrf(v2)
+        .setOwner(c2)
+        .build();
+    c1.setTrackingGroups(
+        ImmutableMap.of(
+            "succeeds",
+            TrackReachability.of(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME),
+            "fails",
+            TrackReachability.of(Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME)));
+    StaticRoute srSucceeds =
+        StaticRoute.builder()
+            .setNetwork(Prefix.strict("10.10.0.0/24"))
+            .setNextHop(NextHopDiscard.instance())
+            .setTrack("succeeds")
+            .setAdmin(1)
+            .build();
+    StaticRoute srFails =
+        StaticRoute.builder()
+            .setNetwork(Prefix.strict("10.10.0.0/24"))
+            .setNextHop(NextHopDiscard.instance())
+            .setAdmin(1)
+            .setTrack("fails")
+            .build();
+    v1.setStaticRoutes(ImmutableSortedSet.of(srSucceeds, srFails));
+
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+    TopologyContext initialTopologyContext =
+        TopologyContext.builder().setLayer3Topology(synthesizeL3Topology(configurations)).build();
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
+    ComputeDataPlaneResult dp =
+        engine.computeDataPlane(
+            configurations,
+            initialTopologyContext,
+            ImmutableSet.of(),
+            new TestIpOwners(configurations));
+    Set<AbstractRoute> installedStaticRoutes =
+        dp._dataPlane.getRibs().get(c1.getHostname()).get(v1.getName()).getRoutes().stream()
+            .filter(StaticRoute.class::isInstance)
+            .collect(ImmutableSet.toImmutableSet());
+
+    // Only the static route tracking the reachable IP should be present.
+    assertThat(installedStaticRoutes, containsInAnyOrder(srSucceeds));
+  }
+
+  @Test
+  public void testComputeDataPlane_trackRoute() {
     Configuration c =
         Configuration.builder()
             .setHostname("foo")

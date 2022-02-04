@@ -8,6 +8,8 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.IpsecUtil.retainReachableIpsecEdges;
 import static org.batfish.common.util.IpsecUtil.toEdgeSet;
 import static org.batfish.common.util.StreamUtil.toListInRandomOrder;
+import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.getPotentialSrcIps;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
@@ -26,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -52,7 +55,11 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
@@ -60,6 +67,7 @@ import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
@@ -67,6 +75,7 @@ import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethodReference;
+import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -330,12 +339,15 @@ final class IncrementalBdpEngine {
               initialIpVrfOwners);
       Map<String, Collection<TrackRoute>> trackRoutesByHostname =
           collectTrackRoutes(configurations);
+      Map<String, Collection<TrackReachability>> trackReachabilitiesByHostname =
+          collectTrackReachabilities(configurations);
       DataPlaneTrackMethodEvaluatorProvider currentTrackMethodEvaluatorProvider =
           nextTrackMethodEvaluatorProvider(
               currentDataplane,
               nodes,
               currentTopologyContext,
               configurations,
+              trackReachabilitiesByHostname,
               trackRoutesByHostname);
       DataPlaneIpOwners currentIpOwners =
           new DataPlaneIpOwners(
@@ -379,6 +391,7 @@ final class IncrementalBdpEngine {
                   nodes,
                   nextTopologyContext,
                   configurations,
+                  trackReachabilitiesByHostname,
                   trackRoutesByHostname);
           DataPlaneIpOwners nextIpOwners =
               new DataPlaneIpOwners(
@@ -416,6 +429,66 @@ final class IncrementalBdpEngine {
       return new IbdpResult(answerElement, finalDataplane, currentTopologyContext, nodes);
     } finally {
       span.finish();
+    }
+  }
+
+  /**
+   * Returns map: hostname of config with at least one {@link TrackRoute} -> {@link TrackRoute}s in
+   * that config.
+   */
+  private static @Nonnull Map<String, Collection<TrackReachability>> collectTrackReachabilities(
+      Map<String, Configuration> configurations) {
+    ImmutableMap.Builder<String, Collection<TrackReachability>> builder = ImmutableMap.builder();
+    configurations.forEach(
+        (hostname, c) -> {
+          Collection<TrackReachability> trackReachabilities =
+              c.getTrackingGroups().values().stream()
+                  .flatMap(TRACK_REACHABILITY_COLLECTOR::visit)
+                  .collect(ImmutableList.toImmutableList());
+          if (!trackReachabilities.isEmpty()) {
+            builder.put(hostname, trackReachabilities);
+          }
+        });
+    return builder.build();
+  }
+
+  private static final TrackReachabilityCollector TRACK_REACHABILITY_COLLECTOR =
+      new TrackReachabilityCollector();
+
+  private static final class TrackReachabilityCollector
+      implements GenericTrackMethodVisitor<Stream<TrackReachability>> {
+
+    @Override
+    public Stream<TrackReachability> visitNegatedTrackMethod(
+        NegatedTrackMethod negatedTrackMethod) {
+      return visit(negatedTrackMethod.getTrackMethod());
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackInterface(TrackInterface trackInterface) {
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackMethodReference(
+        TrackMethodReference trackMethodReference) {
+      // target will be found elsewhere
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackReachability(TrackReachability trackReachability) {
+      return Stream.of(trackReachability);
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackRoute(TrackRoute trackRoute) {
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackTrue(TrackTrue trackTrue) {
+      return Stream.of();
     }
   }
 
@@ -461,6 +534,11 @@ final class IncrementalBdpEngine {
     }
 
     @Override
+    public Stream<TrackRoute> visitTrackReachability(TrackReachability trackReachability) {
+      return Stream.of();
+    }
+
+    @Override
     public Stream<TrackRoute> visitTrackRoute(TrackRoute trackRoute) {
       return Stream.of(trackRoute);
     }
@@ -495,7 +573,9 @@ final class IncrementalBdpEngine {
       Map<String, Node> nodes,
       TopologyContext topologyContext,
       Map<String, Configuration> configurations,
+      Map<String, Collection<TrackReachability>> trackReachabilitiesByHostname,
       Map<String, Collection<TrackRoute>> trackRoutesByHostname) {
+    // track route
     ImmutableMap.Builder<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname =
         ImmutableMap.builder();
     trackRoutesByHostname.forEach(
@@ -507,10 +587,79 @@ final class IncrementalBdpEngine {
                         ImmutableMap.toImmutableMap(
                             Function.identity(),
                             trackRoute -> evaluateTrackRoute(trackRoute, nodes.get(hostname))))));
+
+    // track reachability
     TracerouteEngine tr =
         new TracerouteEngineImpl(dp, topologyContext.getLayer3Topology(), configurations);
+    ImmutableMap.Builder<String, Map<TrackReachability, Boolean>>
+        trackReachabilityResultsByHostname = ImmutableMap.builder();
+    trackReachabilitiesByHostname.forEach(
+        (hostname, trackReachabilities) ->
+            trackReachabilityResultsByHostname.put(
+                hostname,
+                trackReachabilities.stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(
+                            Function.identity(),
+                            trackReachability ->
+                                evaluateTrackReachability(
+                                    trackReachability,
+                                    nodes.get(hostname).getConfiguration(),
+                                    dp.getFibs()
+                                        .get(hostname)
+                                        .get(trackReachability.getSourceVrf()),
+                                    tr)))));
+
     return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
-        trackRouteResultsByHostname.build(), tr);
+        trackReachabilityResultsByHostname.build(), trackRouteResultsByHostname.build());
+  }
+
+  private static boolean evaluateTrackReachability(
+      TrackReachability trackReachability,
+      Configuration c,
+      Fib fib,
+      TracerouteEngine tracerouteEngine) {
+    Ip dstIp = trackReachability.getDestinationIp();
+    String vrf = trackReachability.getSourceVrf();
+    // TODO: support manual srcIp
+    Set<Ip> sourceIpsToTry = getPotentialSrcIps(dstIp, fib, c);
+    for (Ip srcIpToTry : sourceIpsToTry) {
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(srcIpToTry)
+              .setDstIp(dstIp)
+              .setIngressNode(c.getHostname())
+              .setIngressVrf(vrf)
+              // TODO: support other flow types
+              .setIpProtocol(IpProtocol.ICMP)
+              .setIcmpType(IcmpType.ECHO_REQUEST)
+              .setIcmpCode(0)
+              .build();
+      Map<Flow, List<TraceAndReverseFlow>> tracerouteResult =
+          tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+      List<TraceAndReverseFlow> traceAndReverseFlows = tracerouteResult.get(flow);
+      if (traceAndReverseFlows != null
+          && traceAndReverseFlows.stream()
+              .filter(IncrementalBdpEngine::isSuccessfulFlow)
+              .map(
+                  // Go backward direction
+                  tr -> {
+                    assert tr.getReverseFlow() != null; // guaranteed by isSuccessfulFlow
+                    return tracerouteEngine
+                        .computeTracesAndReverseFlows(ImmutableSet.of(tr.getReverseFlow()), false)
+                        .get(tr.getReverseFlow());
+                  })
+              .filter(Objects::nonNull)
+              .flatMap(List::stream)
+              .anyMatch(IncrementalBdpEngine::isSuccessfulFlow)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean isSuccessfulFlow(TraceAndReverseFlow tr) {
+    return tr.getTrace().getDisposition() == ACCEPTED && tr.getReverseFlow() != null;
   }
 
   @VisibleForTesting

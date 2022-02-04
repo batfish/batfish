@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
@@ -13,13 +12,14 @@ import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.tracking.TrackMethodReference;
+import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.tracking.TrackTrue;
 
 /**
  * Evaluator for a {@link org.batfish.datamodel.tracking.TrackMethod} given knowledge of the
- * contents of a {@link Configuration}, its associated RIBs, and a {@link TracerouteEngine} that can
- * perform reachabilty checks.
+ * contents of a {@link Configuration} and the results of dataplane-based tracking checks at a given
+ * point in time.
  *
  * <p>Delegates to {@link PreDataPlaneTrackMethodEvaluator} when only the contents of the {@link
  * Configuration} are needed for evaluation.
@@ -35,16 +35,16 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
   }
 
   /**
-   * Create a provider for {@link DataplaneTrackEvaluator}s given a fixed dataplane and traceroute
-   * engine.
+   * Create a provider for {@link DataplaneTrackEvaluator}s given current results for all
+   * dataplane-based tracking checks..
    */
   public static @Nonnull DataPlaneTrackMethodEvaluatorProvider createTrackMethodEvaluatorProvider(
-      Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname,
-      TracerouteEngine tracerouteEngine) {
+      Map<String, Map<TrackReachability, Boolean>> trackReachabilityResultsByHostname,
+      Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname) {
     return configuration ->
         new DataplaneTrackEvaluator(
             configuration,
-            tracerouteEngine,
+            trackReachabilityResultsByHostname.get(configuration.getHostname()),
             trackRouteResultsByHostname.get(configuration.getHostname()));
   }
 
@@ -66,6 +66,11 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
   }
 
   @Override
+  public Boolean visitTrackReachability(TrackReachability trackReachability) {
+    return _trackReachabilityResults.get(trackReachability);
+  }
+
+  @Override
   public Boolean visitTrackRoute(TrackRoute trackRoute) {
     return _trackRouteResults.get(trackRoute);
   }
@@ -76,21 +81,18 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
   }
 
   private final @Nonnull Configuration _configuration;
+  private final @Nonnull Map<TrackReachability, Boolean> _trackReachabilityResults;
   private final @Nonnull Map<TrackRoute, Boolean> _trackRouteResults;
   private final @Nonnull PreDataPlaneTrackMethodEvaluator _preDataPlaneTrackMethodEvaluator;
-
-  // TODO: support track reachability
-  @SuppressWarnings("unused")
-  private final @Nonnull TracerouteEngine _tracerouteEngine;
 
   @VisibleForTesting
   DataplaneTrackEvaluator(
       Configuration configuration,
-      TracerouteEngine tracerouteEngine,
+      Map<TrackReachability, Boolean> trackReachabilityResults,
       Map<TrackRoute, Boolean> trackRouteResults) {
     _configuration = configuration;
     _preDataPlaneTrackMethodEvaluator = new PreDataPlaneTrackMethodEvaluator(configuration);
-    _tracerouteEngine = tracerouteEngine;
+    _trackReachabilityResults = trackReachabilityResults;
     _trackRouteResults = trackRouteResults;
   }
 }
