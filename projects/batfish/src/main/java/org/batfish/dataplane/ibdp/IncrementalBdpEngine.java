@@ -326,15 +326,17 @@ final class IncrementalBdpEngine {
           collectTrackRoutes(configurations);
       Map<String, Collection<TrackReachability>> trackReachabilitiesByHostname =
           collectTrackReachabilities(configurations);
+      Map<String, Map<TrackReachability, Boolean>> currentTrackReachabilityResultsByHostname =
+          nextTrackReachabilityResultsByHostname(
+              currentDataplane,
+              currentTopologyContext,
+              configurations,
+              trackReachabilitiesByHostname);
       Map<String, Map<TrackRoute, Boolean>> currentTrackRouteResultsByHostname =
           nextTrackRoutesByHostname(trackRoutesByHostname, nodes);
       DataPlaneTrackMethodEvaluatorProvider currentTrackMethodEvaluatorProvider =
           nextTrackMethodEvaluatorProvider(
-              currentDataplane,
-              currentTopologyContext,
-              configurations,
-              trackReachabilitiesByHostname,
-              currentTrackRouteResultsByHostname);
+              currentTrackReachabilityResultsByHostname, currentTrackRouteResultsByHostname);
       DataPlaneIpOwners currentIpOwners =
           new DataPlaneIpOwners(
               configurations,
@@ -373,15 +375,17 @@ final class IncrementalBdpEngine {
                   initialTopologyContext,
                   networkConfigurations,
                   currentIpOwners.getIpVrfOwners());
+          Map<String, Map<TrackReachability, Boolean>> nextTrackReachabilityResultsByHostname =
+              nextTrackReachabilityResultsByHostname(
+                  currentDataplane,
+                  currentTopologyContext,
+                  configurations,
+                  trackReachabilitiesByHostname);
           Map<String, Map<TrackRoute, Boolean>> nextTrackRouteResultsByHostname =
               nextTrackRoutesByHostname(trackRoutesByHostname, nodes);
           currentTrackMethodEvaluatorProvider =
               nextTrackMethodEvaluatorProvider(
-                  currentDataplane,
-                  nextTopologyContext,
-                  configurations,
-                  trackReachabilitiesByHostname,
-                  nextTrackRouteResultsByHostname);
+                  nextTrackReachabilityResultsByHostname, nextTrackRouteResultsByHostname);
           DataPlaneIpOwners nextIpOwners =
               new DataPlaneIpOwners(
                   configurations,
@@ -389,9 +393,12 @@ final class IncrementalBdpEngine {
                   currentTrackMethodEvaluatorProvider);
           converged =
               currentTopologyContext.equals(nextTopologyContext)
+                  && currentTrackReachabilityResultsByHostname.equals(
+                      nextTrackReachabilityResultsByHostname)
                   && currentTrackRouteResultsByHostname.equals(nextTrackRouteResultsByHostname)
                   && currentIpOwners.equals(nextIpOwners);
           currentTopologyContext = nextTopologyContext;
+          currentTrackReachabilityResultsByHostname = nextTrackReachabilityResultsByHostname;
           currentTrackRouteResultsByHostname = nextTrackRouteResultsByHostname;
           currentIpOwners = nextIpOwners;
         } finally {
@@ -572,16 +579,23 @@ final class IncrementalBdpEngine {
    *       evaulator must have an immutable view of the RIB being inspected. So we should depend on
    *       the routes from the beginning of the iteration (note we are only able to supply FIBs from
    *       the beginning of an iteration anyway). Since saving routes of a VRF can be expensive, we
-   *       instead use pre-evaluated {@link org.batfish.datamodel.tracking.TrackRoute} results here.
+   *       instead use pre-evaluated {@link org.batfish.datamodel.tracking.TrackRoute} {@link
+   *       org.batfish.datamodel.tracking.TrackReachability} results here.
    * </ul>
    */
   private static @Nonnull DataPlaneTrackMethodEvaluatorProvider nextTrackMethodEvaluatorProvider(
-      PartialDataplane dp,
-      TopologyContext topologyContext,
-      Map<String, Configuration> configurations,
-      Map<String, Collection<TrackReachability>> trackReachabilitiesByHostname,
+      Map<String, Map<TrackReachability, Boolean>> trackReachabilityResultsByHostname,
       Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname) {
-    // track reachability
+    return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
+        trackReachabilityResultsByHostname, trackRouteResultsByHostname);
+  }
+
+  private static @Nonnull Map<String, Map<TrackReachability, Boolean>>
+      nextTrackReachabilityResultsByHostname(
+          PartialDataplane dp,
+          TopologyContext topologyContext,
+          Map<String, Configuration> configurations,
+          Map<String, Collection<TrackReachability>> trackReachabilitiesByHostname) {
     TracerouteEngine tr =
         new TracerouteEngineImpl(dp, topologyContext.getLayer3Topology(), configurations);
     ImmutableMap.Builder<String, Map<TrackReachability, Boolean>>
@@ -597,12 +611,10 @@ final class IncrementalBdpEngine {
                             trackReachability ->
                                 evaluateTrackReachability(
                                     trackReachability,
-                                    nodes.get(hostname).getConfiguration(),
+                                    configurations.get(hostname),
                                     dp.getFibs().get(hostname),
                                     tr)))));
-
-    return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
-        trackReachabilityResultsByHostname.build(), trackRouteResultsByHostname);
+    return trackReachabilityResultsByHostname.build();
   }
 
   @VisibleForTesting
