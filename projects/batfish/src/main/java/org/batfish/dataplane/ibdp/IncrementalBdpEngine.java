@@ -261,8 +261,6 @@ final class IncrementalBdpEngine {
       LOGGER.info("Computing Data Plane using iBDP");
 
       Map<Ip, Map<String, Set<String>>> initialIpVrfOwners = initialIpOwners.getIpVrfOwners();
-      Map<String, Map<String, Set<Ip>>> initialActiveInterfaceOwners =
-          initialIpOwners.getInterfaceOwners(true);
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =

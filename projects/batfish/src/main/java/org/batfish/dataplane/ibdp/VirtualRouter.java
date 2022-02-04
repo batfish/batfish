@@ -395,7 +395,11 @@ public final class VirtualRouter {
                                 // TODO: set custom administrative distance
                                 .setNextHop(NextHopInterface.of(iface.getName()))
                                 .build())
-                    .forEach(delta::add);
+                    .forEach(
+                        hmmRoute -> {
+                          delta.add(hmmRoute);
+                          newHmmRoutes.add(hmmRoute);
+                        });
               }
             });
     delta
@@ -406,7 +410,6 @@ public final class VirtualRouter {
               if (action.isWithdrawn()) {
                 _independentRib.removeRoute(annotateRoute(action.getRoute()));
               } else {
-                newHmmRoutes.add(action.getRoute());
                 _independentRib.mergeRoute(annotateRoute(action.getRoute()));
               }
             });
