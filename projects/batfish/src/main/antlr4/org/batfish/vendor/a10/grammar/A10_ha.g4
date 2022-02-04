@@ -25,7 +25,20 @@ s_ha
 
 ha_arp_retry: ARP_RETRY null_rest_of_line;
 
-ha_check: CHECK null_rest_of_line;
+ha_check
+:
+  CHECK (
+    ha_check_gateway
+    | ha_check_route
+    | ha_check_vlan
+  )
+;
+
+ha_check_gateway: GATEWAY ip = ip_address NEWLINE;
+
+ha_check_route: ROUTE null_rest_of_line;
+
+ha_check_vlan: VLAN null_rest_of_line;
 
 ha_conn_mirror: CONN_MIRROR IP ip = ip_address NEWLINE;
 

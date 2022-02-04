@@ -17,6 +17,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.convertAccessL
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.findHaSourceAddress;
 import static org.batfish.vendor.a10.representation.A10Conversion.findVrrpAEnabledSourceAddress;
+import static org.batfish.vendor.a10.representation.A10Conversion.generatedServerTrackMethodName;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIps;
@@ -93,6 +94,10 @@ import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.Statement;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackAction;
+import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Noop;
@@ -375,6 +380,8 @@ public final class A10Configuration extends VendorConfiguration {
 
     // Must be done after interface conversion
     convertVirtualServers();
+    convertHealthChecks();
+    // template name -> generated track method name -> action
     convertVrrpA();
     convertHa();
     createKernelRoutes();
@@ -386,6 +393,72 @@ public final class A10Configuration extends VendorConfiguration {
     generateNatPoolIpSpaces();
 
     return ImmutableList.of(_c);
+  }
+
+  /**
+   * Creates {@link TrackMethod}s for each enabled IPv4 server health check, searchable by server
+   * IPv4 address.
+   */
+  private void convertHealthChecks() {
+    for (Server server : _servers.values()) {
+      if (!(server.getTarget() instanceof ServerTargetAddress)) {
+        // Not an IPv4 server
+        return;
+      }
+      if (!firstNonNull(server.getEnable(), true)) {
+        // server is disabled
+        return;
+      }
+      if (firstNonNull(server.getHealthCheckDisable(), false)) {
+        // health check is disabled
+        return;
+      }
+      String healthMonitorName = server.getHealthCheck();
+      if (healthMonitorName == null) {
+        // no associated health monitor
+        return;
+      }
+      HealthMonitor healthMonitor = _healthMonitors.get(healthMonitorName);
+      if (healthMonitor == null) {
+        // undefined health monitor
+        return;
+      }
+      Ip ip = ((ServerTargetAddress) server.getTarget()).getAddress();
+      // TODO: Use configured health monitor method (e.g. ICMP, TCP/123, etc.)
+      //       instead of forcing ICMP (which is the default)
+      TrackMethod method = TrackReachability.of(ip, DEFAULT_VRF_NAME);
+      String methodName = generatedServerTrackMethodName(ip);
+      _c.getTrackingGroups().put(methodName, method);
+    }
+  }
+
+  /** Returns map: template name -> generated track method name -> action */
+  private @Nonnull Map<String, Map<String, TrackAction>> convertFailOverPolicyTemplates() {
+    if (_vrrpA == null) {
+      return ImmutableMap.of();
+    }
+    ImmutableMap.Builder<String, Map<String, TrackAction>> builder = ImmutableMap.builder();
+    _vrrpA
+        .getFailOverPolicyTemplates()
+        .forEach(
+            (templateName, template) -> {
+              ImmutableMap.Builder<String, TrackAction> actionsBuilder = ImmutableMap.builder();
+              template
+                  .getGateways()
+                  .forEach(
+                      (ip, decrement) -> {
+                        String trackMethodName = generatedServerTrackMethodName(ip);
+                        if (!_c.getTrackingGroups().containsKey(trackMethodName)) {
+                          // unusable gateway health check
+                          return;
+                        }
+                        String methodName = generatedServerTrackMethodName(ip);
+                        TrackAction action = new DecrementPriority(decrement);
+                        actionsBuilder.put(methodName, action);
+                      });
+              builder.put(templateName, actionsBuilder.build());
+            });
+    return builder.build();
   }
 
   /** Creates and puts a {@link ReferenceBook} for virtual servers defined in the configuration */
@@ -446,11 +519,13 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   private void convertVrrpA() {
+    Map<String, Map<String, TrackAction>> failOverPolicyTemplateActions =
+        convertFailOverPolicyTemplates();
     // If vrrp-a is disabled, then the device should act as if it owns all addresses that would have
     // been part of vrrp-a.
     // If vrrp-a is enabled, then the device should own all addresses for VRIDs that are enabled.
     if (isVrrpAEnabled(_vrrpA)) {
-      convertVrrpAEnabled();
+      convertVrrpAEnabled(failOverPolicyTemplateActions);
     } else if (_ha == null) {
       convertVrrpADisabled();
     }
@@ -504,8 +579,12 @@ public final class A10Configuration extends VendorConfiguration {
   /**
    * Process vrrp-a vrids in the case vrrp-a is enabled. Causes the device to own all virtual
    * addresses for each vrid for which it is converted VRRP master.
+   *
+   * @param failOverPolicyTemplateActions
    */
-  private void convertVrrpAEnabled() {
+  private void convertVrrpAEnabled(
+      // template name -> generated track method name -> action
+      Map<String, Map<String, TrackAction>> failOverPolicyTemplateActions) {
     // Overview:
     // - Add a VrrpGroup for each enabled vrid on the first found L3 interface owning a subnet
     //   containing any vrrp-a peer-group ip
@@ -586,7 +665,8 @@ public final class A10Configuration extends VendorConfiguration {
                         _vrrpA.getVrids().get(vrid),
                         finalSourceAddress,
                         virtualAddresses,
-                        ipOwnerInterfaces)));
+                        ipOwnerInterfaces,
+                        failOverPolicyTemplateActions)));
     // Assign the VRRP groups to the peer interface
     peerInterface.setVrrpGroups(vrrpGroupsBuilder.build());
   }
@@ -620,7 +700,7 @@ public final class A10Configuration extends VendorConfiguration {
       _w.redFlag("Batfish does not support ha without explicit conn-mirror");
       return;
     }
-
+    Map<String, TrackAction> trackActions = convertHaChecks();
     // Find the ha heartbeat interface and source IP
     org.batfish.datamodel.Interface heartbeatInterface = null;
     ConcreteInterfaceAddress sourceAddress = null;
@@ -683,9 +763,34 @@ public final class A10Configuration extends VendorConfiguration {
                 vrrpGroupsBuilder.put(
                     haGroupId,
                     toVrrpGroup(
-                        haGroupId, _ha, finalSourceAddress, virtualAddresses, ipOwnerInterfaces)));
+                        haGroupId,
+                        _ha,
+                        finalSourceAddress,
+                        virtualAddresses,
+                        ipOwnerInterfaces,
+                        trackActions)));
     // Assign the VRRP groups to the heartbeat interface
     heartbeatInterface.setVrrpGroups(vrrpGroupsBuilder.build());
+  }
+
+  /** Returns map: trackMethodName -> action */
+  private @Nonnull Map<String, TrackAction> convertHaChecks() {
+    assert _ha != null;
+    ImmutableMap.Builder<String, TrackAction> builder = ImmutableMap.builder();
+    for (Ip ip : _ha.getCheckGateways()) {
+      String trackMethodName = generatedServerTrackMethodName(ip);
+      if (!_c.getTrackingGroups().containsKey(trackMethodName)) {
+        // unusable gateway health check
+        continue;
+      }
+      // TODO: Docs say this device should no longer participate in HA if check fails, but we don't
+      //       currently have an action for that. For now, best we can do is reduce priority to
+      //       minimum.
+      builder.put(trackMethodName, new DecrementPriority(255));
+    }
+
+    // TODO: other check types
+    return builder.build();
   }
 
   private void convertAccessLists() {
