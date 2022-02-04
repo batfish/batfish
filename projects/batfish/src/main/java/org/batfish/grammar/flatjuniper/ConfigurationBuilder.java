@@ -1306,8 +1306,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return JunosApplication.JUNOS_SQLNET_V2;
     } else if (ctx.JUNOS_SSH() != null) {
       return JunosApplication.JUNOS_SSH;
-    } else if (ctx.JUNOS_STUN() != null) {
-      return JunosApplication.JUNOS_STUN;
+    } else if (ctx.JUNOS_STUN_TCP() != null) {
+      return JunosApplication.JUNOS_STUN_TCP;
+    } else if (ctx.JUNOS_STUN_UDP() != null) {
+      return JunosApplication.JUNOS_STUN_UDP;
     } else if (ctx.JUNOS_SUN_RPC_ANY_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_ANY_TCP;
     } else if (ctx.JUNOS_SUN_RPC_ANY_UDP() != null) {
@@ -1426,6 +1428,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return JunosApplicationSet.JUNOS_MS_RPC_WMIC;
     } else if (ctx.JUNOS_ROUTING_INBOUND() != null) {
       return JunosApplicationSet.JUNOS_ROUTING_INBOUND;
+    } else if (ctx.JUNOS_STUN() != null) {
+      return JunosApplicationSet.JUNOS_STUN;
     } else if (ctx.JUNOS_SUN_RPC() != null) {
       return JunosApplicationSet.JUNOS_SUN_RPC;
     } else if (ctx.JUNOS_SUN_RPC_ANY() != null) {
