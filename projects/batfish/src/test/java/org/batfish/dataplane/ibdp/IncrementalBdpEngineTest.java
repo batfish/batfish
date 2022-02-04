@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.RoutingProtocol.CONNECTED;
 import static org.batfish.datamodel.RoutingProtocol.HMM;
 import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.evaluateTrackRoute;
@@ -14,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,13 +29,17 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.HmmRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
@@ -189,6 +195,142 @@ public final class IncrementalBdpEngineTest {
             .collect(ImmutableSet.toImmutableSet());
 
     assertThat(installedStaticRoutes, contains(srWithPassingTrack));
+  }
+
+  @Test
+  public void testComputeDataPlane_hmmWithVrrp() {
+    // Test that HMM routes reflect post-dataplane VRRP winners.
+    // Topology:
+    // - h1:i1 <=> vrrp1:i1
+    // - h1:i2 <=> vrrp2:i1
+    // - vrrp1:i2 <=> vrrp2:i2
+    // Notes:
+    // - h is running hmm on i1 and i2.
+    // - vrrp1 and vrrp2 participate in vrrp on i2, with virtual address 10.0.0.1 installed on i1.
+    // - vrrp1 has higher configured priority, but would have lower priority if its dataplane-based
+    //   track succeeded.
+    // - Since dataplane tracks fail with initial IpOwners, h having hmm route for 10.0.0.1 with
+    //   next hop interface i2 means hmm computation is correctly using dataplane IpOwners.
+    Ip virtualAddress = Ip.parse("10.0.0.1");
+    Configuration h =
+        Configuration.builder().setHostname("h").setConfigurationFormat(CISCO_IOS).build();
+    Configuration vrrp1 =
+        Configuration.builder().setHostname("vrrp1").setConfigurationFormat(CISCO_IOS).build();
+    String trackIndex = "1";
+    Configuration vrrp2 =
+        Configuration.builder().setHostname("vrrp2").setConfigurationFormat(CISCO_IOS).build();
+    Vrf hVrf1 = Vrf.builder().setName("v1").setOwner(h).build();
+    Vrf hVrf2 = Vrf.builder().setName("v2").setOwner(h).build();
+    Vrf vrrp1Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(vrrp1).build();
+    Vrf vrrp2Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(vrrp2).build();
+    // h interfaces
+    Interface hI1 =
+        Interface.builder()
+            .setName("i1")
+            .setAddress(ConcreteInterfaceAddress.parse("10.1.0.1/24"))
+            .setHmm(true)
+            .setVrf(hVrf1)
+            .setOwner(h)
+            .build();
+    Interface hI2 =
+        Interface.builder()
+            .setName("i2")
+            .setAddress(ConcreteInterfaceAddress.parse("10.2.0.1/24"))
+            .setHmm(true)
+            .setVrf(hVrf2)
+            .setOwner(h)
+            .build();
+    // vrrp1 interfaces
+    ConcreteInterfaceAddress i1HAddress = ConcreteInterfaceAddress.parse("10.1.0.2/24");
+    Interface.builder()
+        .setAddress(i1HAddress)
+        .setName("i1")
+        .setVrf(vrrp1Vrf)
+        .setOwner(vrrp1)
+        .build();
+    ConcreteInterfaceAddress vrrp1Source = ConcreteInterfaceAddress.parse("192.168.0.1/24");
+    vrrp1.setTrackingGroups(
+        ImmutableMap.of(
+            trackIndex,
+            TrackRoute.of(vrrp1Source.getPrefix(), ImmutableSet.of(CONNECTED), DEFAULT_VRF_NAME)));
+    Interface.builder()
+        .setAddress(vrrp1Source)
+        .setName("i2")
+        .setVrrpGroups(
+            ImmutableSortedMap.of(
+                1,
+                VrrpGroup.builder()
+                    .setPriority(110)
+                    .setSourceAddress(vrrp1Source)
+                    .addVirtualAddress("i1", virtualAddress)
+                    .setTrackActions(ImmutableMap.of(trackIndex, new DecrementPriority(50)))
+                    .build()))
+        .setVrf(vrrp1Vrf)
+        .setOwner(vrrp1)
+        .build();
+
+    // vrrp2 interfaces
+    ConcreteInterfaceAddress i2HAddress = ConcreteInterfaceAddress.parse("10.2.0.2/24");
+    Interface.builder()
+        .setAddress(i2HAddress)
+        .setName("i1")
+        .setVrf(vrrp2Vrf)
+        .setOwner(vrrp2)
+        .build();
+    ConcreteInterfaceAddress vrrp2Source = ConcreteInterfaceAddress.parse("192.168.0.2/24");
+    Interface.builder()
+        .setAddress(vrrp2Source)
+        .setName("i2")
+        .setVrrpGroups(
+            ImmutableSortedMap.of(
+                1,
+                VrrpGroup.builder()
+                    .setPriority(100)
+                    .setSourceAddress(vrrp2Source)
+                    .addVirtualAddress("i1", virtualAddress)
+                    .build()))
+        .setVrf(vrrp2Vrf)
+        .setOwner(vrrp2)
+        .build();
+
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(h.getHostname(), h, vrrp1.getHostname(), vrrp1, vrrp2.getHostname(), vrrp2);
+    TopologyContext initialTopologyContext =
+        TopologyContext.builder().setLayer3Topology(synthesizeL3Topology(configurations)).build();
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
+    ComputeDataPlaneResult dp =
+        engine.computeDataPlane(
+            configurations,
+            initialTopologyContext,
+            ImmutableSet.of(),
+            new TestIpOwners(configurations));
+    Set<AbstractRoute> h1Vrf1HmmRoutes =
+        dp._dataPlane.getRibs().get(h.getHostname()).get(hVrf1.getName()).getRoutes().stream()
+            .filter(HmmRoute.class::isInstance)
+            .collect(ImmutableSet.toImmutableSet());
+    Set<AbstractRoute> h1Vrf2HmmRoutes =
+        dp._dataPlane.getRibs().get(h.getHostname()).get(hVrf2.getName()).getRoutes().stream()
+            .filter(HmmRoute.class::isInstance)
+            .collect(ImmutableSet.toImmutableSet());
+
+    assertThat(
+        h1Vrf1HmmRoutes,
+        containsInAnyOrder(
+            HmmRoute.builder()
+                .setNetwork(Prefix.create(i1HAddress.getIp(), MAX_PREFIX_LENGTH))
+                .setNextHop(NextHopInterface.of(hI1.getName()))
+                .build()));
+    assertThat(
+        h1Vrf2HmmRoutes,
+        containsInAnyOrder(
+            HmmRoute.builder()
+                .setNetwork(Prefix.create(i2HAddress.getIp(), MAX_PREFIX_LENGTH))
+                .setNextHop(NextHopInterface.of(hI2.getName()))
+                .build(),
+            HmmRoute.builder()
+                .setNetwork(Prefix.create(virtualAddress, MAX_PREFIX_LENGTH))
+                .setNextHop(NextHopInterface.of(hI2.getName()))
+                .build()));
   }
 
   private static class TestIpOwners extends IpOwnersBaseImpl {
