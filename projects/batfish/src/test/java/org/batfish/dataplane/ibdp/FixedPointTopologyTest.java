@@ -29,6 +29,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.HybridL3Adjacencies;
+import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topologies;
@@ -62,6 +63,7 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -201,8 +203,13 @@ public final class FixedPointTopologyTest {
         callerTopologyContext.getLayer3Topology().getEdges(),
         not(hasItem(Edge.of(H1_NAME, E1_NAME, H2_NAME, E2_NAME))));
 
+    Map<String, Configuration> configurations = generateVxlanConfigs();
     ComputeDataPlaneResult dp =
-        engine.computeDataPlane(generateVxlanConfigs(), callerTopologyContext, ImmutableSet.of());
+        engine.computeDataPlane(
+            configurations,
+            callerTopologyContext,
+            ImmutableSet.of(),
+            new TestIpOwners(configurations, callerTopologyContext.getL3Adjacencies()));
     TopologyContainer topologies = dp._topologies;
 
     // There should be an active VXLAN tunnel
@@ -371,7 +378,11 @@ public final class FixedPointTopologyTest {
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
 
     ComputeDataPlaneResult dp =
-        engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
+        engine.computeDataPlane(
+            configurations,
+            topologyContext,
+            ImmutableSet.of(),
+            new TestIpOwners(configurations, topologyContext.getL3Adjacencies()));
     TopologyContainer topologies = dp._topologies;
 
     assertThat(topologies, instanceOf(TopologyContext.class));
@@ -398,7 +409,11 @@ public final class FixedPointTopologyTest {
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
 
     ComputeDataPlaneResult dp =
-        engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
+        engine.computeDataPlane(
+            configurations,
+            topologyContext,
+            ImmutableSet.of(),
+            new TestIpOwners(configurations, topologyContext.getL3Adjacencies()));
     TopologyContainer topologies = dp._topologies;
 
     assertThat(topologies, instanceOf(TopologyContext.class));
@@ -424,7 +439,11 @@ public final class FixedPointTopologyTest {
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
 
     ComputeDataPlaneResult dp =
-        engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
+        engine.computeDataPlane(
+            configurations,
+            topologyContext,
+            ImmutableSet.of(),
+            new TestIpOwners(configurations, topologyContext.getL3Adjacencies()));
     TopologyContainer topologies = dp._topologies;
 
     assertThat(topologies, instanceOf(TopologyContext.class));
@@ -465,7 +484,11 @@ public final class FixedPointTopologyTest {
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
 
     ComputeDataPlaneResult dp =
-        engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
+        engine.computeDataPlane(
+            configurations,
+            topologyContext,
+            ImmutableSet.of(),
+            new TestIpOwners(configurations, topologyContext.getL3Adjacencies()));
     TopologyContainer topologies = dp._topologies;
 
     assertThat(topologies, instanceOf(TopologyContext.class));
@@ -490,5 +513,12 @@ public final class FixedPointTopologyTest {
                 new Edge(
                     NodeInterfacePair.of("host2", "Tunnel2"),
                     NodeInterfacePair.of("host1", "Tunnel1")))));
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(
+        Map<String, Configuration> configurations, L3Adjacencies initialL3Adjacencies) {
+      super(configurations, initialL3Adjacencies, PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

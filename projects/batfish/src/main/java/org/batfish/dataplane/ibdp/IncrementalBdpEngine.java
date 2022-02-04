@@ -15,10 +15,13 @@ import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanTopologyToLaye
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,9 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BdpOscillationException;
@@ -42,6 +48,7 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -55,8 +62,16 @@ import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
+import org.batfish.datamodel.tracking.NegatedTrackMethod;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.tracking.TrackMethodReference;
+import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
+import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEvaluatorProvider;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
 import org.batfish.dataplane.rib.RibDelta;
@@ -87,12 +102,14 @@ final class IncrementalBdpEngine {
   private PartialDataplane nextDataplane(
       TopologyContext currentTopologyContext,
       SortedMap<String, Node> nodes,
-      List<VirtualRouter> vrs) {
+      List<VirtualRouter> vrs,
+      IpOwners currentIpOwners) {
     LOGGER.info("Updating dataplane");
     computeFibs(vrs);
 
     return PartialDataplane.builder()
         .setNodes(nodes)
+        .setIpOwners(currentIpOwners)
         .setLayer3Topology(currentTopologyContext.getLayer3Topology())
         .setL3Adjacencies(currentTopologyContext.getL3Adjacencies())
         .build();
@@ -110,7 +127,7 @@ final class IncrementalBdpEngine {
    * can be established given the current L3 topology and dataplane state. The resulting {@code
    * TopologyContext} for the next iteration of dataplane is returned.
    */
-  private TopologyContext nextTopologyContext(
+  private static TopologyContext nextTopologyContext(
       TopologyContext currentTopologyContext,
       PartialDataplane currentDataplane,
       TopologyContext initialTopologyContext,
@@ -235,17 +252,17 @@ final class IncrementalBdpEngine {
   ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations,
       TopologyContext initialTopologyContext,
-      Set<BgpAdvertisement> externalAdverts) {
+      Set<BgpAdvertisement> externalAdverts,
+      IpOwners initialIpOwners) {
     Span span = GlobalTracer.get().buildSpan("Compute Data Plane").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
       LOGGER.info("Computing Data Plane using iBDP");
 
-      // TODO: switch to topologies and owners from TopologyProvider
-      IpOwners ipOwners = new IpOwners(configurations, initialTopologyContext.getL3Adjacencies());
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners = ipOwners.getIpVrfOwners();
-      Map<String, Map<String, Set<Ip>>> activeInterfaceOwners = ipOwners.getInterfaceOwners(true);
+      Map<Ip, Map<String, Set<String>>> initialIpVrfOwners = initialIpOwners.getIpVrfOwners();
+      Map<String, Map<String, Set<Ip>>> initialActiveInterfaceOwners =
+          initialIpOwners.getInterfaceOwners(true);
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =
@@ -268,7 +285,12 @@ final class IncrementalBdpEngine {
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
       computeIgpDataPlane(
-          nodes, vrs, initialTopologyContext, ipVrfOwners, activeInterfaceOwners, answerElement);
+          nodes,
+          vrs,
+          initialTopologyContext,
+          initialIpVrfOwners,
+          initialActiveInterfaceOwners,
+          answerElement);
 
       LOGGER.info("Initialize virtual routers before topology fixed point");
       Span initializationSpan =
@@ -277,7 +299,9 @@ final class IncrementalBdpEngine {
         assert innerScope != null; // avoid unused warning
         vrs.parallelStream()
             .forEach(
-                vr -> vr.initForEgpComputationBeforeTopologyLoop(externalAdverts, ipVrfOwners));
+                vr ->
+                    vr.initForEgpComputationBeforeTopologyLoop(
+                        externalAdverts, initialIpVrfOwners));
       } finally {
         initializationSpan.finish();
       }
@@ -294,7 +318,8 @@ final class IncrementalBdpEngine {
               .setTunnelTopology(TunnelTopology.EMPTY)
               .setVxlanTopology(VxlanTopology.EMPTY)
               .build();
-      PartialDataplane currentDataplane = nextDataplane(priorTopologyContext, nodes, vrs);
+      PartialDataplane currentDataplane =
+          nextDataplane(priorTopologyContext, nodes, vrs, initialIpOwners);
 
       TopologyContext currentTopologyContext =
           nextTopologyContext(
@@ -302,7 +327,21 @@ final class IncrementalBdpEngine {
               currentDataplane,
               initialTopologyContext,
               networkConfigurations,
-              ipVrfOwners);
+              initialIpVrfOwners);
+      Map<String, Collection<TrackRoute>> trackRoutesByHostname =
+          collectTrackRoutes(configurations);
+      DataPlaneTrackMethodEvaluatorProvider currentTrackMethodEvaluatorProvider =
+          nextTrackMethodEvaluatorProvider(
+              currentDataplane,
+              nodes,
+              currentTopologyContext,
+              configurations,
+              trackRoutesByHostname);
+      DataPlaneIpOwners currentIpOwners =
+          new DataPlaneIpOwners(
+              configurations,
+              currentTopologyContext.getL3Adjacencies(),
+              currentTrackMethodEvaluatorProvider);
       int topologyIterations = 0;
       boolean converged = false;
       while (!converged && topologyIterations++ < MAX_TOPOLOGY_ITERATIONS) {
@@ -314,23 +353,43 @@ final class IncrementalBdpEngine {
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(
-                  nodes, vrs, answerElement, currentTopologyContext, networkConfigurations);
+                  nodes,
+                  vrs,
+                  answerElement,
+                  currentTopologyContext,
+                  networkConfigurations,
+                  currentTrackMethodEvaluatorProvider);
           if (isOscillating) {
             // If we are oscillating here, network has no stable solution.
             LOGGER.error("Network has no stable solution");
             throw new BdpOscillationException("Network has no stable solution");
           }
 
-          currentDataplane = nextDataplane(currentTopologyContext, nodes, vrs);
+          currentDataplane = nextDataplane(currentTopologyContext, nodes, vrs, currentIpOwners);
           TopologyContext nextTopologyContext =
               nextTopologyContext(
                   currentTopologyContext,
                   currentDataplane,
                   initialTopologyContext,
                   networkConfigurations,
-                  ipVrfOwners);
-          converged = currentTopologyContext.equals(nextTopologyContext);
+                  currentIpOwners.getIpVrfOwners());
+          currentTrackMethodEvaluatorProvider =
+              nextTrackMethodEvaluatorProvider(
+                  currentDataplane,
+                  nodes,
+                  nextTopologyContext,
+                  configurations,
+                  trackRoutesByHostname);
+          DataPlaneIpOwners nextIpOwners =
+              new DataPlaneIpOwners(
+                  configurations,
+                  nextTopologyContext.getL3Adjacencies(),
+                  currentTrackMethodEvaluatorProvider);
+          converged =
+              currentTopologyContext.equals(nextTopologyContext)
+                  && currentIpOwners.equals(nextIpOwners);
           currentTopologyContext = nextTopologyContext;
+          currentIpOwners = nextIpOwners;
         } finally {
           iterSpan.finish();
         }
@@ -361,6 +420,115 @@ final class IncrementalBdpEngine {
   }
 
   /**
+   * Returns map: hostname of config with at least one {@link TrackRoute} -> {@link TrackRoute}s in
+   * that config.
+   */
+  private static @Nonnull Map<String, Collection<TrackRoute>> collectTrackRoutes(
+      Map<String, Configuration> configurations) {
+    ImmutableMap.Builder<String, Collection<TrackRoute>> builder = ImmutableMap.builder();
+    configurations.forEach(
+        (hostname, c) -> {
+          Collection<TrackRoute> trackRoutes =
+              c.getTrackingGroups().values().stream()
+                  .flatMap(TRACK_ROUTE_COLLECTOR::visit)
+                  .collect(ImmutableList.toImmutableList());
+          if (!trackRoutes.isEmpty()) {
+            builder.put(hostname, trackRoutes);
+          }
+        });
+    return builder.build();
+  }
+
+  private static final TrackRouteCollector TRACK_ROUTE_COLLECTOR = new TrackRouteCollector();
+
+  private static final class TrackRouteCollector
+      implements GenericTrackMethodVisitor<Stream<TrackRoute>> {
+
+    @Override
+    public Stream<TrackRoute> visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod) {
+      return visit(negatedTrackMethod.getTrackMethod());
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackInterface(TrackInterface trackInterface) {
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackMethodReference(TrackMethodReference trackMethodReference) {
+      // target will be found elsewhere
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackRoute(TrackRoute trackRoute) {
+      return Stream.of(trackRoute);
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackTrue(TrackTrue trackTrue) {
+      return Stream.of();
+    }
+  }
+
+  /**
+   * Create a provider for data-plane-based track evaluation, which depends in general on the
+   * contents of FIBs and RIBs.
+   *
+   * <p>Evaluation is currently performed in the following places:
+   *
+   * <ul>
+   *   <li>Constructor of {@link DataPlaneIpOwners}. This happens between iterations, so is thread
+   *       safe with respect to RIBs and FIBs.
+   *   <li>{@link VirtualRouter#activateStaticRoutes}. This happens during evaluation of a parallel
+   *       stream over all {@link VirtualRouter}s that modifies RIBs. In order to achieve
+   *       thread-safety in the case where a {@link org.batfish.datamodel.tracking.TrackRoute}
+   *       depends on information in a different VRF than that containing the static route, the
+   *       evaulator must have an immutable view of the RIB being inspected. So we should depend on
+   *       the routes from the beginning of the iteration (note we are only able to supply FIBs from
+   *       the beginning of an iteration anyway). Since saving routes of a VRF can be expensive, we
+   *       instead pre-evaluate the {@link org.batfish.datamodel.tracking.TrackRoute}s now.
+   * </ul>
+   */
+  private static @Nonnull DataPlaneTrackMethodEvaluatorProvider nextTrackMethodEvaluatorProvider(
+      PartialDataplane dp,
+      Map<String, Node> nodes,
+      TopologyContext topologyContext,
+      Map<String, Configuration> configurations,
+      Map<String, Collection<TrackRoute>> trackRoutesByHostname) {
+    ImmutableMap.Builder<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname =
+        ImmutableMap.builder();
+    trackRoutesByHostname.forEach(
+        (hostname, trackRoutes) ->
+            trackRouteResultsByHostname.put(
+                hostname,
+                trackRoutes.stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(
+                            Function.identity(),
+                            trackRoute -> evaluateTrackRoute(trackRoute, nodes.get(hostname))))));
+    TracerouteEngine tr =
+        new TracerouteEngineImpl(dp, topologyContext.getLayer3Topology(), configurations);
+    return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
+        trackRouteResultsByHostname.build(), tr);
+  }
+
+  @VisibleForTesting
+  static boolean evaluateTrackRoute(TrackRoute trackRoute, Node node) {
+    Set<AnnotatedRoute<AbstractRoute>> routesForPrefix =
+        node.getVirtualRouter(trackRoute.getVrf())
+            .get()
+            .getMainRib()
+            .getRoutes(trackRoute.getPrefix());
+    if (trackRoute.getProtocols().isEmpty()) {
+      return !routesForPrefix.isEmpty();
+    } else {
+      return routesForPrefix.stream()
+          .anyMatch(r -> trackRoute.getProtocols().contains(r.getRoute().getProtocol()));
+    }
+  }
+
+  /**
    * Perform one iteration of the "dependent routes" dataplane computation. Dependent routes refers
    * to routes that could change because other routes have changed. For example, this includes:
    *
@@ -379,6 +547,7 @@ final class IncrementalBdpEngine {
       String iterationLabel,
       Map<String, Node> allNodes,
       NetworkConfigurations networkConfigurations,
+      DataPlaneTrackMethodEvaluatorProvider provider,
       int iteration) {
     Span overallSpan =
         GlobalTracer.get().buildSpan(iterationLabel + ": Compute dependent routes").start();
@@ -394,7 +563,9 @@ final class IncrementalBdpEngine {
       LOGGER.info("{}: Recompute conditional static routes", iterationLabel);
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(nhIpSpan)) {
         assert innerScope != null; // avoid unused warning
-        vrs.parallelStream().forEach(VirtualRouter::activateStaticRoutes);
+        vrs.parallelStream()
+            .forEach(
+                vr -> vr.activateStaticRoutes(provider.forConfiguration(vr.getConfiguration())));
       } finally {
         nhIpSpan.finish();
       }
@@ -633,7 +804,9 @@ final class IncrementalBdpEngine {
             .forEach(
                 vr -> {
                   importRib(vr.getMainRib(), vr._independentRib);
-                  vr.activateStaticRoutes();
+                  // Use static evaluator since we don't have dataplane yet
+                  vr.activateStaticRoutes(
+                      new PreDataPlaneTrackMethodEvaluator(vr.getConfiguration()));
                 });
       } finally {
         staticSpan.finish();
@@ -660,7 +833,8 @@ final class IncrementalBdpEngine {
       List<VirtualRouter> vrs,
       IncrementalBdpAnswerElement ae,
       TopologyContext topologyContext,
-      NetworkConfigurations networkConfigurations) {
+      NetworkConfigurations networkConfigurations,
+      DataPlaneTrackMethodEvaluatorProvider provider) {
     LOGGER.info("Compute EGP");
     Span span = GlobalTracer.get().buildSpan("Compute EGP").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -757,7 +931,12 @@ final class IncrementalBdpEngine {
             String iterationlabel =
                 String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
             computeDependentRoutesIteration(
-                iterationVrs, iterationlabel, nodes, networkConfigurations, _numIterations);
+                iterationVrs,
+                iterationlabel,
+                nodes,
+                networkConfigurations,
+                provider,
+                _numIterations);
             ++nodeSet;
           }
 

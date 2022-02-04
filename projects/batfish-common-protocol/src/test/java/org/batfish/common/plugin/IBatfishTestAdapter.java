@@ -16,6 +16,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1TopologiesFactory;
@@ -38,6 +39,7 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.batfish.grammar.BgpTableFormat;
@@ -73,8 +75,8 @@ public class IBatfishTestAdapter implements IBatfish {
 
     @Nonnull
     @Override
-    public IpOwners getIpOwners(NetworkSnapshot snapshot) {
-      return new IpOwners(_batfish.loadConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
+    public IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
+      return new TestIpOwners(snapshot);
     }
 
     @Override
@@ -152,6 +154,15 @@ public class IBatfishTestAdapter implements IBatfish {
     @Override
     public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
       return VxlanTopologyUtils.computeVxlanTopology(_batfish.loadConfigurations(snapshot));
+    }
+
+    private class TestIpOwners extends IpOwnersBaseImpl {
+      private TestIpOwners(NetworkSnapshot snapshot) {
+        super(
+            _batfish.loadConfigurations(snapshot),
+            getInitialL3Adjacencies(snapshot),
+            PreDataPlaneTrackMethodEvaluator::new);
+      }
     }
   }
 

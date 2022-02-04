@@ -1,36 +1,51 @@
 package org.batfish.dataplane.ibdp;
 
-import java.util.Set;
+import com.google.common.annotations.VisibleForTesting;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.GenericRibReadOnly;
-import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
-import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.tracking.TrackTrue;
 
 /**
- * Evaluator for a {@link org.batfish.datamodel.tracking.TrackMethod} given knowledge of the routes
- * in a main RIB, and the contents of the associated {@link Configuration}.
+ * Evaluator for a {@link org.batfish.datamodel.tracking.TrackMethod} given knowledge of the
+ * contents of a {@link Configuration}, its associated RIBs, and a {@link TracerouteEngine} that can
+ * perform reachabilty checks.
  *
- * <p>Delegates to {@link StaticTrackMethodEvaluator} when only the contents of the {@link
+ * <p>Delegates to {@link PreDataPlaneTrackMethodEvaluator} when only the contents of the {@link
  * Configuration} are needed for evaluation.
  */
 @ParametersAreNonnullByDefault
-public class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<Boolean> {
+public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
 
-  public DataplaneTrackEvaluator(
-      Configuration configuration, GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib) {
-    _configuration = configuration;
-    _staticEvaluator = new StaticTrackMethodEvaluator(configuration);
-    _mainRib = mainRib;
+  @FunctionalInterface
+  public interface DataPlaneTrackMethodEvaluatorProvider extends TrackMethodEvaluatorProvider {
+    @Override
+    @Nonnull
+    DataplaneTrackEvaluator forConfiguration(Configuration c);
+  }
+
+  /**
+   * Create a provider for {@link DataplaneTrackEvaluator}s given a fixed dataplane and traceroute
+   * engine.
+   */
+  public static @Nonnull DataPlaneTrackMethodEvaluatorProvider createTrackMethodEvaluatorProvider(
+      Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname,
+      TracerouteEngine tracerouteEngine) {
+    return configuration ->
+        new DataplaneTrackEvaluator(
+            configuration,
+            tracerouteEngine,
+            trackRouteResultsByHostname.get(configuration.getHostname()));
   }
 
   @Override
@@ -40,7 +55,7 @@ public class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<Boolea
 
   @Override
   public Boolean visitTrackInterface(TrackInterface trackInterface) {
-    return _staticEvaluator.visit(trackInterface);
+    return _preDataPlaneTrackMethodEvaluator.visit(trackInterface);
   }
 
   @Override
@@ -52,21 +67,30 @@ public class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<Boolea
 
   @Override
   public Boolean visitTrackRoute(TrackRoute trackRoute) {
-    Set<AnnotatedRoute<AbstractRoute>> routesForPrefix = _mainRib.getRoutes(trackRoute.getPrefix());
-    if (trackRoute.getProtocols().isEmpty()) {
-      return !routesForPrefix.isEmpty();
-    } else {
-      return routesForPrefix.stream()
-          .anyMatch(r -> trackRoute.getProtocols().contains(r.getRoute().getProtocol()));
-    }
+    return _trackRouteResults.get(trackRoute);
   }
 
   @Override
   public Boolean visitTrackTrue(TrackTrue trackTrue) {
-    return _staticEvaluator.visit(trackTrue);
+    return _preDataPlaneTrackMethodEvaluator.visit(trackTrue);
   }
 
   private final @Nonnull Configuration _configuration;
-  private final @Nonnull GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
-  private final @Nonnull StaticTrackMethodEvaluator _staticEvaluator;
+  private final @Nonnull Map<TrackRoute, Boolean> _trackRouteResults;
+  private final @Nonnull PreDataPlaneTrackMethodEvaluator _preDataPlaneTrackMethodEvaluator;
+
+  // TODO: support track reachability
+  @SuppressWarnings("unused")
+  private final @Nonnull TracerouteEngine _tracerouteEngine;
+
+  @VisibleForTesting
+  DataplaneTrackEvaluator(
+      Configuration configuration,
+      TracerouteEngine tracerouteEngine,
+      Map<TrackRoute, Boolean> trackRouteResults) {
+    _configuration = configuration;
+    _preDataPlaneTrackMethodEvaluator = new PreDataPlaneTrackMethodEvaluator(configuration);
+    _tracerouteEngine = tracerouteEngine;
+    _trackRouteResults = trackRouteResults;
+  }
 }

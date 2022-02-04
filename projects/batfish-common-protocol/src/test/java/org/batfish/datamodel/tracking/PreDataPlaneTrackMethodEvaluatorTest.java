@@ -10,8 +10,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.junit.Test;
 
-/** Tests of {@link StaticTrackMethodEvaluator} */
-public class StaticTrackMethodEvaluatorTest {
+/** Tests of {@link PreDataPlaneTrackMethodEvaluator} */
+public class PreDataPlaneTrackMethodEvaluatorTest {
   @Test
   public void testVisitTrackInterface() {
     Configuration c =
@@ -31,7 +31,7 @@ public class StaticTrackMethodEvaluatorTest {
         .setAdminUp(false)
         .build();
 
-    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c);
+    PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);
     // Iface is active
     TrackInterface trackInterface1 = new TrackInterface("i1");
     assertTrue(evaluator.visit(trackInterface1));
@@ -50,7 +50,7 @@ public class StaticTrackMethodEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     TrackMethod base = TrackTrue.instance();
-    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c);
+    PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);
 
     assertFalse(evaluator.visit(NegatedTrackMethod.of(base)));
   }
@@ -61,7 +61,7 @@ public class StaticTrackMethodEvaluatorTest {
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     TrackMethod base = TrackTrue.instance();
     c.setTrackingGroups(ImmutableMap.of("1", base));
-    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c);
+    PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);
 
     assertTrue(evaluator.visit(TrackMethodReference.of("1")));
   }
@@ -70,7 +70,7 @@ public class StaticTrackMethodEvaluatorTest {
   public void testVisitTrackTrue() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
-    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c);
+    PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);
 
     assertTrue(evaluator.visit(TrackTrue.instance()));
   }

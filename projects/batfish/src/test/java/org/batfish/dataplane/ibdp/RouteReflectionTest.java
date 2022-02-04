@@ -13,9 +13,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
+import org.batfish.common.topology.IpOwnersBaseImpl;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -42,6 +45,7 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -209,10 +213,11 @@ public class RouteReflectionTest {
             .build();
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+    TopologyContext topologyContext = TopologyContext.builder().setLayer3Topology(topology).build();
     ComputeDataPlaneResult dpResult =
         engine.computeDataPlane(
             configurations,
-            TopologyContext.builder().setLayer3Topology(topology).build(),
+            topologyContext,
             ImmutableSet.of(
                 _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setDstIp(edge1EbgpIfaceIp)
@@ -231,7 +236,8 @@ public class RouteReflectionTest {
                     .setOriginatorIp(as3PeeringIp)
                     .setSrcIp(as3PeeringIp)
                     .setSrcNode("as3Edge")
-                    .build()));
+                    .build()),
+            new TestIpOwners(configurations, topologyContext.getL3Adjacencies()));
     return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dpResult._dataPlane);
   }
 
@@ -339,11 +345,12 @@ public class RouteReflectionTest {
             .build();
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+    TopologyContext topologyContext = TopologyContext.builder().setLayer3Topology(topology).build();
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
             engine.computeDataPlane(
                     configurations,
-                    TopologyContext.builder().setLayer3Topology(topology).build(),
+                    topologyContext,
                     ImmutableSet.of(
                         _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
                             .setDstIp(edge1EbgpIfaceIp)
@@ -353,7 +360,8 @@ public class RouteReflectionTest {
                             .setOriginatorIp(as1PeeringIp)
                             .setSrcIp(as1PeeringIp)
                             .setSrcNode("as1Edge")
-                            .build()))
+                            .build()),
+                    new TestIpOwners(configurations, topologyContext.getL3Adjacencies()))
                 ._dataPlane;
     return IncrementalBdpEngine.getRoutes(dp);
   }
@@ -471,5 +479,12 @@ public class RouteReflectionTest {
     assertIbgpRoute(routes, RR_NAME, AS1_PREFIX);
     assertIbgpRoute(routes, RR_NAME, AS3_PREFIX);
     assertIbgpRoute(routes, EDGE2_NAME, AS1_PREFIX);
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(
+        Map<String, Configuration> configurations, L3Adjacencies initialL3Adjacencies) {
+      super(configurations, initialL3Adjacencies, PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

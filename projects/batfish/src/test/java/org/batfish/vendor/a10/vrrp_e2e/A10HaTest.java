@@ -64,7 +64,10 @@ public final class A10HaTest {
   @Test
   public void testIpOwners() {
     Map<String, Map<String, Set<Ip>>> ipOwners =
-        _batfish.getTopologyProvider().getIpOwners(_batfish.getSnapshot()).getInterfaceOwners(true);
+        _batfish
+            .getTopologyProvider()
+            .getInitialIpOwners(_batfish.getSnapshot())
+            .getInterfaceOwners(true);
     Map<String, Set<Ip>> r1IpsByInterface = ipOwners.get(R1);
     Map<String, Set<Ip>> r2IpsByInterface = ipOwners.get(R2);
     String ve4094Name = getInterfaceName(Type.VE, 4094);

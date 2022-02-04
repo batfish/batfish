@@ -15,6 +15,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -92,8 +93,7 @@ public class VrrpComputationTest {
   public void testVrrpPriority() {
     Map<String, Configuration> configs = setupVrrpTestCase(false);
 
-    Map<Ip, Set<String>> owners =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
+    Map<Ip, Set<String>> owners = new TestIpOwners(configs).getNodeOwners(false);
 
     assertThat(owners.get(_virtInterfaceAddr), contains("n2"));
   }
@@ -106,8 +106,7 @@ public class VrrpComputationTest {
   public void testVrrpPriorityTieBreaking() {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
-    Map<Ip, Set<String>> owners =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
+    Map<Ip, Set<String>> owners = new TestIpOwners(configs).getNodeOwners(false);
 
     // Ensure node that has higher interface IP wins
     assertThat(owners.get(_virtInterfaceAddr), contains("n2"));
@@ -118,7 +117,7 @@ public class VrrpComputationTest {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
     Map<Ip, Map<String, Set<String>>> interfaceOwners =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getAllDeviceOwnedIps();
+        new TestIpOwners(configs).getAllDeviceOwnedIps();
 
     assertThat(
         interfaceOwners,
@@ -135,5 +134,14 @@ public class VrrpComputationTest {
         hasEntry(
             equalTo(_virtInterfaceAddr),
             hasEntry(equalTo(_i2.getOwner().getHostname()), contains(_i2.getName()))));
+  }
+
+  private static class TestIpOwners extends IpOwnersBaseImpl {
+    protected TestIpOwners(Map<String, Configuration> configurations) {
+      super(
+          configurations,
+          GlobalBroadcastNoPointToPoint.instance(),
+          PreDataPlaneTrackMethodEvaluator::new);
+    }
   }
 }

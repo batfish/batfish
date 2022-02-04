@@ -912,7 +912,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
     return computeLocationInfo(
-        getTopologyProvider().getIpOwners(snapshot), loadConfigurations(snapshot));
+        getTopologyProvider().getInitialIpOwners(snapshot), loadConfigurations(snapshot));
   }
 
   private void disableUnusableVlanInterfaces(Map<String, Configuration> configurations) {
@@ -2145,7 +2145,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new CompletionMetadata(
         getFilterNames(configurations),
         getInterfaces(configurations),
-        getIps(configurations, getTopologyProvider().getIpOwners(snapshot)),
+        getIps(configurations, getTopologyProvider().getInitialIpOwners(snapshot)),
         getLocationCompletionMetadata(getLocationInfo(snapshot), configurations),
         getMlagIds(configurations),
         getNodes(configurations),
