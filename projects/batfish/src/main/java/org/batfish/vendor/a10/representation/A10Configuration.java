@@ -451,9 +451,8 @@ public final class A10Configuration extends VendorConfiguration {
                           // unusable gateway health check
                           return;
                         }
-                        String methodName = generatedServerTrackMethodName(ip);
                         TrackAction action = new DecrementPriority(decrement);
-                        actionsBuilder.put(methodName, action);
+                        actionsBuilder.put(trackMethodName, action);
                       });
               builder.put(templateName, actionsBuilder.build());
             });
