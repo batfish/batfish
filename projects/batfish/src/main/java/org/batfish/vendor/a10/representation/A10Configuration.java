@@ -578,8 +578,6 @@ public final class A10Configuration extends VendorConfiguration {
   /**
    * Process vrrp-a vrids in the case vrrp-a is enabled. Causes the device to own all virtual
    * addresses for each vrid for which it is converted VRRP master.
-   *
-   * @param failOverPolicyTemplateActions
    */
   private void convertVrrpAEnabled(
       // template name -> generated track method name -> action
