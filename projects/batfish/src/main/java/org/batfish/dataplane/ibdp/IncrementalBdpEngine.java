@@ -12,10 +12,10 @@ import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanTopologyToLayer3Edges;
+import static org.batfish.dataplane.ibdp.TrackReachabilityUtils.evaluateTrackReachability;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.Scope;
@@ -67,6 +67,7 @@ import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethodReference;
+import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -322,14 +323,19 @@ final class IncrementalBdpEngine {
               initialIpVrfOwners);
       Map<String, Collection<TrackRoute>> trackRoutesByHostname =
           collectTrackRoutes(configurations);
+      Map<String, Collection<TrackReachability>> trackReachabilitiesByHostname =
+          collectTrackReachabilities(configurations);
+      Map<String, Map<TrackReachability, Boolean>> currentTrackReachabilityResultsByHostname =
+          nextTrackReachabilityResultsByHostname(
+              currentDataplane,
+              currentTopologyContext,
+              configurations,
+              trackReachabilitiesByHostname);
       Map<String, Map<TrackRoute, Boolean>> currentTrackRouteResultsByHostname =
           nextTrackRoutesByHostname(trackRoutesByHostname, nodes);
       DataPlaneTrackMethodEvaluatorProvider currentTrackMethodEvaluatorProvider =
           nextTrackMethodEvaluatorProvider(
-              currentDataplane,
-              currentTopologyContext,
-              configurations,
-              currentTrackRouteResultsByHostname);
+              currentTrackReachabilityResultsByHostname, currentTrackRouteResultsByHostname);
       DataPlaneIpOwners currentIpOwners =
           new DataPlaneIpOwners(
               configurations,
@@ -368,14 +374,17 @@ final class IncrementalBdpEngine {
                   initialTopologyContext,
                   networkConfigurations,
                   currentIpOwners.getIpVrfOwners());
+          Map<String, Map<TrackReachability, Boolean>> nextTrackReachabilityResultsByHostname =
+              nextTrackReachabilityResultsByHostname(
+                  currentDataplane,
+                  currentTopologyContext,
+                  configurations,
+                  trackReachabilitiesByHostname);
           Map<String, Map<TrackRoute, Boolean>> nextTrackRouteResultsByHostname =
               nextTrackRoutesByHostname(trackRoutesByHostname, nodes);
           currentTrackMethodEvaluatorProvider =
               nextTrackMethodEvaluatorProvider(
-                  currentDataplane,
-                  nextTopologyContext,
-                  configurations,
-                  nextTrackRouteResultsByHostname);
+                  nextTrackReachabilityResultsByHostname, nextTrackRouteResultsByHostname);
           DataPlaneIpOwners nextIpOwners =
               new DataPlaneIpOwners(
                   configurations,
@@ -383,9 +392,12 @@ final class IncrementalBdpEngine {
                   currentTrackMethodEvaluatorProvider);
           converged =
               currentTopologyContext.equals(nextTopologyContext)
+                  && currentTrackReachabilityResultsByHostname.equals(
+                      nextTrackReachabilityResultsByHostname)
                   && currentTrackRouteResultsByHostname.equals(nextTrackRouteResultsByHostname)
                   && currentIpOwners.equals(nextIpOwners);
           currentTopologyContext = nextTopologyContext;
+          currentTrackReachabilityResultsByHostname = nextTrackReachabilityResultsByHostname;
           currentTrackRouteResultsByHostname = nextTrackRouteResultsByHostname;
           currentIpOwners = nextIpOwners;
         } finally {
@@ -437,6 +449,66 @@ final class IncrementalBdpEngine {
    * Returns map: hostname of config with at least one {@link TrackRoute} -> {@link TrackRoute}s in
    * that config.
    */
+  private static @Nonnull Map<String, Collection<TrackReachability>> collectTrackReachabilities(
+      Map<String, Configuration> configurations) {
+    ImmutableMap.Builder<String, Collection<TrackReachability>> builder = ImmutableMap.builder();
+    configurations.forEach(
+        (hostname, c) -> {
+          Collection<TrackReachability> trackReachabilities =
+              c.getTrackingGroups().values().stream()
+                  .flatMap(TRACK_REACHABILITY_COLLECTOR::visit)
+                  .collect(ImmutableSet.toImmutableSet());
+          if (!trackReachabilities.isEmpty()) {
+            builder.put(hostname, trackReachabilities);
+          }
+        });
+    return builder.build();
+  }
+
+  private static final TrackReachabilityCollector TRACK_REACHABILITY_COLLECTOR =
+      new TrackReachabilityCollector();
+
+  private static final class TrackReachabilityCollector
+      implements GenericTrackMethodVisitor<Stream<TrackReachability>> {
+
+    @Override
+    public Stream<TrackReachability> visitNegatedTrackMethod(
+        NegatedTrackMethod negatedTrackMethod) {
+      return visit(negatedTrackMethod.getTrackMethod());
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackInterface(TrackInterface trackInterface) {
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackMethodReference(
+        TrackMethodReference trackMethodReference) {
+      // target will be found elsewhere
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackReachability(TrackReachability trackReachability) {
+      return Stream.of(trackReachability);
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackRoute(TrackRoute trackRoute) {
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackReachability> visitTrackTrue(TrackTrue trackTrue) {
+      return Stream.of();
+    }
+  }
+
+  /**
+   * Returns map: hostname of config with at least one {@link TrackRoute} -> {@link TrackRoute}s in
+   * that config.
+   */
   private static @Nonnull Map<String, Collection<TrackRoute>> collectTrackRoutes(
       Map<String, Configuration> configurations) {
     ImmutableMap.Builder<String, Collection<TrackRoute>> builder = ImmutableMap.builder();
@@ -445,7 +517,7 @@ final class IncrementalBdpEngine {
           Collection<TrackRoute> trackRoutes =
               c.getTrackingGroups().values().stream()
                   .flatMap(TRACK_ROUTE_COLLECTOR::visit)
-                  .collect(ImmutableList.toImmutableList());
+                  .collect(ImmutableSet.toImmutableSet());
           if (!trackRoutes.isEmpty()) {
             builder.put(hostname, trackRoutes);
           }
@@ -471,6 +543,11 @@ final class IncrementalBdpEngine {
     @Override
     public Stream<TrackRoute> visitTrackMethodReference(TrackMethodReference trackMethodReference) {
       // target will be found elsewhere
+      return Stream.of();
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackReachability(TrackReachability trackReachability) {
       return Stream.of();
     }
 
@@ -501,18 +578,42 @@ final class IncrementalBdpEngine {
    *       evaulator must have an immutable view of the RIB being inspected. So we should depend on
    *       the routes from the beginning of the iteration (note we are only able to supply FIBs from
    *       the beginning of an iteration anyway). Since saving routes of a VRF can be expensive, we
-   *       instead use pre-evaluated {@link org.batfish.datamodel.tracking.TrackRoute} results here.
+   *       instead use pre-evaluated {@link org.batfish.datamodel.tracking.TrackRoute} and {@link
+   *       org.batfish.datamodel.tracking.TrackReachability} results here.
    * </ul>
    */
   private static @Nonnull DataPlaneTrackMethodEvaluatorProvider nextTrackMethodEvaluatorProvider(
-      PartialDataplane dp,
-      TopologyContext topologyContext,
-      Map<String, Configuration> configurations,
+      Map<String, Map<TrackReachability, Boolean>> trackReachabilityResultsByHostname,
       Map<String, Map<TrackRoute, Boolean>> trackRouteResultsByHostname) {
+    return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
+        trackReachabilityResultsByHostname, trackRouteResultsByHostname);
+  }
+
+  private static @Nonnull Map<String, Map<TrackReachability, Boolean>>
+      nextTrackReachabilityResultsByHostname(
+          PartialDataplane dp,
+          TopologyContext topologyContext,
+          Map<String, Configuration> configurations,
+          Map<String, Collection<TrackReachability>> trackReachabilitiesByHostname) {
     TracerouteEngine tr =
         new TracerouteEngineImpl(dp, topologyContext.getLayer3Topology(), configurations);
-    return DataplaneTrackEvaluator.createTrackMethodEvaluatorProvider(
-        trackRouteResultsByHostname, tr);
+    ImmutableMap.Builder<String, Map<TrackReachability, Boolean>>
+        trackReachabilityResultsByHostname = ImmutableMap.builder();
+    trackReachabilitiesByHostname.forEach(
+        (hostname, trackReachabilities) ->
+            trackReachabilityResultsByHostname.put(
+                hostname,
+                trackReachabilities.stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(
+                            Function.identity(),
+                            trackReachability ->
+                                evaluateTrackReachability(
+                                    trackReachability,
+                                    configurations.get(hostname),
+                                    dp.getFibs().get(hostname),
+                                    tr)))));
+    return trackReachabilityResultsByHostname.build();
   }
 
   @VisibleForTesting
