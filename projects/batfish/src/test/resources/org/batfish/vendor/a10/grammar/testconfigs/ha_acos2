@@ -29,6 +29,8 @@ ha id 1 set-id 2
 ha arp-retry 4
 ha group 1 priority 200
 ha check gateway 10.0.0.1
+ha check route 1.1.1.1 /32 priority-cost 1
+ha check vlan 2 timeout 5
 ha conn-mirror ip 10.0.5.2
 ha interface ethernet 3 both vlan 4094
 ha interface ethernet 3 router-interface no-heartbeat
@@ -46,4 +48,11 @@ ip nat pool pool1 10.0.3.1 10.0.3.2 netmask /24  ha-group-id 1
 slb virtual-server vs1 10.0.4.1
    ha-group 1
    port 22 tcp
+!
+
+health monitor hm1
+!
+
+slb server gateway1 10.0.0.1
+  health-check hm1
 !

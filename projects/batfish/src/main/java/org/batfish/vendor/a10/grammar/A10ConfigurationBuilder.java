@@ -61,6 +61,9 @@ import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_or_trunk_referenceContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Fail_over_policy_template_nameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Fip_optionContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_check_gatewayContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_check_routeContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_check_vlanContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_conn_mirrorContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_groupContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_idContext;
@@ -1714,6 +1717,21 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
                 _currentTrunk.getMembers().add(iface);
               });
         });
+  }
+
+  @Override
+  public void exitHa_check_gateway(Ha_check_gatewayContext ctx) {
+    _c.getOrCreateHa().addCheckGateway(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitHa_check_route(Ha_check_routeContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitHa_check_vlan(Ha_check_vlanContext ctx) {
+    todo(ctx);
   }
 
   @Override

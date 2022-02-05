@@ -1,8 +1,10 @@
 package org.batfish.vendor.a10.representation;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -11,7 +13,23 @@ import org.batfish.datamodel.Ip;
 public final class Ha implements Serializable {
 
   public Ha() {
+    _checkGateways = ImmutableSet.of();
     _groups = ImmutableMap.of();
+  }
+
+  public void addCheckGateway(Ip ip) {
+    if (_checkGateways.contains(ip)) {
+      return;
+    }
+    _checkGateways =
+        ImmutableSet.<Ip>builderWithExpectedSize(_checkGateways.size() + 1)
+            .addAll(_checkGateways)
+            .add(ip)
+            .build();
+  }
+
+  public @Nonnull Set<Ip> getCheckGateways() {
+    return _checkGateways;
   }
 
   public @Nullable Ip getConnMirror() {
@@ -64,6 +82,7 @@ public final class Ha implements Serializable {
     _setId = setId;
   }
 
+  private @Nonnull Set<Ip> _checkGateways;
   private @Nullable Ip _connMirror;
   private @Nonnull Map<Integer, HaGroup> _groups;
   private @Nullable Integer _id;
