@@ -402,25 +402,25 @@ public final class A10Configuration extends VendorConfiguration {
     for (Server server : _servers.values()) {
       if (!(server.getTarget() instanceof ServerTargetAddress)) {
         // Not an IPv4 server
-        return;
+        continue;
       }
       if (!firstNonNull(server.getEnable(), true)) {
         // server is disabled
-        return;
+        continue;
       }
       if (firstNonNull(server.getHealthCheckDisable(), false)) {
         // health check is disabled
-        return;
+        continue;
       }
       String healthMonitorName = server.getHealthCheck();
       if (healthMonitorName == null) {
         // no associated health monitor
-        return;
+        continue;
       }
       HealthMonitor healthMonitor = _healthMonitors.get(healthMonitorName);
       if (healthMonitor == null) {
         // undefined health monitor
-        return;
+        continue;
       }
       Ip ip = ((ServerTargetAddress) server.getTarget()).getAddress();
       // TODO: Use configured health monitor method (e.g. ICMP, TCP/123, etc.)
