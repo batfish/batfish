@@ -72,6 +72,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -274,6 +275,11 @@ public class A10Conversion {
         .map(VrrpA::getCommon)
         .map(VrrpACommon::getEnable)
         .orElse(false);
+  }
+
+  @VisibleForTesting
+  public static @Nonnull String generatedServerTrackMethodName(Ip gatewayIp) {
+    return String.format("~gateway~%s~", gatewayIp);
   }
 
   /** Precondition: vrrpA.getCommon() is not null. */
@@ -489,7 +495,9 @@ public class A10Conversion {
       @Nullable VrrpAVrid vridConfig,
       ConcreteInterfaceAddress sourceAddress,
       Iterable<Ip> virtualAddresses,
-      Collection<String> ipOwnerInterfaces) {
+      Collection<String> ipOwnerInterfaces,
+      // template name -> generated track method name -> action
+      Map<String, Map<String, TrackAction>> failOverPolicyTemplateActions) {
     Map<String, Set<Ip>> virtualAddressesMap =
         ipOwnerInterfaces.stream()
             .collect(
@@ -503,11 +511,18 @@ public class A10Conversion {
           .setVirtualAddresses(virtualAddressesMap)
           .build();
     } else {
+      Map<String, TrackAction> trackActions =
+          Optional.ofNullable(vridConfig.getBladeParameters())
+              .map(VrrpaVridBladeParameters::getFailOverPolicyTemplate)
+              // already warned in extraction if absent
+              .map(failOverPolicyTemplateActions::get)
+              .orElse(ImmutableMap.of());
       return VrrpGroup.builder()
           .setPreempt(getVrrpAVridPreempt(vridConfig))
           .setPriority(getVrrpAVridPriority(vridConfig))
           .setSourceAddress(sourceAddress)
           .setVirtualAddresses(virtualAddressesMap)
+          .setTrackActions(trackActions)
           .build();
     }
   }
@@ -522,7 +537,8 @@ public class A10Conversion {
       Ha ha,
       ConcreteInterfaceAddress sourceAddress,
       Iterable<Ip> virtualAddresses,
-      Collection<String> ipOwnerInterfaces) {
+      Collection<String> ipOwnerInterfaces,
+      Map<String, TrackAction> trackActions) {
     Map<String, Set<Ip>> virtualAddressesMap =
         ipOwnerInterfaces.stream()
             .collect(
@@ -533,6 +549,7 @@ public class A10Conversion {
         .setPriority(getHaGroupPriority(ha.getGroups().get(haGroupId)))
         .setVirtualAddresses(virtualAddressesMap)
         .setSourceAddress(sourceAddress)
+        .setTrackActions(trackActions)
         .build();
   }
 

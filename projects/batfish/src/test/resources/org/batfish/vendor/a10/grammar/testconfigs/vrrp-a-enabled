@@ -8,8 +8,13 @@ vrrp-a common
   enable
 !
 
+vrrp-a fail-over-policy-template gateway
+  gateway 10.10.10.10 weight 50
+
 vrrp-a vrid 1
   floating-ip 3.0.0.1
+  blade-parameters
+    fail-over-policy-template gateway
 !
 
 vrrp-a peer-group
@@ -36,5 +41,10 @@ slb virtual-server vs1 2.0.0.1
   vrid 1
 !
 
+health monitor hm1
+!
+
+slb server gateway1 10.10.10.10
+  health-check hm1
 !
 

@@ -103,6 +103,8 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.trace.TraceTree;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
@@ -427,7 +429,8 @@ public class A10ConversionTest {
     ConcreteInterfaceAddress sourceAddress = ConcreteInterfaceAddress.parse("10.0.0.1/30");
     // null vrid config (must be vrid 0)
     assertThat(
-        toVrrpGroup(null, sourceAddress, ImmutableSet.of(ip), ImmutableList.of("foo")),
+        toVrrpGroup(
+            null, sourceAddress, ImmutableSet.of(ip), ImmutableList.of("foo"), ImmutableMap.of()),
         equalTo(
             VrrpGroup.builder()
                 .setPreempt(DEFAULT_VRRP_A_PREEMPT)
@@ -440,15 +443,24 @@ public class A10ConversionTest {
     VrrpAVrid vridConfig = new VrrpAVrid();
     vridConfig.setPreemptModeDisable(true);
     vridConfig.getOrCreateBladeParameters().setPriority(5);
+    vridConfig.getOrCreateBladeParameters().setFailOverPolicyTemplate("template");
+    Map<String, Map<String, TrackAction>> trackActionsByTemplate =
+        ImmutableMap.of("template", ImmutableMap.of("method", new DecrementPriority(1)));
 
     assertThat(
-        toVrrpGroup(vridConfig, sourceAddress, ImmutableSet.of(ip), ImmutableList.of("foo")),
+        toVrrpGroup(
+            vridConfig,
+            sourceAddress,
+            ImmutableSet.of(ip),
+            ImmutableList.of("foo"),
+            trackActionsByTemplate),
         equalTo(
             VrrpGroup.builder()
                 .setPreempt(false)
                 .setPriority(5)
                 .setSourceAddress(sourceAddress)
                 .setVirtualAddresses("foo", ImmutableSet.of(ip))
+                .setTrackActions(trackActionsByTemplate.get("template"))
                 .build()));
   }
 

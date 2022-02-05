@@ -7,6 +7,7 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
@@ -48,6 +49,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
+import static org.batfish.vendor.a10.representation.A10Conversion.generatedServerTrackMethodName;
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
@@ -128,6 +130,8 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -1459,6 +1463,12 @@ public class A10GrammarTest {
     String i2Name = getInterfaceName(Type.ETHERNET, 2);
     int vrid = 1;
 
+    assertThat(
+        c.getTrackingGroups(),
+        equalTo(
+            ImmutableMap.of(
+                generatedServerTrackMethodName(Ip.parse("10.10.10.10")),
+                TrackReachability.of(Ip.parse("10.10.10.10"), DEFAULT_VRF_NAME))));
     assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name));
     {
       org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i1Name);
@@ -1479,6 +1489,10 @@ public class A10GrammarTest {
                               Ip.parse("2.0.0.1"),
                               Ip.parse("3.0.0.1")))
                       .setSourceAddress(i1Address)
+                      .setTrackActions(
+                          ImmutableMap.of(
+                              generatedServerTrackMethodName(Ip.parse("10.10.10.10")),
+                              new DecrementPriority(50)))
                       .build())));
       // Should not contain virtual addresses
       assertThat(i.getAllAddresses(), contains(i1Address));
@@ -2186,6 +2200,14 @@ public class A10GrammarTest {
     String i3Name = getInterfaceName(Type.ETHERNET, 3);
     int haGroup = 1;
 
+    // test health monitor conversion
+    assertThat(
+        c.getTrackingGroups(),
+        equalTo(
+            ImmutableMap.of(
+                generatedServerTrackMethodName(Ip.parse("10.0.0.1")),
+                TrackReachability.of(Ip.parse("10.0.0.1"), DEFAULT_VRF_NAME))));
+
     // Test VRRP conversion
     assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name, i3Name));
     {
@@ -2207,6 +2229,10 @@ public class A10GrammarTest {
                               Ip.parse("10.0.3.2"),
                               Ip.parse("10.0.4.1")))
                       .setSourceAddress(i1Address)
+                      .setTrackActions(
+                          ImmutableMap.of(
+                              generatedServerTrackMethodName(Ip.parse("10.0.0.1")),
+                              new DecrementPriority(255)))
                       .build())));
       // Should not contain virtual addresses
       assertThat(i.getAllAddresses(), contains(i1Address));

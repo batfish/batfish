@@ -220,6 +220,7 @@ PREEMPT_MODE: 'preempt-mode';
 PREEMPTION_DELAY: 'preemption-delay';
 PREEMPTION_ENABLE: 'preemption-enable';
 PRIORITY: 'priority';
+PRIORITY_COST: 'priority-cost';
 RADIUS
 :
   'radius'
