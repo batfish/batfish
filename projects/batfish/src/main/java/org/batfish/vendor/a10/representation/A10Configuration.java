@@ -381,7 +381,6 @@ public final class A10Configuration extends VendorConfiguration {
     // Must be done after interface conversion
     convertVirtualServers();
     convertHealthChecks();
-    // template name -> generated track method name -> action
     convertVrrpA();
     convertHa();
     createKernelRoutes();
