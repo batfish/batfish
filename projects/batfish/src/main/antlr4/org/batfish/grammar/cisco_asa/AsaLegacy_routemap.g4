@@ -8,7 +8,7 @@ options {
 
 as_expr
 :
-   dec
+   asn = bgp_asn
    | AUTO
 ;
 

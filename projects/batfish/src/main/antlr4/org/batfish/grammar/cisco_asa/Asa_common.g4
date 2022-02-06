@@ -22,7 +22,7 @@ address_family_footer
 
 bgp_asn
 :
-    asn = dec
+    asn = uint32
     | asn4b = FLOAT // dec.dec , but this lexes as FLOAT
 ;
 

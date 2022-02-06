@@ -65,8 +65,8 @@ as_unit
 
 bgp_asn
 :
-    asn = dec
-    | asn4hi = dec PERIOD asn4lo = dec
+    asn = uint32
+    | asn4hi = uint16 PERIOD asn4lo = uint16
 ;
 
 dec

@@ -65,7 +65,7 @@ public final class ExcludeAsPathTest {
 
   @Test
   public void testExcludeWithIntermediateAttributes() {
-    List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3));
+    List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3L));
     ExcludeAsPath operation = new ExcludeAsPath(new LiteralAsList(exclude));
     Bgpv4Route.Builder outputRoute = Bgpv4Route.testBuilder();
     outputRoute.setAsPath(ofSingletonAsSets(3L, 4L));

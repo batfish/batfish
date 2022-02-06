@@ -24,6 +24,12 @@ public final class ExplicitAs extends AsExpr {
     _as = as;
   }
 
+  /** Use {@link #ExplicitAs(long)}. */
+  @Deprecated
+  public ExplicitAs(int as) {
+    this((long) as);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {

@@ -27,7 +27,7 @@ public class PrependAsPathTest {
 
   @Test
   public void testPrepend() {
-    List<AsExpr> prepend = Lists.newArrayList(new ExplicitAs(1), new ExplicitAs(2));
+    List<AsExpr> prepend = Lists.newArrayList(new ExplicitAs(1L), new ExplicitAs(2L));
     PrependAsPath operation = new PrependAsPath(new LiteralAsList(prepend));
     Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
     builder.setAsPath(ofSingletonAsSets(3L, 4L));
@@ -39,7 +39,7 @@ public class PrependAsPathTest {
 
   @Test
   public void testPrependWithIntermediateAttributes() {
-    List<AsExpr> prepend = Lists.newArrayList(new ExplicitAs(1), new ExplicitAs(2));
+    List<AsExpr> prepend = Lists.newArrayList(new ExplicitAs(1L), new ExplicitAs(2L));
     PrependAsPath operation = new PrependAsPath(new LiteralAsList(prepend));
     Bgpv4Route.Builder outputRoute = Bgpv4Route.testBuilder();
     outputRoute.setAsPath(ofSingletonAsSets(3L, 4L));
