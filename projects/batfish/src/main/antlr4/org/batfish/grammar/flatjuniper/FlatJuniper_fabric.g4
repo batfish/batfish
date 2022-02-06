@@ -25,17 +25,17 @@ fab_resources
 
 faba_interconnect_device
 :
-   INTERCONNECT_DEVICE name1 = variable name2 = variable
+   INTERCONNECT_DEVICE name1 = junos_name name2 = junos_name
 ;
 
 faba_node_device
 :
-   NODE_DEVICE name1 = variable name2 = variable
+   NODE_DEVICE name1 = junos_name name2 = junos_name
 ;
 
 fabr_node_group
 :
-   NODE_GROUP group = variable
+   NODE_GROUP group = junos_name
    (
       fabrn_network_domain
       | fabrn_node_device
@@ -49,7 +49,7 @@ fabrn_network_domain
 
 fabrn_node_device
 :
-   NODE_DEVICE node = variable
+   NODE_DEVICE node = junos_name
 ;
 
 s_fabric

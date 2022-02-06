@@ -8,7 +8,7 @@ options {
 
 a_application
 :
-   APPLICATION name = variable
+   APPLICATION name = junos_name
    (
       aa_common
       | aa_description
@@ -18,7 +18,7 @@ a_application
 
 a_application_set
 :
-   APPLICATION_SET name = variable
+   APPLICATION_SET name = junos_name
    (
       aas_application
       | aas_application_set
@@ -56,7 +56,7 @@ aas_application
    APPLICATION
    (
       junos_application
-      | name = variable
+      | name = junos_name
    )
 ;
 
@@ -65,7 +65,7 @@ aas_application_set
    APPLICATION_SET
    (
       junos_application_set
-      | name = variable
+      | name = junos_name
    )
 ;
 

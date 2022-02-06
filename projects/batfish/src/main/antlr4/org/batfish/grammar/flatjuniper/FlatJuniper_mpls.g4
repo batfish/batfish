@@ -8,7 +8,7 @@ options {
 
 c_interface_switch
 :
-   INTERFACE_SWITCH name = variable
+   INTERFACE_SWITCH name = junos_name
    (
       ci_interface
    )

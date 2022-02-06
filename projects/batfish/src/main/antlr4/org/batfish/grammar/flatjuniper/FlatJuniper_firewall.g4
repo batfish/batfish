@@ -28,7 +28,7 @@ f_family
 
 f_filter
 :
-   FILTER name = variable
+   FILTER name = filter_name
    (
       apply
       | ff_interface_specific
@@ -116,9 +116,9 @@ fft_then
 
 fftfa_address_mask_prefix
 :
-    ip_address = IP_ADDRESS (FORWARD_SLASH wildcard_mask = IP_ADDRESS)?
-    | IP_PREFIX
-
+   ip = ip_address
+   | ip_and_mask = ip_address_and_mask
+   | prefix = ip_prefix
 ;
 
 fftf_address
@@ -161,12 +161,12 @@ fftf_destination_port_except
 
 fftf_destination_prefix_list
 :
-   DESTINATION_PREFIX_LIST name = variable EXCEPT?
+   DESTINATION_PREFIX_LIST name = junos_name EXCEPT?
 ;
 
 fftf_dscp
 :
-   DSCP variable
+   DSCP name = junos_name
 ;
 
 fftf_exp
@@ -186,7 +186,7 @@ fftf_first_fragment
 
 fftf_forwarding_class
 :
-   FORWARDING_CLASS variable
+   FORWARDING_CLASS name = junos_name
 ;
 
 fftf_fragment_offset
@@ -277,7 +277,7 @@ fftf_precedence
 
 fftf_prefix_list
 :
-   PREFIX_LIST name = variable
+   PREFIX_LIST name = junos_name
 ;
 
 fftf_protocol
@@ -311,7 +311,7 @@ fftf_source_port
 
 fftf_source_prefix_list
 :
-   SOURCE_PREFIX_LIST name = variable EXCEPT?
+   SOURCE_PREFIX_LIST name = junos_name EXCEPT?
 ;
 
 fftf_tcp_established
@@ -331,7 +331,7 @@ fftf_tcp_initial
 
 fftf_vlan
 :
-   VLAN name = variable
+   VLAN name = junos_name
 ;
 
 fftt_accept
@@ -359,8 +359,8 @@ fftt_next_ip
 :
    NEXT_IP
    (
-      ip = IP_ADDRESS
-      | prefix = IP_PREFIX
+      ip = ip_address
+      | prefix = ip_prefix
    )
 ;
 
@@ -395,7 +395,7 @@ fftt_reject
 
 fftt_routing_instance
 :
-   ROUTING_INSTANCE name = variable
+   ROUTING_INSTANCE name = junos_name
 ;
 
 s_firewall

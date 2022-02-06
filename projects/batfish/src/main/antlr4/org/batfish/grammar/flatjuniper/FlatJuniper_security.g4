@@ -11,7 +11,15 @@ address_specifier
    ANY
    | ANY_IPV4
    | ANY_IPV6
-   | name = variable
+   | name = address_specifier_name
+;
+
+address_specifier_name
+:
+  junos_name
+  // must treat these as names when part of an address specifier
+  | IP_PREFIX
+  | IPV6_PREFIX
 ;
 
 dh_group
@@ -133,7 +141,7 @@ nat_interface
 
 nat_pool
 :
-   POOL name = variable
+   POOL name = junos_name
    (
       natp_address
       | natp_description
@@ -159,7 +167,7 @@ nat_port_randomization
 
 nat_rule_set
 :
-   RULE_SET name = variable
+   RULE_SET name = junos_name
    (
       rs_packet_location
       | rs_rule
@@ -180,18 +188,18 @@ natp_address
 :
    ADDRESS
    (
-      prefix = IP_PREFIX
+      prefix = ip_prefix
       |
       (
-         from = IP_ADDRESS TO to = IP_ADDRESS
+         from_address = ip_address TO to_address = ip_address
       )
       |
       (
-         from = IP_PREFIX TO to = IP_PREFIX
+         from_prefix = ip_prefix TO to_prefix = ip_prefix
       )
       |
       (
-         ip_address = IP_ADDRESS PORT port_num = dec
+         ip = ip_address PORT port_num = dec
       )
    )
 ;
@@ -212,7 +220,7 @@ natp_description
 
 natp_routing_instance
 :
-   ROUTING_INSTANCE name = variable
+   ROUTING_INSTANCE name = junos_name
 ;
 
 proposal_set_type
@@ -242,12 +250,12 @@ rs_packet_location
 
 rs_routing_instance
 :
-    ROUTING_INSTANCE name = variable
+    ROUTING_INSTANCE name = junos_name
 ;
 
 rs_rule
 :
-   RULE name = variable
+   RULE name = junos_name
    (
       rsr_description
       | rsr_match
@@ -257,7 +265,7 @@ rs_rule
 
 rs_zone
 :
-   ZONE name = variable
+   ZONE name = junos_name
 ;
 
 rsr_description
@@ -290,12 +298,12 @@ rsr_then
 
 rsrm_destination_address
 :
-   DESTINATION_ADDRESS IP_PREFIX
+   DESTINATION_ADDRESS ip_prefix
 ;
 
 rsrm_destination_address_name
 :
-   DESTINATION_ADDRESS_NAME name = variable
+   DESTINATION_ADDRESS_NAME name = junos_name
 ;
 
 rsrm_destination_port
@@ -308,12 +316,12 @@ rsrm_destination_port
 
 rsrm_source_address
 :
-   SOURCE_ADDRESS IP_PREFIX
+   SOURCE_ADDRESS ip_prefix
 ;
 
 rsrm_source_address_name
 :
-   SOURCE_ADDRESS_NAME name = variable
+   SOURCE_ADDRESS_NAME name = junos_name
 ;
 
 rsrm_source_port
@@ -345,7 +353,7 @@ rsrt_nat_off
 
 rsrt_nat_pool
 :
-   POOL name = variable
+   POOL name = junos_name
    (
       rsrtnp_persistent_nat
    )?
@@ -430,17 +438,17 @@ rsrtstp_mapped_port
 
 rsrtstp_prefix
 :
-   IP_PREFIX
+   ip_prefix
 ;
 
 rsrtstp_prefix_name
 :
-   name = variable
+   name = junos_name
 ;
 
 rsrtstp_routing_instance
 :
-   ROUTING_INSTANCE name = variable
+   ROUTING_INSTANCE name = junos_name
 ;
 
 s_security
@@ -463,7 +471,7 @@ s_security
 
 se_address_book
 :
-   ADDRESS_BOOK name = variable
+   ADDRESS_BOOK name = junos_name
    (
        apply
        | sead_address
@@ -474,7 +482,7 @@ se_address_book
 
 se_authentication_key_chain
 :
-   AUTHENTICATION_KEY_CHAINS KEY_CHAIN name = string
+   AUTHENTICATION_KEY_CHAINS KEY_CHAIN name = junos_name
    (
       sea_key
       | sea_description
@@ -566,7 +574,7 @@ sea_description
 
 sea_key
 :
-   KEY name = string
+   KEY name = junos_name
    (
       seak_algorithm
       | seak_options
@@ -582,20 +590,20 @@ sea_tolerance
 
 sead_address
 :
-   ADDRESS name = variable
+   ADDRESS name = junos_name
    (
       apply
       | DESCRIPTION null_filler
-      | address = IP_ADDRESS
-      | prefix = IP_PREFIX
-      | RANGE_ADDRESS lower_limit = IP_ADDRESS TO upper_limit = IP_ADDRESS
-      | WILDCARD_ADDRESS wildcard_address
+      | address = ip_address
+      | prefix = ip_prefix
+      | RANGE_ADDRESS lower_limit = ip_address TO upper_limit = ip_address
+      | WILDCARD_ADDRESS ip_and_mask = ip_address_and_mask
    )
 ;
 
 sead_address_set
 :
-   ADDRESS_SET name = variable
+   ADDRESS_SET name = junos_name
    (
       apply
       | seada_address
@@ -606,17 +614,17 @@ sead_address_set
 
 sead_attach
 :
-   ATTACH ZONE name = variable
+   ATTACH ZONE name = junos_name
 ;
 
 seada_address
 :
-   ADDRESS name = variable
+   ADDRESS name = junos_name
 ;
 
 seada_address_set
 :
-   ADDRESS_SET name = variable
+   ADDRESS_SET name = junos_name
 ;
 
 seada_description
@@ -626,7 +634,7 @@ seada_description
 
 sec_local
 :
-   LOCAL name = variable cert = DOUBLE_QUOTED_STRING
+   LOCAL name = junos_name cert = certificate_string
 ;
 
 seak_algorithm
@@ -649,17 +657,17 @@ seak_options
 
 seak_secret
 :
-   SECRET key = string
+   SECRET key = secret_string
 ;
 
 seak_start_time
 :
-   START_TIME time = variable_permissive
+   START_TIME time = null_filler
 ;
 
 seik_gateway
 :
-   GATEWAY name = variable
+   GATEWAY name = junos_name
    (
       seikg_address
       | seikg_dead_peer_detection
@@ -676,7 +684,7 @@ seik_gateway
 
 seik_policy
 :
-   POLICY name = variable
+   POLICY name = junos_name
    (
       seikp_description
       | seikp_mode
@@ -688,7 +696,7 @@ seik_policy
 
 seik_proposal
 :
-   PROPOSAL name = variable
+   PROPOSAL name = junos_name
    (
       seikpr_authentication_algorithm
       | seikpr_authentication_method
@@ -701,7 +709,7 @@ seik_proposal
 
 seikg_address
 :
-   ADDRESS IP_ADDRESS
+   ADDRESS ip_address
 ;
 
 seikg_dead_peer_detection
@@ -727,12 +735,12 @@ seikg_external_interface
 
 seikg_ike_policy
 :
-   IKE_POLICY name = variable
+   IKE_POLICY name = junos_name
 ;
 
 seikg_local_address
 :
-   LOCAL_ADDRESS IP_ADDRESS
+   LOCAL_ADDRESS ip_address
 ;
 
 seikg_local_identity
@@ -755,7 +763,7 @@ seikg_version
 
 seikg_xauth
 :
-   XAUTH ACCESS_PROFILE name = variable
+   XAUTH ACCESS_PROFILE name = junos_name
 ;
 
 seikgd_connections_limit
@@ -765,7 +773,7 @@ seikgd_connections_limit
 
 seikgd_hostname
 :
-   HOSTNAME name = variable
+   HOSTNAME name = junos_name
 ;
 
 seikgd_ike_user_type
@@ -779,7 +787,7 @@ seikgd_ike_user_type
 
 seikgl_inet
 :
-   INET name = variable
+   INET name = junos_name
 ;
 
 seikp_description
@@ -808,7 +816,7 @@ seikp_proposal_set
 
 seikp_proposals
 :
-   PROPOSALS proposal_list
+   PROPOSALS junos_name_list
 ;
 
 seikpr_authentication_algorithm
@@ -843,7 +851,7 @@ seikpr_lifetime_seconds
 
 seip_policy
 :
-   POLICY name = variable
+   POLICY name = junos_name
    (
       seipp_perfect_forward_secrecy
       | seipp_proposal_set
@@ -853,7 +861,7 @@ seip_policy
 
 seip_proposal
 :
-   PROPOSAL name = variable
+   PROPOSAL name = junos_name
    (
       apply
       | seippr_authentication_algorithm
@@ -867,7 +875,7 @@ seip_proposal
 
 seip_vpn
 :
-   VPN name = variable
+   VPN name = junos_name
    (
       seipv_bind_interface
       | seipv_df_bit
@@ -889,7 +897,7 @@ seipp_proposal_set
 
 seipp_proposals
 :
-   PROPOSALS proposal_list
+   PROPOSALS junos_name_list
 ;
 
 seippr_authentication_algorithm
@@ -960,12 +968,12 @@ seipv_vpn_monitor
 
 seipvi_gateway
 :
-   GATEWAY name = variable
+   GATEWAY name = junos_name
 ;
 
 seipvi_ipsec_policy
 :
-   IPSEC_POLICY name = variable
+   IPSEC_POLICY name = junos_name
 ;
 
 seipvi_null
@@ -1000,7 +1008,7 @@ seipvip_service
    SERVICE
    (
       ANY
-      | name = variable
+      | name = junos_name
    )
 ;
 
@@ -1108,7 +1116,7 @@ sep_global
 
 sepctx_policy
 :
-   POLICY name = variable_policy
+   POLICY name = junos_name
    (
       apply
       | sepctxp_description
@@ -1153,7 +1161,7 @@ sepctxpm_application
    (
       junos_application
       | junos_application_set
-      | name = variable
+      | name = junos_name
    )
 ;
 
@@ -1182,7 +1190,7 @@ sepctxpm_source_identity
    SOURCE_IDENTITY
    (
       ANY
-      | name = variable
+      | name = junos_name
    )
 ;
 
@@ -1233,12 +1241,12 @@ sepctxptp_tunnel
 
 sepctxptpt_ipsec_vpn
 :
-   IPSEC_VPN name = variable
+   IPSEC_VPN name = junos_name
 ;
 
 ses_ids_option
 :
-   IDS_OPTION name = variable
+   IDS_OPTION name = junos_name
    (
       seso_alarm
       | seso_description
@@ -1262,7 +1270,7 @@ seso_alarm
 
 seso_description
 :
-   DESCRIPTION string
+   description
 ;
 
 seso_icmp
@@ -1582,7 +1590,7 @@ sesots_timeout
 
 sesots_whitelist
 :
-   WHITE_LIST name=variable
+   WHITE_LIST name = junos_name
    (
       sesotsw_dst
       | sesotsw_src
@@ -1699,7 +1707,7 @@ sezs_screen
    SCREEN
    (
       UNTRUST_SCREEN
-      | name = variable
+      | name = junos_name
    )
 ;
 
@@ -1710,18 +1718,18 @@ sezs_tcp_rst
 
 sezsa_address
 :
-   ADDRESS name = variable
+   ADDRESS name = junos_name
    (
       apply
-      | address = IP_ADDRESS
-      | prefix = IP_PREFIX
-      | WILDCARD_ADDRESS wildcard_address
+      | address = ip_address
+      | prefix = ip_prefix
+      | WILDCARD_ADDRESS ip_and_mask = ip_address_and_mask
    )
 ;
 
 sezsa_address_set
 :
-   ADDRESS_SET name = variable
+   ADDRESS_SET name = junos_name
    (
       apply
       | sezsaad_address
@@ -1731,12 +1739,12 @@ sezsa_address_set
 
 sezsaad_address
 :
-   ADDRESS name = variable
+   ADDRESS name = junos_name
 ;
 
 sezsaad_address_set
 :
-   ADDRESS_SET name = variable
+   ADDRESS_SET name = junos_name
 ;
 
 sezsh_protocols
@@ -1754,5 +1762,5 @@ zone
    JUNOS_HOST
    | TRUST
    | UNTRUST
-   | name = variable
+   | name = junos_name
 ;
