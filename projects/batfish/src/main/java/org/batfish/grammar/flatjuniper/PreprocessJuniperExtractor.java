@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.PreprocessExtractor;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 
 /**
  * Parse tree extractor used for generating pre-processed Juniper configuration text from an initial
@@ -114,8 +115,8 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
     Span prunerSpan = GlobalTracer.get().buildSpan("FlatJuniper::GroupPruner").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(prunerSpan)) {
       assert scope != null; // avoid unused warning
-      GroupPruner gp = new GroupPruner();
-      walker.walk(gp, tree);
+      assert tree instanceof Flat_juniper_configurationContext; // should be true.
+      GroupPruner.prune((Flat_juniper_configurationContext) tree);
     } finally {
       prunerSpan.finish();
     }
