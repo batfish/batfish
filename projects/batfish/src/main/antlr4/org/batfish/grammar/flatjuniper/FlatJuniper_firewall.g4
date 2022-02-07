@@ -84,12 +84,14 @@ fft_from
       | fftf_null
       | fftf_packet_length
       | fftf_port
+      | fftf_port_except
       | fftf_precedence
       | fftf_prefix_list
       | fftf_protocol
       | fftf_source_address
       | fftf_source_mac_address
       | fftf_source_port
+      | fftf_source_port_except
       | fftf_source_prefix_list
       | fftf_tcp_established
       | fftf_tcp_flags
@@ -141,23 +143,9 @@ fftf_destination_address
    ) EXCEPT?
 ;
 
-fftf_destination_port
-:
-   DESTINATION_PORT
-   (
-      port
-      | range
-   )
-;
+fftf_destination_port: DESTINATION_PORT port_range;
 
-fftf_destination_port_except
-:
-   DESTINATION_PORT_EXCEPT
-   (
-      port
-      | range
-   )
-;
+fftf_destination_port_except: DESTINATION_PORT_EXCEPT port_range;
 
 fftf_destination_prefix_list
 :
@@ -261,14 +249,9 @@ fftf_packet_length_except
    PACKET_LENGTH_EXCEPT range
 ;
 
-fftf_port
-:
-   PORT
-   (
-      port
-      | range
-   )
-;
+fftf_port: PORT port_range;
+
+fftf_port_except: PORT_EXCEPT port_range;
 
 fftf_precedence
 :
@@ -300,14 +283,9 @@ fftf_source_mac_address
    SOURCE_MAC_ADDRESS address = MAC_ADDRESS FORWARD_SLASH length = dec
 ;
 
-fftf_source_port
-:
-   SOURCE_PORT
-   (
-      port
-      | range
-   )
-;
+fftf_source_port: SOURCE_PORT port_range;
+
+fftf_source_port_except: SOURCE_PORT_EXCEPT port_range;
 
 fftf_source_prefix_list
 :

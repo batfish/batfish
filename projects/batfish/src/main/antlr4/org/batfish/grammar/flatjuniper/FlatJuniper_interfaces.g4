@@ -559,7 +559,7 @@ ifiavt_interface
 
 ifiavt_route
 :
-   ROUTE IP_PREFIX ROUTING_INSTANCE ri = junos_name PRIORITY_COST dec
+   ROUTE ip_prefix ROUTING_INSTANCE ri = junos_name PRIORITY_COST dec
 ;
 
 ifiavti_priority_cost

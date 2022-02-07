@@ -81,7 +81,7 @@ aat_application_protocol
 
 aat_destination_port
 :
-   DESTINATION_PORT (port | subrange)
+   DESTINATION_PORT port_range
 ;
 
 aat_icmp_code
@@ -125,7 +125,7 @@ aat_rpc_program_number
 
 aat_source_port
 :
-   SOURCE_PORT (port | subrange)
+   SOURCE_PORT port_range
 ;
 
 aat_uuid

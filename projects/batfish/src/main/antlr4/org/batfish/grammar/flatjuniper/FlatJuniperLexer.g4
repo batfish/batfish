@@ -519,9 +519,9 @@ DESTINATION_NETWORK_PROHIBITED: 'destination-network-prohibited';
 
 DESTINATION_NETWORK_UNKNOWN: 'destination-network-unknown';
 
-DESTINATION_PORT: 'destination-port';
+DESTINATION_PORT: 'destination-port' -> pushMode(M_Port);
 
-DESTINATION_PORT_EXCEPT: 'destination-port-except';
+DESTINATION_PORT_EXCEPT: 'destination-port-except' -> pushMode(M_Port);
 
 DESTINATION_PREFIX_LIST: 'destination-prefix-list' -> pushMode(M_Name);
 
@@ -2085,9 +2085,8 @@ POOL_UTILIZATION_ALARM: 'pool-utilization-alarm';
 
 POP3: 'pop3';
 
-PORT: 'port';
-
-PORTS: 'ports';
+PORT: 'port' -> pushMode(M_Port);
+PORT_EXCEPT: 'port-except' -> pushMode(M_Port);
 
 PORT_MIRROR: 'port-mirror';
 
@@ -2107,6 +2106,8 @@ PORT_SCAN
 ;
 
 PORT_UNREACHABLE: 'port-unreachable';
+
+PORTS: 'ports';
 
 PPM: 'ppm';
 
@@ -2537,7 +2538,8 @@ SOURCE_MAC_ADDRESS: 'source-mac-address' -> pushMode(M_MacAddressAndLength);
 
 SOURCE_NAT: 'source-nat';
 
-SOURCE_PORT: 'source-port';
+SOURCE_PORT: 'source-port' -> pushMode(M_Port);
+SOURCE_PORT_EXCEPT: 'source-port-except' -> pushMode(M_Port);
 
 SOURCE_PREFIX_LIST: 'source-prefix-list' -> pushMode(M_Name);
 
@@ -3505,43 +3507,55 @@ F_Variable_LeadingVarChar_Ipv6
 fragment
 F_Uint8
 :
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
+  // juniper allows leading zeros in general
+  '0'*
+  (
+    F_Digit
+    | '0'* F_PositiveDigit F_Digit
+    | '1' F_Digit F_Digit
+    | '2' [0-4] F_Digit
+    | '25' [0-5]
+  )
 ;
 
 fragment
 F_Uint16
 :
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit?
-  | [1-5] F_Digit F_Digit F_Digit F_Digit
-  | '6' [0-4] F_Digit F_Digit F_Digit
-  | '65' [0-4] F_Digit F_Digit
-  | '655' [0-2] F_Digit
-  | '6553' [0-5]
+  // juniper allows leading zeros in general
+  '0'*
+  (
+    F_Digit
+    | F_PositiveDigit F_Digit F_Digit? F_Digit?
+    | [1-5] F_Digit F_Digit F_Digit F_Digit
+    | '6' [0-4] F_Digit F_Digit F_Digit
+    | '65' [0-4] F_Digit F_Digit
+    | '655' [0-2] F_Digit
+    | '6553' [0-5]
+  )
 ;
 
 fragment
 F_Uint32
 :
 // 0-4294967295
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
-  F_Digit? F_Digit?
-  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  F_Digit
-  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
-  | '429496' [0-6] F_Digit F_Digit F_Digit
-  | '4294967' [0-1] F_Digit F_Digit
-  | '42949672' [0-8] F_Digit
-  | '429496729' [0-5]
+  // juniper allows leading zeros in general
+  '0'*
+  (
+    F_Digit
+    | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+    F_Digit? F_Digit?
+    | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    F_Digit
+    | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+    | '429496' [0-6] F_Digit F_Digit F_Digit
+    | '4294967' [0-1] F_Digit F_Digit
+    | '42949672' [0-8] F_Digit
+    | '429496729' [0-5]
+  )
 ;
 
 fragment
@@ -4696,3 +4710,13 @@ M_AsPathExprQuoted_UINT32: F_Uint32 -> type(UINT32);
 M_AsPathExprQuoted_PERIOD: '.' -> type(PERIOD);
 M_AsPathExprQuoted_OPEN_BRACKET: '[' -> type(OPEN_BRACKET);
 M_AsPathExprQuoted_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET);
+
+mode M_Port;
+M_Port_WS: F_WhitespaceChar+ -> skip;
+M_Port_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Port_UINT8: F_Uint8 -> type(UINT8);
+M_Port_UINT16: F_Uint16 -> type(UINT16);
+M_Port_DASH: '-' -> type(DASH);
+
+// Not a range. We can continue in default mode since words need not be broken up.
+M_Port_NON_RANGE: [A-Za-z]+ {less();} -> popMode;

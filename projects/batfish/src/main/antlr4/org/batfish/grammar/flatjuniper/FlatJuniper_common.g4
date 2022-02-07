@@ -517,6 +517,18 @@ policy_expression
 
 port
 :
+  port_number
+  | named_port
+;
+
+port_range
+:
+  named = named_port
+  | start = port_number (DASH end = port_number)?
+;
+
+named_port
+:
   AFS
   | BGP
   | BIFF
@@ -524,7 +536,6 @@ port
   | BOOTPS
   | CMD
   | CVSPSERVER
-  | dec
   | DHCP
   | DOMAIN
   | EKLOGIN
@@ -579,6 +590,12 @@ port
   | TIMED
   | WHO
   | XDMCP
+;
+
+port_number
+:
+  // 1-65535
+  uint16
 ;
 
 range

@@ -255,6 +255,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_port_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_dscpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_first_fragmentContext;
@@ -268,10 +269,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_is_fragmentContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_lengthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_length_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_port_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_port_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_establishedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_flagsContext;
@@ -371,6 +374,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Name_or_ipContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_pool_default_port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
@@ -469,7 +473,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_ipv6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_peer_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_selfContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.PortContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
@@ -899,7 +904,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return _parser.getLine(t);
   }
 
-  public static NamedPort getNamedPort(PortContext ctx) {
+  public static @Nonnull NamedPort getNamedPort(Named_portContext ctx) {
     if (ctx.AFS() != null) {
       return NamedPort.AFS;
     } else if (ctx.BGP() != null) {
@@ -1024,16 +1029,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return NamedPort.XDMCP;
     } else {
       throw new BatfishException("missing port-number mapping for port: \"" + ctx.getText() + "\"");
-    }
-  }
-
-  public static int getPortNumber(PortContext ctx) {
-    if (ctx.dec() != null) {
-      int port = toInt(ctx.dec());
-      return port;
-    } else {
-      NamedPort namedPort = getNamedPort(ctx);
-      return namedPort.number();
     }
   }
 
@@ -1809,6 +1804,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return Integer.parseInt(ctx.getText());
   }
 
+  private static int toInt(Port_numberContext ctx) {
+    // TODO: validate value is from 1-65535, handle in callers
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static int toInt(Named_portContext ctx) {
+    return getNamedPort(ctx).number();
+  }
+
   private static @Nonnull IpOptions toIpOptions(Ip_optionContext ctx) {
     if (ctx.LOOSE_SOURCE_ROUTE() != null) {
       return IpOptions.LOOSE_SOURCE_ROUTE;
@@ -1926,6 +1930,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     int low = toInt(ctx.low);
     int high = (ctx.high != null) ? toInt(ctx.high) : low;
     return new SubRange(low, high);
+  }
+
+  private static @Nonnull SubRange toSubRange(Port_rangeContext ctx) {
+    if (ctx.named_port() != null) {
+      return SubRange.singleton(toInt(ctx.named));
+    } else {
+      assert ctx.start != null;
+      int start = toInt(ctx.start);
+      return ctx.end != null ? new SubRange(start, toInt(ctx.end)) : SubRange.singleton(start);
+    }
   }
 
   private static TcpFlagsMatchConditions toTcpFlags(Tcp_flags_alternativeContext ctx) {
@@ -3795,10 +3809,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitAat_destination_port(Aat_destination_portContext ctx) {
-    SubRange subrange =
-        (ctx.subrange() != null)
-            ? toSubRange(ctx.subrange())
-            : SubRange.singleton(getPortNumber(ctx.port()));
+    SubRange subrange = toSubRange(ctx.port_range());
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace.toBuilder()
@@ -3826,10 +3837,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitAat_source_port(Aat_source_portContext ctx) {
-    SubRange subrange =
-        (ctx.subrange() != null)
-            ? toSubRange(ctx.subrange())
-            : SubRange.singleton(getPortNumber(ctx.port()));
+    SubRange subrange = toSubRange(ctx.port_range());
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace.toBuilder()
@@ -4057,18 +4065,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_destination_port(Fftf_destination_portContext ctx) {
-    if (ctx.port() != null) {
-      int port = getPortNumber(ctx.port());
-      SubRange subrange = SubRange.singleton(port);
-      FwFrom from = new FwFromDestinationPort(subrange);
-      _currentFwTerm.getFroms().add(from);
-    } else if (ctx.range() != null) {
-      for (SubrangeContext subrangeContext : ctx.range().range_list) {
-        SubRange subrange = toSubRange(subrangeContext);
-        FwFrom from = new FwFromDestinationPort(subrange);
-        _currentFwTerm.getFroms().add(from);
-      }
-    }
+    SubRange ports = toSubRange(ctx.port_range());
+    FwFrom from = new FwFromDestinationPort(ports);
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
+  public void exitFftf_destination_port_except(Fftf_destination_port_exceptContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -4211,18 +4215,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_port(Fftf_portContext ctx) {
-    if (ctx.port() != null) {
-      int port = getPortNumber(ctx.port());
-      SubRange subrange = SubRange.singleton(port);
-      FwFrom from = new FwFromPort(subrange);
-      _currentFwTerm.getFroms().add(from);
-    } else if (ctx.range() != null) {
-      for (SubrangeContext subrangeContext : ctx.range().range_list) {
-        SubRange subrange = toSubRange(subrangeContext);
-        FwFrom from = new FwFromPort(subrange);
-        _currentFwTerm.getFroms().add(from);
-      }
-    }
+    SubRange ports = toSubRange(ctx.port_range());
+    FwFrom from = new FwFromPort(ports);
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
+  public void exitFftf_port_except(Fftf_port_exceptContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -4257,18 +4257,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_source_port(Fftf_source_portContext ctx) {
-    if (ctx.port() != null) {
-      int port = getPortNumber(ctx.port());
-      SubRange subrange = SubRange.singleton(port);
-      FwFrom from = new FwFromSourcePort(subrange);
-      _currentFwTerm.getFroms().add(from);
-    } else if (ctx.range() != null) {
-      for (SubrangeContext subrangeContext : ctx.range().range_list) {
-        SubRange subrange = toSubRange(subrangeContext);
-        FwFrom from = new FwFromSourcePort(subrange);
-        _currentFwTerm.getFroms().add(from);
-      }
-    }
+    SubRange ports = toSubRange(ctx.port_range());
+    FwFrom from = new FwFromSourcePort(ports);
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
+  public void exitFftf_source_port_except(Fftf_source_port_exceptContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -4822,7 +4818,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Prefix prefix = toPrefix(ctx.prefix);
       _currentNatPool.setFromAddress(prefix.getFirstHostIp());
       _currentNatPool.setToAddress(prefix.getLastHostIp());
-    } else if (ctx.PORT() != null) {
+    } else {
+      assert ctx.port_num != null;
       // this command can only happen for destination nat, and when port is given we need to enable
       // port translation
       Ip ip = toIp(ctx.ip);
@@ -4830,8 +4827,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentNatPool.setToAddress(ip);
       int port = toInt(ctx.port_num);
       _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
-    } else {
-      _w.redFlag(ctx.getText() + " cannot be recognized");
     }
   }
 
@@ -6136,28 +6131,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (addressSpecifierContext.ANY() != null) {
       FwFromDestinationAddress match = new FwFromDestinationAddress(IpWildcard.ANY, "any");
       _currentFwTerm.getFroms().add(match);
-      return;
     } else if (addressSpecifierContext.ANY_IPV4() != null) {
       FwFromDestinationAddress match = new FwFromDestinationAddress(IpWildcard.ANY, "any-ipv4");
       _currentFwTerm.getFroms().add(match);
-      return;
-    }
-
-    if (addressSpecifierContext.ANY_IPV6() != null) {
+    } else if (addressSpecifierContext.ANY_IPV6() != null) {
       _currentFwTerm.setIpv6(true);
-      return;
-    }
-
-    Address_specifier_nameContext name = addressSpecifierContext.name;
-    if (name != null) {
+    } else {
+      assert addressSpecifierContext.name != null;
       FwFrom match =
           new FwFromDestinationAddressBookEntry(
-              _currentToZone, _currentLogicalSystem.getGlobalAddressBook(), toString(name));
+              _currentToZone,
+              _currentLogicalSystem.getGlobalAddressBook(),
+              toString(addressSpecifierContext.name));
       _currentFwTerm.getFroms().add(match);
-      return;
     }
-
-    throw new BatfishException("Invalid address-specifier");
   }
 
   @Override
@@ -6177,14 +6164,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentFwTerm.getFroms().add(match);
     } else if (ctx.address_specifier().ANY_IPV6() != null) {
       _currentFwTerm.setIpv6(true);
-    } else if (ctx.address_specifier().name != null) {
+    } else {
+      assert ctx.address_specifier().name != null;
       String addressBookEntryName = toString(ctx.address_specifier().name);
       FwFrom match =
           new FwFromSourceAddressBookEntry(
               _currentFromZone, _currentLogicalSystem.getGlobalAddressBook(), addressBookEntryName);
       _currentFwTerm.getFroms().add(match);
-    } else {
-      throw new BatfishException("Invalid address-specifier");
     }
   }
 

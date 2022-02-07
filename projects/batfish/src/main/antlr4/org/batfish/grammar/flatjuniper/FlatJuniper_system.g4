@@ -317,8 +317,8 @@ sy_tacplus_server
 
 tacplus_server_host
 :
-  IP_ADDRESS
-  | IPV6_ADDRESS
+  ip_address
+  | ipv6_address
 ;
 
 syp_disable

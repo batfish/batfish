@@ -16,8 +16,10 @@ address_specifier
 
 address_specifier_name
 :
-  junos_name
-  // must treat these as names when part of an address specifier
+  // All of these alternatives should be treated as names. We use tokens instead of rules here
+  // because the only converter should be for address_specifier_name. That is, we don't assign
+  // semantic content to the text of the tokens.
+  NAME
   | IP_PREFIX
   | IPV6_PREFIX
 ;
@@ -157,7 +159,7 @@ nat_pool_utilization_alarm
 
 nat_pool_default_port_range
 :
-   POOL_DEFAULT_PORT_RANGE low = dec (TO high = dec)?
+   POOL_DEFAULT_PORT_RANGE low = port_number (TO high = port_number)?
 ;
 
 nat_port_randomization
@@ -199,7 +201,7 @@ natp_address
       )
       |
       (
-         ip = ip_address PORT port_num = dec
+         ip = ip_address PORT port_num = port_number
       )
    )
 ;
@@ -209,7 +211,7 @@ natp_port
    PORT
    (
       NO_TRANSLATION
-      | RANGE from = dec (TO to = dec)?
+      | RANGE from = port_number (TO to = port_number)?
    )
 ;
 
@@ -308,9 +310,9 @@ rsrm_destination_address_name
 
 rsrm_destination_port
 :
-   DESTINATION_PORT from = dec
+   DESTINATION_PORT from = port_number
    (
-      TO to = dec
+      TO to = port_number
    )?
 ;
 
@@ -326,9 +328,9 @@ rsrm_source_address_name
 
 rsrm_source_port
 :
-   SOURCE_PORT from = dec
+   SOURCE_PORT from = port_number
     (
-        TO to = dec
+        TO to = port_number
     )?
 ;
 
@@ -430,9 +432,9 @@ rsrtst_prefix_name
 
 rsrtstp_mapped_port
 :
-   MAPPED_PORT low = dec
+   MAPPED_PORT low = port_number
    (
-      TO high = dec
+      TO high = port_number
    )?
 ;
 
