@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
@@ -10,6 +12,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.PreprocessExtractor;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 
 /**
  * Parse tree extractor used for generating pre-processed Juniper configuration text from an initial
@@ -48,7 +51,10 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    * @param w The store for warnings produced during pre-processing
    */
   static void preprocess(
-      ParserRuleContext tree, Hierarchy hierarchy, FlatJuniperCombinedParser parser, Warnings w) {
+      Flat_juniper_configurationContext tree,
+      Hierarchy hierarchy,
+      FlatJuniperCombinedParser parser,
+      Warnings w) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     Span deleterSpan = GlobalTracer.get().buildSpan("FlatJuniper::InsertDeleteApplicator").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(deleterSpan)) {
@@ -114,8 +120,7 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
     Span prunerSpan = GlobalTracer.get().buildSpan("FlatJuniper::GroupPruner").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(prunerSpan)) {
       assert scope != null; // avoid unused warning
-      GroupPruner gp = new GroupPruner();
-      walker.walk(gp, tree);
+      GroupPruner.prune(tree);
     } finally {
       prunerSpan.finish();
     }
@@ -173,7 +178,12 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    */
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    preprocess(tree, new Hierarchy(), _parser, _w);
+    checkArgument(
+        tree instanceof Flat_juniper_configurationContext,
+        "Expected %s, not %s",
+        Flat_juniper_configurationContext.class,
+        tree.getClass());
+    preprocess((Flat_juniper_configurationContext) tree, new Hierarchy(), _parser, _w);
     Hierarchy finalHierarchy = new Hierarchy();
     Span span = GlobalTracer.get().buildSpan("FlatJuniper::InitialTreeBuilder").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
