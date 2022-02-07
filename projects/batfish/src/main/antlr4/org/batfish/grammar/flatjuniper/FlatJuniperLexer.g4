@@ -3656,11 +3656,8 @@ F_QuotedAsPathRegexChar
 mode M_AsPathDefinitionName;
 
 M_AsPathDefinition_WS: F_WhitespaceChar+ -> skip;
-
 M_AsPathDefinition_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-
 M_AsPathDefinition_WILDCARD: F_Wildcard {setWildcard();} -> mode(M_AsPathDefinitionRegex);
-
 M_AsPathDefinition_NAME: F_Name -> type(NAME), mode(M_AsPathDefinitionRegex);
 
 mode M_AsPathDefinitionRegex;
@@ -3686,42 +3683,21 @@ M_AsPathPrepend_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 mode M_AsPathPrepend2;
 
 M_AsPathPrepend2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-M_AsPathPrepend2_DEC: F_Digit+ -> type(DEC);
+M_AsPathPrepend2_UINT8: F_Uint8 -> type(UINT8);
+M_AsPathPrepend2_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathPrepend2_UINT32: F_Uint32 -> type(UINT32);
 M_AsPathPrepend2_PERIOD: '.' -> type(PERIOD);
 M_AsPathPrepend2_DOUBLE_QUOTE: '"' -> skip, mode(M_AsPathPrepend_Inner);
 M_AsPathPrepend2_WS: F_WhitespaceChar+ -> skip, popMode;
 
 mode M_AsPathPrepend_Inner;
 
-M_AsPathPrepend_Inner_UINT8
-:
-   F_Uint8 -> type ( UINT8 )
-;
-
-M_AsPathPrepend_Inner_UINT16
-:
-   F_Uint16 -> type ( UINT16 )
-;
-
-M_AsPathPrepend_Inner_UINT32
-:
-   F_Uint32 -> type ( UINT32 )
-;
-
-M_AsPathPrepend_Inner_DOUBLE_QUOTE
-:
-   '"' -> channel( HIDDEN ) , popMode
-;
-
-M_AsPathPrepend_Inner_PERIOD
-:
-   '.' -> type ( PERIOD )
-;
-
-M_AsPathPrepend_Inner_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
+M_AsPathPrepend_Inner_UINT8: F_Uint8 -> type (UINT8);
+M_AsPathPrepend_Inner_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathPrepend_Inner_UINT32: F_Uint32 -> type(UINT32);
+M_AsPathPrepend_Inner_DOUBLE_QUOTE: '"' -> skip, popMode;
+M_AsPathPrepend_Inner_PERIOD: '.' -> type(PERIOD);
+M_AsPathPrepend_Inner_WS: F_WhitespaceChar+ -> skip;
 
 mode M_Description;
 
@@ -4704,7 +4680,9 @@ M_AsPathExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 mode M_AsPathExpr2;
 M_AsPathExpr2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_AsPathExpr2_WS: F_WhitespaceChar+ -> skip, popMode;
-M_AsPathExpr2_DEC: F_Digit+ -> type(DEC);
+M_AsPathExpr2_UINT8: F_Uint8 -> type(UINT8);
+M_AsPathExpr2_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathExpr2_UINT32: F_Uint32 -> type(UINT32);
 M_AsPathExpr2_PERIOD: '.' -> type(PERIOD);
 M_AsPathExpr2_DOUBLE_QUOTE: '"' -> skip, mode(M_AsPathExprQuoted);
 
@@ -4712,7 +4690,9 @@ mode M_AsPathExprQuoted;
 M_AsPathExprQuoted_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_AsPathExprQuoted_WS: F_WhitespaceChar+ -> skip;
 M_AsPathExprQuoted_DOUBLE_QUOTE: '"' -> skip, popMode;
-M_AsPathExprQuoted_DEC: F_Digit+ -> type(DEC);
+M_AsPathExprQuoted_UINT8: F_Uint8 -> type(UINT8);
+M_AsPathExprQuoted_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathExprQuoted_UINT32: F_Uint32 -> type(UINT32);
 M_AsPathExprQuoted_PERIOD: '.' -> type(PERIOD);
 M_AsPathExprQuoted_OPEN_BRACKET: '[' -> type(OPEN_BRACKET);
 M_AsPathExprQuoted_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET);
