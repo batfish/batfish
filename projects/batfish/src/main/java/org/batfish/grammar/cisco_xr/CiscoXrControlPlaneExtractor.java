@@ -6674,8 +6674,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private AsExpr toAsExpr(As_exprContext ctx) {
-    if (ctx.uint_legacy() != null) {
-      int as = toInteger(ctx.uint_legacy());
+    if (ctx.asn != null) {
+      long as = toAsNum(ctx.asn);
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
       return AutoAs.instance();

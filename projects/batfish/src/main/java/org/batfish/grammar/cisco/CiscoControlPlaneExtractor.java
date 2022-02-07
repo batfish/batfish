@@ -9314,8 +9314,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private AsExpr toAsExpr(As_exprContext ctx) {
-    if (ctx.dec() != null) {
-      int as = toInteger(ctx.dec());
+    if (ctx.asn != null) {
+      long as = toAsNum(ctx.asn);
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
       return AutoAs.instance();

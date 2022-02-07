@@ -16,7 +16,7 @@ apply_rp_stanza
 
 as_expr
 :
-   uint_legacy
+   asn = bgp_asn
    | AUTO
    | RP_VARIABLE
 ;
