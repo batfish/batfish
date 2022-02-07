@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
@@ -11,6 +13,7 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.vendor.VendorConfiguration;
@@ -48,9 +51,15 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
   @Override
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
+    checkArgument(
+        tree instanceof Flat_juniper_configurationContext,
+        "Expected %s, not %s",
+        Flat_juniper_configurationContext.class,
+        tree.getClass());
     Hierarchy hierarchy = new Hierarchy();
     // Pre-process parse tree
-    PreprocessJuniperExtractor.preprocess(tree, hierarchy, _parser, _w);
+    PreprocessJuniperExtractor.preprocess(
+        (Flat_juniper_configurationContext) tree, hierarchy, _parser, _w);
     Span span = GlobalTracer.get().buildSpan("FlatJuniper::ConfigurationBuilder").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
