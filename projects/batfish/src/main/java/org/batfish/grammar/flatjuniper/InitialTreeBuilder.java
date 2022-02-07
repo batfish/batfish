@@ -1,10 +1,11 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.grammar.flatjuniper.ConfigurationBuilder.unquote;
+
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groups_exceptContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
@@ -19,8 +20,6 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
 
   private Hierarchy _hierarchy;
 
-  private boolean _reenablePathRecording;
-
   private HierarchyPath _lastPath;
 
   public InitialTreeBuilder(Hierarchy hierarchy) {
@@ -33,24 +32,6 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
     _hierarchy.addMasterPath(_currentPath, null, null);
     String groupName = ctx.name.getText();
     _hierarchy.setApplyGroupsExcept(_currentPath, groupName);
-  }
-
-  @Override
-  public void enterInterface_id(Interface_idContext ctx) {
-    if (_enablePathRecording && (ctx.unit != null || ctx.chnl != null || ctx.node != null)) {
-      _enablePathRecording = false;
-      _reenablePathRecording = true;
-      String text = ctx.getText();
-      _currentPath.addNode(text, ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitInterface_id(Interface_idContext ctx) {
-    if (_reenablePathRecording) {
-      _enablePathRecording = true;
-      _reenablePathRecording = false;
-    }
   }
 
   @Override
@@ -101,7 +82,7 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void visitTerminal(TerminalNode node) {
     if (_enablePathRecording) {
-      String text = node.getText();
+      String text = unquote(node.getText());
       int line = node.getSymbol().getLine();
       if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
         _currentPath.addWildcardNode(text, line);

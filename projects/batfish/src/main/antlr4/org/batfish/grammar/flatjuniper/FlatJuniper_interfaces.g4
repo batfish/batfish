@@ -48,7 +48,7 @@ eo_null
 
 eo_redundant_parent
 :
-   REDUNDANT_PARENT name = variable
+   REDUNDANT_PARENT name = interface_id
 ;
 
 eo_speed
@@ -58,9 +58,7 @@ eo_speed
 
 eo8023ad_interface
 :
-   (
-      node = variable COLON
-   )? name = variable
+   interface_id
 ;
 
 eo8023ad_lacp
@@ -80,7 +78,7 @@ filter
 :
    FILTER
    (
-      direction name = variable
+      direction name = filter_name
    )?
 ;
 
@@ -227,7 +225,8 @@ i_per_unit_scheduler
 
 i_redundant_ether_options
 :
-   REDUNDANCY_GROUP name = variable
+  // TODO: should this just accept a number?
+   REDUNDANCY_GROUP name = junos_name
 ;
 
 i_speed
@@ -390,7 +389,7 @@ ife_vlan
    (
       ALL
       | range
-      | name = variable
+      | name = junos_name
    )
 ;
 
@@ -398,8 +397,8 @@ ifi_address
 :
    ADDRESS
    (
-      IP_ADDRESS
-      | IP_PREFIX
+      ip_address
+      | ip_prefix
       | wildcard
    )
    (
@@ -439,7 +438,7 @@ ifi_null
 
 ifi_rpf_check
 :
-   RPF_CHECK FAIL_FILTER name = variable
+   RPF_CHECK FAIL_FILTER name = junos_name
 ;
 
 ifi_tcp_mss
@@ -449,7 +448,7 @@ ifi_tcp_mss
 
 ifia_arp
 :
-   ARP ip = IP_ADDRESS
+   ARP ip = ip_address
    (
       L2_INTERFACE interface_id
    )?
@@ -504,7 +503,7 @@ ifiav_advertise_interval_null
 
 ifiav_authentication_key_null
 :
-   AUTHENTICATION_KEY string
+   AUTHENTICATION_KEY secret_string
 ;
 
 ifiav_authentication_type_null
@@ -547,7 +546,7 @@ ifiav_track
 
 ifiav_virtual_address
 :
-   VIRTUAL_ADDRESS IP_ADDRESS
+   VIRTUAL_ADDRESS ip_address
 ;
 
 ifiavt_interface
@@ -560,7 +559,7 @@ ifiavt_interface
 
 ifiavt_route
 :
-   ROUTE IP_PREFIX ROUTING_INSTANCE variable PRIORITY_COST dec
+   ROUTE ip_prefix ROUTING_INSTANCE ri = junos_name PRIORITY_COST dec
 ;
 
 ifiavti_priority_cost
@@ -570,7 +569,7 @@ ifiavti_priority_cost
 
 ifiso_address
 :
-   ADDRESS ISO_ADDRESS
+   ADDRESS iso_address
 ;
 
 ifiso_mtu
@@ -595,7 +594,7 @@ ifm_mtu
 
 int_interface_range
 :
-   INTERFACE_RANGE irange = variable
+   INTERFACE_RANGE irange = junos_name
    (
        i_common_physical
        | intir_member

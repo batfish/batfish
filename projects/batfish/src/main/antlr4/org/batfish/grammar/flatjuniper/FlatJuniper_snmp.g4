@@ -20,7 +20,7 @@ s_snmp
 
 snmp_community
 :
-   COMMUNITY comm = variable
+   COMMUNITY comm = junos_name
    (
       apply
       | snmpc_authorization
@@ -36,7 +36,7 @@ snmp_filter_interfaces
 
 snmp_name
 :
-    NAME name = variable
+    NAME_LITERALLY name = junos_name
 ;
 
 snmp_null
@@ -57,7 +57,7 @@ snmp_null
 
 snmp_trap_group
 :
-   TRAP_GROUP name = variable
+   TRAP_GROUP name = junos_name
    (
       snmptg_null
       | snmptg_targets
@@ -75,7 +75,7 @@ snmpc_authorization
 
 snmpc_client_list_name
 :
-   CLIENT_LIST_NAME name = variable
+   CLIENT_LIST_NAME name = junos_name
 ;
 
 snmpc_null
@@ -96,5 +96,5 @@ snmptg_null
 
 snmptg_targets
 :
-   TARGETS target = IP_ADDRESS
+   TARGETS target = ip_address
 ;

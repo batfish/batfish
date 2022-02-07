@@ -12,14 +12,6 @@ ri_class_of_service
    s_class_of_service
 ;
 
-ri_common
-:
-   apply
-   | ri_description
-   | s_forwarding_options
-   | s_routing_options
-;
-
 ri_description
 :
    description
@@ -44,9 +36,12 @@ ri_interface
 
 ri_named_routing_instance
 :
-   name = variable
+   name = junos_name
    (
-      ri_common
+      apply
+      | s_forwarding_options
+      | s_routing_options
+      | ri_description
       | ri_instance_type
       | ri_interface
       | ri_null
@@ -93,12 +88,12 @@ ri_snmp
 
 ri_vrf_export
 :
-   VRF_EXPORT name = variable
+   VRF_EXPORT name = junos_name
 ;
 
 ri_vrf_import
 :
-   VRF_IMPORT name = variable
+   VRF_IMPORT name = junos_name
 ;
 
 ri_vrf_table_label
@@ -203,7 +198,7 @@ ro_generate
 
 ro_instance_import
 :
-   INSTANCE_IMPORT name = variable
+   INSTANCE_IMPORT name = junos_name
 ;
 
 ro_interface_routes
@@ -250,7 +245,7 @@ ro_resolution
 
 rores_rib
 :
-  RIB name = variable
+  RIB name = junos_name
   (
     apply
     | roresr_import
@@ -259,12 +254,12 @@ rores_rib
 
 roresr_import
 :
-  IMPORT name = variable
+  IMPORT expr = policy_expression
 ;
 
 ro_rib
 :
-   RIB name = VARIABLE
+   RIB name = junos_name
    (
       apply
       | ro_aggregate
@@ -275,7 +270,7 @@ ro_rib
 
 ro_rib_groups
 :
-   RIB_GROUPS name = variable
+   RIB_GROUPS name = junos_name
    (
       ror_export_rib
       | ror_import_policy
@@ -285,17 +280,17 @@ ro_rib_groups
 
 ro_route_distinguisher_id
 :
-   ROUTE_DISTINGUISHER_ID addr = IP_ADDRESS
+   ROUTE_DISTINGUISHER_ID addr = ip_address
 ;
 
 ro_router_id
 :
-   ROUTER_ID id = IP_ADDRESS
+   ROUTER_ID id = ip_address
 ;
 
 ro_srlg
 :
-   SRLG name = variable
+   SRLG name = junos_name
    (
       roslrg_srlg_cost
       | roslrg_srlg_value
@@ -361,7 +356,7 @@ roa_passive
 
 roa_policy
 :
-  POLICY name = variable
+  POLICY expr = policy_expression
 ;
 
 roa_preference
@@ -373,8 +368,8 @@ roa_route
 :
   ROUTE
   (
-    prefix = IP_PREFIX
-    | prefix6 = IPV6_PREFIX
+    prefix = ip_prefix
+    | prefix6 = ipv6_prefix
   )
   (
     apply
@@ -424,7 +419,7 @@ rob_station_port
 
 rof_export
 :
-   EXPORT name = variable
+   EXPORT expr = policy_expression
 ;
 
 rof_no_ecmp_fast_reroute
@@ -483,15 +478,15 @@ rog_passive
 
 rog_policy
 :
-   POLICY policy = variable
+   POLICY expr = policy_expression
 ;
 
 rog_route
 :
   ROUTE
   (
-    IP_PREFIX
-    | IPV6_PREFIX
+    ip_prefix
+    | ipv6_prefix
   ) rog_common
 ;
 
@@ -506,7 +501,7 @@ roi_family
 
 roi_rib_group
 :
-   RIB_GROUP (INET | INET6) name = variable
+   RIB_GROUP (INET | INET6) name = junos_name
 ;
 
 roif_inet
@@ -543,30 +538,30 @@ roifie_point_to_point
 
 ror_export_rib
 :
-   EXPORT_RIB rib = variable
+   EXPORT_RIB rib = junos_name
 ;
 
 ror_import_policy
 :
-   IMPORT_POLICY name = variable
+   IMPORT_POLICY expr = policy_expression
 ;
 
 ror_import_rib
 :
-   IMPORT_RIB rib = variable
+   IMPORT_RIB rib = junos_name
 ;
 
 ros_rib_group
 :
-   RIB_GROUP name = variable
+   RIB_GROUP name = junos_name
 ;
 
 ros_route
 :
    ROUTE
    (
-      IP_PREFIX
-      | IPV6_PREFIX
+      ip_prefix
+      | ipv6_prefix
    )
    (
       rosr_common
@@ -591,10 +586,7 @@ rosr_active
 
 rosr_as_path
 :
-   AS_PATH PATH
-   (
-      path += dec
-   )+
+   AS_PATH PATH path = as_path_expr
 ;
 
 rosr_common
@@ -646,15 +638,15 @@ rosr_next_hop
 :
    NEXT_HOP
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
+      ip_address
+      | ipv6_address
       | interface_id
    )
 ;
 
 rosr_next_table
 :
-   NEXT_TABLE name = variable
+   NEXT_TABLE name = junos_name
 ;
 
 rosr_no_install
@@ -686,7 +678,7 @@ rosr_qualified_next_hop
 :
    QUALIFIED_NEXT_HOP
    (
-      IP_ADDRESS
+      ip_address
       | interface_id
    )
    rosrqnh_common?
@@ -743,11 +735,7 @@ rosrqnhc_tag
 
 s_routing_instances
 :
-   ROUTING_INSTANCES
-   (
-      ri_common
-      | ri_named_routing_instance
-   )
+   ROUTING_INSTANCES ri_named_routing_instance
 ;
 
 s_routing_options

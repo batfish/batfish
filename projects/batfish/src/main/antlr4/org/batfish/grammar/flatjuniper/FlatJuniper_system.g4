@@ -49,17 +49,20 @@ sy_default_address_selection
 
 sy_domain_name
 :
-   DOMAIN_NAME variable
+  // TODO: do better
+  DOMAIN_NAME name = junos_name
 ;
 
 sy_host_name
 :
-   HOST_NAME variable
+  // TODO: do better
+  HOST_NAME name = junos_name
 ;
 
 sy_name_server
 :
-   NAME_SERVER hostname = variable
+  // TODO: do better
+  NAME_SERVER hostname = junos_name
 ;
 
 sy_ntp
@@ -82,7 +85,7 @@ syn_null
 
 syn_server
 :
-   SERVER hostname = variable
+   SERVER hostname = name_or_ip
    (
        syn_server_key
        | syn_server_version
@@ -98,7 +101,7 @@ syn_source_address
 
 syn_server_key
 :
-    KEY dec
+    KEY secret_string
 ;
 
 syn_server_prefer
@@ -108,7 +111,7 @@ syn_server_prefer
 
 syn_server_routing_instance
 :
-    ROUTING_INSTANCE name = variable
+    ROUTING_INSTANCE name = junos_name
 ;
 
 syn_server_version
@@ -191,7 +194,7 @@ sy_syslog
 
 sys_host
 :
-   HOST hostname = variable
+   HOST hostname = junos_name
    (
       sysh_null
    )
@@ -237,7 +240,7 @@ sysh_null
 
 sy_security_profile
 :
-  SECURITY_PROFILE name = variable
+  SECURITY_PROFILE name = junos_name
   (
     apply
     | sysp_logical_system
@@ -256,17 +259,19 @@ sy_services
 
 sy_services_linetype
 :
-   linetype =
-   (
-      FTP
-      | SSH
-      | TELNET
-   )
+   linetype = line_type
    (
       apply_groups
       | sy_authentication_order
       | sysl_null
    )?
+;
+
+line_type
+:
+  FTP
+  | SSH
+  | TELNET
 ;
 
 sy_services_null
@@ -299,8 +304,7 @@ sy_tacplus_server
 :
    TACPLUS_SERVER
    (
-      hostname = IP_ADDRESS
-      | hostname = IPV6_ADDRESS
+      tacplus_server_host
       | wildcard
    )
    (
@@ -309,6 +313,12 @@ sy_tacplus_server
       | syt_source_address
       | syt_null
    )
+;
+
+tacplus_server_host
+:
+  ip_address
+  | ipv6_address
 ;
 
 syp_disable
@@ -327,7 +337,7 @@ syp_null
 
 syr_encrypted_password
 :
-   ENCRYPTED_PASSWORD password = variable
+   ENCRYPTED_PASSWORD password = secret_string
 ;
 
 sysl_null
@@ -357,7 +367,7 @@ sysl_null
 
 sysp_logical_system
 :
-  LOGICAL_SYSTEM name = variable
+  LOGICAL_SYSTEM name = junos_name
 ;
 
 sysp_null
@@ -373,12 +383,12 @@ sysp_null
 
 syt_secret
 :
-  SECRET secret
+  SECRET secret_string
 ;
 
 syt_source_address
 :
-   SOURCE_ADDRESS address = IP_ADDRESS
+   SOURCE_ADDRESS address = ip_address
 ;
 
 syt_null

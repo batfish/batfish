@@ -1,0 +1,12 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name firewall-filter-from-port
+#
+set firewall family inet filter f1 term t1 from port bgp
+set firewall family inet filter f1 term t1 from port 0100
+set firewall family inet filter f1 term t1 from port 1000-2000
+set firewall family inet filter f1 term t1 from destination-port bgp
+set firewall family inet filter f1 term t1 from destination-port 100
+set firewall family inet filter f1 term t1 from destination-port 1000-2000
+set firewall family inet filter f1 term t1 from source-port bgp
+set firewall family inet filter f1 term t1 from source-port 100
+set firewall family inet filter f1 term t1 from source-port 1000-2000

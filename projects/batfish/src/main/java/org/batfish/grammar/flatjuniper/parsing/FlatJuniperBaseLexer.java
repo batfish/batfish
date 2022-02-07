@@ -13,8 +13,6 @@ import org.batfish.grammar.BatfishLexer;
 @ParametersAreNonnullByDefault
 public abstract class FlatJuniperBaseLexer extends BatfishLexer {
 
-  protected boolean _enableIpv6Address = true;
-  protected boolean _enableIpAddress = true;
   protected boolean _markWildcards = false;
 
   private Integer _overrideTokenStartLine;
@@ -50,19 +48,9 @@ public abstract class FlatJuniperBaseLexer extends BatfishLexer {
     }
   }
 
-  public boolean isPrefix() {
-    char nextChar = (char) getInputStream().LA(1);
-    if (Character.isDigit(nextChar) || nextChar == '.') {
-      return false;
-    }
-    return true;
-  }
-
   @Override
   public String printStateVariables() {
     StringBuilder sb = new StringBuilder();
-    sb.append("enableIpv6Address: " + _enableIpv6Address + "\n");
-    sb.append("enableIpAddress: " + _enableIpAddress + "\n");
     sb.append("markWildcards: " + _markWildcards + "\n");
     return sb.toString();
   }

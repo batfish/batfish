@@ -12,17 +12,23 @@ options {
 
 tokens {
    ACK,
+   AS_PATH_REGEX,
    BANG,
+   CERTIFICATE_STRING,
    DOUBLE_QUOTED_NAME,
    DYNAMIC_DB,
+   SECRET_STRING,
    FIN,
-   INTERFACE_NAME,
+   IGNORED_WORD,
+   INTERFACE_ID,
    INTERFACE_WILDCARD,
    ISO_ADDRESS,
    LITERAL_OR_REGEX_COMMUNITY,
    NAME,
    PIPE,
+   POLICY_EXPRESSION,
    RST,
+   SUB_RANGE,
    SYN,
    VERSION_STRING,
    WILDCARD_ARTIFACT
@@ -40,27 +46,53 @@ ACCESS: 'access';
 
 ACCESS_INTERNAL: 'access-internal';
 
-ACCESS_PROFILE: 'access-profile';
+ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
 
 ACCOUNTING: 'accounting';
 
 ACTIVE: 'active';
 
-ACTIVE_SERVER_GROUP: 'active-server-group';
+ACTIVE_SERVER_GROUP: 'active-server-group' -> pushMode(M_Name);
 
 ADAPTIVE_SHAPERS: 'adaptive-shapers';
 
-ADD: 'add';
+ADD
+:
+  'add'
+  {
+    if (lastTokenType() == COMMUNITY) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 ADD_PATH: 'add-path';
 
-ADDRESS: 'address';
+ADDRESS
+:
+  'address'
+  {
+    if (lastTokenType() == ADDRESS_BOOK
+        || secondToLastTokenType() == ADDRESS_BOOK
+        || secondToLastTokenType() == ADDRESS_SET) {
+      pushMode(M_Name);
+    }
+  }
+;
 
-ADDRESS_BOOK: 'address-book';
+ADDRESS_BOOK
+:
+  'address-book'
+  {
+    if (lastTokenType() == SECURITY) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 ADDRESS_MASK: 'address-mask';
 
-ADDRESS_SET: 'address-set';
+ADDRESS_SET: 'address-set' -> pushMode(M_Name);
 
 ADVERTISE_EXTERNAL: 'advertise-external';
 
@@ -75,13 +107,13 @@ AFS: 'afs';
 AFTER: 'after';
 
 AGGREGATE: 'aggregate';
-
+AGGREGATED_DEVICES: 'aggregated-devices';
 AGGREGATED_ETHER_OPTIONS: 'aggregated-ether-options';
 
 AGGREGATOR: 'aggregator';
 
 AGGRESSIVE: 'aggressive';
-
+AE_IRB: 'ae-irb';
 AES_128_CBC: 'aes-128-cbc';
 
 AES_128_CMAC_96: 'aes-128-cmac-96';
@@ -100,7 +132,7 @@ AES_256_GCM: 'aes-256-gcm';
 AH: 'ah';
 
 AH_HEADER: 'AH-header';
-
+AGING_TIMER: 'aging-timer';
 ALARM_WITHOUT_DROP: 'alarm-without-drop';
 
 ALARM_THRESHOLD: 'alarm-threshold';
@@ -141,11 +173,11 @@ ANY_REMOTE_HOST: 'any-remote-host';
 
 ANY_SERVICE: 'any-service';
 
-APPLICATION: 'application';
+APPLICATION: 'application' -> pushMode(M_Application);
 
 APPLICATION_PROTOCOL: 'application-protocol';
 
-APPLICATION_SET: 'application-set';
+APPLICATION_SET: 'application-set' -> pushMode(M_ApplicationSet);
 
 APPLICATION_TRACKING: 'application-tracking';
 
@@ -153,9 +185,9 @@ APPLICATION_TRAFFIC_CONTROL: 'application-traffic-control';
 
 APPLICATIONS: 'applications';
 
-APPLY_GROUPS: 'apply-groups';
+APPLY_GROUPS: 'apply-groups' -> pushMode(M_ApplyGroups);
 
-APPLY_GROUPS_EXCEPT: 'apply-groups-except';
+APPLY_GROUPS_EXCEPT: 'apply-groups-except' -> pushMode(M_Name);
 
 APPLY_MACRO: 'apply-macro';
 
@@ -175,15 +207,34 @@ AS_OVERRIDE: 'as-override';
 
 AS_PATH
 :
-   'as-path' -> pushMode ( M_AsPath )
+  'as-path'
+  {
+    switch(lastTokenType()) {
+      case POLICY_OPTIONS:
+        // set policy-options as-path
+        pushMode(M_AsPathDefinitionName);
+        break;
+      case FROM:
+        // set policy-options policy-statement from as-path
+        pushMode(M_Name);
+        break;
+      default:
+        switch(secondToLastTokenType()) {
+          case AS_PATH_GROUP:
+            // set policy-options as-path-group foo as-path
+            pushMode(M_AsPathDefinitionName);
+            break;
+          default:
+            break;
+        }
+        break;
+    }
+  }
 ;
 
 AS_PATH_EXPAND: 'as-path-expand';
 
-AS_PATH_GROUP
-:
-   'as-path-group' -> pushMode ( M_AsPathGroup )
-;
+AS_PATH_GROUP: 'as-path-group' -> pushMode (M_Name);
 
 AS_PATH_PREPEND
 :
@@ -202,9 +253,9 @@ AUTHENTICATION: 'authentication';
 
 AUTHENTICATION_ALGORITHM: 'authentication-algorithm';
 
-AUTHENTICATION_KEY: 'authentication-key';
+AUTHENTICATION_KEY: 'authentication-key' -> pushMode(M_SecretString);
 
-AUTHENTICATION_KEY_CHAIN: 'authentication-key-chain';
+AUTHENTICATION_KEY_CHAIN: 'authentication-key-chain' -> pushMode(M_Name);
 
 AUTHENTICATION_KEY_CHAINS: 'authentication-key-chains';
 
@@ -314,16 +365,16 @@ CLIENT_ALIVE_INTERVAL: 'client-alive-interval';
 
 CLIENT_LIST: 'client-list';
 
-CLIENT_LIST_NAME: 'client-list-name';
+CLIENT_LIST_NAME: 'client-list-name' -> pushMode(M_Name);
 
 CLIENTS: 'clients';
 
 CLUSTER: 'cluster';
 
 CMD: 'cmd';
-
+CODE_POINT: 'code-point' -> pushMode(M_Name);
 CODE_POINT_ALIASES: 'code-point-aliases';
-
+CODE_POINTS: 'code-points' -> pushMode(M_Name);
 COLOR: 'color';
 
 COLOR2: 'color2';
@@ -334,11 +385,18 @@ COMMUNICATION_PROHIBITED_BY_FILTERING: 'communication-prohibited-by-filtering';
 
 COMMUNITY
 :
-   'community'
-   {
-      _enableIpv6Address = false;
-   }
-
+  'community'
+  {
+    switch (lastTokenType()) {
+      case FROM:
+      case POLICY_OPTIONS:
+      case SNMP:
+        pushMode(M_Name);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 COMPATIBLE: 'compatible';
@@ -357,14 +415,14 @@ CONNECTIONS: 'connections';
 CONNECTION_LIMIT: 'connection-limit';
 
 CONNECTIONS_LIMIT: 'connections-limit';
-
+CONNECTIVITY_FAULT_MANAGEMENT: 'connectivity-fault-management';
 CONSOLE: 'console';
 
 CONTACT: 'contact';
 
-COS_NEXT_HOP_MAP: 'cos-next-hop-map';
+COS_NEXT_HOP_MAP: 'cos-next-hop-map' -> pushMode(M_Name);
 
-COUNT: 'count';
+COUNT: 'count' -> pushMode(M_Name);
 
 CREDIBILITY_PROTOCOL_PREFERENCE: 'credibility-protocol-preference';
 
@@ -377,7 +435,7 @@ DAEMON: 'daemon';
 DAMPING: 'damping';
 
 DATABASE_REPLICATION: 'database-replication';
-
+DEVICE_COUNT: 'device-count';
 DESTINATION_HEADER: 'destination-header';
 
 DESTINATION_THRESHOLD: 'destination-threshold';
@@ -405,8 +463,16 @@ DEFAULT_METRIC: 'default-metric';
 DEFAULT_POLICY: 'default-policy';
 
 DEFAULTS: 'defaults';
-
-DELETE: 'delete';
+DELEGATE_PROCESSING: 'delegate-processing';
+DELETE
+:
+  'delete'
+  {
+    if (lastTokenType() == COMMUNITY) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 DELETE_BINDING_ON_RENEGOTIATION: 'delete-binding-on-renegotiation';
 
@@ -425,11 +491,19 @@ DESIGNATED_FORWARDER_ELECTION_HOLD_TIME: 'designated-forwarder-election-hold-tim
 
 DESTINATION: 'destination';
 
-DESTINATION_ADDRESS: 'destination-address';
+DESTINATION_ADDRESS
+:
+  'destination-address'
+   {
+     if (lastTokenType() == MATCH) {
+       pushMode(M_AddressSpecifier);
+     }
+   }
+;
 
 DESTINATION_ADDRESS_EXCLUDED: 'destination-address-excluded';
 
-DESTINATION_ADDRESS_NAME: 'destination-address-name';
+DESTINATION_ADDRESS_NAME: 'destination-address-name' -> pushMode(M_Name);
 
 DESTINATION_HOST_PROHIBITED: 'destination-host-prohibited';
 
@@ -445,11 +519,11 @@ DESTINATION_NETWORK_PROHIBITED: 'destination-network-prohibited';
 
 DESTINATION_NETWORK_UNKNOWN: 'destination-network-unknown';
 
-DESTINATION_PORT: 'destination-port';
+DESTINATION_PORT: 'destination-port' -> pushMode(M_Port);
 
-DESTINATION_PORT_EXCEPT: 'destination-port-except';
+DESTINATION_PORT_EXCEPT: 'destination-port-except' -> pushMode(M_Port);
 
-DESTINATION_PREFIX_LIST: 'destination-prefix-list';
+DESTINATION_PREFIX_LIST: 'destination-prefix-list' -> pushMode(M_Name);
 
 DESTINATION_UNREACHABLE: 'destination-unreachable';
 
@@ -475,20 +549,17 @@ DNS: 'dns';
 
 DOMAIN: 'domain';
 
-DOMAIN_NAME: 'domain-name';
+DOMAIN_NAME: 'domain-name' -> pushMode(M_Name);
 
 DOMAIN_SEARCH: 'domain-search';
 
 DROP_PATH_ATTRIBUTES: 'drop-path-attributes';
 
-DROP_PROFILES: 'drop-profiles';
+DROP_PROFILES: 'drop-profiles' -> pushMode(M_Name);
 
 DSA_SIGNATURES: 'dsa-signatures';
 
-DSCP
-:
-   'dscp' -> pushMode ( M_DSCP )
-;
+DSCP: 'dscp' -> pushMode(M_Name);
 
 DSLITE: 'dslite';
 
@@ -514,10 +585,7 @@ EGP: 'egp';
 
 EGRESS: 'egress';
 
-EIGHT02_3AD
-:
-   '802.3ad'
-;
+EIGHT02_3AD: '802.3ad' -> pushMode(M_Interface);
 
 EKLOGIN: 'eklogin';
 
@@ -529,7 +597,7 @@ ENABLE: 'enable';
 
 ENCAPSULATION: 'encapsulation';
 
-ENCRYPTED_PASSWORD: 'encrypted-password';
+ENCRYPTED_PASSWORD: 'encrypted-password' -> pushMode(M_SecretString);
 
 ENCRYPTION_ALGORITHM: 'encryption-algorithm';
 
@@ -546,7 +614,7 @@ ESTABLISH_TUNNELS: 'establish-tunnels';
 ETHER_OPTIONS: 'ether-options';
 
 ETHER_TYPE: 'ether-type';
-
+ETHERNET: 'ethernet';
 ETHERNET_SWITCHING: 'ethernet-switching';
 
 ETHERNET_SWITCHING_OPTIONS: 'ethernet-switching-options';
@@ -565,9 +633,18 @@ EXP: 'exp';
 
 EXPLICIT_PRIORITY: 'explicit-priority';
 
-EXPORT: 'export';
+EXPORT
+:
+  'export'
+  {
+    // set routing-options interface-routes family inet export
+    if (secondToLastTokenType() != FAMILY) {
+      pushMode(M_PolicyExpression);
+    }
+  }
+;
 
-EXPORT_RIB: 'export-rib';
+EXPORT_RIB: 'export-rib' -> pushMode(M_Name);
 
 EXPRESSION: 'expression';
 
@@ -598,7 +675,7 @@ FABRIC_OPTIONS: 'fabric-options';
 
 FACILITY_OVERRIDE: 'facility-override';
 
-FAIL_FILTER: 'fail-filter';
+FAIL_FILTER: 'fail-filter' -> pushMode(M_Name);
 
 FAMILY: 'family';
 
@@ -608,12 +685,12 @@ FASTETHER_OPTIONS: 'fastether-options';
 
 FILE: 'file';
 
-FILTER: 'filter';
+FILTER: 'filter' -> pushMode(M_Filter);
 
 FILTER_DUPLICATES: 'filter-duplicates';
 
 FILTER_INTERFACES: 'filter-interfaces';
-
+FILL_LEVEL: 'fill-level';
 FIN_NO_ACK: 'fin-no-ack';
 
 FINGER: 'finger';
@@ -644,9 +721,11 @@ FORWARD_SNOOPED_CLIENTS: 'forward-snooped-clients';
 
 FORWARDING: 'forwarding';
 
-FORWARDING_CLASS: 'forwarding-class';
+FORWARDING_CLASS: 'forwarding-class' -> pushMode(M_Name);
 
 FORWARDING_CLASS_ACCOUNTING: 'forwarding-class-accounting';
+
+FORWARDING_CLASS_SET: 'forwarding-class-set' -> pushMode(M_Name);
 
 FORWARDING_CLASSES: 'forwarding-classes';
 
@@ -664,15 +743,15 @@ FRAGMENTATION_MAPS: 'fragmentation-maps';
 
 FRAGMENTATION_NEEDED: 'fragmentation-needed';
 
-FRAGMENT_OFFSET: 'fragment-offset';
+FRAGMENT_OFFSET: 'fragment-offset' -> pushMode(M_SubRange);
 
-FRAGMENT_OFFSET_EXCEPT: 'fragment-offset-except';
+FRAGMENT_OFFSET_EXCEPT: 'fragment-offset-except' -> pushMode(M_SubRange);
 
 FRAMING: 'framing';
 
 FROM: 'from';
 
-FROM_ZONE: 'from-zone';
+FROM_ZONE: 'from-zone' -> pushMode(M_Zone);
 
 FTP: 'ftp';
 
@@ -682,7 +761,7 @@ FULL_DUPLEX: 'full-duplex';
 
 G: 'g';
 
-GATEWAY: 'gateway';
+GATEWAY: 'gateway' -> pushMode(M_Name);
 
 GENERATE: 'generate';
 
@@ -702,10 +781,7 @@ GRE_6IN4: 'gre-6in4';
 
 GRE_6IN6: 'gre-6in6';
 
-GROUP
-:
-   'group' -> pushMode ( M_VarOrWildcard )
-;
+GROUP: 'group' -> pushMode(M_Name);
 
 GROUP_IKE_ID: 'group-ike-id';
 
@@ -727,11 +803,11 @@ GROUP24: 'group24';
 
 GROUP5: 'group5';
 
-GROUPS: 'groups';
+GROUPS: 'groups' -> pushMode(M_Name);
 
 HASH_KEY: 'hash-key';
 
-HELLO_AUTHENTICATION_KEY: 'hello-authentication-key';
+HELLO_AUTHENTICATION_KEY: 'hello-authentication-key' -> pushMode(M_SecretString);
 
 HELLO_AUTHENTICATION_TYPE: 'hello-authentication-type';
 
@@ -763,11 +839,11 @@ HOLD_TIME: 'hold-time';
 
 HOP_BY_HOP: 'hop-by-hop';
 
-HOST: 'host';
+HOST: 'host' -> pushMode(M_Name);
 
 HOST_INBOUND_TRAFFIC: 'host-inbound-traffic';
 
-HOST_NAME: 'host-name';
+HOST_NAME: 'host-name' -> pushMode(M_Name);
 
 HOST_PRECEDENCE_VIOLATION: 'host-precedence-violation';
 
@@ -777,7 +853,7 @@ HOST_UNREACHABLE_FOR_TOS: 'host-unreachable-for-tos';
 
 HOSTKEY_ALGORITHM: 'hostkey-algorithm';
 
-HOSTNAME: 'hostname';
+HOSTNAME: 'hostname' -> pushMode(M_Name);
 
 HTTP: 'http';
 
@@ -807,7 +883,7 @@ IDENT_RESET: 'ident-reset';
 
 IDLE_TIMEOUT: 'idle-timeout';
 
-IDS_OPTION: 'ids-option';
+IDS_OPTION: 'ids-option' -> pushMode(M_Name);
 
 IF_ROUTE_EXISTS: 'if-route-exists';
 
@@ -825,7 +901,7 @@ IKE: 'ike';
 
 IKE_ESP_NAT: 'ike-esp-nat';
 
-IKE_POLICY: 'ike-policy';
+IKE_POLICY: 'ike-policy' -> pushMode(M_Name);
 
 IKE_USER_TYPE: 'ike-user-type';
 
@@ -835,11 +911,20 @@ IMAP: 'imap';
 
 IMMEDIATELY: 'immediately';
 
-IMPORT: 'import';
+IMPORT
+:
+  'import'
+  {
+    if (secondToLastTokenType() != FAMILY) {
+      // set routing-options interface-routes family inet import
+      pushMode(M_PolicyExpression);
+    }
+  }
+;
 
-IMPORT_POLICY: 'import-policy';
+IMPORT_POLICY: 'import-policy' -> pushMode(M_PolicyExpression);
 
-IMPORT_RIB: 'import-rib';
+IMPORT_RIB: 'import-rib' -> pushMode(M_Name);
 
 INACTIVE: 'inactive';
 
@@ -853,7 +938,15 @@ INDIRECT_NEXT_HOP: 'indirect-next-hop';
 
 INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS: 'indirect-next-hop-change-acknowledgements';
 
-INET: 'inet';
+INET
+:
+  'inet'
+  {
+    if (lastTokenType() == LOCAL_IDENTITY) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 INET6: 'inet6';
 
@@ -877,9 +970,9 @@ INGRESS_REPLICATION: 'ingress-replication';
 
 INNER: 'inner';
 
-INPUT: 'input';
+INPUT: 'input' -> pushMode(M_Name);
 
-INPUT_LIST: 'input-list';
+INPUT_LIST: 'input-list' -> pushMode(M_Name);
 
 INPUT_VLAN_MAP: 'input-vlan-map';
 
@@ -891,15 +984,15 @@ INSTALL: 'install';
 
 INSTALL_NEXTHOP: 'install-nexthop';
 
-INSTANCE: 'instance';
+INSTANCE: 'instance' -> pushMode(M_Name);
 
-INSTANCE_IMPORT: 'instance-import';
+INSTANCE_IMPORT: 'instance-import' -> pushMode(M_Name);
 
 INSTANCE_TYPE: 'instance-type';
 
 INTERACTIVE_COMMANDS: 'interactive-commands';
 
-INTERCONNECT_DEVICE: 'interconnect-device';
+INTERCONNECT_DEVICE: 'interconnect-device' -> pushMode(M_FabricDevice);
 
 INTERFACE
 :
@@ -908,11 +1001,11 @@ INTERFACE
 
 INTERFACE_MODE: 'interface-mode';
 
-INTERFACE_RANGE: 'interface-range';
+INTERFACE_RANGE: 'interface-range' -> pushMode(M_Name);
 
 INTERFACE_SPECIFIC: 'interface-specific';
 
-INTERFACE_SWITCH: 'interface-switch';
+INTERFACE_SWITCH: 'interface-switch' -> pushMode(M_Name);
 
 INTERFACE_TRANSMIT_STATISTICS: 'interface-transmit-statistics';
 
@@ -935,7 +1028,7 @@ INTERFACE_TYPE: 'interface-type';
 INTERNAL: 'internal';
 
 INTERNET_OPTIONS: 'internet-options';
-
+INTERPOLATE: 'interpolate';
 INVERT_MATCH: 'invert-match';
 
 IP: 'ip';
@@ -970,9 +1063,9 @@ IPIP_6TO4RELAY: 'ipip-6to4relay';
 
 IPSEC: 'ipsec';
 
-IPSEC_POLICY: 'ipsec-policy';
+IPSEC_POLICY: 'ipsec-policy' -> pushMode(M_Name);
 
-IPSEC_VPN: 'ipsec-vpn';
+IPSEC_VPN: 'ipsec-vpn' -> pushMode(M_Name);
 
 IPV6: 'ipv6';
 
@@ -1409,11 +1502,28 @@ KERBEROS_SEC: 'kerberos-sec';
 
 KERNEL: 'kernel';
 
-KEY: 'key';
+KEY
+:
+  'key'
+  {
+    switch(secondToLastTokenType()) {
+      case KEY_CHAIN:
+        // set security authentication-key-chains key-chain foo key 0 ...
+        pushMode(M_Name);
+        break;
+      case SERVER:
+        // set system ntp server 2.3.4.7 key 33333
+        pushMode(M_SecretString);
+        break;
+      default:
+        break;
+    }
+  }
+;
 
 KEYS: 'keys';
 
-KEY_CHAIN: 'key-chain';
+KEY_CHAIN: 'key-chain' -> pushMode(M_Name);
 
 KEY_EXCHANGE: 'key-exchange';
 
@@ -1445,7 +1555,7 @@ L3_INTERFACE
    'l3-interface' -> pushMode(M_Interface)
 ;
 
-LABEL_SWITCHED_PATH: 'label-switched-path';
+LABEL_SWITCHED_PATH: 'label-switched-path' -> pushMode(M_Name);
 
 LABELED_UNICAST: 'labeled-unicast';
 
@@ -1468,7 +1578,7 @@ LICENSE: 'license';
 LINE_IDENTIFICATION_OPTION: 'line-identification-option';
 
 LINK_MODE: 'link-mode';
-
+LINK_SPEED: 'link-speed';
 LDAP: 'ldap';
 
 LDP: 'ldp';
@@ -1491,7 +1601,15 @@ LLDP_MED: 'lldp-med';
 
 LOAD_BALANCE: 'load-balance';
 
-LOCAL: 'local';
+LOCAL
+:
+  'local'
+  {
+    if (lastTokenType() == CERTIFICATES) {
+      pushMode(M_CertificatesLocal);
+    }
+  }
+;
 
 LOCAL_ADDRESS: 'local-address';
 
@@ -1511,9 +1629,9 @@ LOG_PREFIX: 'log-prefix';
 
 LOG_UPDOWN: 'log-updown';
 
-LOGICAL_SYSTEM: 'logical-system';
+LOGICAL_SYSTEM: 'logical-system' -> pushMode(M_Name);
 
-LOGICAL_SYSTEMS: 'logical-systems';
+LOGICAL_SYSTEMS: 'logical-systems' -> pushMode(M_Name);
 
 LOGIN: 'login';
 
@@ -1555,7 +1673,7 @@ MAC
 MACS: 'macs';
 
 MAIN: 'main';
-
+MAINTENANCE_DOMAIN: 'maintenance-domain' -> pushMode(M_Name);
 MAPPED_PORT: 'mapped-port';
 
 MARTIANS: 'martians';
@@ -1592,7 +1710,12 @@ MEDIUM_LOW: 'medium-low';
 
 MEMBER
 :
-   'member' -> pushMode(M_Interface)
+  'member'
+  {
+    if (secondToLastTokenType() == INTERFACE_RANGE) {
+      pushMode(M_Interface);
+    }
+  }
 ;
 
 MEMBER_RANGE
@@ -1604,8 +1727,10 @@ MEMBERS
 :
   'members'
   {
-    if (secondToLastTokenType() != CONFEDERATION) {
+    if (secondToLastTokenType() == COMMUNITY) {
       pushMode(M_Members);
+    } else if (lastTokenType() == VLAN) {
+      pushMode(M_VlanMembers);
     }
   }
 ;
@@ -1672,11 +1797,11 @@ MULTISERVICE_OPTIONS: 'multiservice-options';
 
 MVPN: 'mvpn';
 
-NAME: 'name';
+NAME_LITERALLY: 'name' -> pushMode(M_Name);
 
 NAME_RESOLUTION: 'name-resolution';
 
-NAME_SERVER: 'name-server';
+NAME_SERVER: 'name-server' -> pushMode(M_Name);
 
 NAT: 'nat';
 
@@ -1730,7 +1855,7 @@ NEXT_IP: 'next-ip';
 
 NEXT_IP6: 'next-ip6';
 
-NEXT_TABLE: 'next-table';
+NEXT_TABLE: 'next-table' -> pushMode(M_Name);
 
 NFSD: 'nfsd';
 
@@ -1810,9 +1935,9 @@ NO_TRANSLATION: 'no-translation';
 
 NO_TRAPS: 'no-traps';
 
-NODE_DEVICE: 'node-device';
+NODE_DEVICE: 'node-device' -> pushMode(M_FabricDevice);
 
-NODE_GROUP: 'node-group';
+NODE_GROUP: 'node-group' -> pushMode(M_Name);
 
 NODE_LINK_PROTECTION: 'node-link-protection';
 
@@ -1844,9 +1969,11 @@ OUT_DELAY: 'out-delay';
 
 OUTBOUND_SSH: 'outbound-ssh';
 
-OUTPUT: 'output';
+OUTPUT: 'output' -> pushMode(M_Name);
 
-OUTPUT_LIST: 'output-list';
+OUTPUT_LIST: 'output-list' -> pushMode(M_Name);
+
+OUTPUT_TRAFFIC_CONTROL_PROFILE: 'output-traffic-control-profile' -> pushMode(M_Name);
 
 OUTPUT_VLAN_MAP: 'output-vlan-map';
 
@@ -1864,7 +1991,7 @@ P2MP_OVER_LAN: 'p2mp-over-lan';
 
 P2P: 'p2p';
 
-PACKET_LENGTH: 'packet-length';
+PACKET_LENGTH: 'packet-length' -> pushMode(M_SubRange);
 
 PACKET_LENGTH_EXCEPT: 'packet-length-except';
 
@@ -1876,7 +2003,7 @@ PASSIVE: 'passive';
 
 PASSWORD: 'password';
 
-PATH: 'path';
+PATH: 'path' -> pushMode(M_AsPathExpr);
 
 PATH_COUNT: 'path-count';
 
@@ -1918,15 +2045,39 @@ POLICER: 'policer';
 
 POLICIES: 'policies';
 
-POLICY: 'policy';
+POLICY
+:
+  'policy'
+  {
+    switch(lastTokenType()) {
+      case GLOBAL:
+      case IKE:
+      case IPSEC:
+        pushMode(M_Name);
+        break;
+      default:
+        switch(secondToLastTokenType()) {
+          case FROM_ZONE:
+          case SECURITY_PROFILE:
+          case TO_ZONE:
+            pushMode(M_Name);
+            break;
+          default:
+            pushMode(M_PolicyExpression);
+            break;
+        }
+        break;
+    }
+  }
+;
 
 POLICY_OPTIONS: 'policy-options';
 
-POLICY_STATEMENT: 'policy-statement';
+POLICY_STATEMENT: 'policy-statement' -> pushMode(M_Name);
 
 POLL_INTERVAL: 'poll-interval';
 
-POOL: 'pool';
+POOL: 'pool' -> pushMode(M_Name);
 
 POOL_DEFAULT_PORT_RANGE: 'pool-default-port-range';
 
@@ -1934,9 +2085,8 @@ POOL_UTILIZATION_ALARM: 'pool-utilization-alarm';
 
 POP3: 'pop3';
 
-PORT: 'port';
-
-PORTS: 'ports';
+PORT: 'port' -> pushMode(M_Port);
+PORT_EXCEPT: 'port-except' -> pushMode(M_Port);
 
 PORT_MIRROR: 'port-mirror';
 
@@ -1956,6 +2106,8 @@ PORT_SCAN
 ;
 
 PORT_UNREACHABLE: 'port-unreachable';
+
+PORTS: 'ports';
 
 PPM: 'ppm';
 
@@ -1981,22 +2133,19 @@ PREFERRED: 'preferred';
 
 PREFIX: 'prefix';
 
-PREFIX_NAME: 'prefix-name';
+PREFIX_NAME: 'prefix-name' -> pushMode(M_PrefixName);
 
 PREFIX_EXPORT_LIMIT: 'prefix-export-limit';
 
-PREFIX_LENGTH_RANGE: 'prefix-length-range';
+PREFIX_LENGTH_RANGE: 'prefix-length-range' -> pushMode(M_PrefixLengthRange);
 
 PREFIX_LIMIT: 'prefix-limit';
 
-PREFIX_LIST
-:
-   'prefix-list' -> pushMode ( M_PrefixListName )
-;
+PREFIX_LIST: 'prefix-list' -> pushMode(M_Name);
 
-PREFIX_LIST_FILTER: 'prefix-list-filter';
+PREFIX_LIST_FILTER: 'prefix-list-filter' -> pushMode(M_Name);
 
-PREFIX_POLICY: 'prefix-policy';
+PREFIX_POLICY: 'prefix-policy' -> pushMode(M_Name);
 
 PRIMARY: 'primary';
 
@@ -2010,11 +2159,11 @@ PRIVATE: 'private';
 
 PROCESSES: 'processes';
 
-PROPOSAL: 'proposal';
+PROPOSAL: 'proposal' -> pushMode(M_Name);
 
 PROPOSAL_SET: 'proposal-set';
 
-PROPOSALS: 'proposals';
+PROPOSALS: 'proposals' -> pushMode(M_NameList);
 
 PROTECT: 'protect';
 
@@ -2043,6 +2192,7 @@ QUALIFIED_NEXT_HOP
    'qualified-next-hop' -> pushMode(M_Interface)
 ;
 
+QUEUE: 'queue' -> pushMode(M_Queue);
 QUICK_START_OPTION: 'quick-start-option';
 
 R2CP: 'r2cp';
@@ -2085,11 +2235,12 @@ REDIRECT_FOR_TOS_AND_HOST: 'redirect-for-tos-and-host';
 
 REDIRECT_FOR_TOS_AND_NET: 'redirect-for-tos-and-net';
 
-REDUNDANCY_GROUP: 'redundancy-group';
+// TODO: should this just allow a number afterward?
+REDUNDANCY_GROUP: 'redundancy-group' -> pushMode(M_Name);
 
 REDUNDANT_ETHER_OPTIONS: 'redundant-ether-options';
 
-REDUNDANT_PARENT: 'redundant-parent';
+REDUNDANT_PARENT: 'redundant-parent' -> pushMode(M_Interface);
 
 REFERENCE_BANDWIDTH
 :
@@ -2134,11 +2285,27 @@ REVERSE_TELNET: 'reverse-telnet';
 
 REWRITE_RULES: 'rewrite-rules';
 
-RIB: 'rib';
+RIB: 'rib' -> pushMode(M_Name);
 
-RIB_GROUP: 'rib-group';
+RIB_GROUP
+:
+  'rib-group'
+   {
+     switch(lastTokenType()) {
+       case INTERFACE_ROUTES:
+         pushMode(M_InterfaceRoutesRibGroup);
+         break;
+       case ISIS:
+         pushMode(M_IsisRibGroup);
+         break;
+       default:
+         pushMode(M_Name);
+         break;
+     }
+   }
+;
 
-RIB_GROUPS: 'rib-groups';
+RIB_GROUPS: 'rib-groups' -> pushMode(M_Name);
 
 RIP: 'rip';
 
@@ -2183,9 +2350,9 @@ ROUTER_SOLICIT: 'router-solicit';
 
 ROUTING_HEADER: 'routing-header';
 
-ROUTING_INSTANCE: 'routing-instance';
+ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_Name);
 
-ROUTING_INSTANCES: 'routing-instances';
+ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Name);
 
 ROUTING_OPTIONS: 'routing-options';
 
@@ -2207,9 +2374,9 @@ RSVP: 'rsvp';
 
 RTSP: 'rtsp';
 
-RULE: 'rule';
+RULE: 'rule' -> pushMode(M_Name);
 
-RULE_SET: 'rule-set';
+RULE_SET: 'rule-set' -> pushMode(M_Name);
 
 SAMPLE: 'sample';
 
@@ -2224,41 +2391,55 @@ SAVED_CORE_FILES: 'saved-core-files';
 SCCP: 'sccp';
 
 SCHEDULER: 'scheduler';
-
+SCHEDULER_MAP: 'scheduler-map' -> pushMode(M_Name);
 SCHEDULER_MAPS: 'scheduler-maps';
 
 SCHEDULERS: 'schedulers';
 
-SCREEN: 'screen';
+SCREEN
+:
+  'screen'
+   {
+     if (secondToLastTokenType() == SECURITY_ZONE) {
+       // set security zones security-zone ZONENAME screen
+       pushMode(M_Screen);
+     }
+   }
+;
 
 SCRIPTS: 'scripts';
 
 SCTP: 'sctp';
 
-SCRUBBED
-:
-  '<SCRUBBED>'
-;
+SCRUBBED: F_Scrubbed;
 
-SECRET: 'secret';
+SECRET: 'secret' -> pushMode(M_SecretString);
 
 SECURITY: 'security';
 
 SECURITY_OPTION: 'security-option';
 
-SECURITY_PROFILE: 'security-profile';
+SECURITY_PROFILE: 'security-profile' -> pushMode(M_Name);
 
-SECURITY_ZONE: 'security-zone';
+SECURITY_ZONE: 'security-zone' -> pushMode(M_Zone);
 
 SELF: 'self';
 
 SEND: 'send';
 
-SERVER: 'server';
+SERVER: 'server' -> pushMode(M_NameOrIp);
 
-SERVER_GROUP: 'server-group';
+SERVER_GROUP: 'server-group' -> pushMode(M_Name);
 
-SERVICE: 'service';
+SERVICE
+:
+  'service' 
+  {
+    if (lastTokenType() == PROXY_IDENTITY) {
+      pushMode(M_ProxyIdentityService);
+    }
+  }
+;
 
 SERVICE_DEPLOYMENT: 'service-deployment';
 
@@ -2268,7 +2449,15 @@ SERVICES: 'services';
 
 SERVICES_OFFLOAD: 'services-offload';
 
-SET: 'set';
+SET
+:
+  'set'
+  {
+    if (lastTokenType() == COMMUNITY) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 SFLOW: 'sflow';
 
@@ -2296,7 +2485,7 @@ SIP: 'sip';
 
 SQLNET_V2: 'sqlnet-v2';
 
-SRLG: 'srlg';
+SRLG: 'srlg' -> pushMode(M_Name);
 
 SRLG_COST: 'srlg-cost';
 
@@ -2318,17 +2507,25 @@ SONET_OPTIONS: 'sonet-options';
 
 SOURCE: 'source';
 
-SOURCE_ADDRESS: 'source-address';
+SOURCE_ADDRESS
+:
+  'source-address'
+   {
+     if (lastTokenType() == MATCH) {
+       pushMode(M_AddressSpecifier);
+     }
+   }
+;
 
 SOURCE_ADDRESS_EXCLUDED: 'source-address-excluded';
 
 SOURCE_ADDRESS_FILTER: 'source-address-filter';
 
-SOURCE_ADDRESS_NAME: 'source-address-name';
+SOURCE_ADDRESS_NAME: 'source-address-name' -> pushMode(M_Name);
 
 SOURCE_HOST_ISOLATED: 'source-host-isolated';
 
-SOURCE_IDENTITY: 'source-identity';
+SOURCE_IDENTITY: 'source-identity' -> pushMode(M_SourceIdentity);
 
 SOURCE_INTERFACE
 :
@@ -2337,16 +2534,14 @@ SOURCE_INTERFACE
 
 SOURCE_IP_BASED: 'source-ip-based';
 
-SOURCE_MAC_ADDRESS
-:
-   'source-mac-address' -> pushMode ( M_MacAddress )
-;
+SOURCE_MAC_ADDRESS: 'source-mac-address' -> pushMode(M_MacAddressAndLength);
 
 SOURCE_NAT: 'source-nat';
 
-SOURCE_PORT: 'source-port';
+SOURCE_PORT: 'source-port' -> pushMode(M_Port);
+SOURCE_PORT_EXCEPT: 'source-port-except' -> pushMode(M_Port);
 
-SOURCE_PREFIX_LIST: 'source-prefix-list';
+SOURCE_PREFIX_LIST: 'source-prefix-list' -> pushMode(M_Name);
 
 SOURCE_ROUTE_FAILED: 'source-route-failed';
 
@@ -2369,11 +2564,11 @@ SSH: 'ssh';
 
 STANDARD: 'standard';
 
-START_TIME: 'start-time';
+START_TIME: 'start-time' -> pushMode(M_RestOfLine);
 
 STATIC: 'static';
 
-STATIC_HOST_MAPPING: 'static-host-mapping';
+STATIC_HOST_MAPPING: 'static-host-mapping' -> pushMode(M_RestOfLine);
 
 STATIC_NAT: 'static-nat';
 
@@ -2383,7 +2578,7 @@ STATION_PORT: 'station-port';
 
 STATS_CACHE_LIFETIME: 'stats-cache-lifetime';
 
-STORM_CONTROL: 'storm-control';
+STORM_CONTROL: 'storm-control' -> pushMode(M_Name);
 
 STORM_CONTROL_PROFILES: 'storm-control-profiles';
 
@@ -2427,7 +2622,7 @@ SYSTEM: 'system';
 
 SYSTEM_SERVICES: 'system-services';
 
-TABLE: 'table';
+TABLE: 'table' -> pushMode(M_Name);
 
 TACACS: 'tacacs';
 
@@ -2482,10 +2677,7 @@ TEREDO: 'teredo';
 
 TELNET: 'telnet';
 
-TERM
-:
-   'term' -> pushMode ( M_Name )
-;
+TERM: 'term' -> pushMode(M_Name);
 
 TFTP: 'tftp';
 
@@ -2503,7 +2695,7 @@ TIME_FORMAT: 'time-format';
 
 TIME_EXCEEDED: 'time-exceeded';
 
-TIME_ZONE: 'time-zone';
+TIME_ZONE: 'time-zone' -> pushMode(M_RestOfLine);
 
 TIMED: 'timed';
 
@@ -2518,7 +2710,7 @@ TIMESTAMP_REPLY: 'timestamp-reply';
 TO: 'to';
 
 TOLERANCE: 'tolerance';
-TO_ZONE: 'to-zone';
+TO_ZONE: 'to-zone' -> pushMode(M_Zone);
 
 TRACE: 'trace';
 
@@ -2530,7 +2722,7 @@ TRACEROUTE: 'traceroute';
 
 TRACK: 'track';
 
-TRAFFIC_CONTROL_PROFILES: 'traffic-control-profiles';
+TRAFFIC_CONTROL_PROFILES: 'traffic-control-profiles' -> pushMode(M_Name);
 
 TRAFFIC_ENGINEERING: 'traffic-engineering';
 
@@ -2540,7 +2732,7 @@ TRAP_DESTINATIONS: 'trap-destinations';
 
 TRAP: 'trap';
 
-TRAP_GROUP: 'trap-group';
+TRAP_GROUP: 'trap-group' -> pushMode(M_Name);
 
 TRAP_OPTIONS: 'trap-options';
 
@@ -2584,7 +2776,7 @@ UNTRUST_SCREEN: 'untrust-screen';
 
 UPLINK_FAILURE_DETECTION: 'uplink-failure-detection';
 
-UPTO: 'upto';
+UPTO: 'upto' -> pushMode(M_PrefixLength);
 
 URG: 'urg';
 
@@ -2617,10 +2809,15 @@ VIRTUAL_SWITCH: 'virtual-switch';
 
 VLAN
 :
-   'vlan' -> pushMode ( M_Vlan )
+  'vlan'
+  {
+    if (lastTokenType() != ETHERNET_SWITCHING) {
+      pushMode(M_Name);
+    }
+  }
 ;
 
-VLANS: 'vlans';
+VLANS: 'vlans' -> pushMode(M_Name);
 
 VLAN_ID: 'vlan-id';
 
@@ -2636,15 +2833,15 @@ VNI_OPTIONS: 'vni-options';
 
 VPLS: 'vpls';
 
-VPN: 'vpn';
+VPN: 'vpn' -> pushMode(M_Name);
 
 VPN_MONITOR: 'vpn-monitor';
 
 VRF: 'vrf';
 
-VRF_EXPORT: 'vrf-export';
+VRF_EXPORT: 'vrf-export' -> pushMode(M_Name);
 
-VRF_IMPORT: 'vrf-import';
+VRF_IMPORT: 'vrf-import' -> pushMode(M_Name);
 
 VRF_TABLE_LABEL: 'vrf-table-label';
 
@@ -2670,16 +2867,13 @@ WEB_MANAGEMENT: 'web-management';
 
 WEBAPI: 'webapi';
 
-WHITE_LIST: 'white-list';
+WHITE_LIST: 'white-list' -> pushMode(M_Name);
 
 WHO: 'who';
 
 WIDE_METRICS_ONLY: 'wide-metrics-only';
 
-WILDCARD_ADDRESS
-:
-   'wildcard-address' -> pushMode(M_WildcardAddress)
-;
+WILDCARD_ADDRESS: 'wildcard-address';
 
 WINNUKE: 'winnuke';
 
@@ -2691,54 +2885,23 @@ XNM_CLEAR_TEXT: 'xnm-clear-text';
 
 XNM_SSL: 'xnm-ssl';
 
-ZONE: 'zone';
+ZONE: 'zone' -> pushMode(M_Name);
 
 ZONES: 'zones';
 
 // End of Juniper keywords
 
-STANDARD_COMMUNITY
+// Other tokens
+
+COMMENT_LINE
 :
-  F_StandardCommunity {!_enableIpv6Address}?
+  F_WhitespaceChar* [!#] {lastTokenType() == NEWLINE || lastTokenType() == -1}?
+  F_NonNewlineChar* (F_NewlineChar+ | EOF) -> channel(HIDDEN)
 ;
 
-VARIABLE
-:
-   (
-      (
-         (
-            F_Variable_RequiredVarChar
-            {!_enableIpv6Address}?
+WILDCARD: F_Wildcard {setWildcard();};
 
-            F_Variable_VarChar*
-         )
-         |
-         (
-            F_Variable_RequiredVarChar_Ipv6
-            {_enableIpv6Address}?
-
-            F_Variable_VarChar_Ipv6*
-         )
-      )
-      |
-      (
-         (
-            F_Variable_LeadingVarChar
-            {!_enableIpv6Address}?
-
-            F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
-         )
-         |
-         (
-            F_Variable_LeadingVarChar_Ipv6
-            {_enableIpv6Address}?
-
-            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6
-            F_Variable_VarChar_Ipv6*
-         )
-      )
-   )
-;
+STANDARD_COMMUNITY: F_StandardCommunity;
 
 AMPERSAND
 :
@@ -2828,40 +2991,17 @@ GREATER_THAN
    '>'
 ;
 
-IP_ADDRESS
-:
-   F_IpAddress{_enableIpAddress}?
-;
+IP_ADDRESS: F_IpAddress;
 
-IP_PREFIX
-:
-   F_IpPrefix {_enableIpAddress}? {isPrefix()}?
-;
+IP_ADDRESS_AND_MASK: F_IpAddressAndMask;
 
-IPV6_ADDRESS
-:
-   F_Ipv6Address {_enableIpv6Address}?
-;
+IP_PREFIX: F_IpPrefix;
 
-IPV6_PREFIX
-:
-   F_Ipv6Prefix {_enableIpv6Address}?
-;
+IPV6_ADDRESS: F_Ipv6Address;
 
-COMMENT_LINE
-:
-  F_WhitespaceChar* [!#] {lastTokenType() == NEWLINE || lastTokenType() == -1}?
-  F_NonNewlineChar* (F_NewlineChar+ | EOF) -> channel(HIDDEN)
-;
+IPV6_PREFIX: F_Ipv6Prefix;
 
-NEWLINE
-:
-   F_NewlineChar+
-   {
-      _enableIpv6Address = true;
-   }
-
-;
+NEWLINE: F_Newline;
 
 OPEN_BRACE
 :
@@ -2905,11 +3045,6 @@ SINGLE_QUOTE
 
 UNDERSCORE: '_';
 
-WILDCARD
-:
-   '<' ~'>'* '>' {setWildcard();}
-;
-
 WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
@@ -2936,6 +3071,15 @@ DEC
 :
    F_Digit+
 ;
+
+// Any contiguous sequence of non-whitespace tokens in the default mode not matching any previous
+// token will be lexed as UNRECOGNIZED_WORD. The UNRECOGNIZED_WORD token should only be valid in the
+// null_filler parser rule. Since the UNRECOGNIZED_WORD token will be a preferred match over any
+// shorter token in the default mode, recognition of shorter tokens that do not take up an entire
+// contiguous sequence of non-whitespace tokens must happen in a non-default mode.
+UNRECOGNIZED_WORD: F_NonWhitespaceChar+;
+
+// Fragments
 
 fragment
 F_DecByte
@@ -3178,6 +3322,12 @@ F_IpAddress
 ;
 
 fragment
+F_IpAddressAndMask
+:
+  F_IpAddress '/' F_IpAddress
+;
+
+fragment
 F_IpPrefix
 :
   F_IpAddress '/' F_IpPrefixLength
@@ -3227,16 +3377,53 @@ F_Letter
 ;
 
 fragment
+F_DoubleQuotedString
+:
+  '"' F_NonNewlineChar* '"'
+;
+
+fragment
+F_Wildcard
+:
+  F_WildcardInner
+  | '"' F_WildcardInner '"'
+;
+
+fragment
+F_WildcardInner
+:
+  '<' ~'>'* '>'
+;
+
+fragment
+F_SecretString
+:
+  '"' ~'"'+ '"'
+;
+
+fragment
+F_CertificateString
+:
+  '"' ~'"'+ '"'
+;
+
+fragment
+F_Scrubbed
+:
+  '<SCRUBBED>'
+;
+
+fragment
 F_Name
 :
   F_NameChar+
+  | F_NameQuoted
 ;
 
 fragment
 F_NameQuoted
 :
-// Quotes, at least one char, does not end in space
-  '"' F_NameChar ((F_NameChar | ' ')* F_NameChar)? '"'
+  '"' (F_NameChar | ' ')* '"'
 ;
 
 fragment
@@ -3248,10 +3435,19 @@ F_NameChar
   | '.'
 ;
 
+// Any number of newlines, allowing whitespace in between
+fragment
+F_Newline
+:
+  F_NewlineChar (F_WhitespaceChar* F_NewlineChar+)*
+;
+
+// A single newline character [sequence - allowing \r, \r\n, or \n]
 fragment
 F_NewlineChar
 :
-   [\r\n]
+   '\r' '\n'?
+   | '\n'
 ;
 
 fragment
@@ -3276,18 +3472,6 @@ fragment
 F_Variable_RequiredVarChar
 :
    ~[ 0-9\t\n\r/.,\-;{}<>[\]&|()"']
-;
-
-fragment
-F_Hostname_LeadingChar
-:
-   [A-Za-z]
-;
-
-fragment
-F_Hostname_TrailingChar
-:
-   [A-Za-z0-9_]|'-'
 ;
 
 fragment
@@ -3323,43 +3507,55 @@ F_Variable_LeadingVarChar_Ipv6
 fragment
 F_Uint8
 :
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
+  // juniper allows leading zeros in general
+  '0'*
+  (
+    F_Digit
+    | F_PositiveDigit F_Digit
+    | '1' F_Digit F_Digit
+    | '2' [0-4] F_Digit
+    | '25' [0-5]
+  )
 ;
 
 fragment
 F_Uint16
 :
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit?
-  | [1-5] F_Digit F_Digit F_Digit F_Digit
-  | '6' [0-4] F_Digit F_Digit F_Digit
-  | '65' [0-4] F_Digit F_Digit
-  | '655' [0-2] F_Digit
-  | '6553' [0-5]
+  // juniper allows leading zeros in general
+  '0'*
+  (
+    F_Digit
+    | F_PositiveDigit F_Digit F_Digit? F_Digit?
+    | [1-5] F_Digit F_Digit F_Digit F_Digit
+    | '6' [0-4] F_Digit F_Digit F_Digit
+    | '65' [0-4] F_Digit F_Digit
+    | '655' [0-2] F_Digit
+    | '6553' [0-5]
+  )
 ;
 
 fragment
 F_Uint32
 :
 // 0-4294967295
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
-  F_Digit? F_Digit?
-  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  F_Digit
-  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
-  | '429496' [0-6] F_Digit F_Digit F_Digit
-  | '4294967' [0-1] F_Digit F_Digit
-  | '42949672' [0-8] F_Digit
-  | '429496729' [0-5]
+  // juniper allows leading zeros in general
+  '0'*
+  (
+    F_Digit
+    | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+    F_Digit? F_Digit?
+    | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    F_Digit
+    | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+    | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+    | '429496' [0-6] F_Digit F_Digit F_Digit
+    | '4294967' [0-1] F_Digit F_Digit
+    | '42949672' [0-8] F_Digit
+    | '429496729' [0-5]
+  )
 ;
 
 fragment
@@ -3377,260 +3573,145 @@ F_Variable_VarChar_Ipv6
 fragment
 F_WhitespaceChar
 :
-   [ \t\u000C]
+   [ \t\u000C\u00A0]
 ;
 
-mode M_AsPath;
-
-M_AsPath_NEWLINE
+fragment
+F_InterfaceId
 :
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
-
-   -> type ( NEWLINE ) , popMode
+  F_InterfaceIdBase
+  | '"' F_InterfaceIdBase '"'
 ;
 
-M_AsPath_AGGREGATOR
+fragment
+F_InterfaceIdBase
 :
-   'aggregator' -> type ( AGGREGATOR ) , popMode
+  // optional node
+  (F_InterfaceHostname ':')?
+  
+  // mandatory parent interface name
+  F_InterfaceName
+  
+  // optional unit
+  ('.' F_Digit+)? 
 ;
 
-M_AsPath_ORIGIN
+fragment
+F_InterfaceHostname
 :
-   'origin' -> type ( ORIGIN ) , popMode
+  F_InterfaceHostname_LeadingChar F_InterfaceHostname_TrailingChar*
 ;
 
-M_AsPath_PATH
+fragment
+F_InterfaceHostname_LeadingChar
 :
-   'path' -> type ( PATH ) , mode ( M_AsPathPath )
+   [A-Za-z]
 ;
 
-M_AsPath_TERM
+fragment
+F_InterfaceHostname_TrailingChar
 :
-   'term' -> type ( TERM ) , mode ( M_Name )
+   [A-Za-z0-9_]|'-'
 ;
 
-M_AsPath_VARIABLE
+fragment
+F_InterfaceName
 :
-   (
-      F_Digit
-      | F_Variable_RequiredVarChar
-   ) F_Variable_VarChar* -> type ( VARIABLE ) , mode ( M_AsPathRegex )
+  (
+    F_InterfaceMediaType '-'? F_Digit+ ('/' F_Digit+)*
+    // optional channel  
+    (':' F_Digit+)?
+  )
+  | 'irb'
+  | 'vlan'
+  | 'vme'
 ;
 
-M_AsPath_WS
+fragment
+F_MacAddress
 :
-   F_WhitespaceChar+ -> channel ( HIDDEN )
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit
 ;
 
-mode M_AsPathPath;
-
-M_AsPathPath_UINT8
+fragment
+F_UnquotedAsPathRegex
 :
-   F_Uint8 -> type ( UINT8 ) , popMode
+  F_UnquotedAsPathRegexChar+
 ;
 
-M_AsPathPath_UINT16
+fragment
+F_UnquotedAsPathRegexChar
 :
-   F_Uint16 -> type ( UINT16 ) , popMode
+  [0-9,$*.{}+_]
+  | '['
+  | ']'
+  | '-'
+  | '^'
 ;
 
-M_AsPathPath_UINT32
+fragment
+F_QuotedAsPathRegex
 :
-   F_Uint32 -> type ( UINT32 ) , popMode
+  F_QuotedAsPathRegexChar+
 ;
 
-M_AsPathPath_DOUBLE_QUOTE
+fragment
+F_QuotedAsPathRegexChar
 :
-   '"' -> channel ( HIDDEN ) , mode ( M_AsPathExpr )
+  F_UnquotedAsPathRegexChar
+  | [|()? ]
 ;
 
-M_AsPathPath_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
+mode M_AsPathDefinitionName;
 
-mode M_AsPathExpr;
+M_AsPathDefinition_WS: F_WhitespaceChar+ -> skip;
+M_AsPathDefinition_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathDefinition_WILDCARD: F_Wildcard {setWildcard();} -> mode(M_AsPathDefinitionRegex);
+M_AsPathDefinition_NAME: F_Name -> type(NAME), mode(M_AsPathDefinitionRegex);
 
-M_AsPathExpr_UINT8
-:
-   F_Uint8 -> type ( UINT8 )
-;
+mode M_AsPathDefinitionRegex;
 
-M_AsPathExpr_UINT16
-:
-   F_Uint16 -> type ( UINT16 )
-;
+M_AsPathDefinitionRegex_WS: F_WhitespaceChar+ -> channel(HIDDEN), mode(M_AsPathDefinitionRegex2);
+M_AsPathDefinitionRegex_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
-M_AsPathExpr_UINT32
-:
-   F_Uint32 -> type ( UINT32 )
-;
+mode M_AsPathDefinitionRegex2;
+M_AsPathDefinitionRegex2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathDefinitionRegex2_DOUBLE_QUOTE: '"' -> channel(HIDDEN), mode(M_AsPathDefinitionRegexQuoted);
+M_AsPathDefinitionRegex2_AS_PATH_REGEX: F_UnquotedAsPathRegex -> type(AS_PATH_REGEX), popMode;
 
-M_AsPathExpr_PERIOD
-:
-   '.' -> type ( PERIOD )
-;
-
-M_AsPathExpr_OPEN_BRACKET
-:
-   '[' -> type ( OPEN_BRACKET )
-;
-
-M_AsPathExpr_CLOSE_BRACKET
-:
-   ']' -> type ( CLOSE_BRACKET )
-;
-
-M_AsPathExpr_DOUBLE_QUOTE
-:
-   '"' -> channel ( HIDDEN ) , popMode
-;
-
-M_AsPathExpr_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_AsPathGroup;
-
-M_AsPathGroup_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-M_AsPathGroup_NAME_QUOTED
-:
-  '"' ~'"'+ '"' -> mode ( M_AsPathGroup2 )
-;
-
-M_AsPathGroup_NAME
-:
-  F_NonWhitespaceChar+ -> mode(M_AsPathGroup2)
-;
-
-mode M_AsPathGroup2;
-
-M_AsPathGroup2_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-M_AsPathGroup2_NEWLINE
-:
-  F_NewlineChar+ -> type(NEWLINE), popMode
-;
-
-M_AsPathGroup2_AS_PATH
-:
-   'as-path' -> type(AS_PATH), mode(M_AsPathGroup3)
-;
-
-M_AsPathGroup2_DYNAMIC_DB
-:
-  'dynamic-db' -> type(DYNAMIC_DB), popMode
-;
-
-mode M_AsPathGroup3;
-
-M_AsPathGroup3_WS
-:
-   F_WhitespaceChar+ -> channel(HIDDEN)
-;
-
-M_AsPathGroup3_NAME_QUOTED
-:
-  '"' ~'"'+ '"' -> mode (M_AsPathRegex)
-;
-
-M_AsPathGroup3_NAME
-:
-  F_NonWhitespaceChar+ -> mode(M_AsPathRegex)
-;
+mode M_AsPathDefinitionRegexQuoted;
+M_AsPathDefinitionRegexQuoted_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathDefinitionRegexQuoted_DOUBLE_QUOTE: '"' -> channel(HIDDEN), popMode;
+M_AsPathDefinitionRegexQuoted_AS_PATH_REGEX: F_QuotedAsPathRegex -> type(AS_PATH_REGEX);
 
 mode M_AsPathPrepend;
 
-M_AsPathPrepend_UINT8
-:
-   F_Uint8 -> type ( UINT8 ) , popMode
-;
+M_AsPathPrepend_WS: F_WhitespaceChar+ -> skip, mode(M_AsPathPrepend2);
+M_AsPathPrepend_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
-M_AsPathPrepend_UINT16
-:
-   F_Uint16 -> type ( UINT16 ) , popMode
-;
+mode M_AsPathPrepend2;
 
-M_AsPathPrepend_UINT32
-:
-   F_Uint32 -> type ( UINT32 ) , popMode
-;
-
-M_AsPathPrepend_DOUBLE_QUOTE
-:
-   '"' -> channel( HIDDEN ) , mode ( M_AsPathPrepend_Inner )
-;
-
-M_AsPathPrepend_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
+M_AsPathPrepend2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathPrepend2_UINT8: F_Uint8 -> type(UINT8);
+M_AsPathPrepend2_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathPrepend2_UINT32: F_Uint32 -> type(UINT32);
+M_AsPathPrepend2_PERIOD: '.' -> type(PERIOD);
+M_AsPathPrepend2_DOUBLE_QUOTE: '"' -> skip, mode(M_AsPathPrepend_Inner);
+M_AsPathPrepend2_WS: F_WhitespaceChar+ -> skip, popMode;
 
 mode M_AsPathPrepend_Inner;
 
-M_AsPathPrepend_Inner_UINT8
-:
-   F_Uint8 -> type ( UINT8 )
-;
-
-M_AsPathPrepend_Inner_UINT16
-:
-   F_Uint16 -> type ( UINT16 )
-;
-
-M_AsPathPrepend_Inner_UINT32
-:
-   F_Uint32 -> type ( UINT32 )
-;
-
-M_AsPathPrepend_Inner_DOUBLE_QUOTE
-:
-   '"' -> channel( HIDDEN ) , popMode
-;
-
-M_AsPathPrepend_Inner_PERIOD
-:
-   '.' -> type ( PERIOD )
-;
-
-M_AsPathPrepend_Inner_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_AsPathRegex;
-
-AS_PATH_REGEX
-:
-   [0-9,^$[\]\-*.{}+|()] [0-9,^$[\]\-*.{}+|() _?]*
-;
-
-M_AsPathRegex_DOUBLE_QUOTE
-:
-   '"' -> channel ( HIDDEN )
-;
-
-M_AsPathRegex_NEWLINE
-:
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-M_AsPathRegex_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
+M_AsPathPrepend_Inner_UINT8: F_Uint8 -> type (UINT8);
+M_AsPathPrepend_Inner_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathPrepend_Inner_UINT32: F_Uint32 -> type(UINT32);
+M_AsPathPrepend_Inner_DOUBLE_QUOTE: '"' -> skip, popMode;
+M_AsPathPrepend_Inner_PERIOD: '.' -> type(PERIOD);
+M_AsPathPrepend_Inner_WS: F_WhitespaceChar+ -> skip;
 
 mode M_Description;
 
@@ -3639,161 +3720,48 @@ M_Description_DESCRIPTION
    F_NonWhitespaceChar F_NonNewlineChar*
 ;
 
-M_Description_NEWLINE
-:
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
+M_Description_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 M_Description_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
-mode M_DSCP;
-
-M_DSCP_VARIABLE
-:
-   F_NonWhitespaceChar+ -> type ( VARIABLE ), popMode
-;
-
-M_DSCP_NEWLINE
-:
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
-
-   -> type ( NEWLINE ) , popMode
-;
-
-M_DSCP_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
 mode M_Interface;
 
-M_Interface_COLON
-:
-   ':' -> type (COLON)
+M_Interface_ALL: 'all' -> type(ALL), popMode;
+
+M_Interface_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
+
+M_Interface_APPLY_GROUPS_EXCEPT: 'apply-groups-except' -> type(APPLY_GROUPS_EXCEPT), popMode;
+
+M_Interface_INTERFACE_RANGE: 'interface-range' -> type(INTERFACE_RANGE), mode(M_Name);
+
+M_Interface_PORT_OVERLOADING: 'port-overloading' -> type(PORT_OVERLOADING), popMode;
+
+M_Interface_PORT_OVERLOADING_FACTOR:
+  'port-overloading-factor' -> type(PORT_OVERLOADING_FACTOR), popMode
 ;
 
-M_Interface_DEC
-:
-   DEC -> type ( DEC ) , popMode
-;
+M_Interface_TRACEOPTIONS: 'traceoptions' -> type(TRACEOPTIONS), popMode;
 
+M_Interface_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS), popMode;
 
-M_Interface_ALL
-:
-   'all' -> type ( ALL ) , popMode
-;
+M_Interface_IPV6_ADDRESS: F_Ipv6Address -> type(IPV6_ADDRESS), popMode;
 
-M_Interface_APPLY_GROUPS
-:
-   'apply-groups' -> type ( APPLY_GROUPS ) , popMode
-;
+M_Interface_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
-M_Interface_APPLY_GROUPS_EXCEPT
-:
-   'apply-groups-except' -> type ( APPLY_GROUPS_EXCEPT ) , popMode
-;
+M_Interface_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 
-M_Interface_NEWLINE
-:
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
+// TODO: probably better to adjust modes so we don't need this
+M_Interface_INTERFACE: 'interface' -> type(INTERFACE);
 
-   -> type ( NEWLINE ) , popMode
-;
+M_Interface_WS: F_WhitespaceChar+ -> skip;
 
-M_Interface_INTERFACE
-:
-   'interface' -> type ( INTERFACE )
-;
+M_Interface_INTERFACE_ID: F_InterfaceId -> type(INTERFACE_ID), popMode;
 
-M_Interface_INTERFACE_RANGE
-:
-   'interface-range' -> type ( INTERFACE_RANGE ) , popMode
-;
-
-M_Interface_INTERFACE_NAME
-:
-   (
-      F_InterfaceMediaType '-'? F_Digit+ ('/' F_Digit+)*
-      | 'irb'
-      | 'vlan'
-      | 'vme'
-   ) -> type(INTERFACE_NAME), popMode
-;
-
-M_Interface_PORT_OVERLOADING
-:
-   'port-overloading' -> type ( PORT_OVERLOADING ) , popMode
-;
-
-M_Interface_PORT_OVERLOADING_FACTOR
-:
-   'port-overloading-factor' -> type ( PORT_OVERLOADING_FACTOR ) , popMode
-;
-
-M_Interface_QUOTE
-:
-   '"' -> channel ( HIDDEN ) , mode ( M_InterfaceQuote )
-;
-
-M_Interface_TRACEOPTIONS
-:
-   'traceoptions' -> type ( TRACEOPTIONS ) , popMode
-;
-
-M_Interface_HOSTNAME
-:
-   F_Hostname_LeadingChar F_Hostname_TrailingChar* -> type ( VARIABLE )
-;
-
-M_Interface_WILDCARD
-:
-   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);} -> popMode
-;
-
-M_Interface_IP_ADDRESS
-:
-   F_IpAddress -> type ( IP_ADDRESS ) , popMode
-;
-
-M_Interface_IPV6_ADDRESS
-:
-   F_Ipv6Address -> type (IPV6_ADDRESS), popMode
-;
-
-M_Interface_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-mode M_InterfaceQuote;
-
-M_InterfaceQuote_QUOTE
-:
-   '"' -> channel ( HIDDEN ) , popMode
-;
-
-M_InterfaceQuote_VARIABLE
-:
-   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type ( VARIABLE )
-;
-
-M_InterfaceQuote_WILDCARD
-:
-   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);}
-;
-
-M_InterfaceQuote_DOUBLE_QUOTED_STRING
-:
-    ~'"'+ -> type ( DOUBLE_QUOTED_STRING )
-;
+// for interface-range member
+M_Interface_DOUBLE_QUOTED_STRING: F_DoubleQuotedString -> type(DOUBLE_QUOTED_STRING), popMode;
 
 mode M_InterfaceWildcard;
 
@@ -3822,7 +3790,9 @@ M_InterfaceWildcard_INTERFACE_WILDCARD
 
 M_InterfaceWildcard_WILDCARD
 :
-  '<' ~'>'* '>' -> type(WILDCARD), popMode
+  F_Wildcard
+  {setWildcard();}
+    -> popMode
 ;
 
 M_InterfaceWildcard_WS
@@ -3844,10 +3814,7 @@ M_ISO_MTU
 
 M_ISO_Newline
 :
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
-
-   -> type ( NEWLINE ) , popMode
+  F_Newline -> type(NEWLINE), popMode
 ;
 
 M_ISO_WS
@@ -3872,12 +3839,7 @@ M_ISO_Address_WS
 
 mode M_MacAddress;
 
-MAC_ADDRESS
-:
-   F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit
-   ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit
-   F_HexDigit -> popMode
-;
+MAC_ADDRESS: F_MacAddress -> popMode;
 
 M_MacAddress_WS
 :
@@ -3886,12 +3848,7 @@ M_MacAddress_WS
 
 mode M_MemberRange;
 
-M_MemberRange_INTERFACE_NAME:
-   (
-      F_InterfaceMediaType '-'? F_Digit+ ('/' F_Digit+)*
-      | 'irb' | 'vlan'
-   ) -> type(INTERFACE_NAME), mode(M_MemberRange2)
-;
+M_MemberRange_INTERFACE_ID: F_InterfaceName -> type(INTERFACE_ID), mode(M_MemberRange2);
 
 M_MemberRange_WS
 :
@@ -3918,10 +3875,7 @@ M_Members_DOUBLE_QUOTE
 
 M_Members_NEWLINE
 :
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
-
-   -> type ( NEWLINE ) , popMode
+   F_Newline -> type(NEWLINE), popMode
 ;
 
 M_Members_NO_ADVERTISE
@@ -3951,42 +3905,36 @@ M_Members_WS
 
 mode M_Name;
 
-M_Name_NEWLINE
-:
-  F_NewlineChar+ -> type ( NEWLINE ) , popMode
-;
+M_Name_WS: F_WhitespaceChar+ -> skip;
+M_Name_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Name_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
+M_Name_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_Name_NAME: F_Name -> type(NAME), popMode;
 
-M_Name_NAME
-:
-  F_Name -> type ( NAME ) , popMode
-;
+mode M_NameList;
 
-M_Name_QUOTED_NAME
-:
-  F_NameQuoted -> type ( DOUBLE_QUOTED_NAME ), popMode
-;
+M_NameList_WS: F_WhitespaceChar+ -> skip;
+M_NameList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_NameList_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
+M_NameList_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_NameList_NAME: F_Name -> type(NAME), popMode;
+M_NamList_OPEN_BRACKET: '[' -> type(OPEN_BRACKET), mode(M_NameListInner);
 
-M_Name_WS
-:
-  F_WhitespaceChar+ -> channel ( HIDDEN )
-;
+mode M_NameListInner;
+M_NameListInner_WS: F_WhitespaceChar+ -> skip;
+M_NameListInner_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_NameListInner_SCRUBBED: F_Scrubbed -> type(NAME);
+M_NameListInner_NAME: F_Name -> type(NAME);
+M_NamList_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET), popMode;
 
-mode M_PrefixListName;
+mode M_NameOrIp;
 
-M_PrefixListName_WILDCARD
-:
-   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);} -> popMode
-;
-
-M_PrefixListName_VARIABLE
-:
-   ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
-;
-
-M_PrefixListName_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
+M_NameOrIp_WS: F_WhitespaceChar+ -> skip;
+M_NameOrIp_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_NameOrIp_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_NameOrIp_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS), popMode;
+M_NameOrIp_IPV6_ADDRESS: F_Ipv6Address -> type(IPV6_ADDRESS), popMode;
+M_NameOrIp_NAME: F_Name -> type(NAME), popMode;
 
 mode M_Bandwidth;
 
@@ -4185,10 +4133,7 @@ M_RouteDistinguisher_DEC
 
 M_RouteDistinguisher_NEWLINE
 :
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
-
-   -> type ( NEWLINE ) , popMode
+   F_Newline -> type(NEWLINE), popMode
 ;
 
 M_RouteDistinguisher_WS
@@ -4218,23 +4163,6 @@ M_Speed_WS
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
-mode M_VarOrWildcard;
-
-M_VarOrWildcard_VARIABLE
-:
-   ~[ \t\u000C\r\n<]+ -> type ( VARIABLE ) , popMode
-;
-
-M_VarOrWildcard_WILDCARD
-:
-   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);}-> popMode
-;
-
-M_VarOrWildcard_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
 mode M_Version;
 
 M_Version_V1_ONLY
@@ -4257,27 +4185,25 @@ M_Version_WS
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
-mode M_Vlan;
+mode M_VlanMembers;
 
-M_Vlan_MEMBERS
+M_VlanMembers_ALL: 'all' -> type(ALL), popMode;
+
+M_VlanMembers_WS: F_WhitespaceChar+ -> skip;
+
+M_VlanMembers_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+M_VlanMembers_RANGE
 :
-   'members' -> type ( MEMBERS ) , popMode
+  (
+    F_Digit
+    | '-'
+    | ','
+  )+
+  {less();} -> mode(M_Range2) // go to second mode since we already saw whitespace
 ;
 
-M_Vlan_UNIT
-:
-   'unit' -> type ( UNIT ) , popMode
-;
-
-M_Vlan_VARIABLE
-:
-   ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
-;
-
-M_Vlan_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
+M_VlanMembers_NAME: F_Name -> type(NAME), popMode;
 
 mode M_VrfTarget;
 
@@ -4308,10 +4234,7 @@ M_VrfTarget_L
 
 M_VrfTarget_NEWLINE
 :
-   F_NewlineChar+
-   {_enableIpv6Address = true;}
-
-   -> type ( NEWLINE ) , popMode
+   F_NewlineChar+ -> type(NEWLINE), popMode
 ;
 
 M_VrfTarget_PERIOD
@@ -4329,26 +4252,471 @@ M_VrfTarget_WS
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
-mode M_WildcardAddress;
+mode M_PolicyExpression;
 
-M_WildcardAddress_IP_ADDRESS
-:
-    F_IpAddress -> type ( IP_ADDRESS )
-;
+M_PolicyExpression_OPEN_PAREN: '(' -> type(OPEN_PAREN);
+M_PolicyExpression_CLOSE_PAREN: ')' -> type(CLOSE_PAREN);
+M_PolicyExpression_DOUBLE_AMPERSAND: '&&' -> type(DOUBLE_AMPERSAND);
+M_PolicyExpression_DOUBLE_PIPE: '||' -> type(DOUBLE_PIPE);
+M_PolicyExpression_BANG: '!' -> type(BANG);
+M_PolicyExpression_NAME: F_Name -> type(NAME);
 
-M_WildcardAddress_FORWARD_SLASH
-:
-    '/' -> type ( FORWARD_SLASH ) , mode ( M_WildcardAddress2 )
-;
+M_PolicyExpression_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
-M_WildcardAddress_WS
-:
-   F_WhitespaceChar+ -> channel ( HIDDEN )
-;
+M_PolicyExpression_WS: F_WhitespaceChar+ -> skip;
 
-mode M_WildcardAddress2;
+mode M_Application;
+M_Application_ANY: 'any' -> type(ANY), popMode;
+M_Application_JUNOS_AOL: 'junos-aol' -> type(JUNOS_AOL), popMode;
+M_Application_JUNOS_BGP: 'junos-bgp' -> type(JUNOS_BGP), popMode;
+M_Application_JUNOS_BIFF: 'junos-biff' -> type(JUNOS_BIFF), popMode;
+M_Application_JUNOS_BOOTPC: 'junos-bootpc' -> type(JUNOS_BOOTPC), popMode;
+M_Application_JUNOS_BOOTPS: 'junos-bootps' -> type(JUNOS_BOOTPS), popMode;
+M_Application_JUNOS_CHARGEN: 'junos-chargen' -> type(JUNOS_CHARGEN), popMode;
+M_Application_JUNOS_CVSPSERVER: 'junos-cvspserver' -> type(JUNOS_CVSPSERVER), popMode;
+M_Application_JUNOS_DHCP_CLIENT: 'junos-dhcp-client' -> type(JUNOS_DHCP_CLIENT), popMode;
+M_Application_JUNOS_DHCP_RELAY: 'junos-dhcp-relay' -> type(JUNOS_DHCP_RELAY), popMode;
+M_Application_JUNOS_DHCP_SERVER: 'junos-dhcp-server' -> type(JUNOS_DHCP_SERVER), popMode;
+M_Application_JUNOS_DISCARD: 'junos-discard' -> type(JUNOS_DISCARD), popMode;
+M_Application_JUNOS_DNS_TCP: 'junos-dns-tcp' -> type(JUNOS_DNS_TCP), popMode;
+M_Application_JUNOS_DNS_UDP: 'junos-dns-udp' -> type(JUNOS_DNS_UDP), popMode;
+M_Application_JUNOS_ECHO: 'junos-echo' -> type(JUNOS_ECHO), popMode;
+M_Application_JUNOS_FINGER: 'junos-finger' -> type(JUNOS_FINGER), popMode;
+M_Application_JUNOS_FTP: 'junos-ftp' -> type(JUNOS_FTP), popMode;
+M_Application_JUNOS_FTP_DATA: 'junos-ftp-data' -> type(JUNOS_FTP_DATA), popMode;
+M_Application_JUNOS_GNUTELLA: 'junos-gnutella' -> type(JUNOS_GNUTELLA), popMode;
+M_Application_JUNOS_GOPHER: 'junos-gopher' -> type(JUNOS_GOPHER), popMode;
+M_Application_JUNOS_GPRS_GTP_C: 'junos-gprs-gtp-c' -> type(JUNOS_GPRS_GTP_C), popMode;
+M_Application_JUNOS_GPRS_GTP_U: 'junos-gprs-gtp-u' -> type(JUNOS_GPRS_GTP_U), popMode;
+M_Application_JUNOS_GPRS_GTP_V0: 'junos-gprs-gtp-v0' -> type(JUNOS_GPRS_GTP_V0), popMode;
+M_Application_JUNOS_GPRS_SCTP: 'junos-gprs-sctp' -> type(JUNOS_GPRS_SCTP), popMode;
+M_Application_JUNOS_GRE: 'junos-gre' -> type(JUNOS_GRE), popMode;
+M_Application_JUNOS_GTP: 'junos-gtp' -> type(JUNOS_GTP), popMode;
+M_Application_JUNOS_H323: 'junos-h323' -> type(JUNOS_H323), popMode;
+M_Application_JUNOS_HTTP: 'junos-http' -> type(JUNOS_HTTP), popMode;
+M_Application_JUNOS_HTTP_EXT: 'junos-http-ext' -> type(JUNOS_HTTP_EXT), popMode;
+M_Application_JUNOS_HTTPS: 'junos-https' -> type(JUNOS_HTTPS), popMode;
+M_Application_JUNOS_ICMP_ALL: 'junos-icmp-all' -> type(JUNOS_ICMP_ALL), popMode;
+M_Application_JUNOS_ICMP_PING: 'junos-icmp-ping' -> type(JUNOS_ICMP_PING), popMode;
+M_Application_JUNOS_ICMP6_ALL: 'junos-icmp6-all' -> type(JUNOS_ICMP6_ALL), popMode;
+M_Application_JUNOS_ICMP6_DST_UNREACH_ADDR: 'junos-icmp6-dst-unreach-addr' -> type(JUNOS_ICMP6_DST_UNREACH_ADDR), popMode;
+M_Application_JUNOS_ICMP6_DST_UNREACH_ADMIN: 'junos-icmp6-dst-unreach-admin' -> type(JUNOS_ICMP6_DST_UNREACH_ADMIN), popMode;
+M_Application_JUNOS_ICMP6_DST_UNREACH_BEYOND: 'junos-icmp6-dst-unreach-beyond' -> type(JUNOS_ICMP6_DST_UNREACH_BEYOND), popMode;
+M_Application_JUNOS_ICMP6_DST_UNREACH_PORT: 'junos-icmp6-dst-unreach-port' -> type(JUNOS_ICMP6_DST_UNREACH_PORT), popMode;
+M_Application_JUNOS_ICMP6_DST_UNREACH_ROUTE: 'junos-icmp6-dst-unreach-route' -> type(JUNOS_ICMP6_DST_UNREACH_ROUTE), popMode;
+M_Application_JUNOS_ICMP6_ECHO_REPLY: 'junos-icmp6-echo-reply' -> type(JUNOS_ICMP6_ECHO_REPLY), popMode;
+M_Application_JUNOS_ICMP6_ECHO_REQUEST: 'junos-icmp6-echo-request' -> type(JUNOS_ICMP6_ECHO_REQUEST), popMode;
+M_Application_JUNOS_ICMP6_PACKET_TOO_BIG: 'junos-icmp6-packet-too-big' -> type(JUNOS_ICMP6_PACKET_TOO_BIG), popMode;
+M_Application_JUNOS_ICMP6_PARAM_PROB_HEADER: 'junos-icmp6-param-prob-header' -> type(JUNOS_ICMP6_PARAM_PROB_HEADER), popMode;
+M_Application_JUNOS_ICMP6_PARAM_PROB_NEXTHDR: 'junos-icmp6-param-prob-nexthdr' -> type(JUNOS_ICMP6_PARAM_PROB_NEXTHDR), popMode;
+M_Application_JUNOS_ICMP6_PARAM_PROB_OPTION: 'junos-icmp6-param-prob-option' -> type(JUNOS_ICMP6_PARAM_PROB_OPTION), popMode;
+M_Application_JUNOS_ICMP6_TIME_EXCEED_REASSEMBLY: 'junos-icmp6-time-exceed-reassembly' -> type(JUNOS_ICMP6_TIME_EXCEED_REASSEMBLY), popMode;
+M_Application_JUNOS_ICMP6_TIME_EXCEED_TRANSIT: 'junos-icmp6-time-exceed-transit' -> type(JUNOS_ICMP6_TIME_EXCEED_TRANSIT), popMode;
+M_Application_JUNOS_IDENT: 'junos-ident' -> type(JUNOS_IDENT), popMode;
+M_Application_JUNOS_IKE: 'junos-ike' -> type(JUNOS_IKE), popMode;
+M_Application_JUNOS_IKE_NAT: 'junos-ike-nat' -> type(JUNOS_IKE_NAT), popMode;
+M_Application_JUNOS_IMAP: 'junos-imap' -> type(JUNOS_IMAP), popMode;
+M_Application_JUNOS_IMAPS: 'junos-imaps' -> type(JUNOS_IMAPS), popMode;
+M_Application_JUNOS_INTERNET_LOCATOR_SERVICE: 'junos-internet-locator-service' -> type(JUNOS_INTERNET_LOCATOR_SERVICE), popMode;
+M_Application_JUNOS_IRC: 'junos-irc' -> type(JUNOS_IRC), popMode;
+M_Application_JUNOS_L2TP: 'junos-l2tp' -> type(JUNOS_L2TP), popMode;
+M_Application_JUNOS_LDAP: 'junos-ldap' -> type(JUNOS_LDAP), popMode;
+M_Application_JUNOS_LDP_TCP: 'junos-ldp-tcp' -> type(JUNOS_LDP_TCP), popMode;
+M_Application_JUNOS_LDP_UDP: 'junos-ldp-udp' -> type(JUNOS_LDP_UDP), popMode;
+M_Application_JUNOS_LPR: 'junos-lpr' -> type(JUNOS_LPR), popMode;
+M_Application_JUNOS_MAIL: 'junos-mail' -> type(JUNOS_MAIL), popMode;
+M_Application_JUNOS_MGCP_CA: 'junos-mgcp-ca' -> type(JUNOS_MGCP_CA), popMode;
+M_Application_JUNOS_MGCP_UA: 'junos-mgcp-ua' -> type(JUNOS_MGCP_UA), popMode;
+M_Application_JUNOS_MS_RPC_EPM: 'junos-ms-rpc-epm' -> type(JUNOS_MS_RPC_EPM), popMode;
+M_Application_JUNOS_MS_RPC_IIS_COM_1: 'junos-ms-rpc-iis-com-1' -> type(JUNOS_MS_RPC_IIS_COM_1), popMode;
+M_Application_JUNOS_MS_RPC_IIS_COM_ADMINBASE: 'junos-ms-rpc-iis-com-adminbase' -> type(JUNOS_MS_RPC_IIS_COM_ADMINBASE), popMode;
+M_Application_JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP: 'junos-ms-rpc-msexchange-directory-nsp' -> type(JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP), popMode;
+M_Application_JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR: 'junos-ms-rpc-msexchange-directory-rfr' -> type(JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR), popMode;
+M_Application_JUNOS_MS_RPC_MSEXCHANGE_INFO_STORE: 'junos-ms-rpc-msexchange-info-store' -> type(JUNOS_MS_RPC_MSEXCHANGE_INFO_STORE), popMode;
+M_Application_JUNOS_MS_RPC_TCP: 'junos-ms-rpc-tcp' -> type(JUNOS_MS_RPC_TCP), popMode;
+M_Application_JUNOS_MS_RPC_UDP: 'junos-ms-rpc-udp' -> type(JUNOS_MS_RPC_UDP), popMode;
+M_Application_JUNOS_MS_RPC_UUID_ANY_TCP: 'junos-ms-rpc-uuid-any-tcp' -> type(JUNOS_MS_RPC_UUID_ANY_TCP), popMode;
+M_Application_JUNOS_MS_RPC_UUID_ANY_UDP: 'junos-ms-rpc-uuid-any-udp' -> type(JUNOS_MS_RPC_UUID_ANY_UDP), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_ADMIN: 'junos-ms-rpc-wmic-admin' -> type(JUNOS_MS_RPC_WMIC_ADMIN), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_ADMIN2: 'junos-ms-rpc-wmic-admin2' -> type(JUNOS_MS_RPC_WMIC_ADMIN2), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_MGMT: 'junos-ms-rpc-wmic-mgmt' -> type(JUNOS_MS_RPC_WMIC_MGMT), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_CALLRESULT: 'junos-ms-rpc-wmic-webm-callresult' -> type(JUNOS_MS_RPC_WMIC_WEBM_CALLRESULT), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_CLASSOBJECT: 'junos-ms-rpc-wmic-webm-classobject' -> type(JUNOS_MS_RPC_WMIC_WEBM_CLASSOBJECT), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_LEVEL1LOGIN: 'junos-ms-rpc-wmic-webm-level1login' -> type(JUNOS_MS_RPC_WMIC_WEBM_LEVEL1LOGIN), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_LOGIN_CLIENTID: 'junos-ms-rpc-wmic-webm-login-clientid' -> type(JUNOS_MS_RPC_WMIC_WEBM_LOGIN_CLIENTID), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_LOGIN_HELPER: 'junos-ms-rpc-wmic-webm-login-helper' -> type(JUNOS_MS_RPC_WMIC_WEBM_LOGIN_HELPER), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_OBJECTSINK: 'junos-ms-rpc-wmic-webm-objectsink' -> type(JUNOS_MS_RPC_WMIC_WEBM_OBJECTSINK), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_REFRESHING_SERVICES: 'junos-ms-rpc-wmic-webm-refreshing-services' -> type(JUNOS_MS_RPC_WMIC_WEBM_REFRESHING_SERVICES), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_REMOTE_REFRESHER: 'junos-ms-rpc-wmic-webm-remote-refresher' -> type(JUNOS_MS_RPC_WMIC_WEBM_REMOTE_REFRESHER), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_SERVICES: 'junos-ms-rpc-wmic-webm-services' -> type(JUNOS_MS_RPC_WMIC_WEBM_SERVICES), popMode;
+M_Application_JUNOS_MS_RPC_WMIC_WEBM_SHUTDOWN: 'junos-ms-rpc-wmic-webm-shutdown' -> type(JUNOS_MS_RPC_WMIC_WEBM_SHUTDOWN), popMode;
+M_Application_JUNOS_MS_SQL: 'junos-ms-sql' -> type(JUNOS_MS_SQL), popMode;
+M_Application_JUNOS_MSN: 'junos-msn' -> type(JUNOS_MSN), popMode;
+M_Application_JUNOS_NBDS: 'junos-nbds' -> type(JUNOS_NBDS), popMode;
+M_Application_JUNOS_NBNAME: 'junos-nbname' -> type(JUNOS_NBNAME), popMode;
+M_Application_JUNOS_NETBIOS_SESSION: 'junos-netbios-session' -> type(JUNOS_NETBIOS_SESSION), popMode;
+M_Application_JUNOS_NFS: 'junos-nfs' -> type(JUNOS_NFS), popMode;
+M_Application_JUNOS_NFSD_TCP: 'junos-nfsd-tcp' -> type(JUNOS_NFSD_TCP), popMode;
+M_Application_JUNOS_NFSD_UDP: 'junos-nfsd-udp' -> type(JUNOS_NFSD_UDP), popMode;
+M_Application_JUNOS_NNTP: 'junos-nntp' -> type(JUNOS_NNTP), popMode;
+M_Application_JUNOS_NS_GLOBAL: 'junos-ns-global' -> type(JUNOS_NS_GLOBAL), popMode;
+M_Application_JUNOS_NS_GLOBAL_PRO: 'junos-ns-global-pro' -> type(JUNOS_NS_GLOBAL_PRO), popMode;
+M_Application_JUNOS_NSM: 'junos-nsm' -> type(JUNOS_NSM), popMode;
+M_Application_JUNOS_NTALK: 'junos-ntalk' -> type(JUNOS_NTALK), popMode;
+M_Application_JUNOS_NTP: 'junos-ntp' -> type(JUNOS_NTP), popMode;
+M_Application_JUNOS_OSPF: 'junos-ospf' -> type(JUNOS_OSPF), popMode;
+M_Application_JUNOS_PC_ANYWHERE: 'junos-pc-anywhere' -> type(JUNOS_PC_ANYWHERE), popMode;
+M_Application_JUNOS_PERSISTENT_NAT: 'junos-persistent-nat' -> type(JUNOS_PERSISTENT_NAT), popMode;
+M_Application_JUNOS_PING: 'junos-ping' -> type(JUNOS_PING), popMode;
+M_Application_JUNOS_PINGV6: 'junos-pingv6' -> type(JUNOS_PINGV6), popMode;
+M_Application_JUNOS_POP3: 'junos-pop3' -> type(JUNOS_POP3), popMode;
+M_Application_JUNOS_PPTP: 'junos-pptp' -> type(JUNOS_PPTP), popMode;
+M_Application_JUNOS_PRINTER: 'junos-printer' -> type(JUNOS_PRINTER), popMode;
+M_Application_JUNOS_R2CP: 'junos-r2cp' -> type(JUNOS_R2CP), popMode;
+M_Application_JUNOS_RADACCT: 'junos-radacct' -> type(JUNOS_RADACCT), popMode;
+M_Application_JUNOS_RADIUS: 'junos-radius' -> type(JUNOS_RADIUS), popMode;
+M_Application_JUNOS_REALAUDIO: 'junos-realaudio' -> type(JUNOS_REALAUDIO), popMode;
+M_Application_JUNOS_RIP: 'junos-rip' -> type(JUNOS_RIP), popMode;
+M_Application_JUNOS_RSH: 'junos-rsh' -> type(JUNOS_RSH), popMode;
+M_Application_JUNOS_RTSP: 'junos-rtsp' -> type(JUNOS_RTSP), popMode;
+M_Application_JUNOS_SCCP: 'junos-sccp' -> type(JUNOS_SCCP), popMode;
+M_Application_JUNOS_SCTP_ANY: 'junos-sctp-any' -> type(JUNOS_SCTP_ANY), popMode;
+M_Application_JUNOS_SIP: 'junos-sip' -> type(JUNOS_SIP), popMode;
+M_Application_JUNOS_SMB: 'junos-smb' -> type(JUNOS_SMB), popMode;
+M_Application_JUNOS_SMB_SESSION: 'junos-smb-session' -> type(JUNOS_SMB_SESSION), popMode;
+M_Application_JUNOS_SMTP: 'junos-smtp' -> type(JUNOS_SMTP), popMode;
+M_Application_JUNOS_SMTPS: 'junos-smtps' -> type(JUNOS_SMTPS), popMode;
+M_Application_JUNOS_SNMP_AGENTX: 'junos-snmp-agentx' -> type(JUNOS_SNMP_AGENTX), popMode;
+M_Application_JUNOS_SNPP: 'junos-snpp' -> type(JUNOS_SNPP), popMode;
+M_Application_JUNOS_SQL_MONITOR: 'junos-sql-monitor' -> type(JUNOS_SQL_MONITOR), popMode;
+M_Application_JUNOS_SQLNET_V1: 'junos-sqlnet-v1' -> type(JUNOS_SQLNET_V1), popMode;
+M_Application_JUNOS_SQLNET_V2: 'junos-sqlnet-v2' -> type(JUNOS_SQLNET_V2), popMode;
+M_Application_JUNOS_SSH: 'junos-ssh' -> type(JUNOS_SSH), popMode;
+M_Application_JUNOS_STUN_TCP: 'junos-stun-tcp' -> type(JUNOS_STUN_TCP), popMode;
+M_Application_JUNOS_STUN_UDP: 'junos-stun-udp' -> type(JUNOS_STUN_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_ANY_TCP: 'junos-sun-rpc-any-tcp' -> type(JUNOS_SUN_RPC_ANY_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_ANY_UDP: 'junos-sun-rpc-any-udp' -> type(JUNOS_SUN_RPC_ANY_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_MOUNTD_TCP: 'junos-sun-rpc-mountd-tcp' -> type(JUNOS_SUN_RPC_MOUNTD_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_MOUNTD_UDP: 'junos-sun-rpc-mountd-udp' -> type(JUNOS_SUN_RPC_MOUNTD_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_NFS_TCP: 'junos-sun-rpc-nfs-tcp' -> type(JUNOS_SUN_RPC_NFS_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_NFS_UDP: 'junos-sun-rpc-nfs-udp' -> type(JUNOS_SUN_RPC_NFS_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_NLOCKMGR_TCP: 'junos-sun-rpc-nlockmgr-tcp' -> type(JUNOS_SUN_RPC_NLOCKMGR_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_NLOCKMGR_UDP: 'junos-sun-rpc-nlockmgr-udp' -> type(JUNOS_SUN_RPC_NLOCKMGR_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_PORTMAP_TCP: 'junos-sun-rpc-portmap-tcp' -> type(JUNOS_SUN_RPC_PORTMAP_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_PORTMAP_UDP: 'junos-sun-rpc-portmap-udp' -> type(JUNOS_SUN_RPC_PORTMAP_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_RQUOTAD_TCP: 'junos-sun-rpc-rquotad-tcp' -> type(JUNOS_SUN_RPC_RQUOTAD_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_RQUOTAD_UDP: 'junos-sun-rpc-rquotad-udp' -> type(JUNOS_SUN_RPC_RQUOTAD_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_RUSERD_TCP: 'junos-sun-rpc-ruserd-tcp' -> type(JUNOS_SUN_RPC_RUSERD_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_RUSERD_UDP: 'junos-sun-rpc-ruserd-udp' -> type(JUNOS_SUN_RPC_RUSERD_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_SADMIND_TCP: 'junos-sun-rpc-sadmind-tcp' -> type(JUNOS_SUN_RPC_SADMIND_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_SADMIND_UDP: 'junos-sun-rpc-sadmind-udp' -> type(JUNOS_SUN_RPC_SADMIND_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_SPRAYD_TCP: 'junos-sun-rpc-sprayd-tcp' -> type(JUNOS_SUN_RPC_SPRAYD_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_SPRAYD_UDP: 'junos-sun-rpc-sprayd-udp' -> type(JUNOS_SUN_RPC_SPRAYD_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_STATUS_TCP: 'junos-sun-rpc-status-tcp' -> type(JUNOS_SUN_RPC_STATUS_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_STATUS_UDP: 'junos-sun-rpc-status-udp' -> type(JUNOS_SUN_RPC_STATUS_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_TCP: 'junos-sun-rpc-tcp' -> type(JUNOS_SUN_RPC_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_UDP: 'junos-sun-rpc-udp' -> type(JUNOS_SUN_RPC_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_WALLD_TCP: 'junos-sun-rpc-walld-tcp' -> type(JUNOS_SUN_RPC_WALLD_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_WALLD_UDP: 'junos-sun-rpc-walld-udp' -> type(JUNOS_SUN_RPC_WALLD_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_YPBIND_TCP: 'junos-sun-rpc-ypbind-tcp' -> type(JUNOS_SUN_RPC_YPBIND_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_YPBIND_UDP: 'junos-sun-rpc-ypbind-udp' -> type(JUNOS_SUN_RPC_YPBIND_UDP), popMode;
+M_Application_JUNOS_SUN_RPC_YPSERV_TCP: 'junos-sun-rpc-ypserv-tcp' -> type(JUNOS_SUN_RPC_YPSERV_TCP), popMode;
+M_Application_JUNOS_SUN_RPC_YPSERV_UDP: 'junos-sun-rpc-ypserv-udp' -> type(JUNOS_SUN_RPC_YPSERV_UDP), popMode;
+M_Application_JUNOS_SYSLOG: 'junos-syslog' -> type(JUNOS_SYSLOG), popMode;
+M_Application_JUNOS_TACACS: 'junos-tacacs' -> type(JUNOS_TACACS), popMode;
+M_Application_JUNOS_TACACS_DS: 'junos-tacacs-ds' -> type(JUNOS_TACACS_DS), popMode;
+M_Application_JUNOS_TALK: 'junos-talk' -> type(JUNOS_TALK), popMode;
+M_Application_JUNOS_TCP_ANY: 'junos-tcp-any' -> type(JUNOS_TCP_ANY), popMode;
+M_Application_JUNOS_TELNET: 'junos-telnet' -> type(JUNOS_TELNET), popMode;
+M_Application_JUNOS_TFTP: 'junos-tftp' -> type(JUNOS_TFTP), popMode;
+M_Application_JUNOS_UDP_ANY: 'junos-udp-any' -> type(JUNOS_UDP_ANY), popMode;
+M_Application_JUNOS_UUCP: 'junos-uucp' -> type(JUNOS_UUCP), popMode;
+M_Application_JUNOS_VDO_LIVE: 'junos-vdo-live' -> type(JUNOS_VDO_LIVE), popMode;
+M_Application_JUNOS_VNC: 'junos-vnc' -> type(JUNOS_VNC), popMode;
+M_Application_JUNOS_WAIS: 'junos-wais' -> type(JUNOS_WAIS), popMode;
+M_Application_JUNOS_WHO: 'junos-who' -> type(JUNOS_WHO), popMode;
+M_Application_JUNOS_WHOIS: 'junos-whois' -> type(JUNOS_WHOIS), popMode;
+M_Application_JUNOS_WINFRAME: 'junos-winframe' -> type(JUNOS_WINFRAME), popMode;
+M_Application_JUNOS_WXCONTROL: 'junos-wxcontrol' -> type(JUNOS_WXCONTROL), popMode;
+M_Application_JUNOS_X_WINDOWS: 'junos-x-windows' -> type(JUNOS_X_WINDOWS), popMode;
+M_Application_JUNOS_XNM_CLEAR_TEXT: 'junos-xnm-clear-text' -> type(JUNOS_XNM_CLEAR_TEXT), popMode;
+M_Application_JUNOS_XNM_SSL: 'junos-xnm-ssl' -> type(JUNOS_XNM_SSL), popMode;
+M_Application_JUNOS_YMSG: 'junos-ymsg' -> type(JUNOS_YMSG), popMode;
 
-M_WildcardAddress2_IP_ADDRESS
-:
-    F_IpAddress -> type ( IP_ADDRESS ) , popMode
-;
+// application-sets also included
+M_Application_JUNOS_CIFS: 'junos-cifs' -> type(JUNOS_CIFS), popMode;
+M_Application_JUNOS_MGCP: 'junos-mgcp' -> type(JUNOS_MGCP), popMode;
+M_Application_JUNOS_MS_RPC: 'junos-ms-rpc' -> type(JUNOS_MS_RPC), popMode;
+M_Application_JUNOS_MS_RPC_ANY: 'junos-ms-rpc-any' -> type(JUNOS_MS_RPC_ANY), popMode;
+M_Application_JUNOS_MS_RPC_IIS_COM: 'junos-ms-rpc-iis-com' -> type(JUNOS_MS_RPC_IIS_COM), popMode;
+M_Application_JUNOS_MS_RPC_MSEXCHANGE: 'junos-ms-rpc-msexchange' -> type(JUNOS_MS_RPC_MSEXCHANGE), popMode;
+M_Application_JUNOS_MS_RPC_WMIC: 'junos-ms-rpc-wmic' -> type(JUNOS_MS_RPC_WMIC), popMode;
+M_Application_JUNOS_ROUTING_INBOUND: 'junos-routing-inbound' -> type(JUNOS_ROUTING_INBOUND), popMode;
+M_Application_JUNOS_STUN: 'junos-stun' -> type(JUNOS_STUN), popMode;
+M_Application_JUNOS_SUN_RPC: 'junos-sun-rpc' -> type(JUNOS_SUN_RPC), popMode;
+M_Application_JUNOS_SUN_RPC_ANY: 'junos-sun-rpc-any' -> type(JUNOS_SUN_RPC_ANY), popMode;
+M_Application_JUNOS_SUN_RPC_MOUNTD: 'junos-sun-rpc-mountd' -> type(JUNOS_SUN_RPC_MOUNTD), popMode;
+M_Application_JUNOS_SUN_RPC_NFS: 'junos-sun-rpc-nfs' -> type(JUNOS_SUN_RPC_NFS), popMode;
+M_Application_JUNOS_SUN_RPC_NFS_ACCESS: 'junos-sun-rpc-nfs-access' -> type(JUNOS_SUN_RPC_NFS_ACCESS), popMode;
+M_Application_JUNOS_SUN_RPC_NLOCKMGR: 'junos-sun-rpc-nlockmgr' -> type(JUNOS_SUN_RPC_NLOCKMGR), popMode;
+M_Application_JUNOS_SUN_RPC_PORTMAP: 'junos-sun-rpc-portmap' -> type(JUNOS_SUN_RPC_PORTMAP), popMode;
+M_Application_JUNOS_SUN_RPC_RQUOTAD: 'junos-sun-rpc-rquotad' -> type(JUNOS_SUN_RPC_RQUOTAD), popMode;
+M_Application_JUNOS_SUN_RPC_RUSERD: 'junos-sun-rpc-ruserd' -> type(JUNOS_SUN_RPC_RUSERD), popMode;
+M_Application_JUNOS_SUN_RPC_SADMIND: 'junos-sun-rpc-sadmind' -> type(JUNOS_SUN_RPC_SADMIND), popMode;
+M_Application_JUNOS_SUN_RPC_SPRAYD: 'junos-sun-rpc-sprayd' -> type(JUNOS_SUN_RPC_SPRAYD), popMode;
+M_Application_JUNOS_SUN_RPC_STATUS: 'junos-sun-rpc-status' -> type(JUNOS_SUN_RPC_STATUS), popMode;
+M_Application_JUNOS_SUN_RPC_WALLD: 'junos-sun-rpc-walld' -> type(JUNOS_SUN_RPC_WALLD), popMode;
+M_Application_JUNOS_SUN_RPC_YPBIND: 'junos-sun-rpc-ypbind' -> type(JUNOS_SUN_RPC_YPBIND), popMode;
+M_Application_JUNOS_SUN_RPC_YPSERV: 'junos-sun-rpc-ypserv' -> type(JUNOS_SUN_RPC_YPSERV), popMode;
+
+M_Application_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_Application_NAME: F_Name -> type(NAME), popMode;
+M_Application_WS: F_WhitespaceChar+ -> skip;
+M_Application_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_ApplicationSet;
+M_ApplicationSet_JUNOS_CIFS: 'junos-cifs' -> type(JUNOS_CIFS), popMode;
+M_ApplicationSet_JUNOS_MGCP: 'junos-mgcp' -> type(JUNOS_MGCP), popMode;
+M_ApplicationSet_JUNOS_MS_RPC: 'junos-ms-rpc' -> type(JUNOS_MS_RPC), popMode;
+M_ApplicationSet_JUNOS_MS_RPC_ANY: 'junos-ms-rpc-any' -> type(JUNOS_MS_RPC_ANY), popMode;
+M_ApplicationSet_JUNOS_MS_RPC_IIS_COM: 'junos-ms-rpc-iis-com' -> type(JUNOS_MS_RPC_IIS_COM), popMode;
+M_ApplicationSet_JUNOS_MS_RPC_MSEXCHANGE: 'junos-ms-rpc-msexchange' -> type(JUNOS_MS_RPC_MSEXCHANGE), popMode;
+M_ApplicationSet_JUNOS_MS_RPC_WMIC: 'junos-ms-rpc-wmic' -> type(JUNOS_MS_RPC_WMIC), popMode;
+M_ApplicationSet_JUNOS_ROUTING_INBOUND: 'junos-routing-inbound' -> type(JUNOS_ROUTING_INBOUND), popMode;
+M_ApplicationSet_JUNOS_STUN: 'junos-stun' -> type(JUNOS_STUN), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC: 'junos-sun-rpc' -> type(JUNOS_SUN_RPC), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_ANY: 'junos-sun-rpc-any' -> type(JUNOS_SUN_RPC_ANY), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_MOUNTD: 'junos-sun-rpc-mountd' -> type(JUNOS_SUN_RPC_MOUNTD), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_NFS: 'junos-sun-rpc-nfs' -> type(JUNOS_SUN_RPC_NFS), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_NFS_ACCESS: 'junos-sun-rpc-nfs-access' -> type(JUNOS_SUN_RPC_NFS_ACCESS), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_NLOCKMGR: 'junos-sun-rpc-nlockmgr' -> type(JUNOS_SUN_RPC_NLOCKMGR), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_PORTMAP: 'junos-sun-rpc-portmap' -> type(JUNOS_SUN_RPC_PORTMAP), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_RQUOTAD: 'junos-sun-rpc-rquotad' -> type(JUNOS_SUN_RPC_RQUOTAD), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_RUSERD: 'junos-sun-rpc-ruserd' -> type(JUNOS_SUN_RPC_RUSERD), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_SADMIND: 'junos-sun-rpc-sadmind' -> type(JUNOS_SUN_RPC_SADMIND), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_SPRAYD: 'junos-sun-rpc-sprayd' -> type(JUNOS_SUN_RPC_SPRAYD), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_STATUS: 'junos-sun-rpc-status' -> type(JUNOS_SUN_RPC_STATUS), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_WALLD: 'junos-sun-rpc-walld' -> type(JUNOS_SUN_RPC_WALLD), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_YPBIND: 'junos-sun-rpc-ypbind' -> type(JUNOS_SUN_RPC_YPBIND), popMode;
+M_ApplicationSet_JUNOS_SUN_RPC_YPSERV: 'junos-sun-rpc-ypserv' -> type(JUNOS_SUN_RPC_YPSERV), popMode;
+
+M_ApplicationSet_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_ApplicationSet_NAME: F_Name -> type(NAME), popMode;
+M_ApplicationSet_WS: F_WhitespaceChar+ -> skip;
+M_ApplicationSet_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_SecretString;
+
+M_SecretString_QUOTED_STRING: F_DoubleQuotedString -> type(SECRET_STRING), popMode;
+M_SecretString_WORD: F_NonWhitespaceChar+ -> type(SECRET_STRING), popMode;
+
+M_SecretString_WS: F_WhitespaceChar+ -> skip;
+M_SecretString_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_AddressSpecifier;
+M_AddressSpecifier_ANY: 'any' -> type(ANY), popMode;
+M_AddressSpecifier_ANY_IPV4: 'any-ipv4' -> type(ANY_IPV4), popMode;
+M_AddressSpecifier_ANY_IPV6: 'any-ipv6' -> type(ANY_IPV6), popMode;
+M_AddressSpecifier_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_AddressSpecifier_IP_PREFIX: F_IpPrefix -> type(IP_PREFIX), popMode;
+M_AddressSpecifier_IPV6_PREFIX: F_Ipv6Prefix -> type(IPV6_PREFIX), popMode;
+M_AddressSpecifier_NAME: F_Name -> type(NAME), popMode;
+M_AddressSpecifier_WS: F_WhitespaceChar+ -> skip;
+M_AddressSpecifier_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_SourceIdentity;
+M_SourceIdentity_ANY: 'any' -> type(ANY), popMode;
+M_SourceIdentity_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_SourceIdentity_NAME: F_Name -> type(NAME), popMode;
+M_SourceIdentity_WS: F_WhitespaceChar+ -> skip;
+M_SourceIdentity_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_PrefixName;
+M_PrefixName_ROUTING_INSTANCE: 'routing-instance' -> type(ROUTING_INSTANCE), mode(M_Name);
+M_PrefixName_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_PrefixName_NAME: F_Name -> type(NAME), popMode;
+M_PrefixName_WS: F_WhitespaceChar+ -> skip;
+M_PrefixName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_CertificatesLocal;
+M_CertificatesLocal_NAME: F_Name -> type(NAME), mode(M_Certificate);
+M_CertificatesLocal_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_CertificatesLocal_WS: F_WhitespaceChar+ -> skip;
+M_CertificatesLocal_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_Certificate;
+M_Certificate_CERTIFICATE_STRING: F_CertificateString -> type(CERTIFICATE_STRING), popMode;
+M_Certificate_WS: F_WhitespaceChar+ -> skip;
+M_Certificate_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_RestOfLine;
+M_RestOfLine_WS: F_WhitespaceChar+ -> skip;
+M_RestOfLine_QUOTED_STRING: F_DoubleQuotedString -> type(IGNORED_WORD);
+M_RestOfLine_WORD: F_NonWhitespaceChar+ -> type(IGNORED_WORD);
+M_RestOfLine_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_ProxyIdentityService;
+M_ProxyIdentityService_ANY: 'any' -> type(ANY), popMode;
+M_ProxyIdentityService_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_ProxyIdentityService_NAME: F_Name -> type(NAME), popMode;
+M_ProxyIdentityService_WS: F_WhitespaceChar+ -> skip;
+M_ProxyIdentityService_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_Screen;
+M_Screen_UNTRUST_SCREEN: 'untrust-screen' -> type(UNTRUST_SCREEN), popMode;
+M_Screen_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_Screen_NAME: F_Name -> type(NAME), popMode;
+M_Screen_WS: F_WhitespaceChar+ -> skip;
+M_Screen_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_Zone;
+M_Zone_JUNOS_HOST: 'junos-host' -> type(JUNOS_HOST), popMode;
+M_Zone_TRUST: 'trust' -> type(TRUST), popMode;
+M_Zone_UNTRUST: 'untrust' -> type(UNTRUST), popMode;
+M_Zone_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_Zone_NAME: F_Name -> type(NAME), popMode;
+M_Zone_WS: F_WhitespaceChar+ -> skip;
+M_Zone_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_FabricDevice;
+M_FabricDevice_WILDCARD: F_Wildcard {setWildcard();};
+M_FabricDevice_NAME: F_Name -> type(NAME);
+M_FabricDevice_WS: F_WhitespaceChar+ -> skip;
+M_FabricDevice_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_InterfaceRoutesRibGroup;
+M_InterfaceRoutesRibGroup_INET: 'inet' -> type(INET), mode(M_Name);
+M_InterfaceRoutesRibGroup_INET6: 'inet6' -> type(INET6), mode(M_Name);
+M_InterfaceRoutesRibGroup_WS: F_WhitespaceChar+ -> skip;
+M_InterfaceRoutesRibGroup_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_IsisRibGroup;
+M_IsisRibGroup_INET: 'inet' -> type(INET), mode(M_Name);
+M_IsisRibGroup_WS: F_WhitespaceChar+ -> skip;
+M_IsisRibGroup_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_Filter;
+M_Filter_WILDCARD: F_Wildcard {setWildcard();};
+M_Filter_INPUT: 'input' -> type(INPUT);
+M_Filter_INPUT_LIST: 'input-list' -> type(INPUT_LIST);
+M_Filter_OUTPUT: 'output' -> type(OUTPUT);
+M_Filter_OUTPUT_LIST: 'output-list' -> type(OUTPUT_LIST);
+M_Filter_NAME: F_Name -> type(NAME), popMode;
+M_Filter_WS: F_WhitespaceChar+ -> skip;
+M_Filter_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_ApplyGroups;
+M_ApplyGroups_WS: F_WhitespaceChar+ -> skip;
+M_ApplyGroups_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_ApplyGroups_NODE: '"${node}"' -> type(NAME), popMode;
+M_ApplyGroups_NAME: F_Name -> type(NAME), popMode;
+
+mode M_Queue;
+M_Queue_DEC: F_Digit+ -> type(DEC), mode(M_QueueNumber);
+M_Queue_WS: F_WhitespaceChar+ -> skip;
+M_Queue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_QueueNumber;
+M_QueueNumber_PRIORITY: 'priority' -> type(PRIORITY), mode(M_QueueNumber2);
+M_QueueNumber_NAME: F_Name -> type(NAME), popMode;
+M_QueueNumber_WS: F_WhitespaceChar+ -> skip;
+M_QueueNumber_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_QueueNumber2;
+M_QueueNumber2_HIGH: 'high' -> type(HIGH), mode(M_Name);
+M_QueueNumber2_LOW: 'low' -> type(LOW), mode(M_Name);
+M_QueueNumber2_WS: F_WhitespaceChar+ -> skip;
+M_QueueNumber2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_SubRange;
+M_SubRange_WS: F_WhitespaceChar+ -> skip, mode(M_SubRange2);
+M_SubRange_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_SubRange2;
+M_SubRange2_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
+M_SubRange2_DEC: F_Digit+ -> type(DEC);
+M_SubRange2_DASH: '-' -> type(DASH);
+M_SubRange2_WS: F_WhitespaceChar+ -> skip, popMode;
+M_SubRange2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+
+mode M_Range;
+M_Range_WS: F_WhitespaceChar+ -> mode(M_Range2);
+M_Range_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_Range2;
+M_Range2_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
+M_Range2_DEC: F_Digit+ -> type(DEC);
+M_Range2_DASH: '-' -> type(DASH);
+M_Range2_COMMA: ',' -> type(COMMA);
+M_Range2_WS: F_WhitespaceChar+ -> skip, popMode;
+M_Range2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_PrefixLengthRange;
+M_PrefixLengthRange_WS: F_WhitespaceChar+ -> skip, mode(M_PrefixLengthRange2);
+M_PrefixLengthRange_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_PrefixLengthRange2;
+M_PrefixLengthRange2_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
+M_PrefixLengthRange2_DEC: F_Digit+ -> type(DEC);
+M_PrefixLengthRange2_DASH: '-' -> type(DASH);
+M_PrefixLengthRange2_FORWARD_SLASH: '/' -> type(FORWARD_SLASH);
+M_PrefixLengthRange2_WS: F_WhitespaceChar+ -> skip, popMode;
+M_PrefixLengthRange2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_PrefixLength;
+M_PrefixLength_WS: F_WhitespaceChar+ -> skip, mode(M_PrefixLength2);
+M_PrefixLength_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_PrefixLength2;
+M_PrefixLength2_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
+M_PrefixLength2_DEC: F_Digit+ -> type(DEC);
+M_PrefixLength2_FORWARD_SLASH: '/' -> type(FORWARD_SLASH);
+M_PrefixLength2_WS: F_WhitespaceChar+ -> skip, popMode;
+M_PrefixLength2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_MacAddressAndLength;
+M_MacAddressAndLength_WS: F_WhitespaceChar+ -> skip, mode(M_MacAddressAndLength2);
+M_MacAddressAndLength_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_MacAddressAndLength2;
+M_MacAddressAndLength2_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
+M_MacAddressAndLength2_DEC: F_Digit+ -> type(DEC);
+M_MacAddressAndLength2_MAC_ADDESS: F_MacAddress -> type(MAC_ADDRESS);
+M_MacAddressAndLength2_FORWARD_SLASH: '/' -> type(FORWARD_SLASH);
+M_MacAddressAndLength2_WS: F_WhitespaceChar+ -> skip, popMode;
+M_MacAddressAndLength2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_AsPathExpr;
+M_AsPathExpr_WS: F_WhitespaceChar+ -> skip, mode(M_AsPathExpr2);
+M_AsPathExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_AsPathExpr2;
+M_AsPathExpr2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathExpr2_WS: F_WhitespaceChar+ -> skip, popMode;
+M_AsPathExpr2_UINT8: F_Uint8 -> type(UINT8);
+M_AsPathExpr2_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathExpr2_UINT32: F_Uint32 -> type(UINT32);
+M_AsPathExpr2_PERIOD: '.' -> type(PERIOD);
+M_AsPathExpr2_DOUBLE_QUOTE: '"' -> skip, mode(M_AsPathExprQuoted);
+
+mode M_AsPathExprQuoted;
+M_AsPathExprQuoted_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathExprQuoted_WS: F_WhitespaceChar+ -> skip;
+M_AsPathExprQuoted_DOUBLE_QUOTE: '"' -> skip, popMode;
+M_AsPathExprQuoted_UINT8: F_Uint8 -> type(UINT8);
+M_AsPathExprQuoted_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathExprQuoted_UINT32: F_Uint32 -> type(UINT32);
+M_AsPathExprQuoted_PERIOD: '.' -> type(PERIOD);
+M_AsPathExprQuoted_OPEN_BRACKET: '[' -> type(OPEN_BRACKET);
+M_AsPathExprQuoted_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET);
+
+mode M_Port;
+M_Port_WS: F_WhitespaceChar+ -> skip;
+M_Port_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Port_UINT8: F_Uint8 -> type(UINT8);
+M_Port_UINT16: F_Uint16 -> type(UINT16);
+M_Port_DASH: '-' -> type(DASH);
+
+// Not a range. We can continue in default mode since words need not be broken up.
+M_Port_NON_RANGE: [A-Za-z]+ {less();} -> popMode;
