@@ -10,8 +10,8 @@ o_area
 :
    AREA
    (
-      area_int = dec
-      | area_ip = IP_ADDRESS
+      area_int = uint32
+      | area_ip = ip_address
       | wildcard
    )
    (
@@ -53,7 +53,7 @@ o_enable
 
 o_export
 :
-   EXPORT name = variable
+   EXPORT expr = policy_expression
 ;
 
 o_external_preference
@@ -63,7 +63,7 @@ o_external_preference
 
 o_import
 :
-   IMPORT name = variable
+   IMPORT expr = policy_expression
 ;
 
 o_no_active_backbone
@@ -89,7 +89,7 @@ o_reference_bandwidth
 
 o_rib_group
 :
-   RIB_GROUP name = variable
+   RIB_GROUP name = junos_name
 ;
 
 o_traffic_engineering
@@ -106,8 +106,8 @@ oa_area_range
 :
    AREA_RANGE
    (
-      IP_PREFIX
-      | IPV6_PREFIX
+      ip_prefix
+      | ipv6_prefix
    )
    (
       apply
@@ -125,7 +125,7 @@ oa_interface
    (
       ALL
       | id = interface_id
-      | ip = IP_ADDRESS
+      | ip = ip_address
       | wildcard
    )
    (
@@ -148,7 +148,7 @@ oa_interface
 
 oa_label_switched_path
 :
-   LABEL_SWITCHED_PATH name = variable
+   LABEL_SWITCHED_PATH name = junos_name
    (
       apply
       | oal_metric
@@ -249,7 +249,7 @@ oai_metric
 
 oai_neighbor
 :
-   NEIGHBOR IP_ADDRESS ELIGIBLE?
+   NEIGHBOR ip_address ELIGIBLE?
 ;
 
 oai_null

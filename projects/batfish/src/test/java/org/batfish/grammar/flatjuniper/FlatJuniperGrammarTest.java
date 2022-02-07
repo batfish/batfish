@@ -205,6 +205,7 @@ import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -273,6 +274,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -353,6 +355,12 @@ import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DscpUtil;
+import org.batfish.representation.juniper.FirewallFilter;
+import org.batfish.representation.juniper.FwFrom;
+import org.batfish.representation.juniper.FwFromDestinationPort;
+import org.batfish.representation.juniper.FwFromPort;
+import org.batfish.representation.juniper.FwFromSourcePort;
+import org.batfish.representation.juniper.FwTerm;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -6630,5 +6638,79 @@ public final class FlatJuniperGrammarTest {
             filename, CLASS_OF_SERVICE_CODE_POINT_ALIAS, "my1", contains(4)));
 
     assertThat(ccae, hasNumReferrers(filename, CLASS_OF_SERVICE_CODE_POINT_ALIAS, "my1", 1));
+  }
+
+  @Test
+  public void testFirewallFilterFromExtraction() {
+    String hostname = "firewall-filter-from-port";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasEntry(equalTo("f1"), instanceOf(ConcreteFirewallFilter.class)));
+
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("f1");
+
+    assertThat(filter.getTerms(), hasKeys("t1"));
+
+    FwTerm term = filter.getTerms().get("t1");
+
+    Iterator<FwFrom> i = term.getFroms().iterator();
+    assertTrue(i.hasNext());
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromPort.class));
+      FwFromPort fromPort = (FwFromPort) from;
+      assertThat(fromPort.getPortRange(), equalTo(SubRange.singleton(NamedPort.BGP.number())));
+    }
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromPort.class));
+      FwFromPort fromPort = (FwFromPort) from;
+      // leading zeros should be ignored
+      assertThat(fromPort.getPortRange(), equalTo(SubRange.singleton(100)));
+    }
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromPort.class));
+      FwFromPort fromPort = (FwFromPort) from;
+      assertThat(fromPort.getPortRange(), equalTo(new SubRange(1000, 2000)));
+    }
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromDestinationPort.class));
+      FwFromDestinationPort fromPort = (FwFromDestinationPort) from;
+      assertThat(fromPort.getPortRange(), equalTo(SubRange.singleton(NamedPort.BGP.number())));
+    }
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromDestinationPort.class));
+      FwFromDestinationPort fromPort = (FwFromDestinationPort) from;
+      assertThat(fromPort.getPortRange(), equalTo(SubRange.singleton(100)));
+    }
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromDestinationPort.class));
+      FwFromDestinationPort fromPort = (FwFromDestinationPort) from;
+      assertThat(fromPort.getPortRange(), equalTo(new SubRange(1000, 2000)));
+    }
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromSourcePort.class));
+      FwFromSourcePort fromPort = (FwFromSourcePort) from;
+      assertThat(fromPort.getPortRange(), equalTo(SubRange.singleton(NamedPort.BGP.number())));
+    }
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromSourcePort.class));
+      FwFromSourcePort fromPort = (FwFromSourcePort) from;
+      assertThat(fromPort.getPortRange(), equalTo(SubRange.singleton(100)));
+    }
+    {
+      FwFrom from = i.next();
+      assertThat(from, instanceOf(FwFromSourcePort.class));
+      FwFromSourcePort fromPort = (FwFromSourcePort) from;
+      assertThat(fromPort.getPortRange(), equalTo(new SubRange(1000, 2000)));
+    }
+    assertFalse(i.hasNext());
   }
 }

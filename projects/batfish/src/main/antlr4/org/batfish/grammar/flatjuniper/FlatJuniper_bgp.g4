@@ -33,20 +33,20 @@ b_authentication_algorithm
 
 b_authentication_key
 :
-   AUTHENTICATION_KEY key = string
+   AUTHENTICATION_KEY key = secret_string
 ;
 
 b_authentication_key_chain
 :
-   AUTHENTICATION_KEY_CHAIN name = string
+   AUTHENTICATION_KEY_CHAIN name = junos_name
 ;
 
 b_allow
 :
    ALLOW
    (
-      IP_PREFIX
-      | IPV6_PREFIX
+      ip_prefix
+      | ipv6_prefix
       | ALL
    )
 ;
@@ -58,7 +58,7 @@ b_as_override
 
 b_cluster
 :
-   CLUSTER id = IP_ADDRESS
+   CLUSTER id = ip_address
 ;
 
 b_common
@@ -148,7 +148,7 @@ b_family
 
 b_group
 :
-   GROUP name = variable
+   GROUP name = junos_name
    (
       b_common
       | b_neighbor
@@ -165,8 +165,8 @@ b_local_address
 :
    LOCAL_ADDRESS
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
+      ip_address
+      | ipv6_address
    )?
 ;
 
@@ -194,8 +194,8 @@ b_neighbor
 :
    NEIGHBOR
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
+      ip_address
+      | ipv6_address
       | wildcard
    ) b_common
 ;
@@ -413,7 +413,7 @@ bfiu_prefix_limit
 
 bfiu_rib_group
 :
-   RIB_GROUP name = variable
+   RIB_GROUP name = junos_name
 ;
 
 bfiua_receive
@@ -437,7 +437,7 @@ bfiuas_path_count
 
 bfiuas_prefix_policy
 :
-   PREFIX_POLICY policy = variable
+   PREFIX_POLICY policy = junos_name
 ;
 
 bl_alias

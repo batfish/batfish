@@ -34,12 +34,12 @@ apply
 
 apply_groups
 :
-  APPLY_GROUPS name = variable
+  APPLY_GROUPS name = junos_name
 ;
 
 apply_groups_except
 :
-  APPLY_GROUPS_EXCEPT name = variable
+  APPLY_GROUPS_EXCEPT name = junos_name
 ;
 
 as_path_expr
@@ -170,11 +170,7 @@ icmp6_only_type
 ;
 
 
-interface_id
-:
-   (node=variable COLON)? name = INTERFACE_NAME (COLON chnl=dec)? (PERIOD unit = dec)?
-;
-
+interface_id: INTERFACE_ID;
 
 ip_option
 :
@@ -188,7 +184,17 @@ ip_option
   | TIMESTAMP
 ;
 
+ip_address: IP_ADDRESS;
+
+ip_address_and_mask: IP_ADDRESS_AND_MASK;
+
 ip_prefix: IP_PREFIX;
+
+ipv6_address: IPV6_ADDRESS;
+
+ipv6_prefix: IPV6_PREFIX;
+
+iso_address: ISO_ADDRESS;
 
 ip_protocol
 :
@@ -433,7 +439,39 @@ junos_application_set
 junos_name
 :
   NAME
-  | DOUBLE_QUOTED_NAME
+  | WILDCARD
+;
+
+junos_name_list
+:
+  junos_name
+  | OPEN_BRACKET junos_name* CLOSE_BRACKET
+;
+
+filter_name
+:
+  junos_name
+  // Edge-cases due to language ambiguity
+  | INPUT
+  | OUTPUT
+;
+
+name_or_ip
+:
+  junos_name
+  | IP_ADDRESS
+  | IPV6_ADDRESS
+;
+
+secret_string
+:
+  SECRET_STRING
+  | SCRUBBED
+;
+
+certificate_string
+:
+  CERTIFICATE_STRING
 ;
 
 null_filler
@@ -474,10 +512,22 @@ policy_expression
   pe_conjunction
   | pe_disjunction
   | pe_nested
-  | variable
+  | junos_name
 ;
 
 port
+:
+  port_number
+  | named_port
+;
+
+port_range
+:
+  named = named_port
+  | start = port_number (DASH end = port_number)?
+;
+
+named_port
 :
   AFS
   | BGP
@@ -486,7 +536,6 @@ port
   | BOOTPS
   | CMD
   | CVSPSERVER
-  | dec
   | DHCP
   | DOMAIN
   | EKLOGIN
@@ -543,27 +592,10 @@ port
   | XDMCP
 ;
 
-proposal_list
+port_number
 :
-  (
-    proposal
-    |
-    (
-      OPEN_BRACKET
-        (
-          proposal
-        )*
-      CLOSE_BRACKET
-    )
-  )
-;
-
-proposal
-:
-  ~(
-     CLOSE_BRACKET
-     | NEWLINE
-   )
+  // 1-65535
+  uint16
 ;
 
 range
@@ -597,22 +629,10 @@ sc_named
   | NO_EXPORT_SUBCONFED
 ;
 
-secret
-:
-  DOUBLE_QUOTED_STRING
-  | SCRUBBED
-;
-
 standard_community
 :
   sc_literal
   | sc_named
-;
-
-string
-:
-  DOUBLE_QUOTED_STRING
-  | variable
 ;
 
 subrange
@@ -646,29 +666,8 @@ uint32
   | UINT32
 ;
 
-variable
-:
-  text = ~( APPLY_GROUPS | APPLY_GROUPS_EXCEPT | APPLY_PATH | NEWLINE |
-  OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE )
-;
-
-variable_permissive
-:
-  ~NEWLINE+
-;
-
-variable_policy
-:
-  text = ~( DESCRIPTION | MATCH | THEN )+
-;
-
 wildcard
 :
   WILDCARD
   | WILDCARD_ARTIFACT
-;
-
-wildcard_address
-:
-  ip_address = IP_ADDRESS FORWARD_SLASH wildcard_mask = IP_ADDRESS
 ;

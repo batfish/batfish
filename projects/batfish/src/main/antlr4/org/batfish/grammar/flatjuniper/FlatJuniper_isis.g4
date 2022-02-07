@@ -14,10 +14,7 @@ hello_authentication_type
 
 is_export
 :
-  EXPORT
-  (
-    policies += variable
-  )+
+  EXPORT expr = policy_expression
 ;
 
 is_interface
@@ -89,7 +86,7 @@ is_reference_bandwidth
 
 is_rib_group
 :
-  RIB_GROUP INET name = variable
+  RIB_GROUP INET name = junos_name
 ;
 
 is_traffic_engineering
@@ -170,7 +167,7 @@ isil_disable
 
 isil_hello_authentication_key
 :
-  HELLO_AUTHENTICATION_KEY key = string
+  HELLO_AUTHENTICATION_KEY key = secret_string
 ;
 
 isil_hello_authentication_type

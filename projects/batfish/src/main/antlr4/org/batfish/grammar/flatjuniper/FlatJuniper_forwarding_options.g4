@@ -43,7 +43,7 @@ fo_null
 
 fod_active_server_group
 :
-   ACTIVE_SERVER_GROUP name = variable
+   ACTIVE_SERVER_GROUP name = junos_name
 ;
 
 fod_common
@@ -53,7 +53,7 @@ fod_common
 
 fod_group
 :
-   GROUP name = variable
+   GROUP name = junos_name
    (
       fod_common
       | fodg_interface
@@ -71,7 +71,7 @@ fod_null
 
 fod_server_group
 :
-   SERVER_GROUP name = variable address = IP_ADDRESS
+   SERVER_GROUP name = junos_name address = ip_address
 ;
 
 fodg_interface
@@ -144,7 +144,7 @@ fohb_server_null
       | IP_ADDRESS
    )
    (
-      ROUTING_INSTANCE ri = variable
+      ROUTING_INSTANCE ri = junos_name
    )?
 ;
 

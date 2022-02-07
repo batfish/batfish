@@ -115,7 +115,7 @@ s_groups
 
 s_groups_named
 :
-   name = variable s_groups_tail
+   name = junos_name s_groups_tail
 ;
 
 s_groups_tail
@@ -127,7 +127,7 @@ s_groups_tail
 
 s_logical_systems
 :
-   LOGICAL_SYSTEMS name = variable s_logical_systems_tail
+   LOGICAL_SYSTEMS name = junos_name s_logical_systems_tail
 ;
 
 s_logical_systems_tail
@@ -169,7 +169,7 @@ s_vlans
 
 s_vlans_named
 :
-  name = variable
+  name = junos_name
   (
     apply
     | vlt_description
@@ -203,7 +203,7 @@ vlt_filter
    (
       INPUT
       | OUTPUT
-   ) name = variable
+   ) name = filter_name
 ;
 
 vlt_interface

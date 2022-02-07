@@ -21,7 +21,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_dstContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_srcContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.hierarchical.StatementTree;
@@ -178,24 +177,6 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void enterInterface_id(Interface_idContext ctx) {
-    if (_enablePathRecording && (ctx.unit != null || ctx.chnl != null || ctx.node != null)) {
-      _enablePathRecording = false;
-      _reenablePathRecording = true;
-      String text = ctx.getText();
-      _words.add(text);
-    }
-  }
-
-  @Override
-  public void exitInterface_id(Interface_idContext ctx) {
-    if (_reenablePathRecording) {
-      _enablePathRecording = true;
-      _reenablePathRecording = false;
-    }
-  }
-
-  @Override
   public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
     if (!_dirty) {
       return;
@@ -313,7 +294,6 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
   private Insert_lineContext _currentInsert;
   private boolean _dirty;
   private boolean _enablePathRecording;
-  private boolean _reenablePathRecording;
   private final @Nonnull StatementTree _statementTree;
   private List<String> _words;
   private List<String> _insertSrcWords;

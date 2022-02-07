@@ -19,17 +19,17 @@ metric_expression
 
 po_as_path
 :
-   AS_PATH name = variable regex = AS_PATH_REGEX
+   AS_PATH name = junos_name regex = AS_PATH_REGEX
 ;
 
 po_as_path_group
 :
-  AS_PATH_GROUP name = variable poapg_as_path
+  AS_PATH_GROUP name = junos_name poapg_as_path
 ;
 
 po_community
 :
-   COMMUNITY name = variable
+   COMMUNITY name = junos_name
    (
       poc_invert_match
       | poc_members
@@ -56,11 +56,11 @@ pocond_if_route_exists
 
 pocondi_prefix: prefix=ip_prefix;
 
-pocondi_table: TABLE name=variable;
+pocondi_table: TABLE name = junos_name;
 
 po_policy_statement
 :
-   POLICY_STATEMENT name = variable
+   POLICY_STATEMENT name = junos_name
    (
       pops_term
       | pops_common
@@ -69,7 +69,7 @@ po_policy_statement
 
 po_prefix_list
 :
-   PREFIX_LIST name = variable
+   PREFIX_LIST (name = junos_name | wildcard)
    (
       apply
       | poplt_apply_path
@@ -80,7 +80,7 @@ po_prefix_list
 
 poapg_as_path
 :
-  AS_PATH name = variable regex = AS_PATH_REGEX
+  AS_PATH name = junos_name regex = AS_PATH_REGEX
 ;
 
 poc_invert_match
@@ -116,12 +116,12 @@ poplt_ip6
 
 poplt_network
 :
-   network = IP_PREFIX
+   network = ip_prefix
 ;
 
 poplt_network6
 :
-   network = IPV6_PREFIX
+   network = ipv6_prefix
 ;
 
 pops_common
@@ -190,13 +190,13 @@ popsf_as_path
 :
    AS_PATH
    (
-      name = variable
+      name = junos_name
    )?
 ;
 
 popsf_as_path_group
 :
-   AS_PATH_GROUP name = variable
+   AS_PATH_GROUP name = junos_name
 ;
 
 popsf_color
@@ -206,7 +206,7 @@ popsf_color
 
 popsf_community
 :
-   COMMUNITY name = variable
+   COMMUNITY name = junos_name
 ;
 
 popsf_condition: CONDITION name = junos_name;
@@ -232,7 +232,7 @@ popsf_family
 
 popsf_instance
 :
-   INSTANCE name = variable
+   INSTANCE name = junos_name
 ;
 
 popsf_interface
@@ -284,12 +284,12 @@ popsf_policy
 
 popsf_prefix_list
 :
-   PREFIX_LIST name = variable
+   PREFIX_LIST name = junos_name
 ;
 
 popsf_prefix_list_filter
 :
-   PREFIX_LIST_FILTER name = variable
+   PREFIX_LIST_FILTER name = junos_name
    (
       popsfpl_exact
       | popsfpl_longer
@@ -318,15 +318,15 @@ popsf_protocol
 
 popsf_rib
 :
-   RIB name = variable
+   RIB name = junos_name
 ;
 
 popsf_route_filter
 :
    ROUTE_FILTER
    (
-      IP_PREFIX
-      | IPV6_PREFIX
+      ip_prefix
+      | ipv6_prefix
    ) popsfrf_common then = popsfrf_then?
 ;
 
@@ -383,8 +383,8 @@ popsfrf_address_mask
 :
    ADDRESS_MASK
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
+      ip_address
+      | ipv6_address
    )
 ;
 
@@ -417,8 +417,8 @@ popsfrf_through
 :
    THROUGH
    (
-      IP_PREFIX
-      | IPV6_PREFIX
+      ip_prefix
+      | ipv6_prefix
    )
 ;
 
@@ -496,22 +496,22 @@ popst_common
 
 popst_community_add
 :
-   COMMUNITY ADD name = variable
+   COMMUNITY ADD name = junos_name
 ;
 
 popst_community_delete
 :
-   COMMUNITY DELETE name = variable
+   COMMUNITY DELETE name = junos_name
 ;
 
 popst_community_set
 :
-   COMMUNITY SET name = variable
+   COMMUNITY SET name = junos_name
 ;
 
 popst_cos_next_hop_map
 :
-   COS_NEXT_HOP_MAP name = variable
+   COS_NEXT_HOP_MAP name = junos_name
 ;
 
 popst_default_action_accept
@@ -531,7 +531,7 @@ popst_external
 
 popst_forwarding_class
 :
-   FORWARDING_CLASS variable
+   FORWARDING_CLASS junos_name
 ;
 
 popst_install_nexthop
@@ -602,12 +602,12 @@ popstnh_discard
 
 popstnh_ipv4
 :
-   addr = IP_ADDRESS
+   addr = ip_address
 ;
 
 popstnh_ipv6
 :
-   addr6 = IPV6_ADDRESS
+   addr6 = ipv6_address
 ;
 
 popstnh_peer_address
@@ -681,7 +681,7 @@ popsto_level
 
 popsto_rib
 :
-   RIB variable
+   RIB junos_name
 ;
 
 s_policy_options

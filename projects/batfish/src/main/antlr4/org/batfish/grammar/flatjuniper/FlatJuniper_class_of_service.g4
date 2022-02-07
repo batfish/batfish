@@ -13,7 +13,7 @@ s_class_of_service
 
 scos_code_point_aliases
 :
-    CODE_POINT_ALIASES DSCP name = variable dec
+    CODE_POINT_ALIASES DSCP name = junos_name dec
 ;
 
 scos_null

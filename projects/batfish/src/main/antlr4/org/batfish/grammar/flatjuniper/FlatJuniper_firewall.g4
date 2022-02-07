@@ -28,7 +28,7 @@ f_family
 
 f_filter
 :
-   FILTER name = variable
+   FILTER name = filter_name
    (
       apply
       | ff_interface_specific
@@ -84,12 +84,14 @@ fft_from
       | fftf_null
       | fftf_packet_length
       | fftf_port
+      | fftf_port_except
       | fftf_precedence
       | fftf_prefix_list
       | fftf_protocol
       | fftf_source_address
       | fftf_source_mac_address
       | fftf_source_port
+      | fftf_source_port_except
       | fftf_source_prefix_list
       | fftf_tcp_established
       | fftf_tcp_flags
@@ -116,9 +118,9 @@ fft_then
 
 fftfa_address_mask_prefix
 :
-    ip_address = IP_ADDRESS (FORWARD_SLASH wildcard_mask = IP_ADDRESS)?
-    | IP_PREFIX
-
+   ip = ip_address
+   | ip_and_mask = ip_address_and_mask
+   | prefix = ip_prefix
 ;
 
 fftf_address
@@ -141,32 +143,18 @@ fftf_destination_address
    ) EXCEPT?
 ;
 
-fftf_destination_port
-:
-   DESTINATION_PORT
-   (
-      port
-      | range
-   )
-;
+fftf_destination_port: DESTINATION_PORT port_range;
 
-fftf_destination_port_except
-:
-   DESTINATION_PORT_EXCEPT
-   (
-      port
-      | range
-   )
-;
+fftf_destination_port_except: DESTINATION_PORT_EXCEPT port_range;
 
 fftf_destination_prefix_list
 :
-   DESTINATION_PREFIX_LIST name = variable EXCEPT?
+   DESTINATION_PREFIX_LIST name = junos_name EXCEPT?
 ;
 
 fftf_dscp
 :
-   DSCP variable
+   DSCP name = junos_name
 ;
 
 fftf_exp
@@ -186,7 +174,7 @@ fftf_first_fragment
 
 fftf_forwarding_class
 :
-   FORWARDING_CLASS variable
+   FORWARDING_CLASS name = junos_name
 ;
 
 fftf_fragment_offset
@@ -261,14 +249,9 @@ fftf_packet_length_except
    PACKET_LENGTH_EXCEPT range
 ;
 
-fftf_port
-:
-   PORT
-   (
-      port
-      | range
-   )
-;
+fftf_port: PORT port_range;
+
+fftf_port_except: PORT_EXCEPT port_range;
 
 fftf_precedence
 :
@@ -277,7 +260,7 @@ fftf_precedence
 
 fftf_prefix_list
 :
-   PREFIX_LIST name = variable
+   PREFIX_LIST name = junos_name
 ;
 
 fftf_protocol
@@ -300,18 +283,13 @@ fftf_source_mac_address
    SOURCE_MAC_ADDRESS address = MAC_ADDRESS FORWARD_SLASH length = dec
 ;
 
-fftf_source_port
-:
-   SOURCE_PORT
-   (
-      port
-      | range
-   )
-;
+fftf_source_port: SOURCE_PORT port_range;
+
+fftf_source_port_except: SOURCE_PORT_EXCEPT port_range;
 
 fftf_source_prefix_list
 :
-   SOURCE_PREFIX_LIST name = variable EXCEPT?
+   SOURCE_PREFIX_LIST name = junos_name EXCEPT?
 ;
 
 fftf_tcp_established
@@ -331,7 +309,7 @@ fftf_tcp_initial
 
 fftf_vlan
 :
-   VLAN name = variable
+   VLAN name = junos_name
 ;
 
 fftt_accept
@@ -359,8 +337,8 @@ fftt_next_ip
 :
    NEXT_IP
    (
-      ip = IP_ADDRESS
-      | prefix = IP_PREFIX
+      ip = ip_address
+      | prefix = ip_prefix
    )
 ;
 
@@ -395,7 +373,7 @@ fftt_reject
 
 fftt_routing_instance
 :
-   ROUTING_INSTANCE name = variable
+   ROUTING_INSTANCE name = junos_name
 ;
 
 s_firewall
