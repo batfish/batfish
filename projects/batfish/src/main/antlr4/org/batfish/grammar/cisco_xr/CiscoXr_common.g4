@@ -112,12 +112,12 @@ address_family_footer
 
 asn_dotted
 :
-  uint_legacy PERIOD uint_legacy
+  uint16 PERIOD uint16
 ;
 
 bgp_asn
 :
-    asn = uint_legacy
+    asn = uint32
     | asn4b = asn_dotted
 ;
 

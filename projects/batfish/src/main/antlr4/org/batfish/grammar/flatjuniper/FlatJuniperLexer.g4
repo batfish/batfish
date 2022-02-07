@@ -3693,9 +3693,19 @@ M_AsPathPrepend2_WS: F_WhitespaceChar+ -> skip, popMode;
 
 mode M_AsPathPrepend_Inner;
 
-M_AsPathPrepend_Inner_DEC
+M_AsPathPrepend_Inner_UINT8
 :
-   F_Digit+ -> type ( DEC )
+   F_Uint8 -> type ( UINT8 )
+;
+
+M_AsPathPrepend_Inner_UINT16
+:
+   F_Uint16 -> type ( UINT16 )
+;
+
+M_AsPathPrepend_Inner_UINT32
+:
+   F_Uint32 -> type ( UINT32 )
 ;
 
 M_AsPathPrepend_Inner_DOUBLE_QUOTE

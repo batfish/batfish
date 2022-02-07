@@ -120,7 +120,6 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOUR
 import static org.batfish.representation.juniper.Nat.Type.SOURCE;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -662,6 +661,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
@@ -1794,32 +1794,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return null;
   }
 
-  @VisibleForTesting
-  long sanitizeAsn(long asn, int bytes, ParserRuleContext ctx) {
-    long mask;
-    if (bytes == 2) {
-      mask = 0xFFFF;
-    } else {
-      assert bytes == 4;
-      mask = 0xFFFFFFFF;
-    }
-    if ((asn & mask) != asn) {
-      _w.addWarning(
-          ctx,
-          ctx.getText(),
-          _parser,
-          String.format("AS number %s is out of the legal %s-byte AS range", asn, bytes));
-      return 0;
-    }
-    return asn;
-  }
-
   private long toAsNum(Bgp_asnContext ctx) {
     if (ctx.asn != null) {
-      return sanitizeAsn(toLong(ctx.asn), 4, ctx);
+      return toLong(ctx.asn);
     } else {
-      long hi = sanitizeAsn(toLong(ctx.asn4hi), 2, ctx);
-      long lo = sanitizeAsn(toLong(ctx.asn4lo), 2, ctx);
+      assert ctx.asn4hi != null;
+      long hi = toLong(ctx.asn4hi);
+      long lo = toLong(ctx.asn4lo);
       return (hi << 16) + lo;
     }
   }
@@ -1852,6 +1833,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
+  private static long toLong(Uint16Context ctx) {
     return Long.parseLong(ctx.getText());
   }
 
