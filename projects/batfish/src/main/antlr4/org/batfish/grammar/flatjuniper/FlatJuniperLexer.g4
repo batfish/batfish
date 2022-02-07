@@ -3425,9 +3425,19 @@ M_AsPath_WS
 
 mode M_AsPathPath;
 
-M_AsPathPath_DEC
+M_AsPathPath_UINT8
 :
-   F_Digit+ -> type ( DEC ) , popMode
+   F_Uint8 -> type ( UINT8 ) , popMode
+;
+
+M_AsPathPath_UINT16
+:
+   F_Uint16 -> type ( UINT16 ) , popMode
+;
+
+M_AsPathPath_UINT32
+:
+   F_Uint32 -> type ( UINT32 ) , popMode
 ;
 
 M_AsPathPath_DOUBLE_QUOTE
@@ -3442,9 +3452,19 @@ M_AsPathPath_WS
 
 mode M_AsPathExpr;
 
-M_AsPathExpr_DEC
+M_AsPathExpr_UINT8
 :
-   F_Digit+ -> type ( DEC )
+   F_Uint8 -> type ( UINT8 )
+;
+
+M_AsPathExpr_UINT16
+:
+   F_Uint16 -> type ( UINT16 )
+;
+
+M_AsPathExpr_UINT32
+:
+   F_Uint32 -> type ( UINT32 )
 ;
 
 M_AsPathExpr_PERIOD
@@ -3530,9 +3550,19 @@ M_AsPathGroup3_NAME
 
 mode M_AsPathPrepend;
 
-M_AsPathPrepend_DEC
+M_AsPathPrepend_UINT8
 :
-   F_Digit+ -> type ( DEC ) , popMode
+   F_Uint8 -> type ( UINT8 ) , popMode
+;
+
+M_AsPathPrepend_UINT16
+:
+   F_Uint16 -> type ( UINT16 ) , popMode
+;
+
+M_AsPathPrepend_UINT32
+:
+   F_Uint32 -> type ( UINT32 ) , popMode
 ;
 
 M_AsPathPrepend_DOUBLE_QUOTE
@@ -3547,9 +3577,19 @@ M_AsPathPrepend_WS
 
 mode M_AsPathPrepend_Inner;
 
-M_AsPathPrepend_Inner_DEC
+M_AsPathPrepend_Inner_UINT8
 :
-   F_Digit+ -> type ( DEC )
+   F_Uint8 -> type ( UINT8 )
+;
+
+M_AsPathPrepend_Inner_UINT16
+:
+   F_Uint16 -> type ( UINT16 )
+;
+
+M_AsPathPrepend_Inner_UINT32
+:
+   F_Uint32 -> type ( UINT32 )
 ;
 
 M_AsPathPrepend_Inner_DOUBLE_QUOTE

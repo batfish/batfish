@@ -23,6 +23,7 @@ public class RouteMapSetExcludeAsPathTest {
         contains(
             new ExcludeAsPath(
                 new LiteralAsList(
-                    ImmutableList.of(new ExplicitAs(1), new ExplicitAs(2), new ExplicitAs(3))))));
+                    ImmutableList.of(
+                        new ExplicitAs(1L), new ExplicitAs(2L), new ExplicitAs(3L))))));
   }
 }
