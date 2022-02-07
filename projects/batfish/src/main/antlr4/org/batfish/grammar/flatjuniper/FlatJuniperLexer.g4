@@ -3511,7 +3511,7 @@ F_Uint8
   '0'*
   (
     F_Digit
-    | '0'* F_PositiveDigit F_Digit
+    | F_PositiveDigit F_Digit
     | '1' F_Digit F_Digit
     | '2' [0-4] F_Digit
     | '25' [0-5]
