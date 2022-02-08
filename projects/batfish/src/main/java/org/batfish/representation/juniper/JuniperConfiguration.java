@@ -431,7 +431,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
-    String vrfName = routingInstance.getName();
     int ebgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
     int ibgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
     BgpProcess proc =
