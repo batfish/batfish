@@ -344,7 +344,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Maximum IS-IS route cost if wide-metrics-only is not set */
   @VisibleForTesting static final int MAX_ISIS_COST_WITHOUT_WIDE_METRICS = 63;
 
-  @VisibleForTesting static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
+  private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
   private static String communityRegexToJavaRegex(String regex) {
     String out = regex;
