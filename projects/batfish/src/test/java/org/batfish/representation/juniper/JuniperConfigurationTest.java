@@ -11,10 +11,11 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_HE
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NBMA_DEAD_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NBMA_HELLO_INTERVAL;
-import static org.batfish.representation.juniper.JuniperConfiguration.FIRST_LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
 import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
+import static org.batfish.representation.juniper.JuniperConfiguration.getDefaultSourceAddress;
+import static org.batfish.representation.juniper.JuniperConfiguration.getPrimaryInterface;
 import static org.batfish.representation.juniper.JuniperConfiguration.getRouterId;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAccessListLines;
@@ -45,6 +46,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -877,57 +879,103 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testInferBgpLocalIp_lo0() {
-    // we are not adding any interfaces to vs._c, so all test cases below hit the l0-based inference
-
+  public void testGetDefaultSourceAddress() {
     {
-      // lo0 does not exist
-      JuniperConfiguration vsC = createConfig();
-      vsC.getMasterLogicalSystem().setDefaultAddressSelection(true);
-      assertThat(
-          vsC.inferBgpLocalIp(Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.1/31")),
-          nullValue());
+      // neither lo0 nor primary exists
+      assertThat(getDefaultSourceAddress(new RoutingInstance("ri")), equalTo(Optional.empty()));
     }
 
     {
-      // lo0 with legal (not 127.0.0.1) address
+      // when both lo0 and primary are present
       JuniperConfiguration vsC = createConfig();
-      vsC.getMasterLogicalSystem().setDefaultAddressSelection(true);
 
-      Interface lo0 = new Interface(FIRST_LOOPBACK_INTERFACE_NAME);
-      lo0.setRoutingInstance(vsC.getMasterLogicalSystem().getDefaultRoutingInstance());
+      Interface lo0 = new Interface("lo0.0");
+      Interface em0 = new Interface("em0.0");
+      em0.setPrimary(true);
+      em0.setPrimaryAddress(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(lo0.getName(), lo0);
+      ri.getInterfaces().put(em0.getName(), em0);
+
+      // l0 has legal (not 127.0.0.1) address
       lo0.setPrimaryAddress(ConcreteInterfaceAddress.parse("192.168.1.1/32"));
-      vsC.getMasterLogicalSystem()
-          .getDefaultRoutingInstance()
-          .getInterfaces()
-          .put(lo0.getName(), lo0);
+      assertThat(getDefaultSourceAddress(ri), equalTo(Optional.of(Ip.parse("192.168.1.1"))));
 
-      // neighbor in default VRF
-      assertThat(
-          vsC.inferBgpLocalIp(Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.1/31")),
-          equalTo(Ip.parse("192.168.1.1")));
-
-      // neighbor in a different VRF
-      assertThat(vsC.inferBgpLocalIp("other", Prefix.parse("1.1.1.1/31")), nullValue());
+      // l0 has illegal address
+      lo0.setPrimaryAddress(ConcreteInterfaceAddress.parse("127.0.0.1/32"));
+      assertThat(getDefaultSourceAddress(ri), equalTo(Optional.of(Ip.parse("10.10.10.1"))));
     }
 
     {
-      // lo0 with 127.0.0.1
-      JuniperConfiguration vsC = createConfig();
-      vsC.getMasterLogicalSystem().setDefaultAddressSelection(true);
+      // only primary interface is present
+      Interface em0 = new Interface("em0.0");
+      em0.setPrimary(true);
 
-      Interface lo0 = new Interface(FIRST_LOOPBACK_INTERFACE_NAME);
-      lo0.setRoutingInstance(vsC.getMasterLogicalSystem().getDefaultRoutingInstance());
-      lo0.setPrimaryAddress(ConcreteInterfaceAddress.parse("127.0.0.1/32"));
-      vsC.getMasterLogicalSystem()
-          .getDefaultRoutingInstance()
-          .getInterfaces()
-          .put(lo0.getName(), lo0);
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(em0.getName(), em0);
 
-      // neighbor in default VRF
-      assertThat(
-          vsC.inferBgpLocalIp(Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.1/31")),
-          nullValue());
+      // primary interface has no address
+      assertThat(getDefaultSourceAddress(ri), equalTo(Optional.empty()));
+
+      // normal address
+      em0.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+      assertThat(getDefaultSourceAddress(ri), equalTo(Optional.of(Ip.parse("10.10.10.1"))));
+
+      // prefer preferred address over normal address
+      em0.setPreferredAddress(ConcreteInterfaceAddress.parse("10.10.10.2/31"));
+      assertThat(getDefaultSourceAddress(ri), equalTo(Optional.of(Ip.parse("10.10.10.2"))));
+
+      // prefer primary address over other addresses
+      em0.setPrimaryAddress(ConcreteInterfaceAddress.parse("10.10.10.3/31"));
+      assertThat(getDefaultSourceAddress(ri), equalTo(Optional.of(Ip.parse("10.10.10.3"))));
+    }
+  }
+
+  @Test
+  public void testGetPrimaryInterface() {
+    {
+      // prefer explicit primary
+      Interface explicitPrimary = new Interface("xe-0/0/0.0");
+      explicitPrimary.setPrimary(true);
+
+      Interface implicitPrimary = new Interface("em0.0");
+      implicitPrimary.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(explicitPrimary.getName(), explicitPrimary);
+      ri.getInterfaces().put(implicitPrimary.getName(), implicitPrimary);
+
+      assertThat(getPrimaryInterface(ri), equalTo(Optional.of(explicitPrimary)));
+    }
+    {
+      // prefer management if it has an address
+      Interface mgmtInterface = new Interface("em0.0");
+
+      Interface otherInterface = new Interface("xe-0/0/0.0");
+      otherInterface.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(mgmtInterface.getName(), mgmtInterface);
+      ri.getInterfaces().put(otherInterface.getName(), otherInterface);
+
+      assertThat(getPrimaryInterface(ri), equalTo(Optional.of(otherInterface)));
+
+      mgmtInterface.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+      assertThat(getPrimaryInterface(ri), equalTo(Optional.of(mgmtInterface)));
+    }
+    {
+      // return other interfaces with address
+      Interface noAddressInterface = new Interface("xe-0/0/0.0");
+
+      Interface addressedInterface = new Interface("xe-1/0/0.0");
+      addressedInterface.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(addressedInterface.getName(), addressedInterface);
+      ri.getInterfaces().put(noAddressInterface.getName(), noAddressInterface);
+
+      assertThat(getPrimaryInterface(ri), equalTo(Optional.of(addressedInterface)));
     }
   }
 }
