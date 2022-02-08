@@ -2857,6 +2857,33 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfacePrimary() throws IOException {
+    String hostname = "interface-primary";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    JuniperConfiguration jc =
+        (JuniperConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    Map<String, org.batfish.representation.juniper.Interface> units =
+        jc.getMasterLogicalSystem().getInterfaces().get("em0").getUnits();
+
+    assertTrue(units.get("em0.0").getPrimary());
+    assertFalse(units.get("em0.1").getPrimary());
+
+    // duplicate primary is ignored and we get a warning
+    assertFalse(units.get("em0.2").getPrimary());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname,
+            containsString(
+                "Cannot make em0.2 as the primary interface. em0.0 is already configured as"
+                    + " primary.")));
+  }
+
+  @Test
   public void testJuniperOspfIntervals() {
     JuniperConfiguration config = parseJuniperConfig("ospf-intervals");
     Map<String, org.batfish.representation.juniper.Interface> ifaces =

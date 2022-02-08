@@ -169,6 +169,7 @@ public class Interface implements Serializable {
   private Interface _parent;
   private InterfaceAddress _preferredAddress;
   private ConcreteInterfaceAddress _primaryAddress;
+  private boolean _primary;
   @Nullable private String _redundantParentInterface;
   private RoutingInstance _routingInstance;
   private final @Nonnull InterfaceType _type;
@@ -295,6 +296,16 @@ public class Interface implements Serializable {
 
   public ConcreteInterfaceAddress getPrimaryAddress() {
     return _primaryAddress;
+  }
+
+  /**
+   * Whether this interface is explicitly configured as primary.
+   *
+   * <p>Primary interfaces are used to decide IP addresses for outgoing packets. If no interface is
+   * an explicit primary, Junos has rules for inferring primary.
+   */
+  public boolean getPrimary() {
+    return _primary;
   }
 
   @Nullable
@@ -462,6 +473,10 @@ public class Interface implements Serializable {
 
   public void setPrimaryAddress(ConcreteInterfaceAddress address) {
     _primaryAddress = address;
+  }
+
+  public void setPrimary(boolean primary) {
+    _primary = primary;
   }
 
   public void setRedundantParentInterface(@Nullable String redundantParentInterface) {

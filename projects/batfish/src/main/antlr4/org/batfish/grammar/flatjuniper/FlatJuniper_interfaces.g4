@@ -158,6 +158,7 @@ i_family
       | if_inet
       | if_inet6
       | if_iso
+      | if_primary
       | if_mpls
    )
 ;
@@ -333,6 +334,11 @@ if_mpls
       | ifm_maximum_labels
       | ifm_mtu
    )
+;
+
+if_primary
+:
+   PRIMARY
 ;
 
 if_storm_control
