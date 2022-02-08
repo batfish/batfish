@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.grammar.flatjuniper.ConfigurationBuilder.unquote;
+
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -33,6 +36,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_host_nameContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.representation.juniper.GroupWildcard;
 
+@ParametersAreNonnullByDefault
 public final class Hierarchy {
 
   private static class IsHostnameStatement extends FlatJuniperParserBaseListener {
@@ -84,10 +88,12 @@ public final class Hierarchy {
       protected int _lineNumber;
       protected String _sourceGroup;
       public List<String> _sourceWildcards;
-      protected String _text;
+      protected final @Nonnull String _text;
+      protected final @Nonnull String _unquotedText;
 
       private HierarchyChildNode(String text, int lineNumber) {
         _text = text;
+        _unquotedText = unquote(text);
         _lineNumber = lineNumber;
       }
 
@@ -113,12 +119,12 @@ public final class Hierarchy {
 
       @Override
       public boolean isMatchedBy(HierarchyLiteralNode node) {
-        return _text.equals(node._text);
+        return _unquotedText.equals(node._unquotedText);
       }
 
       @Override
       public boolean isMatchedBy(HierarchyWildcardNode node) {
-        return matchWithJuniperRegex(_text, node._wildcard);
+        return matchWithJuniperRegex(_unquotedText, node._wildcard);
       }
 
       @Override
@@ -175,7 +181,7 @@ public final class Hierarchy {
       }
 
       public void addChildNode(HierarchyChildNode node) {
-        _children.put(node._text, node);
+        _children.put(node._unquotedText, node);
       }
 
       public HierarchyChildNode getChildNode(String text) {
@@ -248,10 +254,11 @@ public final class Hierarchy {
 
       private HierarchyWildcardNode(String text, int lineNumber) {
         super(text, lineNumber);
-        if (text.charAt(0) != '<' || text.charAt(text.length() - 1) != '>') {
+        if (_unquotedText.charAt(0) != '<'
+            || _unquotedText.charAt(_unquotedText.length() - 1) != '>') {
           throw new BatfishException("Improperly-formatted wildcard: " + text);
         }
-        _wildcard = text.substring(1, text.length() - 1);
+        _wildcard = _unquotedText.substring(1, _unquotedText.length() - 1);
       }
 
       @Override
@@ -267,7 +274,7 @@ public final class Hierarchy {
       @Override
       public boolean isMatchedBy(HierarchyWildcardNode node) {
         // TODO: check whether this is the only way to match two wildcards
-        return _text.equals(node._text);
+        return _unquotedText.equals(node._unquotedText);
       }
 
       @Override
@@ -400,7 +407,7 @@ public final class Hierarchy {
       HierarchyNode currentNode = _root;
       HierarchyChildNode matchNode = null;
       for (HierarchyChildNode currentPathNode : path._nodes) {
-        matchNode = currentNode.getChildNode(currentPathNode._text);
+        matchNode = currentNode.getChildNode(currentPathNode._unquotedText);
         if (matchNode == null) {
           result = AddPathResult.MODIFIED;
           matchNode = currentPathNode.copy();
@@ -470,9 +477,8 @@ public final class Hierarchy {
       }
       HierarchyChildNode currentPathNode = path._nodes.get(startingIndex);
       if (!currentPathNode.isWildcard()) {
-        String currentPathNodeText = currentPathNode._text;
         HierarchyChildNode newDestinationTreeRoot =
-            destinationTreeRoot.getChildNode(currentPathNodeText);
+            destinationTreeRoot.getChildNode(currentPathNode._unquotedText);
         if (newDestinationTreeRoot == null) {
           // If literal node does not exist, but there are still more
           // wildcards to match, we abort.
@@ -481,7 +487,8 @@ public final class Hierarchy {
             return;
           }
           newDestinationTreeRoot = currentPathNode.copy();
-          destinationTreeRoot._children.put(newDestinationTreeRoot._text, newDestinationTreeRoot);
+          destinationTreeRoot._children.put(
+              newDestinationTreeRoot._unquotedText, newDestinationTreeRoot);
         }
         newPath._nodes.add(newDestinationTreeRoot);
         if (startingIndex == path._nodes.size() - 1) {
@@ -506,7 +513,7 @@ public final class Hierarchy {
         }
         newPath._nodes.remove(newPath._nodes.size() - 1);
       } else {
-        appliedWildcards.add(currentPathNode._text);
+        appliedWildcards.add(currentPathNode._unquotedText);
         if (startingIndex < path._nodes.size() - 1) {
           for (HierarchyChildNode destinationTreeNode : destinationTreeRoot._children.values()) {
             // if there are no matching children, then we recurse no
@@ -537,7 +544,7 @@ public final class Hierarchy {
       Map<String, HierarchyChildNode> currentChildren = _root.getChildren();
       List<HierarchyChildNode> pathNodes = path._nodes;
       for (HierarchyChildNode currentPathNode : pathNodes) {
-        HierarchyChildNode treeMatchNode = currentChildren.get(currentPathNode._text);
+        HierarchyChildNode treeMatchNode = currentChildren.get(currentPathNode._unquotedText);
         if (treeMatchNode != null) {
           if (treeMatchNode.getChildren().size() == 0) {
             return true;
@@ -555,7 +562,7 @@ public final class Hierarchy {
       HierarchyNode currentGroupNode = _root;
       HierarchyChildNode matchNode = null;
       for (HierarchyChildNode currentPathNode : path._nodes) {
-        matchNode = currentGroupNode.getChildNode(currentPathNode._text);
+        matchNode = currentGroupNode.getChildNode(currentPathNode._unquotedText);
         currentGroupNode = matchNode;
       }
       return matchNode;
