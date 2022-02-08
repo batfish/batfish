@@ -282,6 +282,11 @@ public class A10Conversion {
     return String.format("~gateway~%s~", gatewayIp);
   }
 
+  @VisibleForTesting
+  public static @Nonnull String generatedFailedTrackMethodName(String trackName) {
+    return String.format("~FAILED~%s~", trackName);
+  }
+
   /** Precondition: vrrpA.getCommon() is not null. */
   static @Nonnull Stream<Integer> getEnabledVrids(VrrpA vrrpA) {
     assert vrrpA.getCommon() != null;
