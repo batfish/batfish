@@ -310,6 +310,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_taggingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_ethernet_switchingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_primaryContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_interface_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idContext;
@@ -2436,6 +2437,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterIf_ethernet_switching(If_ethernet_switchingContext ctx) {
     _currentInterfaceOrRange.initEthernetSwitching();
+  }
+
+  @Override
+  public void enterIf_primary(If_primaryContext ctx) {
+    if (_currentInterfaceOrRange instanceof InterfaceRange) {
+      warn(ctx, "Interface ranges cannot be declared primary");
+      return;
+    }
+    Optional<Interface> currentPrimary =
+        _currentLogicalSystem.getInterfaces().values().stream()
+            .flatMap(iface -> iface.getUnits().values().stream())
+            .filter(Interface::getPrimary)
+            .findAny();
+    if (currentPrimary.isPresent()
+        && !currentPrimary.get().getName().equals(_currentInterfaceOrRange.getName())) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot make %s as the primary interface. %s is already configured as primary.",
+              _currentInterfaceOrRange.getName(), currentPrimary.get().getName()));
+      return;
+    }
+    _currentInterfaceOrRange.setPrimary(true);
   }
 
   @Override

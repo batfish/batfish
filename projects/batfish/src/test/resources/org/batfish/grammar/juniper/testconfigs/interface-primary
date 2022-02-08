@@ -1,0 +1,11 @@
+#
+set system host-name interface-primary
+#
+set interfaces em0 unit 0 family inet address 1.1.1.1/31
+set interfaces em0 unit 1 family inet address 2.1.1.1/31
+set interfaces em0 unit 2 family inet address 2.1.1.1/31
+#
+set interfaces em0 unit 0 family primary
+#
+set interfaces em0 unit 2 family primary
+#
