@@ -887,8 +887,6 @@ public class JuniperConfigurationTest {
 
     {
       // when both lo0 and primary are present
-      JuniperConfiguration vsC = createConfig();
-
       Interface lo0 = new Interface("lo0.0");
       Interface em0 = new Interface("em0.0");
       em0.setPrimary(true);
