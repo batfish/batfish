@@ -2441,17 +2441,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIf_primary(If_primaryContext ctx) {
+    if (_currentInterfaceOrRange instanceof InterfaceRange) {
+      warn(ctx, "Interface ranges cannot be declared primary");
+      return;
+    }
     Optional<Interface> currentPrimary =
-        _currentRoutingInstance.getInterfaces().values().stream()
+        _currentLogicalSystem.getInterfaces().values().stream()
             .flatMap(iface -> iface.getUnits().values().stream())
-            .filter(unit -> firstNonNull(unit.getPrimary(), true))
+            .filter(Interface::getPrimary)
             .findAny();
     if (currentPrimary.isPresent()
         && !currentPrimary.get().getName().equals(_currentInterfaceOrRange.getName())) {
-      throw new WillNotCommitException(
+      warn(
+          ctx,
           String.format(
               "Cannot make %s as the primary interface. %s is already configured as primary.",
               _currentInterfaceOrRange.getName(), currentPrimary.get().getName()));
+      return;
     }
     _currentInterfaceOrRange.setPrimary(true);
   }
