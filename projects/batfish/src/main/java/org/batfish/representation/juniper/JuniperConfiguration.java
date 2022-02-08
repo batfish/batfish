@@ -51,7 +51,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -187,6 +186,7 @@ import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
+import org.batfish.representation.juniper.Interface.InterfaceType;
 import org.batfish.representation.juniper.Interface.VlanTaggingMode;
 import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.representation.juniper.Zone.AddressBookType;
@@ -354,10 +354,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   Configuration _c;
-
-  private transient Interface _lo0;
-
-  private transient boolean _lo0Initialized;
 
   /** Map of policy name to routing instances referenced in the policy, in the order they appear */
   private transient Map<String, List<String>> _vrfReferencesInPolicies;
@@ -731,21 +727,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // inherit update-source
       Ip localIp = ig.getLocalAddress();
-      if (localIp == null) {
-        localIp = inferBgpLocalIp(vrfName, prefix);
+
+      // When local IP is not explicitly set, the source address is dynamically picked based on the
+      // outgoing interface (done in VI land, so we don't need to do anything more here).
+      // The exception to this behavior occurs for iBGP and eBGP-multihop sessions when
+      // default-address-selection is set.
+      if (localIp == null
+          && _masterLogicalSystem.getDefaultAddressSelection()
+          && (ibgp || ig.getEbgpMultihop())) {
+        localIp = getDefaultSourceAddress(routingInstance).orElse(null);
       }
-      if (localIp == null) {
-        if (ig.getDynamic()) {
-          _w.redFlag(
-              "Could not determine local ip for bgp peering with neighbor prefix: " + prefix);
-        } else {
-          _w.redFlag(
-              "Could not determine local ip for bgp peering with neighbor ip: "
-                  + prefix.getStartIp());
-        }
-      } else {
-        neighbor.setLocalIp(localIp);
-      }
+      neighbor.setLocalIp(localIp);
       neighbor.setBgpProcess(proc);
       neighbor.setIpv4UnicastAddressFamily(
           ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());
@@ -762,31 +754,79 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return proc;
   }
 
+  /** Returns the source address used for outgoing packets */
+  // Docs:
+  // https://www.juniper.net/documentation/us/en/software/junos/transport-ip/topics/ref/statement/default-address-selection-edit-system.html
+  // 1. Use lo0 interfaces (in the same VRF) if the address is NOT 127.0.0.1
+  // 2. Use primary interface
   @VisibleForTesting
-  @Nullable
-  Ip inferBgpLocalIp(String neighborVrfName, Prefix neighborPrefix) {
-    // assign the ip of the interface that is likely connected to this peer
-    for (org.batfish.datamodel.Interface iface : _c.getAllInterfaces(neighborVrfName).values()) {
-      for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
-        if (address.getPrefix().containsPrefix(neighborPrefix)) {
-          return address.getIp();
-        }
+  static @Nonnull Optional<Ip> getDefaultSourceAddress(RoutingInstance routingInstance) {
+    Optional<Interface> loopback =
+        routingInstance.getInterfaces().values().stream()
+            .filter(
+                iface ->
+                    iface.isUnit() && iface.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
+            .findAny(); // should be at most one: Junos allows only lo0 (no lo1) and only one unit
+    // in a routing instance
+    if (loopback.isPresent()
+        && !loopback.get().getPrimaryAddress().getIp().equals(Ip.parse("127.0.0.1"))) {
+      return Optional.of(loopback.get().getPrimaryAddress().getIp());
+    }
+    Optional<Interface> primaryInterfaceOpt = getPrimaryInterface(routingInstance);
+    if (primaryInterfaceOpt.isPresent()) {
+      Interface primaryInterface = primaryInterfaceOpt.get();
+      if (primaryInterface.getPrimaryAddress() != null) {
+        return Optional.of(primaryInterface.getPrimaryAddress().getIp());
       }
+      if (primaryInterface.getPreferredAddress() != null
+          && primaryInterface.getPreferredAddress() instanceof ConcreteInterfaceAddress) {
+        return Optional.of(
+            ((ConcreteInterfaceAddress) primaryInterface.getPreferredAddress()).getIp());
+      }
+      return primaryInterface.getAllAddresses().stream()
+          .findFirst()
+          .map(ConcreteInterfaceAddress::getIp);
+    }
+    return Optional.empty();
+  }
+
+  /** Returns the primary interface of this routing instance. */
+  @VisibleForTesting
+  static @Nonnull Optional<Interface> getPrimaryInterface(RoutingInstance routingInstance) {
+    Optional<Interface> explicitPrimary =
+        routingInstance.getInterfaces().values().stream()
+            .filter(iface -> iface.isUnit() && firstNonNull(iface.getPrimary(), false))
+            .min(
+                Comparator.comparing(
+                    Interface::getName)); // there should be only one; sorting just in case
+    if (explicitPrimary.isPresent()) {
+      return explicitPrimary;
     }
 
-    // Use lo0 as long as it is in the same VRF
-    // Also, do not use 127.0.0.1
-    // https://www.juniper.net/documentation/us/en/software/junos/transport-ip/topics/ref/statement/default-address-selection-edit-system.html
-    if (_masterLogicalSystem.getDefaultAddressSelection()) {
-      initFirstLoopbackInterface();
-      if (_lo0 != null && _lo0.getRoutingInstance().getName().equals(neighborVrfName)) {
-        ConcreteInterfaceAddress lo0Unit0Address = _lo0.getPrimaryAddress();
-        if (lo0Unit0Address != null && !lo0Unit0Address.getIp().equals(Ip.parse("127.0.0.1"))) {
-          return lo0Unit0Address.getIp();
-        }
-      }
+    // In the absence an explicit primary, Junos method for picking the primary relies on unmodeled
+    // properties (and rules aren't clear either). Doc:
+    // https://www.juniper.net/documentation/us/en/software/junos/interfaces-fundamentals/topics/ref/statement/primary-edit-interfaces-family.html
+    // By default, the multicast-capable interface with the lowest-index address is chosen as the
+    // primary interface. If there is no such interface, the point-to-point interface with the
+    // lowest-index address is chosen. Otherwise, any interface with an address can be picked. In
+    // practice, this means that, on the device, the fxp0 or em0 interface is picked by default.
+
+    // We first try mgmt interfaces (fxp, em), then rest
+    // Lexicographical sorting should suffice
+    Optional<Interface> mgmtInterfaceWithAddress =
+        routingInstance.getInterfaces().values().stream()
+            .filter(
+                iface ->
+                    iface.getType() == InterfaceType.MANAGEMENT_UNIT
+                        && !iface.getAllAddresses().isEmpty())
+            .min(Comparator.comparing(Interface::getName));
+    if (mgmtInterfaceWithAddress.isPresent()) {
+      return mgmtInterfaceWithAddress;
     }
-    return null;
+
+    return routingInstance.getInterfaces().values().stream()
+        .filter(iface -> iface.isUnit() && !iface.getAllAddresses().isEmpty())
+        .min(Comparator.comparing(Interface::getName));
   }
 
   /**
@@ -1460,42 +1500,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RoutingPolicy defaultRejectPolicy = new RoutingPolicy(DEFAULT_REJECT_POLICY_NAME, _c);
       _c.getRoutingPolicies().put(DEFAULT_REJECT_POLICY_NAME, defaultRejectPolicy);
       PsThenReject.INSTANCE.applyTo(defaultRejectPolicy.getStatements(), this, _c, _w);
-    }
-  }
-
-  private void initFirstLoopbackInterface() {
-    if (_lo0Initialized) {
-      return;
-    }
-    _lo0Initialized = true;
-    _lo0 =
-        _masterLogicalSystem
-            .getDefaultRoutingInstance()
-            .getInterfaces()
-            .get(FIRST_LOOPBACK_INTERFACE_NAME);
-    Pattern p = Pattern.compile("[A-Za-z0-9][A-Za-z0-9]*:lo[0-9][0-9]*\\.[0-9][0-9]*");
-    if (_lo0 == null) {
-      for (NodeDevice nd : _nodeDevices.values()) {
-        for (Interface iface : nd.getInterfaces().values()) {
-          for (Interface unit : iface.getUnits().values()) {
-            if (p.matcher(unit.getName()).matches()) {
-              _lo0 = unit;
-              return;
-            }
-          }
-        }
-      }
-    } else if (_lo0.getPrimaryAddress() == null) {
-      Pattern q = Pattern.compile("lo[0-9][0-9]*\\.[0-9][0-9]*");
-      for (Interface iface :
-          _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values()) {
-        for (Interface unit : iface.getUnits().values()) {
-          if (q.matcher(unit.getName()).matches()) {
-            _lo0 = unit;
-            return;
-          }
-        }
-      }
     }
   }
 
