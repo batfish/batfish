@@ -254,7 +254,8 @@ public final class Hierarchy {
 
       private HierarchyWildcardNode(String text, int lineNumber) {
         super(text, lineNumber);
-        if (_unquotedText.charAt(0) != '<' || _unquotedText.charAt(text.length() - 1) != '>') {
+        if (_unquotedText.charAt(0) != '<'
+            || _unquotedText.charAt(_unquotedText.length() - 1) != '>') {
           throw new BatfishException("Improperly-formatted wildcard: " + text);
         }
         _wildcard = _unquotedText.substring(1, _unquotedText.length() - 1);
