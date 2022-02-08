@@ -734,7 +734,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (localIp == null
           && _masterLogicalSystem.getDefaultAddressSelection()
           && (ibgp || ig.getEbgpMultihop())) {
-        localIp = getDefaultSourceAddress(routingInstance).orElse(null);
+        localIp = getDefaultSourceAddress(routingInstance, _c).orElse(null);
       }
       neighbor.setLocalIp(localIp);
       neighbor.setBgpProcess(proc);
@@ -753,48 +753,61 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return proc;
   }
 
-  /** Returns the source address used for outgoing packets */
+  /**
+   * Returns the source address used for outgoing packets.
+   *
+   * <p>Assumes that VI interfaces have been created in {@code c}.
+   */
   // Docs:
   // https://www.juniper.net/documentation/us/en/software/junos/transport-ip/topics/ref/statement/default-address-selection-edit-system.html
   // 1. Use lo0 interfaces (in the same VRF) if the address is NOT 127.0.0.1
   // 2. Use primary interface
   @VisibleForTesting
-  static @Nonnull Optional<Ip> getDefaultSourceAddress(RoutingInstance routingInstance) {
+  static @Nonnull Optional<Ip> getDefaultSourceAddress(
+      RoutingInstance routingInstance, Configuration c) {
     Optional<Interface> loopback =
         routingInstance.getInterfaces().values().stream()
             .filter(
                 iface ->
-                    iface.isUnit() && iface.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
-            .findAny(); // should be at most one: Junos allows only lo0 (no lo1) and only one unit
-    // in a routing instance
-    if (loopback.isPresent()
-        && !loopback.get().getPrimaryAddress().getIp().equals(Ip.parse("127.0.0.1"))) {
-      return Optional.of(loopback.get().getPrimaryAddress().getIp());
+                    iface.isUnit()
+                        && c.getAllInterfaces().get(iface.getName()).getActive()
+                        && iface.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
+            // should be at most one: Junos has only lo0 (no lo1) and only one unit in a
+            // routing instance
+            .findAny();
+
+    if (loopback.isPresent()) {
+      Optional<Ip> primaryAddress = getDefaultSourceAddress(loopback.get());
+      if (primaryAddress.isPresent()) {
+        return primaryAddress;
+      }
     }
-    Optional<Interface> primaryInterfaceOpt = getPrimaryInterface(routingInstance);
-    if (primaryInterfaceOpt.isPresent()) {
-      Interface primaryInterface = primaryInterfaceOpt.get();
-      if (primaryInterface.getPrimaryAddress() != null) {
-        return Optional.of(primaryInterface.getPrimaryAddress().getIp());
+
+    Optional<Interface> primaryInterface = getPrimaryInterface(routingInstance, c);
+    if (primaryInterface.isPresent()) {
+      Optional<Ip> primaryAddress = getDefaultSourceAddress(primaryInterface.get());
+      if (primaryAddress.isPresent()) {
+        return primaryAddress;
       }
-      if (primaryInterface.getPreferredAddress() != null
-          && primaryInterface.getPreferredAddress() instanceof ConcreteInterfaceAddress) {
-        return Optional.of(
-            ((ConcreteInterfaceAddress) primaryInterface.getPreferredAddress()).getIp());
-      }
-      return primaryInterface.getAllAddresses().stream()
-          .findFirst()
-          .map(ConcreteInterfaceAddress::getIp);
     }
     return Optional.empty();
   }
 
-  /** Returns the primary interface of this routing instance. */
+  /**
+   * Returns the primary interface of this routing instance.
+   *
+   * <p>Assumes that VI interfaces have been created in {@code c}.
+   */
   @VisibleForTesting
-  static @Nonnull Optional<Interface> getPrimaryInterface(RoutingInstance routingInstance) {
+  static @Nonnull Optional<Interface> getPrimaryInterface(
+      RoutingInstance routingInstance, Configuration c) {
     Optional<Interface> explicitPrimary =
         routingInstance.getInterfaces().values().stream()
-            .filter(iface -> iface.isUnit() && firstNonNull(iface.getPrimary(), false))
+            .filter(
+                iface ->
+                    iface.isUnit()
+                        && firstNonNull(iface.getPrimary(), false)
+                        && c.getAllInterfaces().get(iface.getName()).getActive())
             .min(
                 Comparator.comparing(
                     Interface::getName)); // there should be only one; sorting just in case
@@ -817,6 +830,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .filter(
                 iface ->
                     iface.getType() == InterfaceType.MANAGEMENT_UNIT
+                        && c.getAllInterfaces().get(iface.getName()).getActive()
                         && !iface.getAllAddresses().isEmpty())
             .min(Comparator.comparing(Interface::getName));
     if (mgmtInterfaceWithAddress.isPresent()) {
@@ -824,8 +838,45 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     return routingInstance.getInterfaces().values().stream()
-        .filter(iface -> iface.isUnit() && !iface.getAllAddresses().isEmpty())
+        .filter(
+            iface ->
+                iface.isUnit()
+                    && c.getAllInterfaces().get(iface.getName()).getActive()
+                    && !iface.getAllAddresses().isEmpty())
         .min(Comparator.comparing(Interface::getName));
+  }
+
+  /** Returns the default source address for this interface. */
+  // Docs:
+  // https://www.juniper.net/documentation/us/en/software/junos/interfaces-ethernet-switches/topics/ref/statement/primary-edit-interfaces.html
+  // The primary address may be explicitly configured. If not, pick the lowest
+  // preferred address. Else, pick the lowest address. In each case, 127.0.0.1 is ignored.
+  @VisibleForTesting
+  static @Nonnull Optional<Ip> getDefaultSourceAddress(Interface iface) {
+    Ip ignoredIp = Ip.parse("127.0.0.1");
+
+    Optional<Ip> explicitPrimary =
+        Optional.ofNullable(iface.getPrimaryAddress())
+            .map(ConcreteInterfaceAddress::getIp)
+            .filter(ip -> !ip.equals(ignoredIp));
+    if (explicitPrimary.isPresent()) {
+      return explicitPrimary;
+    }
+
+    Optional<Ip> preferred =
+        Optional.ofNullable(iface.getPreferredAddress())
+            .filter(addr -> addr instanceof ConcreteInterfaceAddress)
+            .map(addr -> ((ConcreteInterfaceAddress) addr).getIp())
+            .filter(ip -> !ip.equals(ignoredIp));
+    if (preferred.isPresent()) {
+      return preferred;
+    }
+
+    return iface.getAllAddresses().stream()
+        .map(ConcreteInterfaceAddress::getIp)
+        .filter(ip -> !ip.equals(ignoredIp))
+        .sorted()
+        .findFirst();
   }
 
   /**
