@@ -2857,6 +2857,17 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfacePrimary() {
+    String hostname = "interface-primary";
+    JuniperConfiguration c = parseJuniperConfig(hostname);
+    Map<String, org.batfish.representation.juniper.Interface> units =
+        c.getMasterLogicalSystem().getInterfaces().get("em0").getUnits();
+
+    assertThat(units.get("em0.0").getPrimary(), equalTo(true));
+    assertThat(units.get("em0.1").getPrimary(), nullValue());
+  }
+
+  @Test
   public void testJuniperOspfIntervals() {
     JuniperConfiguration config = parseJuniperConfig("ospf-intervals");
     Map<String, org.batfish.representation.juniper.Interface> ifaces =
