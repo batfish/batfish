@@ -10,6 +10,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
+import static org.batfish.datamodel.tracking.TrackMethodReference.negated;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
@@ -17,6 +18,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.convertAccessL
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.findHaSourceAddress;
 import static org.batfish.vendor.a10.representation.A10Conversion.findVrrpAEnabledSourceAddress;
+import static org.batfish.vendor.a10.representation.A10Conversion.generatedFailedTrackMethodName;
 import static org.batfish.vendor.a10.representation.A10Conversion.generatedServerTrackMethodName;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpKernelRoutes;
@@ -452,7 +454,8 @@ public final class A10Configuration extends VendorConfiguration {
                           return;
                         }
                         TrackAction action = new DecrementPriority(decrement);
-                        actionsBuilder.put(trackMethodName, action);
+                        String failedTrackMethodName = createFailedTrackIfNeeded(trackMethodName);
+                        actionsBuilder.put(failedTrackMethodName, action);
                       });
               builder.put(templateName, actionsBuilder.build());
             });
@@ -782,11 +785,20 @@ public final class A10Configuration extends VendorConfiguration {
       // TODO: Docs say this device should no longer participate in HA if check fails, but we don't
       //       currently have an action for that. For now, best we can do is reduce priority to
       //       minimum.
-      builder.put(trackMethodName, new DecrementPriority(255));
+      String failedTrackMethodName = createFailedTrackIfNeeded(trackMethodName);
+      builder.put(failedTrackMethodName, new DecrementPriority(255));
     }
 
     // TODO: other check types
     return builder.build();
+  }
+
+  private @Nonnull String createFailedTrackIfNeeded(String trackMethodName) {
+    String failedTrackMethodName = generatedFailedTrackMethodName(trackMethodName);
+    if (!_c.getTrackingGroups().containsKey(failedTrackMethodName)) {
+      _c.getTrackingGroups().put(failedTrackMethodName, negated(trackMethodName));
+    }
+    return failedTrackMethodName;
   }
 
   private void convertAccessLists() {
