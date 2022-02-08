@@ -39,6 +39,7 @@ import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.datamodel.tracking.TrackMethodReference.negated;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
@@ -49,6 +50,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
+import static org.batfish.vendor.a10.representation.A10Conversion.generatedFailedTrackMethodName;
 import static org.batfish.vendor.a10.representation.A10Conversion.generatedServerTrackMethodName;
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
@@ -1463,12 +1465,17 @@ public class A10GrammarTest {
     String i2Name = getInterfaceName(Type.ETHERNET, 2);
     int vrid = 1;
 
+    Ip gatewayIp = Ip.parse("10.10.10.10");
+    String trackGatewayName = generatedServerTrackMethodName(gatewayIp);
+    String failedTrackGatewayName = generatedFailedTrackMethodName(trackGatewayName);
     assertThat(
         c.getTrackingGroups(),
         equalTo(
             ImmutableMap.of(
-                generatedServerTrackMethodName(Ip.parse("10.10.10.10")),
-                TrackReachability.of(Ip.parse("10.10.10.10"), DEFAULT_VRF_NAME))));
+                trackGatewayName,
+                TrackReachability.of(Ip.parse("10.10.10.10"), DEFAULT_VRF_NAME),
+                failedTrackGatewayName,
+                negated(trackGatewayName))));
     assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name));
     {
       org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i1Name);
@@ -1490,9 +1497,7 @@ public class A10GrammarTest {
                               Ip.parse("3.0.0.1")))
                       .setSourceAddress(i1Address)
                       .setTrackActions(
-                          ImmutableMap.of(
-                              generatedServerTrackMethodName(Ip.parse("10.10.10.10")),
-                              new DecrementPriority(50)))
+                          ImmutableMap.of(failedTrackGatewayName, new DecrementPriority(50)))
                       .build())));
       // Should not contain virtual addresses
       assertThat(i.getAllAddresses(), contains(i1Address));
@@ -2199,14 +2204,19 @@ public class A10GrammarTest {
     String i2Name = getInterfaceName(Type.ETHERNET, 2);
     String i3Name = getInterfaceName(Type.ETHERNET, 3);
     int haGroup = 1;
+    Ip gatewayIp = Ip.parse("10.0.0.1");
+    String trackGatewayName = generatedServerTrackMethodName(gatewayIp);
+    String failedTrackGatewayName = generatedFailedTrackMethodName(trackGatewayName);
 
     // test health monitor conversion
     assertThat(
         c.getTrackingGroups(),
         equalTo(
             ImmutableMap.of(
-                generatedServerTrackMethodName(Ip.parse("10.0.0.1")),
-                TrackReachability.of(Ip.parse("10.0.0.1"), DEFAULT_VRF_NAME))));
+                trackGatewayName,
+                TrackReachability.of(gatewayIp, DEFAULT_VRF_NAME),
+                failedTrackGatewayName,
+                negated(trackGatewayName))));
 
     // Test VRRP conversion
     assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name, i3Name));
@@ -2230,9 +2240,7 @@ public class A10GrammarTest {
                               Ip.parse("10.0.4.1")))
                       .setSourceAddress(i1Address)
                       .setTrackActions(
-                          ImmutableMap.of(
-                              generatedServerTrackMethodName(Ip.parse("10.0.0.1")),
-                              new DecrementPriority(255)))
+                          ImmutableMap.of(failedTrackGatewayName, new DecrementPriority(255)))
                       .build())));
       // Should not contain virtual addresses
       assertThat(i.getAllAddresses(), contains(i1Address));
