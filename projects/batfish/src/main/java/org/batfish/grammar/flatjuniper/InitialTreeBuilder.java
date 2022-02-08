@@ -1,7 +1,5 @@
 package org.batfish.grammar.flatjuniper;
 
-import static org.batfish.grammar.flatjuniper.ConfigurationBuilder.unquote;
-
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groupsContext;
@@ -82,7 +80,7 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void visitTerminal(TerminalNode node) {
     if (_enablePathRecording) {
-      String text = unquote(node.getText());
+      String text = node.getText();
       int line = node.getSymbol().getLine();
       if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
         _currentPath.addWildcardNode(text, line);

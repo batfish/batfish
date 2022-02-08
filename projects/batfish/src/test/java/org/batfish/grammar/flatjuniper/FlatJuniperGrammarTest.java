@@ -6713,4 +6713,10 @@ public final class FlatJuniperGrammarTest {
     }
     assertFalse(i.hasNext());
   }
+
+  @Test
+  public void testApplyGroupsParsing() {
+    String hostname = "apply-groups";
+    parseJuniperConfig(hostname);
+  }
 }

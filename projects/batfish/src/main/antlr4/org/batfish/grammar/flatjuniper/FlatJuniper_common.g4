@@ -439,7 +439,7 @@ junos_application_set
 junos_name
 :
   NAME
-  | WILDCARD
+  | wildcard
 ;
 
 junos_name_list

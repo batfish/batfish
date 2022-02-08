@@ -1,0 +1,7 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name apply-groups
+#
+set groups EBGP protocols bgp group <EBGP-*> type external
+set protocols bgp apply-groups EBGP
+set protocols bgp group EBGP-FOO peer-as 65001
+set protocols bgp group EBGP-FOO local-as 65002
