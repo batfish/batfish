@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -521,7 +522,14 @@ public final class PacketPolicyToBddTest {
             .collect(
                 ImmutableTable.toImmutableTable(
                     Edge::getPreState, Edge::getPostState, Edge::getTransition, Transitions::or));
+    // Ensure there is a break.
     StateExpr startState = new PacketPolicyStatement(_hostname, _ingressVrf, _policyName, 0);
+    StateExpr secondState = new PacketPolicyStatement(_hostname, _ingressVrf, _policyName, 1);
+    StateExpr thirdState = new PacketPolicyStatement(_hostname, _ingressVrf, _policyName, 2);
+    assertThat(
+        table.rowMap(), allOf(hasKey(startState), hasKey(secondState), not(hasKey(thirdState))));
+
+    // Actually traverse the packet policy.
     Map<StateExpr, BDD> reachableSet = new HashMap<>();
     reachableSet.put(startState, _bddPacket.getFactory().one());
     BDDReachabilityUtils.fixpoint(reachableSet, table, Transition::transitForward);
