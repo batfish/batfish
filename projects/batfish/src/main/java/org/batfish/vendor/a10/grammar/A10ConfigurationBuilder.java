@@ -253,14 +253,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
                 todo(ctx);
                 return;
               }
-              toAclRule(ctx.sal_rule_definition())
-                  .ifPresent(
-                      rule -> {
-                        // Will not clash with named access lists; they can't start with a digit
-                        String aclName = String.valueOf(accessListNum);
-                        _c.defineStructure(A10StructureType.ACCESS_LIST, aclName, ctx);
-                        _c.getOrCreateAccessList(aclName).addRule(rule);
-                      });
+              // Will not clash with named access lists; they can't start with a digit
+              String aclName = String.valueOf(accessListNum);
+              _c.defineStructure(A10StructureType.ACCESS_LIST, aclName, ctx);
+              _c.getOrCreateAccessList(aclName).addRule(toAclRule(ctx.sal_rule_definition()));
             });
   }
 
@@ -286,7 +282,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     toAclRule(ctx).ifPresent(_currentAccessList::addRule);
   }
 
-  private Optional<AccessListRule> toAclRule(A10Parser.Sal_rule_definitionContext ctx) {
+  private AccessListRule toAclRule(A10Parser.Sal_rule_definitionContext ctx) {
     String lineText = getFullText(ctx);
     AccessListRule.Action action = toAclAction(ctx.access_list_action());
     AccessListAddress source = toAclAddress(ctx.source);
@@ -312,16 +308,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         return Optional.empty();
       }
     }
-    return toAclRule(
-        lineText,
-        action,
-        source,
-        destination,
-        ctx.access_list_protocol(),
-        maybeDestRange.orElse(null));
+    return Optional.of(
+        toAclRule(
+            lineText,
+            action,
+            source,
+            destination,
+            ctx.access_list_protocol(),
+            maybeDestRange.orElse(null)));
   }
 
-  private Optional<AccessListRule> toAclRule(
+  private AccessListRule toAclRule(
       String lineText,
       AccessListRule.Action action,
       AccessListAddress source,
@@ -329,18 +326,18 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       A10Parser.Access_list_protocolContext protocolCtx,
       @Nullable SubRange destRange) {
     if (protocolCtx.ICMP() != null) {
-      return Optional.of(new AccessListRuleIcmp(action, source, destination, lineText));
+      return new AccessListRuleIcmp(action, source, destination, lineText);
     } else if (protocolCtx.IP() != null) {
-      return Optional.of(new AccessListRuleIp(action, source, destination, lineText));
+      return new AccessListRuleIp(action, source, destination, lineText);
     } else if (protocolCtx.TCP() != null) {
       AccessListRuleTcp tcp = new AccessListRuleTcp(action, source, destination, lineText);
       tcp.setDestinationRange(destRange);
-      return Optional.of(tcp);
+      return tcp;
     }
     assert protocolCtx.UDP() != null;
     AccessListRuleUdp udp = new AccessListRuleUdp(action, source, destination, lineText);
     udp.setDestinationRange(destRange);
-    return Optional.of(udp);
+    return udp;
   }
 
   private @Nonnull AccessListAddress toAclAddress(A10Parser.Access_list_addressContext ctx) {
