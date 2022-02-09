@@ -9,6 +9,7 @@ import static org.batfish.datamodel.RoutingProtocol.HMM;
 import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.evaluateTrackRoute;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -29,9 +30,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.HmmRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -40,6 +43,7 @@ import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
@@ -331,6 +335,81 @@ public final class IncrementalBdpEngineTest {
                 .setNetwork(Prefix.create(virtualAddress, MAX_PREFIX_LENGTH))
                 .setNextHop(NextHopInterface.of(hI2.getName()))
                 .build()));
+  }
+
+  @Test
+  public void testKernelRoutesUpdatedMidDataPlane() {
+    // Topology: r1 <=> r2
+    // - r1 has a kernel route that is activated if it wins VRRP virtual address 192.0.2.10
+    // - r1 and r2 connected on interface i1 with IPs 192.0.2.{1,2}
+    // - r1 and r2 run VRRP group 1 on i1
+    // - r1 has higher initial priority than r2
+    // - r1 has track that reduces priority to below that of r2 if reachability to itself fails
+    //   (will fail at start of data plane, but not end)
+    Ip r1Ip = Ip.parse("192.0.2.1");
+    Ip r2Ip = Ip.parse("192.0.2.2");
+    ConcreteInterfaceAddress r1Address = ConcreteInterfaceAddress.create(r1Ip, 24);
+    ConcreteInterfaceAddress r2Address = ConcreteInterfaceAddress.create(r2Ip, 24);
+    Ip virtualIp = Ip.parse("192.0.2.10");
+    Configuration r1 =
+        Configuration.builder().setHostname("r1").setConfigurationFormat(CISCO_IOS).build();
+    Configuration r2 =
+        Configuration.builder().setHostname("r2").setConfigurationFormat(CISCO_IOS).build();
+    Vrf v1 = Vrf.builder().setOwner(r1).setName(DEFAULT_VRF_NAME).build();
+    Vrf v2 = Vrf.builder().setOwner(r2).setName(DEFAULT_VRF_NAME).build();
+    Prefix kernelRoutePrefix = Prefix.create(virtualIp, MAX_PREFIX_LENGTH);
+    KernelRoute kernelRoute =
+        KernelRoute.builder().setNetwork(kernelRoutePrefix).setRequiredOwnedIp(virtualIp).build();
+    v1.setKernelRoutes(ImmutableSortedSet.of(kernelRoute));
+    v2.setKernelRoutes(ImmutableSortedSet.of(kernelRoute));
+    r1.setTrackingGroups(
+        ImmutableMap.of(
+            "failReach", NegatedTrackMethod.of(TrackReachability.of(r1Ip, DEFAULT_VRF_NAME))));
+    VrrpGroup g1 =
+        VrrpGroup.builder()
+            .setPriority(100)
+            .setTrackActions(ImmutableMap.of("failReach", new DecrementPriority(100)))
+            .addVirtualAddress("i1", virtualIp)
+            .setSourceAddress(r1Address)
+            .build();
+    VrrpGroup g2 =
+        VrrpGroup.builder()
+            .setPriority(50)
+            .addVirtualAddress("i1", virtualIp)
+            .setSourceAddress(r2Address)
+            .build();
+    Interface.builder()
+        .setName("i1")
+        .setOwner(r1)
+        .setVrf(v1)
+        .setAddress(r1Address)
+        .setVrrpGroups(ImmutableSortedMap.of(1, g1))
+        .build();
+    Interface.builder()
+        .setName("i1")
+        .setOwner(r2)
+        .setVrf(v2)
+        .setAddress(r1Address)
+        .setVrrpGroups(ImmutableSortedMap.of(1, g2))
+        .build();
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(r1.getHostname(), r1, r2.getHostname(), r2);
+    TopologyContext initialTopologyContext =
+        TopologyContext.builder().setLayer3Topology(synthesizeL3Topology(configurations)).build();
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
+    DataPlane dp =
+        engine.computeDataPlane(
+                configurations,
+                initialTopologyContext,
+                ImmutableSet.of(),
+                new TestIpOwners(configurations))
+            ._dataPlane;
+
+    // r1 should have the kernel route, but r2 should not.
+    assertThat(
+        dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix),
+        contains(new AnnotatedRoute<>(kernelRoute, DEFAULT_VRF_NAME)));
+    assertThat(dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix), empty());
   }
 
   private static class TestIpOwners extends IpOwnersBaseImpl {

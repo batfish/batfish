@@ -120,7 +120,6 @@ import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.ConnectedRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
 import org.batfish.dataplane.rib.IsisRib;
-import org.batfish.dataplane.rib.KernelRib;
 import org.batfish.dataplane.rib.LocalRib;
 import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
@@ -187,6 +186,7 @@ public final class VirtualRouter {
   /** Routes in main RIB to redistribute into IS-IS */
   RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _routesForIsisRedistribution;
 
+  @VisibleForTesting @Nonnull List<KernelRoute> _kernelConditionalRoutes;
   private @Nonnull List<HmmRoute> _hmmRoutes;
 
   IsisLevelRib _isisL1Rib;
@@ -194,7 +194,6 @@ public final class VirtualRouter {
   private IsisLevelRib _isisL1StagingRib;
   private IsisLevelRib _isisL2StagingRib;
   private IsisRib _isisRib;
-  KernelRib _kernelRib;
   LocalRib _localRib;
 
   /** The default main RIB, contains routes from different protocol RIBs */
@@ -289,6 +288,7 @@ public final class VirtualRouter {
     }
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
     _hmmRoutes = ImmutableList.of();
+    _kernelConditionalRoutes = ImmutableList.of();
   }
 
   @VisibleForTesting
@@ -329,15 +329,13 @@ public final class VirtualRouter {
    * iterations (e.g., static route RIB, connected route RIB, etc.)
    */
   @VisibleForTesting
-  void initForIgpComputation(
-      TopologyContext topologyContext, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+  void initForIgpComputation(TopologyContext topologyContext) {
     initConnectedRib();
-    initKernelRib(ipVrfOwners);
+    initKernelRoutes();
     initLocalRib();
     initStaticRibs();
     // Always import local and connected routes into your own rib
     importRib(_independentRib, _connectedRib);
-    importRib(_independentRib, _kernelRib);
     importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticUnconditionalRib, _name);
     importRib(_mainRib, _independentRib);
@@ -367,7 +365,7 @@ public final class VirtualRouter {
     initBaseRipRoutes();
   }
 
-  /** Cmopute HMM routes, and import them into independent RIB. */
+  /** Recompute HMM routes, and import delta into main RIB. */
   void computeHmmRoutes(
       Topology initialLayer3Topology, Map<String, Map<String, Set<Ip>>> interfaceOwners) {
     RibDelta.Builder<HmmRoute> delta = RibDelta.builder();
@@ -408,15 +406,30 @@ public final class VirtualRouter {
         .forEach(
             action -> {
               if (action.isWithdrawn()) {
-                _independentRib.removeRoute(annotateRoute(action.getRoute()));
+                _mainRib.removeRoute(annotateRoute(action.getRoute()));
               } else {
-                _independentRib.mergeRoute(annotateRoute(action.getRoute()));
+                _mainRib.mergeRoute(annotateRoute(action.getRoute()));
               }
             });
     _hmmRoutes = newHmmRoutes.build();
   }
 
-  /** Apply a rib group to a given source rib (which belongs to this VRF) */
+  /** Recompute conditional kernel routes, and import delta into main RIB. */
+  public void computeConditionalKernelRoutes(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    for (KernelRoute kernelRoute : _kernelConditionalRoutes) {
+      if (shouldActivateConditionalKernelRoute(kernelRoute, ipVrfOwners)) {
+        _mainRib.mergeRoute(annotateRoute(kernelRoute));
+      } else {
+        _mainRib.removeRoute(annotateRoute(kernelRoute));
+      }
+    }
+  }
+
+  /**
+   * Compute public void computeKernelRoutes(Map<Ip, Map<String, Set<String>>> ipVrfOwners) { }
+   *
+   * <p>/** Apply a rib group to a given source rib (which belongs to this VRF)
+   */
   private void applyRibGroup(@Nonnull RibGroup ribGroup, @Nonnull AnnotatedRib<?> sourceRib) {
     RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
     checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
@@ -825,23 +838,30 @@ public final class VirtualRouter {
    * Initialize the kernel routes -- a set of non-forwarding routes installed for the purpose of
    * redistribution.
    *
-   * @param ipVrfOwners For {@link KernelRoute}s with a required owned ip, this structure is used to
-   *     see whether the IP is owned.
+   * <ul>
+   *   <li>Kernel routes with no dependencies are added to {@code _independentRib}.
+   *   <li>Kernel routes with dependencies are stored in {@code _kernelConditionalRoutes}, to be
+   *       processed each data plane iteration.
+   * </ul>
    */
   @VisibleForTesting
-  void initKernelRib(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
-    _vrf.getKernelRoutes().stream()
-        .filter(kr -> shouldActivateKernelRoute(kr, ipVrfOwners))
-        .map(this::annotateRoute)
-        .forEach(_kernelRib::mergeRoute);
+  void initKernelRoutes() {
+    ImmutableList.Builder<KernelRoute> kernelConditionalRoutesBuilder = ImmutableList.builder();
+    for (KernelRoute kernelRoute : _vrf.getKernelRoutes()) {
+      if (kernelRoute.getRequiredOwnedIp() != null) {
+        kernelConditionalRoutesBuilder.add(kernelRoute);
+      } else {
+        _independentRib.mergeRoute(annotateRoute(kernelRoute));
+      }
+    }
+    _kernelConditionalRoutes = kernelConditionalRoutesBuilder.build();
   }
 
   @VisibleForTesting
-  boolean shouldActivateKernelRoute(KernelRoute kr, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+  boolean shouldActivateConditionalKernelRoute(
+      KernelRoute kr, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
     Ip requiredOwnedIp = kr.getRequiredOwnedIp();
-    if (requiredOwnedIp == null) {
-      return true;
-    }
+    assert requiredOwnedIp != null;
     return ipVrfOwners
         .getOrDefault(requiredOwnedIp, ImmutableMap.of())
         .getOrDefault(_c.getHostname(), ImmutableSet.of())
@@ -1069,7 +1089,6 @@ public final class VirtualRouter {
   final void initRibs() {
     // Non-learned-protocol RIBs
     _connectedRib = new ConnectedRib();
-    _kernelRib = new KernelRib();
     _localRib = new LocalRib();
     _generatedRib = new Rib();
     _independentRib = new Rib();
