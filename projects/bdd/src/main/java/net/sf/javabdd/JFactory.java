@@ -2012,10 +2012,14 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
+  /**
+   * Implemenation of {@link BDD#applyEx(BDD, BDDOp, BDD)} when the operation is {@link
+   * BDDFactory#and}.
+   *
+   * <p>Internally, uses {@link #orAll_rec(int[])} to save on intermediate {@link BDD#or}
+   * operations.
+   */
   private int relprod_rec(int l, int r) {
-    BddCacheDataI entry;
-    int res;
-
     if (l == BDDZERO || r == BDDZERO) {
       return BDDZERO;
     } else if (l == r) {
@@ -2030,58 +2034,63 @@ public final class JFactory extends BDDFactory {
     int LEVEL_r = LEVEL(r);
     if (LEVEL_l > quantlast && LEVEL_r > quantlast) {
       applyop = bddop_and;
-      res = and_rec(l, r);
+      int res = and_rec(l, r);
       applyop = bddop_or;
-    } else {
-      int hash = APPEXHASH(l, r, bddop_and);
-      entry = BddCache_lookupI(appexcache, hash);
-      if (entry.a == l && entry.b == r && entry.c == appexid) {
-        if (CACHESTATS) {
-          cachestats.opHit++;
-        }
-        return entry.res;
-      }
-      if (CACHESTATS) {
-        cachestats.opMiss++;
-      }
+      return res;
+    }
 
+    int hash = APPEXHASH(l, r, bddop_and);
+    BddCacheDataI entry = BddCache_lookupI(appexcache, hash);
+    if (entry.a == l && entry.b == r && entry.c == appexid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.res;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    int res;
+    if (!INSVARSET(LEVEL_l)) {
+      // l is not to be erased. Just do normal relprod_rec.
       if (LEVEL_l == LEVEL_r) {
         PUSHREF(relprod_rec(LOW(l), LOW(r)));
         PUSHREF(relprod_rec(HIGH(l), HIGH(r)));
-        if (INVARSET(LEVEL_l)) {
-          res = or_rec(READREF(2), READREF(1));
-        } else {
-          res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
-        }
+        res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
       } else if (LEVEL_l < LEVEL_r) {
         PUSHREF(relprod_rec(LOW(l), r));
         PUSHREF(relprod_rec(HIGH(l), r));
-        if (INVARSET(LEVEL_l)) {
-          res = or_rec(READREF(2), READREF(1));
-        } else {
-          res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
-        }
+        res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
       } else {
         PUSHREF(relprod_rec(l, LOW(r)));
         PUSHREF(relprod_rec(l, HIGH(r)));
-        if (INVARSET(LEVEL_r)) {
-          res = or_rec(READREF(2), READREF(1));
-        } else {
-          res = bdd_makenode(LEVEL_r, READREF(2), READREF(1));
-        }
+        res = bdd_makenode(LEVEL_r, READREF(2), READREF(1));
       }
-
       POPREF(2);
-
-      if (CACHESTATS && entry.a != -1) {
-        cachestats.opOverwrite++;
+    } else {
+      if (LEVEL_l == LEVEL_r) {
+        PUSHREF(relprod_rec(LOW(l), LOW(r)));
+        PUSHREF(relprod_rec(HIGH(l), HIGH(r)));
+      } else if (LEVEL_l < LEVEL_r) {
+        PUSHREF(relprod_rec(LOW(l), r));
+        PUSHREF(relprod_rec(HIGH(l), r));
+      } else {
+        PUSHREF(relprod_rec(l, LOW(r)));
+        PUSHREF(relprod_rec(l, HIGH(r)));
       }
-      entry.a = l;
-      entry.b = r;
-      entry.c = appexid;
-      entry.res = res;
-      entry.hash = hash;
+      res = or_rec(READREF(2), READREF(1));
+      POPREF(2);
     }
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = l;
+    entry.b = r;
+    entry.c = appexid;
+    entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
