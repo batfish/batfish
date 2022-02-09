@@ -1,26 +1,38 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.EdgeMatchers.edge;
+import static org.batfish.bddreachability.PacketPolicyToBdd.STATEMENTS_BEFORE_BREAK;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Table;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.PacketPolicyToBdd.BddPacketPolicy;
 import org.batfish.bddreachability.PacketPolicyToBdd.BoolExprToBdd;
+import org.batfish.bddreachability.transition.Transition;
+import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -53,11 +65,13 @@ import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.Statement;
 import org.batfish.datamodel.packet_policy.TrueExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.symbolic.state.PacketPolicyAction;
 import org.batfish.symbolic.state.PacketPolicyStatement;
+import org.batfish.symbolic.state.StateExpr;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -477,5 +491,50 @@ public final class PacketPolicyToBddTest {
               .getEdges();
       assertThat(edges, contains(edge(statement(0), _dropState, IDENTITY)));
     }
+  }
+
+  @Test
+  public void testLongPolicyBreaks() {
+    Return fl = new Return(new FibLookup(new LiteralVrfName("vrf")));
+    Return drop = new Return(Drop.instance());
+
+    // Construct a long packet policy, with more statements than required to create a break.
+    long tenZero = Ip.parse("10.0.0.0").asLong();
+    List<Statement> statements = new ArrayList<>();
+    int numStatements = STATEMENTS_BEFORE_BREAK + 5;
+    for (int i = 0; i < numStatements; ++i) {
+      statements.add(
+          new If(new PacketMatchExpr(matchDst(Ip.create(tenZero + i))), ImmutableList.of(drop)));
+    }
+    PacketPolicy longPolicy = new PacketPolicy(_policyName, statements, fl);
+
+    // Convert longPolicy to a graph, and evaluate it from the initial node.
+    BddPacketPolicy asBdd =
+        PacketPolicyToBdd.evaluate(
+            _hostname,
+            _ingressVrf,
+            longPolicy,
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
+    Table<StateExpr, StateExpr, Transition> table =
+        asBdd.getEdges().stream()
+            .collect(
+                ImmutableTable.toImmutableTable(
+                    Edge::getPreState, Edge::getPostState, Edge::getTransition, Transitions::or));
+    StateExpr startState = new PacketPolicyStatement(_hostname, _ingressVrf, _policyName, 0);
+    Map<StateExpr, BDD> reachableSet = new HashMap<>();
+    reachableSet.put(startState, _bddPacket.getFactory().one());
+    BDDReachabilityUtils.fixpoint(reachableSet, table, Transition::transitForward);
+    StateExpr dropped =
+        new PacketPolicyAction(_hostname, _ingressVrf, _policyName, drop.getAction());
+    StateExpr lookedUp =
+        new PacketPolicyAction(_hostname, _ingressVrf, _policyName, fl.getAction());
+    assertThat(reachableSet, allOf(hasKey(dropped), hasKey(lookedUp)));
+
+    // Ensure that the right things are dropped and looked up.
+    BDD droppedBDDs = _bddPacket.getDstIp().range(tenZero, tenZero + numStatements - 1);
+    assertThat(reachableSet, hasEntry(dropped, droppedBDDs));
+    BDD lookedUpBDDs = droppedBDDs.not();
+    assertThat(reachableSet, hasEntry(lookedUp, lookedUpBDDs));
   }
 }
