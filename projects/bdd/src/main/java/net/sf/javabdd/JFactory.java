@@ -28,6 +28,8 @@
  */
 package net.sf.javabdd;
 
+import com.carrotsearch.hppc.IntStack;
+import com.carrotsearch.hppc.procedures.IntProcedure;
 import java.io.PrintStream;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -77,6 +79,7 @@ public final class JFactory extends BDDFactory {
 
   private JFactory() {
     supportSet = new int[0];
+    bddrefstack = new IntStack();
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -609,8 +612,7 @@ public final class JFactory extends BDDFactory {
   private int bddfreenum; /* Number of free nodes */
   private int bddproduced; /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
-  private int[] bddrefstack; /* Internal node reference stack */
-  private int bddrefstacktop; /* Internal node reference stack top */
+  private final IntStack bddrefstack; /* BDDs referenced during the current computation. */
   private int[] bddvar2level; /* Variable -> level table */
   private int[] bddlevel2var; /* Level -> variable table */
   private boolean bddresized; /* Flag indicating a resize of the nodetable */
@@ -3385,20 +3387,20 @@ public final class JFactory extends BDDFactory {
   }
 
   private void INITREF() {
-    bddrefstacktop = 0;
+    bddrefstack.clear();
   }
 
   private int PUSHREF(int a) {
-    bddrefstack[bddrefstacktop++] = a;
+    bddrefstack.push(a);
     return a;
   }
 
   private int READREF(int a) {
-    return bddrefstack[bddrefstacktop - a];
+    return bddrefstack.get(bddrefstack.elementsCount - a);
   }
 
   private void POPREF(int a) {
-    bddrefstacktop -= a;
+    bddrefstack.discard(a);
   }
 
   private int bdd_nodecount(int r) {
@@ -3559,9 +3561,7 @@ public final class JFactory extends BDDFactory {
       gbc_handler(true, gcstats);
     }
 
-    for (int r = 0; r < bddrefstacktop; r++) {
-      bdd_mark(bddrefstack[r]);
-    }
+    bddrefstack.forEach((IntProcedure) this::bdd_mark);
 
     for (int n = 0; n < bddnodesize; n++) {
       if (HASREF(n)) {
@@ -4491,7 +4491,6 @@ public final class JFactory extends BDDFactory {
     bdd_pairs_done();
 
     bddnodes = null;
-    bddrefstack = null;
     bddvarset = null;
     bddvar2level = null;
     bddlevel2var = null;
@@ -4657,9 +4656,6 @@ public final class JFactory extends BDDFactory {
       System.arraycopy(bddvar2level, 0, bddvar2level2, 0, bddvar2level.length);
       bddvar2level = bddvar2level2;
     }
-
-    bddrefstack = new int[num * 2 + 1];
-    bddrefstacktop = 0;
 
     for (bdv = bddvarnum; bddvarnum < num; bddvarnum++) {
       bddvarset[bddvarnum * 2] = PUSHREF(bdd_makenode(bddvarnum, BDDZERO, BDDONE));

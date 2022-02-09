@@ -68,6 +68,7 @@
         <guava.version>31.0.1-jre</guava.version>
         <guava-eea.version>0.0.1</guava-eea.version>
         <hamcrest.version>2.2</hamcrest.version>
+        <hppc.version>0.9.1</hppc.version>
         <icu4j.version>69.1</icu4j.version>
         <jackson.version>2.11.4</jackson.version>
         <javax-activation.version>1.1</javax-activation.version>
@@ -649,6 +650,12 @@
             </dependency>
 
             <!-- External modules. -->
+            <dependency>
+                <groupId>com.carrotsearch</groupId>
+                <artifactId>hppc</artifactId>
+                <version>${hppc.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
