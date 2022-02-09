@@ -117,6 +117,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -140,6 +141,8 @@ import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.AccessList;
 import org.batfish.vendor.a10.representation.AccessListAddressAny;
 import org.batfish.vendor.a10.representation.AccessListAddressHost;
+import org.batfish.vendor.a10.representation.AccessListAddressPrefix;
+import org.batfish.vendor.a10.representation.AccessListAddressWildcard;
 import org.batfish.vendor.a10.representation.AccessListRule;
 import org.batfish.vendor.a10.representation.AccessListRuleIcmp;
 import org.batfish.vendor.a10.representation.AccessListRuleIp;
@@ -2279,37 +2282,67 @@ public class A10GrammarTest {
   public void testAccessListExtraction() {
     A10Configuration vc = parseVendorConfig("access_list");
     Map<String, AccessList> acls = vc.getAccessLists();
+    assertThat(acls, hasKeys("100", "ACL1"));
+    {
+      AccessList acl = acls.get("ACL1");
+      assertThat(acl.getName(), equalTo("ACL1"));
+      List<AccessListRule> rules = acl.getRules();
 
-    assertThat(acls, hasKey(equalTo("ACL1")));
-    AccessList acl = acls.get("ACL1");
-    assertThat(acl.getName(), equalTo("ACL1"));
-    List<AccessListRule> rules = acl.getRules();
+      assertThat(rules, iterableWithSize(5));
+      assertThat(rules.get(0), instanceOf(AccessListRuleIcmp.class));
+      assertThat(rules.get(1), instanceOf(AccessListRuleTcp.class));
+      assertThat(rules.get(2), instanceOf(AccessListRuleUdp.class));
+      assertThat(rules.get(3), instanceOf(AccessListRuleIp.class));
+      assertThat(rules.get(4), instanceOf(AccessListRuleUdp.class));
+      AccessListRuleIcmp rule1 = (AccessListRuleIcmp) rules.get(0);
+      AccessListRuleTcp rule2 = (AccessListRuleTcp) rules.get(1);
+      AccessListRuleUdp rule3 = (AccessListRuleUdp) rules.get(2);
 
-    assertThat(rules, iterableWithSize(5));
-    assertThat(rules.get(0), instanceOf(AccessListRuleIcmp.class));
-    assertThat(rules.get(1), instanceOf(AccessListRuleTcp.class));
-    assertThat(rules.get(2), instanceOf(AccessListRuleUdp.class));
-    assertThat(rules.get(3), instanceOf(AccessListRuleIp.class));
-    assertThat(rules.get(4), instanceOf(AccessListRuleUdp.class));
-    AccessListRuleIcmp rule1 = (AccessListRuleIcmp) rules.get(0);
-    AccessListRuleTcp rule2 = (AccessListRuleTcp) rules.get(1);
-    AccessListRuleUdp rule3 = (AccessListRuleUdp) rules.get(2);
+      assertThat(rule1.getAction(), equalTo(AccessListRule.Action.PERMIT));
+      assertThat(rule1.getSource(), instanceOf(AccessListAddressHost.class));
+      assertThat(
+          ((AccessListAddressHost) rule1.getSource()).getHost(), equalTo(Ip.parse("10.10.10.10")));
+      assertThat(rule1.getDestination(), instanceOf(AccessListAddressAny.class));
 
-    assertThat(rule1.getAction(), equalTo(AccessListRule.Action.PERMIT));
-    assertThat(rule1.getSource(), instanceOf(AccessListAddressHost.class));
-    assertThat(
-        ((AccessListAddressHost) rule1.getSource()).getHost(), equalTo(Ip.parse("10.10.10.10")));
-    assertThat(rule1.getDestination(), instanceOf(AccessListAddressAny.class));
+      assertThat(rule2.getAction(), equalTo(AccessListRule.Action.DENY));
+      assertThat(rule2.getSource(), instanceOf(AccessListAddressAny.class));
+      assertThat(rule2.getDestination(), instanceOf(AccessListAddressHost.class));
+      assertThat(
+          ((AccessListAddressHost) rule2.getDestination()).getHost(),
+          equalTo(Ip.parse("10.11.11.11")));
+      assertThat(rule2.getDestinationRange(), equalTo(new SubRange(1, 100)));
 
-    assertThat(rule2.getAction(), equalTo(AccessListRule.Action.DENY));
-    assertThat(rule2.getSource(), instanceOf(AccessListAddressAny.class));
-    assertThat(rule2.getDestination(), instanceOf(AccessListAddressHost.class));
-    assertThat(
-        ((AccessListAddressHost) rule2.getDestination()).getHost(),
-        equalTo(Ip.parse("10.11.11.11")));
-    assertThat(rule2.getDestinationRange(), equalTo(new SubRange(1, 100)));
+      assertThat(rule3.getDestinationRange(), equalTo(new SubRange(2, 99)));
+    }
+    {
+      AccessList acl = acls.get("100");
+      assertThat(acl.getName(), equalTo("100"));
+      List<AccessListRule> rules = acl.getRules();
 
-    assertThat(rule3.getDestinationRange(), equalTo(new SubRange(2, 99)));
+      assertThat(rules, iterableWithSize(4));
+      assertThat(rules.get(0), instanceOf(AccessListRuleIcmp.class));
+      assertThat(rules.get(1), instanceOf(AccessListRuleTcp.class));
+      assertThat(rules.get(2), instanceOf(AccessListRuleUdp.class));
+      assertThat(rules.get(3), instanceOf(AccessListRuleIp.class));
+
+      AccessListRuleIcmp rule1 = (AccessListRuleIcmp) rules.get(0);
+      assertThat(rule1.getAction(), equalTo(AccessListRule.Action.PERMIT));
+      assertThat(rule1.getSource(), instanceOf(AccessListAddressHost.class));
+      assertThat(
+          ((AccessListAddressHost) rule1.getSource()).getHost(), equalTo(Ip.parse("10.10.10.10")));
+      assertThat(rule1.getDestination(), instanceOf(AccessListAddressAny.class));
+
+      AccessListRuleTcp rule2 = (AccessListRuleTcp) rules.get(1);
+      assertThat(rule2.getAction(), equalTo(AccessListRule.Action.DENY));
+      assertThat(rule2.getSource(), instanceOf(AccessListAddressPrefix.class));
+      assertThat(
+          ((AccessListAddressPrefix) rule2.getSource()).getPrefix(),
+          equalTo(Prefix.parse("1.1.1.0/24")));
+      assertThat(rule2.getDestination(), instanceOf(AccessListAddressWildcard.class));
+      assertThat(
+          ((AccessListAddressWildcard) rule2.getDestination()).getWildcard(),
+          equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("2.2.2.2"), Ip.parse("0.255.0.255"))));
+    }
   }
 
   /**
@@ -2376,9 +2409,11 @@ public class A10GrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
+    assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "100"));
     assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "ACL_UNUSED"));
     assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "ACL1"));
 
+    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "100", 0));
     assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL_UNUSED", 0));
     assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL1", 1));
   }

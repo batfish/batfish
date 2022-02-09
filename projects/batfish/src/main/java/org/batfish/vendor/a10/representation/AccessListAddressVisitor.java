@@ -9,4 +9,8 @@ public interface AccessListAddressVisitor<T> {
   T visitAny(AccessListAddressAny address);
 
   T visitHost(AccessListAddressHost address);
+
+  T visitPrefix(AccessListAddressPrefix prefix);
+
+  T visitWildcard(AccessListAddressWildcard wildcard);
 }

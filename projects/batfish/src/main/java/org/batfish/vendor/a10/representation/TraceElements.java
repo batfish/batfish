@@ -44,6 +44,30 @@ public final class TraceElements {
         .build();
   }
 
+  public static TraceElement traceElementForSourcePrefix(AccessListAddressPrefix prefix) {
+    return TraceElement.builder()
+        .add(String.format("Matched source prefix %s", prefix.getPrefix()))
+        .build();
+  }
+
+  public static TraceElement traceElementForDestPrefix(AccessListAddressPrefix prefix) {
+    return TraceElement.builder()
+        .add(String.format("Matched destination prefix %s", prefix.getPrefix()))
+        .build();
+  }
+
+  public static TraceElement traceElementForSourceWildcard(AccessListAddressWildcard wildcard) {
+    return TraceElement.builder()
+        .add(String.format("Matched source wildcard %s", wildcard.getWildcard()))
+        .build();
+  }
+
+  public static TraceElement traceElementForDestWildcard(AccessListAddressWildcard wildcard) {
+    return TraceElement.builder()
+        .add(String.format("Matched destination wildcard %s", wildcard.getWildcard()))
+        .build();
+  }
+
   public static TraceElement traceElementForVirtualServer(VirtualServer server, String filename) {
     String serverName = server.getName();
     return TraceElement.builder()

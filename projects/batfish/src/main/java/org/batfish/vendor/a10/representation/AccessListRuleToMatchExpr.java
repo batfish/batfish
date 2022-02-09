@@ -2,10 +2,14 @@ package org.batfish.vendor.a10.representation;
 
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForDestAddressAny;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForDestHost;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForDestPrefix;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForDestWildcard;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForProtocol;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForProtocolPortRange;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForSourceAddressAny;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForSourceHost;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForSourcePrefix;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForSourceWildcard;
 
 import com.google.common.collect.ImmutableList;
 import javax.annotation.Nullable;
@@ -99,6 +103,22 @@ public final class AccessListRuleToMatchExpr implements AccessListRuleVisitor<Ac
         return _isSource
             ? AclLineMatchExprs.matchSrc(ip, traceElementForSourceHost(host))
             : AclLineMatchExprs.matchDst(ip, traceElementForDestHost(host));
+      }
+
+      @Override
+      public AclLineMatchExpr visitPrefix(AccessListAddressPrefix prefix) {
+        IpSpace prefixIpSpace = prefix.getPrefix().toIpSpace();
+        return _isSource
+            ? AclLineMatchExprs.matchSrc(prefixIpSpace, traceElementForSourcePrefix(prefix))
+            : AclLineMatchExprs.matchDst(prefixIpSpace, traceElementForDestPrefix(prefix));
+      }
+
+      @Override
+      public AclLineMatchExpr visitWildcard(AccessListAddressWildcard wildcard) {
+        IpSpace wildcardIpSpace = wildcard.getWildcard().toIpSpace();
+        return _isSource
+            ? AclLineMatchExprs.matchSrc(wildcardIpSpace, traceElementForSourceWildcard(wildcard))
+            : AclLineMatchExprs.matchDst(wildcardIpSpace, traceElementForDestWildcard(wildcard));
       }
 
       public AccessListAddressToMatchExprImpl(boolean isSource) {

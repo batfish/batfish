@@ -49,6 +49,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -109,6 +110,8 @@ import org.batfish.vendor.a10.representation.AccessList;
 import org.batfish.vendor.a10.representation.AccessListAddress;
 import org.batfish.vendor.a10.representation.AccessListAddressAny;
 import org.batfish.vendor.a10.representation.AccessListAddressHost;
+import org.batfish.vendor.a10.representation.AccessListAddressPrefix;
+import org.batfish.vendor.a10.representation.AccessListAddressWildcard;
 import org.batfish.vendor.a10.representation.AccessListRule;
 import org.batfish.vendor.a10.representation.AccessListRuleIcmp;
 import org.batfish.vendor.a10.representation.AccessListRuleIp;
@@ -241,6 +244,27 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitS_access_list(A10Parser.S_access_listContext ctx) {
+    toInteger(ctx, ctx.access_list_number())
+        .ifPresent(
+            accessListNum -> {
+              if (accessListNum < 100) {
+                // TODO support standard access lists
+                todo(ctx);
+                return;
+              }
+              toAclRule(ctx.sal_rule_definition())
+                  .ifPresent(
+                      rule -> {
+                        // Will not clash with named access lists; they can't start with a digit
+                        String aclName = String.valueOf(accessListNum);
+                        _c.defineStructure(A10StructureType.ACCESS_LIST, aclName, ctx);
+                        _c.getOrCreateAccessList(aclName).addRule(rule);
+                      });
+            });
+  }
+
+  @Override
   public void enterSi_access_list(A10Parser.Si_access_listContext ctx) {
     _currentAccessList =
         toString(ctx, ctx.access_list_name())
@@ -262,13 +286,21 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     toAclRule(ctx).ifPresent(_currentAccessList::addRule);
   }
 
+  private Optional<AccessListRule> toAclRule(A10Parser.Sal_rule_definitionContext ctx) {
+    String lineText = getFullText(ctx);
+    AccessListRule.Action action = toAclAction(ctx.access_list_action());
+    AccessListAddress source = toAclAddress(ctx.source);
+    AccessListAddress destination = toAclAddress(ctx.destination);
+    return toAclRule(lineText, action, source, destination, ctx.access_list_protocol(), null);
+  }
+
   /**
    * Convert a rule definition context into an {@link AccessListRule}. Warns and returns {@link
    * Optional#empty()} if the definition is not valid.
    */
   private Optional<AccessListRule> toAclRule(A10Parser.Sial_rule_definitionContext ctx) {
     String lineText = getFullText(ctx);
-    AccessListRule.Action action = toAclAction(ctx.sialr_action());
+    AccessListRule.Action action = toAclAction(ctx.access_list_action());
     AccessListAddress source = toAclAddress(ctx.source);
     AccessListAddress destination = toAclAddress(ctx.destination);
 
@@ -280,23 +312,38 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         return Optional.empty();
       }
     }
+    return toAclRule(
+        lineText,
+        action,
+        source,
+        destination,
+        ctx.access_list_protocol(),
+        maybeDestRange.orElse(null));
+  }
 
-    if (ctx.sialr_protocol().ICMP() != null) {
+  private Optional<AccessListRule> toAclRule(
+      String lineText,
+      AccessListRule.Action action,
+      AccessListAddress source,
+      AccessListAddress destination,
+      A10Parser.Access_list_protocolContext protocolCtx,
+      @Nullable SubRange destRange) {
+    if (protocolCtx.ICMP() != null) {
       return Optional.of(new AccessListRuleIcmp(action, source, destination, lineText));
-    } else if (ctx.sialr_protocol().IP() != null) {
+    } else if (protocolCtx.IP() != null) {
       return Optional.of(new AccessListRuleIp(action, source, destination, lineText));
-    } else if (ctx.sialr_protocol().TCP() != null) {
+    } else if (protocolCtx.TCP() != null) {
       AccessListRuleTcp tcp = new AccessListRuleTcp(action, source, destination, lineText);
-      maybeDestRange.ifPresent(tcp::setDestinationRange);
+      tcp.setDestinationRange(destRange);
       return Optional.of(tcp);
     }
-    assert ctx.sialr_protocol().UDP() != null;
+    assert protocolCtx.UDP() != null;
     AccessListRuleUdp udp = new AccessListRuleUdp(action, source, destination, lineText);
-    maybeDestRange.ifPresent(udp::setDestinationRange);
+    udp.setDestinationRange(destRange);
     return Optional.of(udp);
   }
 
-  private AccessListAddress toAclAddress(A10Parser.Access_list_addressContext ctx) {
+  private @Nonnull AccessListAddress toAclAddress(A10Parser.Access_list_addressContext ctx) {
     if (ctx.access_list_address_any() != null) {
       return AccessListAddressAny.INSTANCE;
     }
@@ -304,7 +351,26 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return new AccessListAddressHost(toIp(ctx.access_list_address_host().address));
   }
 
-  private AccessListRule.Action toAclAction(A10Parser.Sialr_actionContext ctx) {
+  private @Nonnull AccessListAddress toAclAddress(A10Parser.Sal_addressContext ctx) {
+    if (ctx.access_list_address_any() != null) {
+      return AccessListAddressAny.INSTANCE;
+    } else if (ctx.access_list_address_host() != null) {
+      return new AccessListAddressHost(toIp(ctx.access_list_address_host().address));
+    }
+    assert ctx.ip_wildcard() != null;
+    A10Parser.Ip_wildcard_maskContext mask = ctx.ip_wildcard().ip_wildcard_mask();
+    if (mask.ip_slash_prefix() != null) {
+      return new AccessListAddressPrefix(
+          Prefix.parse(
+              ctx.ip_wildcard().ip_address().getText() + mask.ip_slash_prefix().getText()));
+    }
+    assert mask.ip_address() != null;
+    return new AccessListAddressWildcard(
+        IpWildcard.ipWithWildcardMask(
+            toIp(ctx.ip_wildcard().ip_address()), toIp(mask.ip_address())));
+  }
+
+  private AccessListRule.Action toAclAction(A10Parser.Access_list_actionContext ctx) {
     if (ctx.PERMIT() != null) {
       return AccessListRule.Action.PERMIT;
     }
@@ -2555,6 +2621,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Access_list_numberContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint8(), ACCESS_LIST_NUMBER_RANGE, "access-list number");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, A10Parser.Interface_mtuContext ctx) {
     return toIntegerInSpace(messageCtx, ctx.uint16(), INTERFACE_MTU_RANGE, "interface mtu");
   }
@@ -2729,6 +2801,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return text.getText().replaceAll("\\\\", "");
   }
 
+  private static final IntegerSpace ACCESS_LIST_NUMBER_RANGE =
+      IntegerSpace.of(Range.closed(1, 199));
   private static final IntegerSpace CONNECTION_LIMIT_RANGE =
       IntegerSpace.of(Range.closed(1, 64000000));
   private static final IntegerSpace CONNECTION_WEIGHT_RANGE =

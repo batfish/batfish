@@ -1,6 +1,7 @@
 parser grammar A10Parser;
 
 import
+  A10_access_list,
   A10_common,
   A10_floating_ip,
   A10_ha,
@@ -29,7 +30,8 @@ a10_configuration: NEWLINE? statement+ EOF;
 
 statement
 :
-   s_floating_ip
+   s_access_list
+   | s_floating_ip
    | s_health_monitor
    | s_hostname
    | s_interface

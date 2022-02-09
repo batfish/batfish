@@ -1,6 +1,10 @@
 !BATFISH_FORMAT: a10_acos
 hostname access_list
 !
+access-list 100 permit icmp host 10.10.10.10 any
+access-list 100 deny tcp 1.1.1.1 /24 2.2.2.2 0.255.0.255
+access-list 100 deny udp any any
+access-list 100 permit ip any any
 !
 ip access-list ACL1
   permit icmp host 10.10.10.10 any

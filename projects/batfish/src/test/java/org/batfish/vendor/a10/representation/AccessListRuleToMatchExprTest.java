@@ -9,6 +9,8 @@ import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -43,6 +45,32 @@ public class AccessListRuleToMatchExprTest {
             "lineText");
     AclLineMatchExpr matchExpr = AccessListRuleToMatchExpr.INSTANCE.visit(ruleDest);
     assertThat(_tb.toBDD(matchExpr), equalTo(_tb.toBDD(AclLineMatchExprs.matchDst(dest))));
+  }
+
+  @Test
+  public void testPrefixConstraint() {
+    Prefix src = Prefix.parse("1.1.1.0/24");
+    AccessListRule ruleDest =
+        new AccessListRuleIp(
+            AccessListRule.Action.DENY,
+            new AccessListAddressPrefix(src),
+            AccessListAddressAny.INSTANCE,
+            "lineText");
+    AclLineMatchExpr matchExpr = AccessListRuleToMatchExpr.INSTANCE.visit(ruleDest);
+    assertThat(_tb.toBDD(matchExpr), equalTo(_tb.toBDD(AclLineMatchExprs.matchSrc(src))));
+  }
+
+  @Test
+  public void testWildcardConstraint() {
+    IpWildcard src = IpWildcard.ipWithWildcardMask(Ip.parse("1.1.1.1"), Ip.parse("0.255.0.255"));
+    AccessListRule ruleDest =
+        new AccessListRuleIp(
+            AccessListRule.Action.DENY,
+            new AccessListAddressWildcard(src),
+            AccessListAddressAny.INSTANCE,
+            "lineText");
+    AclLineMatchExpr matchExpr = AccessListRuleToMatchExpr.INSTANCE.visit(ruleDest);
+    assertThat(_tb.toBDD(matchExpr), equalTo(_tb.toBDD(AclLineMatchExprs.matchSrc(src))));
   }
 
   @Test
