@@ -43,13 +43,16 @@ import static org.batfish.datamodel.tracking.TrackMethodReference.negated;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
+import static org.batfish.vendor.a10.representation.A10Configuration.VIRTUAL_SERVERS_PACKET_POLICY_NAME;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
+import static org.batfish.vendor.a10.representation.A10Configuration.packetPolicyName;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_FLOATING_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
+import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
 import static org.batfish.vendor.a10.representation.A10Conversion.generatedFailedTrackMethodName;
 import static org.batfish.vendor.a10.representation.A10Conversion.generatedServerTrackMethodName;
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
@@ -131,6 +134,11 @@ import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TransformationStep;
+import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.tracking.DecrementPriority;
@@ -2365,25 +2373,97 @@ public class A10GrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
 
-    Flow permitted =
+    assertThat(c.getIpAccessLists(), hasKeys(computeAclName("100"), computeAclName("ACL1")));
+    String packetPolicy100 = packetPolicyName("100");
+    String packetPolicyAcl1 = packetPolicyName("ACL1");
+    assertThat(
+        c.getPacketPolicies(),
+        hasKeys(packetPolicy100, packetPolicyAcl1, VIRTUAL_SERVERS_PACKET_POLICY_NAME));
+
+    Flow.Builder flowBuilder =
         Flow.builder()
             .setIngressNode(hostname)
-            .setIngressInterface("Ethernet12")
             .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(Ip.parse("10.0.2.11"))
             // Arbitrary source port
             .setSrcPort(4096)
             .setDstIp(Ip.parse("10.0.1.101"))
-            .setDstPort(443)
-            .build();
-    Flow denied = permitted.toBuilder().setSrcIp(Ip.parse("10.0.2.10")).build();
-    SortedMap<Flow, List<Trace>> traces =
-        batfish
-            .getTracerouteEngine(snapshot)
-            .computeTraces(ImmutableSet.of(permitted, denied), false);
+            .setDstPort(443);
 
-    assertTrue(traces.get(permitted).get(0).getDisposition().isSuccessful());
-    assertFalse(traces.get(denied).get(0).getDisposition().isSuccessful());
+    {
+      // Test that a flow entering real client hosts is correctly filtered by virtual server ACL
+      Flow permitted =
+          flowBuilder.setIngressInterface("Ethernet12").setSrcIp(Ip.parse("10.0.2.11")).build();
+      Flow denied = permitted.toBuilder().setSrcIp(Ip.parse("10.0.2.10")).build();
+      SortedMap<Flow, List<Trace>> traces =
+          batfish
+              .getTracerouteEngine(snapshot)
+              .computeTraces(ImmutableSet.of(permitted, denied), false);
+
+      assertTrue(traces.get(permitted).get(0).getDisposition().isSuccessful());
+      assertFalse(traces.get(denied).get(0).getDisposition().isSuccessful());
+    }
+    {
+      // Test that ethernet20 is correctly guarded by access-list 100
+      assertThat(
+          c.getAllInterfaces().get("Ethernet20").getPacketPolicyName(), equalTo(packetPolicy100));
+      PacketPolicy policy = c.getPacketPolicies().get(packetPolicy100);
+      Flow permitted =
+          flowBuilder.setIngressInterface("Ethernet20").setSrcIp(Ip.parse("10.0.2.5")).build();
+      Flow denied = permitted.toBuilder().setSrcIp(Ip.parse("10.10.10.10")).build();
+      assertThat(
+          PacketPolicyEvaluator.evaluate(
+                  permitted,
+                  "Ethernet20",
+                  DEFAULT_VRF_NAME,
+                  policy,
+                  c.getIpAccessLists(),
+                  ImmutableMap.of(),
+                  ImmutableMap.of())
+              .getAction(),
+          equalTo(new FibLookup(IngressInterfaceVrf.instance())));
+      assertThat(
+          PacketPolicyEvaluator.evaluate(
+                  denied,
+                  "Ethernet20",
+                  DEFAULT_VRF_NAME,
+                  policy,
+                  c.getIpAccessLists(),
+                  ImmutableMap.of(),
+                  ImmutableMap.of())
+              .getAction(),
+          equalTo(Drop.instance()));
+    }
+    {
+      // Test that ethernet21 is correctly guarded by access-list ACL1
+      assertThat(
+          c.getAllInterfaces().get("Ethernet21").getPacketPolicyName(), equalTo(packetPolicyAcl1));
+      PacketPolicy policy = c.getPacketPolicies().get(packetPolicyAcl1);
+      Flow permitted =
+          flowBuilder.setIngressInterface("Ethernet21").setSrcIp(Ip.parse("10.0.2.11")).build();
+      Flow denied = permitted.toBuilder().setSrcIp(Ip.parse("10.0.2.10")).build();
+      assertThat(
+          PacketPolicyEvaluator.evaluate(
+                  permitted,
+                  "Ethernet21",
+                  DEFAULT_VRF_NAME,
+                  policy,
+                  c.getIpAccessLists(),
+                  ImmutableMap.of(),
+                  ImmutableMap.of())
+              .getAction(),
+          equalTo(new FibLookup(IngressInterfaceVrf.instance())));
+      assertThat(
+          PacketPolicyEvaluator.evaluate(
+                  denied,
+                  "Ethernet21",
+                  DEFAULT_VRF_NAME,
+                  policy,
+                  c.getIpAccessLists(),
+                  ImmutableMap.of(),
+                  ImmutableMap.of())
+              .getAction(),
+          equalTo(Drop.instance()));
+    }
   }
 
   @Test
@@ -2421,9 +2501,9 @@ public class A10GrammarTest {
     assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "ACL_UNUSED"));
     assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "ACL1"));
 
-    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "100", 0));
+    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "100", 1));
     assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL_UNUSED", 0));
-    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL1", 1));
+    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL1", 2));
   }
 
   @Test

@@ -134,6 +134,7 @@ HTTPS
 ;
 ICMP: 'icmp';
 ID: 'id';
+IN: 'in';
 INTERVAL: 'interval';
 IMAP: 'imap';
 IP: 'ip';
