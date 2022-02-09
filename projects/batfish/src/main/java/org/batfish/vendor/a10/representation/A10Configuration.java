@@ -823,7 +823,12 @@ public final class A10Configuration extends VendorConfiguration {
               iface.setFirewallSessionInterfaceInfo(
                   new FirewallSessionInterfaceInfo(
                       POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
-              String incomingFilter = _ifaceNametoIface.get(name).getAccessListIn();
+              String incomingFilter =
+                  // TODO Can trunk interfaces configure access-list?
+                  //  They are not included in _ifaceNametoIface.
+                  Optional.ofNullable(_ifaceNametoIface.get(name))
+                      .map(Interface::getAccessListIn)
+                      .orElse(null);
               String policyName = packetPolicyName(incomingFilter);
 
               // Create packet policy if it doesn't already exist
