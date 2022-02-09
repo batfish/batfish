@@ -28,6 +28,8 @@
  */
 package net.sf.javabdd;
 
+import com.carrotsearch.hppc.IntHashSet;
+import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
 import com.carrotsearch.hppc.procedures.IntProcedure;
 import java.io.PrintStream;
@@ -2017,11 +2019,11 @@ public final class JFactory extends BDDFactory {
     if (l == BDDZERO || r == BDDZERO) {
       return BDDZERO;
     } else if (l == r) {
-      return quant_rec(l);
+      return exist_rec(l);
     } else if (l == BDDONE) {
-      return quant_rec(r);
+      return exist_rec(r);
     } else if (r == BDDONE) {
-      return quant_rec(l);
+      return exist_rec(l);
     }
 
     int LEVEL_l = LEVEL(l);
@@ -2199,11 +2201,11 @@ public final class JFactory extends BDDFactory {
         if (l == BDDONE || r == BDDONE) {
           return BDDONE;
         } else if (l == r) {
-          return quant_rec(l);
+          return exist_rec(l);
         } else if (l == BDDZERO) {
-          return quant_rec(r);
+          return exist_rec(r);
         } else if (r == BDDZERO) {
-          return quant_rec(l);
+          return exist_rec(l);
         }
         break;
       case bddop_xor:
@@ -2448,6 +2450,103 @@ public final class JFactory extends BDDFactory {
     }
 
     POPREF(2);
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = r;
+    entry.c = quantid;
+    entry.res = res;
+    entry.hash = hash;
+
+    return res;
+  }
+
+  /**
+   * Variant of {@link #quant_rec(int)} specialized for when {@link #applyop} is {@link #bddop_or},
+   * and using {@link #orAll_rec(int[])}.
+   */
+  private int exist_rec(int r) {
+    BddCacheDataI entry;
+    int res;
+
+    if (r < 2 || LEVEL(r) > quantlast) {
+      return r;
+    }
+
+    int hash = QUANTHASH(r);
+    entry = BddCache_lookupI(quantcache, hash);
+    if (entry.a == r && entry.c == quantid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.res;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    if (INVARSET(LEVEL(r))) {
+      // The root node of this BDD is meant to be erased. Collect all its non-erased children
+      // and combine them. We can short-circuit any time we find an erased child that is BDDONE.
+      int pushedRefs = 0;
+      IntStack toProcess = new IntStack(); // all have roots that will be erased
+      IntSet processed = new IntHashSet(); // nothing gets in toProcess if not new here
+      IntSet toOr = new IntHashSet(); // will be orAll'd to get the final result.
+      processed.add(r);
+      toProcess.push(r);
+      while (!toProcess.isEmpty()) {
+        int bdd = toProcess.pop();
+        int left = LOW(bdd);
+        int right = HIGH(bdd);
+        if (left == BDDONE || right == BDDONE) {
+          // Short-circuit to true.
+          POPREF(pushedRefs);
+          return BDDONE;
+        }
+        if (left == BDDZERO) {
+          // do nothing
+        } else if (INVARSET(LEVEL(left))) {
+          if (processed.add(left)) {
+            // No need to push a ref, since bdd is referenced.
+            toProcess.push(left);
+          }
+        } else {
+          int quantLeft = exist_rec(left);
+          if (quantLeft == BDDONE) {
+            POPREF(pushedRefs);
+            return BDDONE;
+          }
+          PUSHREF(quantLeft);
+          toOr.add(quantLeft);
+          ++pushedRefs;
+        }
+        if (right == BDDZERO) {
+          // do nothing
+        } else if (INVARSET(LEVEL(right))) {
+          if (processed.add(right)) {
+            // No need to push a ref, since bdd is referenced.
+            toProcess.push(right);
+          }
+        } else {
+          int quantRight = exist_rec(right);
+          if (quantRight == BDDONE) {
+            POPREF(pushedRefs);
+            return BDDONE;
+          }
+          PUSHREF(quantRight);
+          toOr.add(quantRight);
+          ++pushedRefs;
+        }
+      }
+      res = orAll_rec(toOr.toArray());
+      POPREF(pushedRefs);
+    } else {
+      PUSHREF(exist_rec(LOW(r)));
+      PUSHREF(exist_rec(HIGH(r)));
+      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      POPREF(2);
+    }
 
     if (CACHESTATS && entry.a != -1) {
       cachestats.opOverwrite++;
@@ -2799,7 +2898,7 @@ public final class JFactory extends BDDFactory {
     quantid = (var << 3) | CACHEID_EXIST; /* FIXME: range */
 
     INITREF();
-    int res = quant_rec(r);
+    int res = exist_rec(r);
     checkresize();
 
     return res;
