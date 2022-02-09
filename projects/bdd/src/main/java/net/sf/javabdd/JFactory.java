@@ -2467,15 +2467,12 @@ public final class JFactory extends BDDFactory {
    * and using {@link #orAll_rec(int[])}.
    */
   private int exist_rec(int r) {
-    BddCacheDataI entry;
-    int res;
-
     if (r < 2 || LEVEL(r) > quantlast) {
       return r;
     }
 
     int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
+    BddCacheDataI entry = BddCache_lookupI(quantcache, hash);
     if (entry.a == r && entry.c == quantid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2485,6 +2482,8 @@ public final class JFactory extends BDDFactory {
     if (CACHESTATS) {
       cachestats.opMiss++;
     }
+
+    int res = -1; // indicates that it has not been set.
 
     if (INVARSET(LEVEL(r))) {
       // The root node of this BDD is meant to be erased. Collect all its non-erased children
@@ -2501,8 +2500,8 @@ public final class JFactory extends BDDFactory {
         int right = HIGH(bdd);
         if (left == BDDONE || right == BDDONE) {
           // Short-circuit to true.
-          POPREF(pushedRefs);
-          return BDDONE;
+          res = BDDONE;
+          break;
         }
         if (left == BDDZERO) {
           // do nothing
@@ -2514,8 +2513,8 @@ public final class JFactory extends BDDFactory {
         } else {
           int quantLeft = exist_rec(left);
           if (quantLeft == BDDONE) {
-            POPREF(pushedRefs);
-            return BDDONE;
+            res = BDDONE;
+            break;
           }
           PUSHREF(quantLeft);
           toOr.add(quantLeft);
@@ -2531,15 +2530,17 @@ public final class JFactory extends BDDFactory {
         } else {
           int quantRight = exist_rec(right);
           if (quantRight == BDDONE) {
-            POPREF(pushedRefs);
-            return BDDONE;
+            res = BDDONE;
+            break;
           }
           PUSHREF(quantRight);
           toOr.add(quantRight);
           ++pushedRefs;
         }
       }
-      res = orAll_rec(toOr.toArray());
+      if (res == -1) {
+        res = orAll_rec(toOr.toArray());
+      } // else it was set above and we can skip the orAll
       POPREF(pushedRefs);
     } else {
       PUSHREF(exist_rec(LOW(r)));
