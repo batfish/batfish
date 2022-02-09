@@ -1,6 +1,7 @@
 !BATFISH_FORMAT: a10_acos
 hostname access_list_ref
 !
+access-list 100 permit ip any any
 !
 ip access-list ACL_UNUSED
   permit ip any any
