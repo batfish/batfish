@@ -153,6 +153,14 @@ class PacketPolicyToBdd {
   }
 
   /**
+   * Observationally, the graph construction time for large PacketPolicies is much less if we
+   * arbitrarily introduce breaks in the statement list.
+   *
+   * <p>Used in {@link StatementToBdd#visitStatements(List)}.
+   */
+  static final int STATEMENTS_BEFORE_BREAK = 100;
+
+  /**
    * Walks all the statements in the packet policy, statefully building up BDDs based on boolean
    * expressions that are encountered. When a {@link Return} is encountered, calls into a
    */
@@ -183,11 +191,17 @@ class PacketPolicyToBdd {
     }
 
     public void visitStatements(List<Statement> statements) {
+      int counter = 0;
       for (Statement statement : statements) {
         visit(statement);
         if (_nextEdgeConstraint.isZero()) {
           // does not fall through, so exit immediately
           return;
+        }
+        ++counter;
+        if (counter % STATEMENTS_BEFORE_BREAK == 0) {
+          addEdge(currentStatement(), nextStatement(), _nextEdgeConstraint);
+          _nextEdgeConstraint = _one;
         }
       }
     }
