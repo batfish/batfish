@@ -17,6 +17,11 @@ public class Interface implements Serializable {
   public static final int DEFAULT_MTU = 1500;
 
   @Nullable
+  public String getAccessListIn() {
+    return _accessListIn;
+  }
+
+  @Nullable
   public Boolean getEnabled() {
     return _enabled;
   }
@@ -47,6 +52,10 @@ public class Interface implements Serializable {
   @Nonnull
   public Type getType() {
     return _type;
+  }
+
+  public void setAccessListIn(@Nullable String accessListIn) {
+    _accessListIn = accessListIn;
   }
 
   public void setEnabled(boolean enabled) {
@@ -88,6 +97,7 @@ public class Interface implements Serializable {
     _type = type;
   }
 
+  @Nullable private String _accessListIn;
   @Nullable private Boolean _enabled;
   @Nonnull private final Type _type;
   @Nullable private ConcreteInterfaceAddress _ipAddress;

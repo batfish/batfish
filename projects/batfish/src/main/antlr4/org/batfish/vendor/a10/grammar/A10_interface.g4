@@ -20,7 +20,8 @@ sid_ve: VE num = vlan_number NEWLINE sid*;
 
 sid
 :
-   sid_disable
+   sid_access_list
+   | sid_disable
    | sid_duplexity
    | sid_enable
    | sid_ip
@@ -34,6 +35,8 @@ sid
    | sid_speed
    | sid_trunk_group
 ;
+
+sid_access_list: ACCESS_LIST ((NAME access_list_name) | access_list_number) IN NEWLINE;
 
 sid_enable: ENABLE NEWLINE;
 

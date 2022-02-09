@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
 import static org.batfish.vendor.a10.representation.A10Configuration.arePortTypesCompatible;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
+import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
@@ -13,6 +14,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.VIRTUAL_SER
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.HA_INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.INTERFACE_ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVER_HEALTH_CHECK;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVER_PORT_HEALTH_CHECK;
@@ -462,6 +464,30 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSid_loopback(A10Parser.Sid_loopbackContext ctx) {
     _currentInterface = null;
+  }
+
+  @Override
+  public void exitSid_access_list(A10Parser.Sid_access_listContext ctx) {
+    String accessList;
+    if (ctx.access_list_name() != null) {
+      Optional<String> nameOptional = toString(ctx, ctx.access_list_name());
+      if (!nameOptional.isPresent()) {
+        return;
+      }
+      accessList = nameOptional.get();
+    } else {
+      assert ctx.access_list_number() != null;
+      Optional<Integer> numOptional = toInteger(ctx, ctx.access_list_number());
+      if (!numOptional.isPresent()) {
+        return;
+      } else if (numOptional.get() < 100) {
+        warn(ctx, "A10 standard access lists are not yet supported");
+        return;
+      }
+      accessList = String.valueOf(numOptional.get());
+    }
+    _c.referenceStructure(ACCESS_LIST, accessList, INTERFACE_ACCESS_LIST, ctx.start.getLine());
+    _currentInterface.setAccessListIn(accessList);
   }
 
   @Override

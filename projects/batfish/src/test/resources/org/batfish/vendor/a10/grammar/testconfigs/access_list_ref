@@ -10,6 +10,12 @@ ip access-list ACL1
   permit ip any any
 !
 !
+interface ethernet 1
+  access-list 100 in
+!
+interface ethernet 2
+  access-list name ACL1 in
+!
 slb virtual-server VS1 10.0.0.101
   enable
   port 80 tcp range 10

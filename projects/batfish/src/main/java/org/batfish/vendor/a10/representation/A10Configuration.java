@@ -84,6 +84,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
@@ -116,8 +117,8 @@ import org.batfish.vendor.a10.representation.Interface.Type;
 /** Datamodel class representing an A10 device configuration. */
 public final class A10Configuration extends VendorConfiguration {
 
-  private static final String VIRTUAL_SERVERS_PACKET_POLICY_NAME =
-      "~VIRTUAL_SERVERS_PACKET_POLICY~";
+  @VisibleForTesting
+  public static final String VIRTUAL_SERVERS_PACKET_POLICY_NAME = "~VIRTUAL_SERVERS_PACKET_POLICY~";
 
   public A10Configuration() {
     _accessLists = new HashMap<>();
@@ -811,22 +812,62 @@ public final class A10Configuration extends VendorConfiguration {
    * created.
    */
   private void convertVirtualServers() {
-    // Build transformations
-    createPacketPolicy();
+    // Build transformation statements
+    Return returnFibLookup = new Return(new FibLookup(IngressInterfaceVrf.instance()));
+    List<Statement> transformationStatements = getTransformationStatements(returnFibLookup);
 
+    // Apply transformations at each interface, along with incoming access list if present
     _c.getAllInterfaces()
         .forEach(
             (name, iface) -> {
               iface.setFirewallSessionInterfaceInfo(
                   new FirewallSessionInterfaceInfo(
                       POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
-              iface.setPacketPolicy(VIRTUAL_SERVERS_PACKET_POLICY_NAME);
+              String incomingFilter =
+                  // TODO Can trunk interfaces configure access-list?
+                  //  They are not included in _ifaceNametoIface.
+                  Optional.ofNullable(_ifaceNametoIface.get(name))
+                      .map(Interface::getAccessListIn)
+                      .orElse(null);
+              String policyName = packetPolicyName(incomingFilter);
+
+              // Create packet policy if it doesn't already exist
+              if (!_c.getPacketPolicies().containsKey(policyName)) {
+                PacketPolicy policy;
+                if (incomingFilter == null) {
+                  policy = new PacketPolicy(policyName, transformationStatements, returnFibLookup);
+                } else {
+                  List<Statement> policyStatements =
+                      ImmutableList.<Statement>builder()
+                          .add(
+                              new If(
+                                  new PacketMatchExpr(
+                                      new DeniedByAcl(computeAclName(incomingFilter))),
+                                  ImmutableList.of(new Return(Drop.instance()))))
+                          .addAll(transformationStatements)
+                          .build();
+                  policy = new PacketPolicy(policyName, policyStatements, returnFibLookup);
+                }
+                _c.getPacketPolicies().put(policyName, policy);
+              }
+
+              iface.setPacketPolicy(policyName);
             });
   }
 
-  /** Create a {@link PacketPolicy} which encodes the NAT transformations for this device. */
-  private void createPacketPolicy() {
-    Return returnFibLookup = new Return(new FibLookup(IngressInterfaceVrf.instance()));
+  @VisibleForTesting
+  public static String packetPolicyName(@Nullable String incomingFilter) {
+    if (incomingFilter == null) {
+      return VIRTUAL_SERVERS_PACKET_POLICY_NAME;
+    }
+    return String.format("~PACKET_POLICY_%s~", incomingFilter);
+  }
+
+  /**
+   * Generate {@link Statement packet policy statements} encoding the NAT transformations for this
+   * device.
+   */
+  private List<Statement> getTransformationStatements(Return returnFibLookup) {
     ImmutableList.Builder<Statement> statements = ImmutableList.builder();
 
     // Apply transformations to traffic matching virtual servers. These statements return FibLookup
@@ -857,9 +898,7 @@ public final class A10Configuration extends VendorConfiguration {
               ImmutableList.of(new Return(Drop.instance()))));
     }
 
-    PacketPolicy policy =
-        new PacketPolicy(VIRTUAL_SERVERS_PACKET_POLICY_NAME, statements.build(), returnFibLookup);
-    _c.getPacketPolicies().put(VIRTUAL_SERVERS_PACKET_POLICY_NAME, policy);
+    return statements.build();
   }
 
   /**

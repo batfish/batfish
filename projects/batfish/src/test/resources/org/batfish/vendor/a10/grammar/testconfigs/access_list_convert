@@ -10,6 +10,10 @@ hostname access_list_convert
 ip nat pool POOL1 10.0.3.1 10.0.3.100 netmask /24
 !
 !
+access-list 100 permit ip host 10.0.2.5 any
+access-list 100 deny ip any any
+!
+!
 ip access-list ACL1
   deny tcp host 10.0.2.10 any
   permit ip any any
@@ -43,3 +47,13 @@ interface ethernet 12
   name "real client hosts"
   enable
 !
+! Interfaces for testing incoming filters
+interface ethernet 20
+  ip address 11.0.0.1 255.255.255.0
+  access-list 100 in
+  enable
+!
+interface ethernet 21
+  ip address 11.0.1.1 255.255.255.0
+  access-list name ACL1 in
+  enable
