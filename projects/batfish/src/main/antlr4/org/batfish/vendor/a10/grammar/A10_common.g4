@@ -12,6 +12,17 @@ word: WORD_SEPARATOR word_content;
 
 access_list_name: word;
 
+// 1-199 (for unnamed access lists)
+access_list_number: uint8;
+
+access_list_action: PERMIT | DENY;
+
+access_list_address_any: ANY;
+
+access_list_address_host: HOST address = ip_address;
+
+access_list_protocol: ICMP | IP | TCP | UDP;
+
 aflex_name: word;
 
 health_check_name: word;
@@ -51,6 +62,11 @@ virtual_service_name: word;
 ip_prefix: ip_address ip_netmask;
 
 ip_netmask: subnet_mask | ip_slash_prefix;
+
+// Wildcard formatted as 1.1.1.0 /24 or 1.0.1.0 0.255.0.255 (1s are ignore bits)
+ip_wildcard: ip_address ip_wildcard_mask;
+
+ip_wildcard_mask: ip_slash_prefix | ip_address;
 
 ip_address: IP_ADDRESS | SUBNET_MASK;
 
