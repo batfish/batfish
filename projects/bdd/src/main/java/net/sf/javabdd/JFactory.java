@@ -37,7 +37,10 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
+import java.util.Stack;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
@@ -2012,6 +2015,52 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
+  /** Simple class used to track pairs of operands used in binary operations. */
+  private static final class OpPair {
+    private final int _l;
+    private final int _r;
+
+    public OpPair(int l, int r) {
+      _l = l;
+      _r = r;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof OpPair)) {
+        return false;
+      }
+      OpPair opPair = (OpPair) o;
+      return _l == opPair._l && _r == opPair._r;
+    }
+
+    @Override
+    public int hashCode() {
+      return _l * 31 + _r;
+    }
+  }
+
+  /** Make an OpPair for a symmetric operation. The result will have l <= r. */
+  private static OpPair symmetric(int l, int r) {
+    if (l > r) {
+      return new OpPair(r, l);
+    }
+    return new OpPair(l, r);
+  }
+
+  /**
+   * Make an OpPair for a symmetric operation using level as the first breaker. The result will have
+   * LEVEL(l) < LEVEL(r), and will have l <= r if they have the same level.
+   */
+  private OpPair symmetricByLevel(int l, int r) {
+    if (LEVEL(l) > LEVEL(r)) {
+      return new OpPair(r, l);
+    }
+    return symmetric(l, r);
+  }
+
   /**
    * Implemenation of {@link BDD#applyEx(BDD, BDDOp, BDD)} when the operation is {@link
    * BDDFactory#and}.
@@ -2039,6 +2088,26 @@ public final class JFactory extends BDDFactory {
       return res;
     }
 
+    // relprod_rec is symmetric. It will be convenient later to establish the following
+    // invariants:
+    // - level_l <= level_r
+    // - if level_l == level_r, l < r
+    // These invariants also improve cache efficiency.
+    if (LEVEL_l > LEVEL_r) {
+      // Swap l and r for the level invariant.
+      int t = LEVEL_l;
+      LEVEL_l = LEVEL_r;
+      LEVEL_r = t;
+      t = l;
+      l = r;
+      r = t;
+    } else if (LEVEL_l == LEVEL_r && l > r) {
+      // Swap l and r for the order invariant.
+      int t = l;
+      l = r;
+      r = t;
+    }
+
     int hash = APPEXHASH(l, r, bddop_and);
     BddCacheDataI entry = BddCache_lookupI(appexcache, hash);
     if (entry.a == l && entry.b == r && entry.c == appexid) {
@@ -2058,29 +2127,112 @@ public final class JFactory extends BDDFactory {
         PUSHREF(relprod_rec(LOW(l), LOW(r)));
         PUSHREF(relprod_rec(HIGH(l), HIGH(r)));
         res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
-      } else if (LEVEL_l < LEVEL_r) {
+      } else { // we know LEVEL_l < LEVEL_r
         PUSHREF(relprod_rec(LOW(l), r));
         PUSHREF(relprod_rec(HIGH(l), r));
         res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
-      } else {
-        PUSHREF(relprod_rec(l, LOW(r)));
-        PUSHREF(relprod_rec(l, HIGH(r)));
-        res = bdd_makenode(LEVEL_r, READREF(2), READREF(1));
       }
       POPREF(2);
     } else {
-      if (LEVEL_l == LEVEL_r) {
-        PUSHREF(relprod_rec(LOW(l), LOW(r)));
-        PUSHREF(relprod_rec(HIGH(l), HIGH(r)));
-      } else if (LEVEL_l < LEVEL_r) {
-        PUSHREF(relprod_rec(LOW(l), r));
-        PUSHREF(relprod_rec(HIGH(l), r));
-      } else {
-        PUSHREF(relprod_rec(l, LOW(r)));
-        PUSHREF(relprod_rec(l, HIGH(r)));
+      int pushedRefs = 0;
+      Stack<OpPair> toProcess = new Stack<>(); // invariant: all have OpPair._l to erase
+      Set<OpPair> processed = new HashSet<>(); // nothing gets in toProcess if not new here
+      IntSet toOr = new IntHashSet(); // will be orAll'd to get the final result.
+      OpPair pair = new OpPair(l, r); // should be symmetric by level due to above invariant
+      processed.add(pair);
+      toProcess.push(pair);
+      res = -1; // indicate that it has not been short-circuited.
+      while (!toProcess.isEmpty()) {
+        OpPair nextPair = toProcess.pop();
+        int left = nextPair._l;
+        int right = nextPair._r;
+
+        int lowL = LOW(left);
+        int highL = HIGH(left);
+        // We know left's root is to be erased. The result of relprod_rec(left, right) will
+        // therefore be achieved by or-ing the left and right recursive calls to with the
+        // appropriate value from the right BDD. If left and right are the same level, we must
+        // recurse separately: both low branches OR-ed with both high branches. If left has a lower
+        // level, its low and high branch both recurse with the same right BDD.
+        boolean sameLevel = LEVEL(left) == LEVEL(right); // or else LEVEL(left) < LEVEL(right);
+        int lowR = sameLevel ? LOW(right) : right;
+        int highR = sameLevel ? HIGH(right) : right;
+        if (lowL == BDDONE && lowR == BDDONE || highL == BDDONE && highR == BDDONE) {
+          // short-circuit when either branch is BDDONE.
+          res = BDDONE;
+          break;
+        }
+
+        // Handle low branch first.
+        if (lowL == BDDZERO || lowR == BDDZERO) {
+          // low branch AND resolves to zero, do nothing.
+        } else if (lowL == BDDONE || lowR == BDDONE) {
+          // low branch AND is trivial, this is now just exists.
+          int constraint = lowL == BDDONE ? lowR : lowL;
+          int erasedConstraint = exist_rec(constraint);
+          if (erasedConstraint == BDDONE) {
+            res = BDDONE;
+            break;
+          }
+          PUSHREF(erasedConstraint);
+          toOr.add(erasedConstraint);
+          pushedRefs++;
+        } else {
+          OpPair lowPair = symmetricByLevel(lowL, lowR);
+          if (processed.add(lowPair)) {
+            if (INVARSET(LEVEL(lowPair._l))) {
+              toProcess.add(lowPair);
+            } else {
+              int lowResult = relprod_rec(lowL, lowR);
+              if (lowResult == BDDONE) {
+                res = BDDONE;
+                break;
+              }
+              if (toOr.add(lowResult)) {
+                PUSHREF(lowResult);
+                pushedRefs++;
+              }
+            }
+          }
+        }
+
+        // Handle high branch.
+        if (highL == BDDZERO || highR == BDDZERO) {
+          // high branch AND resolves to zero, do nothing.
+        } else if (highL == BDDONE || highR == BDDONE) {
+          // high branch AND is trivial, this is now just exists.
+          int constraint = highL == BDDONE ? highR : highL;
+          int erasedConstraint = exist_rec(constraint);
+          if (erasedConstraint == BDDONE) {
+            res = BDDONE;
+            break;
+          }
+          PUSHREF(erasedConstraint);
+          toOr.add(erasedConstraint);
+          pushedRefs++;
+        } else {
+          OpPair highPair = symmetricByLevel(highL, highR);
+          if (processed.add(highPair)) {
+            if (INVARSET(LEVEL(highPair._l))) {
+              toProcess.add(highPair);
+            } else {
+              int highResult = relprod_rec(highL, highR);
+              if (highResult == BDDONE) {
+                res = BDDONE;
+                break;
+              }
+              if (toOr.add(highResult)) {
+                PUSHREF(highResult);
+                pushedRefs++;
+              }
+            }
+          }
+        }
       }
-      res = or_rec(READREF(2), READREF(1));
-      POPREF(2);
+      if (res == -1) {
+        res = orAll_rec(toOr.toArray());
+      }
+      POPREF(pushedRefs);
     }
 
     if (CACHESTATS && entry.a != -1) {
