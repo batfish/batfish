@@ -295,9 +295,6 @@ public class VirtualRouterTest {
             .setTag(11L)
             .setRequiredOwnedIp(presentRequiredOwnedIp)
             .build();
-    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-        ImmutableMap.of(
-            presentRequiredOwnedIp, ImmutableMap.of(hostname, ImmutableSet.of(DEFAULT_VRF_NAME)));
     VirtualRouter vr = makeF5VirtualRouter(hostname);
     vr.getConfiguration()
         .getDefaultVrf()
@@ -307,16 +304,17 @@ public class VirtualRouterTest {
     vr.initRibs();
 
     // Test
-    vr.initKernelRib(ipVrfOwners);
+    vr.initKernelRoutes();
 
     // Assert that all kernel routes have been processed
-    // The kernel route missing the required owned IP should not be present in the RIB.
+    // The kernel routes not requiring owned IPs should be present in the independent RIB.
+    // All others should be present in _kernelConditionalRoutes.
     assertThat(
-        vr._kernelRib.getTypedRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                vr.annotateRoute(noRequiredOwnedIpRoute),
-                vr.annotateRoute(presentRequiredOwnedIpRoute))));
+        vr._independentRib.getTypedRoutes(),
+        containsInAnyOrder(vr.annotateRoute(noRequiredOwnedIpRoute)));
+    assertThat(
+        vr._kernelConditionalRoutes,
+        containsInAnyOrder(missingRequiredOwnedIpRoute, presentRequiredOwnedIpRoute));
   }
 
   @Test
@@ -327,7 +325,6 @@ public class VirtualRouterTest {
     Ip presentRequiredOwnedIp = Ip.parse("10.0.1.0");
     Prefix missingOwnedIpPrefix = Prefix.create(missingRequiredOwnedIp, 24);
     Prefix presentOwnedIpPrefix = Prefix.create(presentRequiredOwnedIp, 24);
-    KernelRoute noRequiredOwnedIpRoute = KernelRoute.builder().setNetwork(Prefix.ZERO).build();
     KernelRoute missingRequiredOwnedIpRoute =
         KernelRoute.builder()
             .setNetwork(missingOwnedIpPrefix)
@@ -346,9 +343,8 @@ public class VirtualRouterTest {
     VirtualRouter vr = makeA10VirtualRouter(hostname);
 
     // Test
-    assertTrue(vr.shouldActivateKernelRoute(noRequiredOwnedIpRoute, ipVrfOwners));
-    assertTrue(vr.shouldActivateKernelRoute(presentRequiredOwnedIpRoute, ipVrfOwners));
-    assertFalse(vr.shouldActivateKernelRoute(missingRequiredOwnedIpRoute, ipVrfOwners));
+    assertTrue(vr.shouldActivateConditionalKernelRoute(presentRequiredOwnedIpRoute, ipVrfOwners));
+    assertFalse(vr.shouldActivateConditionalKernelRoute(missingRequiredOwnedIpRoute, ipVrfOwners));
   }
 
   /** Check that initialization of Local RIB is as expected */
@@ -970,9 +966,7 @@ public class VirtualRouterTest {
     int vrInitialHashcode = vr.computeIterationHashCode();
 
     // Now init connected routes. This should cause a change in the main RIB.
-    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-        new TestIpOwners(ImmutableMap.of(c.getHostname(), c)).getIpVrfOwners();
-    vr.initForIgpComputation(emptyTopology, ipVrfOwners);
+    vr.initForIgpComputation(emptyTopology);
 
     assertNotEquals(vrInitialHashcode, vr.computeIterationHashCode());
   }
