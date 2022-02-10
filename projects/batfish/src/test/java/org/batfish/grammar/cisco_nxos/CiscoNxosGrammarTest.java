@@ -11,6 +11,8 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.InactiveReason.INVALID;
+import static org.batfish.datamodel.InactiveReason.VRF_DOWN;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
@@ -70,12 +72,15 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInactiveReason;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isAdminUp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
@@ -9818,5 +9823,43 @@ public final class CiscoNxosGrammarTest {
                 .setAdmin(1)
                 .setTag(0)
                 .build()));
+  }
+
+  @Test
+  public void testInterfaceDeactivationExtraction() {
+    String hostname = "nxos_interface_deactivation";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2"));
+    assertThat(vc.getVrfs(), hasKey("disabledvrf"));
+    assertTrue(vc.getVrfs().get("disabledvrf").getShutdown());
+    {
+      Interface i = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(i.getVrfMember(), equalTo("undefinedvrf"));
+      assertFalse(i.getShutdown());
+    }
+    {
+      Interface i = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(i.getVrfMember(), equalTo("disabledvrf"));
+      assertFalse(i.getShutdown());
+    }
+  }
+
+  @Test
+  public void testInterfaceDeactivationConversion() throws IOException {
+    String hostname = "nxos_interface_deactivation";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces().get("Ethernet1/1"),
+        allOf(
+            isAdminUp(),
+            isActive(false),
+            hasInactiveReason(INVALID),
+            hasVrfName(DEFAULT_VRF_NAME)));
+    assertThat(
+        c.getAllInterfaces().get("Ethernet1/2"),
+        allOf(
+            isAdminUp(), isActive(false), hasInactiveReason(VRF_DOWN), hasVrfName("disabledvrf")));
   }
 }

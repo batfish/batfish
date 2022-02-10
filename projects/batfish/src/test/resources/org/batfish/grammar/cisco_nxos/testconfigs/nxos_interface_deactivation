@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_deactivation
+!
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  vrf member undefinedvrf
+
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  vrf member disabledvrf
+
+vrf context disabledvrf
+  shutdown
+
+
+
