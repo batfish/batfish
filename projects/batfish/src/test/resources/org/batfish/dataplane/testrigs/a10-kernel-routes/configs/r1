@@ -1,0 +1,39 @@
+!BATFISH_FORMAT: a10_acos
+hostname r1
+!
+
+vrrp-a common
+  device-id 1
+  set-id 1
+  enable
+!
+
+vrrp-a vrid 1
+  floating-ip 10.0.1.10
+  blade-parameters
+    priority 100
+!
+
+vrrp-a peer-group
+  peer 10.0.2.2
+!
+
+interface ethernet 1
+  mtu 1500
+  enable
+  ip address 10.0.1.1 /24
+!
+
+interface ethernet 2
+  mtu 1500
+  enable
+  ip address 10.0.2.1 /24
+!
+
+router bgp 1
+  bgp router-id 10.0.1.1
+  neighbor 10.0.1.2 remote-as 2
+  neighbor 10.0.1.2 activate
+  neighbor 10.0.1.2 update-source 10.0.1.1
+  redistribute floating-ip
+!

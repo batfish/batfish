@@ -937,27 +937,6 @@ final class IncrementalBdpEngine {
       IpOwners ipOwners,
       NetworkConfigurations networkConfigurations,
       DataPlaneTrackMethodEvaluatorProvider provider) {
-    LOGGER.info("Compute HMM routes");
-    Span hmmSpan = GlobalTracer.get().buildSpan("Compute HMM routes").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(hmmSpan)) {
-      assert scope != null; // avoid unused warning
-      vrs.parallelStream()
-          .forEach(
-              vr -> vr.computeHmmRoutes(initialLayer3Topology, ipOwners.getInterfaceOwners(true)));
-    } finally {
-      hmmSpan.finish();
-    }
-
-    LOGGER.info("Compute kernel routes");
-    Span kernelSpan = GlobalTracer.get().buildSpan("Compute kernel routes").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(kernelSpan)) {
-      assert scope != null; // avoid unused warning
-      vrs.parallelStream()
-          .forEach(vr -> vr.computeConditionalKernelRoutes(ipOwners.getIpVrfOwners()));
-    } finally {
-      kernelSpan.finish();
-    }
-
     LOGGER.info("Compute EGP");
     Span span = GlobalTracer.get().buildSpan("Compute EGP").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -977,6 +956,28 @@ final class IncrementalBdpEngine {
             .forEach(vr -> vr.initForEgpComputationWithNewTopology(topologyContext));
       } finally {
         initializationSpan.finish();
+      }
+
+      LOGGER.info("Compute HMM routes");
+      Span hmmSpan = GlobalTracer.get().buildSpan("Compute HMM routes").start();
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(hmmSpan)) {
+        assert innerScope != null; // avoid unused warning
+        vrs.parallelStream()
+            .forEach(
+                vr ->
+                    vr.computeHmmRoutes(initialLayer3Topology, ipOwners.getInterfaceOwners(true)));
+      } finally {
+        hmmSpan.finish();
+      }
+
+      LOGGER.info("Compute kernel routes");
+      Span kernelSpan = GlobalTracer.get().buildSpan("Compute kernel routes").start();
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(kernelSpan)) {
+        assert innerScope != null; // avoid unused warning
+        vrs.parallelStream()
+            .forEach(vr -> vr.computeConditionalKernelRoutes(ipOwners.getIpVrfOwners()));
+      } finally {
+        kernelSpan.finish();
       }
 
       /*

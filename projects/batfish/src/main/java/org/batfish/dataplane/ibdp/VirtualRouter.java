@@ -406,9 +406,11 @@ public final class VirtualRouter {
         .forEach(
             action -> {
               if (action.isWithdrawn()) {
-                _mainRib.removeRoute(annotateRoute(action.getRoute()));
+                _mainRibRouteDeltaBuilder.from(
+                    _mainRib.removeRouteGetDelta(annotateRoute(action.getRoute())));
               } else {
-                _mainRib.mergeRoute(annotateRoute(action.getRoute()));
+                _mainRibRouteDeltaBuilder.from(
+                    _mainRib.mergeRouteGetDelta(annotateRoute(action.getRoute())));
               }
             });
     _hmmRoutes = newHmmRoutes.build();
@@ -418,18 +420,14 @@ public final class VirtualRouter {
   public void computeConditionalKernelRoutes(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
     for (KernelRoute kernelRoute : _kernelConditionalRoutes) {
       if (shouldActivateConditionalKernelRoute(kernelRoute, ipVrfOwners)) {
-        _mainRib.mergeRoute(annotateRoute(kernelRoute));
+        _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(kernelRoute)));
       } else {
-        _mainRib.removeRoute(annotateRoute(kernelRoute));
+        _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(annotateRoute(kernelRoute)));
       }
     }
   }
 
-  /**
-   * Compute public void computeKernelRoutes(Map<Ip, Map<String, Set<String>>> ipVrfOwners) { }
-   *
-   * <p>/** Apply a rib group to a given source rib (which belongs to this VRF)
-   */
+  /** Apply a rib group to a given source rib (which belongs to this VRF) */
   private void applyRibGroup(@Nonnull RibGroup ribGroup, @Nonnull AnnotatedRib<?> sourceRib) {
     RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
     checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
@@ -1588,7 +1586,7 @@ public final class VirtualRouter {
   boolean isDirty() {
     return
     // Route Deltas
-    !_mainRibRouteDeltaBuilder.isEmpty()
+    !_mainRibDeltaPrevRound.isEmpty()
         // Message queues
         || !_isisIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_routesForIsisRedistribution.isEmpty()
