@@ -5743,7 +5743,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _currentInterfaces.forEach(iface -> iface.setIpv6Address(address6));
     }
     if (ctx.tag != null) {
-      warn(ctx, "Unsupported: tag on interface ipv6 address");
       address6.setTag(toLong(ctx.tag));
     }
   }
