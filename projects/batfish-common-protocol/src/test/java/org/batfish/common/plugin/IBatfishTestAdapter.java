@@ -153,7 +153,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
     @Override
     public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-      return VxlanTopologyUtils.computeVxlanTopology(_batfish.loadConfigurations(snapshot));
+      return VxlanTopologyUtils.computeInitialVxlanTopology(_batfish.loadConfigurations(snapshot));
     }
 
     private class TestIpOwners extends IpOwnersBaseImpl {

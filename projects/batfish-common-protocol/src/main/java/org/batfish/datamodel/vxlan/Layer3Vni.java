@@ -16,14 +16,14 @@ import org.batfish.datamodel.Ip;
 public final class Layer3Vni implements Vni {
   @Nonnull private final Set<Ip> _learnedNexthopVtepIps;
   @Nullable private final Ip _sourceAddress;
-  @Nonnull private final Integer _udpPort;
+  private final int _udpPort;
   private final int _vni;
   @Nonnull private final String _srcVrf;
 
   private Layer3Vni(
       Set<Ip> learnedNexthopVtepIps,
       @Nullable Ip sourceAddress,
-      Integer udpPort,
+      int udpPort,
       int vni,
       String srcVrf) {
     _learnedNexthopVtepIps = learnedNexthopVtepIps;
@@ -49,8 +49,7 @@ public final class Layer3Vni implements Vni {
   }
 
   @Override
-  @Nonnull
-  public Integer getUdpPort() {
+  public int getUdpPort() {
     return _udpPort;
   }
 
@@ -77,7 +76,7 @@ public final class Layer3Vni implements Vni {
     return _vni == layer3Vni._vni
         && _learnedNexthopVtepIps.equals(layer3Vni._learnedNexthopVtepIps)
         && Objects.equals(_sourceAddress, layer3Vni._sourceAddress)
-        && _udpPort.equals(layer3Vni._udpPort)
+        && _udpPort == layer3Vni._udpPort
         && _srcVrf.equals(layer3Vni._srcVrf);
   }
 

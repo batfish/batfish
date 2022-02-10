@@ -1741,7 +1741,7 @@ public final class VirtualRouter {
 
   /**
    * Process EVPN type 5 routes in our RIB and update learned VTEPs on corresponding {@link
-   * Layer3Vni}s if neessary.
+   * Layer3Vni}s if necessary.
    */
   public void updateLayer3Vnis() {
     if (_bgpRoutingProcess == null) {
@@ -1753,10 +1753,7 @@ public final class VirtualRouter {
         .map(AbstractRoute::getNextHop)
         .filter(NextHopVtep.class::isInstance)
         .map(NextHopVtep.class::cast)
-        .forEach(
-            nextHopVtep -> {
-              vtepsByVni.put(nextHopVtep.getVni(), nextHopVtep.getVtepIp());
-            });
+        .forEach(nextHopVtep -> vtepsByVni.put(nextHopVtep.getVni(), nextHopVtep.getVtepIp()));
     Map<Integer, Layer3Vni> newLayer3Vnis = new HashMap<>(_layer3Vnis);
     vtepsByVni
         .asMap()
@@ -1765,6 +1762,11 @@ public final class VirtualRouter {
               Layer3Vni l3Vni = _layer3Vnis.get(vni);
               if (l3Vni == null) {
                 // shouldn't happen, but skip just in case
+                LOGGER.warn(
+                    String.format(
+                        "updateLayer3Vnis: Host '%s' vrf '%s' has route(s) whose next hop is"
+                            + " unconfigured VNI %d with VTEP IP(s) %s",
+                        _c.getHostname(), getName(), vni, ips));
                 return;
               }
               newLayer3Vnis.put(

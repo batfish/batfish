@@ -95,7 +95,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   @Override
   public @Nonnull VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-    return INITIAL_VXLAN_TOPOLOGIES.get(snapshot, this::computeVxlanTopology);
+    return INITIAL_VXLAN_TOPOLOGIES.get(snapshot, this::computeInitialVxlanTopology);
   }
 
   @Override
@@ -337,11 +337,12 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  private @Nonnull VxlanTopology computeVxlanTopology(NetworkSnapshot snapshot) {
-    Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeVxlanTopology").start();
+  private @Nonnull VxlanTopology computeInitialVxlanTopology(NetworkSnapshot snapshot) {
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialVxlanTopology").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return VxlanTopologyUtils.computeVxlanTopology(getConfigurations(snapshot));
+      return VxlanTopologyUtils.computeInitialVxlanTopology(getConfigurations(snapshot));
     } finally {
       span.finish();
     }

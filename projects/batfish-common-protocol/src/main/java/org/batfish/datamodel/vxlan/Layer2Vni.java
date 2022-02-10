@@ -89,7 +89,7 @@ public final class Layer2Vni implements Vni {
   @Nonnull private final Set<Ip> _bumTransportIps;
   @Nonnull private final BumTransportMethod _bumTransportMethod;
   @Nullable private final Ip _sourceAddress;
-  @Nonnull private final Integer _udpPort;
+  private final int _udpPort;
   private final int _vlan;
   private final int _vni;
   @Nonnull private final String _srcVrf;
@@ -107,7 +107,7 @@ public final class Layer2Vni implements Vni {
       Set<Ip> bumTransportIps,
       BumTransportMethod bumTransportMethod,
       @Nullable Ip sourceAddress,
-      Integer udpPort,
+      int udpPort,
       int vlan,
       int vni,
       String srcVrf) {
@@ -132,7 +132,7 @@ public final class Layer2Vni implements Vni {
     return Objects.equals(_bumTransportMethod, rhs._bumTransportMethod)
         && Objects.equals(_bumTransportIps, rhs._bumTransportIps)
         && Objects.equals(_sourceAddress, rhs._sourceAddress)
-        && Objects.equals(_udpPort, rhs._udpPort)
+        && _udpPort == rhs._udpPort
         && Objects.equals(_vlan, rhs._vlan)
         && _vni == rhs._vni
         && _srcVrf.equals(rhs._srcVrf);
@@ -171,7 +171,7 @@ public final class Layer2Vni implements Vni {
   }
 
   @Override
-  public @Nonnull Integer getUdpPort() {
+  public int getUdpPort() {
     return _udpPort;
   }
 

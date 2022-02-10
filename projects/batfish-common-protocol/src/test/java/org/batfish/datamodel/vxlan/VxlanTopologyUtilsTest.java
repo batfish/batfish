@@ -14,8 +14,7 @@ import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.buildLayer2VxlanNod
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.buildLayer3VxlanNode;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.compatibleLayer2VniSettings;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.compatibleLayer3VniSettings;
-import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVniSettingsTable;
-import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeNextVxlanTopologyModuloReachability;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanFlowDelivered;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanTopologyToLayer3Edges;
@@ -322,7 +321,6 @@ public final class VxlanTopologyUtilsTest {
 
   @Test
   public void testAddLayer2VniEdges() {
-    Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     Layer2Vni.Builder vniSettingsBuilder =
         Layer2Vni.testBuilder()
@@ -336,8 +334,6 @@ public final class VxlanTopologyUtilsTest {
     _v2.setLayer2Vnis(ImmutableSet.of(vniSettingsHead));
     addLayer2VniEdges(
         graph,
-        computeVniSettingsTable(configurations, Vrf::getLayer2Vnis),
-        VNI,
         ImmutableMap.of(
             new VrfId(_c1.getHostname(), _v1.getName()), vniSettingsTail,
             new VrfId(_c2.getHostname(), _v2.getName()), vniSettingsHead));
@@ -352,7 +348,6 @@ public final class VxlanTopologyUtilsTest {
 
   @Test
   public void testAddLayer3VniEdges() {
-    Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     Layer3Vni.Builder vniSettingsBuilder = Layer3Vni.testBuilder().setUdpPort(UDP_PORT).setVni(VNI);
     Layer3Vni vniSettingsTail =
@@ -369,8 +364,6 @@ public final class VxlanTopologyUtilsTest {
     _v2.setLayer3Vnis(ImmutableSet.of(vniSettingsHead));
     addLayer3VniEdges(
         graph,
-        computeVniSettingsTable(configurations, Vrf::getLayer3Vnis),
-        VNI,
         ImmutableMap.of(
             new VrfId(_c1.getHostname(), _v1.getName()), vniSettingsTail,
             new VrfId(_c2.getHostname(), _v2.getName()), vniSettingsHead));
@@ -670,27 +663,23 @@ public final class VxlanTopologyUtilsTest {
   }
 
   @Test
-  public void testCompatibleLayer3VniSettingsMismatchHeadLearnedIps() {
+  public void testCompatibleLayer3VniSettingsOnlyOneSideLearnedAnIp() {
     Layer3Vni vniSettingsTail =
-        Layer3Vni.testBuilder()
-            .setLearnedNexthopVtepIps(ImmutableSortedSet.of(SRC_IP2))
-            .setSourceAddress(SRC_IP1)
-            .setUdpPort(UDP_PORT)
-            .setVni(VNI)
-            .build();
+        Layer3Vni.testBuilder().setSourceAddress(SRC_IP1).setUdpPort(UDP_PORT).setVni(VNI).build();
     Layer3Vni vniSettingsHead =
         Layer3Vni.testBuilder()
-            .setLearnedNexthopVtepIps(ImmutableSortedSet.of(SRC_IP2))
+            .setLearnedNexthopVtepIps(ImmutableSortedSet.of(SRC_IP1))
             .setSourceAddress(SRC_IP2)
             .setUdpPort(UDP_PORT)
             .setVni(VNI)
             .build();
 
-    assertThat(compatibleLayer3VniSettings(vniSettingsTail, vniSettingsHead), equalTo(false));
+    assertTrue(compatibleLayer3VniSettings(vniSettingsTail, vniSettingsHead));
+    assertTrue(compatibleLayer3VniSettings(vniSettingsHead, vniSettingsTail));
   }
 
   @Test
-  public void testCompatibleLayer3VniSettingsMismatchTailLearnedIps() {
+  public void testCompatibleLayer3VniSettingsMismatchLearnedIps() {
     Layer3Vni vniSettingsTail =
         Layer3Vni.testBuilder()
             .setLearnedNexthopVtepIps(ImmutableSortedSet.of(SRC_IP1))
@@ -700,13 +689,13 @@ public final class VxlanTopologyUtilsTest {
             .build();
     Layer3Vni vniSettingsHead =
         Layer3Vni.testBuilder()
-            .setLearnedNexthopVtepIps(ImmutableSortedSet.of(SRC_IP1))
+            .setLearnedNexthopVtepIps(ImmutableSortedSet.of(SRC_IP2))
             .setSourceAddress(SRC_IP2)
             .setUdpPort(UDP_PORT)
             .setVni(VNI)
             .build();
-
-    assertThat(compatibleLayer3VniSettings(vniSettingsTail, vniSettingsHead), equalTo(false));
+    assertFalse(compatibleLayer3VniSettings(vniSettingsTail, vniSettingsHead));
+    assertFalse(compatibleLayer3VniSettings(vniSettingsHead, vniSettingsTail));
   }
 
   @Test
@@ -829,7 +818,7 @@ public final class VxlanTopologyUtilsTest {
         VxlanNode.builder().setHostname(NODE2).setVni(VNI).setVniLayer(LAYER_2).build();
 
     assertThat(
-        VxlanTopologyUtils.computeVxlanTopology(configurations).getGraph().edges(),
+        VxlanTopologyUtils.computeInitialVxlanTopology(configurations).getGraph().edges(),
         equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
   }
 
@@ -856,7 +845,9 @@ public final class VxlanTopologyUtilsTest {
 
     // TODO: nontrivial l3
     assertThat(
-        computeVxlanTopology(table, HashBasedTable.create()).getGraph().edges(),
+        computeNextVxlanTopologyModuloReachability(table, HashBasedTable.create())
+            .getGraph()
+            .edges(),
         equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
   }
 

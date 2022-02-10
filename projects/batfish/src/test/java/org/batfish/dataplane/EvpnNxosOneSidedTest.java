@@ -5,6 +5,7 @@ import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.HopMatchers.hasAcceptingInterface;
+import static org.batfish.datamodel.matchers.HopMatchers.hasInputInterface;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasLastHop;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,6 +13,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
@@ -41,9 +43,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** End-to-end-ish test of EVPN Type 5 routes and VTEP forwarding on NX-OS devices */
-public class EvpnNxosTest {
-  private static final String SNAPSHOT_FOLDER = "org/batfish/dataplane/testrigs/evpn-l3-vnis";
+/** End-to-end-ish test of one-sided EVPN Type 5 routes and VTEP forwarding on NX-OS devices */
+public class EvpnNxosOneSidedTest {
+  private static final String SNAPSHOT_FOLDER =
+      "org/batfish/dataplane/testrigs/evpn-l3-vnis-one-sided";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -61,12 +64,11 @@ public class EvpnNxosTest {
    * - There is an EVPN session betwen r1 and r2
    * - Ethernet1/1 on r1/r2 are in default vrf
    * - Ethernet1/2 on r1/r2 are in tenant vrf
-   * - 10.0.1.0/24 and 10.0.2.0/24 are redistributed into BGP on r1 and r2 respectively
-   * - BGP routes routes in tenant vrf are leaked into EVPN on r1/r2
+   * - 10.0.2.0/24 is redistributed into BGP on r2
+   * - BGP routes routes in tenant vrf are leaked into EVPN on r2
    * - r1 tenant vrf main RIB should have 10.0.2.0/24 with VTEP next hop 10.0.4.2 for VNI 10001
-   * - r2 tenant vrf main RIB should have 10.0.1.0/24 with VTEP next hop 10.0.4.1 for VNI 10001
-   * - Subnets of r1/r2 interfaces connected to h1/2 are redistributed into BGP
-   * - h1 and h2 should be able to reach other across the tunnel
+   * - Subnet of r2 interface connected to h2 is redistributed into BGP
+   * - h1 should be able to reach h2 across the tunnel, but not vice versa.
    */
   @Before
   public void setup() throws IOException {
@@ -96,17 +98,13 @@ public class EvpnNxosTest {
     assertThat(
         r1EvpnRoutes,
         containsInAnyOrder(
-            allOf(hasPrefix(Prefix.strict("10.0.1.0/24")), hasNextHop(NextHopDiscard.instance())),
             allOf(
                 hasPrefix(Prefix.strict("10.0.2.0/24")),
                 hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.2"))))));
     assertThat(
         r2EvpnRoutes,
         containsInAnyOrder(
-            allOf(hasPrefix(Prefix.strict("10.0.2.0/24")), hasNextHop(NextHopDiscard.instance())),
-            allOf(
-                hasPrefix(Prefix.strict("10.0.1.0/24")),
-                hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.1"))))));
+            allOf(hasPrefix(Prefix.strict("10.0.2.0/24")), hasNextHop(NextHopDiscard.instance()))));
 
     // test bgpv4 routes
     Set<Bgpv4Route> r1BgpRoutes = dp.getBgpRoutes().get("r1", TENANT_VRF_NAME);
@@ -115,17 +113,13 @@ public class EvpnNxosTest {
     assertThat(
         r1BgpRoutes,
         containsInAnyOrder(
-            allOf(hasPrefix(Prefix.strict("10.0.1.0/24")), hasNextHop(NextHopDiscard.instance())),
             allOf(
                 hasPrefix(Prefix.strict("10.0.2.0/24")),
                 hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.2"))))));
     assertThat(
         r2BgpRoutes,
         containsInAnyOrder(
-            allOf(hasPrefix(Prefix.strict("10.0.2.0/24")), hasNextHop(NextHopDiscard.instance())),
-            allOf(
-                hasPrefix(Prefix.strict("10.0.1.0/24")),
-                hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.1"))))));
+            allOf(hasPrefix(Prefix.strict("10.0.2.0/24")), hasNextHop(NextHopDiscard.instance()))));
 
     // test main RIB routes
     Set<AnnotatedRoute<AbstractRoute>> r1Routes =
@@ -139,12 +133,7 @@ public class EvpnNxosTest {
             allOf(
                 hasPrefix(Prefix.strict("10.0.2.0/24")),
                 hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.2"))))));
-    assertThat(
-        r2Routes,
-        hasItem(
-            allOf(
-                hasPrefix(Prefix.strict("10.0.1.0/24")),
-                hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.1"))))));
+    assertThat(r2Routes, not(hasItem(hasPrefix(Prefix.strict("10.0.1.0/24")))));
   }
 
   @Test
@@ -200,8 +189,8 @@ public class EvpnNxosTest {
           traces.get(flow),
           contains(
               allOf(
-                  hasDisposition(FlowDisposition.ACCEPTED),
-                  hasLastHop(hasAcceptingInterface(NodeInterfacePair.of("h1", "i1"))))));
+                  hasDisposition(FlowDisposition.NO_ROUTE),
+                  hasLastHop(hasInputInterface(NodeInterfacePair.of("r2", "Ethernet1/2"))))));
     }
   }
 }

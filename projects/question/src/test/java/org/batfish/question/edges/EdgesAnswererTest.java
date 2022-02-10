@@ -492,7 +492,7 @@ public class EdgesAnswererTest {
   public void testGetVxlanEdges() {
     NetworkConfigurations nc = buildVxlanNetworkConfigurations();
     Map<String, Configuration> configurations = nc.getMap();
-    VxlanTopology vxlanTopology = VxlanTopologyUtils.computeVxlanTopology(nc.getMap());
+    VxlanTopology vxlanTopology = VxlanTopologyUtils.computeInitialVxlanTopology(nc.getMap());
     Set<String> includeNodes = configurations.keySet();
     Set<String> includeRemoteNodes = configurations.keySet();
 
