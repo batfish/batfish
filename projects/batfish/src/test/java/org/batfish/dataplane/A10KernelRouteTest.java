@@ -9,12 +9,12 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
@@ -43,7 +43,7 @@ public final class A10KernelRouteTest {
    * Topology:
    *
    *          vrrp-a
-   *    .2  10.0.2.0/24  .1
+   *    .1  10.0.2.0/24  .2
    *    ethernet2 ethernet2
    *    <=================>
    * r1                     r2
@@ -78,8 +78,8 @@ public final class A10KernelRouteTest {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
 
     assertThat(
-        dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes().stream()
-            .filter(KernelRoute.class::isInstance)
+        dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes(KERNEL_PREFIX).stream()
+            .map(AnnotatedRoute::getAbstractRoute)
             .collect(ImmutableSet.toImmutableSet()),
         contains(
             KernelRoute.builder()
@@ -88,10 +88,10 @@ public final class A10KernelRouteTest {
                 .setNetwork(KERNEL_PREFIX)
                 .build()));
     assertThat(
-        dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes().stream()
-            .filter(KernelRoute.class::isInstance)
+        dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes(KERNEL_PREFIX).stream()
+            .map(AnnotatedRoute::getAbstractRoute)
             .collect(ImmutableSet.toImmutableSet()),
-        empty());
+        contains(isBgpv4RouteThat(allOf(hasAsPath(equalTo(AsPath.ofSingletonAsSets(1L)))))));
   }
 
   @Test

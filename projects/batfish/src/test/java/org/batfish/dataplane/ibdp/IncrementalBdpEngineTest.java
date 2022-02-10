@@ -389,7 +389,7 @@ public final class IncrementalBdpEngineTest {
         .setName("i1")
         .setOwner(r2)
         .setVrf(v2)
-        .setAddress(r1Address)
+        .setAddress(r2Address)
         .setVrrpGroups(ImmutableSortedMap.of(1, g2))
         .build();
     Map<String, Configuration> configurations =
