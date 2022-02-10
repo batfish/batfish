@@ -49,7 +49,7 @@ public final class A10KernelRouteTest {
    * r1                     r2
    *    <=================>
    *    ethernet1 ethernet1
-   *    .2  10.0.1.0/24  .1
+   *    .1  10.0.1.0/24  .2
    *           bgp
    * - There is a BGP session betwen r1 and r2 on ethernet1
    * - There is vrrp-a between r1 and r2 on ethernet2
