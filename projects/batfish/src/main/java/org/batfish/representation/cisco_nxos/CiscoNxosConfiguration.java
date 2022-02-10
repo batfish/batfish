@@ -2263,16 +2263,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     String vrfName = firstNonNull(iface.getVrfMember(), DEFAULT_VRF_NAME);
     org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
+    // Disable if VRF configuration invalid
     if (vrf == null) {
-      // Non-existent VRF set; disable and leave in default VRF
-      _w.redFlag(
-          String.format(
-              "Disabling interface '%s' because it is a member of an undefined vrf",
-              iface.getName()));
-      newIface.deactivate(INVALID);
+      // Non-existent VRF set; leave in default VRF and disable if not already down
       vrf = _c.getVrfs().get(DEFAULT_VRF_NAME);
-    } else if (_vrfs.get(vrfName).getShutdown()) {
-      // VRF is shutdown; disable
+      if (newIface.getAdminUp()) {
+        _w.redFlag(
+            String.format(
+                "Disabling interface '%s' because it is a member of an undefined vrf",
+                iface.getName()));
+        newIface.deactivate(INVALID);
+      }
+    } else if (_vrfs.get(vrfName).getShutdown() && newIface.getAdminUp()) {
+      // VRF is shutdown; disable since not already down
       newIface.deactivate(VRF_DOWN);
     }
     newIface.setVrf(vrf);
