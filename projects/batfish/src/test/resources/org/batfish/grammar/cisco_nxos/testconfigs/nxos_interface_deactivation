@@ -12,6 +12,16 @@ interface Ethernet1/2
   no shutdown
   vrf member disabledvrf
 
+interface Ethernet1/3
+  no switchport
+  shutdown
+  vrf member undefinedvrf
+
+interface Ethernet1/4
+  no switchport
+  shutdown
+  vrf member disabledvrf
+
 vrf context disabledvrf
   shutdown
 

@@ -11,6 +11,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
 import static org.batfish.datamodel.InactiveReason.INVALID;
 import static org.batfish.datamodel.InactiveReason.VRF_DOWN;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -9830,7 +9831,8 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_interface_deactivation";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2"));
+    assertThat(
+        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
     assertThat(vc.getVrfs(), hasKey("disabledvrf"));
     assertTrue(vc.getVrfs().get("disabledvrf").getShutdown());
     {
@@ -9843,6 +9845,16 @@ public final class CiscoNxosGrammarTest {
       assertThat(i.getVrfMember(), equalTo("disabledvrf"));
       assertFalse(i.getShutdown());
     }
+    {
+      Interface i = vc.getInterfaces().get("Ethernet1/3");
+      assertThat(i.getVrfMember(), equalTo("undefinedvrf"));
+      assertTrue(i.getShutdown());
+    }
+    {
+      Interface i = vc.getInterfaces().get("Ethernet1/4");
+      assertThat(i.getVrfMember(), equalTo("disabledvrf"));
+      assertTrue(i.getShutdown());
+    }
   }
 
   @Test
@@ -9850,6 +9862,8 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_interface_deactivation";
     Configuration c = parseConfig(hostname);
 
+    assertThat(
+        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
     assertThat(
         c.getAllInterfaces().get("Ethernet1/1"),
         allOf(
@@ -9861,5 +9875,19 @@ public final class CiscoNxosGrammarTest {
         c.getAllInterfaces().get("Ethernet1/2"),
         allOf(
             isAdminUp(), isActive(false), hasInactiveReason(VRF_DOWN), hasVrfName("disabledvrf")));
+    assertThat(
+        c.getAllInterfaces().get("Ethernet1/3"),
+        allOf(
+            isAdminUp(false),
+            isActive(false),
+            hasInactiveReason(ADMIN_DOWN),
+            hasVrfName(DEFAULT_VRF_NAME)));
+    assertThat(
+        c.getAllInterfaces().get("Ethernet1/4"),
+        allOf(
+            isAdminUp(false),
+            isActive(false),
+            hasInactiveReason(ADMIN_DOWN),
+            hasVrfName("disabledvrf")));
   }
 }
