@@ -31,16 +31,16 @@ package net.sf.javabdd;
 import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
+import com.carrotsearch.hppc.LongHashSet;
+import com.carrotsearch.hppc.LongSet;
+import com.carrotsearch.hppc.LongStack;
 import com.carrotsearch.hppc.procedures.IntProcedure;
 import java.io.PrintStream;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
-import java.util.Stack;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
@@ -2015,50 +2015,23 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
-  /** Simple class used to track pairs of operands used in binary operations. */
-  private static final class OpPair {
-    private final int _l;
-    private final int _r;
-
-    public OpPair(int l, int r) {
-      _l = l;
-      _r = r;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      } else if (!(o instanceof OpPair)) {
-        return false;
-      }
-      OpPair opPair = (OpPair) o;
-      return _l == opPair._l && _r == opPair._r;
-    }
-
-    @Override
-    public int hashCode() {
-      return _l * 31 + _r;
-    }
-  }
-
-  /** Make an OpPair for a symmetric operation. The result will have l <= r. */
-  private static OpPair symmetric(int l, int r) {
-    if (l > r) {
-      return new OpPair(r, l);
-    }
-    return new OpPair(l, r);
-  }
-
   /**
-   * Make an OpPair for a symmetric operation using level as the first breaker. The result will have
-   * LEVEL(l) < LEVEL(r), and will have l <= r if they have the same level.
+   * Make an operator pair for a symmetric operation using level as the first breaker. The result
+   * will have LEVEL(l) < LEVEL(r), and will have l <= r if they have the same level.
    */
-  private OpPair symmetricByLevel(int l, int r) {
+  private long symmetricByLevel(int l, int r) {
     if (LEVEL(l) > LEVEL(r)) {
-      return new OpPair(r, l);
+      return ((long) r << 32) | l;
     }
-    return symmetric(l, r);
+    return ((long) l << 32) | r;
+  }
+
+  private int leftFromPair(long pair) {
+    return (int) (pair >>> 32);
+  }
+
+  private int rightFromPair(long pair) {
+    return (int) pair;
   }
 
   /**
@@ -2135,17 +2108,17 @@ public final class JFactory extends BDDFactory {
       POPREF(2);
     } else {
       int pushedRefs = 0;
-      Stack<OpPair> toProcess = new Stack<>(); // invariant: all have OpPair._l to erase
-      Set<OpPair> processed = new HashSet<>(); // nothing gets in toProcess if not new here
+      LongStack toProcess = new LongStack(); // invariant: all have OpPair._l to erase
+      LongSet processed = new LongHashSet(); // nothing gets in toProcess if not new here
       IntSet toOr = new IntHashSet(); // will be orAll'd to get the final result.
-      OpPair pair = new OpPair(l, r); // should be symmetric by level due to above invariant
+      long pair = symmetricByLevel(l, r);
       processed.add(pair);
       toProcess.push(pair);
       res = -1; // indicate that it has not been short-circuited.
       while (!toProcess.isEmpty()) {
-        OpPair nextPair = toProcess.pop();
-        int left = nextPair._l;
-        int right = nextPair._r;
+        long nextPair = toProcess.pop();
+        int left = leftFromPair(nextPair);
+        int right = rightFromPair(nextPair);
 
         int lowL = LOW(left);
         int highL = HIGH(left);
@@ -2178,9 +2151,9 @@ public final class JFactory extends BDDFactory {
           toOr.add(erasedConstraint);
           pushedRefs++;
         } else {
-          OpPair lowPair = symmetricByLevel(lowL, lowR);
+          long lowPair = symmetricByLevel(lowL, lowR);
           if (processed.add(lowPair)) {
-            if (INVARSET(LEVEL(lowPair._l))) {
+            if (INVARSET(LEVEL(leftFromPair(lowPair)))) {
               toProcess.add(lowPair);
             } else {
               int lowResult = relprod_rec(lowL, lowR);
@@ -2211,9 +2184,9 @@ public final class JFactory extends BDDFactory {
           toOr.add(erasedConstraint);
           pushedRefs++;
         } else {
-          OpPair highPair = symmetricByLevel(highL, highR);
+          long highPair = symmetricByLevel(highL, highR);
           if (processed.add(highPair)) {
-            if (INVARSET(LEVEL(highPair._l))) {
+            if (INVARSET(LEVEL(leftFromPair(highPair)))) {
               toProcess.add(highPair);
             } else {
               int highResult = relprod_rec(highL, highR);
