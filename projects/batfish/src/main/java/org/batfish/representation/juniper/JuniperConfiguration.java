@@ -733,7 +733,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // default-address-selection is set.
       if (localIp == null
           && _masterLogicalSystem.getDefaultAddressSelection()
-          && (ibgp || ig.getEbgpMultihop())) {
+          && (ibgp || firstNonNull(ig.getEbgpMultihop(), false))) {
         localIp = getDefaultSourceAddress(routingInstance, _c).orElse(null);
       }
       neighbor.setLocalIp(localIp);
