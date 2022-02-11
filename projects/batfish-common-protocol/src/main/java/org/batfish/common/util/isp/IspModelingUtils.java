@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_SINGLEHOP;
+import static org.batfish.datamodel.BgpSessionProperties.getSessionType;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
@@ -418,11 +420,6 @@ public final class IspModelingUtils {
 
     // TODO: Enforce interface type constraint here
 
-    Set<Ip> localConcreteIps =
-        snapshotIface.getAllConcreteAddresses().stream()
-            .map(ConcreteInterfaceAddress::getIp)
-            .collect(ImmutableSet.toImmutableSet());
-
     List<BgpPeerConfig> validBgpPeers =
         snapshotHost.getVrfs().values().stream()
             .map(Vrf::getBgpProcess)
@@ -433,7 +430,10 @@ public final class IspModelingUtils {
             .filter(
                 bgpPeerConfig ->
                     isValidBgpPeerForBorderInterfaceInfo(
-                        bgpPeerConfig, localConcreteIps, remoteIps, remoteAsns))
+                        bgpPeerConfig,
+                        snapshotIface.getAllConcreteAddresses(),
+                        remoteIps,
+                        remoteAsns))
             .collect(Collectors.toList());
 
     if (validBgpPeers.isEmpty()) {
@@ -1177,7 +1177,7 @@ public final class IspModelingUtils {
   @VisibleForTesting
   static boolean isValidBgpPeerForBorderInterfaceInfo(
       BgpPeerConfig bgpPeerConfig,
-      Set<Ip> validLocalIps,
+      Set<ConcreteInterfaceAddress> interfaceAddresses,
       Set<Ip> allowedRemoteIps,
       LongSpace allowedRemoteAsns) {
     boolean commonCriteria =
@@ -1194,11 +1194,8 @@ public final class IspModelingUtils {
     if (bgpPeerConfig instanceof BgpActivePeerConfig) {
       BgpActivePeerConfig activePeerConfig = (BgpActivePeerConfig) bgpPeerConfig;
 
-      // limit to peers with statically determined local IP -- that is how we know that the
-      // session is indeed tied to the interface
-      return Objects.nonNull(bgpPeerConfig.getLocalIp())
-          && validLocalIps.contains(bgpPeerConfig.getLocalIp())
-          && Objects.nonNull(activePeerConfig.getPeerAddress()) // peer address is defined
+      return Objects.nonNull(activePeerConfig.getPeerAddress()) // peer address is defined
+          && activeBgpPeerUsesInterface(activePeerConfig, interfaceAddresses)
           && (allowedRemoteIps.isEmpty()
               || allowedRemoteIps.contains(
                   activePeerConfig.getPeerAddress())); // peer address is allowed
@@ -1208,6 +1205,24 @@ public final class IspModelingUtils {
       return true;
     }
     // passive peers are not valid for ISP modeling
+    return false;
+  }
+
+  /** Returns if {@code bgpPeerConfig} will use the interface with {@code interfaceAddresses}. */
+  private static boolean activeBgpPeerUsesInterface(
+      BgpActivePeerConfig bgpPeerConfig, Set<ConcreteInterfaceAddress> interfaceAddresses) {
+    // If the peer config has an explicit local IP, then the interface should have that IP.
+    // Otherwise, if the session is eBGP-singlehop, the interface should have a prefix that contains
+    // the remote address. For other session types, we cannot be sure that this
+    // interface will be used, so we return false.
+    if (Objects.nonNull(bgpPeerConfig.getLocalIp())) {
+      return interfaceAddresses.stream()
+          .anyMatch(addr -> addr.getIp().equals(bgpPeerConfig.getLocalIp()));
+    } else if (Objects.nonNull(bgpPeerConfig.getPeerAddress())
+        && getSessionType(bgpPeerConfig) == EBGP_SINGLEHOP) {
+      return interfaceAddresses.stream()
+          .anyMatch(addr -> addr.getPrefix().containsIp(bgpPeerConfig.getPeerAddress()));
+    }
     return false;
   }
 
