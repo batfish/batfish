@@ -308,35 +308,59 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testIsValidBgpPeerConfig() {
-    Set<Ip> validLocalIps = ImmutableSet.of(Ip.parse("3.3.3.3"));
-    BgpActivePeerConfig invalidPeer =
+  public void testIsValidBgpPeerForBorderInterfaceInfo_active() {
+    Set<ConcreteInterfaceAddress> interfaceAddresses =
+        ImmutableSet.of(ConcreteInterfaceAddress.parse("3.3.3.1/30"));
+    BgpActivePeerConfig.Builder bgpActivePeerConfig =
         BgpActivePeerConfig.builder()
-            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setPeerAddress(Ip.parse("3.3.3.3"))
             .setRemoteAs(1L)
-            .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
-            .build();
-    BgpActivePeerConfig validPeer =
-        BgpActivePeerConfig.builder()
-            .setPeerAddress(Ip.parse("1.1.1.1"))
-            .setRemoteAs(1L)
-            .setLocalIp(Ip.parse("3.3.3.3"))
-            .setLocalAs(2L)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
-            .build();
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build());
 
+    // wrong explict local IP
     assertFalse(
         isValidBgpPeerForBorderInterfaceInfo(
-            invalidPeer, validLocalIps, ImmutableSet.of(), ALL_AS_NUMBERS));
+            bgpActivePeerConfig.setLocalIp(Ip.parse("2.2.2.2")).build(),
+            interfaceAddresses,
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS));
+
+    // correct explicit local IP
     assertTrue(
         isValidBgpPeerForBorderInterfaceInfo(
-            validPeer, validLocalIps, ImmutableSet.of(), ALL_AS_NUMBERS));
+            bgpActivePeerConfig.setLocalIp(Ip.parse("3.3.3.1")).build(),
+            interfaceAddresses,
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS));
+
+    // no local IP, eBGP-single hop with matching IP
+    assertTrue(
+        isValidBgpPeerForBorderInterfaceInfo(
+            bgpActivePeerConfig.setLocalIp(null).build(),
+            interfaceAddresses,
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS));
+
+    // no local IP, eBGP-single hop, non-matching IP
+    assertFalse(
+        isValidBgpPeerForBorderInterfaceInfo(
+            bgpActivePeerConfig.setLocalIp(null).build(),
+            ImmutableSet.of(ConcreteInterfaceAddress.parse("4.4.4.1/30")),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS));
+
+    // no local IP, eBGP-multihop, non-matching IP
+    assertFalse(
+        isValidBgpPeerForBorderInterfaceInfo(
+            bgpActivePeerConfig.setLocalIp(null).setEbgpMultihop(true).build(),
+            interfaceAddresses,
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS));
   }
 
   @Test
-  public void testIsValidBgpPeerInterfaceNeighbor() {
+  public void testIsValidBgpPeerForBorderInterfaceInfo_unnumbered() {
     // missing remote ASN
     BgpUnnumberedPeerConfig invalidPeer =
         BgpUnnumberedPeerConfig.builder()
