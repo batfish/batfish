@@ -46,9 +46,9 @@ import org.junit.runner.RunWith;
  * @version $Id: IteratorTests.java,v 1.6 2005/06/03 20:19:46 joewhaley Exp $
  */
 @RunWith(JUnit38ClassRunner.class)
-public class IteratorTests extends BDDTestCase {
+public class IteratorTest extends BDDTestCase {
   public static void main(String[] args) {
-    junit.textui.TestRunner.run(IteratorTests.class);
+    junit.textui.TestRunner.run(IteratorTest.class);
   }
 
   public void testOneZeroIterator() {
