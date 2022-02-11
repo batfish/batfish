@@ -317,6 +317,10 @@ public class Interface implements Serializable {
     return _routingInstance;
   }
 
+  public @Nonnull InterfaceType getType() {
+    return _type;
+  }
+
   public Map<String, Interface> getUnits() {
     return _units;
   }
