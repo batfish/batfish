@@ -141,6 +141,33 @@ public abstract class BDDFactory {
   /** Inverse implication. */
   public static final BDDOp invimp = new BDDOp(9, "invimp");
 
+  public BDDOp getOp(int op) {
+    switch (op) {
+      case 0:
+        return and;
+      case 1:
+        return xor;
+      case 2:
+        return or;
+      case 3:
+        return nand;
+      case 4:
+        return nor;
+      case 5:
+        return imp;
+      case 6:
+        return biimp;
+      case 7:
+        return diff;
+      case 8:
+        return less;
+      case 9:
+        return invimp;
+      default:
+        throw new IllegalArgumentException(Integer.toString(op));
+    }
+  }
+
   /**
    * Enumeration class for binary operations on BDDs. Use the static fields in BDDFactory to access
    * the different binary operations.
@@ -246,17 +273,6 @@ public abstract class BDDFactory {
    * @return true if this BDD factory is initialized
    */
   public abstract boolean isInitialized();
-
-  /**
-   * Sets the error condition. This will cause the BDD package to throw an exception at the next
-   * garbage collection.
-   *
-   * @param code the error code to set
-   */
-  public abstract void setError(int code);
-
-  /** Clears any outstanding error condition. */
-  public abstract void clearError();
 
   /** ** CACHE/TABLE PARAMETERS *** */
 

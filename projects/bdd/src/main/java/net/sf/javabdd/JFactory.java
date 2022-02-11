@@ -29,22 +29,37 @@
 package net.sf.javabdd;
 
 import com.carrotsearch.hppc.IntHashSet;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.IntIntMap;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
 import com.carrotsearch.hppc.procedures.IntProcedure;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.math.BigInteger;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Random;
+import java.util.StringJoiner;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
@@ -70,6 +85,340 @@ public final class JFactory extends BDDFactory {
   /** The number of BDDImpl objects reused since the last garbage collection. */
   private long reusedBDDs;
 
+  /** Whether tracing is enabled. Defaults to false. */
+  private boolean _tracing;
+
+  /** The actual trace. */
+  private final List<TracedOperation> _trace;
+
+  private final IntIntMap _indexToSequence;
+
+  /** Implements the trace operation. */
+  private BDDImpl trace(BDDImpl result, Operation op, int... args) {
+    if (_tracing) {
+      int[] uniqueArgs =
+          Arrays.stream(args).map(i -> i < 0 ? i : _indexToSequence.get(i)).toArray();
+      _trace.add(new TracedOperation(_indexToSequence.get(result._index), op, uniqueArgs));
+    }
+    return result;
+  }
+
+  /** Implements the trace operation. */
+  private void traceNoResult(Operation op, int... args) {
+    if (_tracing) {
+      int[] uniqueArgs =
+          Arrays.stream(args).map(i -> i < 0 ? i : _indexToSequence.get(i)).toArray();
+      _trace.add(new TracedOperation(-1, op, uniqueArgs));
+    }
+  }
+
+  private void crashIfTracing() {
+    if (_tracing) {
+      throw new IllegalStateException("Tracing is on, but user called an untraced operation");
+    }
+  }
+
+  private void crashIfTracingStarted() {
+    if (_tracing && !_trace.isEmpty()) {
+      throw new IllegalStateException("Unexpected call when tracing has begun");
+    }
+  }
+
+  private enum Operation {
+    /** {@link BDDFactory#andAll}. */
+    AND_ALL,
+    /** {@link BDDFactory#andAllAndFree}. */
+    AND_ALL_FREE,
+    /** {@link BDD#andSat(BDD)}. */
+    AND_SAT,
+    /** Standard binary operation with bdd_apply such as {@link BDD#and(BDD)}. */
+    APPLY,
+    /** Standard binary operation with bdd_applyEq such as {@link BDD#andEq(BDD)}. */
+    APPLY_EQ,
+    /** {@link BDD#applyEx(BDD, BDDOp, BDD)}. */
+    APPLY_EX,
+    /** Standard binary operation with bdd_applyWith such as {@link BDD#andWith(BDD)}. */
+    APPLY_WITH,
+    /** {@link BDD#diffSat(BDD)}. */
+    DIFF_SAT,
+    /** {@link BDD#exist(BDD)}. */
+    EXIST,
+    /** {@link BDD#existEq(BDD)}. */
+    EXIST_EQ,
+    /** {@link BDD#free()}. */
+    FREE,
+    /** {@link BDD#fullSatOne()}. */
+    FULL_SAT_ONE,
+    /** {@link BDD#id()}. */
+    ID,
+    /** {@link BDD#ite(BDD, BDD)}. */
+    ITE,
+    /** {@link BDDFactory#ithVar(int)}. */
+    ITH_VAR,
+    /** {@link BDD#minAssignmentBits()}. */
+    MIN_ASSIGNMENT_BITS,
+    /** {@link BDDFactory#nithVar(int)}. */
+    NITH_VAR,
+    /** {@link BDD#not()}. */
+    NOT,
+    /** {@link BDDFactory#one}. */
+    ONE,
+    /** {@link BDDFactory#orAll}. */
+    OR_ALL,
+    /** {@link BDDFactory#orAllAndFree}. */
+    OR_ALL_FREE,
+    /** {@link BDD#project(BDD)}. */
+    PROJECT,
+    /** {@link BDD#randomFullSatOne(int)}. */
+    RANDOM_FULL_SAT_ONE,
+    /** {@link BDD#satOne()}. */
+    SAT_ONE,
+    /** {@link BDDFactory#setVarNum(int)}. */
+    SET_VAR_NUM,
+    /** {@link BDD#support()}. */
+    SUPPORT,
+    /** {@link BDDFactory#zero}. */
+    ZERO,
+  }
+
+  /** Used to log and reply all BDD operations on a factory. */
+  private static class TracedOperation implements Serializable {
+    private static final long serialVersionUID = -490376373193321074L;
+    private final Operation _op;
+    private final int _result;
+    private final int[] _args;
+
+    public TracedOperation(int result, Operation op, int... arguments) {
+      _result = result;
+      _op = op;
+      _args = arguments;
+    }
+
+    @Override
+    public String toString() {
+      return new StringJoiner(", ", TracedOperation.class.getSimpleName() + "[", "]")
+          .add("op=" + _op)
+          .add("result=" + _result)
+          .add("args=" + _args.length)
+          .toString();
+    }
+  }
+
+  /** Turns on tracing for this {@link JFactory}. */
+  public void enableTracing() {
+    if (!_tracing) {
+      _tracing = true;
+      _indexToSequence.put(BDDZERO, ++bddproduced);
+      _indexToSequence.put(BDDONE, ++bddproduced);
+      trace(makeBDD(BDDZERO), Operation.ZERO);
+      trace(makeBDD(BDDONE), Operation.ONE);
+    }
+  }
+
+  /** Saves the trace created by this {@link JFactory} at the given {@link Path}. */
+  public void saveTrace(Path path) throws IOException {
+    if (!_tracing) {
+      throw new IllegalStateException("Cannot save a trace if tracing is not enabled");
+    }
+
+    try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
+      try (GZIPOutputStream gzip = new GZIPOutputStream(fos)) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(gzip)) {
+          oos.writeObject(_trace);
+        }
+      }
+    }
+  }
+
+  /** Replays the trace at the given {@link Path}. */
+  public void replayTrace(Path path) throws IOException, ClassNotFoundException {
+    System.err.println("Reading trace from " + path);
+    LOGGER.info("Reading trace from {}", path);
+    List<TracedOperation> trace;
+    try (FileInputStream fis = new FileInputStream(path.toFile())) {
+      try (GZIPInputStream gis = new GZIPInputStream(fis)) {
+        try (ObjectInputStream ois = new ObjectInputStream(gis)) {
+          trace = (List<TracedOperation>) ois.readObject();
+        }
+      }
+    }
+    replay(trace);
+  }
+
+  private void replay(List<TracedOperation> trace) {
+    Replayer replayer = new Replayer();
+    boolean t = _tracing;
+    _tracing = false;
+    int count = 0;
+    for (TracedOperation operation : trace) {
+      if (++count % 10000 == 0) {
+        System.err.println("Replaying a " + operation._op + ": " + count + " / " + trace.size());
+        LOGGER.info("Replaying a {}", operation._op);
+      }
+      replayer.replayTracedOperation(operation);
+    }
+    _tracing = t;
+    System.err.println(
+        trace.stream()
+            .map(to -> to._op)
+            .collect(Collectors.groupingBy(Operation::toString, Collectors.counting())));
+  }
+
+  private class Replayer {
+    private final IntIntMap _sequenceToReplayIndex = new IntIntHashMap();
+
+    /** Creates a BDD without incrementing its reference count. */
+    private BDD replayBdd(int seq) {
+      int index = _sequenceToReplayIndex.getOrDefault(seq, -1);
+      if (index == -1) {
+        throw new IllegalStateException("No mapping for seq " + seq + " found ");
+      }
+      BDDImpl ret = makeBDD(BDDZERO);
+      ret._index = index;
+      return ret;
+    }
+
+    private void recordSequence(int seq, BDD result) {
+      BDDImpl res = (BDDImpl) result;
+      int existingIndex = _sequenceToReplayIndex.getOrDefault(seq, -1);
+      if (existingIndex == -1) {
+        _sequenceToReplayIndex.put(seq, res._index);
+      } else if (res._index != existingIndex) {
+        throw new IllegalStateException("Reassigned index for sequence " + seq);
+      }
+    }
+
+    private void replayTracedOperation(TracedOperation operation) {
+      switch (operation._op) {
+        case AND_ALL:
+          {
+            BDD[] ops =
+                Arrays.stream(operation._args).mapToObj(this::replayBdd).toArray(BDD[]::new);
+            recordSequence(operation._result, andAll(ops));
+          }
+          break;
+        case AND_ALL_FREE:
+          {
+            BDD[] ops =
+                Arrays.stream(operation._args).mapToObj(this::replayBdd).toArray(BDD[]::new);
+            recordSequence(operation._result, andAllAndFree(ops));
+          }
+          break;
+        case AND_SAT:
+          replayBdd(operation._args[0]).andSat(replayBdd(operation._args[1]));
+          break;
+        case APPLY:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0])
+                  .apply(replayBdd(operation._args[1]), getOp(-operation._args[2] - 1), true));
+          break;
+        case APPLY_EQ:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0])
+                  .apply(replayBdd(operation._args[1]), getOp(-operation._args[2] - 1), false));
+          break;
+        case APPLY_EX:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0])
+                  .applyEx(
+                      replayBdd(operation._args[1]),
+                      getOp(-operation._args[2] - 1),
+                      replayBdd(operation._args[3])));
+          break;
+        case APPLY_WITH:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0])
+                  .applyWith(replayBdd(operation._args[1]), getOp(-operation._args[2] - 1)));
+          break;
+        case DIFF_SAT:
+          replayBdd(operation._args[0]).diffSat(replayBdd(operation._args[1]));
+          break;
+        case EXIST:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0]).exist(replayBdd(operation._args[1])));
+          break;
+        case EXIST_EQ:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0]).existEq(replayBdd(operation._args[1])));
+          break;
+        case FREE:
+          replayBdd(operation._args[0]).free();
+          break;
+        case FULL_SAT_ONE:
+          replayBdd(operation._args[0]).fullSatOne();
+          break;
+        case ID:
+          replayBdd(operation._args[0]).id();
+          break;
+        case ITE:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0])
+                  .ite(replayBdd(operation._args[1]), replayBdd(operation._args[2])));
+          break;
+        case ITH_VAR:
+          recordSequence(operation._result, ithVar(-(operation._args[0] + 1)));
+          break;
+        case MIN_ASSIGNMENT_BITS:
+          replayBdd(operation._args[0]).minAssignmentBits();
+          break;
+        case NITH_VAR:
+          recordSequence(operation._result, nithVar(-(operation._args[0] + 1)));
+          break;
+        case NOT:
+          recordSequence(operation._result, replayBdd(operation._args[0]).not());
+          break;
+        case ONE:
+          recordSequence(operation._result, one());
+          break;
+        case OR_ALL:
+          {
+            BDD[] ops =
+                Arrays.stream(operation._args).mapToObj(this::replayBdd).toArray(BDD[]::new);
+            recordSequence(operation._result, orAll(ops));
+          }
+          break;
+        case OR_ALL_FREE:
+          {
+            BDD[] ops =
+                Arrays.stream(operation._args).mapToObj(this::replayBdd).toArray(BDD[]::new);
+            recordSequence(operation._result, orAllAndFree(ops));
+          }
+          break;
+        case PROJECT:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0]).project(replayBdd(operation._args[1])));
+          break;
+        case RANDOM_FULL_SAT_ONE:
+          recordSequence(
+              operation._result,
+              replayBdd(operation._args[0]).randomFullSatOne(operation._args[1]));
+          break;
+        case SAT_ONE:
+          recordSequence(operation._result, replayBdd(operation._args[0]).satOne());
+          break;
+        case SET_VAR_NUM:
+          setVarNum(-operation._args[0]);
+          break;
+        case SUPPORT:
+          recordSequence(operation._result, replayBdd(operation._args[0]).support());
+          break;
+        case ZERO:
+          recordSequence(operation._result, zero());
+          break;
+        default:
+          throw new IllegalStateException("Unsupported replay of " + operation._op);
+      }
+    }
+  }
+
   /**
    * Whether to flush (clear completely) the cache when live BDD nodes are garbage collected. If
    * {@code false}, the cache will be attempted to be cleaned and maintain existing valid cache
@@ -85,6 +434,8 @@ public final class JFactory extends BDDFactory {
   private JFactory() {
     supportSet = new int[0];
     bddrefstack = new IntStack();
+    _trace = new ArrayList<>();
+    _indexToSequence = new IntIntHashMap();
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -153,22 +504,24 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD high() {
+      crashIfTracing();
       return makeBDD(HIGH(_index));
     }
 
     @Override
     public BDD low() {
+      crashIfTracing();
       return makeBDD(LOW(_index));
     }
 
     @Override
     public BDD id() {
-      return makeBDD(_index);
+      return trace(makeBDD(_index), Operation.ID, _index);
     }
 
     @Override
     public BDD not() {
-      return makeBDD(bdd_not(_index));
+      return trace(makeBDD(bdd_not(_index)), Operation.NOT, _index);
     }
 
     @Override
@@ -176,11 +529,12 @@ public final class JFactory extends BDDFactory {
       int x = _index;
       int y = ((BDDImpl) thenBDD)._index;
       int z = ((BDDImpl) elseBDD)._index;
-      return makeBDD(bdd_ite(x, y, z));
+      return trace(makeBDD(bdd_ite(x, y, z)), Operation.ITE, x, y, z);
     }
 
     @Override
     public BDD relprod(BDD that, BDD var) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = ((BDDImpl) var)._index;
@@ -189,6 +543,7 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD compose(BDD g, int var) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) g)._index;
       return makeBDD(bdd_compose(x, y, var));
@@ -196,12 +551,14 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD veccompose(BDDPairing pair) {
+      crashIfTracing();
       int x = _index;
       return makeBDD(bdd_veccompose(x, (bddPair) pair));
     }
 
     @Override
     public BDD constrain(BDD that) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       return makeBDD(bdd_constrain(x, y));
@@ -211,7 +568,7 @@ public final class JFactory extends BDDFactory {
      * Given the index of the result of an operation, either changes {@code this} {@link BDD} (when
      * {@code makeNew} is false) or creates a new BDD ({@code makeNew} is true).
      */
-    private BDD eqOrNew(int result, boolean makeNew) {
+    private BDDImpl eqOrNew(int result, boolean makeNew) {
       if (makeNew) {
         return makeBDD(result);
       }
@@ -229,18 +586,20 @@ public final class JFactory extends BDDFactory {
     BDD exist(BDD var, boolean makeNew) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return eqOrNew(bdd_exist(x, y), makeNew);
+      return trace(
+          eqOrNew(bdd_exist(x, y), makeNew), makeNew ? Operation.EXIST : Operation.EXIST_EQ, x, y);
     }
 
     @Override
     public BDD project(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return makeBDD(bdd_project(x, y));
+      return trace(makeBDD(bdd_project(x, y)), Operation.PROJECT, x, y);
     }
 
     @Override
     public BDD forAll(BDD var) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_forall(x, y));
@@ -248,6 +607,7 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD unique(BDD var) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_unique(x, y));
@@ -255,6 +615,7 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD restrict(BDD var) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_restrict(x, y));
@@ -262,6 +623,7 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD restrictWith(BDD that) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int a = bdd_restrict(x, y);
@@ -276,6 +638,7 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD simplify(BDD d) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) d)._index;
       return makeBDD(bdd_simplify(x, y));
@@ -284,23 +647,29 @@ public final class JFactory extends BDDFactory {
     @Override
     public BDD support() {
       int x = _index;
-      return makeBDD(bdd_support(x));
+      return trace(makeBDD(bdd_support(x)), Operation.SUPPORT, x);
     }
 
     @Override
     public boolean andSat(BDD that) {
+      int x = _index;
+      int y = ((BDDImpl) that)._index;
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }
-      return andsat_rec(_index, ((BDDImpl) that)._index);
+      traceNoResult(Operation.AND_SAT, x, y);
+      return andsat_rec(x, y);
     }
 
     @Override
     public boolean diffSat(BDD that) {
+      int x = _index;
+      int y = ((BDDImpl) that)._index;
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }
-      return diffsat_rec(_index, ((BDDImpl) that)._index);
+      traceNoResult(Operation.DIFF_SAT, x, y);
+      return diffsat_rec(x, y);
     }
 
     @Override
@@ -308,7 +677,12 @@ public final class JFactory extends BDDFactory {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      return eqOrNew(bdd_apply(x, y, z), makeNew);
+      return trace(
+          eqOrNew(bdd_apply(x, y, z), makeNew),
+          makeNew ? Operation.APPLY : Operation.APPLY_EQ,
+          x,
+          y,
+          -z - 1);
     }
 
     @Override
@@ -323,11 +697,12 @@ public final class JFactory extends BDDFactory {
       }
       bdd_addref(a);
       _index = a;
-      return this;
+      return trace(this, Operation.APPLY_WITH, x, y, -z - 1);
     }
 
     @Override
     public BDD applyAll(BDD that, BDDOp opr, BDD var) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
@@ -341,11 +716,12 @@ public final class JFactory extends BDDFactory {
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
       int a = ((BDDImpl) var)._index;
-      return makeBDD(bdd_appex(x, y, z, a));
+      return trace(makeBDD(bdd_appex(x, y, z, a)), Operation.APPLY_EX, x, y, -z - 1, a);
     }
 
     @Override
     public BDD applyUni(BDD that, BDDOp opr, BDD var) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
@@ -356,28 +732,30 @@ public final class JFactory extends BDDFactory {
     @Override
     public BDD satOne() {
       int x = _index;
-      return makeBDD(bdd_satone(x));
+      return trace(makeBDD(bdd_satone(x)), Operation.SAT_ONE, x);
     }
 
     @Override
     public BDD fullSatOne() {
       int x = _index;
-      return makeBDD(bdd_fullsatone(x));
+      return trace(makeBDD(bdd_fullsatone(x)), Operation.FULL_SAT_ONE, x);
     }
 
     @Override
     public BitSet minAssignmentBits() {
+      traceNoResult(Operation.MIN_ASSIGNMENT_BITS, _index);
       return bdd_minassignmentbits(_index);
     }
 
     @Override
     public BDD randomFullSatOne(int seed) {
       int x = _index;
-      return makeBDD(bdd_randomfullsatone(x, seed));
+      return trace(makeBDD(bdd_randomfullsatone(x, seed)), Operation.RANDOM_FULL_SAT_ONE, x, seed);
     }
 
     @Override
     public BDD satOne(BDD var, boolean pol) {
+      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) var)._index;
       int z = pol ? 1 : 0;
@@ -386,12 +764,14 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD replace(BDDPairing pair) {
+      crashIfTracing();
       int x = _index;
       return makeBDD(bdd_replace(x, (bddPair) pair));
     }
 
     @Override
     public BDD replaceWith(BDDPairing pair) {
+      crashIfTracing();
       int x = _index;
       int y = bdd_replace(x, (bddPair) pair);
       bdd_delref(x);
@@ -437,6 +817,10 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public void free() {
+      if (!ISCONST(_index)) {
+        // else deliberately not tracing "trivial" operation.
+        traceNoResult(Operation.FREE, _index);
+      }
       freeInternal();
     }
 
@@ -734,11 +1118,13 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public BDD zero() {
+    // Deliberately not tracing "trivial" operation.
     return makeBDD(BDDZERO);
   }
 
   @Override
   public BDD one() {
+    // Deliberately not tracing "trivial" operation.
     return makeBDD(BDDONE);
   }
 
@@ -902,7 +1288,7 @@ public final class JFactory extends BDDFactory {
     if (free) {
       bddOperands.forEach(BDD::freeInternal);
     }
-    return makeBDD(ret);
+    return trace(makeBDD(ret), free ? Operation.AND_ALL_FREE : Operation.AND_ALL, operands);
   }
 
   private int bdd_andAll(int[] operands) {
@@ -939,7 +1325,7 @@ public final class JFactory extends BDDFactory {
     if (free) {
       bddOperands.forEach(BDD::freeInternal);
     }
-    return makeBDD(ret);
+    return trace(makeBDD(ret), free ? Operation.OR_ALL_FREE : Operation.OR_ALL, operands);
   }
 
   private int bdd_orAll(int[] operands) {
@@ -3900,6 +4286,9 @@ public final class JFactory extends BDDFactory {
     bddfreepos = NEXT(bddfreepos);
     bddfreenum--;
     bddproduced++;
+    if (_tracing) {
+      _indexToSequence.put(res, bddproduced);
+    }
 
     SETLEVELANDMARK(res, level);
     SETLOW(res, low);
@@ -3936,6 +4325,7 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public int setNodeTableSize(int size) {
+    crashIfTracingStarted();
     int old = bddnodesize;
     doResize(true, old, size);
     return old;
@@ -4095,9 +4485,6 @@ public final class JFactory extends BDDFactory {
   private BddCache countcache; /* Cache for count results */
   private int cacheratio;
   private int satPolarity;
-  /* Used instead of local variable in order
-  to avoid compiler warning about 'first'
-  being clobbered by setjmp */
 
   private void bdd_operator_init() {
     quantvarsetID = 0;
@@ -4140,6 +4527,7 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public int setCacheSize(int newcachesize) {
+    crashIfTracingStarted();
     int old = cachesize;
     BddCache_resize(applycache, newcachesize);
     BddCache_resize(quantcache, newcachesize);
@@ -4560,17 +4948,8 @@ public final class JFactory extends BDDFactory {
   }
 
   @Override
-  public void setError(int code) {
-    bdderrorcond = code;
-  }
-
-  @Override
-  public void clearError() {
-    bdderrorcond = 0;
-  }
-
-  @Override
   public double setMinFreeNodes(double x) {
+    crashIfTracingStarted();
     return bdd_setminfreenodes((int) (x * 100.)) / 100.;
   }
 
@@ -4599,6 +4978,7 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public int setCacheRatio(int r) {
+    crashIfTracingStarted();
     return bdd_setcacheratio(r);
   }
 
@@ -4624,11 +5004,14 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public int setVarNum(int num) {
-    return bdd_setvarnum(num);
+    int ret = bdd_setvarnum(num);
+    traceNoResult(Operation.SET_VAR_NUM, -num);
+    return ret;
   }
 
   @Override
   public int duplicateVar(int var) {
+    crashIfTracing();
     if (var < 0 || var >= bddvarnum) {
       bdd_error(BDD_VAR);
       return BDDZERO;
@@ -4735,12 +5118,12 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public BDD ithVar(int var) {
-    return makeBDD(bdd_ithvar(var));
+    return trace(makeBDD(bdd_ithvar(var)), Operation.ITH_VAR, -(var + 1));
   }
 
   @Override
   public BDD nithVar(int var) {
-    return makeBDD(bdd_nithvar(var));
+    return trace(makeBDD(bdd_nithvar(var)), Operation.NITH_VAR, -(var + 1));
   }
 
   @Override
@@ -4766,6 +5149,7 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public void setVarOrder(int[] neworder) {
+    crashIfTracing();
     bdd_setvarorder(neworder);
   }
 
@@ -5616,6 +6000,7 @@ public final class JFactory extends BDDFactory {
 
   @Override
   protected BDDDomain createDomain(int a, BigInteger b) {
+    crashIfTracing();
     return new bddDomain(a, b);
   }
 
@@ -5633,6 +6018,7 @@ public final class JFactory extends BDDFactory {
 
   @Override
   protected BDDBitVector createBitVector(int a) {
+    crashIfTracing();
     return new bvec(a);
   }
 
