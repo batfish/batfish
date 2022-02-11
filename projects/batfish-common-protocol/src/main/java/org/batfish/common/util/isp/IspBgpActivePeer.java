@@ -1,6 +1,7 @@
 package org.batfish.common.util.isp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
@@ -22,10 +23,19 @@ final class IspBgpActivePeer extends IspBgpPeer {
 
   /** Extracts parameters from {@code snapshotBgpPeer} to create IspBgpPeer */
   static IspBgpActivePeer create(BgpActivePeerConfig snapshotBgpPeer) {
-    assert snapshotBgpPeer.getLocalIp() != null;
+    checkArgument(
+        Objects.nonNull(snapshotBgpPeer.getLocalIp()),
+        "Local IP must not be null when creating the ISP BGP peer");
+    return create(snapshotBgpPeer, snapshotBgpPeer.getLocalIp());
+  }
+
+  /** Extracts parameters from {@code snapshotBgpPeer} to create IspBgpPeer */
+  static IspBgpActivePeer create(BgpActivePeerConfig snapshotBgpPeer, Ip snapshotLocalIp) {
+    assert snapshotLocalIp != null;
     assert snapshotBgpPeer.getPeerAddress() != null;
+    assert snapshotBgpPeer.getLocalAs() != null;
     return new IspBgpActivePeer(
-        snapshotBgpPeer.getLocalIp(),
+        snapshotLocalIp,
         snapshotBgpPeer.getPeerAddress(),
         firstNonNull(snapshotBgpPeer.getConfederationAsn(), snapshotBgpPeer.getLocalAs()),
         snapshotBgpPeer.getRemoteAsns().least(),
