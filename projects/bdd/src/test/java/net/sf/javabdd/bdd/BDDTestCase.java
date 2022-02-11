@@ -48,7 +48,7 @@ public abstract class BDDTestCase extends TestCase implements Iterator<BDDFactor
     "net.sf.javabdd.JFactory",
   };
 
-  private static Collection<BDDFactory> factories;
+  private Collection<BDDFactory> factories;
   private Iterator<BDDFactory> i;
   private int nodenum, cachesize;
 
@@ -73,17 +73,6 @@ public abstract class BDDTestCase extends TestCase implements Iterator<BDDFactor
     factories = f;
   }
 
-  protected void destroyFactories() {
-    if (factories == null) {
-      return;
-    }
-    for (Object factory : factories) {
-      BDDFactory f = (BDDFactory) factory;
-      f.done();
-    }
-    factories = null;
-  }
-
   protected BDDTestCase(int nodenum, int cachesize) {
     this.nodenum = nodenum;
     this.cachesize = cachesize;
@@ -102,9 +91,7 @@ public abstract class BDDTestCase extends TestCase implements Iterator<BDDFactor
 
   @Override
   public BDDFactory next() {
-    BDDFactory f = i.next();
-    f.reset();
-    return f;
+    return i.next();
   }
 
   @Override
