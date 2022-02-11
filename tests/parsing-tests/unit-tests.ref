@@ -71006,7 +71006,7 @@
         "aws_configs" : "WARNINGS",
         "bgp-allow" : "PASSED",
         "bgp-disable" : "PASSED",
-        "bgp-enforce-first-as" : "WARNINGS",
+        "bgp-enforce-first-as" : "PASSED",
         "bgp_address_family" : "WARNINGS",
         "bgp_default_originate_policy" : "PASSED",
         "bgp_nsr" : "PASSED",
@@ -85606,14 +85606,6 @@
             }
           ]
         },
-        "bgp-enforce-first-as" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine local ip for bgp peering with neighbor ip: 1.1.1.1"
-            }
-          ]
-        },
         "bgp_address_family" : {
           "Red flags" : [
             {
@@ -85907,10 +85899,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine local ip for bgp peering with neighbor ip: 3.4.5.7"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Currently do not support per-neighbor BGP preference"
             },
             {
@@ -85928,14 +85916,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Both authentication-key and authentication-key-chain specified for neighbor 172.16.2.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2"
             }
           ]
         },

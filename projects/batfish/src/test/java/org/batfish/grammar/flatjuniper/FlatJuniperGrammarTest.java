@@ -1101,13 +1101,10 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         parseWarnings,
         hasItem(allOf(hasComment("This feature is not currently supported"), hasText("private"))));
-    Warnings convertWarnings =
-        batfish
-            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
-            .getWarnings()
-            .get(hostname);
+    SortedMap<String, Warnings> convertWarnings =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()).getWarnings();
     assertThat(
-        convertWarnings.getRedFlagWarnings(),
+        convertWarnings.getOrDefault(hostname, new Warnings()).getRedFlagWarnings(),
         not(
             hasItem(
                 WarningMatchers.hasText(
