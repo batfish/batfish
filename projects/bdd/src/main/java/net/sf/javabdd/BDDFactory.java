@@ -251,28 +251,6 @@ public abstract class BDDFactory {
   public abstract boolean isInitialized();
 
   /**
-   * Reset the BDD factory to its initial state. Everything is reallocated from scratch. This is
-   * like calling done() followed by initialize().
-   */
-  public void reset() {
-    int nodes = getNodeTableSize();
-    int cache = getCacheSize();
-    domain = null;
-    fdvarnum = 0;
-    firstbddvar = 0;
-    done();
-    initialize(nodes, cache);
-  }
-
-  /**
-   * This function frees all memory used by the BDD package and resets the package to its
-   * uninitialized state. The BDD package is no longer usable after this call.
-   *
-   * <p>Compare to bdd_done.
-   */
-  public abstract void done();
-
-  /**
    * Sets the error condition. This will cause the BDD package to throw an exception at the next
    * garbage collection.
    *
@@ -603,13 +581,6 @@ public abstract class BDDFactory {
   public abstract int duplicateVar(int var);
 
   /** ** BDD STATS *** */
-
-  /**
-   * Get the BDD library version.
-   *
-   * @return version string
-   */
-  public abstract String getVersion();
 
   /**
    * Counts the number of shared nodes in a collection of BDDs. Counts all distinct nodes that are
