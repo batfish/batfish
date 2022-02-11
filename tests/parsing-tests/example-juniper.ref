@@ -11190,7 +11190,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "convertStatus" : {
-        "as1border1" : "WARNINGS",
+        "as1border1" : "PASSED",
         "as1border2" : "PASSED",
         "as1core1" : "PASSED",
         "as2border1" : "PASSED",
@@ -14073,18 +14073,6 @@
       },
       "version" : "0.36.0",
       "warnings" : {
-        "as1border1" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine local ip for bgp peering with neighbor ip: 3.2.2.2"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine local ip for bgp peering with neighbor ip: 5.6.7.8"
-            }
-          ]
-        },
         "internet" : { }
       }
     },
