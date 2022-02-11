@@ -1219,12 +1219,14 @@ public final class IspModelingUtils {
     if (Objects.nonNull(bgpPeerConfig.getLocalIp())) {
       return interfaceAddresses.stream()
           .filter(addr -> addr.getIp().equals(bgpPeerConfig.getLocalIp()))
-          .findAny();
+          .sorted() // for determinism
+          .findFirst();
     } else if (Objects.nonNull(bgpPeerConfig.getPeerAddress())
         && getSessionType(bgpPeerConfig) == EBGP_SINGLEHOP) {
       return interfaceAddresses.stream()
           .filter(addr -> addr.getPrefix().containsIp(bgpPeerConfig.getPeerAddress()))
-          .findAny();
+          .sorted() // for determinism
+          .findFirst();
     }
     return Optional.empty();
   }
