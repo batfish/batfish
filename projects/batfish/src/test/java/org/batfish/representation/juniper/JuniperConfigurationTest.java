@@ -14,6 +14,8 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NB
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
 import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
+import static org.batfish.representation.juniper.JuniperConfiguration.getDefaultSourceAddress;
+import static org.batfish.representation.juniper.JuniperConfiguration.getPrimaryInterface;
 import static org.batfish.representation.juniper.JuniperConfiguration.getRouterId;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAccessListLines;
@@ -44,6 +46,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -873,5 +876,183 @@ public class JuniperConfigurationTest {
         traceableStatement.getTraceElement(),
         equalTo(
             toTraceableStatement(ImmutableList.of(), "psterm", "ps", "file").getTraceElement()));
+  }
+
+  private Configuration createViConfig(List<String> ifaceNames) {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.JUNIPER)
+            .build();
+    ifaceNames.forEach(
+        ifaceName ->
+            org.batfish.datamodel.Interface.builder().setName(ifaceName).setOwner(c).build());
+    return c;
+  }
+
+  @Test
+  public void testGetDefaultSourceAddress() {
+    {
+      // neither lo0 nor primary exists
+      assertThat(
+          getDefaultSourceAddress(new RoutingInstance("ri"), createViConfig(ImmutableList.of())),
+          equalTo(Optional.empty()));
+    }
+
+    {
+      // when both lo0 and primary are present in the routing instance
+      Interface lo0 = new Interface("lo0.0");
+      Interface em0 = new Interface("em0.0");
+      em0.setPrimary(true);
+      em0.setPrimaryAddress(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(lo0.getName(), lo0);
+      ri.getInterfaces().put(em0.getName(), em0);
+
+      Configuration c = createViConfig(ImmutableList.of(lo0.getName(), em0.getName()));
+
+      // l0 has no address
+      assertThat(getDefaultSourceAddress(ri, c), equalTo(Optional.of(Ip.parse("10.10.10.1"))));
+
+      // l0 has legal (not 127.0.0.1) address
+      lo0.setPrimaryAddress(ConcreteInterfaceAddress.parse("192.168.1.1/32"));
+      assertThat(getDefaultSourceAddress(ri, c), equalTo(Optional.of(Ip.parse("192.168.1.1"))));
+
+      // l0 is not active
+      c.getAllInterfaces().get(lo0.getName()).adminDown();
+      assertThat(getDefaultSourceAddress(ri, c), equalTo(Optional.of(Ip.parse("10.10.10.1"))));
+    }
+
+    {
+      // only primary interface is present in the routing instance
+      Interface em0 = new Interface("em0.0");
+      em0.setPrimary(true);
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(em0.getName(), em0);
+
+      Configuration c = createViConfig(ImmutableList.of(em0.getName()));
+
+      // primary interface has no address
+      assertThat(getDefaultSourceAddress(ri, c), equalTo(Optional.empty()));
+
+      // primary interface has address
+      em0.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+      assertThat(getDefaultSourceAddress(ri, c), equalTo(Optional.of(Ip.parse("10.10.10.1"))));
+
+      // primary interface is inactive
+      c.getAllInterfaces().get(em0.getName()).adminDown();
+      assertThat(getDefaultSourceAddress(ri, c), equalTo(Optional.empty()));
+    }
+  }
+
+  @Test
+  public void testGetPrimaryInterface() {
+    {
+      // prefer explicit primary
+      Interface explicitPrimary = new Interface("xe-0/0/0.0");
+      explicitPrimary.setPrimary(true);
+
+      Interface implicitPrimary = new Interface("em0.0");
+      implicitPrimary.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+
+      Configuration c =
+          createViConfig(ImmutableList.of(explicitPrimary.getName(), implicitPrimary.getName()));
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(explicitPrimary.getName(), explicitPrimary);
+      ri.getInterfaces().put(implicitPrimary.getName(), implicitPrimary);
+
+      assertThat(getPrimaryInterface(ri, c), equalTo(Optional.of(explicitPrimary)));
+
+      // inactive explicit primary
+      c.getAllInterfaces().get(explicitPrimary.getName()).adminDown();
+      assertThat(getPrimaryInterface(ri, c), equalTo(Optional.of(implicitPrimary)));
+    }
+    {
+      // prefer management if it has an address
+      Interface mgmtInterface = new Interface("em0.0");
+
+      Interface otherInterface = new Interface("xe-0/0/0.0");
+      otherInterface.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(mgmtInterface.getName(), mgmtInterface);
+      ri.getInterfaces().put(otherInterface.getName(), otherInterface);
+
+      Configuration c =
+          createViConfig(ImmutableList.of(mgmtInterface.getName(), otherInterface.getName()));
+
+      // mgmt interface without address
+      assertThat(getPrimaryInterface(ri, c), equalTo(Optional.of(otherInterface)));
+
+      // mgmt interface with address
+      mgmtInterface.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+      assertThat(getPrimaryInterface(ri, c), equalTo(Optional.of(mgmtInterface)));
+
+      // inactive mgmt interface
+      c.getAllInterfaces().get(mgmtInterface.getName()).adminDown();
+      assertThat(getPrimaryInterface(ri, c), equalTo(Optional.of(otherInterface)));
+    }
+    {
+      // return other interfaces with address
+      Interface noAddressInterface = new Interface("xe-0/0/0.0");
+
+      Interface addressedInterface = new Interface("xe-1/0/0.0");
+      addressedInterface.getAllAddresses().add(ConcreteInterfaceAddress.parse("10.10.10.1/31"));
+
+      Configuration c =
+          createViConfig(
+              ImmutableList.of(noAddressInterface.getName(), addressedInterface.getName()));
+
+      RoutingInstance ri = new RoutingInstance("ri");
+      ri.getInterfaces().put(addressedInterface.getName(), addressedInterface);
+      ri.getInterfaces().put(noAddressInterface.getName(), noAddressInterface);
+
+      assertThat(getPrimaryInterface(ri, c), equalTo(Optional.of(addressedInterface)));
+
+      // inactive addressed interface
+      // inactive mgmt interface
+      c.getAllInterfaces().get(addressedInterface.getName()).adminDown();
+      assertThat(getPrimaryInterface(ri, c), equalTo(Optional.empty()));
+    }
+  }
+
+  @Test
+  public void testDefaultSourceAddress() {
+    ConcreteInterfaceAddress ignoredAddress = ConcreteInterfaceAddress.parse("127.0.0.1/32");
+    ConcreteInterfaceAddress addr1 = ConcreteInterfaceAddress.parse("1.1.1.1/32");
+    ConcreteInterfaceAddress addr2 = ConcreteInterfaceAddress.parse("2.2.2.2/32");
+    {
+      // ignored IP is always ignored
+      Interface iface = new Interface("em0.0");
+      iface.setPrimaryAddress(ignoredAddress);
+      iface.setPreferredAddress(ignoredAddress);
+      iface.getAllAddresses().add(ignoredAddress);
+      assertThat(getDefaultSourceAddress(iface), equalTo(Optional.empty()));
+    }
+    {
+      // first pref: explicit primary
+      Interface iface = new Interface("em0.0");
+      iface.setPrimaryAddress(addr2);
+      iface.setPreferredAddress(addr1);
+      iface.getAllAddresses().add(addr1);
+      assertThat(getDefaultSourceAddress(iface), equalTo(Optional.of(addr2.getIp())));
+    }
+    {
+      // second pref: preferred address
+      Interface iface = new Interface("em0.0");
+      iface.setPreferredAddress(addr2);
+      iface.getAllAddresses().add(addr1);
+      assertThat(getDefaultSourceAddress(iface), equalTo(Optional.of(addr2.getIp())));
+    }
+    {
+      // last pref: lowest address
+      Interface iface = new Interface("em0.0");
+      iface.getAllAddresses().add(addr1);
+      iface.getAllAddresses().add(addr2);
+      assertThat(getDefaultSourceAddress(iface), equalTo(Optional.of(addr1.getIp())));
+    }
   }
 }
