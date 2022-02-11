@@ -41,10 +41,10 @@ import org.junit.runner.RunWith;
  * @version $Id: CallbackTests.java,v 1.3 2005/05/09 09:58:02 joewhaley Exp $
  */
 @RunWith(JUnit38ClassRunner.class)
-public class CallbackTests extends BDDTestCase {
+public class CallbackTest extends BDDTestCase {
 
   public static void main(String[] args) {
-    junit.textui.TestRunner.run(CallbackTests.class);
+    junit.textui.TestRunner.run(CallbackTest.class);
   }
 
   volatile int gc_called;
@@ -61,7 +61,7 @@ public class CallbackTests extends BDDTestCase {
     Method m;
     try {
       m =
-          CallbackTests.class.getDeclaredMethod(
+          CallbackTest.class.getDeclaredMethod(
               "my_gc_callback", int.class, BDDFactory.GCStats.class);
     } catch (SecurityException | NoSuchMethodException e) {
       fail(e.toString());
@@ -107,7 +107,7 @@ public class CallbackTests extends BDDTestCase {
     Method m;
     try {
       m =
-          CallbackTests.class.getDeclaredMethod(
+          CallbackTest.class.getDeclaredMethod(
               "my_reorder_callback", boolean.class, BDDFactory.ReorderStats.class);
     } catch (SecurityException | NoSuchMethodException e) {
       fail(e.toString());
@@ -144,7 +144,7 @@ public class CallbackTests extends BDDTestCase {
     reset();
     Method m;
     try {
-      m = CallbackTests.class.getDeclaredMethod("my_resize_callback", int.class, int.class);
+      m = CallbackTest.class.getDeclaredMethod("my_resize_callback", int.class, int.class);
     } catch (SecurityException | NoSuchMethodException e) {
       fail(e.toString());
       return;

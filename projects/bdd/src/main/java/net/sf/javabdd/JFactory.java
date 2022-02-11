@@ -47,12 +47,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * This is a 100% Java implementation of the BDD factory. It is based on the C source code for
- * BuDDy. As such, the implementation is very ugly, but it works. Like BuDDy, it uses a reference
- * counting scheme for garbage collection.
+ * This is a 100% Java implementation of the BDD factory.
  *
- * @author John Whaley
- * @version $Id: JFactory.java,v 1.28 2005/09/27 22:56:18 joewhaley Exp $
+ * <p>It was originally authored by John Whaley, and has since been heavily modified and improved by
+ * the Batfish Authors.
  */
 public final class JFactory extends BDDFactory {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
@@ -64,20 +62,12 @@ public final class JFactory extends BDDFactory {
    * {@code false}, the cache will be attempted to be cleaned and maintain existing valid cache
    * entries.
    */
-  // Warning: we've never tried with this flag false.
   private static final boolean FLUSH_CACHE_ON_GC = false;
 
   /**
    * If set, assertions will be made on BDD internal computations. Used in developing the factory.
    */
   private static final boolean VERIFY_ASSERTIONS = false;
-
-  private static final String REVISION = "$Revision: 1.28 $";
-
-  @Override
-  public String getVersion() {
-    return "JFactory " + REVISION.substring(11, REVISION.length() - 2);
-  }
 
   private JFactory() {
     supportSet = new int[0];
@@ -4032,7 +4022,7 @@ public final class JFactory extends BDDFactory {
     {0, 0, 1, 0}, /* difference /greater than  ( - ) ( > )   */
     {0, 1, 0, 0}, /* less than                 ( < )         */
     {1, 0, 1, 1}, /* inverse implication       ( << )        */
-    {1, 1, 0, 0} /* not                       ( ! )         */
+    {1, 1, 0, 0}, /* not                       ( ! )         */
   };
 
   private int applyop; /* Current operator for apply */
@@ -4069,31 +4059,6 @@ public final class JFactory extends BDDFactory {
     quantvarset = null;
     cacheratio = 0;
     supportSet = new int[0];
-  }
-
-  private void bdd_operator_done() {
-    if (quantvarset != null) {
-      quantvarset = null;
-    }
-
-    BddCache_done(applycache);
-    applycache = null;
-    BddCache_done(quantcache);
-    quantcache = null;
-    BddCache_done(appexcache);
-    appexcache = null;
-    BddCache_done(replacecache);
-    replacecache = null;
-    BddCache_done(misccache);
-    misccache = null;
-    BddCache_done(multiopcache);
-    multiopcache = null;
-    BddCache_done(countcache);
-    countcache = null;
-
-    if (supportSet.length > 0) {
-      supportSet = new int[0];
-    }
   }
 
   private void bdd_operator_reset() {
@@ -4513,19 +4478,6 @@ public final class JFactory extends BDDFactory {
     pairs = null;
   }
 
-  private void bdd_pairs_done() {
-    bddPair p = pairs;
-
-    while (p != null) {
-      bddPair next = p.next;
-      for (int n = 0; n < bddvarnum; n++) {
-        bdd_delref(p.result[n]);
-      }
-      p.result = null;
-      p = next;
-    }
-  }
-
   private int update_pairsid() {
     pairsid++;
 
@@ -4577,34 +4529,6 @@ public final class JFactory extends BDDFactory {
   @Override
   public boolean isInitialized() {
     return bddrunning;
-  }
-
-  @Override
-  public void done() {
-    bdd_done();
-  }
-
-  private void bdd_done() {
-    /*sanitycheck(); FIXME */
-    // bdd_fdd_done();
-    // bdd_reorder_done();
-    bdd_pairs_done();
-
-    bddnodes = null;
-    bddvarset = null;
-    bddvar2level = null;
-    bddlevel2var = null;
-
-    bdd_operator_done();
-
-    bddrunning = false;
-    bddnodesize = 0;
-    bddvarnum = 0;
-    bddproduced = 0;
-
-    // err_handler = null;
-    // gbc_handler = null;
-    // resize_handler = null;
   }
 
   @Override
