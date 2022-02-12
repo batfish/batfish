@@ -230,8 +230,8 @@ public final class BDDFlowConstraintGenerator {
             .addAll(_icmpConstraints)
             .addAll(_udpConstraints)
             .addAll(_tcpConstraints)
-            .add(_defaultPacketLength)
             .addAll(_ipConstraints)
+            .add(_defaultPacketLength)
             .build();
       case APPLICATION:
       case TESTFILTER:
@@ -239,16 +239,16 @@ public final class BDDFlowConstraintGenerator {
             .addAll(_tcpConstraints)
             .addAll(_udpConstraints)
             .addAll(_icmpConstraints)
-            .add(_defaultPacketLength)
             .addAll(_ipConstraints)
+            .add(_defaultPacketLength)
             .build();
       case TRACEROUTE:
         return ImmutableList.<BDD>builder()
             .addAll(_udpConstraints)
             .addAll(_tcpConstraints)
             .addAll(_icmpConstraints)
-            .add(_defaultPacketLength)
             .addAll(_ipConstraints)
+            .add(_defaultPacketLength)
             .build();
       default:
         throw new BatfishException("Not supported flow preference");
