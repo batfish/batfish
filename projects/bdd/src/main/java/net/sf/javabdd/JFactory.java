@@ -692,7 +692,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private int NODEHASH(int lvl, int l, int h) {
-    return Math.abs(TRIPLE(lvl, l, h) % bddnodesize);
+    return Math.floorMod(TRIPLE(lvl, l, h), bddnodesize);
   }
 
   @Override
@@ -4202,7 +4202,7 @@ public final class JFactory extends BDDFactory {
       T[] oldTable, int newsize, IntFunction<T[]> newTable, Supplier<T> constructor) {
     T[] ret = newTable.apply(newsize);
     for (T entry : oldTable) {
-      ret[Math.abs(entry.hash % newsize)] = entry;
+      ret[Math.floorMod(entry.hash, newsize)] = entry;
     }
     for (int i = 0; i < newsize; ++i) {
       if (ret[i] != null) {
@@ -4250,15 +4250,15 @@ public final class JFactory extends BDDFactory {
   }
 
   private static BddCacheDataI BddCache_lookupI(BddCache cache, int hash) {
-    return (BddCacheDataI) cache.table[Math.abs(hash % cache.tablesize)];
+    return (BddCacheDataI) cache.table[Math.floorMod(hash, cache.tablesize)];
   }
 
   private static BigIntegerBddCacheData BddCache_lookupBigInteger(BddCache cache, int hash) {
-    return (BigIntegerBddCacheData) cache.table[Math.abs(hash % cache.tablesize)];
+    return (BigIntegerBddCacheData) cache.table[Math.floorMod(hash, cache.tablesize)];
   }
 
   private static MultiOpBddCacheData BddCache_lookupMultiOp(BddCache cache, int hash) {
-    return (MultiOpBddCacheData) cache.table[Math.abs(hash % cache.tablesize)];
+    return (MultiOpBddCacheData) cache.table[Math.floorMod(hash, cache.tablesize)];
   }
 
   private void BddCache_reset(BddCache cache) {
@@ -5109,7 +5109,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private int NODEHASH2(int var, int l, int h) {
-    return Math.abs(PAIR(l, h) % levels[var].size) + levels[var].start;
+    return Math.floorMod(PAIR(l, h), levels[var].size) + levels[var].start;
   }
 
   private boolean resizedInMakenode;
