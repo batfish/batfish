@@ -227,10 +227,10 @@ public class BDDInteger {
       BDD bit = _bitvec[_bitvec.length - i - 1];
       if ((currentVal & 1) != 0) {
         // since this bit of val is 1: 0 implies lt OR 1 and suffix leq. ('1 and' is redundant).
-        acc = bit.imp(acc); // "not i or acc" rewritten "i implies acc".
+        acc.invimpEq(bit); // "not i or acc" rewritten "i implies acc" and flipped.
       } else {
         // since this bit of val is 0: must be 0 and have leq suffix.
-        acc = bit.less(acc); // "not i and acc" rewritten "i less acc"
+        acc.diffEq(bit); // "not i and acc" rewritten "i less acc" and flipped.
       }
       currentVal >>= 1;
     }
@@ -255,10 +255,10 @@ public class BDDInteger {
       BDD bit = _bitvec[_bitvec.length - i - 1];
       if ((currentVal & 1) != 0) {
         // since this bit of val is 1: must be 1 and have geq suffix.
-        acc = bit.and(acc);
+        acc.andEq(bit);
       } else {
         // since this bit of val is 0: 1 implies gt OR 0 and suffix geq. ('0 and' is redundant.)
-        acc = bit.or(acc);
+        acc.orEq(bit);
       }
       currentVal >>= 1;
     }
@@ -297,14 +297,14 @@ public class BDDInteger {
     long suffixMask = 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - sizeOfDifferentSuffix);
     BDD lower = ((a & suffixMask) == 0) ? _factory.one() : geqN(a, sizeOfDifferentSuffix);
     BDD upper = ((b & suffixMask) == suffixMask) ? _factory.one() : leqN(b, sizeOfDifferentSuffix);
-    BDD between = lower.and(upper);
+    BDD between = lower.andWith(upper);
     long currentVal = a >> sizeOfDifferentSuffix;
     for (int i = sizeOfDifferentSuffix; i < _bitvec.length; ++i) {
       BDD bit = _bitvec[_bitvec.length - i - 1];
       if ((currentVal & 1) != 0) {
-        between = bit.and(between);
+        between = between.andEq(bit);
       } else {
-        between = bit.less(between); // "not i and x" rewritten "i less x"
+        between = between.diffEq(bit); // "not i and x" rewritten "i less x"
       }
       currentVal >>= 1;
     }
