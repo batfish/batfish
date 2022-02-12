@@ -1005,8 +1005,9 @@ public class Parser extends CommonParser {
             WhiteSpace(),
             InterfaceWithNodeTail(),
             push(
-                new InterfaceWithNodeInterfaceAstNode(
-                    new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME), pop()))),
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
+                    new InterfaceWithNodeInterfaceAstNode(
+                        new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME), pop())))),
         Sequence(
             IgnoreCase(IspModelingUtils.INTERNET_HOST_NAME),
             push(InternetLocationAstNode.INSTANCE)));
