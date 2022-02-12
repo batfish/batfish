@@ -64,7 +64,8 @@ public final class VxlanTopologyUtils {
 
   /**
    * Add edges to the {@code graph} between all VRFs that have the same layer-2 VNI configured on
-   * them (excludes self-edges), if they are compatible.
+   * them (excludes self-edges), if they are compatible. Note that all values of {@code vrfs} must
+   * have the same VNI.
    */
   @VisibleForTesting
   static void addLayer2VniEdges(MutableGraph<VxlanNode> graph, Map<VrfId, Layer2Vni> vrfs) {
@@ -101,7 +102,8 @@ public final class VxlanTopologyUtils {
 
   /**
    * Add edges to the {@code graph} between all VRFs that have the same layer-3 VNI configured on
-   * them (excludes self-edges), if they are compatible.
+   * them (excludes self-edges), if they are compatible. Note that all values of {@code vrfs} must
+   * have the same VNI.
    */
   @VisibleForTesting
   static void addLayer3VniEdges(MutableGraph<VxlanNode> graph, Map<VrfId, Layer3Vni> vrfs) {

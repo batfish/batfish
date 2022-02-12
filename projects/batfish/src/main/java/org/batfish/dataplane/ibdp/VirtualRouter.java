@@ -1681,7 +1681,8 @@ public final class VirtualRouter {
       Optional<BgpRoutingProcess> exportingBgpProc =
           exportingVr.map(VirtualRouter::getBgpRoutingProcess);
       if (exportingBgpProc.isPresent()) {
-        Collection<Layer3Vni> exportingVrfL3Vnis = exportingVr.get().getLayer3Vnis().values();
+        // Use immutable _vrf.getLayer3Vnis() since we don't care about learned IPs here.
+        Collection<Layer3Vni> exportingVrfL3Vnis = exportingVr.get()._vrf.getLayer3Vnis().values();
         if (exportingVrfL3Vnis.size() == 1) {
           int vni = exportingVrfL3Vnis.iterator().next().getVni();
           _bgpRoutingProcess.importCrossVrfV4RoutesToEvpn(
