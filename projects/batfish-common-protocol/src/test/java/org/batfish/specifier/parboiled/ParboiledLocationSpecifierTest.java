@@ -196,4 +196,25 @@ public class ParboiledLocationSpecifierTest {
         ParboiledLocationSpecifier.parse("internet").resolve(ctxt),
         contains(interfaceLocation(i1)));
   }
+
+  @Test
+  public void testParseInternet_toIsp() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration inet =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(IspModelingUtils.INTERNET_HOST_NAME)
+            .build();
+    Interface i1 = nf.interfaceBuilder().setOwner(inet).setName("To-isp_577").build();
+
+    MockSpecifierContext ctxt =
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of(inet.getHostname(), inet))
+            .build();
+
+    assertThat(
+        ParboiledLocationSpecifier.parse("internet[To-isp_577]").resolve(ctxt),
+        contains(interfaceLocation(i1)));
+  }
 }

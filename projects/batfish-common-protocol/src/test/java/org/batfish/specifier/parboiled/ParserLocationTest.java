@@ -193,9 +193,10 @@ public class ParserLocationTest {
     assertThat(
         ParserUtils.getAst(getRunner().run("internet[To-Isp123]")),
         equalTo(
-            new InterfaceWithNodeInterfaceAstNode(
-                new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
-                new NameInterfaceAstNode("To-Isp123"))));
+            InterfaceLocationAstNode.createFromInterfaceWithNode(
+                new InterfaceWithNodeInterfaceAstNode(
+                    new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
+                    new NameInterfaceAstNode("To-Isp123")))));
     assertThat(
         ParserUtils.getAst(getRunner().run("@enter(internet[To-Isp123])")),
         equalTo(
