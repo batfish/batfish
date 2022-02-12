@@ -30,6 +30,8 @@ public class MockFib implements Fib {
     }
 
     public Builder setFibEntries(@Nonnull Map<Ip, Set<FibEntry>> fibEntries) {
+      // TODO: remove once Route.UNSET_NEXT_HOP_IP and Ip.AUTO are killed
+      assert !fibEntries.containsKey(Route.UNSET_ROUTE_NEXT_HOP_IP);
       _fibEntries = fibEntries;
       return this;
     }

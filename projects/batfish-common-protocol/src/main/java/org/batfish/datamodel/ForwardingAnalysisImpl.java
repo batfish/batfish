@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -166,9 +167,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             .getOrDefault(node, ImmutableMap.of())
             .getOrDefault(vrf, ImmutableMap.of());
     /*
-     * Mapping: route -> nexthopinterface -> resolved nextHopIp -> interfaceRoutes
+     * Mapping: route -> nexthopinterface -> resolved nextHopIps (where Optional.empty() indicates
+     *                                       dest IP should be used for ARP)
      */
-    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces = computeNextHopInterfaces(fib);
+    Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces =
+        computeNextHopInterfaces(fib);
 
     /* interface -> set of routes on that vrf that forward out that interface,
      * ARPing for the destination IP
@@ -194,8 +197,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     Map<Edge, IpSpace> arpTrueEdgeDestIp =
         computeArpTrueEdgeDestIp(matchingIps, routesWithDestIpEdge, _arpReplies);
 
-    /* edge -> dst ips for which that vrf forwards out the source of the edge,
-     * ARPing for some next-hop IP and receiving a reply from the target of the edge.
+    /* edge -> routes for which an arp true response will be received when they are the lpm of
+     * the dest IP
      *
      * Note: the source interface of the edge must be in the node, but may not be in the vrf,
      * due to route leaking, etc
@@ -335,7 +338,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    */
   private static void classifyArpFalseNhipRoutes(
       Set<Ip> unownedArpIps,
-      Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
+      Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces,
       Set<AbstractRoute> routesWithNextHopIpArpFalse,
       Consumer<AbstractRoute> arpFalseNhipRoutesWithUnownedArpIp,
       Consumer<AbstractRoute> arpFalseNhipRoutesWithOwnedArpIp) {
@@ -344,7 +347,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
           // Iterate over the arpIps for this route, checking whether each is owned. Stop once
           // we've found one owned and one unowned.
           Iterator<Ip> it =
-              nextHopInterfaces.get(route).values().stream().flatMap(Set::stream).iterator();
+              nextHopInterfaces.get(route).values().stream()
+                  .flatMap(Set::stream)
+                  .filter(Optional::isPresent)
+                  .map(Optional::get)
+                  .iterator();
           boolean foundUnowned = false;
           boolean foundOwned = false;
           while (it.hasNext() && !(foundUnowned && foundOwned)) {
@@ -370,6 +377,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         .map(FibEntry::getAction)
         .filter(FibForward.class::isInstance)
         .map(fibAction -> ((FibForward) fibAction).getArpIp())
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .distinct()
         .filter(arpIp -> ipSpaceToBDD.toBDD(arpIp).andSat(unownedIpsBDD))
         .collect(ImmutableSet.toImmutableSet());
@@ -762,7 +771,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    */
   @VisibleForTesting
   static Map<String, Set<AbstractRoute>> computeRoutesWhereDstIpCanBeArpIp(
-      Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
+      Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces,
       Map<String, Set<AbstractRoute>> routesWithNextHop) {
     return toImmutableMap(
         routesWithNextHop,
@@ -780,7 +789,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                       nextHopInterfaces
                           .get(route)
                           .get(iface) // final next hop ips
-                          .contains(Route.UNSET_ROUTE_NEXT_HOP_IP))
+                          .contains(Optional.<Ip>empty()))
               .collect(ImmutableSet.toImmutableSet());
         });
   }
@@ -832,7 +841,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   @VisibleForTesting
   static Set<AbstractRoute> computeArpFalseNhipRoutes(
       String iface,
-      Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
+      Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces,
       Set<AbstractRoute> routesWithNextHop,
       IpSpace someoneReplies) {
     return computeRoutesWithNextHopIpArpFalseForInterface(
@@ -841,7 +850,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static Set<AbstractRoute> computeRoutesWithNextHopIpArpFalseForInterface(
-      Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
+      Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces,
       String outInterface,
       Set<AbstractRoute> candidateRoutes,
       IpSpace someoneReplies) {
@@ -849,16 +858,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         .filter(
             candidateRoute ->
                 nextHopInterfaces.get(candidateRoute).get(outInterface).stream()
-                    .filter(ip -> !ip.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .anyMatch(
                         nextHopIp -> !someoneReplies.containsIp(nextHopIp, ImmutableMap.of())))
         .collect(ImmutableSet.toImmutableSet());
   }
 
   @VisibleForTesting
-  static Map<Edge, Set<AbstractRoute>> computeRoutesWithNextHopIpArpTrue(
+  static @Nonnull Map<Edge, Set<AbstractRoute>> computeRoutesWithNextHopIpArpTrue(
       String node,
-      Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
+      Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces,
       Topology topology,
       Map<String, Map<String, IpSpace>> arpReplies,
       Map<String, Set<AbstractRoute>> routesWithNextHop) {
@@ -884,7 +894,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                             .get(route)
                                             .get(outInterface) // nextHopIps
                                             .stream()
-                                            .filter(ip -> !Route.UNSET_ROUTE_NEXT_HOP_IP.equals(ip))
+                                            .filter(Optional::isPresent)
+                                            .map(Optional::get)
                                             .anyMatch(
                                                 nextHopIp ->
                                                     recvReplies.containsIp(
@@ -1214,8 +1225,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     assert iface.getActive() : node + "[" + i + "] is not active";
   }
 
-  /** Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIp -&gt; interfaceRoutes */
-  private static Map<AbstractRoute, Map<String, Set<Ip>>> computeNextHopInterfaces(Fib fib) {
+  /**
+   * Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIps (or Optional.empty() if dest IP
+   * should be used for ARP
+   */
+  private static @Nonnull Map<AbstractRoute, Map<String, Set<Optional<Ip>>>>
+      computeNextHopInterfaces(Fib fib) {
     return fib.allEntries().stream()
         .filter(fibEntry -> fibEntry.getAction() instanceof FibForward)
         .collect(

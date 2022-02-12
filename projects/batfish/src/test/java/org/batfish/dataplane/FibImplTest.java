@@ -33,6 +33,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.dataplane.rib.Rib;
@@ -179,15 +180,23 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNonForwardingRouteNotInFib() {
+  public void testNonForwardingRoutesNotInFib() {
     Rib rib = new Rib();
 
-    StaticRoute nonForwardingRoute =
+    StaticRoute nonForwardingInterfaceRoute =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
             .setNonForwarding(true)
+            .build();
+    StaticRoute nonForwardingNextHopIpRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("3.3.3.0/24"))
+            .setNextHopIp(Ip.parse("2.2.2.1"))
+            .setAdministrativeCost(1)
+            .setNonForwarding(true)
+            .setRecursive(true)
             .build();
     StaticRoute forwardingRoute =
         StaticRoute.testBuilder()
@@ -197,10 +206,11 @@ public final class FibImplTest {
             .setNonForwarding(false)
             .build();
 
-    rib.mergeRoute(annotateRoute(nonForwardingRoute));
+    rib.mergeRoute(annotateRoute(nonForwardingNextHopIpRoute));
+    rib.mergeRoute(annotateRoute(nonForwardingInterfaceRoute));
     rib.mergeRoute(annotateRoute(forwardingRoute));
 
-    Fib fib = new FibImpl(rib, null);
+    Fib fib = new FibImpl(rib, ResolutionRestriction.alwaysTrue());
     Set<AbstractRoute> fibRoutes = getTopLevelRoutesByInterface(fib, "Eth1");
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
@@ -221,7 +231,7 @@ public final class FibImplTest {
 
     rib.mergeRoute(annotateRoute(nextVrfRoute));
 
-    Fib fib = new FibImpl(rib, null);
+    Fib fib = new FibImpl(rib, ResolutionRestriction.alwaysTrue());
 
     assertThat(
         fib.allEntries(),
