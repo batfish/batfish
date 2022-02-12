@@ -13,7 +13,7 @@ router ospf 1
   redistribute connected route-policy RP
   area 0
    distribute-list route-policy RP in
-   interface Ethernet1
+   interface GigabitEthernet0/0/0/0
     cost 100
     authentication message-digest
     message-digest-key 1 md5 encrypted 00000000000000000000

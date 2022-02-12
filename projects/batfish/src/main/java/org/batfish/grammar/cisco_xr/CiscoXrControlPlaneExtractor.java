@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.INTERFACE_PREFIX_PATTERN;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_AF_GROUP;
@@ -100,7 +101,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_INGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
@@ -216,6 +216,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -1168,7 +1169,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
    */
   private Optional<String> toNextHopInt(Route_nexthopContext ctx) {
     if (ctx.nhint != null) {
-      return Optional.of(getCanonicalInterfaceName(ctx.nhint.getText()));
+      return Optional.of(getCanonicalInterfaceName(ctx.nhint));
     }
     return Optional.empty();
   }
@@ -1187,19 +1188,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return toIntegerInSpace(messageCtx, ctx, HSRP_GROUP_NUM_RANGE_V2, "HSRP group");
   }
 
-  private static String toInterfaceName(Interface_nameContext ctx) {
-    StringBuilder name =
-        new StringBuilder(
-            CiscoXrConfiguration.getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha.getText()));
-    for (Token part : ctx.name_middle_parts) {
-      name.append(part.getText());
-    }
-    if (ctx.range().range_list.size() != 1) {
-      throw new BatfishException(
-          "got interface range where single interface was expected: '" + ctx.getText() + "'");
-    }
-    name.append(ctx.range().getText());
-    return name.toString();
+  private @Nonnull String toInterfaceName(Interface_nameContext ctx) {
+    return _configuration.canonicalizeInterfaceName(ctx.getText());
   }
 
   private static long toAsNum(Bgp_asnContext ctx) {
@@ -1293,7 +1283,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private HsrpAddressFamily _currentHsrpAddressFamily;
   private HsrpGroup _currentHsrpGroup;
   private HsrpInterface _currentHsrpInterface;
-  private List<Interface> _currentInterfaces;
+  private Interface _currentInterface;
   private Ipv4AccessList _currentIpv4Acl;
   private Ipv4AccessListLine.Builder _currentIpv4AclLine;
   private Ipv6AccessList _currentIpv6Acl;
@@ -1394,13 +1384,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             .add(ctx.getText())
             .build());
     if (explicit) {
-      _currentInterfaces.add(newInterface);
+      _currentInterface = newInterface;
     }
     return newInterface;
   }
 
   private Interface getOrAddInterface(Interface_nameContext ctx) {
-    String canonicalIfaceName = getCanonicalInterfaceName(ctx.getText());
+    String canonicalIfaceName = getCanonicalInterfaceName(ctx);
     Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
     if (iface == null) {
       iface = addInterface(canonicalIfaceName, ctx, false);
@@ -1893,7 +1883,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.IP_ADDRESS() != null) {
       _currentIsakmpProfile.setLocalAddress(toIp(ctx.IP_ADDRESS()));
     } else {
-      _currentIsakmpProfile.setLocalInterfaceName(ctx.iname.getText());
+      assert ctx.iname != null;
+      _currentIsakmpProfile.setLocalInterfaceName(getCanonicalInterfaceName(ctx.iname));
     }
   }
 
@@ -1902,7 +1893,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.IP_ADDRESS() != null) {
       _currentKeyring.setLocalAddress(toIp(ctx.IP_ADDRESS()));
     } else {
-      _currentKeyring.setLocalInterfaceName(ctx.iname.getText());
+      _currentKeyring.setLocalInterfaceName(getCanonicalInterfaceName(ctx.iname));
     }
   }
 
@@ -2134,15 +2125,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIf_description(If_descriptionContext ctx) {
     String description = getDescription(ctx.description_line());
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setDescription(description);
-    }
+    _currentInterface.setDescription(description);
   }
 
   @Override
   public void exitIf_encapsulation(If_encapsulationContext ctx) {
-    toInteger(ctx, ctx.vlan)
-        .ifPresent(vlan -> _currentInterfaces.forEach(i -> i.setEncapsulationVlan(vlan)));
+    toInteger(ctx, ctx.vlan).ifPresent(vlan -> _currentInterface.setEncapsulationVlan(vlan));
   }
 
   @Override
@@ -2484,7 +2472,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterRoa_interface(Roa_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    String ifaceName = getCanonicalInterfaceName(ctx.iname);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, OSPF_AREA_INTERFACE, ctx.iname.getStart().getLine());
     _currentOspfSettings =
@@ -2553,7 +2541,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterReaf_interface(Reaf_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    String ifaceName = getCanonicalInterfaceName(ctx.iname);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, EIGRP_AF_INTERFACE, ctx.iname.getStart().getLine());
     _currentEigrpInterface = ifaceName;
@@ -2594,39 +2582,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterS_interface(S_interfaceContext ctx) {
-    String nameAlpha = ctx.iname.name_prefix_alpha.getText();
-    String canonicalNamePrefix;
+    String canonicalName;
     try {
-      canonicalNamePrefix = CiscoXrConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
+      canonicalName = getCanonicalInterfaceName(ctx.iname);
     } catch (BatfishException e) {
       warn(ctx, "Error fetching interface name: " + e.getMessage());
-      _currentInterfaces = ImmutableList.of();
+      // dummy
+      _currentInterface = new Interface("foo", _configuration);
       return;
     }
-    StringBuilder namePrefix = new StringBuilder(canonicalNamePrefix);
-    for (Token part : ctx.iname.name_middle_parts) {
-      namePrefix.append(part.getText());
-    }
-    _currentInterfaces = new ArrayList<>();
-    if (ctx.iname.range() != null) {
-      List<SubRange> ranges = toRange(ctx.iname.range());
-      for (SubRange range : ranges) {
-        for (int i = range.getStart(); i <= range.getEnd(); i++) {
-          String name = namePrefix.toString() + i;
-          Interface iface = addInterface(name, ctx.iname, true);
-          if (ctx.L2TRANSPORT() != null) {
-            iface.setL2transport(true);
-          }
-          _configuration.defineStructure(INTERFACE, name, ctx);
-          _configuration.referenceStructure(
-              INTERFACE, name, INTERFACE_SELF_REF, ctx.getStart().getLine());
-        }
-      }
-    } else {
-      Interface iface = addInterface(namePrefix.toString(), ctx.iname, true);
-      if (ctx.L2TRANSPORT() != null) {
-        iface.setL2transport(true);
-      }
+    addInterface(canonicalName, ctx.iname, true);
+    if (ctx.L2TRANSPORT() != null) {
+      _currentInterface.setL2transport(true);
     }
     if (ctx.MULTIPOINT() != null) {
       todo(ctx);
@@ -2950,7 +2917,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterVrrp_interface(Vrrp_interfaceContext ctx) {
-    _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
+    _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface);
     _configuration.referenceStructure(
         INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
   }
@@ -3438,7 +3405,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitDomain_lookup(Domain_lookupContext ctx) {
     if (ctx.iname != null) {
-      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      String ifaceName = getCanonicalInterfaceName(ctx.iname);
       _configuration.referenceStructure(
           INTERFACE, ifaceName, DOMAIN_LOOKUP_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
       _configuration.setDnsSourceInterface(ifaceName);
@@ -3964,9 +3931,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIf_autostate(If_autostateContext ctx) {
     if (ctx.NO() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setAutoState(false);
-      }
+      _currentInterface.setAutoState(false);
     }
   }
 
@@ -3978,18 +3943,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       newBandwidthBps = toLong(ctx.uint_legacy()) * 1000.0D;
     }
-    _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
+    _currentInterface.setBandwidth(newBandwidthBps);
   }
 
   @Override
   public void exitIf_bundle_id(If_bundle_idContext ctx) {
     int id = toInteger(ctx.id);
-    _currentInterfaces.forEach(i -> i.setBundleId(id));
+    _currentInterface.setBundleId(id);
   }
 
   @Override
   public void exitIf_crypto_map(If_crypto_mapContext ctx) {
-    _currentInterfaces.forEach(i -> i.setCryptoMap(ctx.name.getText()));
+    _currentInterface.setCryptoMap(ctx.name.getText());
   }
 
   @Override
@@ -4000,7 +3965,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       newDelayPs = toLong(ctx.uint_legacy()) * 10_000_000;
     }
-    _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
+    _currentInterface.setDelay(newDelayPs);
   }
 
   @Override
@@ -4015,16 +3980,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       String name = toString(ctx.interface_acl);
       CiscoXrStructureUsage usage = null;
       if (ctx.INGRESS() != null) {
-        for (Interface currentInterface : _currentInterfaces) {
-          currentInterface.setIncomingFilter(name);
-          usage = INTERFACE_IPV4_ACCESS_GROUP_INGRESS;
-        }
+        _currentInterface.setIncomingFilter(name);
+        usage = INTERFACE_IPV4_ACCESS_GROUP_INGRESS;
       } else {
         assert ctx.EGRESS() != null;
-        for (Interface currentInterface : _currentInterfaces) {
-          currentInterface.setOutgoingFilter(name);
-          usage = INTERFACE_IPV4_ACCESS_GROUP_EGRESS;
-        }
+        _currentInterface.setOutgoingFilter(name);
+        usage = INTERFACE_IPV4_ACCESS_GROUP_EGRESS;
       }
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, line);
     }
@@ -4059,12 +4020,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return;
     }
     ConcreteInterfaceAddress address = maybeAddress.get();
-    for (Interface currentInterface : _currentInterfaces) {
-      if (ctx.SECONDARY() != null) {
-        currentInterface.getSecondaryAddresses().add(address);
-      } else {
-        currentInterface.setAddress(address);
-      }
+    if (ctx.SECONDARY() != null) {
+      _currentInterface.getSecondaryAddresses().add(address);
+    } else {
+      _currentInterface.setAddress(address);
     }
     if (ctx.tag != null) {
       warn(ctx, "Unsupported: tag declared in interface ipv4 address");
@@ -4073,10 +4032,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitIf_ip_helper_address(If_ip_helper_addressContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      Ip dhcpRelayAddress = toIp(ctx.address);
-      iface.getDhcpRelayAddresses().add(dhcpRelayAddress);
-    }
+    Ip dhcpRelayAddress = toIp(ctx.address);
+    _currentInterface.getDhcpRelayAddresses().add(dhcpRelayAddress);
   }
 
   @Override
@@ -4094,16 +4051,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIf_ip_proxy_arp(If_ip_proxy_arpContext ctx) {
     boolean enabled = ctx.NO() == null;
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setProxyArp(enabled);
-    }
+    _currentInterface.setProxyArp(enabled);
   }
 
   @Override
   public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-    }
+    _currentInterface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
   }
 
   @Override
@@ -4124,31 +4077,25 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIf_isis_metric(If_isis_metricContext ctx) {
     long metric = toLong(ctx.metric);
-    for (Interface iface : _currentInterfaces) {
-      iface.setIsisCost(metric);
-    }
+    _currentInterface.setIsisCost(metric);
   }
 
   @Override
   public void exitIf_mtu(If_mtuContext ctx) {
     int mtu = toInteger(ctx.uint_legacy());
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setMtu(mtu);
-    }
+    _currentInterface.setMtu(mtu);
   }
 
   @Override
   public void exitIf_rewrite_ingress_tag(If_rewrite_ingress_tagContext ctx) {
     Optional<TagRewritePolicy> policy = toTagRewritePolicy(ctx.ifrit_policy());
-    for (Interface currentInterface : _currentInterfaces) {
-      if (!currentInterface.getL2transport()) {
-        warn(
-            ctx,
-            "Rewrite policy can only be configured on l2transport interfaces. Ignoring this line.");
-        continue;
-      }
-      policy.ifPresent(currentInterface::setRewriteIngressTag);
+    if (!_currentInterface.getL2transport()) {
+      warn(
+          ctx,
+          "Rewrite policy can only be configured on l2transport interfaces. Ignoring this line.");
+      return;
     }
+    policy.ifPresent(_currentInterface::setRewriteIngressTag);
   }
 
   private Optional<TagRewritePolicy> toTagRewritePolicy(Ifrit_policyContext ctx) {
@@ -4170,9 +4117,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitIf_shutdown(If_shutdownContext ctx) {
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setActive(ctx.NO() != null);
-    }
+    _currentInterface.setActive(ctx.NO() != null);
   }
 
   @Override
@@ -4184,37 +4129,32 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitIf_speed_ios(If_speed_iosContext ctx) {
     int mbits = toInteger(ctx.mbits);
     double speed = mbits * 1E6D;
-    _currentInterfaces.forEach(i -> i.setSpeed(speed));
+    _currentInterface.setSpeed(speed);
   }
 
   @Override
   public void exitIf_st_portfast(If_st_portfastContext ctx) {
     if (!_no) {
       boolean spanningTreePortfast = ctx.disable == null;
-      for (Interface iface : _currentInterfaces) {
-        iface.setSpanningTreePortfast(spanningTreePortfast);
-      }
+      _currentInterface.setSpanningTreePortfast(spanningTreePortfast);
     }
   }
 
   @Override
   public void exitIf_switchport(If_switchportContext ctx) {
     if (ctx.NO() != null) {
-      for (Interface iface : _currentInterfaces) {
-        iface.setSwitchportMode(SwitchportMode.NONE);
-        iface.setSwitchport(false);
-      }
+      _currentInterface.setSwitchportMode(SwitchportMode.NONE);
+      _currentInterface.setSwitchport(false);
     } else {
-      for (Interface iface : _currentInterfaces) {
-        iface.setSwitchport(true);
-        // setting the switch port mode only if it is not already set
-        if (iface.getSwitchportMode() == null || iface.getSwitchportMode() == SwitchportMode.NONE) {
-          SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
-          iface.setSwitchportMode(
-              (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
-                  ? SwitchportMode.ACCESS
-                  : defaultSwitchportMode);
-        }
+      _currentInterface.setSwitchport(true);
+      // setting the switch port mode only if it is not already set
+      if (_currentInterface.getSwitchportMode() == null
+          || _currentInterface.getSwitchportMode() == SwitchportMode.NONE) {
+        SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
+        _currentInterface.setSwitchportMode(
+            (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
+                ? SwitchportMode.ACCESS
+                : defaultSwitchportMode);
       }
     }
   }
@@ -4223,17 +4163,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitIf_switchport_access(If_switchport_accessContext ctx) {
     if (ctx.vlan != null) {
       int vlan = toInteger(ctx.vlan);
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setSwitchport(true);
-        currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-        currentInterface.setAccessVlan(vlan);
-      }
+      _currentInterface.setSwitchport(true);
+      _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+      _currentInterface.setAccessVlan(vlan);
     } else {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setSwitchport(true);
-        currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-        currentInterface.setSwitchportAccessDynamic(true);
-      }
+      _currentInterface.setSwitchport(true);
+      _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+      _currentInterface.setSwitchportAccessDynamic(true);
     }
   }
 
@@ -4266,75 +4202,62 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       throw new BatfishException("Unhandled switchport mode");
     }
-    _currentInterfaces.forEach(iface -> iface.setSwitchport(true));
-    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(mode));
+    _currentInterface.setSwitchport(true);
+    _currentInterface.setSwitchportMode(mode);
   }
 
   @Override
   public void exitIf_switchport_trunk_allowed(If_switchport_trunk_allowedContext ctx) {
     if (ctx.NONE() != null) {
-      _currentInterfaces.forEach(iface -> iface.setAllowedVlans(IntegerSpace.EMPTY));
+      _currentInterface.setAllowedVlans(IntegerSpace.EMPTY);
       return;
     }
     IntegerSpace allowed = IntegerSpace.builder().includingAllSubRanges(toRange(ctx.r)).build();
-    for (Interface currentInterface : _currentInterfaces) {
-      if (ctx.ADD() != null) {
-        currentInterface.setAllowedVlans(
-            IntegerSpace.builder()
-                .including(allowed)
-                .including(firstNonNull(currentInterface.getAllowedVlans(), IntegerSpace.EMPTY))
-                .build());
-      } else {
-        currentInterface.setAllowedVlans(allowed);
-      }
+    if (ctx.ADD() != null) {
+      _currentInterface.setAllowedVlans(
+          IntegerSpace.builder()
+              .including(allowed)
+              .including(firstNonNull(_currentInterface.getAllowedVlans(), IntegerSpace.EMPTY))
+              .build());
+    } else {
+      _currentInterface.setAllowedVlans(allowed);
     }
   }
 
   @Override
   public void exitIf_switchport_trunk_encapsulation(If_switchport_trunk_encapsulationContext ctx) {
     SwitchportEncapsulationType type = toEncapsulation(ctx.e);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
-      currentInterface.setSwitchportTrunkEncapsulation(type);
-    }
+    _currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
+    _currentInterface.setSwitchportTrunkEncapsulation(type);
   }
 
   @Override
   public void exitIf_switchport_trunk_native(If_switchport_trunk_nativeContext ctx) {
     int vlan = toInteger(ctx.vlan);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setNativeVlan(vlan);
-    }
+    _currentInterface.setNativeVlan(vlan);
   }
 
   @Override
   public void exitIf_vlan(If_vlanContext ctx) {
-    toInteger(ctx, ctx.vlan)
-        .ifPresent(vlan -> _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan)));
+    toInteger(ctx, ctx.vlan).ifPresent(vlan -> _currentInterface.setEncapsulationVlan(vlan));
   }
 
   @Override
   public void exitIf_vrf(If_vrfContext ctx) {
     String name = toString(ctx.name);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setVrf(name);
-      initVrf(name);
-    }
+    _currentInterface.setVrf(name);
+    initVrf(name);
   }
 
   @Override
   public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      Ip address = toIp(ctx.address);
-      iface.getDhcpRelayAddresses().add(address);
-    }
+    Ip address = toIp(ctx.address);
+    _currentInterface.getDhcpRelayAddresses().add(address);
   }
 
   @Override
   public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setDhcpRelayClient(true);
-    }
+    _currentInterface.setDhcpRelayClient(true);
   }
 
   @Override
@@ -4364,29 +4287,25 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIftunnel_destination(Iftunnel_destinationContext ctx) {
     Ip destination = toIp(ctx.IP_ADDRESS());
-    for (Interface iface : _currentInterfaces) {
-      iface.getTunnelInitIfNull().setDestination(destination);
-    }
+    _currentInterface.getTunnelInitIfNull().setDestination(destination);
   }
 
   @Override
   public void exitIftunnel_mode(Iftunnel_modeContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      Tunnel tunnel = iface.getTunnelInitIfNull();
-      if (ctx.gre_ipv4 != null) {
-        tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
-        todo(ctx);
-      } else if (ctx.gre_multipoint != null) {
-        tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
-        todo(ctx);
-      } else if (ctx.ipsec_ipv4 != null) {
-        tunnel.setMode(TunnelMode.IPSEC_IPV4);
-      } else if (ctx.ipv6ip != null) {
-        tunnel.setMode(TunnelMode.IPV6_IP);
-        todo(ctx);
-      } else {
-        todo(ctx);
-      }
+    Tunnel tunnel = _currentInterface.getTunnelInitIfNull();
+    if (ctx.gre_ipv4 != null) {
+      tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
+      todo(ctx);
+    } else if (ctx.gre_multipoint != null) {
+      tunnel.setMode(TunnelMode.GRE_MULTIPOINT);
+      todo(ctx);
+    } else if (ctx.ipsec_ipv4 != null) {
+      tunnel.setMode(TunnelMode.IPSEC_IPV4);
+    } else if (ctx.ipv6ip != null) {
+      tunnel.setMode(TunnelMode.IPV6_IP);
+      todo(ctx);
+    } else {
+      todo(ctx);
     }
   }
 
@@ -4395,31 +4314,24 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
     _configuration.referenceStructure(IPSEC_PROFILE, name, TUNNEL_PROTECTION_IPSEC_PROFILE, line);
-    for (Interface iface : _currentInterfaces) {
-      Tunnel tunnel = iface.getTunnelInitIfNull();
-      tunnel.setIpsecProfileName(name);
-      tunnel.setMode(TunnelMode.IPSEC_IPV4);
-    }
+    Tunnel tunnel = _currentInterface.getTunnelInitIfNull();
+    tunnel.setIpsecProfileName(name);
+    tunnel.setMode(TunnelMode.IPSEC_IPV4);
   }
 
   @Override
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
     if (ctx.IP_ADDRESS() != null) {
       Ip sourceAddress = toIp(ctx.IP_ADDRESS());
-      for (Interface iface : _currentInterfaces) {
-        iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
-      }
+      _currentInterface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
     } else if (ctx.iname != null) {
-      String sourceInterfaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      String sourceInterfaceName = getCanonicalInterfaceName(ctx.iname);
       _configuration.referenceStructure(
           INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.iname.getStart().getLine());
-      for (Interface iface : _currentInterfaces) {
-        iface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
-      }
-    } else if (ctx.DYNAMIC() != null) {
-      for (Interface iface : _currentInterfaces) {
-        iface.getTunnelInitIfNull().setSourceInterfaceName(null);
-      }
+      _currentInterface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
+    } else {
+      assert ctx.DYNAMIC() != null;
+      _currentInterface.getTunnelInitIfNull().setSourceInterfaceName(null);
     }
   }
 
@@ -4666,7 +4578,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitLbgbd_interface(Lbgbd_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
+    String ifaceName = getCanonicalInterfaceName(ctx.interface_name());
     _currentBridgeDomain.getInterfaces().add(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, BRIDGE_DOMAIN_INTERFACE, ctx.start.getLine());
@@ -4674,7 +4586,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitLbgbd_routed_interface(Lbgbd_routed_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
+    String ifaceName = getCanonicalInterfaceName(ctx.interface_name());
     _currentBridgeDomain.setRoutedInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, BRIDGE_DOMAIN_ROUTED_INTERFACE, ctx.start.getLine());
@@ -4904,7 +4816,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return;
     }
     boolean passive = (ctx.NO() == null);
-    String interfaceName = getCanonicalInterfaceName(ctx.i.getText());
+    String interfaceName = getCanonicalInterfaceName(ctx.i);
     _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
     _configuration.referenceStructure(
         INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());
@@ -5219,7 +5131,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitNtp_source_interface(Ntp_source_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    String ifaceName = getCanonicalInterfaceName(ctx.iname);
     _configuration.setNtpSourceInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, NTP_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
@@ -6148,7 +6060,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitS_interface(S_interfaceContext ctx) {
-    _currentInterfaces = null;
+    _currentInterface = null;
   }
 
   @Override
@@ -6279,7 +6191,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitSs_trap_source(Ss_trap_sourceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    String ifaceName = getCanonicalInterfaceName(ctx.iname);
     _configuration.setSnmpSourceInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, SNMP_SERVER_TRAP_SOURCE, ctx.iname.getStart().getLine());
@@ -6369,7 +6281,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitT_source_interface(T_source_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    String ifaceName = getCanonicalInterfaceName(ctx.iname);
     _configuration.setTacacsSourceInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, TACACS_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
@@ -6575,8 +6487,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private String getCanonicalInterfaceName(String ifaceName) {
-    return _configuration.canonicalizeInterfaceName(ifaceName);
+  private @Nonnull String getCanonicalInterfaceName(Interface_nameContext ctx) {
+    return _configuration.canonicalizeInterfaceName(getFullText(ctx));
   }
 
   @Nonnull
@@ -6633,8 +6545,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private void initInterface(Interface iface, Interface_nameContext ctx) {
-    String nameAlpha = ctx.name_prefix_alpha.getText();
-    String canonicalNamePrefix = CiscoXrConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
+    String rawName = getFullText(ctx);
+    Matcher matcher = INTERFACE_PREFIX_PATTERN.matcher(rawName);
+    boolean found = matcher.find();
+    // guaranteed by caller
+    assert found;
+    String canonicalNamePrefix =
+        CiscoXrConfiguration.getCanonicalInterfaceNamePrefix(matcher.group());
     String vrf =
         canonicalNamePrefix.equals(CiscoXrConfiguration.MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoXrConfiguration.MANAGEMENT_VRF_NAME
@@ -8615,7 +8532,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitHsrp4_hsrp_track(Hsrp4_hsrp_trackContext ctx) {
-    String name = getCanonicalInterfaceName(ctx.name.getText());
+    String name = getCanonicalInterfaceName(ctx.name);
     Integer decrement = (ctx.decrement_priority != null) ? toInteger(ctx.decrement_priority) : null;
     _currentHsrpGroup.setInterfaceTrack(name, decrement);
     _configuration.referenceStructure(

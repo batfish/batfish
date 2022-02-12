@@ -327,13 +327,16 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return String.format("~ABF_POLICY_IPV4~%s~", name);
   }
 
+  public static final Pattern INTERFACE_PREFIX_PATTERN = Pattern.compile("^[-A-Za-z]+");
+
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {
-    Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);
+    Matcher matcher = INTERFACE_PREFIX_PATTERN.matcher(ifaceName);
     if (matcher.find()) {
       String ifacePrefix = matcher.group();
       String canonicalPrefix = getCanonicalInterfaceNamePrefix(ifacePrefix);
-      String suffix = ifaceName.substring(ifacePrefix.length());
+      // remove optional space between prefix and number(s)
+      String suffix = ifaceName.substring(ifacePrefix.length()).trim();
       return canonicalPrefix + suffix;
     }
     throw new BatfishException("Invalid interface name: '" + ifaceName + "'");

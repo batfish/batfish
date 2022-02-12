@@ -25,7 +25,7 @@ route_nexthop
 :
    nhip = IP_ADDRESS
    | nhip6 = IPV6_ADDRESS
-   | nhint = interface_name_unstructured
+   | nhint = interface_name
    (
       nhip = IP_ADDRESS
       | nhip6 = IPV6_ADDRESS
