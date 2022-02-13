@@ -1166,110 +1166,6 @@ ipdg_null
    ) null_rest_of_line
 ;
 
-ispla_operation
-:
-   NO? OPERATION null_rest_of_line
-   (
-      ipslao_type
-   )*
-;
-
-ipsla_reaction
-:
-   NO? REACTION null_rest_of_line
-   (
-      ipslar_react
-   )*
-;
-
-ipsla_responder
-:
-   NO? RESPONDER null_rest_of_line
-   (
-      ipslarp_null
-   )*
-;
-
-ipsla_schedule
-:
-   NO? SCHEDULE null_rest_of_line
-   (
-      ipslas_null
-   )*
-;
-
-ipslao_type
-:
-   NO? TYPE null_rest_of_line
-   (
-      ipslaot_null
-      | ipslaot_statistics
-   )*
-;
-
-ipslaot_null
-:
-   NO?
-   (
-      DESTINATION
-      | FREQUENCY
-      | SOURCE
-      | TIMEOUT
-      | TOS
-      | VERIFY_DATA
-   ) null_rest_of_line
-;
-
-ipslaot_statistics
-:
-   NO? STATISTICS null_rest_of_line
-   (
-      ipslaots_null
-   )*
-;
-
-ipslaots_null
-:
-   NO?
-   (
-      BUCKETS
-   ) null_rest_of_line
-;
-
-ipslar_react
-:
-   NO? REACT null_rest_of_line
-   (
-      ispalrr_null
-   )*
-;
-
-ipslarp_null
-:
-   NO?
-   (
-      TYPE
-   ) null_rest_of_line
-;
-
-ispalrr_null
-:
-   NO?
-   (
-      ACTION
-      | THRESHOLD
-   ) null_rest_of_line
-;
-
-ipslas_null
-:
-   NO?
-   (
-      LIFE
-      | START_TIME
-   ) null_rest_of_line
-;
-
 l2_null
 :
    NO?
@@ -2571,17 +2467,6 @@ s_ipc
    )*
 ;
 
-s_ipsla
-:
-   NO? IPSLA null_rest_of_line
-   (
-      ispla_operation
-      | ipsla_reaction
-      | ipsla_responder
-      | ipsla_schedule
-   )*
-;
-
 s_ipv6
 :
   IPV6
@@ -3474,7 +3359,6 @@ stanza
    | s_ip_tacacs_source_interface
    | s_ip_wccp
    | s_ipc
-   | s_ipsla
    | s_ipv6
    | s_ipv6_router_ospf
    | s_key
