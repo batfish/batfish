@@ -69,6 +69,5 @@ hsrp4_hsrp_bfd_null: BFD null_rest_of_line;
 hsrp4_hsrp_preempt: PREEMPT NEWLINE;
 hsrp4_hsrp_priority: PRIORITY priority = uint8 NEWLINE;
 hsrp4_hsrp_timers_null: TIMERS null_rest_of_line;
-// todo fix modes to get this to be interface_name
-hsrp4_hsrp_track: TRACK name = interface_name_unstructured (decrement_priority = uint8)? NEWLINE;
+hsrp4_hsrp_track: TRACK name = interface_name (decrement_priority = uint8)? NEWLINE;
 hsrp4_hsrp_version_null: VERSION null_rest_of_line;

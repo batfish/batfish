@@ -1377,7 +1377,7 @@ iftunnel_source
    (
      DYNAMIC
      | IP_ADDRESS
-     | iname = interface_name_unstructured
+     | iname = interface_name
    ) NEWLINE
 ;
 

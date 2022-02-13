@@ -217,38 +217,7 @@ int_expr
    | RP_VARIABLE
 ;
 
-interface_name
-:
-  name_prefix_alpha = M_Interface_PREFIX
-  (
-    (
-      (
-        name_middle_parts += M_Interface_PREFIX
-      )? name_middle_parts += UINT_BIG
-      (
-        name_middle_parts += FORWARD_SLASH
-        | name_middle_parts += PERIOD
-        | name_middle_parts += COLON
-      )
-    )*
-    | name_middle_parts += MODULE
-  ) range?
-;
-
-interface_name_unstructured
-:
-  (
-    VARIABLE
-    | variable_interface_name uint_legacy?
-  )
-  (
-    (
-      COLON
-      | FORWARD_SLASH
-      | PERIOD
-    ) uint_legacy
-  )*
-;
+interface_name: INTERFACE_NAME;
 
 ios_delimited_banner
 :
