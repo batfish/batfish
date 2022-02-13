@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname xr_track
+!
+track IPv6Loopback
+ type list boolean or
+  object PrimaryRouter
+  object SecondaryRouter
+ !
+!
+!
+

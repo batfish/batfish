@@ -1066,33 +1066,6 @@
         }
       },
       {
-        "Structure_Type" : "track",
-        "Structure_Name" : "3",
-        "Source_Lines" : {
-          "filename" : "configs/cisco_track",
-          "lines" : [
-            6,
-            7,
-            8,
-            9,
-            10
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "track",
-        "Structure_Name" : "IPv6Loopback",
-        "Source_Lines" : {
-          "filename" : "configs/cisco_track",
-          "lines" : [
-            12,
-            13,
-            14,
-            15
-          ]
-        }
-      },
-      {
         "Structure_Type" : "zone",
         "Structure_Name" : "t1",
         "Source_Lines" : {
@@ -1794,6 +1767,20 @@
           "lines" : [
             16,
             17
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "track",
+        "Structure_Name" : "3",
+        "Source_Lines" : {
+          "filename" : "configs/ios_track",
+          "lines" : [
+            6,
+            7,
+            8,
+            9,
+            10
           ]
         }
       },
@@ -3678,6 +3665,19 @@
           "lines" : [
             4,
             5
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "track",
+        "Structure_Name" : "IPv6Loopback",
+        "Source_Lines" : {
+          "filename" : "configs/xr_track",
+          "lines" : [
+            4,
+            5,
+            6,
+            7
           ]
         }
       }
