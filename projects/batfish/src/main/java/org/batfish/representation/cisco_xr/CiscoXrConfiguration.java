@@ -26,7 +26,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertVrfL
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.eigrpRedistributionPoliciesToStatements;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpImportPolicy;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.generatedVrrpOrHsrpInterfaceName;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.generatedVrrpOrHsrpTrackInterfaceDownName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getOspfInboundDistributeListPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getRsaPubKeyGeneratedName;
@@ -1134,7 +1134,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               }
               int decrement =
                   firstNonNull(ifaceTrack.getDecrementPriority(), DEFAULT_HSRP_PRIORITY_DECREMENT);
-              String trackMethodName = generateVrrpOrHsrpInterfaceTrackIfNeeded(ifaceName, c);
+              String trackMethodName = generateVrrpOrHsrpTrackInterfaceDownIfNeeded(ifaceName, c);
               trackActionsBuilder.put(trackMethodName, new DecrementPriority(decrement));
             });
     ret.setTrackActions(trackActionsBuilder.build());
@@ -1142,9 +1142,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return ret.build();
   }
 
-  private @Nonnull String generateVrrpOrHsrpInterfaceTrackIfNeeded(
+  private @Nonnull String generateVrrpOrHsrpTrackInterfaceDownIfNeeded(
       String ifaceName, Configuration c) {
-    String name = generatedVrrpOrHsrpInterfaceName(ifaceName);
+    String name = generatedVrrpOrHsrpTrackInterfaceDownName(ifaceName);
     c.getTrackingGroups()
         .computeIfAbsent(name, n -> NegatedTrackMethod.of(new TrackInterface(ifaceName)));
     return name;

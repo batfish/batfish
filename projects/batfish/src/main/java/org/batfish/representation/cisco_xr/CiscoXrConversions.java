@@ -196,8 +196,8 @@ public class CiscoXrConversions {
       OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
 
   @VisibleForTesting
-  public static @Nonnull String generatedVrrpOrHsrpInterfaceName(String ifaceName) {
-    return String.format("~IntDown~%s~", ifaceName);
+  public static @Nonnull String generatedVrrpOrHsrpTrackInterfaceDownName(String ifaceName) {
+    return String.format("%s is down", ifaceName);
   }
 
   private static Map<String, Interface> getActiveLoopbackInterfacesWithAddresses(

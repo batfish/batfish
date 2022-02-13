@@ -54,7 +54,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCo
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.generatedVrrpOrHsrpInterfaceName;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.generatedVrrpOrHsrpTrackInterfaceDownName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
@@ -2135,9 +2135,9 @@ public final class XrGrammarTest {
         hasTrackingGroups(
             equalTo(
                 ImmutableMap.of(
-                    generatedVrrpOrHsrpInterfaceName("Bundle-Ether10"),
+                    generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether10"),
                     NegatedTrackMethod.of(new TrackInterface("Bundle-Ether10")),
-                    generatedVrrpOrHsrpInterfaceName("Bundle-Ether11"),
+                    generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether11"),
                     NegatedTrackMethod.of(new TrackInterface("Bundle-Ether11"))))));
 
     assertThat(
@@ -2155,10 +2155,10 @@ public final class XrGrammarTest {
                         hasTrackActions(
                             equalTo(
                                 ImmutableMap.of(
-                                    generatedVrrpOrHsrpInterfaceName("Bundle-Ether10"),
+                                    generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether10"),
                                     new DecrementPriority(
                                         CiscoXrConfiguration.DEFAULT_HSRP_PRIORITY_DECREMENT),
-                                    generatedVrrpOrHsrpInterfaceName("Bundle-Ether11"),
+                                    generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether11"),
                                     new DecrementPriority(37)))))),
                 hasHsrpGroup(
                     38,
