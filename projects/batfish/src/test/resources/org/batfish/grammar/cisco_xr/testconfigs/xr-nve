@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-nve
+!
+interface nve1
+ description foo
+ member vni 12345
+  vrf v1
+  host-reachabilty protocol bgp
+ !
+ overlay-encapsulation vxlan
+ source-interface Loopback0
+!

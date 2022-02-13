@@ -15,10 +15,12 @@ tokens {
   DFA_REGEX,
   DOTDOT,
   HEX_FRAGMENT,
+  INTERFACE_NAME,
   IOS_REGEX,
   IS_LOCAL,
   ISO_ADDRESS,
   NEIGHBOR_IS,
+  NVE_INTERFACE_NAME,
   ONE_LITERAL,
   ORIGINATES_FROM,
   PARAMETER,
@@ -33,6 +35,7 @@ tokens {
   RAW_TEXT,
   SELF_SIGNED,
   SLIP_PPP,
+  SLOT_ORDER,
   STATEFUL_DOT1X,
   STATEFUL_KERBEROS,
   STATEFUL_NTLM,
@@ -2545,15 +2548,7 @@ INTEGRITY: 'integrity';
 
 INTERAREA: 'interarea';
 
-INTERFACE
-:
-   'int' 'erface'?
-   {
-     if (lastTokenType() == NEWLINE || lastTokenType() == ROUTED || lastTokenType() == -1) {
-       pushMode(M_Interface);
-     }
-   }
-;
+INTERFACE: 'int' 'erface'? -> pushMode(M_Interface);
 
 INTERFACE_INHERITANCE: 'interface-inheritance';
 
@@ -2745,7 +2740,7 @@ L2TP_CLASS: 'l2tp-class';
 L2TRANSPORT: 'l2transport';
 
 L2VPN: 'l2vpn';
-
+L4: 'l4';
 LABEL: 'label';
 
 LA_MAINT: 'la-maint';
@@ -2872,7 +2867,7 @@ LOCAL: 'local';
 
 LOCALITY: 'locality';
 
-LOCAL_ADDRESS: 'local-address';
+LOCAL_ADDRESS: 'local-address' -> pushMode(M_Interface);
 
 LOCAL_AS: F_LocalAs;
 
@@ -4996,14 +4991,11 @@ SOFTWARE: 'software';
 
 SONET: 'sonet';
 
-SOURCE: 'source';
+SOURCE: 'source' -> pushMode(M_Source);
 
 SOURCE_ADDRESS: 'source-address';
 
-SOURCE_INTERFACE
-:
-   'source-interface' -> pushMode ( M_Interface )
-;
+SOURCE_INTERFACE: 'source-interface' -> pushMode(M_Interface);
 
 SOURCE_IP_ADDRESS: 'source-ip-address';
 
@@ -5448,7 +5440,7 @@ TRACE: 'trace';
 
 TRACEROUTE: 'traceroute';
 
-TRACK: 'track';
+TRACK: 'track' -> pushMode(M_Track);
 
 TRACKING_PRIORITY_INCREMENT: 'tracking-priority-increment';
 
@@ -6183,10 +6175,26 @@ WS
    F_Whitespace+ -> channel ( HIDDEN )
 ; // Fragments
 
+
+INTERFACE_NAME
+:
+  // Currently needed for static route next hop interface
+  //
+  // Because of this token, it is not generally safe to use an interface name as an unrelated
+  // structure name in the default mode.
+  // For instance, 'some-command <structure-name> <number>\n'
+  // concretely as: 'some-command loopback 0' or even 'some-command l 0'
+  // will lex as: SOME_COMMAND INTERFACE_NAME NEWLINE
+  // instead of: SOME_COMMAND STRUCTURE_NAME UINT8 NEWLINE
+  // This is OK as long as a non-default mode is used for structure names.
+  F_InterfaceName -> type(INTERFACE_NAME)
+;
+
 VARIABLE
 :
   F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
 ;
+
 
 fragment
 F_Base64Char
@@ -6495,10 +6503,28 @@ F_Uint16
 ;
 
 fragment
+F_Uint31 // used sparingly
+:
+// 0-2147483647
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  | '1' F_Digit F_Digit F_Digit F_Digit F_FiveDigits
+  | '20' F_Digit F_Digit F_Digit F_FiveDigits
+  | '21' [0-3] F_Digit F_Digit F_FiveDigits
+  | '214' [0-6] F_Digit F_FiveDigits
+  | '2147' [0-3] F_FiveDigits
+  | '21474' [0-7] F_Digit F_Digit F_Digit F_Digit
+  | '214748' [0-2] F_Digit F_Digit F_Digit
+  | '2147483' [0-5] F_Digit F_Digit
+  | '21474836' [0-3] F_Digit
+  | '214748364' [0-7]
+;
+
+fragment
 F_Uint32
 :
 // 0-4294967295
-  '0'
+  F_Digit
   | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
   | [1-3] F_Digit F_Digit F_Digit F_Digit F_FiveDigits
   | '4' [0-1] F_Digit F_Digit F_Digit F_FiveDigits
@@ -6639,6 +6665,336 @@ fragment
 F_CommunitySetRegex
 :
   ['] F_CommunitySetRegexComponentChar* ':' F_CommunitySetRegexComponentChar* [']
+;
+
+fragment
+F_NveInterfaceName
+:
+  // nve
+  // TODO: verify number range
+  [Nn][Vv][Ee] F_Uint32
+;
+
+fragment
+F_InterfaceName
+:
+  F_ParentInterface ('.' F_Uint31)?
+;
+
+fragment
+F_ParentInterface
+:
+  F_ParentInterfaceBundleEther F_Whitespace* F_Uint16
+  | F_ParentInterfaceBundlePos F_Whitespace* F_Uint16
+  | F_ParentInterfaceBvi F_Whitespace* F_Uint32
+  | F_ParentInterfaceCem F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceFastEthernet F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceFiftyGigE F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceFortyGigE F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceFourHundredGigE F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceGigabitEthernet F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceHundredGigE F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceIma F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceInterflexLeft F_Whitespace* F_InterflexNumber
+  | F_ParentInterfaceInterflexRight F_Whitespace* F_InterflexNumber
+  | F_ParentInterfaceLoopback F_Whitespace* F_Uint31
+  | F_ParentInterfaceMgmtEth F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceMultilink F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceNull F_Whitespace* '0'
+  | F_ParentInterfacePos F_Whitespace* F_InterfacePortId
+  | F_ParentInterfacePtp F_Whitespace* F_InterfacePortId
+  | F_ParentInterfacePwEther F_Whitespace* F_PwNumber
+  | F_ParentInterfacePwIw F_Whitespace* F_PwNumber
+  | F_ParentInterfaceSrp F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceSerial F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceTenGigE F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceTwentyFiveGigE F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceTwoHundredGigE F_Whitespace* F_InterfacePortId
+  | F_ParentInterfaceTunnelIp F_Whitespace* F_TunnelIpNumber
+  | F_ParentInterfaceTunnelIpsec F_Whitespace* F_Uint32
+  | F_ParentInterfaceTunnelMte F_Whitespace* F_Uint16
+  | F_ParentInterfaceTunnelTe F_Whitespace* F_Uint16
+  | F_ParentInterfaceTunnelTp F_Whitespace* F_Uint16
+;
+
+fragment
+F_TunnelIpNumber
+:
+  // 0-131070
+  '0'
+  | F_PositiveDigit F_Digit? F_Digit? F_Digit? F_Digit?
+  | '1' [0-2] F_Digit F_Digit F_Digit
+  | '1310' [0-6] F_Digit
+  | '131070'
+;
+
+fragment
+F_PwNumber
+:
+  // 1-32768
+  F_PositiveDigit F_Digit? F_Digit? F_Digit?
+  | [0-2]  F_Digit F_Digit F_Digit F_Digit
+  | '3' [0-1] F_Digit F_Digit F_Digit
+  | '32' [0-6] F_Digit F_Digit
+  | '327' [0-5] F_Digit
+  | '3276' [0-8]
+;
+
+
+fragment
+F_InterfacePortId
+:
+  F_InterfacePortIdSegment ('/' F_InterfacePortIdSegment)+
+;
+
+fragment
+F_InterfacePortIdSegment
+:
+  (
+    [Cc][Pp][Uu]
+    | [Rr][Pp]
+    | [Rr][Ss][Pp]
+  )? F_Digit+
+;
+
+fragment
+F_InterflexNumber
+:
+  // 1-512
+  F_PositiveDigit F_Digit?
+  | [1-4] F_Digit F_Digit
+  | '50' F_Digit
+  | '51' [0-2]
+;
+
+fragment
+F_ParentInterfaceBundleEther
+:
+  // Bundle-Ether | BE
+  [Bb][Uu][Nn][Dd][Ll][Ee] '-' [Ee]([Tt]([Hh]([Ee][Rr]?)?)?)?
+  | [Bb][Ee]
+;
+
+fragment
+F_ParentInterfaceBundlePos
+:
+  // Bundle-POS | BP
+  [Bb][Uu][Nn][Dd][Ll][Ee] '-' [Pp]([Oo][Ss]?)?
+  | [Bb][Pp]
+;
+
+fragment
+F_ParentInterfaceBvi
+:
+  // BVI
+  [Bb][Vv][Ii]?
+;
+
+fragment
+F_ParentInterfaceCem
+:
+  // CEM
+  [Cc]([Ee][Mm]?)?
+;
+
+fragment
+F_ParentInterfaceFastEthernet
+:
+  // FastEthernet
+  [Ff][Aa]([Ss]([Tt]([Ee]([Tt]([Hh]([Ee]([Rr]([Nn]([Ee][Tt]?)?)?)?)?)?)?)?)?)?
+;
+
+fragment
+F_ParentInterfaceFiftyGigE
+:
+  // FiftyGigE
+  [Ff][Ii]([Ff]([Tt]([Yy]([Gg]([Ii]([Gg][Ee]?)?)?)?)?)?)?
+;
+
+fragment
+F_ParentInterfaceFortyGigE
+:
+  // FortyGigE | Fo (takes precedence over FourHundredGigE)
+  [Ff][Oo]([Rr]([Tt]([Yy]([Gg]([Ii]([Gg][Ee]?)?)?)?)?)?)?
+;
+
+fragment
+F_ParentInterfaceFourHundredGigE
+:
+  // FourHundredGigE | F (takes precedence over FortyGigE)
+  [Ff][Oo][Uu]([Rr]([Hh]([Uu]([Nn]([Dd]([Rr]([Ee]([Dd]([Gg]([Ii]([Gg][Ee]?)?)?)?)?)?)?)?)?)?)?)?
+  | [Ff] // but not Fo, which is interpreted as FortyGigE
+;
+
+fragment
+F_ParentInterfaceGigabitEthernet
+:
+  // GigabitEthernet
+  [Gg]([Ii]([Gg]([Aa]([Bb]([Ii]([Tt]([Ee]([Tt]([Hh]([Ee]([Rr]([Nn]([Ee][Tt]?)?)?)?)?)?)?)?)?)?)?)?)?)?
+;
+
+fragment
+F_ParentInterfaceHundredGigE
+:
+  // HundredGigE
+  [Hh][Uu][Nn][Dd][Rr][Ee][Dd][Gg][Ii][Gg][Ee]
+;
+
+fragment
+F_ParentInterfaceIma
+:
+  // IMA
+  [Ii][Mm][Aa]?
+;
+
+fragment
+F_ParentInterfaceInterflexLeft
+:
+  // InterflexLeft | IL
+  [Ii][Nn][Tt][Ee][Rr][Ff][Ll][Ee][Xx]
+  | [Ii][Ll]
+;
+
+fragment
+F_ParentInterfaceInterflexRight
+:
+  // InterflexRight | IR
+  [Ii][Nn][Tt][Ee][Rr][Ff][Ll][Ee][Xx]
+  | [Ii][Rr]
+;
+
+fragment
+F_ParentInterfaceLoopback
+:
+  // Loopback
+  [Ll]([Oo]([Oo]([Pp]([Bb]([Aa]([Cc][Kk]?)?)?)?)?)?)?
+;
+
+fragment
+F_ParentInterfaceMgmtEth
+:
+  // MgmtEth
+  [Mm][Gg]([Mm]([Tt]([Ee]([Tt][Hh]?)?)?)?)?
+;
+
+fragment
+F_ParentInterfaceMultilink
+:
+  // Multilink | Ml
+  [Mm][Uu]([Ll]([Tt]([Ii]([Ll]([Ii]([Nn][Kk]?))?)?)?)?)?
+  | [Mm][Ll]
+;
+
+fragment
+F_ParentInterfaceNull
+:
+  // Null
+  [Nn]([Uu]([Ll][Ll]?)?)?
+;
+
+fragment
+F_ParentInterfacePos
+:
+  // POS
+  [Pp][Oo][Ss]?
+;
+
+fragment
+F_ParentInterfacePtp
+:
+  // PTP
+  [Pp][Tt][Pp]?
+;
+
+fragment
+F_ParentInterfacePwEther
+:
+  // PW-Ether | PE
+  [Pp][Ww] '-' [Ee]([Tt]([Hh]([Ee][Rr]?)?)?)?
+  | [Pp][Ee]
+;
+
+fragment
+F_ParentInterfacePwIw
+:
+  // PW-IW | PI
+  [Pp][Ww] '-' [Ii][Ww]?
+  | [Pp][Ii]
+;
+
+fragment
+F_ParentInterfaceSrp
+:
+  // SRP
+  [Ss][Rr][Pp]?
+;
+
+fragment
+F_ParentInterfaceSerial
+:
+  // Serial
+  [Ss][Ee]([Rr]([Ii]([Aa][Ll]?)?)?)?
+;
+
+fragment
+F_ParentInterfaceTenGigE
+:
+  // TenGigE
+  [Tt][Ee]([Nn]([Gg]([Ii]([Gg][Ee]?)?)?)?)?
+;
+
+fragment
+F_ParentInterfaceTwentyFiveGigE
+:
+  // TwentyFiveGigE | Tw (takes precedence over TwoHundredGigE)
+  [Tt][Ww]([Ee]([Nn]([Tt]([Yy]([Ff]([Ii]([Vv]([Ee]([Gg]([Ii]([Gg][Ee]?)?)?)?)?)?)?)?)?)?)?)?
+;
+
+fragment
+F_ParentInterfaceTwoHundredGigE
+:
+  // TwoHundredGigE | TH
+  [Tt][Ww][Oo]([Hh]([Uu]([Nn]([Dd]([Rr]([Ee]([Dd]([Gg]([Ii]([Gg][Ee]?)?)?)?)?)?)?)?)?)?)?
+  | [Tt][Hh]
+;
+
+fragment
+F_ParentInterfaceTunnelIp
+:
+  // tunnel-ip (no short form, cannot be abbreviated)
+  [Tt][Uu][Nn][Nn][Ee][Ll] '-' [Ii][Pp]
+;
+
+fragment
+F_ParentInterfaceTunnelIpsec
+:
+  // tunnel-ipsec | tsec (latter cannot be abbreviated)
+  [Tt][Uu][Nn][Nn][Ee][Ll] '-' [Ii][Pp][Ss]([Ee][Cc]?)?
+  | [Tt][Ss][Ee][Cc]
+;
+
+fragment
+F_ParentInterfaceTunnelMte
+:
+  // tunnel-mte | tm
+  [Tt][Uu][Nn][Nn][Ee][Ll] '-' [Mm]([Tt][Ee]?)?
+  | [Tt][Mm]
+;
+
+fragment
+F_ParentInterfaceTunnelTe
+:
+  // tunnel-te | tt
+  [Tt][Uu][Nn][Nn][Ee][Ll] '-' [Tt][Ee]
+  | [Tt][Tt]
+;
+
+fragment
+F_ParentInterfaceTunnelTp
+:
+  // tunnel-tp | tp
+  [Tt][Uu][Nn][Nn][Ee][Ll] '-' [Tt][Pp]
+  | [Tt][Pp]
 ;
 
 mode M_Alias;
@@ -7105,199 +7461,15 @@ M_Extcommunity_WS
 
 mode M_Interface;
 
-M_Interface_ALL
-:
-   'all' -> type ( ALL ) , popMode
-;
-
-M_Interface_BREAKOUT
-:
-   'breakout' -> type ( BREAKOUT ) , popMode
-;
-
-M_Interface_CABLE
-:
-   'cable' -> type ( CABLE ) , popMode
-;
-
-M_Interface_DEFAULT
-:
-   'default' -> type ( DEFAULT ) , popMode
-;
-
-M_Interface_DOLLAR
-:
-   '$' -> type ( DOLLAR ) , popMode
-;
-
-M_Interface_EIGRP
-:
-   'eigrp' -> type ( EIGRP ) , popMode
-;
-
-M_Interface_EQ
-:
-   'eq' -> type ( EQ ) , popMode
-;
-
-M_Interface_GLOBAL
-:
-   'global' -> type ( GLOBAL ) , popMode
-;
-
-M_Interface_GT
-:
-   'gt' -> type ( GT ) , popMode
-;
-
-M_Interface_INFORM
-:
-   'inform' -> type ( INFORM )
-;
-
-M_Interface_INFORMS
-:
-   'informs' -> type ( INFORMS )
-;
-
-M_Interface_IP
-:
-   'ip' -> type ( IP ) , popMode
-;
-
-M_Interface_IPV4
-:
-   'IPv4' -> type ( IPV4 )
-;
-
-M_Interface_POINT_TO_POINT
-:
-   'point-to-point' -> type ( POINT_TO_POINT ) , popMode
-;
-
-M_Interface_POLICY
-:
-   'policy' -> type ( POLICY ) , popMode
-;
-
-M_Interface_L2TRANSPORT
-:
-   'l2transport' -> type ( L2TRANSPORT ) , popMode
-;
-
-M_Interface_LT
-:
-   'lt' -> type ( LT ) , popMode
-;
-
-M_Interface_MODULE
-:
-   'module' -> type ( MODULE )
-;
-
-M_Interface_NO
-:
-   'no' -> type ( NO ) , popMode
-;
-
-M_Interface_LINE_PROTOCOL
-:
-   'line-protocol' -> type ( LINE_PROTOCOL ) , popMode
-;
-
-M_Interface_MULTIPOINT
-:
-   'multipoint' -> type ( MULTIPOINT ) , popMode
-;
-
-M_Interface_SCOPE: 'scope' -> type(SCOPE), popMode;
-
-M_Interface_SHUTDOWN
-:
-   'shutdown' -> type ( SHUTDOWN ) , popMode
-;
-
-M_Interface_TRAP
-:
-   'trap' -> type ( TRAP )
-;
-
-M_Interface_TRAPS
-:
-   'traps' -> type ( TRAPS )
-;
-
-M_Interface_VRF
-:
-   'vrf' -> type ( VRF ) , popMode
-;
-
-M_Interface_COLON
-:
-   ':' -> type ( COLON )
-;
-
-M_Interface_COMMA
-:
-   ',' -> type ( COMMA )
-;
-
-M_Interface_DASH
-:
-   '-' -> type ( DASH )
-;
-
-M_Interface_NEWLINE
-:
-   F_Newline -> type ( NEWLINE ) , popMode
-;
-
-M_Interface_NUMBER: F_UintBig -> type (UINT_BIG);
-
-M_Interface_PERIOD
-:
-   '.' -> type ( PERIOD )
-;
-
-M_Interface_PIPE
-:
-   '|' -> type ( PIPE ) , popMode
-;
-
-M_Interface_PRECFONFIGURE
-:
-   'preconfigure' -> type ( PRECONFIGURE )
-;
-
-M_Interface_PREFIX
-:
-   (
-      F_Letter
-      (
-         F_Letter
-         | '-'
-         | '_'
-      )*
-   )
-   | 'Dot11Radio'
-   | [Ee]'1'
-   | [Tt]'1'
-;
-
-M_Interface_RELAY
-:
-   'relay' -> type ( RELAY ) , popMode
-;
-
-M_Interface_SLASH
-:
-   '/' -> type ( FORWARD_SLASH )
-;
-
-M_Interface_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
+M_Interface_WS: F_Whitespace+ -> skip;
+M_Interface_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Interface_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS), popMode;
+M_Interface_IPV6_ADDRESS: F_Ipv6Address -> type(IPV6_ADDRESS), popMode;
+M_Interface_ALL: 'all' -> type(ALL), popMode;
+M_Interface_SLOT_ORDER: 'slot-order' -> type(SLOT_ORDER);
+M_Interface_PRECFONFIGURE: 'preconfigure' -> type(PRECONFIGURE);
+M_Interface_INTERFACE_NAME: F_InterfaceName -> type(INTERFACE_NAME), popMode;
+M_Interface_NVE_INTERFACE_NAME: F_NveInterfaceName -> type(NVE_INTERFACE_NAME), popMode;
 
 mode M_Hostname;
 
@@ -7974,3 +8146,27 @@ M_Prepend_UINT32: F_Uint32 -> type(UINT32);
 M_Prepend_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_Prepend_WS: F_Whitespace+ -> channel(HIDDEN);
 
+mode M_Source;
+
+M_Source_WS: F_Whitespace+ -> skip;
+M_Source_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Source_REACHABLE_VIA: 'reachable-via' -> type(REACHABLE_VIA), popMode;
+M_Source_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS), popMode;
+M_Source_IPV6_ADDRESS: F_Ipv6Address -> type(IPV6_ADDRESS), popMode;
+M_Source_INTERFACE_NAME: F_InterfaceName -> type(INTERFACE_NAME), popMode;
+
+mode M_Track;
+M_Track_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Track_WS: F_Whitespace+ -> skip;
+
+// vrrp track
+M_Track_INTERFACE: 'interface' -> type(INTERFACE), mode(M_Interface);
+
+// vrrp/hsrp track
+M_Track_OBJECT: 'object' -> type(OBJECT), mode(M_Word);
+
+// hsrp track
+M_Track_INTERFACE_NAME: F_InterfaceName -> type(INTERFACE_NAME), popMode;
+
+// track definition / static route track
+M_Track_WORD: F_Word -> type(WORD), popMode;

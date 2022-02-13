@@ -460,7 +460,7 @@ cisprf_local_address
     LOCAL_ADDRESS
     (
        IP_ADDRESS
-       | iname = interface_name_unstructured
+       | iname = interface_name
     ) NEWLINE
 ;
 
@@ -522,7 +522,7 @@ ckr_local_address
    LOCAL_ADDRESS
    (
       IP_ADDRESS
-      | iname = interface_name_unstructured
+      | iname = interface_name
    ) NEWLINE
 ;
 

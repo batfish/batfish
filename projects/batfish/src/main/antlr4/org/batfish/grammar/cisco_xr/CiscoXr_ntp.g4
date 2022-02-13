@@ -110,7 +110,7 @@ ntp_server
          MINPOLL uint_legacy
       )
       | prefer = PREFER
-      | SOURCE src_interface = interface_name_unstructured
+      | SOURCE src_interface = interface_name
       |
       (
          VERSION ver = uint_legacy

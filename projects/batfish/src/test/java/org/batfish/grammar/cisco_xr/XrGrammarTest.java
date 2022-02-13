@@ -234,6 +234,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.ParserBatfishException;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco_xr.AddressFamilyType;
 import org.batfish.representation.cisco_xr.AsPathSetElem;
@@ -4104,5 +4105,12 @@ public final class XrGrammarTest {
     assertEquals(2, routerIds.size()); // unique router ids
     assertThat(routerIds, hasItem(Ip.parse("1.1.1.1")));
     assertThat(routerIds, not(hasItem(Ip.parse("2.1.1.1"))));
+  }
+
+  @Test(expected = ParserBatfishException.class)
+  public void testInterfaceNve() {
+    String hostname = "xr-nve";
+    // don't crash
+    parseVendorConfig(hostname);
   }
 }
