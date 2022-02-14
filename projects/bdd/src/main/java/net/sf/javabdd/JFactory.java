@@ -267,7 +267,7 @@ public final class JFactory extends BDDFactory {
       int a = bdd_restrict(x, y);
       bdd_delref(x);
       if (this != that) {
-        that.free();
+        that.freeInternal();
       }
       bdd_addref(a);
       _index = a;
@@ -319,7 +319,7 @@ public final class JFactory extends BDDFactory {
       int a = bdd_apply(x, y, z);
       bdd_delref(x);
       if (this != that) {
-        that.free();
+        that.freeInternal();
       }
       bdd_addref(a);
       _index = a;
@@ -437,6 +437,11 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public void free() {
+      freeInternal();
+    }
+
+    @Override
+    protected void freeInternal() {
       bdd_delref(_index);
       _index = INVALID_BDD;
       ++freedBDDs;
@@ -893,7 +898,7 @@ public final class JFactory extends BDDFactory {
             .toArray();
     int ret = bdd_andAll(operands);
     if (free) {
-      bddOperands.forEach(BDD::free);
+      bddOperands.forEach(BDD::freeInternal);
     }
     return makeBDD(ret);
   }
@@ -930,7 +935,7 @@ public final class JFactory extends BDDFactory {
             .toArray();
     int ret = bdd_orAll(operands);
     if (free) {
-      bddOperands.forEach(BDD::free);
+      bddOperands.forEach(BDD::freeInternal);
     }
     return makeBDD(ret);
   }
@@ -4475,7 +4480,7 @@ public final class JFactory extends BDDFactory {
           sb.append('=');
           BDDImpl b = new BDDImpl(result[i]);
           sb.append(b);
-          b.free();
+          b.freeInternal();
         }
       }
       sb.append('}');
