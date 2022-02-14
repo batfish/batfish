@@ -1236,19 +1236,10 @@ public abstract class BDDFactory {
   }
 
   protected void bdd_default_reohandler(boolean prestate, ReorderStats s) {
-    int verbose = 1;
     if (prestate) {
       LOGGER.info("Start reordering");
     } else {
       LOGGER.info("End reordering. {}", s);
     }
-  }
-
-  protected void resize_handler(int oldsize, int newsize) {
-    bdd_default_reshandler(oldsize, newsize);
-  }
-
-  protected static void bdd_default_reshandler(int oldsize, int newsize) {
-    LOGGER.info("Resizing node table from {} to {}", oldsize, newsize);
   }
 }

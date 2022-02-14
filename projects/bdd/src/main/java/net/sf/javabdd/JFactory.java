@@ -652,6 +652,8 @@ public final class JFactory extends BDDFactory {
   private int gbcollectnum; /* Number of garbage collections */
   private int cachesize; /* Size of the operator caches */
   private long gbcclock; /* Clock ticks used in GBC */
+  /** Total millis used in resizing */
+  private long sumResizeTime;
 
   private static final int BDD_MEMORY = -1; /* Out of memory */
   private static final int BDD_VAR = -2; /* Unknown variable */
@@ -3945,7 +3947,7 @@ public final class JFactory extends BDDFactory {
       return;
     }
 
-    resize_handler(oldsize, newsize);
+    long resizeStartTime = System.currentTimeMillis();
 
     int[] newnodes;
     newnodes = new int[newsize * __node_size];
@@ -3974,6 +3976,14 @@ public final class JFactory extends BDDFactory {
       bdd_gbc_rehash();
     }
     bddresized = true;
+    long resizeTime = System.currentTimeMillis() - resizeStartTime;
+    sumResizeTime += resizeTime;
+    LOGGER.info(
+        "Resized node table from {} to {} in {}s / {}s",
+        oldsize,
+        newsize,
+        resizeTime / 1000.0,
+        sumResizeTime / 1000.0);
   }
 
   @Override
