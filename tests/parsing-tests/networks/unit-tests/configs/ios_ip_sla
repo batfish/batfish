@@ -25,7 +25,5 @@ ip sla 20
 ip sla 30
  udp-jitter 130.59.38.105 5000
 !
-
-ip sla timeout 100
 !
 
