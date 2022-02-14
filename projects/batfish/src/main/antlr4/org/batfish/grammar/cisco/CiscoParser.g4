@@ -3465,8 +3465,16 @@ s_no
 :
   NO
   (
-    no_ip_sla
+    no_ip
     | no_track
+  )
+;
+
+no_ip
+:
+  IP
+  (
+    no_ip_sla
   )
 ;
 
