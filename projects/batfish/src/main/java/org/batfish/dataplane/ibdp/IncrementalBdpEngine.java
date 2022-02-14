@@ -9,7 +9,7 @@ import static org.batfish.common.util.IpsecUtil.retainReachableIpsecEdges;
 import static org.batfish.common.util.IpsecUtil.toEdgeSet;
 import static org.batfish.common.util.StreamUtil.toListInRandomOrder;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
-import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeNextVxlanTopologyModuloReachability;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanTopologyToLayer3Edges;
 import static org.batfish.dataplane.ibdp.TrackReachabilityUtils.evaluateTrackReachability;
@@ -154,7 +154,7 @@ final class IncrementalBdpEngine {
     LOGGER.info("Updating VXLAN topology");
     VxlanTopology newVxlanTopology =
         prunedVxlanTopology(
-            computeVxlanTopology(
+            computeNextVxlanTopologyModuloReachability(
                 currentDataplane.getLayer2Vnis(), currentDataplane.getLayer3Vnis()),
             configurations,
             trEngCurrentL3Topology);
@@ -366,6 +366,7 @@ final class IncrementalBdpEngine {
             throw new BdpOscillationException("Network has no stable solution");
           }
 
+          updateLayer3Vnis(vrs);
           currentDataplane = nextDataplane(currentTopologyContext, nodes, vrs, currentIpOwners);
           TopologyContext nextTopologyContext =
               nextTopologyContext(
@@ -764,6 +765,18 @@ final class IncrementalBdpEngine {
     }
   }
 
+  private static void updateLayer3Vnis(List<VirtualRouter> vrs) {
+    Span layer3VniSpan =
+        GlobalTracer.get().buildSpan("Update learned VTEP IPs for Layer3Vnis").start();
+    LOGGER.info("Update learned VTEP IPs for Layer3Vnis");
+    try (Scope innerScope = GlobalTracer.get().scopeManager().activate(layer3VniSpan)) {
+      assert innerScope != null; // avoid unused warning
+      vrs.parallelStream().forEach(VirtualRouter::updateLayer3Vnis);
+    } finally {
+      layer3VniSpan.finish();
+    }
+  }
+
   private static void computeIterationOfBgpRoutes(
       String iterationLabel, Map<String, Node> allNodes, List<VirtualRouter> vrs) {
     Span span =
@@ -797,21 +810,6 @@ final class IncrementalBdpEngine {
 
       // Merge BGP routes from BGP process into the main RIB
       vrs.parallelStream().forEach(VirtualRouter::mergeBgpRoutesToMainRib);
-    } finally {
-      propSpan.finish();
-    }
-
-    Span layer3VniSpan =
-        GlobalTracer.get()
-            .buildSpan(iterationLabel + ": Update learned VTEP IPs for Layer3Vnis")
-            .start();
-    LOGGER.info("{}: Update learned VTEP IPs for Layer3Vnis", iterationLabel);
-
-    try (Scope innerScope = GlobalTracer.get().scopeManager().activate(layer3VniSpan)) {
-      assert innerScope != null; // avoid unused warning
-
-      // Merge BGP routes from BGP process into the main RIB
-      vrs.parallelStream().forEach(VirtualRouter::updateLayer3Vnis);
     } finally {
       propSpan.finish();
     }
