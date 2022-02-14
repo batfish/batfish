@@ -8,28 +8,12 @@ options {
 
 s_track
 :
-  TRACK name = variable
+  TRACK num = track_number
   (
-    track_block
-    | track_interface
+    track_interface
     | track_ip
     | track_list
   )
-;
-
-track_block
-:
-  NEWLINE track_block_null*
-;
-
-track_block_null
-:
-  TYPE null_rest_of_line track_block_type_null*
-;
-
-track_block_type_null
-:
-  OBJECT null_rest_of_line
 ;
 
 track_interface
@@ -44,16 +28,91 @@ track_interface
 
 track_ip
 :
-  IP null_rest_of_line track_ip_null*
+  IP (tip_route | tip_sla)
 ;
 
-track_ip_null
+tip_route
 :
+  ROUTE
   (
-    DEFAULT
-    | DELAY
-  ) null_rest_of_line
+    address = ip_address mask = ip_address
+    | prefix = ip_prefix
+  )
+  (
+    tipr_metric
+    | tipr_reachability
+  )
 ;
+
+tipr_metric
+:
+  METRIC THRESHOLD NEWLINE
+  tipr_metric_inner*
+;
+
+tipr_metric_inner
+:
+ track_delay_null
+ | tiprm_ip_vrf
+ | tiprm_threshold
+;
+
+tipr_reachability
+:
+  REACHABILITY NEWLINE
+  tiprr_inner*
+;
+
+tiprr_inner
+:
+  track_delay_null
+  | tiprr_ip_vrf
+;
+
+tiprr_ip_vrf
+:
+  IP VRF name = variable NEWLINE
+;
+
+track_delay_null
+:
+  DELAY
+  (
+    UP up = track_delay_number (DOWN down = track_delay_number)?
+    | DOWN down = track_delay_number (UP up = track_delay_number)?
+  ) NEWLINE
+;
+
+track_delay_number
+:
+  // 0-180 seconds
+  uint8
+;
+
+tiprm_ip_vrf: IP VRF name = variable NEWLINE;
+
+tiprm_threshold
+:
+  THRESHOLD
+  (
+    UP up = uint8 (DOWN down = uint8)?
+    | DOWN down = uint8 (UP up = uint8)?
+  ) NEWLINE
+;
+
+tip_sla
+:
+  SLA sla_number (REACHABILITY | STATE)? NEWLINE
+  tip_sla_inner*
+;
+
+tip_sla_inner
+:
+  track_delay_null
+  | tips_default_state
+;
+
+tips_default_state: DEFAULT_STATE (UP | DOWN) NEWLINE;
 
 track_list
 :
@@ -140,3 +199,4 @@ tltw_object_tail
 :
   tl_object WEIGHT dec NEWLINE
 ;
+

@@ -1085,7 +1085,7 @@ ip_route_tail
       | perm = PERMANENT
       |
       (
-         TRACK track = dec
+         TRACK track = track_number
       )
       |
       (

@@ -314,8 +314,19 @@ port_specifier_literal
 
 port
 :
-   dec
-   | ACAP
+  named = named_port
+  | num = port_number
+;
+
+port_number
+:
+  // 1-65535
+  uint16
+;
+
+named_port
+:
+   ACAP
    | ACR_NEMA
    | AFPOVERTCP
    | AOL
@@ -716,3 +727,19 @@ vlan_id
   v = (DEC | UINT8 | UINT16)
   {isVlanId($v)}?
 ;
+
+track_number
+:
+  // 1-1000
+  uint16
+;
+
+sla_number
+:
+  // 1-2147483647
+  uint32
+;
+
+ip_address: IP_ADDRESS;
+
+ip_prefix: IP_PREFIX;

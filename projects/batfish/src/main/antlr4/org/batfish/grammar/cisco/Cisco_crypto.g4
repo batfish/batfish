@@ -366,7 +366,7 @@ cipt_mode
 
 cis_key
 :
-   KEY dec? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
+   KEY dec? key = VARIABLE ADDRESS ip = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
 ;
 
 cis_null
@@ -513,7 +513,7 @@ ckp_named_key
 
 ckpn_address
 :
-   NO? ADDRESS ip_address = IP_ADDRESS NEWLINE
+   NO? ADDRESS ip = IP_ADDRESS NEWLINE
 ;
 
 ckpn_key_string
@@ -532,7 +532,7 @@ ckr_local_address
 
 ckr_psk
 :
-   PRE_SHARED_KEY ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? KEY variable_permissive NEWLINE
+   PRE_SHARED_KEY ADDRESS ip = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? KEY variable_permissive NEWLINE
 ;
 
 cpki_certificate_chain

@@ -709,6 +709,7 @@ import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Named_portContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_flat_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Net_is_stanzaContext;
@@ -788,6 +789,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_passContext;
 import org.batfish.grammar.cisco.CiscoParser.Pmc_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
+import org.batfish.grammar.cisco.CiscoParser.Port_numberContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifier_literalContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.ProtocolContext;
@@ -988,6 +990,7 @@ import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Tl_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Track_actionContext;
 import org.batfish.grammar.cisco.CiscoParser.Track_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Track_numberContext;
 import org.batfish.grammar.cisco.CiscoParser.Ts_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.U_passwordContext;
 import org.batfish.grammar.cisco.CiscoParser.U_roleContext;
@@ -1484,7 +1487,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private Integer _currentHsrpGroup;
 
-  private String _currentTrackingGroup;
+  private Integer _currentTrackingGroup;
 
   /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
    * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
@@ -1792,7 +1795,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.NO() != null) {
       return;
     }
-    _currentNamedRsaPubKey.setAddress(toIp(ctx.ip_address));
+    _currentNamedRsaPubKey.setAddress(toIp(ctx.ip));
   }
 
   @Override
@@ -1879,8 +1882,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .getIsakmpKeys()
         .add(
             new IsakmpKey(
-                IpWildcard.ipWithWildcardMask(toIp(ctx.ip_address), wildCardMask.inverted())
-                    .toIpSpace(),
+                IpWildcard.ipWithWildcardMask(toIp(ctx.ip), wildCardMask.inverted()).toIpSpace(),
                 ikeKeyType == IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED
                     ? CommonUtil.sha256Digest(psk + CommonUtil.salt())
                     : psk,
@@ -2019,7 +2021,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentKeyring.setKey(
         CommonUtil.sha256Digest(ctx.variable_permissive().getText() + CommonUtil.salt()));
     _currentKeyring.setRemoteIdentity(
-        IpWildcard.ipWithWildcardMask(toIp(ctx.ip_address), wildCardMask.inverted()));
+        IpWildcard.ipWithWildcardMask(toIp(ctx.ip), wildCardMask.inverted()));
   }
 
   @Override
@@ -3418,9 +3420,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_track(S_trackContext ctx) {
-    String name = ctx.name.getText();
-    _currentTrackingGroup = name;
-    _configuration.defineStructure(TRACK, name, ctx);
+    _currentTrackingGroup = toInteger(ctx.num);
+    _configuration.defineStructure(TRACK, Integer.toString(_currentTrackingGroup), ctx);
   }
 
   @Override
@@ -3433,7 +3434,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = toInterfaceName(ctx.interface_name());
     _configuration.referenceStructure(
         INTERFACE, name, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
-    _configuration.getTrackingGroups().put(_currentTrackingGroup, new TrackInterface(name));
+    // TODO: migrate to ios-specific track model
+    _configuration
+        .getTrackingGroups()
+        .put(Integer.toString(_currentTrackingGroup), new TrackInterface(name));
   }
 
   @Override
@@ -6122,6 +6126,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     StaticRoute route =
         new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
     currentVrf().getStaticRoutes().add(route);
+  }
+
+  private static int toInteger(Track_numberContext ctx) {
+    // TODO: enforce range
+    return toInteger(ctx.uint16());
+  }
+
+  private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   @Override
@@ -9237,12 +9250,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private int getPortNumber(PortContext ctx) {
-    if (ctx.dec() != null) {
-      return toInteger(ctx.dec());
+    if (ctx.num != null) {
+      return toInteger(ctx.num);
     } else {
-      NamedPort namedPort = toNamedPort(ctx);
+      NamedPort namedPort = toNamedPort(ctx.named);
       return namedPort.number();
     }
+  }
+
+  private static int toInteger(Port_numberContext ctx) {
+    // TODO: enforce range
+    return toInteger(ctx.uint16());
   }
 
   public String getText() {
@@ -9807,7 +9825,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private NamedPort toNamedPort(PortContext ctx) {
+  private @Nonnull NamedPort toNamedPort(Named_portContext ctx) {
     if (ctx.ACAP() != null) {
       return NamedPort.ACAP;
     } else if (ctx.ACR_NEMA() != null) {
