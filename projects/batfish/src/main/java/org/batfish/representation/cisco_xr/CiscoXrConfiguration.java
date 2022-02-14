@@ -26,6 +26,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertVrfL
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.eigrpRedistributionPoliciesToStatements;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpImportPolicy;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.generatedVrrpOrHsrpTrackInterfaceDownName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getOspfInboundDistributeListPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getRsaPubKeyGeneratedName;
@@ -160,6 +161,10 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.NegatedTrackMethod;
+import org.batfish.datamodel.tracking.TrackAction;
+import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.cisco_xr.Aaa;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthentication;
@@ -281,6 +286,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   static final boolean DEFAULT_VRRP_PREEMPT = true;
   static final int DEFAULT_VRRP_PRIORITY = 100;
   static final int DEFAULT_HSRP_PRIORITY = 100;
+  @VisibleForTesting public static final int DEFAULT_HSRP_PRIORITY_DECREMENT = 10;
   static final boolean DEFAULT_HSRP_PREEMPT = false;
 
   public static final String MANAGEMENT_VRF_NAME = "management";
@@ -1111,7 +1117,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
 
   private org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(
-      HsrpGroup group, @Nullable ConcreteInterfaceAddress sourceAddress) {
+      HsrpGroup group, @Nullable ConcreteInterfaceAddress sourceAddress, Configuration c) {
     org.batfish.datamodel.hsrp.HsrpGroup.Builder ret =
         org.batfish.datamodel.hsrp.HsrpGroup.builder();
     ret.setPreempt(firstNonNull(group.getPreempt(), DEFAULT_HSRP_PREEMPT));
@@ -1120,12 +1126,35 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     if (group.getAddress() != null) {
       ret.setVirtualAddresses(ImmutableSet.of(group.getAddress()));
     }
-    // TODO: auth, timers, tracks.
+    ImmutableSortedMap.Builder<String, TrackAction> trackActionsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    group
+        .getInterfaceTracks()
+        .forEach(
+            (ifaceName, ifaceTrack) -> {
+              if (!_interfaces.containsKey(ifaceName)) {
+                return;
+              }
+              int decrement =
+                  firstNonNull(ifaceTrack.getDecrementPriority(), DEFAULT_HSRP_PRIORITY_DECREMENT);
+              String trackMethodName = generateVrrpOrHsrpTrackInterfaceDownIfNeeded(ifaceName, c);
+              trackActionsBuilder.put(trackMethodName, new DecrementPriority(decrement));
+            });
+    ret.setTrackActions(trackActionsBuilder.build());
+    // TODO: auth, timers
     return ret.build();
   }
 
+  private @Nonnull String generateVrrpOrHsrpTrackInterfaceDownIfNeeded(
+      String ifaceName, Configuration c) {
+    String name = generatedVrrpOrHsrpTrackInterfaceDownName(ifaceName);
+    c.getTrackingGroups()
+        .computeIfAbsent(name, n -> NegatedTrackMethod.of(new TrackInterface(ifaceName)));
+    return name;
+  }
+
   private Map<Integer, org.batfish.datamodel.hsrp.HsrpGroup> toHsrpGroups(
-      String ifaceName, @Nullable ConcreteInterfaceAddress sourceAddress) {
+      String ifaceName, @Nullable ConcreteInterfaceAddress sourceAddress, Configuration c) {
     if (_hsrp == null) {
       return ImmutableMap.of();
     }
@@ -1142,7 +1171,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return v4.getGroups().values().stream()
         .map(
             group ->
-                new SimpleImmutableEntry<>(group.getNumber(), toHsrpGroup(group, sourceAddress)))
+                new SimpleImmutableEntry<>(group.getNumber(), toHsrpGroup(group, sourceAddress, c)))
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
@@ -1230,7 +1259,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
 
       // HSRP source address is primary address.
-      newIface.setHsrpGroups(toHsrpGroups(ifaceName, iface.getAddress()));
+      newIface.setHsrpGroups(toHsrpGroups(ifaceName, iface.getAddress(), c));
       // todo: HSRP version
     }
 

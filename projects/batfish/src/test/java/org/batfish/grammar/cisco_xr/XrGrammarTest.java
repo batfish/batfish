@@ -16,6 +16,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasN
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasTrackingGroups;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -30,6 +31,7 @@ import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasIps;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPreempt;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPriority;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -52,6 +54,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCo
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.generatedVrrpOrHsrpTrackInterfaceDownName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
@@ -231,6 +234,9 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.NegatedTrackMethod;
+import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -2102,11 +2108,15 @@ public final class XrGrammarTest {
       assertThat(group.getAddress(), equalTo(Ip.parse("10.0.30.37")));
       assertThat(group.getPreempt(), equalTo(true));
       assertThat(group.getPriority(), equalTo(137));
-      assertThat(group.getInterfaceTracks(), hasKeys("Bundle-Ether10", "Bundle-Ether11"));
+      assertThat(
+          group.getInterfaceTracks(),
+          hasKeys("Bundle-Ether10", "Bundle-Ether11", "Bundle-Ether12"));
       assertThat(
           group.getInterfaceTracks().get("Bundle-Ether10").getDecrementPriority(), nullValue());
       assertThat(
           group.getInterfaceTracks().get("Bundle-Ether11").getDecrementPriority(), equalTo(37));
+      assertThat(
+          group.getInterfaceTracks().get("Bundle-Ether12").getDecrementPriority(), nullValue());
     }
     {
       HsrpGroup group = af.getGroup(38);
@@ -2123,6 +2133,16 @@ public final class XrGrammarTest {
     Configuration c = parseConfig("hsrp");
     assertThat(
         c,
+        hasTrackingGroups(
+            equalTo(
+                ImmutableMap.of(
+                    generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether10"),
+                    NegatedTrackMethod.of(new TrackInterface("Bundle-Ether10")),
+                    generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether11"),
+                    NegatedTrackMethod.of(new TrackInterface("Bundle-Ether11"))))));
+
+    assertThat(
+        c,
         hasInterface(
             "Bundle-Ether30.37",
             allOf(
@@ -2132,7 +2152,15 @@ public final class XrGrammarTest {
                         hasIps(contains(Ip.parse("10.0.30.37"))),
                         hasPreempt(),
                         hasPriority(137),
-                        hasSourceAddress(ConcreteInterfaceAddress.parse("10.0.30.1/24")))),
+                        hasSourceAddress(ConcreteInterfaceAddress.parse("10.0.30.1/24")),
+                        hasTrackActions(
+                            equalTo(
+                                ImmutableMap.of(
+                                    generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether10"),
+                                    new DecrementPriority(
+                                        CiscoXrConfiguration.DEFAULT_HSRP_PRIORITY_DECREMENT),
+                                    generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether11"),
+                                    new DecrementPriority(37)))))),
                 hasHsrpGroup(
                     38,
                     allOf(
