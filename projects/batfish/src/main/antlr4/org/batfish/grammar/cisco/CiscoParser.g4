@@ -2338,6 +2338,7 @@ s_ip
   (
     ip_extcommunity_list
     | ip_local
+    | ip_sla
   )
 ;
 
@@ -3353,7 +3354,6 @@ stanza
    | s_ip_pim
    | s_ip_probe
    | s_ip_route_mos
-   | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
    | s_ip_tacacs_source_interface
@@ -3383,6 +3383,7 @@ stanza
    | s_netdestination
    | s_netdestination6
    | s_netservice
+   | s_no
    | s_no_access_list_extended
    | s_no_access_list_standard
    | s_no_bfd
@@ -3458,6 +3459,15 @@ stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
+;
+
+s_no
+:
+  NO
+  (
+    no_ip_sla
+    | no_track
+  )
 ;
 
 statistics_null

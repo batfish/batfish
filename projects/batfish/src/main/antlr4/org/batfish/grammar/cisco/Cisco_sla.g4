@@ -6,9 +6,9 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-s_ip_sla
+ip_sla
 :
-   IP SLA
+   SLA
    (
       ip_sla_entry // number
       | ip_sla_auto
@@ -26,8 +26,33 @@ s_ip_sla
       | ip_sla_restart_null
       | ip_sla_schedule_null
       | ip_sla_server
-   )*
+   )
 ;
+
+no_ip_sla
+:
+  SLA
+  (
+    no_ip_sla_entry
+    | no_ip_sla_auto
+    | ip_sla_enable_null
+    | no_ip_sla_endpoint_list
+    | no_ip_sla_ethernet_monitor
+    | ip_sla_group_null
+    | ip_sla_keychain_null
+    | ip_sla_logging_traps_null
+    | ip_sla_low_memory_null
+    // no NO version of reset, since it is an operation
+    | ip_sla_responder_null
+    // no NO vesion of restart, since it is an operation
+    | ip_sla_schedule_null
+    | ip_sla_reaction_configuration_null // could not get CLI to accept anything
+    | ip_sla_reaction_trigger_null // could not get CLI to accept anything
+    | no_ip_sla_server
+  )
+;
+
+no_ip_sla_entry: num = sla_number NEWLINE;
 
 ip_sla_entry
 :
@@ -64,10 +89,13 @@ ip_sla_inner
   // detect scope, since the first alternative that matches will dominate. The individual scopes are
   // commented for reference.
   ip_slai_null
+  | no_ip_slai_null
   | ip_slai_dest_ipaddr
   | ip_slai_dest_port
   | ip_slai_vrf
 ;
+
+no_ip_slai_null: NO ip_slai_null;
 
 ip_slai_null
 :
@@ -404,6 +432,7 @@ advantage_factor
   uint8
 ;
 
+
 ip_sla_auto
 :
   AUTO
@@ -415,12 +444,31 @@ ip_sla_auto
   )
 ;
 
+no_ip_sla_auto
+:
+  AUTO
+  (
+    ip_slaa_discovery_null
+    | no_ip_slaa_group
+    | no_ip_slaa_schedule
+    | no_ip_slaa_template
+  )
+;
+
 ip_slaa_discovery_null: DISCOVERY NEWLINE;
 
 ip_slaa_group
 :
   GROUP TYPE IP name = variable NEWLINE
-  ipslaag_null*
+  ipslaag_inner*
+;
+
+no_ip_slaa_group: GROUP TYPE IP name = variable NEWLINE;
+
+ipslaag_inner
+:
+  ipslaag_null
+  | no_ipslaag_null
 ;
 
 ipslaag_null
@@ -433,10 +481,20 @@ ipslaag_null
   ) null_rest_of_line
 ;
 
+no_ipslaag_null: NO ipslaag_null;
+
 ip_slaa_schedule
 :
   SCHEDULE name = variable NEWLINE
-  ip_slaas_null*
+  ip_slaas_inner*
+;
+
+no_ip_slaa_schedule: SCHEDULE name = variable NEWLINE;
+
+ip_slaas_inner
+:
+  ip_slaas_null
+  | no_ip_slaas_null
 ;
 
 ip_slaas_null
@@ -450,6 +508,8 @@ ip_slaas_null
   ) null_rest_of_line
 ;
 
+no_ip_slaas_null: NO ip_slaas_null;
+
 ip_slaa_template
 :
   TEMPLATE TYPE IP
@@ -462,10 +522,30 @@ ip_slaa_template
   )
 ;
 
+no_ip_slaa_template
+:
+  TEMPLATE TYPE IP
+  (
+    no_ip_slaat_icmp_echo
+    | no_ip_slaat_icmp_jitter
+    | no_ip_slaat_tcp_connect
+    | no_ip_slaat_udp_echo
+    | no_ip_slaat_udp_jitter
+  )
+;
+
 ip_slaat_icmp_echo
 :
   ICMP_ECHO name = variable NEWLINE
-  ipslaati_null*
+  ipslaati_inner*
+;
+
+no_ip_slaat_icmp_echo: ICMP_ECHO name = variable NEWLINE;
+
+ipslaati_inner
+:
+  ipslaati_null
+  | no_ipslaati_null
 ;
 
 ipslaati_null
@@ -480,16 +560,28 @@ ipslaati_null
   ) null_rest_of_line
 ;
 
+no_ipslaati_null: NO ipslaati_null;
+
 ip_slaat_icmp_jitter
 :
   ICMP_ECHO name = variable NEWLINE
-  ipslaati_null*
+  ipslaati_inner*
 ;
+
+no_ip_slaat_icmp_jitter: ICMP_ECHO name = variable NEWLINE;
 
 ip_slaat_tcp_connect
 :
   TCP_CONNECT name = variable NEWLINE
-  ip_slaatt_null*
+  ip_slaatt_inner*
+;
+
+no_ip_slaat_tcp_connect: NO TCP_CONNECT name = variable NEWLINE;
+
+ip_slaatt_inner
+:
+  ip_slaatt_null
+  | no_ip_slaatt_null
 ;
 
 ip_slaatt_null
@@ -506,10 +598,20 @@ ip_slaatt_null
   ) null_rest_of_line
 ;
 
+no_ip_slaatt_null: NO ip_slaatt_null;
+
 ip_slaat_udp_echo
 :
   UDP_ECHO name = variable NEWLINE
-  ip_slaatue_null*
+  ip_slaatue_inner*
+;
+
+no_ip_slaat_udp_echo: UDP_ECHO name = variable NEWLINE;
+
+ip_slaatue_inner
+:
+  ip_slaatue_null
+  | no_ip_slaatue_null
 ;
 
 ip_slaatue_null
@@ -526,10 +628,20 @@ ip_slaatue_null
   ) null_rest_of_line
 ;
 
+no_ip_slaatue_null: NO ip_slaatue_null;
+
 ip_slaat_udp_jitter
 :
   UDP_JITTER name = variable NEWLINE
-  ip_slaatuj_null*
+  ip_slaatuj_inner*
+;
+
+no_ip_slaat_udp_jitter: UDP_JITTER name = variable NEWLINE;
+
+ip_slaatuj_inner
+:
+  ip_slaatuj_null
+  | no_ip_slaatuj_null
 ;
 
 ip_slaatuj_null
@@ -547,6 +659,8 @@ ip_slaatuj_null
   ) null_rest_of_line
 ;
 
+no_ip_slaatuj_null: NO ip_slaatuj_null;
+
 ip_sla_enable_null: ENABLE REACTION_ALERTS NEWLINE;
 
 ip_sla_endpoint_list
@@ -555,17 +669,32 @@ ip_sla_endpoint_list
   ip_slael_inner*
 ;
 
+no_ip_sla_endpoint_list: NO ENDPOINT_LIST TYPE IP name = variable NEWLINE;
+
 ip_slael_inner
 :
   ip_slael_description
+  | no_ip_slael_description
   | ip_slael_ip_address
+  | no_ip_slael_ip_address
 ;
 
 ip_slael_description: description_line;
 
+no_ip_slael_description: NO description_line;
+
 ip_slael_ip_address
 :
   IP_DASH_ADDRESS
+  (
+    ip_slaeli_ip_address_list
+    | ip_slaeli_ip_address_range
+  ) PORT port_number NEWLINE
+;
+
+no_ip_slael_ip_address
+:
+  NO IP_DASH_ADDRESS
   (
     ip_slaeli_ip_address_list
     | ip_slaeli_ip_address_range
@@ -593,13 +722,30 @@ ip_sla_ethernet_monitor
   )
 ;
 
+no_ip_sla_ethernet_monitor
+:
+  ETHERNET_MONITOR
+  (
+    no_ip_slaem_entry
+    | ip_slaem_null
+  )
+;
+
 ip_slaem_entry
 :
   num = sla_number NEWLINE
   ip_slaeme_inner*
 ;
 
+no_ip_slaem_entry: NO num = sla_number NEWLINE;
+
 ip_slaeme_inner
+:
+  ip_slaeme_null
+  | no_ip_slaeme_null
+;
+
+ip_slaeme_null
 :
   // Here you specify a type if the entry is new, then are taken to another context.
   // If the entry already exists and the type has been specified, you are brought directly to the
@@ -617,6 +763,8 @@ ip_slaeme_inner
     | TIMEOUT
   ) null_rest_of_line
 ;
+
+no_ip_slaeme_null: NO ip_slaeme_null;
 
 ip_slaem_null
 :
@@ -649,7 +797,15 @@ ip_sla_schedule_null: SCHEDULE null_rest_of_line;
 ip_sla_server
 :
   SERVER TWAMP NEWLINE
-  ip_slas_null*
+  ip_slas_inner*
+;
+
+no_ip_sla_server: NO SERVER TWAMP NEWLINE;
+
+ip_slas_inner
+:
+  ip_slas_null
+  | no_ip_slas_null
 ;
 
 ip_slas_null
@@ -659,3 +815,5 @@ ip_slas_null
     | TIMER
   ) null_rest_of_line
 ;
+
+no_ip_slas_null: NO ip_slas_null;
