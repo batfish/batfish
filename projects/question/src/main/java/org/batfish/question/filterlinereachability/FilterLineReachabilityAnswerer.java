@@ -21,7 +21,6 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
@@ -450,12 +449,12 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return aclSpecs.stream().map(AclSpecs.Builder::build).collect(Collectors.toList());
   }
 
-  private static Stream<UnreachableFilterLine> computeUnreachableFilterLines(
+  private static List<UnreachableFilterLine> computeUnreachableFilterLines(
       List<AclSpecs> aclSpecs) {
     return aclSpecs.parallelStream()
         .flatMap(
             aclSpec ->
-                FilterLineReachabilityUtils.computeUnreachableFilterLines(
-                    aclSpec, new BDDPacket()));
+                FilterLineReachabilityUtils.computeUnreachableFilterLines(aclSpec, new BDDPacket()))
+        .collect(Collectors.toList());
   }
 }
