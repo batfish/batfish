@@ -3947,10 +3947,7 @@ public final class JFactory extends BDDFactory {
 
     resize_handler(oldsize, newsize);
 
-    int[] newnodes;
-    newnodes = new int[newsize * __node_size];
-    System.arraycopy(bddnodes, 0, newnodes, 0, bddnodes.length);
-    bddnodes = newnodes;
+    bddnodes = Arrays.copyOf(bddnodes, newsize * __node_size);
     bddnodesize = newsize;
 
     if (doRehash) {
@@ -4536,9 +4533,7 @@ public final class JFactory extends BDDFactory {
 
   private int bdd_pairs_resize(int oldsize, int newsize) {
     for (bddPair p = pairs; p != null; p = p.next) {
-      int[] new_result = new int[newsize];
-      System.arraycopy(p.result, 0, new_result, 0, oldsize);
-      p.result = new_result;
+      p.result = Arrays.copyOf(p.result, newsize);
 
       for (int n = oldsize; n < newsize; n++) {
         p.result[n] = bdd_ithvar(bddlevel2var[n]);
@@ -4692,15 +4687,9 @@ public final class JFactory extends BDDFactory {
       bddlevel2var = new int[num + 1];
       bddvar2level = new int[num + 1];
     } else {
-      int[] bddvarset2 = new int[num * 2];
-      System.arraycopy(bddvarset, 0, bddvarset2, 0, bddvarset.length);
-      bddvarset = bddvarset2;
-      int[] bddlevel2var2 = new int[num + 1];
-      System.arraycopy(bddlevel2var, 0, bddlevel2var2, 0, bddlevel2var.length);
-      bddlevel2var = bddlevel2var2;
-      int[] bddvar2level2 = new int[num + 1];
-      System.arraycopy(bddvar2level, 0, bddvar2level2, 0, bddvar2level.length);
-      bddvar2level = bddvar2level2;
+      bddvarset = Arrays.copyOf(bddvarset, num * 2);
+      bddlevel2var = Arrays.copyOf(bddlevel2var, num + 1);
+      bddvar2level = Arrays.copyOf(bddvar2level, num + 1);
     }
 
     for (bdv = bddvarnum; bddvarnum < num; bddvarnum++) {
