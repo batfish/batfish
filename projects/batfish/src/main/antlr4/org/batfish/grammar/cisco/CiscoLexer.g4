@@ -24,6 +24,7 @@ tokens {
    CONFIG_SAVE,
    DSA1024,
    HEX_FRAGMENT,
+   IP_ADDRESS_RANGE,
    ISO_ADDRESS,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
@@ -183,7 +184,7 @@ ADMISSION: 'admission';
 ADMISSION_CONTROL: 'admission-control';
 
 ADP: 'adp';
-
+ADVANTAGE_FACTOR: 'advantage-factor';
 ADVERTISE: 'advertise';
 
 ADVERTISEMENT: 'advertisement';
@@ -246,7 +247,7 @@ AFPOVERTCP: 'afpovertcp';
 AFTER_AUTO: 'after-auto';
 
 AGE: 'age';
-
+AGEOUT: 'ageout';
 AGGREGATE: 'aggregate';
 
 AGGREGATE_ADDRESS: 'aggregate-address';
@@ -989,7 +990,7 @@ CLNS: 'clns';
 CLOCK: 'clock';
 
 CLOCK_PERIOD: 'clock-period';
-
+CLOCK_TOLERANCE: 'clock-tolerance';
 CLOSED: 'closed';
 
 CLUSTER: 'cluster';
@@ -1007,7 +1008,8 @@ CNS: 'cns';
 COAP: 'coap';
 
 CODEC: 'codec';
-
+CODEC_INTERVAL: 'codec-interval';
+CODEC_NUMPACKETS: 'codec-numpackets';
 COLLECT: 'collect';
 
 COLLECT_STATS: 'collect-stats';
@@ -1266,7 +1268,7 @@ DAMPENING: 'dampening';
 DAMPENING_CHANGE: 'dampening-change';
 
 DAMPENING_INTERVAL: 'dampening-interval';
-
+DATA_PATTERN: 'data-pattern';
 DATA_PRIVACY: 'data-privacy';
 
 DATABASE: 'database';
@@ -1338,7 +1340,7 @@ DEFAULT_ROLE: 'default-role';
 DEFAULT_ROUTER: 'default-router';
 
 DEFAULT_ROUTE_TAG: 'default-route-tag';
-
+DEFAULT_STATE: 'default-state';
 DEFAULT_TASKGROUP: 'default-taskgroup';
 
 DEFAULT_TOS_QOS10: 'default-tos-qos10';
@@ -1389,7 +1391,8 @@ DESCRIPTION
 DESIRABLE: 'desirable';
 
 DEST_IP: 'dest-ip';
-
+DEST_IPADDR: 'dest-ipaddr';
+DEST_PORT: 'dest-port';
 DESTINATION: 'destination';
 
 DESTINATION_PATTERN: 'destination-pattern';
@@ -1619,7 +1622,7 @@ DOT1X_DEFAULT_ROLE: 'dot1x-default-role';
 DOT1X_ENABLE: 'dot1x-enable';
 
 DOT1X_SERVER_GROUP: 'dot1x-server-group';
-
+DOWN: 'down';
 DOWNLINK: 'downlink';
 
 DOWNSTREAM: 'downstream';
@@ -1788,8 +1791,6 @@ ENCRYPTION: 'encryption';
 
 END: 'end';
 
-ENDIF: 'endif';
-
 END_CLASS_MAP: 'end-class-map';
 
 END_POLICY: 'end-policy';
@@ -1797,7 +1798,8 @@ END_POLICY: 'end-policy';
 END_POLICY_MAP: 'end-policy-map';
 
 END_SET: 'end-set';
-
+ENDIF: 'endif';
+ENDPOINT_LIST: 'endpoint-list';
 ENET_LINK_PROFILE: 'enet-link-profile';
 
 ENFORCE_DHCP: 'enforce-dhcp';
@@ -1900,7 +1902,7 @@ ETH: 'eth';
 ETHERCHANNEL: 'etherchannel';
 
 ETHERNET: 'ethernet';
-
+ETHERNET_MONITOR: 'ethernet-monitor';
 ETHERNET_SERVICES: 'ethernet-services';
 
 ETYPE: 'etype';
@@ -1967,7 +1969,7 @@ EXIT_SF_INTERFACE: 'exit-sf-interface';
 EXIT_SF_TOPOLOGY: 'exit-sf-topology';
 
 EXIT_VRF: 'exit-vrf';
-
+EXP: 'exp';
 EXPECT: 'expect';
 
 EXPLICIT_NULL: 'explicit-null';
@@ -2179,7 +2181,7 @@ FQDN: 'fqdn';
 FRAGMENTATION: 'fragmentation';
 
 FRAGMENTS: 'fragments';
-
+FRAME: 'frame';
 FRAME_RELAY: 'frame-relay';
 
 FRAMING: 'framing';
@@ -2209,9 +2211,10 @@ FULL_DUPLEX: 'full-duplex';
 FULL_TXT: 'full-txt';
 
 G709: 'g709';
-
+G711ALAW: 'g711alaw';
+G711ULAW: 'g711ulaw';
 G729: 'g729';
-
+G729A: 'g729a';
 GATEKEEPER: 'gatekeeper';
 
 GATEWAY: 'gateway';
@@ -2497,7 +2500,7 @@ ICMP_ERRORS: 'icmp-errors';
 ICMP_INFORMATION_REPLY: 'icmp-information-reply';
 
 ICMP_INFORMATION_REQUEST: 'icmp-information-request';
-
+ICMP_JITTER: 'icmp-jitter';
 ICMP_MASK_REPLY: 'icmp-mask-reply';
 
 ICMP_MASK_REQUEST: 'icmp-mask-request';
@@ -2750,7 +2753,7 @@ IP: 'ip';
 
 IPADDRESS: 'ipaddress';
 
-IP_ADDRESS_LITERAL: 'ip-address';
+IP_DASH_ADDRESS: 'ip-address' -> pushMode(M_IpSlaIpAddress);
 
 IP_FLOW_EXPORT_PROFILE: 'ip-flow-export-profile';
 
@@ -2833,7 +2836,7 @@ ISPF: 'ispf';
 ISSUER_NAME: 'issuer-name';
 
 IUC: 'iuc';
-
+JITTER: 'jitter';
 JOIN_GROUP: 'join-group';
 
 JOIN_PRUNE_INTERVAL: 'join-prune-interval';
@@ -3120,7 +3123,7 @@ LOOPGUARD: 'loopguard';
 LOTUSNOTES: 'lotusnotes';
 
 LOW: 'low';
-
+LOW_MEMORY: 'low-memory';
 LPD: 'lpd';
 
 LPTS: 'lpts';
@@ -3128,7 +3131,7 @@ LPTS: 'lpts';
 LRE: 'lre';
 
 LRQ: 'lrq';
-
+LSP: 'lsp';
 LSP_GEN_INTERVAL: 'lsp-gen-interval';
 
 LSP_INTERVAL: 'lsp-interval';
@@ -3136,7 +3139,7 @@ LSP_INTERVAL: 'lsp-interval';
 LSP_PASSWORD: 'lsp-password';
 
 LSP_REFRESH_INTERVAL: 'lsp-refresh-interval';
-
+LSR_PATH: 'lsr-path';
 LT: 'lt';
 
 M0_7: 'm0-7';
@@ -3316,7 +3319,7 @@ MAX_CONCAT_BURST: 'max-concat-burst';
 MAX_CONFERENCES: 'max-conferences';
 
 MAX_CONNECTIONS: 'max-connections';
-
+MAX_DELAY: 'max-delay';
 MAX_DN: 'max-dn';
 
 MAX_EPHONES: 'max-ephones';
@@ -3865,7 +3868,7 @@ NT_ENCRYPTED: 'nt-encrypted';
 NTP: 'ntp';
 
 NULL: 'null';
-
+NUM_PACKETS: 'num-packets';
 NV: 'nv';
 
 OAM: 'oam';
@@ -3918,7 +3921,7 @@ OPENFLOW: 'openflow';
 OPENVPN: 'openvpn';
 
 OPERATION: 'operation';
-
+OPERATION_PACKET_PRIORITY: 'operation-packet-priority';
 OPMODE: 'opmode';
 
 OPS: 'ops';
@@ -4131,7 +4134,7 @@ PENALTY_PERIOD: 'penalty-period';
 PERCENT_LITERAL: 'percent';
 
 PERCENTAGE: 'percentage';
-
+PERCENTILE: 'percentile';
 PERIODIC: 'periodic';
 
 PERIODIC_INVENTORY: 'periodic-inventory';
@@ -4174,7 +4177,7 @@ PIM: 'pim';
 PIM_AUTO_RP: 'pim-auto-rp';
 
 PIM_SPARSE: 'pim-sparse';
-
+PING: 'ping';
 PINNING: 'pinning';
 
 PKI: 'pki';
@@ -4276,7 +4279,7 @@ PRE_SHARED_KEY: 'pre-shared-key';
 PRECEDENCE: 'precedence';
 
 PRECEDENCE_UNREACHABLE: 'precedence-unreachable';
-
+PRECISION: 'precision';
 PRECONFIGURE: 'preconfigure';
 
 PREDICTOR: 'predictor';
@@ -4357,7 +4360,7 @@ PRIVILEGE_MODE: 'privilege-mode';
 PROACTIVE: 'proactive';
 
 PROBE: 'probe';
-
+PROBE_INTERVAL: 'probe-interval';
 PROCESS: 'process';
 
 PROCESS_MAX_TIME: 'process-max-time';
@@ -4510,11 +4513,13 @@ RD: 'rd';
 RE_MAIL_CK: 're-mail-ck';
 
 REACHABLE_VIA: 'reachable-via';
-
+REACHABILITY: 'reachability';
 REACT: 'react';
 
 REACTION: 'reaction';
-
+REACTION_ALERTS: 'reaction-alerts';
+REACTION_CONFIGURATION: 'reaction-configuration';
+REACTION_TRIGGER: 'reaction-trigger';
 READ: 'read';
 
 READ_ONLY_PASSWORD: 'read-only-password';
@@ -4650,7 +4655,7 @@ REQUEST: 'request';
 REQUEST_DATA_SIZE: 'request-data-size';
 
 REQUIRE_WPA: 'require-wpa';
-
+RESET: 'reset';
 RESOURCE: 'resource';
 
 RESOURCE_POOL: 'resource-pool';
@@ -4660,7 +4665,7 @@ RESOURCES: 'resources';
 RESPONDER: 'responder';
 
 RESPONSE: 'response';
-
+RESPONSE_DATA_SIZE: 'response-data-size';
 RESTART: 'restart';
 
 RESTART_TIME: 'restart-time';
@@ -4927,7 +4932,7 @@ SDROWNER: 'SDROwner';
 SECONDARY: 'secondary';
 
 SECONDARY_DIALTONE: 'secondary-dialtone';
-
+SECONDARY_FREQUENCY: 'secondary-frequency';
 SECRET: 'secret';
 
 SECUREID_UDP: 'secureid-udp';
@@ -5249,9 +5254,9 @@ SOURCE_INTERFACE
 :
    'source-interface' -> pushMode ( M_Interface )
 ;
-
+SOURCE_IP: 'source-ip';
 SOURCE_IP_ADDRESS: 'source-ip-address';
-
+SOURCE_PORT: 'source-port';
 SOURCE_PROTOCOL: 'source-protocol';
 
 SOURCE_ROUTE: 'source-route';
@@ -5918,7 +5923,7 @@ TUNNEL_ID: 'tunnel-id';
 TUNNELED: 'tunneled';
 
 TUNNELED_NODE_ADDRESS: 'tunneled-node-address';
-
+TWAMP: 'twamp';
 TX_QUEUE: 'tx-queue';
 
 TXSPEED: 'txspeed';
@@ -6046,7 +6051,7 @@ UNSUPPRESS_ROUTE: 'unsuppress-route';
 UNICAST: 'unicast';
 
 UNTAGGED: 'untagged';
-
+UP: 'up';
 UPDATE: 'update';
 
 UPDATE_CALENDAR: 'update-calendar';
@@ -6452,7 +6457,7 @@ XNS_CH: 'xns-ch';
 XNS_MAIL: 'xns-mail';
 
 XNS_TIME: 'xns-time';
-
+Y1731: 'y1731';
 YELLOW: 'yellow';
 
 Z39_50: 'z39-50';
@@ -7181,6 +7186,21 @@ F_Whitespace
    | '\t'
    | '\u000C'
    | '\u00A0'
+;
+
+fragment
+F_Fqdn
+:
+  F_FqdnSegment ('.' F_FqdnSegment)*
+;
+
+fragment
+F_FqdnSegment
+:
+  (
+    [A-Za-z0-9]
+    | '-'
+  )+
 ;
 
 mode M_Alias;
@@ -8276,3 +8296,14 @@ M_Words_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_IpSlaIpAddress;
+M_SlaIpAddress_WS: F_Whitespace+ -> skip, mode(M_IpSlaIpAddress2);
+M_SlaIpAddress_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_IpSlaIpAddress2;
+M_SlaIpAddress2_WS: F_Whitespace+ -> skip, popMode;
+M_SlaIpAddress2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_SlaIpAddress2_IP_ADDRESS_RANGE: F_IpAddress '-' F_Uint8 -> type(IP_ADDRESS_RANGE), popMode;
+M_SlaIpAddress2_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
+M_SlaIpAddress2_COMMA: ',' -> type(COMMA);
+M_SlaIpAddress_VARIABLE: F_Fqdn -> type(VARIABLE), popMode;

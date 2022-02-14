@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-track-ip-sla
+!
+track 1 ip sla 1 reachability
+ delay down 5 up 5
+!
+ip route vrf v1 10.0.0.1 255.255.255.0 10.0.1.2 tag 10 track 1
+!
+ip sla 1
+ icmp-echo 10.102.2.207 source-interface Port-channel1.100
+ request-data-size 28
+ tos 0
+ data-pattern ABCDABCD
+ verify-data
+ vrf v1
+ threshold 1000
+ timeout 1000
+ frequency 2
+ secondary-frequency timeout 0
+ secondary-frequency connection-loss 0
+ history hours-of-statistics-kept 2
+ history distributions-of-statistics-kept 1
+ history statistics-distribution-interval 20
+ history lives-kept 0
+ history buckets-kept 15
+ history filter none
+!

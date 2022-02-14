@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname cisco_ip_sla
+!
+ip sla 10
+ icmp-echo 1.2.3.4 source-interface GigabitEthernet0/0/3
+ request-data-size 64
+ frequency 600
+ owner SOME_OWNER
+ tos 184
+ tag edfwrgth
+ history hours-of-statistics-kept 4
+ paths-of-statistics-kept 3
+ hops-of-statistics-kept 30
+ history distributions-of-statistics-kept 5
+ history statistics-distribution-interval 10
+ history lives-kept 2
+ history buckets-kept 25
+ samples-of-history-kept 10
+ history filter failures
+ vrf VRF1
+!
+ip sla 20
+ path-echo 1.2.3.4 source-ip 2.3.4.5
+!
+ip sla 30
+ udp-jitter 130.59.38.105 5000
+!
+!
+

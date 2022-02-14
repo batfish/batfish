@@ -8150,6 +8150,7 @@ mode M_Source;
 
 M_Source_WS: F_Whitespace+ -> skip;
 M_Source_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Source_ADDRESS: 'address' -> type(ADDRESS);
 M_Source_REACHABLE_VIA: 'reachable-via' -> type(REACHABLE_VIA), popMode;
 M_Source_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS), popMode;
 M_Source_IPV6_ADDRESS: F_Ipv6Address -> type(IPV6_ADDRESS), popMode;

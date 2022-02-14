@@ -6609,4 +6609,11 @@ public final class CiscoGrammarTest {
               hasPrefix(learnedPrefix1), hasPrefix(aggPrefix1), hasPrefix(aggPrefix2)));
     }
   }
+
+  @Test
+  public void testTrackIpSlaParsing() {
+    String hostname = "ios-track-ip-sla";
+    // don't crash
+    parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+  }
 }
