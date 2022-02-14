@@ -32,13 +32,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.logging.log4j.LogManager;
@@ -1217,99 +1214,8 @@ public abstract class BDDFactory {
     return v;
   }
 
-  /** ** CALLBACKS *** */
-  protected List<Object[]> gc_callbacks, reorder_callbacks, resize_callbacks;
-
-  /**
-   * Register a callback that is called when garbage collection is about to occur.
-   *
-   * @param o base object
-   * @param m method
-   */
-  public void registerGCCallback(Object o, Method m) {
-    if (gc_callbacks == null) {
-      gc_callbacks = new LinkedList<>();
-    }
-    registerCallback(gc_callbacks, o, m);
-  }
-
-  /**
-   * Unregister a garbage collection callback that was previously registered.
-   *
-   * @param o base object
-   * @param m method
-   */
-  public void unregisterGCCallback(Object o, Method m) {
-    if (gc_callbacks == null) {
-      throw new BDDException();
-    }
-    if (!unregisterCallback(gc_callbacks, o, m)) {
-      throw new BDDException();
-    }
-  }
-
-  /**
-   * Register a callback that is called when reordering is about to occur.
-   *
-   * @param o base object
-   * @param m method
-   */
-  public void registerReorderCallback(Object o, Method m) {
-    if (reorder_callbacks == null) {
-      reorder_callbacks = new LinkedList<>();
-    }
-    registerCallback(reorder_callbacks, o, m);
-  }
-
-  /**
-   * Unregister a reorder callback that was previously registered.
-   *
-   * @param o base object
-   * @param m method
-   */
-  public void unregisterReorderCallback(Object o, Method m) {
-    if (reorder_callbacks == null) {
-      throw new BDDException();
-    }
-    if (!unregisterCallback(reorder_callbacks, o, m)) {
-      throw new BDDException();
-    }
-  }
-
-  /**
-   * Register a callback that is called when node table resizing is about to occur.
-   *
-   * @param o base object
-   * @param m method
-   */
-  public void registerResizeCallback(Object o, Method m) {
-    if (resize_callbacks == null) {
-      resize_callbacks = new LinkedList<>();
-    }
-    registerCallback(resize_callbacks, o, m);
-  }
-
-  /**
-   * Unregister a reorder callback that was previously registered.
-   *
-   * @param o base object
-   * @param m method
-   */
-  public void unregisterResizeCallback(Object o, Method m) {
-    if (resize_callbacks == null) {
-      throw new BDDException();
-    }
-    if (!unregisterCallback(resize_callbacks, o, m)) {
-      throw new BDDException();
-    }
-  }
-
   protected void gbc_handler(boolean pre, GCStats s) {
-    if (gc_callbacks == null) {
-      bdd_default_gbchandler(pre, s);
-    } else {
-      doCallbacks(gc_callbacks, pre ? 1 : 0, s);
-    }
+    bdd_default_gbchandler(pre, s);
   }
 
   protected static void bdd_default_gbchandler(boolean pre, GCStats s) {
@@ -1326,99 +1232,23 @@ public abstract class BDDFactory {
       s.time = System.currentTimeMillis() - s.time;
       s.usednum_after = getNodeNum();
     }
-    if (reorder_callbacks == null) {
-      bdd_default_reohandler(b, s);
-    } else {
-      doCallbacks(reorder_callbacks, b, s);
-    }
+    bdd_default_reohandler(b, s);
   }
 
   protected void bdd_default_reohandler(boolean prestate, ReorderStats s) {
     int verbose = 1;
-    if (verbose > 0) {
-      if (prestate) {
-        LOGGER.info("Start reordering");
-      } else {
-        LOGGER.info("End reordering. {}", s);
-      }
+    if (prestate) {
+      LOGGER.info("Start reordering");
+    } else {
+      LOGGER.info("End reordering. {}", s);
     }
   }
 
   protected void resize_handler(int oldsize, int newsize) {
-    if (resize_callbacks == null) {
-      bdd_default_reshandler(oldsize, newsize);
-    } else {
-      doCallbacks(resize_callbacks, oldsize, newsize);
-    }
+    bdd_default_reshandler(oldsize, newsize);
   }
 
   protected static void bdd_default_reshandler(int oldsize, int newsize) {
-    int verbose = 1;
-    if (verbose > 0) {
-      LOGGER.info("Resizing node table from {} to {}", oldsize, newsize);
-    }
-  }
-
-  protected void registerCallback(List<Object[]> callbacks, Object o, Method m) {
-    if (!Modifier.isPublic(m.getModifiers()) && !m.isAccessible()) {
-      throw new BDDException("Callback method not accessible");
-    }
-    if (!Modifier.isStatic(m.getModifiers())) {
-      if (o == null) {
-        throw new BDDException("Base object for callback method is null");
-      }
-      if (!m.getDeclaringClass().isAssignableFrom(o.getClass())) {
-        throw new BDDException("Base object for callback method is the wrong type");
-      }
-    }
-    callbacks.add(new Object[] {o, m});
-  }
-
-  protected boolean unregisterCallback(List<Object[]> callbacks, Object o, Method m) {
-    if (callbacks != null) {
-      for (Iterator<Object[]> i = callbacks.iterator(); i.hasNext(); ) {
-        Object[] cb = i.next();
-        if (o == cb[0] && m.equals(cb[1])) {
-          i.remove();
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  protected void doCallbacks(List<Object[]> callbacks, Object arg1, Object arg2) {
-    if (callbacks != null) {
-      for (Object callback : callbacks) {
-        Object[] cb = (Object[]) callback;
-        Object o = cb[0];
-        Method m = (Method) cb[1];
-        try {
-          switch (m.getParameterTypes().length) {
-            case 0:
-              m.invoke(o);
-              break;
-            case 1:
-              m.invoke(o, arg1);
-              break;
-            case 2:
-              m.invoke(o, arg1, arg2);
-              break;
-            default:
-              throw new BDDException("Wrong number of arguments for " + m);
-          }
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-          e.printStackTrace();
-        } catch (InvocationTargetException e) {
-          if (e.getTargetException() instanceof RuntimeException) {
-            throw (RuntimeException) e.getTargetException();
-          }
-          if (e.getTargetException() instanceof Error) {
-            throw (Error) e.getTargetException();
-          }
-          e.printStackTrace();
-        }
-      }
-    }
+    LOGGER.info("Resizing node table from {} to {}", oldsize, newsize);
   }
 }
