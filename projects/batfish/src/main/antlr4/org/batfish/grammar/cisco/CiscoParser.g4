@@ -22,8 +22,10 @@ Cisco_pim,
 Cisco_qos,
 Cisco_rip,
 Cisco_routemap,
+Cisco_sla,
 Cisco_snmp,
 Cisco_static,
+Cisco_track,
 Cisco_zone;
 
 
@@ -1083,35 +1085,13 @@ ip_route_tail
       | perm = PERMANENT
       |
       (
-         TRACK track = dec
+         TRACK track = track_number
       )
       |
       (
          NAME variable
       )
    )* NEWLINE
-;
-
-ip_sla_null
-:
-   NO?
-   (
-      FREQUENCY
-      | HISTORY
-      | HOPS_OF_STATISTICS_KEPT
-      | ICMP_ECHO
-      | OWNER
-      | PATH_ECHO
-      | PATHS_OF_STATISTICS_KEPT
-      | REQUEST_DATA_SIZE
-      | SAMPLES_OF_HISTORY_KEPT
-      | TAG
-      | THRESHOLD
-      | TIMEOUT
-      | TOS
-      | UDP_JITTER
-      | VRF
-   ) null_rest_of_line
 ;
 
 ip_ssh_null
@@ -1183,110 +1163,6 @@ ipdg_null
 :
    (
       IMPORT
-   ) null_rest_of_line
-;
-
-ispla_operation
-:
-   NO? OPERATION null_rest_of_line
-   (
-      ipslao_type
-   )*
-;
-
-ipsla_reaction
-:
-   NO? REACTION null_rest_of_line
-   (
-      ipslar_react
-   )*
-;
-
-ipsla_responder
-:
-   NO? RESPONDER null_rest_of_line
-   (
-      ipslarp_null
-   )*
-;
-
-ipsla_schedule
-:
-   NO? SCHEDULE null_rest_of_line
-   (
-      ipslas_null
-   )*
-;
-
-ipslao_type
-:
-   NO? TYPE null_rest_of_line
-   (
-      ipslaot_null
-      | ipslaot_statistics
-   )*
-;
-
-ipslaot_null
-:
-   NO?
-   (
-      DESTINATION
-      | FREQUENCY
-      | SOURCE
-      | TIMEOUT
-      | TOS
-      | VERIFY_DATA
-   ) null_rest_of_line
-;
-
-ipslaot_statistics
-:
-   NO? STATISTICS null_rest_of_line
-   (
-      ipslaots_null
-   )*
-;
-
-ipslaots_null
-:
-   NO?
-   (
-      BUCKETS
-   ) null_rest_of_line
-;
-
-ipslar_react
-:
-   NO? REACT null_rest_of_line
-   (
-      ispalrr_null
-   )*
-;
-
-ipslarp_null
-:
-   NO?
-   (
-      TYPE
-   ) null_rest_of_line
-;
-
-ispalrr_null
-:
-   NO?
-   (
-      ACTION
-      | THRESHOLD
-   ) null_rest_of_line
-;
-
-ipslas_null
-:
-   NO?
-   (
-      LIFE
-      | START_TIME
    ) null_rest_of_line
 ;
 
@@ -2462,6 +2338,7 @@ s_ip
   (
     ip_extcommunity_list
     | ip_local
+    | ip_sla
   )
 ;
 
@@ -2548,14 +2425,6 @@ s_ip_route_mos
    IP ROUTE IP_ADDRESS DEV interface_name NEWLINE
 ;
 
-s_ip_sla
-:
-   NO? IP SLA null_rest_of_line
-   (
-      ip_sla_null
-   )*
-;
-
 s_ip_source_route
 :
    NO? IP SOURCE_ROUTE NEWLINE
@@ -2596,17 +2465,6 @@ s_ipc
    IPC null_rest_of_line
    (
       ipc_association
-   )*
-;
-
-s_ipsla
-:
-   NO? IPSLA null_rest_of_line
-   (
-      ispla_operation
-      | ipsla_reaction
-      | ipsla_responder
-      | ipsla_schedule
    )*
 ;
 
@@ -3007,17 +2865,6 @@ s_time_range
    (
       tr_null
    )*
-;
-
-s_track
-:
-  TRACK name = variable
-  (
-    track_block
-    | track_interface
-    | track_ip
-    | track_list
-  )
 ;
 
 s_tunnel_group
@@ -3507,13 +3354,11 @@ stanza
    | s_ip_pim
    | s_ip_probe
    | s_ip_route_mos
-   | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
    | s_ip_tacacs_source_interface
    | s_ip_wccp
    | s_ipc
-   | s_ipsla
    | s_ipv6
    | s_ipv6_router_ospf
    | s_key
@@ -3538,6 +3383,7 @@ stanza
    | s_netdestination
    | s_netdestination6
    | s_netservice
+   | s_no
    | s_no_access_list_extended
    | s_no_access_list_standard
    | s_no_bfd
@@ -3613,6 +3459,23 @@ stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
+;
+
+s_no
+:
+  NO
+  (
+    no_ip
+    | no_track
+  )
+;
+
+no_ip
+:
+  IP
+  (
+    no_ip_sla
+  )
 ;
 
 statistics_null
@@ -3782,130 +3645,6 @@ tr_null
       WEEKDAY
       | WEEKEND
    ) null_rest_of_line
-;
-
-track_block
-:
-  NEWLINE track_block_null*
-;
-
-track_block_null
-:
-  TYPE null_rest_of_line track_block_type_null*
-;
-
-track_block_type_null
-:
-  OBJECT null_rest_of_line
-;
-
-track_interface
-:
-  INTERFACE interface_name
-  (
-     IP ROUTING
-     | LINE_PROTOCOL
-  )
-  NEWLINE
-;
-
-track_ip
-:
-  IP null_rest_of_line track_ip_null*
-;
-
-track_ip_null
-:
-  (
-    DEFAULT
-    | DELAY
-  ) null_rest_of_line
-;
-
-track_list
-:
-  LIST
-  (
-     tl_boolean
-     | tl_threshold
-  )
-;
-
-tl_boolean
-:
-  BOOLEAN
-  (
-    AND
-    | OR
-  )
-  NEWLINE
-  tlb_tail*
-;
-
-tl_threshold
-:
-   THRESHOLD
-   (
-      tlt_percentage
-      | tlt_weight
-   )
-;
-
-tlb_tail
-:
-  tl_null_tail
-  | tl_object_tail
-;
-
-tlt_percentage
-:
-   PERCENTAGE NEWLINE
-   (
-       tl_null_tail
-       | tl_object_tail
-       | tlt_null_tail
-   )*
-;
-
-tlt_weight
-:
-   WEIGHT NEWLINE
-   (
-       tl_null_tail
-       | tltw_object_tail
-       | tlt_null_tail
-   )*
-;
-
-// common null tail for track list
-tl_null_tail
-:
-  (
-     DEFAULT
-     | DELAY
-  )
-  null_rest_of_line
-;
-
-// common null tail for track list threshold
-tlt_null_tail
-:
-  THRESHOLD null_rest_of_line
-;
-
-tl_object_tail
-:
-    tl_object NEWLINE
-;
-
-tl_object
-:
-    OBJECT name = variable
-;
-
-tltw_object_tail
-:
-  tl_object WEIGHT dec NEWLINE
 ;
 
 ts_common

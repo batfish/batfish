@@ -2224,30 +2224,6 @@
         }
       },
       {
-        "File_Name" : "configs/cisco_track",
-        "Struct_Type" : "interface",
-        "Ref_Name" : "GigabitEthernet0/0",
-        "Context" : "track interface",
-        "Lines" : {
-          "filename" : "configs/cisco_track",
-          "lines" : [
-            4
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_track",
-        "Struct_Type" : "interface",
-        "Ref_Name" : "GigabitEthernet0/1",
-        "Context" : "track interface",
-        "Lines" : {
-          "filename" : "configs/cisco_track",
-          "lines" : [
-            5
-          ]
-        }
-      },
-      {
         "File_Name" : "configs/cisco_zone",
         "Struct_Type" : "policy-map type inspect",
         "Ref_Name" : "p1",
@@ -2678,6 +2654,30 @@
           "lines" : [
             12,
             21
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_track",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet0/0",
+        "Context" : "track interface",
+        "Lines" : {
+          "filename" : "configs/ios_track",
+          "lines" : [
+            4
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_track",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet0/1",
+        "Context" : "track interface",
+        "Lines" : {
+          "filename" : "configs/ios_track",
+          "lines" : [
+            5
           ]
         }
       },
