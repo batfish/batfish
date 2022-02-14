@@ -3979,7 +3979,7 @@ public final class JFactory extends BDDFactory {
     long resizeTime = System.currentTimeMillis() - resizeStartTime;
     sumResizeTime += resizeTime;
     LOGGER.info(
-        "Resized node table from {} to {} in {}s / {}s",
+        "Resized node table from {} to {} in {}s / {}s total",
         oldsize,
         newsize,
         resizeTime / 1000.0,
