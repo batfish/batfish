@@ -11,6 +11,9 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
+import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_EBGP_ADMIN;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
@@ -40,6 +43,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -135,7 +139,9 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
@@ -143,6 +149,9 @@ import org.batfish.vendor.VendorStructureId;
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
 public class CiscoConversions {
+
+  @VisibleForTesting public static int DEFAULT_HSRP_DECREMENT = 10;
+  @VisibleForTesting public static int DEFAULT_VRRP_DECREMENT = 10;
 
   // Defaults from
   // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
@@ -617,10 +626,10 @@ public class CiscoConversions {
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(
       HsrpGroup hsrpGroup,
-      Set<String> trackMethodIds,
-      @Nullable ConcreteInterfaceAddress sourceAddress) {
+      Set<Integer> trackMethodIds,
+      @Nullable ConcreteInterfaceAddress sourceAddress,
+      Configuration c) {
     Ip groupIp = hsrpGroup.getIp();
-    // TODO: make and use vendor class for source track actions
     // HSRP track uses negated value of referenced TrackMethod
     SortedMap<String, TrackAction> trackActions =
         hsrpGroup.getTrackActions().entrySet().stream()
@@ -630,8 +639,9 @@ public class CiscoConversions {
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(),
                     actionByTrackMethodId ->
-                        Names.generatedNegatedTrackMethodId(actionByTrackMethodId.getKey()),
-                    Entry::getValue));
+                        createNegatedTrackMethodIfNeededAndReturnName(
+                            actionByTrackMethodId.getKey(), c),
+                    actionByTrackMethodId -> toTrackAction(actionByTrackMethodId.getValue())));
 
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
@@ -643,6 +653,29 @@ public class CiscoConversions {
         .setPriority(hsrpGroup.getPriority())
         .setTrackActions(trackActions)
         .build();
+  }
+
+  private static @Nonnull String createNegatedTrackMethodIfNeededAndReturnName(
+      int trackNum, Configuration c) {
+    String referencedName = Integer.toString(trackNum);
+    String name = Names.generatedNegatedTrackMethodId(referencedName);
+    c.getTrackingGroups().computeIfAbsent(name, n -> negatedReference(referencedName));
+    return name;
+  }
+
+  private static @Nonnull TrackAction toTrackAction(HsrpTrackAction hsrpTrackAction) {
+    // skip visitor overhead since there are only two types
+    if (hsrpTrackAction instanceof HsrpDecrementPriority) {
+      int decrement =
+          firstNonNull(
+              ((HsrpDecrementPriority) hsrpTrackAction).getDecrement(), DEFAULT_HSRP_DECREMENT);
+      return new DecrementPriority(decrement);
+    } else {
+      assert hsrpTrackAction instanceof HsrpShutdown;
+      // TODO: Support non-participation as an action.
+      //       For now, just use min priority.
+      return new DecrementPriority(255);
+    }
   }
 
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
@@ -2007,6 +2040,57 @@ public class CiscoConversions {
    */
   public static @Nonnull String aclLineStructureName(String aclName, String lineName) {
     return String.format("%s: %s", aclName, lineName);
+  }
+
+  @SuppressWarnings("unused")
+  static void convertIpSlas(Map<Integer, IpSla> slas, Configuration c) {
+    // TODO: implement
+  }
+
+  /** Convert {@link Track}s to {@link TrackMethod}s. */
+  static void convertTracks(
+      Map<Integer, Track> tracks,
+      Predicate<Integer> slaExists,
+      Predicate<String> interfaceExists,
+      Configuration c) {
+    TrackConverter converter =
+        new TrackConverter(tracks.keySet()::contains, slaExists, interfaceExists);
+    tracks.forEach(
+        (num, track) -> c.getTrackingGroups().put(Integer.toString(num), converter.visit(track)));
+  }
+
+  /** Converts a {@link Track} to a {@link TrackMethod}. */
+  private static class TrackConverter implements TrackVisitor<TrackMethod> {
+
+    private TrackConverter(
+        Predicate<Integer> trackExists,
+        Predicate<Integer> slaExists,
+        Predicate<String> interfaceExists) {
+      _trackExists = trackExists;
+      _slaExists = slaExists;
+      _interfaceExists = interfaceExists;
+    }
+
+    private final @Nonnull Predicate<String> _interfaceExists;
+
+    @SuppressWarnings("unused")
+    private final @Nonnull Predicate<Integer> _slaExists;
+
+    @SuppressWarnings("unused")
+    private final @Nonnull Predicate<Integer> _trackExists;
+
+    @Override
+    public TrackMethod visitTrackInterface(TrackInterface trackInterface) {
+      if (!_interfaceExists.test(trackInterface.getInterfaceName())) {
+        return alwaysFalse();
+      }
+      if (trackInterface.getIpRouting()) {
+        // TODO: at least support also checking for existence of an IP address
+        return interfaceActive(trackInterface.getInterfaceName());
+      } else {
+        return interfaceActive(trackInterface.getInterfaceName());
+      }
+    }
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class

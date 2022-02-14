@@ -1,5 +1,6 @@
 package org.batfish.datamodel.tracking;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,6 +35,11 @@ public final class NegatedTrackMethod implements TrackMethod {
   @Override
   public int hashCode() {
     return _trackMethod.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).add(PROP_TRACK_METHOD, _trackMethod).toString();
   }
 
   public static @Nonnull NegatedTrackMethod of(TrackMethod trackMethod) {

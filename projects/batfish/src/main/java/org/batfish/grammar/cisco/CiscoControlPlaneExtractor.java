@@ -394,9 +394,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.TrackAction;
-import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
@@ -782,6 +779,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
+import org.batfish.grammar.cisco.CiscoParser.Pint8Context;
 import org.batfish.grammar.cisco.CiscoParser.Pm_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_event_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_ios_inspectContext;
@@ -992,7 +990,6 @@ import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Tlb_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Tltp_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Tltw_objectContext;
-import org.batfish.grammar.cisco.CiscoParser.Track_actionContext;
 import org.batfish.grammar.cisco.CiscoParser.Track_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Track_numberContext;
 import org.batfish.grammar.cisco.CiscoParser.Ts_hostContext;
@@ -1056,7 +1053,10 @@ import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
 import org.batfish.representation.cisco.FqdnNetworkObject;
 import org.batfish.representation.cisco.HostNetworkObject;
+import org.batfish.representation.cisco.HsrpDecrementPriority;
 import org.batfish.representation.cisco.HsrpGroup;
+import org.batfish.representation.cisco.HsrpShutdown;
+import org.batfish.representation.cisco.HsrpTrackAction;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
 import org.batfish.representation.cisco.IcmpTypeGroupReferenceLine;
 import org.batfish.representation.cisco.IcmpTypeGroupTypeLine;
@@ -1163,6 +1163,8 @@ import org.batfish.representation.cisco.StubSettings;
 import org.batfish.representation.cisco.SubnetNetworkObject;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
+import org.batfish.representation.cisco.Track;
+import org.batfish.representation.cisco.TrackInterface;
 import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
@@ -1491,7 +1493,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private Integer _currentHsrpGroup;
 
-  private Integer _currentTrackingGroup;
+  private Integer _currentTrack;
 
   /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
    * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
@@ -2295,35 +2297,37 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitStandby_group_track(Standby_group_trackContext ctx) {
-    String trackingGroup = ctx.group.getText();
+    int track = toInteger(ctx.num);
     _configuration.referenceStructure(
-        TRACK, trackingGroup, INTERFACE_STANDBY_TRACK, ctx.group.getStart().getLine());
-    TrackAction trackAction = toTrackAction(ctx.track_action());
-    if (trackAction == null) {
-      return;
-    }
+        TRACK, Integer.toString(track), INTERFACE_STANDBY_TRACK, ctx.getStart().getLine());
+    HsrpTrackAction trackAction = toTrackAction(ctx);
     _currentInterfaces.stream()
         .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
         .forEach(
             trackActions -> {
               if (_no) {
-                // 'no' version of command only operates if rest of line matches existing setting
-                if (trackAction.equals(trackActions.get(trackingGroup))) {
-                  trackActions.remove(trackingGroup);
-                }
+                // 'no' command always removes setting regardless of whether details match
+                trackActions.remove(track);
               } else {
-                trackActions.put(trackingGroup, trackAction);
+                trackActions.put(track, trackAction);
               }
             });
   }
 
-  private @Nullable TrackAction toTrackAction(Track_actionContext ctx) {
-    if (ctx.track_action_decrement() != null) {
-      int subtrahend = toInteger(ctx.track_action_decrement().subtrahend);
-      return new DecrementPriority(subtrahend);
+  private @Nonnull HsrpTrackAction toTrackAction(Standby_group_trackContext ctx) {
+    if (ctx.decrement != null) {
+      int subtrahend = toInteger(ctx.decrement);
+      return new HsrpDecrementPriority(subtrahend);
+    } else if (ctx.SHUTDOWN() != null) {
+      return HsrpShutdown.instance();
     } else {
-      return convProblem(TrackAction.class, ctx, null);
+      return new HsrpDecrementPriority(null);
     }
+  }
+
+  private static int toInteger(Pint8Context ctx) {
+    // TODO: enforce range
+    return toInteger(ctx.uint8());
   }
 
   @Override
@@ -3424,24 +3428,35 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_track(S_trackContext ctx) {
-    _currentTrackingGroup = toInteger(ctx.num);
-    _configuration.defineStructure(TRACK, Integer.toString(_currentTrackingGroup), ctx);
+    _currentTrack = toInteger(ctx.num);
+    _configuration.defineStructure(TRACK, Integer.toString(_currentTrack), ctx);
   }
 
   @Override
   public void exitS_track(S_trackContext ctx) {
-    _currentTrackingGroup = null;
+    _currentTrack = null;
   }
 
   @Override
   public void exitTrack_interface(Track_interfaceContext ctx) {
-    String name = toInterfaceName(ctx.interface_name());
+    String interfaceName = toInterfaceName(ctx.interface_name());
     _configuration.referenceStructure(
-        INTERFACE, name, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
-    // TODO: migrate to ios-specific track model
-    _configuration
-        .getTrackingGroups()
-        .put(Integer.toString(_currentTrackingGroup), new TrackInterface(name));
+        INTERFACE, interfaceName, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
+    Track currentTrack = _configuration.getTracks().get(_currentTrack);
+    if (currentTrack != null && !(currentTrack instanceof TrackInterface)) {
+      warn(ctx, "Cannot change track type");
+      return;
+    }
+    TrackInterface trackInterface =
+        (TrackInterface)
+            _configuration
+                .getTracks()
+                .computeIfAbsent(_currentTrack, num -> new TrackInterface(interfaceName));
+    assert ctx.ROUTING() != null ^ ctx.LINE_PROTOCOL() != null;
+    // You can change the interface and the subtype, but you can't change to a different top-level
+    // track type.
+    trackInterface.setInterfaceName(interfaceName);
+    trackInterface.setIpRouting(ctx.ROUTING() != null);
   }
 
   @Override

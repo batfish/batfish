@@ -401,8 +401,10 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethodReference;
+import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1541,6 +1543,7 @@ public final class CiscoGrammarTest {
   public void testIosInterfaceStandby() throws IOException {
     Configuration c = parseConfig("ios-interface-standby");
     Interface i = c.getAllInterfaces().get("Ethernet0");
+    int group = 101;
 
     assertThat(
         c,
@@ -1550,26 +1553,45 @@ public final class CiscoGrammarTest {
                     "1",
                     new TrackInterface("Tunnel1"),
                     generatedNegatedTrackMethodId("1"),
-                    TrackMethodReference.negated("1")))));
+                    TrackMethodReference.negated("1"),
+                    "2",
+                    new TrackInterface("Tunnel1"),
+                    generatedNegatedTrackMethodId("2"),
+                    TrackMethodReference.negated("2"),
+                    "3",
+                    // undefined interface
+                    NegatedTrackMethod.of(TrackTrue.instance()),
+                    generatedNegatedTrackMethodId("3"),
+                    TrackMethodReference.negated("3"),
+                    "4",
+                    new TrackInterface("Tunnel1"),
+                    generatedNegatedTrackMethodId("4"),
+                    TrackMethodReference.negated("4")
+                    // track 5 does not exist
+                    ))));
     assertThat(
         i,
         hasHsrpGroup(
-            1001,
+            group,
             HsrpGroupMatchers.hasAuthentication(
                 sha256Digest("012345678901234567890123456789012345678"))));
-    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHelloTime(500)));
-    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHoldTime(2000)));
-    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIps(contains(Ip.parse("10.0.0.1")))));
-    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPriority(105)));
-    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPreempt()));
+    assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasHelloTime(500)));
+    assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasHoldTime(2000)));
+    assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasIps(contains(Ip.parse("10.0.0.1")))));
+    assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasPriority(105)));
+    assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasPreempt()));
     assertThat(
         i,
         hasHsrpGroup(
-            1001,
+            group,
             hasTrackActions(
                 equalTo(
                     ImmutableMap.of(
-                        generatedNegatedTrackMethodId("1"), new DecrementPriority(20))))));
+                        generatedNegatedTrackMethodId("1"), new DecrementPriority(20),
+                        // TODO: support actual shutdown
+                        generatedNegatedTrackMethodId("2"), new DecrementPriority(255),
+                        generatedNegatedTrackMethodId("3"), new DecrementPriority(20),
+                        generatedNegatedTrackMethodId("4"), new DecrementPriority(10))))));
     assertThat(i, hasHsrpVersion("2"));
   }
 
