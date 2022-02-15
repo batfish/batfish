@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsFirst;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDiff.returnFlowDiffs;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -77,7 +78,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.acl.SourcesReferencedOnDevice;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -159,7 +159,9 @@ class FlowTracer {
 
     private static final Comparator<FibAction> INSTANCE = new FibActionComparator();
     private static final Comparator<FibForward> FIB_FORWARD_COMPARATOR =
-        comparing(FibForward::getInterfaceName).thenComparing(FibForward::getArpIp);
+        comparing(FibForward::getInterfaceName)
+            .thenComparing(
+                fibForward -> fibForward.getArpIp().orElse(null), nullsFirst(Ip::compareTo));
 
     /**
      * new FibActionSameTypeComparator(a).visit(b) compares a and b and requires that a.getClass()
@@ -499,13 +501,11 @@ class FlowTracer {
   }
 
   private void processOutgoingInterfaceEdges(
-      String outgoingInterface, Ip nextHopIp, SortedSet<NodeInterfacePair> neighborIfaces) {
+      String outgoingInterface, Ip arpIp, SortedSet<NodeInterfacePair> neighborIfaces) {
     checkArgument(!neighborIfaces.isEmpty(), "No neighbor interfaces.");
     checkState(
         _steps.get(_steps.size() - 1) instanceof ExitOutputIfaceStep,
         "ExitOutputIfaceStep needs to be added before calling this function");
-    Ip arpIp =
-        Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp) ? _currentFlow.getDstIp() : nextHopIp;
 
     SortedSet<NodeInterfacePair> interfacesThatReplyToArp =
         neighborIfaces.stream()
@@ -798,7 +798,7 @@ class FlowTracer {
         (flowTracer, fibForward) -> {
           flowTracer.forwardOutInterface(
               _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
-              fibForward.getArpIp(),
+              fibForward.getArpIp().orElse(null),
               overrideNextHopIp);
         },
         new Stack<>());
@@ -1009,7 +1009,9 @@ class FlowTracer {
                             outgoingIfaceName, _currentFlow.getDstIp(), disposition);
                       } else {
                         flowTracer.processOutgoingInterfaceEdges(
-                            outgoingIfaceName, fibForward.getArpIp(), neighborIfaces);
+                            outgoingIfaceName,
+                            fibForward.getArpIp().orElse(_currentFlow.getDstIp()),
+                            neighborIfaces);
                       }
                     });
                 return null;
@@ -1046,17 +1048,17 @@ class FlowTracer {
                       SortedSet<NodeInterfacePair> neighborIfaces =
                           _tracerouteContext.getInterfaceNeighbors(
                               currentNodeName, outgoingIfaceName);
+                      Ip arpIp = fibForward.getArpIp().orElse(flowTracer._currentFlow.getDstIp());
                       if (neighborIfaces.isEmpty()) {
                         FlowDisposition disposition =
                             _tracerouteContext.computeDisposition(
                                 currentNodeName,
                                 outgoingIfaceName,
                                 flowTracer._currentFlow.getDstIp());
-                        flowTracer.buildArpFailureTrace(
-                            outgoingIfaceName, flowTracer._currentFlow.getDstIp(), disposition);
+                        flowTracer.buildArpFailureTrace(outgoingIfaceName, arpIp, disposition);
                       } else {
                         flowTracer.processOutgoingInterfaceEdges(
-                            outgoingIfaceName, fibForward.getArpIp(), neighborIfaces);
+                            outgoingIfaceName, arpIp, neighborIfaces);
                       }
                     });
                 return null;
@@ -1187,13 +1189,14 @@ class FlowTracer {
    * setup sessions if necessary, figure out L3 edge to follow.
    *
    * @param outgoingInterface the interface out of which the packet is being sent
-   * @param nextHopIp the next hop IP (a.k.a ARP IP) <emph>as far as the FIB is concerned</emph>
+   * @param nextHopIp the next hop IP (a.k.a ARP IP) <emph>as far as the FIB is concerned</emph>.
+   *     {@code null} means default to dest IP.
    * @param overriddenNextHopIp not {@code null} if the next hop was overridden outside of the FIB
    *     (e.g., in PBR)
    */
   @VisibleForTesting
   void forwardOutInterface(
-      Interface outgoingInterface, Ip nextHopIp, @Nullable Ip overriddenNextHopIp) {
+      Interface outgoingInterface, @Nullable Ip nextHopIp, @Nullable Ip overriddenNextHopIp) {
     // Apply preSourceNatOutgoingFilter
     if (applyFilter(
             outgoingInterface.getPreTransformationOutgoingFilter(),
@@ -1254,14 +1257,15 @@ class FlowTracer {
       - nobody will ARP reply for it as far as we know.
     To simplify our life, just compute disposition for 1.1.1.1, at least that's guaranteed to give us a disposition
     */
+    Ip arpIp = firstNonNull(overriddenNextHopIp, firstNonNull(nextHopIp, _currentFlow.getDstIp()));
     if (neighborIfaces.isEmpty()) {
-      Ip arpIp = firstNonNull(overriddenNextHopIp, _currentFlow.getDstIp());
+      Ip dispositionDestIp = firstNonNull(overriddenNextHopIp, _currentFlow.getDstIp());
       FlowDisposition disposition =
-          _tracerouteContext.computeDisposition(currentNodeName, outgoingIfaceName, arpIp);
+          _tracerouteContext.computeDisposition(
+              currentNodeName, outgoingIfaceName, dispositionDestIp);
       buildArpFailureTrace(outgoingIfaceName, arpIp, disposition);
     } else {
-      processOutgoingInterfaceEdges(
-          outgoingIfaceName, firstNonNull(overriddenNextHopIp, nextHopIp), neighborIfaces);
+      processOutgoingInterfaceEdges(outgoingIfaceName, arpIp, neighborIfaces);
     }
   }
 
@@ -1514,19 +1518,20 @@ class FlowTracer {
               routingStepDetailBuilder.setForwardingDetail(
                   ForwardedIntoVxlanTunnel.of(nhVtep.getVni(), nhVtep.getVtepIp()));
             } else {
-              // TODO: prevent FibForward from containing Ip.AUTO, and rewrite logic below
-              Ip resolvedNextHopIp = fibForward.getArpIp();
-              if (resolvedNextHopIp.equals(Ip.AUTO)) {
+              Optional<Ip> maybeResolvedNextHopIp = fibForward.getArpIp();
+              if (!maybeResolvedNextHopIp.isPresent()) {
                 routingStepDetailBuilder.setForwardingDetail(
                     ForwardedOutInterface.of(fibForward.getInterfaceName()));
               } else {
-                routingStepDetailBuilder.setForwardingDetail(
-                    ForwardedOutInterface.of(fibForward.getInterfaceName(), resolvedNextHopIp));
+                Ip resolvedNextHopIp = maybeResolvedNextHopIp.get();
+                routingStepDetailBuilder
+                    .setForwardingDetail(
+                        ForwardedOutInterface.of(fibForward.getInterfaceName(), resolvedNextHopIp))
+                    // TODO: remove deprecated arpIp
+                    .setArpIp(resolvedNextHopIp);
               }
             }
-            routingStepDetailBuilder
-                .setArpIp(fibForward.getArpIp())
-                .setOutputInterface(fibForward.getInterfaceName());
+            routingStepDetailBuilder.setOutputInterface(fibForward.getInterfaceName());
             routingStepBuilder.setAction(FORWARDED);
             return null;
           }
