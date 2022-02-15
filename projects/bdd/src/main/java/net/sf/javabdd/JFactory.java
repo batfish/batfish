@@ -47,10 +47,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -93,23 +99,50 @@ public final class JFactory extends BDDFactory {
 
   private final IntIntMap _indexToSequence;
 
-  /** Implements the trace operation. */
-  private BDDImpl trace(BDDImpl result, Operation op, int... args) {
-    if (_tracing) {
-      int[] uniqueArgs =
-          Arrays.stream(args).map(i -> i < 0 ? i : _indexToSequence.get(i)).toArray();
-      _trace.add(new TracedOperation(_indexToSequence.get(result._index), op, uniqueArgs));
-    }
-    return result;
+  private int tracingSequence(BDDImpl bdd) {
+    return _indexToSequence.get(bdd._index);
+  }
+
+  /**
+   * Implements the trace operation. The result is passed via {@link Supplier} in case of mutating
+   * arguments.
+   */
+  private TracedBDDImpl trace(Supplier<BDD> result, Operation op, BDDImpl... args) {
+    int[] uniqueArgs = Arrays.stream(args).mapToInt(this::tracingSequence).toArray();
+    BDDImpl resultImpl = (BDDImpl) result.get();
+    _trace.add(new TracedOperation(tracingSequence(resultImpl), null, op, uniqueArgs));
+    return new TracedBDDImpl(resultImpl);
+  }
+
+  /**
+   * Implements the trace operation. The result is passed via {@link Supplier} in case of mutating
+   * arguments.
+   */
+  private TracedBDDImpl traceNoArgs(BDD result, Operation op) {
+    BDDImpl resultImpl = (BDDImpl) result;
+    _trace.add(new TracedOperation(tracingSequence(resultImpl), null, op));
+    return new TracedBDDImpl(resultImpl);
+  }
+
+  /**
+   * Traces an operation. The result is passed via {@link Supplier} in case of mutating arguments.
+   */
+  private TracedBDDImpl traceWithInt(
+      Supplier<BDD> getResult, int val, Operation op, BDDImpl... args) {
+    int[] uniqueArgs = Arrays.stream(args).mapToInt(this::tracingSequence).toArray();
+    BDDImpl resultImpl = (BDDImpl) getResult.get();
+    _trace.add(new TracedOperation(tracingSequence(resultImpl), val, op, uniqueArgs));
+    return new TracedBDDImpl(resultImpl);
   }
 
   /** Implements the trace operation. */
-  private void traceNoResult(Operation op, int... args) {
-    if (_tracing) {
-      int[] uniqueArgs =
-          Arrays.stream(args).map(i -> i < 0 ? i : _indexToSequence.get(i)).toArray();
-      _trace.add(new TracedOperation(-1, op, uniqueArgs));
-    }
+  private void traceNoResult(Operation op, BDDImpl... args) {
+    int[] uniqueArgs = Arrays.stream(args).mapToInt(this::tracingSequence).toArray();
+    _trace.add(new TracedOperation(null, null, op, uniqueArgs));
+  }
+
+  private void traceIntNoResult(Operation op, int arg) {
+    _trace.add(new TracedOperation(null, arg, op));
   }
 
   private void crashIfTracing() {
@@ -149,12 +182,16 @@ public final class JFactory extends BDDFactory {
     FREE,
     /** {@link BDD#fullSatOne()}. */
     FULL_SAT_ONE,
+    /** {@link BDD#high()}. */
+    HIGH,
     /** {@link BDD#id()}. */
     ID,
     /** {@link BDD#ite(BDD, BDD)}. */
     ITE,
     /** {@link BDDFactory#ithVar(int)}. */
     ITH_VAR,
+    /** {@link BDD#low()}. */
+    LOW,
     /** {@link BDD#minAssignmentBits()}. */
     MIN_ASSIGNMENT_BITS,
     /** {@link BDDFactory#nithVar(int)}. */
@@ -185,21 +222,25 @@ public final class JFactory extends BDDFactory {
   private static class TracedOperation implements Serializable {
     private static final long serialVersionUID = -490376373193321074L;
     private final Operation _op;
-    private final int _result;
-    private final int[] _args;
+    private final @Nullable Integer _resultSeq;
+    private final @Nullable Integer _intArg;
+    private final int[] _argSeqs;
 
-    public TracedOperation(int result, Operation op, int... arguments) {
-      _result = result;
+    public TracedOperation(
+        @Nullable Integer resultSeq, @Nullable Integer intArg, Operation op, int... argSeqs) {
+      _resultSeq = resultSeq;
+      _intArg = intArg;
       _op = op;
-      _args = arguments;
+      _argSeqs = argSeqs;
     }
 
     @Override
     public String toString() {
       return new StringJoiner(", ", TracedOperation.class.getSimpleName() + "[", "]")
           .add("op=" + _op)
-          .add("result=" + _result)
-          .add("args=" + _args.length)
+          .add("intArg=" + _intArg)
+          .add("resultSeq=" + _resultSeq)
+          .add("argSeqs=" + _argSeqs.length)
           .toString();
     }
   }
@@ -210,8 +251,8 @@ public final class JFactory extends BDDFactory {
       _tracing = true;
       _indexToSequence.put(BDDZERO, ++bddproduced);
       _indexToSequence.put(BDDONE, ++bddproduced);
-      trace(makeBDD(BDDZERO), Operation.ZERO);
-      trace(makeBDD(BDDONE), Operation.ONE);
+      traceNoArgs(makeBDD(BDDZERO), Operation.ZERO);
+      traceNoArgs(makeBDD(BDDONE), Operation.ONE);
     }
   }
 
@@ -258,10 +299,16 @@ public final class JFactory extends BDDFactory {
       replayer.replayTracedOperation(operation);
     }
     _tracing = t;
-    System.err.println(
+    Map<String, Long> opCounts =
         trace.stream()
             .map(to -> to._op)
-            .collect(Collectors.groupingBy(Operation::toString, Collectors.counting())));
+            .collect(Collectors.groupingBy(Operation::toString, Collectors.counting()));
+    System.err.println(
+        "Operator counts: "
+            + opCounts.entrySet().stream()
+                .sorted(Comparator.comparingLong(e -> opCounts.get(e.getKey())))
+                .map(Entry::toString)
+                .collect(Collectors.joining(", ")));
   }
 
   private class Replayer {
@@ -282,6 +329,7 @@ public final class JFactory extends BDDFactory {
       BDDImpl res = (BDDImpl) result;
       int existingIndex = _sequenceToReplayIndex.getOrDefault(seq, -1);
       if (existingIndex == -1) {
+        System.err.println("Assigning seq " + seq + " as index " + res._index);
         _sequenceToReplayIndex.put(seq, res._index);
       } else if (res._index != existingIndex) {
         throw new IllegalStateException("Reassigned index for sequence " + seq);
@@ -289,129 +337,163 @@ public final class JFactory extends BDDFactory {
     }
 
     private void replayTracedOperation(TracedOperation operation) {
+      System.err.println("Replaying a " + operation._op);
       switch (operation._op) {
         case AND_ALL:
           {
+            assert operation._resultSeq != null;
+            assert operation._intArg == null;
             BDD[] ops =
-                Arrays.stream(operation._args).mapToObj(this::replayBdd).toArray(BDD[]::new);
-            recordSequence(operation._result, andAll(ops));
+                Arrays.stream(operation._argSeqs).mapToObj(this::replayBdd).toArray(BDD[]::new);
+            recordSequence(operation._resultSeq, andAll(ops));
           }
           break;
         case AND_ALL_FREE:
           {
+            assert operation._resultSeq != null;
+            assert operation._intArg == null;
             BDD[] ops =
-                Arrays.stream(operation._args).mapToObj(this::replayBdd).toArray(BDD[]::new);
-            recordSequence(operation._result, andAllAndFree(ops));
+                Arrays.stream(operation._argSeqs).mapToObj(this::replayBdd).toArray(BDD[]::new);
+            recordSequence(operation._resultSeq, andAllAndFree(ops));
           }
           break;
         case AND_SAT:
-          replayBdd(operation._args[0]).andSat(replayBdd(operation._args[1]));
+          assert operation._resultSeq == null;
+          assert operation._intArg == null;
+          replayBdd(operation._argSeqs[0]).andSat(replayBdd(operation._argSeqs[1]));
           break;
         case APPLY:
+          assert operation._resultSeq != null;
+          assert operation._intArg != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0])
-                  .apply(replayBdd(operation._args[1]), getOp(-operation._args[2] - 1), true));
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0])
+                  .apply(replayBdd(operation._argSeqs[1]), getOp(operation._intArg), true));
           break;
         case APPLY_EQ:
+          assert operation._resultSeq != null;
+          assert operation._intArg != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0])
-                  .apply(replayBdd(operation._args[1]), getOp(-operation._args[2] - 1), false));
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0])
+                  .apply(replayBdd(operation._argSeqs[1]), getOp(operation._intArg), false));
           break;
         case APPLY_EX:
+          assert operation._resultSeq != null;
+          assert operation._intArg != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0])
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0])
                   .applyEx(
-                      replayBdd(operation._args[1]),
-                      getOp(-operation._args[2] - 1),
-                      replayBdd(operation._args[3])));
+                      replayBdd(operation._argSeqs[1]),
+                      getOp(operation._intArg),
+                      replayBdd(operation._argSeqs[2])));
           break;
         case APPLY_WITH:
+          assert operation._resultSeq != null;
+          assert operation._intArg != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0])
-                  .applyWith(replayBdd(operation._args[1]), getOp(-operation._args[2] - 1)));
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0])
+                  .applyWith(replayBdd(operation._argSeqs[1]), getOp(operation._intArg)));
           break;
         case DIFF_SAT:
-          replayBdd(operation._args[0]).diffSat(replayBdd(operation._args[1]));
+          assert operation._resultSeq == null;
+          assert operation._intArg == null;
+          replayBdd(operation._argSeqs[0]).diffSat(replayBdd(operation._argSeqs[1]));
           break;
         case EXIST:
+          assert operation._resultSeq != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0]).exist(replayBdd(operation._args[1])));
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0]).exist(replayBdd(operation._argSeqs[1])));
           break;
         case EXIST_EQ:
+          assert operation._resultSeq != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0]).existEq(replayBdd(operation._args[1])));
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0]).existEq(replayBdd(operation._argSeqs[1])));
           break;
         case FREE:
-          replayBdd(operation._args[0]).free();
+          replayBdd(operation._argSeqs[0]).free();
           break;
         case FULL_SAT_ONE:
-          replayBdd(operation._args[0]).fullSatOne();
+          replayBdd(operation._argSeqs[0]).fullSatOne();
           break;
         case ID:
-          replayBdd(operation._args[0]).id();
+          replayBdd(operation._argSeqs[0]).id();
           break;
         case ITE:
+          assert operation._resultSeq != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0])
-                  .ite(replayBdd(operation._args[1]), replayBdd(operation._args[2])));
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0])
+                  .ite(replayBdd(operation._argSeqs[1]), replayBdd(operation._argSeqs[2])));
           break;
         case ITH_VAR:
-          recordSequence(operation._result, ithVar(-(operation._args[0] + 1)));
+          assert operation._resultSeq != null;
+          assert operation._intArg != null;
+          recordSequence(operation._resultSeq, ithVar(operation._intArg));
           break;
         case MIN_ASSIGNMENT_BITS:
-          replayBdd(operation._args[0]).minAssignmentBits();
+          replayBdd(operation._argSeqs[0]).minAssignmentBits();
           break;
         case NITH_VAR:
-          recordSequence(operation._result, nithVar(-(operation._args[0] + 1)));
+          assert operation._resultSeq != null;
+          assert operation._intArg != null;
+          recordSequence(operation._resultSeq, nithVar(operation._intArg));
           break;
         case NOT:
-          recordSequence(operation._result, replayBdd(operation._args[0]).not());
+          assert operation._resultSeq != null;
+          recordSequence(operation._resultSeq, replayBdd(operation._argSeqs[0]).not());
           break;
         case ONE:
-          recordSequence(operation._result, one());
+          assert operation._resultSeq != null;
+          recordSequence(operation._resultSeq, one());
           break;
         case OR_ALL:
           {
+            assert operation._resultSeq != null;
             BDD[] ops =
-                Arrays.stream(operation._args).mapToObj(this::replayBdd).toArray(BDD[]::new);
-            recordSequence(operation._result, orAll(ops));
+                Arrays.stream(operation._argSeqs).mapToObj(this::replayBdd).toArray(BDD[]::new);
+            recordSequence(operation._resultSeq, orAll(ops));
           }
           break;
         case OR_ALL_FREE:
           {
+            assert operation._resultSeq != null;
             BDD[] ops =
-                Arrays.stream(operation._args).mapToObj(this::replayBdd).toArray(BDD[]::new);
-            recordSequence(operation._result, orAllAndFree(ops));
+                Arrays.stream(operation._argSeqs).mapToObj(this::replayBdd).toArray(BDD[]::new);
+            recordSequence(operation._resultSeq, orAllAndFree(ops));
           }
           break;
         case PROJECT:
+          assert operation._resultSeq != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0]).project(replayBdd(operation._args[1])));
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0]).project(replayBdd(operation._argSeqs[1])));
           break;
         case RANDOM_FULL_SAT_ONE:
+          assert operation._resultSeq != null;
           recordSequence(
-              operation._result,
-              replayBdd(operation._args[0]).randomFullSatOne(operation._args[1]));
+              operation._resultSeq,
+              replayBdd(operation._argSeqs[0]).randomFullSatOne(operation._argSeqs[1]));
           break;
         case SAT_ONE:
-          recordSequence(operation._result, replayBdd(operation._args[0]).satOne());
+          assert operation._resultSeq != null;
+          recordSequence(operation._resultSeq, replayBdd(operation._argSeqs[0]).satOne());
           break;
         case SET_VAR_NUM:
-          setVarNum(-operation._args[0]);
+          assert operation._intArg != null;
+          setVarNum(operation._intArg);
           break;
         case SUPPORT:
-          recordSequence(operation._result, replayBdd(operation._args[0]).support());
+          assert operation._resultSeq != null;
+          recordSequence(operation._resultSeq, replayBdd(operation._argSeqs[0]).support());
           break;
         case ZERO:
-          recordSequence(operation._result, zero());
+          assert operation._resultSeq != null;
+          recordSequence(operation._resultSeq, zero());
           break;
         default:
           throw new IllegalStateException("Unsupported replay of " + operation._op);
@@ -469,6 +551,283 @@ public final class JFactory extends BDDFactory {
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
+  private class TracedBDDImpl extends BDD {
+    BDDImpl _bdd;
+
+    TracedBDDImpl(BDDImpl bdd) {
+      _bdd = bdd;
+    }
+
+    @Override
+    public BDDFactory getFactory() {
+      return JFactory.this;
+    }
+
+    @Override
+    public boolean isZero() {
+      return _bdd.isZero();
+    }
+
+    @Override
+    public boolean isOne() {
+      return _bdd.isOne();
+    }
+
+    @Override
+    public boolean isAssignment() {
+      return _bdd.isAssignment();
+    }
+
+    @Override
+    public int var() {
+      return _bdd.var();
+    }
+
+    @Override
+    public TracedBDDImpl high() {
+      return trace(() -> _bdd.high(), Operation.HIGH, _bdd);
+    }
+
+    @Override
+    public TracedBDDImpl low() {
+      return trace(() -> _bdd.low(), Operation.LOW, _bdd);
+    }
+
+    @Override
+    public TracedBDDImpl id() {
+      if (!ISCONST(_bdd._index)) {
+        // Skip tracing "trivial" operation
+        return trace(() -> _bdd.id(), Operation.ID, _bdd);
+      } else {
+        return new TracedBDDImpl((BDDImpl) _bdd.id());
+      }
+    }
+
+    @Override
+    public TracedBDDImpl not() {
+      if (!ISCONST(_bdd._index)) {
+        // Skip tracing "trivial" operation
+        return trace(() -> _bdd.not(), Operation.NOT, _bdd);
+      } else {
+        return new TracedBDDImpl((BDDImpl) _bdd.not());
+      }
+    }
+
+    @Override
+    public TracedBDDImpl ite(BDD thenBDD, BDD elseBDD) {
+      TracedBDDImpl tracedThen = (TracedBDDImpl) thenBDD;
+      TracedBDDImpl tracedElse = (TracedBDDImpl) elseBDD;
+      return trace(
+          () -> _bdd.ite(tracedThen._bdd, tracedElse._bdd),
+          Operation.ITE,
+          _bdd,
+          tracedThen._bdd,
+          tracedElse._bdd);
+    }
+
+    @Override
+    public TracedBDDImpl relprod(BDD that, BDD var) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl compose(BDD g, int var) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl veccompose(BDDPairing pair) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl constrain(BDD that) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    TracedBDDImpl exist(BDD var, boolean makeNew) {
+      TracedBDDImpl tracedVar = (TracedBDDImpl) var;
+      return trace(
+          () -> _bdd.exist(tracedVar._bdd, makeNew),
+          makeNew ? Operation.EXIST : Operation.EXIST_EQ,
+          _bdd,
+          tracedVar._bdd);
+    }
+
+    @Override
+    public TracedBDDImpl project(BDD var) {
+      TracedBDDImpl tracedVar = (TracedBDDImpl) var;
+      return trace(() -> _bdd.project(tracedVar._bdd), Operation.PROJECT, _bdd, tracedVar._bdd);
+    }
+
+    @Override
+    public TracedBDDImpl forAll(BDD var) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl unique(BDD var) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl restrict(BDD var) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl restrictWith(BDD that) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl simplify(BDD d) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl support() {
+      return trace(() -> _bdd.support(), Operation.SUPPORT, _bdd);
+    }
+
+    @Override
+    public boolean andSat(BDD that) {
+      TracedBDDImpl tThat = (TracedBDDImpl) that;
+      traceNoResult(Operation.AND_SAT, _bdd, tThat._bdd);
+      return _bdd.andSat(tThat._bdd);
+    }
+
+    @Override
+    public boolean diffSat(BDD that) {
+      TracedBDDImpl tThat = (TracedBDDImpl) that;
+      traceNoResult(Operation.DIFF_SAT, _bdd, tThat._bdd);
+      return _bdd.diffSat(tThat._bdd);
+    }
+
+    @Override
+    TracedBDDImpl apply(BDD that, BDDOp opr, boolean makeNew) {
+      TracedBDDImpl tThat = (TracedBDDImpl) that;
+      return traceWithInt(
+          () -> _bdd.apply(tThat._bdd, opr, makeNew),
+          opr.id,
+          makeNew ? Operation.APPLY : Operation.APPLY_EQ,
+          _bdd,
+          tThat._bdd);
+    }
+
+    @Override
+    public TracedBDDImpl applyWith(BDD that, BDDOp opr) {
+      TracedBDDImpl tThat = (TracedBDDImpl) that;
+      return traceWithInt(
+          () -> _bdd.applyWith(tThat._bdd, opr), opr.id, Operation.APPLY_WITH, _bdd, tThat._bdd);
+    }
+
+    @Override
+    public TracedBDDImpl applyAll(BDD that, BDDOp opr, BDD var) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl applyEx(BDD that, BDDOp opr, BDD var) {
+      TracedBDDImpl tThat = (TracedBDDImpl) that;
+      TracedBDDImpl tVar = (TracedBDDImpl) var;
+      return traceWithInt(
+          () -> _bdd.applyEx(tThat._bdd, opr, tVar._bdd),
+          opr.id,
+          Operation.APPLY_EX,
+          _bdd,
+          tThat._bdd,
+          tVar._bdd);
+    }
+
+    @Override
+    public TracedBDDImpl applyUni(BDD that, BDDOp opr, BDD var) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl satOne() {
+      return trace(() -> _bdd.satOne(), Operation.SAT_ONE, _bdd);
+    }
+
+    @Override
+    public TracedBDDImpl fullSatOne() {
+      return trace(() -> _bdd.fullSatOne(), Operation.FULL_SAT_ONE, _bdd);
+    }
+
+    @Override
+    public BitSet minAssignmentBits() {
+      traceNoResult(Operation.MIN_ASSIGNMENT_BITS, _bdd);
+      return _bdd.minAssignmentBits();
+    }
+
+    @Override
+    public TracedBDDImpl randomFullSatOne(int seed) {
+      return traceWithInt(
+          () -> _bdd.randomFullSatOne(seed), seed, Operation.RANDOM_FULL_SAT_ONE, _bdd);
+    }
+
+    @Override
+    public TracedBDDImpl satOne(BDD var, boolean pol) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl replace(BDDPairing pair) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TracedBDDImpl replaceWith(BDDPairing pair) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int nodeCount() {
+      return _bdd.nodeCount();
+    }
+
+    @Override
+    public double pathCount() {
+      return _bdd.pathCount();
+    }
+
+    @Override
+    public double satCount() {
+      return _bdd.satCount();
+    }
+
+    @Override
+    public int[] varProfile() {
+      return _bdd.varProfile();
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (!(o instanceof TracedBDDImpl)) {
+        return false;
+      }
+      TracedBDDImpl that = (TracedBDDImpl) o;
+      return _bdd.equals(that._bdd);
+    }
+
+    @Override
+    public int hashCode() {
+      return _bdd.hashCode();
+    }
+
+    @Override
+    public void free() {
+      if (!ISCONST(_bdd._index)) {
+        // else deliberately not tracing "trivial" operation.
+        traceNoResult(Operation.FREE, _bdd);
+      }
+      _bdd.free();
+    }
+  }
+
+  /** Wrapper for the BDD index number used internally in the representation. */
   private class BDDImpl extends BDD {
     int _index;
 
@@ -504,24 +863,22 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD high() {
-      crashIfTracing();
       return makeBDD(HIGH(_index));
     }
 
     @Override
     public BDD low() {
-      crashIfTracing();
       return makeBDD(LOW(_index));
     }
 
     @Override
     public BDD id() {
-      return trace(makeBDD(_index), Operation.ID, _index);
+      return makeBDD(_index);
     }
 
     @Override
     public BDD not() {
-      return trace(makeBDD(bdd_not(_index)), Operation.NOT, _index);
+      return makeBDD(bdd_not(_index));
     }
 
     @Override
@@ -529,12 +886,11 @@ public final class JFactory extends BDDFactory {
       int x = _index;
       int y = ((BDDImpl) thenBDD)._index;
       int z = ((BDDImpl) elseBDD)._index;
-      return trace(makeBDD(bdd_ite(x, y, z)), Operation.ITE, x, y, z);
+      return makeBDD(bdd_ite(x, y, z));
     }
 
     @Override
     public BDD relprod(BDD that, BDD var) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = ((BDDImpl) var)._index;
@@ -543,7 +899,6 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD compose(BDD g, int var) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) g)._index;
       return makeBDD(bdd_compose(x, y, var));
@@ -551,14 +906,12 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD veccompose(BDDPairing pair) {
-      crashIfTracing();
       int x = _index;
       return makeBDD(bdd_veccompose(x, (bddPair) pair));
     }
 
     @Override
     public BDD constrain(BDD that) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       return makeBDD(bdd_constrain(x, y));
@@ -586,20 +939,18 @@ public final class JFactory extends BDDFactory {
     BDD exist(BDD var, boolean makeNew) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return trace(
-          eqOrNew(bdd_exist(x, y), makeNew), makeNew ? Operation.EXIST : Operation.EXIST_EQ, x, y);
+      return eqOrNew(bdd_exist(x, y), makeNew);
     }
 
     @Override
     public BDD project(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return trace(makeBDD(bdd_project(x, y)), Operation.PROJECT, x, y);
+      return makeBDD(bdd_project(x, y));
     }
 
     @Override
     public BDD forAll(BDD var) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_forall(x, y));
@@ -607,7 +958,6 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD unique(BDD var) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_unique(x, y));
@@ -615,7 +965,6 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD restrict(BDD var) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_restrict(x, y));
@@ -623,13 +972,12 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD restrictWith(BDD that) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int a = bdd_restrict(x, y);
       bdd_delref(x);
       if (this != that) {
-        that.freeInternal();
+        that.free();
       }
       bdd_addref(a);
       _index = a;
@@ -638,7 +986,6 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD simplify(BDD d) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) d)._index;
       return makeBDD(bdd_simplify(x, y));
@@ -647,29 +994,23 @@ public final class JFactory extends BDDFactory {
     @Override
     public BDD support() {
       int x = _index;
-      return trace(makeBDD(bdd_support(x)), Operation.SUPPORT, x);
+      return makeBDD(bdd_support(x));
     }
 
     @Override
     public boolean andSat(BDD that) {
-      int x = _index;
-      int y = ((BDDImpl) that)._index;
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }
-      traceNoResult(Operation.AND_SAT, x, y);
-      return andsat_rec(x, y);
+      return andsat_rec(_index, ((BDDImpl) that)._index);
     }
 
     @Override
     public boolean diffSat(BDD that) {
-      int x = _index;
-      int y = ((BDDImpl) that)._index;
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }
-      traceNoResult(Operation.DIFF_SAT, x, y);
-      return diffsat_rec(x, y);
+      return diffsat_rec(_index, ((BDDImpl) that)._index);
     }
 
     @Override
@@ -677,12 +1018,7 @@ public final class JFactory extends BDDFactory {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      return trace(
-          eqOrNew(bdd_apply(x, y, z), makeNew),
-          makeNew ? Operation.APPLY : Operation.APPLY_EQ,
-          x,
-          y,
-          -z - 1);
+      return eqOrNew(bdd_apply(x, y, z), makeNew);
     }
 
     @Override
@@ -693,16 +1029,15 @@ public final class JFactory extends BDDFactory {
       int a = bdd_apply(x, y, z);
       bdd_delref(x);
       if (this != that) {
-        that.freeInternal();
+        that.free();
       }
       bdd_addref(a);
       _index = a;
-      return trace(this, Operation.APPLY_WITH, x, y, -z - 1);
+      return this;
     }
 
     @Override
     public BDD applyAll(BDD that, BDDOp opr, BDD var) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
@@ -716,12 +1051,11 @@ public final class JFactory extends BDDFactory {
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
       int a = ((BDDImpl) var)._index;
-      return trace(makeBDD(bdd_appex(x, y, z, a)), Operation.APPLY_EX, x, y, -z - 1, a);
+      return makeBDD(bdd_appex(x, y, z, a));
     }
 
     @Override
     public BDD applyUni(BDD that, BDDOp opr, BDD var) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
@@ -732,30 +1066,28 @@ public final class JFactory extends BDDFactory {
     @Override
     public BDD satOne() {
       int x = _index;
-      return trace(makeBDD(bdd_satone(x)), Operation.SAT_ONE, x);
+      return makeBDD(bdd_satone(x));
     }
 
     @Override
     public BDD fullSatOne() {
       int x = _index;
-      return trace(makeBDD(bdd_fullsatone(x)), Operation.FULL_SAT_ONE, x);
+      return makeBDD(bdd_fullsatone(x));
     }
 
     @Override
     public BitSet minAssignmentBits() {
-      traceNoResult(Operation.MIN_ASSIGNMENT_BITS, _index);
       return bdd_minassignmentbits(_index);
     }
 
     @Override
     public BDD randomFullSatOne(int seed) {
       int x = _index;
-      return trace(makeBDD(bdd_randomfullsatone(x, seed)), Operation.RANDOM_FULL_SAT_ONE, x, seed);
+      return makeBDD(bdd_randomfullsatone(x, seed));
     }
 
     @Override
     public BDD satOne(BDD var, boolean pol) {
-      crashIfTracing();
       int x = _index;
       int y = ((BDDImpl) var)._index;
       int z = pol ? 1 : 0;
@@ -764,14 +1096,12 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public BDD replace(BDDPairing pair) {
-      crashIfTracing();
       int x = _index;
       return makeBDD(bdd_replace(x, (bddPair) pair));
     }
 
     @Override
     public BDD replaceWith(BDDPairing pair) {
-      crashIfTracing();
       int x = _index;
       int y = bdd_replace(x, (bddPair) pair);
       bdd_delref(x);
@@ -817,15 +1147,6 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public void free() {
-      if (!ISCONST(_index)) {
-        // else deliberately not tracing "trivial" operation.
-        traceNoResult(Operation.FREE, _index);
-      }
-      freeInternal();
-    }
-
-    @Override
-    protected void freeInternal() {
       bdd_delref(_index);
       _index = INVALID_BDD;
       ++freedBDDs;
@@ -1118,14 +1439,22 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public BDD zero() {
-    // Deliberately not tracing "trivial" operation.
-    return makeBDD(BDDZERO);
+    BDDImpl ret = makeBDD(BDDZERO);
+    if (_tracing) {
+      // Deliberately not tracing "trivial" operation.
+      return new TracedBDDImpl(ret);
+    }
+    return ret;
   }
 
   @Override
   public BDD one() {
-    // Deliberately not tracing "trivial" operation.
-    return makeBDD(BDDONE);
+    BDDImpl ret = makeBDD(BDDONE);
+    if (_tracing) {
+      // Deliberately not tracing "trivial" operation.
+      return new TracedBDDImpl(ret);
+    }
+    return ret;
   }
 
   private int bdd_ithvar(int var) {
@@ -1276,19 +1605,38 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
+    if (_tracing) {
+      return trace(
+          () -> andAllImpl(bddOperands, free),
+          free ? Operation.AND_ALL_FREE : Operation.AND_ALL,
+          StreamSupport.stream(bddOperands.spliterator(), false)
+              .map(bdd -> ((TracedBDDImpl) bdd)._bdd)
+              .toArray(BDDImpl[]::new));
+    }
+    return andAllImpl(bddOperands, free);
+  }
+
+  private BDDImpl andAllImpl(Iterable<BDD> bddOperands, boolean free) {
+    Set<BDDImpl> uniqueObjects = Collections.newSetFromMap(new IdentityHashMap<>());
+    bddOperands.forEach(
+        bdd -> {
+          BDDImpl impl = _tracing ? ((TracedBDDImpl) bdd)._bdd : (BDDImpl) bdd;
+          uniqueObjects.add(impl);
+        });
+
     int[] operands =
-        StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
+        uniqueObjects.stream()
+            .mapToInt(bdd -> bdd._index)
             .filter(i -> i != BDDONE)
             .sorted()
             .distinct()
             .peek(this::CHECK)
             .toArray();
-    int ret = bdd_andAll(operands);
+    int retIdx = bdd_andAll(operands);
     if (free) {
-      bddOperands.forEach(BDD::freeInternal);
+      uniqueObjects.forEach(BDDImpl::free);
     }
-    return trace(makeBDD(ret), free ? Operation.AND_ALL_FREE : Operation.AND_ALL, operands);
+    return makeBDD(retIdx);
   }
 
   private int bdd_andAll(int[] operands) {
@@ -1313,19 +1661,38 @@ public final class JFactory extends BDDFactory {
 
   @Override
   protected BDD orAll(Iterable<BDD> bddOperands, boolean free) {
+    if (_tracing) {
+      return trace(
+          () -> orAllImpl(bddOperands, free),
+          free ? Operation.OR_ALL_FREE : Operation.OR_ALL,
+          StreamSupport.stream(bddOperands.spliterator(), false)
+              .map(bdd -> ((TracedBDDImpl) bdd)._bdd)
+              .toArray(BDDImpl[]::new));
+    }
+    return orAllImpl(bddOperands, free);
+  }
+
+  protected BDD orAllImpl(Iterable<BDD> bddOperands, boolean free) {
+    Set<BDDImpl> uniqueObjects = Collections.newSetFromMap(new IdentityHashMap<>());
+    bddOperands.forEach(
+        bdd -> {
+          BDDImpl impl = _tracing ? ((TracedBDDImpl) bdd)._bdd : (BDDImpl) bdd;
+          uniqueObjects.add(impl);
+        });
+
     int[] operands =
-        StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
+        uniqueObjects.stream()
+            .mapToInt(bdd -> bdd._index)
             .filter(i -> i != BDDZERO)
             .sorted()
             .distinct()
             .peek(this::CHECK)
             .toArray();
-    int ret = bdd_orAll(operands);
+    int retIdx = bdd_orAll(operands);
     if (free) {
-      bddOperands.forEach(BDD::freeInternal);
+      uniqueObjects.forEach(BDDImpl::free);
     }
-    return trace(makeBDD(ret), free ? Operation.OR_ALL_FREE : Operation.OR_ALL, operands);
+    return makeBDD(retIdx);
   }
 
   private int bdd_orAll(int[] operands) {
@@ -4876,7 +5243,7 @@ public final class JFactory extends BDDFactory {
           sb.append('=');
           BDDImpl b = new BDDImpl(result[i]);
           sb.append(b);
-          b.freeInternal();
+          b.free();
         }
       }
       sb.append('}');
@@ -5005,13 +5372,12 @@ public final class JFactory extends BDDFactory {
   @Override
   public int setVarNum(int num) {
     int ret = bdd_setvarnum(num);
-    traceNoResult(Operation.SET_VAR_NUM, -num);
+    traceIntNoResult(Operation.SET_VAR_NUM, num);
     return ret;
   }
 
   @Override
   public int duplicateVar(int var) {
-    crashIfTracing();
     if (var < 0 || var >= bddvarnum) {
       bdd_error(BDD_VAR);
       return BDDZERO;
@@ -5118,12 +5484,20 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public BDD ithVar(int var) {
-    return trace(makeBDD(bdd_ithvar(var)), Operation.ITH_VAR, -(var + 1));
+    BDDImpl ret = makeBDD(bdd_ithvar(var));
+    if (_tracing) {
+      return traceWithInt(() -> ret, var, Operation.ITH_VAR);
+    }
+    return ret;
   }
 
   @Override
   public BDD nithVar(int var) {
-    return trace(makeBDD(bdd_nithvar(var)), Operation.NITH_VAR, -(var + 1));
+    BDDImpl ret = makeBDD(bdd_nithvar(var));
+    if (_tracing) {
+      return traceWithInt(() -> ret, var, Operation.NITH_VAR);
+    }
+    return ret;
   }
 
   @Override
