@@ -1903,16 +1903,8 @@ public abstract class BDD {
     }
   }
 
-  /**
-   * Frees this BDD. Further use of this BDD will result in an exception being thrown.
-   *
-   * <p>Meant for use exclusively as a public API. See {@link #freeInternal()} for internal
-   * operations that also need to free a BDD.
-   */
+  /** Frees this BDD. Further use of this BDD will result in an exception being thrown. */
   public abstract void free();
-
-  /** Like {@link #free()}, but for calls from inside a {@link BDDFactory itself}. */
-  protected abstract void freeInternal();
 
   /** Protected constructor. */
   protected BDD() {}
