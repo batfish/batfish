@@ -1,6 +1,7 @@
 package org.batfish.datamodel.tracking;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -33,15 +34,15 @@ public class PreDataPlaneTrackMethodEvaluatorTest {
 
     PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);
     // Iface is active
-    TrackInterface trackInterface1 = new TrackInterface("i1");
+    TrackMethod trackInterface1 = interfaceActive("i1");
     assertTrue(evaluator.visit(trackInterface1));
 
     // Iface is not active
-    TrackInterface trackInterface2 = new TrackInterface("i2");
+    TrackMethod trackInterface2 = interfaceActive("i2");
     assertFalse(evaluator.visit(trackInterface2));
 
     // Non-existent iface
-    TrackInterface trackInterface4 = new TrackInterface("i4");
+    TrackMethod trackInterface4 = interfaceActive("i4");
     assertFalse(evaluator.visit(trackInterface4));
   }
 

@@ -14,6 +14,8 @@ import static org.batfish.common.topology.IpOwnersBaseImpl.processHsrpGroups;
 import static org.batfish.common.topology.IpOwnersBaseImpl.processVrrpGroups;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
@@ -47,9 +49,7 @@ import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
-import org.batfish.datamodel.tracking.TrackTrue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -434,7 +434,7 @@ public class IpOwnersBaseImplTest {
     Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
     Interface i1 = Interface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
     Interface i2 = Interface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
-    c1.setTrackingGroups(ImmutableMap.of("1", TrackTrue.instance()));
+    c1.setTrackingGroups(ImmutableMap.of("1", alwaysTrue()));
     HsrpGroup i1HsrpGroup =
         HsrpGroup.builder()
             .setPriority(100)
@@ -486,7 +486,7 @@ public class IpOwnersBaseImplTest {
     Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
     Interface i1 = Interface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
     Interface i2 = Interface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
-    c1.setTrackingGroups(ImmutableMap.of("1", TrackTrue.instance()));
+    c1.setTrackingGroups(ImmutableMap.of("1", alwaysTrue()));
     VrrpGroup i1VrrpGroup =
         VrrpGroup.builder()
             .setPriority(100)
@@ -558,9 +558,9 @@ public class IpOwnersBaseImplTest {
     c1.setTrackingGroups(
         ImmutableMap.of(
             "1", // never succeeds
-            NegatedTrackMethod.of(TrackTrue.instance()),
+            alwaysFalse(),
             "2", // always succeeds
-            TrackTrue.instance()));
+            alwaysTrue()));
 
     // Only track 2 is triggered, so only track 2 decrement is applied
     assertThat(
@@ -604,9 +604,9 @@ public class IpOwnersBaseImplTest {
     c1.setTrackingGroups(
         ImmutableMap.of(
             "1", // never succeeds
-            NegatedTrackMethod.of(TrackTrue.instance()),
+            alwaysFalse(),
             "2", // always succeeds
-            TrackTrue.instance()));
+            alwaysTrue()));
 
     // Only track 2 is triggered, so only track 2 decrement is applied
     assertThat(

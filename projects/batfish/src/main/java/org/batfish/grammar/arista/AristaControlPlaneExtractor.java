@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
 import static org.batfish.representation.arista.AristaConfiguration.computeRouteMapEntryName;
 import static org.batfish.representation.arista.AristaStructureType.ACCESS_LIST;
@@ -268,7 +269,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
@@ -4067,7 +4067,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = toInterfaceName(ctx.interface_name());
     _configuration.referenceStructure(
         INTERFACE, name, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
-    _configuration.getTrackingGroups().put(_currentTrackingGroup, new TrackInterface(name));
+    // TODO: create and use vendor classes for tracking.
+    _configuration.getTrackingGroups().put(_currentTrackingGroup, interfaceActive(name));
   }
 
   @Override
