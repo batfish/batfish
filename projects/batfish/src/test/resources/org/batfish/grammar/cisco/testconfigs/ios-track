@@ -2,11 +2,11 @@
 hostname ios-track
 !
 interface Ethernet0
- standby 1001 track 1 decrement 20
+ standby 101 track 1 decrement 20
  standby 1 track 4 decrement 20
 !
 interface Ethernet1
- standby 1002 track 3 decrement 20
+ standby 102 track 3 decrement 20
 !
 interface Tunnel1
 !

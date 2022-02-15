@@ -1,11 +1,10 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.SortedMap;
+import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.tracking.TrackAction;
 
 public class HsrpGroup implements Serializable {
 
@@ -23,7 +22,7 @@ public class HsrpGroup implements Serializable {
 
   private int _priority;
 
-  private final SortedMap<String, TrackAction> _trackActions;
+  private final Map<Integer, HsrpTrackAction> _trackActions;
 
   public HsrpGroup(int groupNumber) {
     _groupNumber = groupNumber;
@@ -61,7 +60,7 @@ public class HsrpGroup implements Serializable {
     return _priority;
   }
 
-  public @Nonnull SortedMap<String, TrackAction> getTrackActions() {
+  public @Nonnull Map<Integer, HsrpTrackAction> getTrackActions() {
     return _trackActions;
   }
 

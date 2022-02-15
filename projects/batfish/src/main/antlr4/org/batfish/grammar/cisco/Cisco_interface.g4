@@ -135,66 +135,6 @@ if_flow_sampler
    NO? FLOW_SAMPLER variable EGRESS? NEWLINE
 ;
 
-if_hsrp
-:
-   HSRP group = dec NEWLINE
-   (
-      if_hsrp_ip_address
-      | if_hsrp_null
-      | if_hsrp_preempt
-      | if_hsrp_priority
-      | if_hsrp_track
-   )*
-;
-
-if_hsrp_ip_address
-:
-   IP ip = IP_ADDRESS SECONDARY? NEWLINE
-;
-
-if_hsrp_null
-:
-   NO?
-   (
-      AUTHENTICATION
-      | MAC_ADDRESS
-      | NAME
-      | TIMERS
-   ) null_rest_of_line
-;
-
-if_hsrp_preempt
-:
-   NO? PREEMPT null_rest_of_line
-;
-
-if_hsrp_priority
-:
-   NO? PRIORITY value = dec null_rest_of_line
-;
-
-if_hsrp_track
-:
-   NO? TRACK null_rest_of_line
-;
-
-if_hsrp6
-:
-   HSRP group = dec IPV6 NEWLINE
-   (
-      if_hsrp6_ip_address
-      | if_hsrp_null
-      | if_hsrp_preempt
-      | if_hsrp_priority
-      | if_hsrp_track
-   )*
-;
-
-if_hsrp6_ip_address
-:
-   IP ip = IPV6_ADDRESS NEWLINE
-;
-
 if_ip
 :
   IP
@@ -795,16 +735,6 @@ if_null_block
       | HARDWARE
       | HISTORY
       | HOLD_QUEUE
-      |
-      (
-         HSRP
-         (
-            BFD
-            | DELAY
-            | USE_BIA
-            | VERSION
-         )
-      )
       | IGNORE
       | INGRESS
       |
@@ -1335,7 +1265,7 @@ if_standby
 
 standby_group
 :
-  group = dec
+  group = uint8
   (
     standby_group_authentication
     | standby_group_ip
@@ -1391,17 +1321,12 @@ standby_group_timers
 
 standby_group_track
 :
-  TRACK group = dec track_action
-;
-
-track_action
-:
-  track_action_decrement
-;
-
-track_action_decrement
-:
-  DECREMENT subtrahend = dec
+  TRACK num = track_number
+   (
+     // intentional blank, means decrement 10
+     | DECREMENT decrement = pint8
+     | SHUTDOWN
+   )
 ;
 
 standby_version
@@ -1788,8 +1713,6 @@ if_inner
    | if_description
    | if_encapsulation
    | if_flow_sampler
-   | if_hsrp
-   | if_hsrp6
    | if_ip
    | if_ip_proxy_arp
    | if_ip_access_group

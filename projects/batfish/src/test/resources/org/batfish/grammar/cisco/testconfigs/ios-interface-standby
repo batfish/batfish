@@ -3,15 +3,37 @@ hostname ios-interface-standby
 !
 interface Ethernet0
  ip address 10.0.0.2 255.255.255.0
- standby 1001 authentication 012345678901234567890123456789012345678
- standby 1001 ip 10.0.0.1
- standby 1001 preempt
- standby 1001 priority 105
- standby 1001 timers msec 500 2                                                                                                                                                                                   
- standby 1001 track 1 decrement 20
+ standby 101 authentication 012345678901234567890123456789012345678
+ standby 101 ip 10.0.0.1
+ standby 101 preempt
+ standby 101 priority 105
+ standby 101 timers msec 500 2
+
+ ! tracks Tunnel1 line-protocol
+ standby 101 track 1 decrement 20
+
+ ! tracks Tunnel1 ip routing
+ standby 101 track 2 shutdown
+
+ ! track is defined, but target interface is not
+ standby 101 track 3 decrement 20
+
+ ! use default decrement of 10
+ standby 101 track 4
+
+ ! track is undefined
+ standby 101 track 5 decrement 20
+
  standby version 2
 !
 interface Tunnel1
 !
 track 1 interface Tunnel1 line-protocol
+!
+track 2 interface Tunnel1 ip routing
+!
+! undefined interface
+track 3 interface GigabitEthernet0/0 line-protocol
+!
+track 4 interface Tunnel1 line-protocol
 !

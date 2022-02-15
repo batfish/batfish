@@ -10,7 +10,6 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
-import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -22,6 +21,8 @@ import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
+import static org.batfish.representation.cisco.CiscoConversions.convertIpSlas;
+import static org.batfish.representation.cisco.CiscoConversions.convertTracks;
 import static org.batfish.representation.cisco.CiscoConversions.convertVrfLeakingConfig;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
@@ -201,8 +202,6 @@ import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
-import org.batfish.datamodel.tracking.TrackMethod;
-import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
@@ -497,7 +496,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, SecurityZone> _securityZones;
 
-  private final Map<String, TrackMethod> _trackingGroups;
+  private final Map<Integer, IpSla> _ipSlas;
+  private final Map<Integer, Track> _tracks;
 
   public CiscoConfiguration() {
     _asPathAccessLists = new TreeMap<>();
@@ -521,6 +521,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
+    _ipSlas = new HashMap<>();
     _namedVlans = new HashMap<>();
     _natInside = new TreeSet<>();
     _natOutside = new TreeSet<>();
@@ -542,7 +543,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
-    _trackingGroups = new TreeMap<>();
+    _tracks = new TreeMap<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
@@ -1580,9 +1581,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CollectionUtil.toImmutableMap(
             iface.getHsrpGroups(),
             Entry::getKey,
-            e ->
-                toHsrpGroup(
-                    e.getValue(), _trackingGroups.keySet(), newIface.getConcreteAddress())));
+            e -> toHsrpGroup(e.getValue(), _tracks.keySet(), newIface.getConcreteAddress(), c)));
 
     // For IOS, FirewallSessionInterfaceInfo is created once for all NAT interfaces.
     return newIface;
@@ -2621,18 +2620,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // create zone policies
     createZoneAcls(c);
 
-    // generate negated track methods
-    _interfaces.values().stream()
-        .flatMap(i -> i.getHsrpGroups().values().stream())
-        .flatMap(hsrpGroup -> hsrpGroup.getTrackActions().keySet().stream())
-        .distinct()
-        .filter(_trackingGroups::containsKey)
-        .forEach(
-            trackMethodId ->
-                _trackingGroups.put(
-                    generatedNegatedTrackMethodId(trackMethodId),
-                    TrackMethodReference.negated(trackMethodId)));
-
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
@@ -2763,8 +2750,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         });
 
-    // copy tracking groups
-    c.getTrackingGroups().putAll(_trackingGroups);
+    convertIpSlas(_ipSlas, c);
+    convertTracks(_tracks, _ipSlas.keySet()::contains, _interfaces.keySet()::contains, c);
 
     // apply vrrp settings to interfaces
     applyVrrp(c);
@@ -3754,8 +3741,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _securityZones;
   }
 
-  public Map<String, TrackMethod> getTrackingGroups() {
-    return _trackingGroups;
+  public Map<Integer, IpSla> getIpSlas() {
+    return _ipSlas;
+  }
+
+  public Map<Integer, Track> getTracks() {
+    return _tracks;
   }
 
   private void convertIpCommunityLists(Configuration c) {
