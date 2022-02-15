@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -37,21 +38,22 @@ public final class FibImpl implements Fib {
     private final @Nullable Ip _finalNextHopIp;
 
     private final @Nonnull List<ResolutionTreeNode> _children;
+    private boolean _unresolvable;
 
     /** Use static factories for sanity */
     private ResolutionTreeNode(
         AbstractRoute route, @Nullable Ip finalNextHopIp, List<ResolutionTreeNode> children) {
+      // TODO: remove once Route.UNSET_NEXT_HOP_IP and Ip.AUTO are killed
+      assert !Ip.AUTO.equals(finalNextHopIp);
       _route = route;
-      _finalNextHopIp = finalNextHopIp;
       _children = children;
+      _finalNextHopIp = finalNextHopIp;
     }
 
     static ResolutionTreeNode withParent(
-        AbstractRoute route, @Nullable ResolutionTreeNode parent, @Nullable Ip finalNextHopIp) {
+        AbstractRoute route, ResolutionTreeNode parent, @Nullable Ip finalNextHopIp) {
       ResolutionTreeNode child = new ResolutionTreeNode(route, finalNextHopIp, new LinkedList<>());
-      if (parent != null) {
-        parent.addChild(child);
-      }
+      parent.addChild(child);
       return child;
     }
 
@@ -77,6 +79,14 @@ public final class FibImpl implements Fib {
     private void addChild(ResolutionTreeNode child) {
       _children.add(child);
     }
+
+    public void markUnresolvable() {
+      _unresolvable = true;
+    }
+
+    public boolean getUnresolvable() {
+      return _unresolvable;
+    }
   }
 
   private static final int MAX_DEPTH = 10;
@@ -87,14 +97,12 @@ public final class FibImpl implements Fib {
   private transient Supplier<Set<FibEntry>> _entries;
 
   public <R extends AbstractRouteDecorator> FibImpl(
-      @Nonnull GenericRib<R> rib, ResolutionRestriction<R> restriction) {
+      GenericRib<R> rib, ResolutionRestriction<R> restriction) {
     _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
-    rib.getTypedRoutes()
-        .forEach(
-            r -> {
-              Set<FibEntry> s = resolveRoute(rib, r.getAbstractRoute(), restriction);
-              _root.putAll(r.getNetwork(), s);
-            });
+    rib.getTypedRoutes().stream()
+        .map(AbstractRouteDecorator::getAbstractRoute)
+        .filter(r -> !r.getNonForwarding())
+        .forEach(r -> _root.putAll(r.getNetwork(), resolveRoute(rib, r, restriction)));
     initSuppliers();
   }
 
@@ -127,16 +135,7 @@ public final class FibImpl implements Fib {
   <R extends AbstractRouteDecorator> Set<FibEntry> resolveRoute(
       GenericRib<R> rib, AbstractRoute route, ResolutionRestriction<R> restriction) {
     ResolutionTreeNode resolutionRoot = ResolutionTreeNode.root(route);
-    buildResolutionTree(
-        rib,
-        route,
-        Route.UNSET_ROUTE_NEXT_HOP_IP,
-        new HashSet<>(),
-        0,
-        Prefix.MAX_PREFIX_LENGTH,
-        null,
-        resolutionRoot,
-        restriction);
+    buildResolutionTree(rib, route, null, new HashSet<>(), 0, resolutionRoot, restriction);
     Builder<FibEntry> collector = ImmutableSet.builder();
     collectEntries(resolutionRoot, new Stack<>(), collector);
     return collector.build();
@@ -147,14 +146,19 @@ public final class FibImpl implements Fib {
       Stack<AbstractRoute> stack,
       ImmutableCollection.Builder<FibEntry> entriesBuilder) {
     AbstractRoute route = node.getRoute();
-    if (node.getChildren().isEmpty() && node.getFinalNextHopIp() != null) {
+    assert !route.getNonForwarding();
+    if (node.getChildren().isEmpty()) {
       FibAction fibAction =
           new NextHopVisitor<FibAction>() {
 
             @Override
             public FibAction visitNextHopIp(NextHopIp nextHopIp) {
-              throw new IllegalStateException(
-                  String.format("FIB resolution failed to reach an interface route for %s", route));
+              checkState(
+                  node.getUnresolvable(),
+                  "FIB resolution failed to reach a terminal route for NHIP route not marked"
+                      + " unresolvable: %s",
+                  route);
+              return FibNullRoute.INSTANCE;
             }
 
             @Override
@@ -192,24 +196,21 @@ public final class FibImpl implements Fib {
 
   /**
    * Tail-recursive method to build a route resolution tree. Each top-level route is mapped to a
-   * number of leaf {@link ResolutionTreeNode}. Leaf nodes must contain non-null {@link
-   * ResolutionTreeNode#_finalNextHopIp}
+   * number of leaf {@link ResolutionTreeNode}. Only leaf nodes of {@link NextHopInterface} routes
+   * may contain non-null {@link ResolutionTreeNode#_finalNextHopIp}. Each {@link NextHopIp} route
+   * node must have one or more children, or be an unresolvable leaf node.
    */
   private <R extends AbstractRouteDecorator> void buildResolutionTree(
       GenericRib<R> rib,
       AbstractRoute route,
-      Ip mostRecentNextHopIp,
+      @Nullable Ip mostRecentNextHopIp,
       Set<Prefix> seenNetworks,
       int depth,
-      int maxPrefixLength,
-      @Nullable AbstractRoute parentRoute,
       ResolutionTreeNode treeNode,
       ResolutionRestriction<R> restriction) {
+    assert !route.getNonForwarding();
     Prefix network = route.getNetwork();
-    if (seenNetworks.contains(network)) {
-      // Don't enter a resolution loop
-      return;
-    }
+    checkState(!seenNetworks.contains(network), "Unexpected resolution loop resolving %s", route);
     Set<Prefix> newSeenNetworks = new HashSet<>(seenNetworks);
     newSeenNetworks.add(network);
     if (depth > MAX_DEPTH) {
@@ -218,35 +219,15 @@ public final class FibImpl implements Fib {
       return;
     }
 
-    // For non-forwarding routes, try to find a less specific route
-    if (route.getNonForwarding()) {
-      if (parentRoute == null) {
-        return;
-      } else {
-        seenNetworks.remove(parentRoute.getNetwork());
-        buildResolutionTree(
-            rib,
-            parentRoute,
-            mostRecentNextHopIp,
-            seenNetworks,
-            depth + 1,
-            maxPrefixLength - 1,
-            null,
-            treeNode,
-            restriction);
-        return;
-      }
-    }
-
     new NextHopVisitor<Void>() {
 
       @Override
       public Void visitNextHopIp(NextHopIp nextHopIp) {
-        Set<AbstractRoute> forwardingRoutes =
+        Set<AbstractRoute> lpmRoutes;
+        lpmRoutes =
             rib
                 .longestPrefixMatch(
                     nextHopIp.getIp(),
-                    maxPrefixLength,
                     r -> {
                       if (route.getProtocol() == RoutingProtocol.STATIC) {
                         // TODO: factor out common code with
@@ -268,60 +249,53 @@ public final class FibImpl implements Fib {
                 .map(AbstractRouteDecorator::getAbstractRoute)
                 .collect(ImmutableSet.toImmutableSet());
 
-        if (forwardingRoutes.isEmpty()) {
-          // Re-resolve *this route* with a less specific prefix match
-          seenNetworks.remove(route.getNetwork());
+        if (lpmRoutes.isEmpty()
+            || newSeenNetworks.contains(lpmRoutes.iterator().next().getNetwork())) {
+          // The next hop IP does not resolve or resolves in a loop, so this route becomes a
+          // discard entry. Note that such entries may only exist on some vendors (e.g. IOS), and
+          // will only survive in the final FIB if they do not cause an oscillation during data
+          // plane computation. On other vendors, the main RIB does not activate such routes, so we
+          // will not encounter them here.
+          ResolutionTreeNode.withParent(route, treeNode, null).markUnresolvable();
+          return null;
+        }
+        // We have at least one longest-prefix match, and have not looped yet.
+        for (AbstractRoute nextHopLongestPrefixMatchRoute : lpmRoutes) {
           buildResolutionTree(
               rib,
-              route,
-              mostRecentNextHopIp,
-              seenNetworks,
+              nextHopLongestPrefixMatchRoute,
+              nextHopIp.getIp(),
+              newSeenNetworks,
               depth + 1,
-              maxPrefixLength - 1,
-              parentRoute,
-              treeNode,
+              ResolutionTreeNode.withParent(nextHopLongestPrefixMatchRoute, treeNode, null),
               restriction);
-        } else {
-          // We have at least one valid longest-prefix match
-          for (AbstractRoute nextHopLongestPrefixMatchRoute : forwardingRoutes) {
-            buildResolutionTree(
-                rib,
-                nextHopLongestPrefixMatchRoute,
-                nextHopIp.getIp(),
-                newSeenNetworks,
-                depth + 1,
-                Prefix.MAX_PREFIX_LENGTH,
-                route,
-                ResolutionTreeNode.withParent(nextHopLongestPrefixMatchRoute, treeNode, null),
-                restriction);
-          }
         }
         return null;
       }
 
       @Override
       public Void visitNextHopInterface(NextHopInterface nextHopInterface) {
-        Ip finalNextHopIp =
-            nextHopInterface.getIp() == null ? mostRecentNextHopIp : route.getNextHopIp();
+        Ip nhintIp = nextHopInterface.getIp();
+        Ip finalNextHopIp = nhintIp != null ? nhintIp : mostRecentNextHopIp;
         ResolutionTreeNode.withParent(route, treeNode, finalNextHopIp);
         return null;
       }
 
       @Override
       public Void visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-        ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
+        ResolutionTreeNode.withParent(route, treeNode, null);
         return null;
       }
 
       @Override
       public Void visitNextHopVrf(NextHopVrf nextHopVrf) {
-        ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
+        ResolutionTreeNode.withParent(route, treeNode, null);
         return null;
       }
 
       @Override
       public Void visitNextHopVtep(NextHopVtep nextHopVtep) {
-        ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
+        ResolutionTreeNode.withParent(route, treeNode, null);
         return null;
       }
     }.visit(route.getNextHop());

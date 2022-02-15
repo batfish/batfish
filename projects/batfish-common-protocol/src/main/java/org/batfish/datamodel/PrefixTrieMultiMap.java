@@ -425,6 +425,8 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   /** Find the elements associated with the longest matching prefix of a given IP address. */
   @Nonnull
   public Set<T> longestPrefixMatch(Ip address) {
+    // TODO: remove once Route.UNSET_NEXT_HOP_IP and Ip.AUTO are killed
+    assert !Route.UNSET_ROUTE_NEXT_HOP_IP.equals(address);
     return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
   }
 

@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
@@ -821,9 +822,7 @@ public class ForwardingAnalysisImplTest {
                             ImmutableSet.of(
                                 new FibEntry(FibNullRoute.INSTANCE, ImmutableList.of(nullRoute)),
                                 new FibEntry(
-                                    new FibForward(
-                                        Route.UNSET_ROUTE_NEXT_HOP_IP,
-                                        otherRoute.getNextHopInterface()),
+                                    new FibForward(null, otherRoute.getNextHopInterface()),
                                     ImmutableList.of(otherRoute)))))
                     .build()));
     IpSpace result =
@@ -928,12 +927,12 @@ public class ForwardingAnalysisImplTest {
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
     Map<String, Set<AbstractRoute>> routesWithNextHop =
         ImmutableMap.of(i1, ImmutableSet.of(r1, ifaceRoute));
-    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
+    Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces =
         ImmutableMap.of(
             r1,
-            ImmutableMap.of(i1, ImmutableSet.of(r1.getNextHopIp())),
+            ImmutableMap.of(i1, ImmutableSet.of(Optional.of(r1.getNextHopIp()))),
             ifaceRoute,
-            ImmutableMap.of(i1, ImmutableSet.of(Route.UNSET_ROUTE_NEXT_HOP_IP)));
+            ImmutableMap.of(i1, ImmutableSet.of(Optional.empty())));
     Map<String, Set<AbstractRoute>> result =
         computeRoutesWhereDstIpCanBeArpIp(nextHopInterfaces, routesWithNextHop);
 
@@ -969,9 +968,8 @@ public class ForwardingAnalysisImplTest {
         MockFib.builder()
             .setFibEntries(
                 ImmutableMap.of(
-                    Ip.AUTO,
-                    ImmutableSet.of(
-                        new FibEntry(new FibForward(Ip.AUTO, i1), ImmutableList.of(r1)))))
+                    P1.getFirstHostIp(),
+                    ImmutableSet.of(new FibEntry(new FibForward(null, i1), ImmutableList.of(r1)))))
             .build();
     Map<String, Map<String, Fib>> fibs =
         ImmutableMap.of(
@@ -1009,8 +1007,8 @@ public class ForwardingAnalysisImplTest {
             .setAdministrativeCost(1)
             .build();
     Set<AbstractRoute> routesWithNextHop = ImmutableSet.of(r1);
-    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
-        ImmutableMap.of(r1, ImmutableMap.of(i1, ImmutableSet.of(r1.getNextHopIp())));
+    Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces =
+        ImmutableMap.of(r1, ImmutableMap.of(i1, ImmutableSet.of(Optional.of(r1.getNextHopIp()))));
     IpSpace someoneReplies = P2.getEndIp().toIpSpace();
     Set<AbstractRoute> result =
         computeArpFalseNhipRoutes(i1, nextHopInterfaces, routesWithNextHop, someoneReplies);
@@ -1036,14 +1034,16 @@ public class ForwardingAnalysisImplTest {
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
     Set<AbstractRoute> candidateRoutes =
         ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute);
-    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
+    Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces =
         ImmutableMap.of(
             nextHopIpRoute1,
-            ImmutableMap.of(outInterface, ImmutableSet.of(nextHopIpRoute1.getNextHopIp())),
+            ImmutableMap.of(
+                outInterface, ImmutableSet.of(Optional.of(nextHopIpRoute1.getNextHopIp()))),
             nextHopIpRoute2,
-            ImmutableMap.of(outInterface, ImmutableSet.of(nextHopIpRoute2.getNextHopIp())),
+            ImmutableMap.of(
+                outInterface, ImmutableSet.of(Optional.of(nextHopIpRoute2.getNextHopIp()))),
             ifaceRoute,
-            ImmutableMap.of(outInterface, ImmutableSet.of(Route.UNSET_ROUTE_NEXT_HOP_IP)));
+            ImmutableMap.of(outInterface, ImmutableSet.of(Optional.empty())));
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalseForInterface(
             nextHopInterfaces, outInterface, candidateRoutes, P2.getStartIp().toIpSpace());
@@ -1073,14 +1073,16 @@ public class ForwardingAnalysisImplTest {
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
     Set<AbstractRoute> candidateRoutes =
         ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute);
-    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
+    Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces =
         ImmutableMap.of(
             nextHopIpRoute1,
-            ImmutableMap.of(outInterface, ImmutableSet.of(nextHopIpRoute1.getNextHopIp())),
+            ImmutableMap.of(
+                outInterface, ImmutableSet.of(Optional.of(nextHopIpRoute1.getNextHopIp()))),
             nextHopIpRoute2,
-            ImmutableMap.of(outInterface, ImmutableSet.of(nextHopIpRoute2.getNextHopIp())),
+            ImmutableMap.of(
+                outInterface, ImmutableSet.of(Optional.of(nextHopIpRoute2.getNextHopIp()))),
             ifaceRoute,
-            ImmutableMap.of(outInterface, ImmutableSet.of(Route.UNSET_ROUTE_NEXT_HOP_IP)));
+            ImmutableMap.of(outInterface, ImmutableSet.of(Optional.empty())));
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalseForInterface(
             nextHopInterfaces, outInterface, candidateRoutes, EmptyIpSpace.INSTANCE);
@@ -1117,12 +1119,12 @@ public class ForwardingAnalysisImplTest {
             .build();
     Map<String, Set<AbstractRoute>> routesWithNextHop =
         ImmutableMap.of(i1, ImmutableSet.of(r1, r2));
-    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
+    Map<AbstractRoute, Map<String, Set<Optional<Ip>>>> nextHopInterfaces =
         ImmutableMap.of(
             r1,
-            ImmutableMap.of(i1, ImmutableSet.of(r1.getNextHopIp())),
+            ImmutableMap.of(i1, ImmutableSet.of(Optional.of(r1.getNextHopIp()))),
             r2,
-            ImmutableMap.of(i1, ImmutableSet.of(r2.getNextHopIp())));
+            ImmutableMap.of(i1, ImmutableSet.of(Optional.of(r2.getNextHopIp()))));
     Map<Edge, Set<AbstractRoute>> result =
         computeRoutesWithNextHopIpArpTrue(
             c1, nextHopInterfaces, topology, arpReplies, routesWithNextHop);
@@ -1467,10 +1469,10 @@ public class ForwardingAnalysisImplTest {
             .setMatchingIps(ImmutableMap.of(prefix, ipSpace))
             .setFibEntries(
                 ImmutableMap.of(
-                    Ip.AUTO,
+                    prefix.getFirstHostIp(),
                     ImmutableSet.of(
                         new FibEntry(
-                            new FibForward(Ip.AUTO, i1.getName()), ImmutableList.of(route1)))))
+                            new FibForward(null, i1.getName()), ImmutableList.of(route1)))))
             .build();
 
     MockFib fib2 =
@@ -1478,10 +1480,10 @@ public class ForwardingAnalysisImplTest {
             .setMatchingIps(ImmutableMap.of(prefix, ipSpace))
             .setFibEntries(
                 ImmutableMap.of(
-                    Ip.AUTO,
+                    prefix.getFirstHostIp(),
                     ImmutableSet.of(
                         new FibEntry(
-                            new FibForward(Ip.AUTO, i2.getName()), ImmutableList.of(route2)))))
+                            new FibForward(null, i2.getName()), ImmutableList.of(route2)))))
             .build();
 
     Map<String, Map<String, Fib>> fibs =

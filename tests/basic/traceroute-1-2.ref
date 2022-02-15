@@ -400,7 +400,6 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
                         "outputInterface" : "GigabitEthernet2/0"
@@ -834,7 +833,6 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
                         "outputInterface" : "GigabitEthernet2/0"
@@ -1268,7 +1266,6 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
                         "outputInterface" : "GigabitEthernet2/0"
@@ -1702,7 +1699,6 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
                         "outputInterface" : "GigabitEthernet2/0"
@@ -2164,7 +2160,6 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
                         "outputInterface" : "GigabitEthernet2/0"
@@ -2598,7 +2593,6 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
                         "outputInterface" : "GigabitEthernet2/0"
@@ -3032,7 +3026,6 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
                         "outputInterface" : "GigabitEthernet2/0"
@@ -3466,7 +3459,6 @@
                     "type" : "Routing",
                     "action" : "FORWARDED",
                     "detail" : {
-                      "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
                         "outputInterface" : "GigabitEthernet2/0"
