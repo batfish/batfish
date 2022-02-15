@@ -196,8 +196,9 @@ public final class FibImpl implements Fib {
 
   /**
    * Tail-recursive method to build a route resolution tree. Each top-level route is mapped to a
-   * number of leaf {@link ResolutionTreeNode}. Leaf nodes must contain non-null {@link
-   * ResolutionTreeNode#_finalNextHopIp}
+   * number of leaf {@link ResolutionTreeNode}. Only leaf nodes of {@link NextHopInterface} routes
+   * may contain non-null {@link ResolutionTreeNode#_finalNextHopIp}. Each {@link NextHopIp} route
+   * node must have one or more children, or be an unresolvable leaf node.
    */
   private <R extends AbstractRouteDecorator> void buildResolutionTree(
       GenericRib<R> rib,
@@ -255,7 +256,7 @@ public final class FibImpl implements Fib {
           // will only survive in the final FIB if they do not cause an oscillation during data
           // plane computation. On other vendors, the main RIB does not activate such routes, so we
           // will not encounter them here.
-          treeNode.markUnresolvable();
+          ResolutionTreeNode.withParent(route, treeNode, null).markUnresolvable();
           return null;
         }
         // We have at least one longest-prefix match, and have not looped yet.
