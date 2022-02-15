@@ -648,6 +648,12 @@ uint8
   UINT8
 ;
 
+pint8
+:
+  // 1-255
+  uint8
+;
+
 uint16
 :
   UINT8

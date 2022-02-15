@@ -250,9 +250,3 @@ percent
   // 0-100
   uint8
 ;
-
-pint8
-:
-  // 1-255
-  uint8
-;
