@@ -3953,18 +3953,19 @@ public final class JFactory extends BDDFactory {
     bddnodesize = newsize;
 
     if (doRehash) {
-      for (int n = 0; n < oldsize; n++) {
-        SETHASH(n, 0);
-      }
+      // Clear the hash of all the existing nodes.
+      IntStream.range(0, oldsize).parallel().forEach(i -> SETHASH(i, 0));
     }
 
-    for (int n = oldsize; n < bddnodesize; n++) {
-      SETLOW(n, INVALID_BDD);
-      // SETREFCOU(n, 0);
-      // SETHASH(n, 0);
-      // SETLEVEL(n, 0);
-      SETNEXT(n, n + 1);
-    }
+    // Initialize the new nodes in parallel
+    IntStream.range(oldsize, newsize)
+        .parallel()
+        .forEach(
+            n -> {
+              SETLOW(n, INVALID_BDD);
+              SETNEXT(n, n + 1);
+            });
+
     SETNEXT(bddnodesize - 1, bddfreepos);
     bddfreepos = oldsize;
     bddfreenum += bddnodesize - oldsize;
