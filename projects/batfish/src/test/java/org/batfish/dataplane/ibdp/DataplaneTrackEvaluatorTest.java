@@ -2,6 +2,12 @@ package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
+import static org.batfish.datamodel.tracking.TrackMethods.reachability;
+import static org.batfish.datamodel.tracking.TrackMethods.reference;
+import static org.batfish.datamodel.tracking.TrackMethods.route;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -12,13 +18,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.tracking.NegatedTrackMethod;
-import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
-import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
-import org.batfish.datamodel.tracking.TrackTrue;
 import org.junit.Test;
 
 /** Test of {@link DataplaneTrackEvaluator}. */
@@ -41,8 +43,8 @@ public final class DataplaneTrackEvaluatorTest {
         .setVrf(c.getDefaultVrf())
         .setAdminUp(false)
         .build();
-    TrackInterface tiUp = new TrackInterface("i1");
-    TrackInterface tiDown = new TrackInterface("i2");
+    TrackMethod tiUp = interfaceActive("i1");
+    TrackMethod tiDown = interfaceActive("i2");
     DataplaneTrackEvaluator e =
         new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
@@ -55,10 +57,10 @@ public final class DataplaneTrackEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     // contents don't matter
-    TrackReachability trackReachability =
-        TrackReachability.of(Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME);
+    TrackMethod trackReachability = reachability(Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME);
     DataplaneTrackEvaluator e =
-        new DataplaneTrackEvaluator(c, ImmutableMap.of(trackReachability, true), ImmutableMap.of());
+        new DataplaneTrackEvaluator(
+            c, ImmutableMap.of((TrackReachability) trackReachability, true), ImmutableMap.of());
 
     assertTrue(e.visit(trackReachability));
   }
@@ -68,9 +70,10 @@ public final class DataplaneTrackEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     // contents don't matter
-    TrackRoute trackRoute = TrackRoute.of(Prefix.ZERO, ImmutableSet.of(), "bar");
+    TrackMethod trackRoute = route(Prefix.ZERO, ImmutableSet.of(), "bar");
     DataplaneTrackEvaluator e =
-        new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of(trackRoute, true));
+        new DataplaneTrackEvaluator(
+            c, ImmutableMap.of(), ImmutableMap.of((TrackRoute) trackRoute, true));
 
     assertTrue(e.visit(trackRoute));
   }
@@ -79,12 +82,12 @@ public final class DataplaneTrackEvaluatorTest {
   public void testVisitTrackMethodReference() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
-    TrackMethod base = TrackTrue.instance();
+    TrackMethod base = alwaysTrue();
     c.setTrackingGroups(ImmutableMap.of("1", base));
     DataplaneTrackEvaluator e =
         new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
-    assertTrue(e.visit(TrackMethodReference.of("1")));
+    assertTrue(e.visit(reference("1")));
   }
 
   @Test
@@ -94,7 +97,7 @@ public final class DataplaneTrackEvaluatorTest {
     DataplaneTrackEvaluator e =
         new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
-    assertFalse(e.visit(NegatedTrackMethod.of(TrackTrue.instance())));
+    assertFalse(e.visit(alwaysFalse()));
   }
 
   @Test
@@ -104,6 +107,6 @@ public final class DataplaneTrackEvaluatorTest {
     DataplaneTrackEvaluator evaluator =
         new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
-    assertTrue(evaluator.visit(TrackTrue.instance()));
+    assertTrue(evaluator.visit(alwaysTrue()));
   }
 }

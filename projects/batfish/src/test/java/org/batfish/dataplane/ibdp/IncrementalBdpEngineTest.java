@@ -6,6 +6,9 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.RoutingProtocol.CONNECTED;
 import static org.batfish.datamodel.RoutingProtocol.HMM;
+import static org.batfish.datamodel.tracking.TrackMethods.negated;
+import static org.batfish.datamodel.tracking.TrackMethods.reachability;
+import static org.batfish.datamodel.tracking.TrackMethods.route;
 import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.evaluateTrackRoute;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -43,9 +46,7 @@ import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
-import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Test;
@@ -62,11 +63,14 @@ public final class IncrementalBdpEngineTest {
     Rib rib = node.getVirtualRouter(DEFAULT_VRF_NAME).get().getMainRib();
     Prefix prefix = Prefix.parse("192.0.2.0/24");
     rib.mergeRoute(new AnnotatedRoute<>(new ConnectedRoute(prefix, "foo"), DEFAULT_VRF_NAME));
-    TrackRoute trMatchWithoutProtocol = TrackRoute.of(prefix, ImmutableSet.of(), DEFAULT_VRF_NAME);
+    TrackRoute trMatchWithoutProtocol =
+        (TrackRoute) route(prefix, ImmutableSet.of(), DEFAULT_VRF_NAME);
     TrackRoute trMatchWithProtocol =
-        TrackRoute.of(prefix, ImmutableSet.of(CONNECTED), DEFAULT_VRF_NAME);
-    TrackRoute trPrefixMismatch = TrackRoute.of(Prefix.ZERO, ImmutableSet.of(), DEFAULT_VRF_NAME);
-    TrackRoute trProtocolMismatch = TrackRoute.of(prefix, ImmutableSet.of(HMM), DEFAULT_VRF_NAME);
+        (TrackRoute) route(prefix, ImmutableSet.of(CONNECTED), DEFAULT_VRF_NAME);
+    TrackRoute trPrefixMismatch =
+        (TrackRoute) route(Prefix.ZERO, ImmutableSet.of(), DEFAULT_VRF_NAME);
+    TrackRoute trProtocolMismatch =
+        (TrackRoute) route(prefix, ImmutableSet.of(HMM), DEFAULT_VRF_NAME);
 
     assertTrue(evaluateTrackRoute(trMatchWithoutProtocol, node));
     assertTrue(evaluateTrackRoute(trMatchWithProtocol, node));
@@ -103,9 +107,9 @@ public final class IncrementalBdpEngineTest {
     c1.setTrackingGroups(
         ImmutableMap.of(
             "succeeds",
-            TrackReachability.of(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME),
+            reachability(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME),
             "fails",
-            TrackReachability.of(Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME)));
+            reachability(Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME)));
     StaticRoute srSucceeds =
         StaticRoute.builder()
             .setNetwork(Prefix.strict("10.10.0.0/24"))
@@ -159,9 +163,9 @@ public final class IncrementalBdpEngineTest {
     c.setTrackingGroups(
         ImmutableMap.of(
             passingTrackId,
-            TrackRoute.of(Prefix.ZERO, ImmutableSet.of(RoutingProtocol.STATIC), v2.getName()),
+            route(Prefix.ZERO, ImmutableSet.of(RoutingProtocol.STATIC), v2.getName()),
             failingTrackId,
-            TrackRoute.of(Prefix.ZERO, ImmutableSet.of(RoutingProtocol.OSPF), v2.getName())));
+            route(Prefix.ZERO, ImmutableSet.of(RoutingProtocol.OSPF), v2.getName())));
     StaticRoute srWithPassingTrack =
         StaticRoute.builder()
             .setNetwork(Prefix.strict("10.0.0.0/24"))
@@ -256,7 +260,7 @@ public final class IncrementalBdpEngineTest {
     vrrp1.setTrackingGroups(
         ImmutableMap.of(
             trackIndex,
-            TrackRoute.of(vrrp1Source.getPrefix(), ImmutableSet.of(CONNECTED), DEFAULT_VRF_NAME)));
+            route(vrrp1Source.getPrefix(), ImmutableSet.of(CONNECTED), DEFAULT_VRF_NAME)));
     Interface.builder()
         .setAddress(vrrp1Source)
         .setName("i2")
@@ -363,8 +367,7 @@ public final class IncrementalBdpEngineTest {
     v1.setKernelRoutes(ImmutableSortedSet.of(kernelRoute));
     v2.setKernelRoutes(ImmutableSortedSet.of(kernelRoute));
     r1.setTrackingGroups(
-        ImmutableMap.of(
-            "failReach", NegatedTrackMethod.of(TrackReachability.of(r1Ip, DEFAULT_VRF_NAME))));
+        ImmutableMap.of("failReach", negated(reachability(r1Ip, DEFAULT_VRF_NAME))));
     VrrpGroup g1 =
         VrrpGroup.builder()
             .setPriority(100)

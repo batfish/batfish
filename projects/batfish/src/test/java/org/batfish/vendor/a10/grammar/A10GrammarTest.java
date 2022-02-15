@@ -39,7 +39,8 @@ import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
-import static org.batfish.datamodel.tracking.TrackMethodReference.negated;
+import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
+import static org.batfish.datamodel.tracking.TrackMethods.reachability;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
@@ -142,7 +143,6 @@ import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -1484,9 +1484,9 @@ public class A10GrammarTest {
         equalTo(
             ImmutableMap.of(
                 trackGatewayName,
-                TrackReachability.of(Ip.parse("10.10.10.10"), DEFAULT_VRF_NAME),
+                reachability(Ip.parse("10.10.10.10"), DEFAULT_VRF_NAME),
                 failedTrackGatewayName,
-                negated(trackGatewayName))));
+                negatedReference(trackGatewayName))));
     assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name));
     {
       org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i1Name);
@@ -2225,9 +2225,9 @@ public class A10GrammarTest {
         equalTo(
             ImmutableMap.of(
                 trackGatewayName,
-                TrackReachability.of(gatewayIp, DEFAULT_VRF_NAME),
+                reachability(gatewayIp, DEFAULT_VRF_NAME),
                 failedTrackGatewayName,
-                negated(trackGatewayName))));
+                negatedReference(trackGatewayName))));
 
     // Test VRRP conversion
     assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name, i3Name));

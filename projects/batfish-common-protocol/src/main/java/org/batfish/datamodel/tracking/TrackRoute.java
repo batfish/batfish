@@ -72,7 +72,7 @@ public final class TrackRoute implements TrackMethod {
     return Objects.hash(_prefix, _protocols, _vrf);
   }
 
-  public static @Nonnull TrackRoute of(Prefix prefix, Set<RoutingProtocol> protocols, String vrf) {
+  static @Nonnull TrackRoute of(Prefix prefix, Set<RoutingProtocol> protocols, String vrf) {
     checkArgument(!Strings.isNullOrEmpty(vrf), "vrf name must be non-empty");
     return new TrackRoute(prefix, protocols, vrf);
   }

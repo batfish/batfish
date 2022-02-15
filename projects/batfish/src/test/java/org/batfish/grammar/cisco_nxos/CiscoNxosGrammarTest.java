@@ -96,6 +96,9 @@ import static org.batfish.datamodel.matchers.VniMatchers.hasUdpPort;
 import static org.batfish.datamodel.matchers.VniMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasLayer2Vnis;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
+import static org.batfish.datamodel.tracking.TrackMethods.route;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_3000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_6000;
@@ -305,8 +308,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.TrackRoute;
-import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1848,15 +1849,15 @@ public final class CiscoNxosGrammarTest {
         equalTo(
             ImmutableMap.of(
                 "1",
-                new org.batfish.datamodel.tracking.TrackInterface("port-channel1"),
+                interfaceActive("port-channel1"),
                 "100",
-                TrackRoute.of(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(HMM), "v1"),
+                route(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(HMM), "v1"),
                 "101",
-                TrackTrue.instance(),
+                alwaysTrue(),
                 "200",
-                TrackRoute.of(Prefix.strict("192.0.2.2/32"), ImmutableSet.of(), DEFAULT_VRF_NAME),
+                route(Prefix.strict("192.0.2.2/32"), ImmutableSet.of(), DEFAULT_VRF_NAME),
                 "500",
-                new org.batfish.datamodel.tracking.TrackInterface("Ethernet1/1"))));
+                interfaceActive("Ethernet1/1"))));
   }
 
   @Test
@@ -9801,9 +9802,9 @@ public final class CiscoNxosGrammarTest {
         equalTo(
             ImmutableMap.of(
                 "10",
-                new org.batfish.datamodel.tracking.TrackInterface("Ethernet1/2"),
+                interfaceActive("Ethernet1/2"),
                 "20",
-                TrackRoute.of(Prefix.strict("10.3.0.2/32"), ImmutableSet.of(HMM), "foo"))));
+                route(Prefix.strict("10.3.0.2/32"), ImmutableSet.of(HMM), "foo"))));
     assertThat(
         c.getDefaultVrf().getStaticRoutes(),
         contains(

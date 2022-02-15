@@ -21,6 +21,10 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
+import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
+import static org.batfish.datamodel.tracking.TrackMethods.route;
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_EBGP;
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_IBGP;
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_LOCAL_BGP;
@@ -226,9 +230,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.TrackMethodReference;
-import org.batfish.datamodel.tracking.TrackRoute;
-import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
@@ -1335,7 +1336,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             _c.getTrackingGroups()
                 .put(
                     generatedNegatedTrackMethodId(num.toString()),
-                    TrackMethodReference.negated(num.toString()));
+                    negatedReference(num.toString()));
           }
         });
   }
@@ -1973,7 +1974,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (track instanceof TrackInterface) {
       TrackInterface trackInterface = (TrackInterface) track;
       if (trackInterface.getMode() == Mode.LINE_PROTOCOL) {
-        return new org.batfish.datamodel.tracking.TrackInterface(trackInterface.getInterface());
+        return interfaceActive(trackInterface.getInterface());
       }
       w.redFlag(
           String.format(
@@ -1982,13 +1983,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               trackInterface.getMode()));
     } else if (track instanceof TrackIpRoute) {
       TrackIpRoute trackIpRoute = (TrackIpRoute) track;
-      return TrackRoute.of(
+      return route(
           trackIpRoute.getPrefix(),
           trackIpRoute.getHmm() ? ImmutableSet.of(RoutingProtocol.HMM) : ImmutableSet.of(),
           firstNonNull(trackIpRoute.getVrf(), DEFAULT_VRF_NAME));
     }
     // unhandled cases
-    return TrackTrue.instance();
+    return alwaysTrue();
   }
 
   private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(

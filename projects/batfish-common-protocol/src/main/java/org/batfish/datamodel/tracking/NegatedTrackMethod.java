@@ -42,7 +42,7 @@ public final class NegatedTrackMethod implements TrackMethod {
     return toStringHelper(this).add(PROP_TRACK_METHOD, _trackMethod).toString();
   }
 
-  public static @Nonnull NegatedTrackMethod of(TrackMethod trackMethod) {
+  static @Nonnull NegatedTrackMethod of(TrackMethod trackMethod) {
     return new NegatedTrackMethod(trackMethod);
   }
 

@@ -45,7 +45,7 @@ public final class TrackReachability implements TrackMethod {
     return Objects.hash(_destinationIp, _sourceVrf);
   }
 
-  public static @Nonnull TrackReachability of(Ip destinationIp, String sourceVrf) {
+  static @Nonnull TrackReachability of(Ip destinationIp, String sourceVrf) {
     return new TrackReachability(destinationIp, sourceVrf);
   }
 

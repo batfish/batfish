@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.representation.cisco_asa.AsaNat.ANY_INTERFACE;
 import static org.batfish.representation.cisco_asa.AsaStructureType.ACCESS_LIST;
@@ -386,7 +387,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
-import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
@@ -3479,7 +3479,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     String name = toInterfaceName(ctx.interface_name());
     _configuration.referenceStructure(
         INTERFACE, name, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
-    _configuration.getTrackingGroups().put(_currentTrackingGroup, new TrackInterface(name));
+    // TODO: create and use vendor classes for tracking.
+    _configuration.getTrackingGroups().put(_currentTrackingGroup, interfaceActive(name));
   }
 
   @Override

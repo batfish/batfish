@@ -4,6 +4,7 @@ import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTrack;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.job.ConvertConfigurationJob.finalizeConfiguration;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -46,7 +47,6 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.job.ConvertConfigurationJob.CollectIpSpaceReferences;
 import org.junit.Rule;
@@ -315,7 +315,7 @@ public final class ConvertConfigurationJobTest {
         .setHsrpGroups(ImmutableMap.of(1, hsrpGroup))
         .build();
     v.setStaticRoutes(ImmutableSortedSet.of(srMissing, srPresent));
-    c.getTrackingGroups().put("present", TrackTrue.instance());
+    c.getTrackingGroups().put("present", alwaysTrue());
 
     Warnings w = new Warnings(false, true, false);
     finalizeConfiguration(c, w);

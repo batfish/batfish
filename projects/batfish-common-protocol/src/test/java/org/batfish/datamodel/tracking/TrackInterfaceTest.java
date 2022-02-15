@@ -12,22 +12,22 @@ public final class TrackInterfaceTest {
 
   @Test
   public void testJavaSerialization() {
-    TrackInterface obj = new TrackInterface("foo");
+    TrackInterface obj = TrackInterface.of("foo");
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testJacksonSerialization() {
-    TrackInterface obj = new TrackInterface("foo");
+    TrackInterface obj = TrackInterface.of("foo");
     assertEquals(obj, BatfishObjectMapper.clone(obj, TrackMethod.class));
   }
 
   @Test
   public void testEquals() {
-    TrackInterface obj = new TrackInterface("foo");
+    TrackInterface obj = TrackInterface.of("foo");
     new EqualsTester()
-        .addEqualityGroup(obj, new TrackInterface("foo"))
-        .addEqualityGroup(new TrackInterface("bar"))
+        .addEqualityGroup(obj, TrackInterface.of("foo"))
+        .addEqualityGroup(TrackInterface.of("bar"))
         .testEquals();
   }
 }
