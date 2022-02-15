@@ -201,13 +201,6 @@ public final class CompletionMetadataUtilsTest {
             new IpCompletionRelevance(
                 interfaceDisplayString(iface1), config.getHostname(), iface1.getName())));
     trie.put(
-        interfaceAddress1.getPrefix(),
-        new IpCompletionMetadata(
-            unownedSubnetHostIps(interfaceAddress1.getPrefix(), ownedIps),
-            ImmutableList.of(
-                new IpCompletionRelevance(
-                    interfaceLinkDisplayString(iface1), config.getHostname(), iface1.getName()))));
-    trie.put(
         ip2.toPrefix(),
         new IpCompletionMetadata(
             ImmutableList.of(
