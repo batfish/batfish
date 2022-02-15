@@ -189,6 +189,11 @@ public final class CompletionMetadataUtils {
       Interface iface,
       Prefix prefix,
       RangeSet<Ip> ownedIps) {
+    // exclude p2p subnets
+    if (prefix.getPrefixLength() > Prefix.HOST_SUBNET_MAX_PREFIX_LENGTH) {
+      return;
+    }
+
     // short-circuit when there are no unownedSubnetHostIps. But if the entry is in the trie, there
     // must be some (and we don't need to compute them again).
     Set<IpCompletionMetadata> metadataSet = trie.get(prefix);
