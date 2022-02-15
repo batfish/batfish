@@ -80,7 +80,7 @@ public final class FibImpl implements Fib {
       _children.add(child);
     }
 
-    public void setUnresolvable(boolean unresolvable) {
+    public void markUnresolvable() {
       _unresolvable = true;
     }
 
@@ -223,8 +223,6 @@ public final class FibImpl implements Fib {
       @Override
       public Void visitNextHopIp(NextHopIp nextHopIp) {
         Set<AbstractRoute> lpmRoutes;
-        // For repeat cases, we don't want to keep around the unresolvable children
-        treeNode.getChildren().clear();
         lpmRoutes =
             rib
                 .longestPrefixMatch(
@@ -257,11 +255,7 @@ public final class FibImpl implements Fib {
           // will only survive in the final FIB if they do not cause an oscillation during data
           // plane computation. On other vendors, the main RIB does not activate such routes, so we
           // will not encounter them here.
-          treeNode.setUnresolvable(true);
-          if (depth == 0) {
-            // Add a child node to satisfy invariant that leaf nodes have a parent.
-            ResolutionTreeNode.withParent(route, treeNode, null).setUnresolvable(true);
-          }
+          treeNode.markUnresolvable();
           return null;
         }
         // We have at least one longest-prefix match, and have not looped yet.

@@ -214,6 +214,7 @@ public final class FibImplTest {
     Set<AbstractRoute> fibRoutes = getTopLevelRoutesByInterface(fib, "Eth1");
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
+    assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("3.3.3.0/24")))));
     assertThat(fibRoutes, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
   }
 

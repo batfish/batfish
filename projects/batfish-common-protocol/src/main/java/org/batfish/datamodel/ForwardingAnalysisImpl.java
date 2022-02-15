@@ -1226,8 +1226,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   /**
-   * Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIps (or Optional.empty() if dest IP
-   * should be used for ARP
+   * Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIps (or {@link Optional#empty()})
+   * if dest IP should be used for ARP
    */
   private static @Nonnull Map<AbstractRoute, Map<String, Set<Optional<Ip>>>>
       computeNextHopInterfaces(Fib fib) {
