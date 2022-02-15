@@ -960,10 +960,9 @@ final class IncrementalBdpEngine {
       Span hmmSpan = GlobalTracer.get().buildSpan("Compute HMM routes").start();
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(hmmSpan)) {
         assert innerScope != null; // avoid unused warning
+        Map<String, Map<String, Set<Ip>>> interfaceOwners = ipOwners.getInterfaceOwners(true);
         vrs.parallelStream()
-            .forEach(
-                vr ->
-                    vr.computeHmmRoutes(initialLayer3Topology, ipOwners.getInterfaceOwners(true)));
+            .forEach(vr -> vr.computeHmmRoutes(initialLayer3Topology, interfaceOwners));
       } finally {
         hmmSpan.finish();
       }
