@@ -153,6 +153,9 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
+import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -401,10 +404,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.NegatedTrackMethod;
-import org.batfish.datamodel.tracking.TrackInterface;
-import org.batfish.datamodel.tracking.TrackMethodReference;
-import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1551,22 +1550,22 @@ public final class CiscoGrammarTest {
             equalTo(
                 ImmutableMap.of(
                     "1",
-                    new TrackInterface("Tunnel1"),
+                    interfaceActive("Tunnel1"),
                     generatedNegatedTrackMethodId("1"),
-                    TrackMethodReference.negated("1"),
+                    negatedReference("1"),
                     "2",
-                    new TrackInterface("Tunnel1"),
+                    interfaceActive("Tunnel1"),
                     generatedNegatedTrackMethodId("2"),
-                    TrackMethodReference.negated("2"),
+                    negatedReference("2"),
                     "3",
                     // undefined interface
-                    NegatedTrackMethod.of(TrackTrue.instance()),
+                    alwaysFalse(),
                     generatedNegatedTrackMethodId("3"),
-                    TrackMethodReference.negated("3"),
+                    negatedReference("3"),
                     "4",
-                    new TrackInterface("Tunnel1"),
+                    interfaceActive("Tunnel1"),
                     generatedNegatedTrackMethodId("4"),
-                    TrackMethodReference.negated("4")
+                    negatedReference("4")
                     // track 5 does not exist
                     ))));
     assertThat(

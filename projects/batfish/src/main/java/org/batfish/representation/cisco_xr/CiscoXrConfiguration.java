@@ -16,6 +16,7 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceInactive;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeDedupedAsPathMatchExprName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeOriginalAsPathMatchExprName;
@@ -162,9 +163,7 @@ import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.TrackAction;
-import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.cisco_xr.Aaa;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthentication;
@@ -1148,8 +1147,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private @Nonnull String generateVrrpOrHsrpTrackInterfaceDownIfNeeded(
       String ifaceName, Configuration c) {
     String name = generatedVrrpOrHsrpTrackInterfaceDownName(ifaceName);
-    c.getTrackingGroups()
-        .computeIfAbsent(name, n -> NegatedTrackMethod.of(new TrackInterface(ifaceName)));
+    c.getTrackingGroups().computeIfAbsent(name, n -> interfaceInactive(ifaceName));
     return name;
   }
 

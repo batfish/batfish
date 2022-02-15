@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.INTERFACE_PREFIX_PATTERN;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
@@ -324,7 +325,6 @@ import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
-import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.vendor_family.cisco_xr.Aaa;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAccounting;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAccountingCommands;
@@ -2805,7 +2805,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     String name = toInterfaceName(ctx.interface_name());
     _configuration.referenceStructure(
         INTERFACE, name, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
-    _configuration.getTrackingGroups().put(_currentTrackingGroup, new TrackInterface(name));
+    _configuration.getTrackingGroups().put(_currentTrackingGroup, interfaceActive(name));
   }
 
   @Override

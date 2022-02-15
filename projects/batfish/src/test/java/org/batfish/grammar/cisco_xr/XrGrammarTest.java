@@ -43,6 +43,7 @@ import static org.batfish.datamodel.routing_policy.RoutingPolicy.isGenerated;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
+import static org.batfish.datamodel.tracking.TrackMethods.interfaceInactive;
 import static org.batfish.grammar.cisco_xr.CiscoXrControlPlaneExtractor.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -235,8 +236,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.NegatedTrackMethod;
-import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -2137,9 +2136,9 @@ public final class XrGrammarTest {
             equalTo(
                 ImmutableMap.of(
                     generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether10"),
-                    NegatedTrackMethod.of(new TrackInterface("Bundle-Ether10")),
+                    interfaceInactive("Bundle-Ether10"),
                     generatedVrrpOrHsrpTrackInterfaceDownName("Bundle-Ether11"),
-                    NegatedTrackMethod.of(new TrackInterface("Bundle-Ether11"))))));
+                    interfaceInactive("Bundle-Ether11")))));
 
     assertThat(
         c,

@@ -10,7 +10,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
-import static org.batfish.datamodel.tracking.TrackMethodReference.negated;
+import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
+import static org.batfish.datamodel.tracking.TrackMethods.reachability;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
@@ -100,7 +101,6 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackMethod;
-import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Noop;
@@ -428,7 +428,7 @@ public final class A10Configuration extends VendorConfiguration {
       Ip ip = ((ServerTargetAddress) server.getTarget()).getAddress();
       // TODO: Use configured health monitor method (e.g. ICMP, TCP/123, etc.)
       //       instead of forcing ICMP (which is the default)
-      TrackMethod method = TrackReachability.of(ip, DEFAULT_VRF_NAME);
+      TrackMethod method = reachability(ip, DEFAULT_VRF_NAME);
       String methodName = generatedServerTrackMethodName(ip);
       _c.getTrackingGroups().put(methodName, method);
     }
@@ -797,7 +797,7 @@ public final class A10Configuration extends VendorConfiguration {
   private @Nonnull String createFailedTrackIfNeeded(String trackMethodName) {
     String failedTrackMethodName = generatedFailedTrackMethodName(trackMethodName);
     if (!_c.getTrackingGroups().containsKey(failedTrackMethodName)) {
-      _c.getTrackingGroups().put(failedTrackMethodName, negated(trackMethodName));
+      _c.getTrackingGroups().put(failedTrackMethodName, negatedReference(trackMethodName));
     }
     return failedTrackMethodName;
   }

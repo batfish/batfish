@@ -42,12 +42,8 @@ public final class TrackMethodReference implements TrackMethod {
     return toStringHelper(this).add(PROP_ID, _id).toString();
   }
 
-  public static @Nonnull TrackMethodReference of(String id) {
+  static @Nonnull TrackMethodReference of(String id) {
     return new TrackMethodReference(id);
-  }
-
-  public static @Nonnull TrackMethod negated(String id) {
-    return NegatedTrackMethod.of(of(id));
   }
 
   @JsonCreator

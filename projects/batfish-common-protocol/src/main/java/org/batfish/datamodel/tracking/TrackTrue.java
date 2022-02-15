@@ -9,7 +9,7 @@ public final class TrackTrue implements TrackMethod {
 
   @JsonCreator
   @JsonValue
-  public static @Nonnull TrackTrue instance() {
+  static @Nonnull TrackTrue instance() {
     return INSTANCE;
   }
 

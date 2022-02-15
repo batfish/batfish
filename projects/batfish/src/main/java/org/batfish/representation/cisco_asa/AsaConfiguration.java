@@ -20,6 +20,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
 import static org.batfish.representation.cisco_asa.AsaConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco_asa.AsaConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco_asa.AsaConversions.convertVrfLeakingConfig;
@@ -189,7 +190,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
-import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -3060,8 +3060,7 @@ public final class AsaConfiguration extends VendorConfiguration {
         .filter(_trackingGroups::containsKey)
         .forEach(
             id ->
-                c.getTrackingGroups()
-                    .put(generatedNegatedTrackMethodId(id), TrackMethodReference.negated(id)));
+                c.getTrackingGroups().put(generatedNegatedTrackMethodId(id), negatedReference(id)));
 
     // apply vrrp settings to interfaces
     applyVrrp(c);
