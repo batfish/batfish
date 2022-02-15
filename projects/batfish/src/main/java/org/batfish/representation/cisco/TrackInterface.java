@@ -23,11 +23,6 @@ public class TrackInterface implements Track {
     return visitor.visitTrackInterface(this);
   }
 
-  @Override
-  public boolean hasVrf() {
-    return false;
-  }
-
   public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }

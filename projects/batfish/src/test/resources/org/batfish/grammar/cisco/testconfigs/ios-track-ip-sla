@@ -2,13 +2,29 @@
 !
 hostname ios-track-ip-sla
 !
+
 track 1 ip sla 1 reachability
  delay down 5 up 5
 !
-ip route vrf v1 10.0.0.1 255.255.255.0 10.0.1.2 tag 10 track 1
+
+track 2 ip sla 1 state
+
+! should default to state
+track 3 ip sla 1
+
+! undefined sla
+track 4 ip sla 999 reachability
+
+!
+ip route vrf v1 10.0.0.0 255.255.255.0 10.0.1.2 tag 10 track 1
+
+interface Loopback0
+  no shutdown
+  ip address 10.100.0.1 255.255.255.255
+  vrf forwarding v1
 !
 ip sla 1
- icmp-echo 10.102.2.207 source-interface Port-channel1.100
+ icmp-echo 10.0.0.2 source-interface Loopback0
  request-data-size 28
  tos 0
  data-pattern ABCDABCD
@@ -26,3 +42,50 @@ ip sla 1
  history buckets-kept 15
  history filter none
 !
+
+ip sla 2
+ icmp-echo 10.0.0.2 source-ip 10.5.5.5
+ ! should use default vrf
+ ! should use default frequency of 60
+!
+
+ip sla 3
+  ! interface does not exist
+  icmp-echo 10.0.0.2 source-interface Loopback1
+!
+
+ip sla 10
+ icmp-echo 10.0.0.2
+ip sla 11
+ icmp-echo 10.0.0.2
+ip sla 12
+ icmp-echo 10.0.0.2
+ip sla 13
+ icmp-echo 10.0.0.2
+ip sla 14
+ icmp-echo 10.0.0.2
+ip sla 15
+ icmp-echo 10.0.0.2
+ip sla 16
+ icmp-echo 10.0.0.2
+
+ip sla 17
+ icmp-echo 10.0.0.2
+no ip sla 17
+
+ip sla schedule 1 start-time now life forever
+ip sla schedule 2 start-time now life forever
+ip sla schedule 3 start-time now life forever
+
+ip sla schedule 10 ageout 20 life forever start-time pending recurring
+ip sla schedule 11 start-time after 11:22:33 life forever
+ip sla schedule 12 start-time 11:22
+ip sla schedule 13 start-time 11:22:33
+ip sla schedule 14 start-time random 1234
+ip sla schedule 15 life 30 start-time now
+
+ip sla schedule 16 life forever start-time now
+no ip sla schedule 16
+
+! undefined sla number; do nothing, don't crash
+ip sla schedule 17 start-time now life forever

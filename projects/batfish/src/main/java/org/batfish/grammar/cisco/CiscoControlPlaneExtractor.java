@@ -51,6 +51,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LI
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.IP_PORT_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.IP_SLA;
 import static org.batfish.representation.cisco.CiscoStructureType.ISAKMP_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
@@ -200,6 +201,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_OUTSID
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_POOL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_ROUTE_NHINT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_SLA_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_POLICY_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
@@ -275,6 +277,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.STATIC_ROUTE_
 import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_IP_SLA;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_LIST_BOOLEAN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_LIST_THRESHOLD_PERCENTAGE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_LIST_THRESHOLD_WEIGHT;
@@ -636,6 +639,7 @@ import org.batfish.grammar.cisco.CiscoParser.Interface_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Interface_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Ios_banner_headerContext;
 import org.batfish.grammar.cisco.CiscoParser.Ios_delimited_bannerContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_as_path_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_as_path_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_expanded_stanzaContext;
@@ -652,6 +656,10 @@ import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_route_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_route_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_sla_entryContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_sla_scheduleContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_slai_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_slat_icmp_echoContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_ssh_versionContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipl_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipn_insideContext;
@@ -717,6 +725,8 @@ import org.batfish.grammar.cisco.CiscoParser.Network_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Next_hop_self_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.No_bgp_enforce_first_as_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_ip_prefix_list_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.No_ip_sla_entryContext;
+import org.batfish.grammar.cisco.CiscoParser.No_ip_sla_scheduleContext;
 import org.batfish.grammar.cisco.CiscoParser.No_neighbor_activate_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_neighbor_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_redistribute_connected_rb_stanzaContext;
@@ -951,6 +961,9 @@ import org.batfish.grammar.cisco.CiscoParser.Set_origin_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_weight_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Shutdown_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Sla_numberContext;
+import org.batfish.grammar.cisco.CiscoParser.Sla_schedule_lifeContext;
+import org.batfish.grammar.cisco.CiscoParser.Sla_schedule_start_timeContext;
 import org.batfish.grammar.cisco.CiscoParser.Sntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Spanning_tree_portfastContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_communityContext;
@@ -987,6 +1000,7 @@ import org.batfish.grammar.cisco.CiscoParser.T_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.T_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_policy_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Tip_slaContext;
 import org.batfish.grammar.cisco.CiscoParser.Tlb_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Tltp_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Tltw_objectContext;
@@ -1052,11 +1066,13 @@ import org.batfish.representation.cisco.ExtendedAccessListLine;
 import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
 import org.batfish.representation.cisco.FqdnNetworkObject;
+import org.batfish.representation.cisco.HasWritableVrf;
 import org.batfish.representation.cisco.HostNetworkObject;
 import org.batfish.representation.cisco.HsrpDecrementPriority;
 import org.batfish.representation.cisco.HsrpGroup;
 import org.batfish.representation.cisco.HsrpShutdown;
 import org.batfish.representation.cisco.HsrpTrackAction;
+import org.batfish.representation.cisco.IcmpEchoSla;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
 import org.batfish.representation.cisco.IcmpTypeGroupReferenceLine;
 import org.batfish.representation.cisco.IcmpTypeGroupTypeLine;
@@ -1072,6 +1088,7 @@ import org.batfish.representation.cisco.Interface;
 import org.batfish.representation.cisco.IpAsPathAccessList;
 import org.batfish.representation.cisco.IpAsPathAccessListLine;
 import org.batfish.representation.cisco.IpBgpPeerGroup;
+import org.batfish.representation.cisco.IpSla;
 import org.batfish.representation.cisco.IpsecProfile;
 import org.batfish.representation.cisco.IpsecTransformSet;
 import org.batfish.representation.cisco.Ipv6BgpPeerGroup;
@@ -1165,6 +1182,7 @@ import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Track;
 import org.batfish.representation.cisco.TrackInterface;
+import org.batfish.representation.cisco.TrackIpSla;
 import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
@@ -1494,6 +1512,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Integer _currentHsrpGroup;
 
   private Integer _currentTrack;
+
+  private Integer _currentSlaNumber;
+
+  private IpSla _currentSla;
 
   /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
    * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
@@ -3438,7 +3460,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitTrack_interface(Track_interfaceContext ctx) {
+  public void enterTrack_interface(Track_interfaceContext ctx) {
     String interfaceName = toInterfaceName(ctx.interface_name());
     _configuration.referenceStructure(
         INTERFACE, interfaceName, TRACK_INTERFACE, ctx.interface_name().getStart().getLine());
@@ -3457,6 +3479,135 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // track type.
     trackInterface.setInterfaceName(interfaceName);
     trackInterface.setIpRouting(ctx.ROUTING() != null);
+  }
+
+  @Override
+  public void enterTip_sla(Tip_slaContext ctx) {
+    int sla = toInteger(ctx.num);
+    _configuration.referenceStructure(
+        IP_SLA, Integer.toString(sla), TRACK_IP_SLA, ctx.getStart().getLine());
+    Track currentTrack = _configuration.getTracks().get(_currentTrack);
+    if (currentTrack != null && !(currentTrack instanceof TrackIpSla)) {
+      warn(ctx, "Cannot change track type");
+      return;
+    }
+    TrackIpSla trackIpSla =
+        (TrackIpSla)
+            _configuration.getTracks().computeIfAbsent(_currentTrack, num -> new TrackIpSla(sla));
+    assert ctx.REACHABILITY() == null || ctx.STATE() == null; // inclusive or, STATE is default
+    // You can change the sla and the subtype, but you can't change to a different top-level
+    // track type.
+    trackIpSla.setIpSla(sla);
+    trackIpSla.setReachability(ctx.REACHABILITY() != null);
+  }
+
+  private static int toInteger(Sla_numberContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  @Override
+  public void enterIp_sla_entry(Ip_sla_entryContext ctx) {
+    _currentSlaNumber = toInteger(ctx.num);
+    _configuration.defineStructure(IP_SLA, Integer.toString(_currentSlaNumber), ctx);
+    // We need to set this in case we are re-entering an existing sla, since the type line will be
+    // absent/rejected on re-entry.
+    _currentSla = _configuration.getIpSlas().get(_currentSlaNumber);
+  }
+
+  @Override
+  public void exitIp_sla_entry(Ip_sla_entryContext ctx) {
+    _currentSlaNumber = null;
+  }
+
+  @Override
+  public void exitIp_slat_icmp_echo(Ip_slat_icmp_echoContext ctx) {
+    if (_configuration.getIpSlas().containsKey(_currentSlaNumber)) {
+      assert _currentSla != null;
+      warn(ctx, "Ignoring invalid type line for existing ip sla");
+      return;
+    }
+    if (ctx.srchost != null || ctx.dsthost != null) {
+      warn(ctx, "No support for DNS names as source or dest IP");
+    }
+    Ip dstIp = ctx.dstip != null ? toIp(ctx.dstip) : null;
+    Ip srcIp = ctx.srcip != null ? toIp(ctx.srcip) : null;
+    String srcInt = null;
+    if (ctx.iname != null) {
+      srcInt = toString(ctx.iname);
+      _configuration.referenceStructure(
+          INTERFACE, srcInt, IP_SLA_SOURCE_INTERFACE, ctx.getStart().getLine());
+    }
+    _currentSla = new IcmpEchoSla(dstIp, srcInt, srcIp);
+    _configuration.getIpSlas().put(_currentSlaNumber, _currentSla);
+  }
+
+  @Override
+  public void exitIp_slai_vrf(Ip_slai_vrfContext ctx) {
+    if (!(_currentSla instanceof HasWritableVrf)) {
+      warn(ctx, "Cannot set vrf for this ip sla type");
+      return;
+    }
+    ((HasWritableVrf) _currentSla).setVrf(toString(ctx.name));
+  }
+
+  private static @Nonnull String toString(VariableContext ctx) {
+    return ctx.getText();
+  }
+
+  private static @Nonnull Ip toIp(Ip_addressContext ctx) {
+    return Ip.parse(ctx.getText());
+  }
+
+  @Override
+  public void exitNo_ip_sla_entry(No_ip_sla_entryContext ctx) {
+    _configuration.getIpSlas().remove(toInteger(ctx.num));
+  }
+
+  @Override
+  public void enterIp_sla_schedule(Ip_sla_scheduleContext ctx) {
+    int num = toInteger(ctx.num);
+    IpSla sla = _configuration.getIpSlas().get(num);
+    if (sla == null) {
+      warn(ctx, String.format("Rejecting schedule configuration for non-existent ip sla %d", num));
+      return;
+    }
+    // non-group schedule is not an independent structure from ip sla
+    _configuration.defineStructure(IP_SLA, Integer.toString(num), ctx);
+    _currentSla = sla;
+  }
+
+  @Override
+  public void exitIp_sla_schedule(Ip_sla_scheduleContext ctx) {
+    _currentSla = null;
+  }
+
+  @Override
+  public void exitSla_schedule_life(Sla_schedule_lifeContext ctx) {
+    if (_currentSla == null) {
+      // because sla does not exist
+      return;
+    }
+    _currentSla.setLivesForever(ctx.FOREVER() != null);
+  }
+
+  @Override
+  public void exitSla_schedule_start_time(Sla_schedule_start_timeContext ctx) {
+    if (_currentSla == null) {
+      // because sla does not exist
+      return;
+    }
+    _currentSla.setStartsEventually(ctx.PENDING() == null);
+  }
+
+  @Override
+  public void exitNo_ip_sla_schedule(No_ip_sla_scheduleContext ctx) {
+    int num = toInteger(ctx.num);
+    IpSla sla = _configuration.getIpSlas().get(num);
+    if (sla == null) {
+      return;
+    }
+    sla.setLivesForever(false); // really makes it default of 3600s
+    sla.setStartsEventually(false); // really makes it INACTIVE (distinct from PENDING)
   }
 
   @Override
@@ -9273,6 +9424,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private String getCanonicalInterfaceName(String ifaceName) {
     return _configuration.canonicalizeInterfaceName(ifaceName);
+  }
+
+  private @Nonnull String toString(Interface_nameContext ctx) {
+    return getCanonicalInterfaceName(ctx.getText());
   }
 
   public CiscoConfiguration getConfiguration() {

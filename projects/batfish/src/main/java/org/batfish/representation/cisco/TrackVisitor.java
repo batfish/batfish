@@ -10,4 +10,6 @@ public interface TrackVisitor<T> {
   }
 
   T visitTrackInterface(TrackInterface trackInterface);
+
+  T visitTrackIpSla(TrackIpSla trackIpSla);
 }

@@ -1,5 +1,7 @@
 package org.batfish.datamodel.tracking;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import javax.annotation.Nonnull;
@@ -29,6 +31,11 @@ public final class TrackTrue implements TrackMethod {
   }
 
   private static @Nonnull TrackTrue INSTANCE = new TrackTrue();
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).toString();
+  }
 
   private TrackTrue() {}
 }

@@ -127,7 +127,8 @@ no_tiprm_threshold_null: NO tiprm_threshold_null;
 
 tip_sla
 :
-  SLA sla_number (REACHABILITY | STATE)? NEWLINE
+  // STATE is default
+  SLA num = sla_number (REACHABILITY | STATE)? NEWLINE
   tip_sla_inner*
 ;
 
