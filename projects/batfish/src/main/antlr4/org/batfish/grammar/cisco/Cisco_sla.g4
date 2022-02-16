@@ -24,7 +24,7 @@ ip_sla
       | ip_sla_reset
       | ip_sla_responder_null
       | ip_sla_restart_null
-      | ip_sla_schedule_null
+      | ip_sla_schedule
       | ip_sla_server
    )
 ;
@@ -45,7 +45,7 @@ no_ip_sla
     // no NO version of reset, since it is an operation
     | ip_sla_responder_null
     // no NO vesion of restart, since it is an operation
-    | ip_sla_schedule_null
+    | no_ip_sla_schedule
     | ip_sla_reaction_configuration_null // could not get CLI to accept anything
     | ip_sla_reaction_trigger_null // could not get CLI to accept anything
     | no_ip_sla_server
@@ -185,6 +185,51 @@ ip_slai_vrf: VRF name = variable NEWLINE;
 //   history
 //   max-delay
 //   owner
+
+// ftp ip sla scope
+//   frequency
+//   history
+//   owner
+//   tag
+//   threshold
+//   timeout
+//   tos
+//   vrf
+
+// http ip sla scope
+//   frequency
+//   history
+//   http-raw-request
+//   owner
+//   tag
+//   threshold
+//   timeout
+//   tos
+//   vrf
+
+// icmp-echo ip sla scope
+//   data-pattern
+//   frequency
+//   history
+//   owner
+//   request-data-size
+//   tag
+//   threshold
+//   timeout
+//   tos
+//   verify-data
+//   vrf
+
+// icmp-jitter ip sla scope
+//   frequency
+//   history
+//   owner
+//   percentile
+//   tag
+//   threshold
+//   timeout
+//   tos
+//   vrf
 
 // mpls ping ip sla scope:
 //   exp
@@ -737,7 +782,7 @@ ip_slaem_entry
   ip_slaeme_inner*
 ;
 
-no_ip_slaem_entry: NO num = sla_number NEWLINE;
+no_ip_slaem_entry: num = sla_number NEWLINE;
 
 ip_slaeme_inner
 :
@@ -792,7 +837,63 @@ ip_sla_responder_null: RESPONDER null_rest_of_line;
 
 ip_sla_restart_null: RESTART null_rest_of_line; // operation, does not appear in config
 
-ip_sla_schedule_null: SCHEDULE null_rest_of_line;
+ip_sla_schedule
+:
+  SCHEDULE num = sla_number
+  (
+    ageout = sla_schedule_ageout
+    | life = sla_schedule_life
+    | recurring = sla_schedule_recurring
+    | starttime = sla_schedule_start_time
+  )* NEWLINE
+;
+
+sla_schedule_ageout: AGEOUT ageout_seconds;
+
+ageout_seconds
+:
+  // 0-2073600
+  uint32
+;
+
+sla_schedule_life
+:
+  LIFE
+  (
+    FOREVER
+    | secs = life_seconds
+  )
+;
+
+life_seconds
+:
+  // 0-2147483647
+  uint32
+;
+
+sla_schedule_recurring: RECURRING;
+
+sla_schedule_start_time
+:
+  START_TIME
+  (
+    AFTER after = HH_MM_SS
+    | HH_MM
+    | HH_MM_SS
+    | NOW
+    | PENDING // never starts
+    | RANDOM sla_schedule_random_ms
+  )
+;
+
+sla_schedule_random_ms
+:
+  // 500-10000
+  uint16
+;
+
+// Contents after number don't seem to matter. Just deletes the schedule, deactivating the sla.
+no_ip_sla_schedule: SCHEDULE num = sla_number null_rest_of_line;
 
 ip_sla_server
 :

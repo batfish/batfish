@@ -743,7 +743,7 @@ track_number
 sla_number
 :
   // 1-2147483647
-  uint32
+  SLA_NUMBER
 ;
 
 ip_address: IP_ADDRESS;

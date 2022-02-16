@@ -42733,13 +42733,12 @@
             "      IP:'ip'",
             "      (ip_sla*",
             "        SLA:'sla'",
-            "        (ip_sla_entry*",
+            "        (ip_sla_entry",
             "          num = (sla_number*",
-            "            (uint32*",
-            "              UINT8:'10'))",
+            "            SLA_NUMBER:'10'  <== mode:M_Sla)",
             "          NEWLINE:'\\n'",
             "          (ip_sla_type*",
-            "            (ip_slat_icmp_echo*",
+            "            (ip_slat_icmp_echo",
             "              ICMP_ECHO:'icmp-echo'",
             "              dstip = (ip_address*",
             "                IP_ADDRESS:'1.2.3.4')",
@@ -42846,7 +42845,7 @@
             "                VARIABLE:'failures'",
             "                NEWLINE:'\\n')))",
             "          (ip_sla_inner*",
-            "            (ip_slai_vrf*",
+            "            (ip_slai_vrf",
             "              VRF:'vrf'",
             "              name = (variable*",
             "                VARIABLE:'VRF1')",
@@ -42856,10 +42855,9 @@
             "      IP:'ip'",
             "      (ip_sla*",
             "        SLA:'sla'",
-            "        (ip_sla_entry*",
+            "        (ip_sla_entry",
             "          num = (sla_number*",
-            "            (uint32*",
-            "              UINT8:'20'))",
+            "            SLA_NUMBER:'20'  <== mode:M_Sla)",
             "          NEWLINE:'\\n'",
             "          (ip_sla_type*",
             "            (ip_slat_path_echo_null*",
@@ -42874,10 +42872,9 @@
             "      IP:'ip'",
             "      (ip_sla*",
             "        SLA:'sla'",
-            "        (ip_sla_entry*",
+            "        (ip_sla_entry",
             "          num = (sla_number*",
-            "            (uint32*",
-            "              UINT8:'30'))",
+            "            SLA_NUMBER:'30'  <== mode:M_Sla)",
             "          NEWLINE:'\\n'",
             "          (ip_sla_type*",
             "            (ip_slat_udp_jitter*",
@@ -73102,7 +73099,22 @@
             }
           }
         },
-        "configs/ios_ip_sla" : { },
+        "configs/ios_ip_sla" : {
+          "ip sla" : {
+            "10" : {
+              "definitionLines" : "4-20",
+              "numReferrers" : 0
+            },
+            "20" : {
+              "definitionLines" : "22-23",
+              "numReferrers" : 0
+            },
+            "30" : {
+              "definitionLines" : "25-26",
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/ios_standby" : {
           "interface" : {
             "Vlan1000" : {
@@ -79531,6 +79543,15 @@
             "Ethernet0" : {
               "interface" : [
                 4
+              ]
+            }
+          }
+        },
+        "configs/ios_ip_sla" : {
+          "interface" : {
+            "GigabitEthernet0/0/3" : {
+              "ip sla source-interface" : [
+                5
               ]
             }
           }
