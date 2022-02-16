@@ -151,7 +151,7 @@ public final class IncrementalBdpEngineTest {
             .filter(StaticRoute.class::isInstance)
             .collect(ImmutableSet.toImmutableSet());
 
-    // Only the static route tracking the reachable IP should be present.
+    // Only the static routes tracking the reachable IP should be present.
     assertThat(installedStaticRoutes, containsInAnyOrder(srSucceedsNoIp, srSucceedsIp));
   }
 

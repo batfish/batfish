@@ -2162,22 +2162,21 @@ public class CiscoConversions {
         // Type is 'track ip sla state'
         // Unsupported, just assume it works like reachability.
         // TODO: something else?
-        return reference(createTrackIpSlateStateIfNeededAndReturnName(trackIpSla.getIpSla(), _c));
+        return reference(createTrackIpSlaStateIfNeededAndReturnName(trackIpSla.getIpSla(), _c));
       } else {
         return reference(
-            createTrackIpSlateReachabilityIfNeededAndReturnName(trackIpSla.getIpSla(), _c));
+            createTrackIpSlaReachabilityIfNeededAndReturnName(trackIpSla.getIpSla(), _c));
       }
     }
 
-    private @Nonnull String createTrackIpSlateStateIfNeededAndReturnName(
-        int ipSla, Configuration c) {
+    private @Nonnull String createTrackIpSlaStateIfNeededAndReturnName(int ipSla, Configuration c) {
       String name = generatedTrackIpSlaStateMethodName(ipSla);
       c.getTrackingGroups()
           .computeIfAbsent(name, n -> reference(generatedIpSlaTrackMethodName(ipSla)));
       return name;
     }
 
-    private @Nonnull String createTrackIpSlateReachabilityIfNeededAndReturnName(
+    private @Nonnull String createTrackIpSlaReachabilityIfNeededAndReturnName(
         int ipSla, Configuration c) {
       String name = generatedTrackIpSlaReachabilityMethodName(ipSla);
       c.getTrackingGroups()

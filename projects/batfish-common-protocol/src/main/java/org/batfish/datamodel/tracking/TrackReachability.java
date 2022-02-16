@@ -28,7 +28,8 @@ public final class TrackReachability implements TrackMethod {
    * Optional source IP for the test flow.
    *
    * <p>If {@code null}, then test flows will be created for every primary interface address of
-   * every layer-3 interface in {@link #getSourceVrf()}. The track will succed if any test flow
+   * every layer-3 interface that is an output interface for {@link #getDestinationIp()} with
+   * resolution starting in {@link #getSourceVrf()}. The track will succed if any test flow
    * succeeds. Else, there will only be a single flow for returned source IP.
    */
   public @Nullable Ip getSourceIp() {
