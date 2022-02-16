@@ -6793,5 +6793,12 @@ public final class CiscoGrammarTest {
         c.getTrackingGroups().get("ip sla 15"), equalTo(alwaysFalse())); // because limited life
     assertThat(
         c.getTrackingGroups().get("ip sla 16"), equalTo(alwaysFalse())); // because not scheduled
+
+    // static routes with tracks
+    assertThat(
+        Iterables.getOnlyElement(c.getVrfs().get("v1").getStaticRoutes()).getTrack(), equalTo("1"));
+    assertThat(
+        // null because track does not exist
+        Iterables.getOnlyElement(c.getDefaultVrf().getStaticRoutes()).getTrack(), nullValue());
   }
 }

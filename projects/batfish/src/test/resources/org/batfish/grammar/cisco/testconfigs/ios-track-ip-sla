@@ -17,6 +17,8 @@ track 4 ip sla 999 reachability
 
 !
 ip route vrf v1 10.0.0.0 255.255.255.0 10.0.1.2 tag 10 track 1
+! track undefined
+ip route 10.99.0.0 255.255.255.0 10.0.1.2 track 999
 
 interface Loopback0
   no shutdown
@@ -89,3 +91,5 @@ no ip sla schedule 16
 
 ! undefined sla number; do nothing, don't crash
 ip sla schedule 17 start-time now life forever
+
+vrf definition v1
