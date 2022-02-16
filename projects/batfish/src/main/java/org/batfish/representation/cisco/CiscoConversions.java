@@ -2046,7 +2046,6 @@ public class CiscoConversions {
     return String.format("%s: %s", aclName, lineName);
   }
 
-  @SuppressWarnings("unused")
   static void convertIpSlas(Map<Integer, IpSla> slas, Configuration c) {
     IpSlaConverter converter = new IpSlaConverter(c);
     slas.forEach(
