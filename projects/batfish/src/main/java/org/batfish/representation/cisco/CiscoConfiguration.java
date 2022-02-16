@@ -46,6 +46,7 @@ import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Pro
 import static org.batfish.representation.cisco.CiscoConversions.toOspfDeadInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfNetworkType;
+import static org.batfish.representation.cisco.CiscoConversions.toStaticRoute;
 import static org.batfish.representation.cisco.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1663,7 +1664,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .map(CiscoIosNat::toRoute)
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .map(CiscoConversions::toStaticRoute)
+        .map(sr -> toStaticRoute(sr, _tracks::containsKey))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -2863,7 +2864,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
           // convert static routes
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(staticRoute));
+            newVrf.getStaticRoutes().add(toStaticRoute(staticRoute, _tracks::containsKey));
           }
           // For the default VRF, also convert static routes created by add-route in NAT rules
           if (vrf == getDefaultVrf()) {

@@ -1702,16 +1702,23 @@ public class CiscoConversions {
     return true;
   }
 
-  static org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute staticRoute) {
+  static org.batfish.datamodel.StaticRoute toStaticRoute(
+      StaticRoute staticRoute, Predicate<Integer> trackExists) {
     String nextHopInterface = staticRoute.getNextHopInterface();
     if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
       nextHopInterface = org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
     }
+    String track =
+        Optional.ofNullable(staticRoute.getTrack())
+            .filter(trackExists)
+            .map(Object::toString)
+            .orElse(null);
     return org.batfish.datamodel.StaticRoute.builder()
         .setNetwork(staticRoute.getPrefix())
         .setNextHop(NextHop.legacyConverter(nextHopInterface, staticRoute.getNextHopIp()))
         .setAdministrativeCost(staticRoute.getDistance())
         .setTag(firstNonNull(staticRoute.getTag(), -1L))
+        .setTrack(track)
         .build();
   }
 
