@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
@@ -12,8 +13,11 @@ import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
+import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
+import static org.batfish.datamodel.tracking.TrackMethods.reachability;
+import static org.batfish.datamodel.tracking.TrackMethods.reference;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_EBGP_ADMIN;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
@@ -2042,9 +2046,63 @@ public class CiscoConversions {
     return String.format("%s: %s", aclName, lineName);
   }
 
-  @SuppressWarnings("unused")
   static void convertIpSlas(Map<Integer, IpSla> slas, Configuration c) {
-    // TODO: implement
+    IpSlaConverter converter = new IpSlaConverter(c);
+    slas.forEach(
+        (slaNum, sla) -> {
+          String name = generatedIpSlaTrackMethodName(slaNum);
+          TrackMethod method;
+          if (!(sla.getLivesForever() && sla.getStartsEventually())) {
+            // We assume "infinite" time has passed since the configuration was applied.
+            // So either the sla expired, or it never started.
+            method = alwaysFalse();
+          } else {
+            method = converter.visit(sla);
+          }
+          c.getTrackingGroups().put(name, method);
+        });
+  }
+
+  private static class IpSlaConverter implements IpSlaVisitor<TrackMethod> {
+
+    @Override
+    public TrackMethod visitIcmpEchoSla(IcmpEchoSla icmpEchoSla) {
+      Ip sourceIp = getSourceIp(icmpEchoSla.getSourceIp(), icmpEchoSla.getSourceInterface());
+      if (sourceIp == null && icmpEchoSla.getSourceInterface() != null) {
+        // the interface was invalid
+        return alwaysFalse();
+      }
+      Ip destinationIp = icmpEchoSla.getDestinationIp();
+      if (destinationIp == null) {
+        // because they specified a hostname to be resolved through DNS
+        return alwaysTrue();
+      }
+      String vrf = firstNonNull(icmpEchoSla.getVrf(), DEFAULT_VRF_NAME);
+      return sourceIp != null
+          ? reachability(destinationIp, vrf, sourceIp)
+          : reachability(destinationIp, vrf);
+    }
+
+    private @Nullable Ip getSourceIp(@Nullable Ip sourceIp, @Nullable String sourceInterface) {
+      if (sourceIp != null) {
+        return sourceIp;
+      }
+      if (sourceInterface == null) {
+        return null;
+      }
+      // interface addresses should have been converted already
+      // TODO: does it matter if the interface is active?
+      return Optional.ofNullable(_c.getAllInterfaces().get(sourceInterface))
+          .map(org.batfish.datamodel.Interface::getConcreteAddress)
+          .map(ConcreteInterfaceAddress::getIp)
+          .orElse(null);
+    }
+
+    private final @Nonnull Configuration _c;
+
+    private IpSlaConverter(Configuration c) {
+      _c = c;
+    }
   }
 
   /** Convert {@link Track}s to {@link TrackMethod}s. */
@@ -2054,7 +2112,7 @@ public class CiscoConversions {
       Predicate<String> interfaceExists,
       Configuration c) {
     TrackConverter converter =
-        new TrackConverter(tracks.keySet()::contains, slaExists, interfaceExists);
+        new TrackConverter(tracks.keySet()::contains, slaExists, interfaceExists, c);
     tracks.forEach(
         (num, track) -> c.getTrackingGroups().put(Integer.toString(num), converter.visit(track)));
   }
@@ -2065,19 +2123,22 @@ public class CiscoConversions {
     private TrackConverter(
         Predicate<Integer> trackExists,
         Predicate<Integer> slaExists,
-        Predicate<String> interfaceExists) {
+        Predicate<String> interfaceExists,
+        Configuration c) {
       _trackExists = trackExists;
       _slaExists = slaExists;
       _interfaceExists = interfaceExists;
+      _c = c;
     }
 
     private final @Nonnull Predicate<String> _interfaceExists;
 
-    @SuppressWarnings("unused")
     private final @Nonnull Predicate<Integer> _slaExists;
 
     @SuppressWarnings("unused")
     private final @Nonnull Predicate<Integer> _trackExists;
+
+    private final @Nonnull Configuration _c;
 
     @Override
     public TrackMethod visitTrackInterface(TrackInterface trackInterface) {
@@ -2091,6 +2152,49 @@ public class CiscoConversions {
         return interfaceActive(trackInterface.getInterfaceName());
       }
     }
+
+    @Override
+    public TrackMethod visitTrackIpSla(TrackIpSla trackIpSla) {
+      if (!_slaExists.test(trackIpSla.getIpSla())) {
+        return alwaysFalse();
+      }
+      if (!trackIpSla.getReachability()) {
+        // Type is 'track ip sla state'
+        // Unsupported, just assume it works like reachability.
+        // TODO: something else?
+        return reference(createTrackIpSlaStateIfNeededAndReturnName(trackIpSla.getIpSla(), _c));
+      } else {
+        return reference(
+            createTrackIpSlaReachabilityIfNeededAndReturnName(trackIpSla.getIpSla(), _c));
+      }
+    }
+
+    private @Nonnull String createTrackIpSlaStateIfNeededAndReturnName(int ipSla, Configuration c) {
+      String name = generatedTrackIpSlaStateMethodName(ipSla);
+      c.getTrackingGroups()
+          .computeIfAbsent(name, n -> reference(generatedIpSlaTrackMethodName(ipSla)));
+      return name;
+    }
+
+    private @Nonnull String createTrackIpSlaReachabilityIfNeededAndReturnName(
+        int ipSla, Configuration c) {
+      String name = generatedTrackIpSlaReachabilityMethodName(ipSla);
+      c.getTrackingGroups()
+          .computeIfAbsent(name, n -> reference(generatedIpSlaTrackMethodName(ipSla)));
+      return name;
+    }
+  }
+
+  private static @Nonnull String generatedIpSlaTrackMethodName(int sla) {
+    return String.format("ip sla %d", sla);
+  }
+
+  private static @Nonnull String generatedTrackIpSlaReachabilityMethodName(int sla) {
+    return String.format("ip sla %d reachability", sla);
+  }
+
+  private static @Nonnull String generatedTrackIpSlaStateMethodName(int sla) {
+    return String.format("ip sla %d state", sla);
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class

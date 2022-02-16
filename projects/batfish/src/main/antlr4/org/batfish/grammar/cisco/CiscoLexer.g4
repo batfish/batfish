@@ -15,6 +15,7 @@ tokens {
    ACL_NUM_OTHER,
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
+   AFTER,
    AS_PATH_SET_REGEX,
    BANNER_DELIMITER_IOS,
    BANNER_BODY,
@@ -23,17 +24,22 @@ tokens {
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
    DSA1024,
+   HH_MM,
+   HH_MM_SS,
    HEX_FRAGMENT,
    IP_ADDRESS_RANGE,
    ISO_ADDRESS,
+   NOW,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
    PASSWORD_SEED,
+   PENDING,
    PIPE,
    PROMPT_TIMEOUT,
    QUOTED_TEXT,
    RAW_TEXT,
    SELF_SIGNED,
+   SLA_NUMBER,
    SLIP_PPP,
    STATEFUL_DOT1X,
    STATEFUL_KERBEROS,
@@ -2154,12 +2160,12 @@ FLUSH_AT_ACTIVATION: 'flush-at-activation';
 
 FLUSH_R1_ON_NEW_R0: 'flush-r1-on-new-r0';
 
+FOR: 'for';
+
 FORCE: 'force';
 
 FORCED: 'forced';
-
-FOR: 'for';
-
+FOREVER: 'forever';
 FORMAT: 'format';
 
 FORTYG_FULL: '40gfull';
@@ -4545,7 +4551,7 @@ RECONNECT_INTERVAL: 'reconnect-interval';
 RECORD: 'record';
 
 RECORD_ENTRY: 'record-entry';
-
+RECURRING: 'recurring';
 RECURSIVE: 'recursive';
 
 RED: 'red';
@@ -5167,7 +5173,7 @@ SITEMAP: 'sitemap';
 
 SIZE: 'size';
 
-SLA: 'sla';
+SLA: 'sla' -> pushMode(M_Sla);
 
 SLOT: 'slot';
 
@@ -5344,7 +5350,7 @@ STANDBY: 'standby';
 
 START_STOP: 'start-stop';
 
-START_TIME: 'start-time';
+START_TIME: 'start-time' -> pushMode(M_StartTime);
 
 STARTUP_QUERY_COUNT: 'startup-query-count';
 
@@ -7130,6 +7136,30 @@ F_Uint16
 ;
 
 fragment
+F_Uint31 // used sparingly
+:
+// 0-2147483647
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  | '1' F_Digit F_Digit F_Digit F_Digit F_FiveDigits
+  | '20' F_Digit F_Digit F_Digit F_FiveDigits
+  | '21' [0-3] F_Digit F_Digit F_FiveDigits
+  | '214' [0-6] F_Digit F_FiveDigits
+  | '2147' [0-3] F_FiveDigits
+  | '21474' [0-7] F_Digit F_Digit F_Digit F_Digit
+  | '214748' [0-2] F_Digit F_Digit F_Digit
+  | '2147483' [0-5] F_Digit F_Digit
+  | '21474836' [0-3] F_Digit
+  | '214748364' [0-7]
+;
+
+fragment
+F_FiveDigits
+:
+  F_Digit F_Digit F_Digit F_Digit F_Digit
+;
+
+fragment
 F_Uint32
 :
 // 0-4294967295
@@ -7201,6 +7231,23 @@ F_FqdnSegment
     [A-Za-z0-9]
     | '-'
   )+
+;
+
+fragment
+F_HhMm
+:
+  // lax until we care
+  F_Digit F_Digit ':'
+  F_Digit F_Digit
+;
+
+fragment
+F_HhMmSs
+:
+  // lax until we care
+  F_Digit F_Digit ':'
+  F_Digit F_Digit ':'
+  F_Digit F_Digit
 ;
 
 mode M_Alias;
@@ -8306,4 +8353,27 @@ M_SlaIpAddress2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_SlaIpAddress2_IP_ADDRESS_RANGE: F_IpAddress '-' F_Uint8 -> type(IP_ADDRESS_RANGE), popMode;
 M_SlaIpAddress2_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
 M_SlaIpAddress2_COMMA: ',' -> type(COMMA);
-M_SlaIpAddress_VARIABLE: F_Fqdn -> type(VARIABLE), popMode;
+M_SlaIpAddress2_VARIABLE: F_Fqdn -> type(VARIABLE), popMode;
+
+mode M_StartTime;
+M_StartTime_WS: F_Whitespace+ -> skip;
+M_StartTime_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_StartTime_AFTER: 'after' -> type(AFTER), mode(M_StartTimeAfter);
+M_StartTime_HH_MM: F_HhMm  -> type(HH_MM), popMode;
+M_StartTime_HH_MM_SS: F_HhMmSs -> type(HH_MM_SS), popMode;
+M_StartTime_NOW: 'now' -> type(NOW), popMode;
+M_StartTime_PENDING: 'pending' -> type(PENDING), popMode;
+M_StartTime_RANDOM: 'random' -> type(RANDOM), popMode;
+
+mode M_StartTimeAfter;
+M_StartTimeAfter_WS: F_Whitespace+ -> skip;
+M_StartTimeAfter_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_StartTimeAfter_HH_MM_SS: F_HhMmSs -> type(HH_MM_SS), popMode;
+
+mode M_Sla;
+M_Sla_WS: F_Whitespace+ -> skip;
+M_Sla_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Sla_SLA_NUMBER: F_Uint31 -> type(SLA_NUMBER), popMode;
+M_Sla_ETHERNET_MONITOR: 'ethernet-monitor' -> type(ETHERNET_MONITOR);
+M_Sla_SCHEDULE: 'schedule' -> type(SCHEDULE);
+M_Sla_NOT_SLA_NUMBER: F_NonWhitespace+ {less();} -> popMode; // try again in default mode

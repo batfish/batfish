@@ -156,6 +156,8 @@ import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSI
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
+import static org.batfish.datamodel.tracking.TrackMethods.reachability;
+import static org.batfish.datamodel.tracking.TrackMethods.reference;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -421,6 +423,8 @@ import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
+import org.batfish.representation.cisco.IcmpEchoSla;
+import org.batfish.representation.cisco.IpSla;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.PortObjectGroup;
 import org.batfish.representation.cisco.PrefixList;
@@ -431,6 +435,7 @@ import org.batfish.representation.cisco.RouteMapSetExtcommunityRtAdditiveLine;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtLine;
 import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StandardCommunityListLine;
+import org.batfish.representation.cisco.TrackIpSla;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
 import org.batfish.vendor.VendorStructureId;
@@ -6632,9 +6637,161 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testTrackIpSlaParsing() {
+  public void testTrackIpSlaExtraction() {
     String hostname = "ios-track-ip-sla";
-    // don't crash
-    parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+
+    // track ip sla
+    assertThat(vc.getTracks(), hasKeys(1, 2, 3, 4));
+    {
+      TrackIpSla track = (TrackIpSla) vc.getTracks().get(1);
+      assertTrue(track.getReachability());
+    }
+    {
+      TrackIpSla track = (TrackIpSla) vc.getTracks().get(2);
+      assertFalse(track.getReachability());
+    }
+    {
+      TrackIpSla track = (TrackIpSla) vc.getTracks().get(3);
+      assertFalse(track.getReachability());
+    }
+    {
+      TrackIpSla track = (TrackIpSla) vc.getTracks().get(4);
+      assertTrue(track.getReachability());
+    }
+
+    // ip sla <entry>
+    assertThat(vc.getIpSlas(), hasKeys(1, 2, 3, 10, 11, 12, 13, 14, 15, 16));
+    {
+      IpSla sla = vc.getIpSlas().get(1);
+      assertTrue(sla.getLivesForever());
+      assertTrue(sla.getStartsEventually());
+      assertThat(sla, instanceOf(IcmpEchoSla.class));
+      IcmpEchoSla ieSla = (IcmpEchoSla) sla;
+      assertThat(ieSla.getDestinationIp(), equalTo(Ip.parse("10.0.0.2")));
+      assertThat(ieSla.getSourceInterface(), equalTo("Loopback0"));
+      assertThat(ieSla.getSourceIp(), nullValue());
+      assertThat(ieSla.getVrf(), equalTo("v1"));
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(2);
+      assertTrue(sla.getLivesForever());
+      assertTrue(sla.getStartsEventually());
+      assertThat(sla, instanceOf(IcmpEchoSla.class));
+      IcmpEchoSla ieSla = (IcmpEchoSla) sla;
+      assertThat(ieSla.getDestinationIp(), equalTo(Ip.parse("10.0.0.2")));
+      assertThat(ieSla.getSourceInterface(), nullValue());
+      assertThat(ieSla.getSourceIp(), equalTo(Ip.parse("10.5.5.5")));
+      assertThat(ieSla.getVrf(), nullValue());
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(3);
+      assertTrue(sla.getLivesForever());
+      assertTrue(sla.getStartsEventually());
+      assertThat(sla, instanceOf(IcmpEchoSla.class));
+      IcmpEchoSla ieSla = (IcmpEchoSla) sla;
+      assertThat(ieSla.getDestinationIp(), equalTo(Ip.parse("10.0.0.2")));
+      assertThat(ieSla.getSourceInterface(), equalTo("Loopback1"));
+      assertThat(ieSla.getSourceIp(), nullValue());
+      assertThat(ieSla.getVrf(), nullValue());
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(10);
+      assertTrue(sla.getLivesForever());
+      assertFalse(sla.getStartsEventually());
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(11);
+      assertTrue(sla.getLivesForever());
+      assertTrue(sla.getStartsEventually());
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(12);
+      assertFalse(sla.getLivesForever());
+      assertTrue(sla.getStartsEventually());
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(13);
+      assertFalse(sla.getLivesForever());
+      assertTrue(sla.getStartsEventually());
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(14);
+      assertFalse(sla.getLivesForever());
+      assertTrue(sla.getStartsEventually());
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(15);
+      assertFalse(sla.getLivesForever());
+      assertTrue(sla.getStartsEventually());
+    }
+    {
+      IpSla sla = vc.getIpSlas().get(16);
+      assertFalse(sla.getLivesForever());
+      assertFalse(sla.getStartsEventually());
+    }
+  }
+
+  @Test
+  public void testIpSlaConversion() throws IOException {
+    String hostname = "ios-track-ip-sla";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getTrackingGroups(),
+        hasKeys(
+            "1",
+            "2",
+            "3",
+            "4",
+            "ip sla 1 reachability",
+            "ip sla 1 state",
+            "ip sla 1",
+            "ip sla 2",
+            "ip sla 3",
+            "ip sla 10",
+            "ip sla 11",
+            "ip sla 12",
+            "ip sla 13",
+            "ip sla 14",
+            "ip sla 15",
+            "ip sla 16"));
+
+    // tracking groups for track ip sla
+    assertThat(c.getTrackingGroups().get("1"), equalTo(reference("ip sla 1 reachability")));
+    assertThat(c.getTrackingGroups().get("2"), equalTo(reference("ip sla 1 state")));
+    assertThat(c.getTrackingGroups().get("3"), equalTo(reference("ip sla 1 state")));
+    assertThat(
+        c.getTrackingGroups().get("4"), equalTo(alwaysFalse())); // because ip sla 999 is undefined
+
+    // generated tracks for reachability/state
+    // TODO: incorporate default-state
+    assertThat(c.getTrackingGroups().get("ip sla 1 reachability"), equalTo(reference("ip sla 1")));
+    // TODO: incorporate default-state, semantic difference from reachability
+    assertThat(c.getTrackingGroups().get("ip sla 1 state"), equalTo(reference("ip sla 1")));
+
+    // tracking groups for ip sla
+    assertThat(
+        c.getTrackingGroups().get("ip sla 1"),
+        equalTo(reachability(Ip.parse("10.0.0.2"), "v1", Ip.parse("10.100.0.1"))));
+    assertThat(
+        c.getTrackingGroups().get("ip sla 2"),
+        equalTo(reachability(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME, Ip.parse("10.5.5.5"))));
+    assertThat(
+        c.getTrackingGroups().get("ip sla 3"),
+        equalTo(alwaysFalse())); // because source-interface does not exist
+    assertThat(
+        c.getTrackingGroups().get("ip sla 10"),
+        equalTo(alwaysFalse())); // because start-time pending
+    assertThat(
+        c.getTrackingGroups().get("ip sla 11"),
+        equalTo(reachability(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME)));
+    assertThat(c.getTrackingGroups().get("ip sla 12"), equalTo(alwaysFalse())); // because no life
+    assertThat(c.getTrackingGroups().get("ip sla 13"), equalTo(alwaysFalse())); // because no life
+    assertThat(c.getTrackingGroups().get("ip sla 14"), equalTo(alwaysFalse())); // because no life
+    assertThat(
+        c.getTrackingGroups().get("ip sla 15"), equalTo(alwaysFalse())); // because limited life
+    assertThat(
+        c.getTrackingGroups().get("ip sla 16"), equalTo(alwaysFalse())); // because not scheduled
   }
 }

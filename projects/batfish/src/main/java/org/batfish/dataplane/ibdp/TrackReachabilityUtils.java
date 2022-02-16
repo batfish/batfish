@@ -43,8 +43,11 @@ public final class TrackReachabilityUtils {
       Map<String, Fib> fibsByVrf,
       TracerouteEngine tracerouteEngine) {
     Ip dstIp = trackReachability.getDestinationIp();
-    // TODO: support manual srcIp specified in track
-    return getPotentialSrcIpsAndVrfs(dstIp, trackReachability.getSourceVrf(), fibsByVrf, c)
+    return (trackReachability.getSourceIp() == null
+            ? getPotentialSrcIpsAndVrfs(dstIp, trackReachability.getSourceVrf(), fibsByVrf, c)
+            : Stream.of(
+                Maps.immutableEntry(
+                    trackReachability.getSourceIp(), trackReachability.getSourceVrf())))
         .anyMatch(
             ipAndVrf ->
                 producesSuccessfulForwardAndReverseTraces(

@@ -8,7 +8,4 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public interface Track extends Serializable {
 
   <T> T accept(TrackVisitor<T> visitor);
-
-  /** Whether this track type allows assigning a vrf. Used in extraction. */
-  boolean hasVrf();
 }

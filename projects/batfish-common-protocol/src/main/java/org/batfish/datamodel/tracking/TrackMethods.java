@@ -40,11 +40,20 @@ public final class TrackMethods {
   }
 
   /**
-   * Succeds when a trace to the given {@code destinationIp} resolved in {@code sourceVrf} is
-   * bidirectionally accepted.
+   * Succeds when any trace using the source IP of an output interface for {@code destinationIp}
+   * resolved in {@code sourceVrf} (and with ingress VRF corresponding to resolved output
+   * interface's VRF) is bidirectionally accepted.
    */
   public static @Nonnull TrackMethod reachability(Ip destinationIp, String sourceVrf) {
-    return TrackReachability.of(destinationIp, sourceVrf);
+    return TrackReachability.of(destinationIp, sourceVrf, null);
+  }
+
+  /**
+   * Succeds when a trace with given {@code sourceIp}, {@code destinationIp}, and {@code sourceVrf}
+   * is bidirectionally accepted.
+   */
+  public static @Nonnull TrackMethod reachability(Ip destinationIp, String sourceVrf, Ip sourceIp) {
+    return TrackReachability.of(destinationIp, sourceVrf, sourceIp);
   }
 
   /** Succeeds when {@link TrackMethod} with {@code trackMethodId} succeeds. */
