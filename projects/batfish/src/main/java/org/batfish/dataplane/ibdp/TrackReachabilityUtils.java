@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -98,7 +99,8 @@ public final class TrackReachabilityUtils {
   }
 
   private static boolean isSuccessfulForwardFlow(TraceAndReverseFlow tr) {
-    return tr.getTrace().getDisposition() == ACCEPTED && tr.getReverseFlow() != null;
+    return SUCCESS_DISPOSITIONS.contains(tr.getTrace().getDisposition())
+        && tr.getReverseFlow() != null;
   }
 
   private static boolean isSuccessfulReverseFlow(

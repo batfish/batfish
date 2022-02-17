@@ -111,7 +111,12 @@ public final class IncrementalBdpEngineTest {
             "succeedsIp",
             reachability(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME, Ip.parse("10.0.0.1")),
             "fails",
-            reachability(Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME)));
+            reachability(Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME),
+            "succeedsExitsNetwork",
+            reachability(Ip.parse("10.1.0.1"), DEFAULT_VRF_NAME, Ip.parse("10.0.0.1")),
+            "succeedsDeliveredToSubnet",
+            reachability(Ip.parse("10.0.0.254"), DEFAULT_VRF_NAME, Ip.parse("10.0.0.1"))));
+
     StaticRoute srSucceedsNoIp =
         StaticRoute.builder()
             .setNetwork(Prefix.strict("10.10.0.0/24"))
@@ -133,7 +138,34 @@ public final class IncrementalBdpEngineTest {
             .setAdmin(1)
             .setTrack("fails")
             .build();
-    v1.setStaticRoutes(ImmutableSortedSet.of(srSucceedsNoIp, srSucceedsIp, srFails));
+    StaticRoute srSucceedsExitsNetwork =
+        StaticRoute.builder()
+            .setNetwork(Prefix.strict("10.40.0.0/24"))
+            .setNextHop(NextHopDiscard.instance())
+            .setTrack("succeedsExitsNetwork")
+            .setAdmin(1)
+            .build();
+    StaticRoute srSucceedsDeliveredToSubnet =
+        StaticRoute.builder()
+            .setNetwork(Prefix.strict("10.50.0.0/24"))
+            .setNextHop(NextHopDiscard.instance())
+            .setTrack("succeedsDeliveredToSubnet")
+            .setAdmin(1)
+            .build();
+    StaticRoute resolvesTrackSucceedsExitsNetwork =
+        StaticRoute.builder()
+            .setNetwork(Prefix.strict("10.1.0.1/32"))
+            .setNextHop(NextHopInterface.of("i1"))
+            .setAdmin(1)
+            .build();
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            srSucceedsNoIp,
+            srSucceedsIp,
+            srFails,
+            srSucceedsExitsNetwork,
+            srSucceedsDeliveredToSubnet,
+            resolvesTrackSucceedsExitsNetwork));
 
     Map<String, Configuration> configurations =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
@@ -152,7 +184,14 @@ public final class IncrementalBdpEngineTest {
             .collect(ImmutableSet.toImmutableSet());
 
     // Only the static routes tracking the reachable IP should be present.
-    assertThat(installedStaticRoutes, containsInAnyOrder(srSucceedsNoIp, srSucceedsIp));
+    assertThat(
+        installedStaticRoutes,
+        containsInAnyOrder(
+            srSucceedsNoIp,
+            srSucceedsIp,
+            srSucceedsExitsNetwork,
+            srSucceedsDeliveredToSubnet,
+            resolvesTrackSucceedsExitsNetwork));
   }
 
   @Test
