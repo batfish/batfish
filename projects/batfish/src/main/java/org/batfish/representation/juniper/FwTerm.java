@@ -31,9 +31,9 @@ public final class FwTerm implements Serializable {
 
   private final List<FwFromApplicationSetMember> _fromApplicationSetMembers;
 
-  private final List<FwFromHostProtocol> _fromHostProtocols;
+  private final List<HostProtocol> _fromHostProtocols;
 
-  private final List<FwFromHostService> _fromHostServices;
+  private final List<HostSystemService> _fromHostServices;
 
   private final List<FwFrom> _froms;
 
@@ -58,11 +58,11 @@ public final class FwTerm implements Serializable {
     return _fromApplicationSetMembers;
   }
 
-  public List<FwFromHostProtocol> getFromHostProtocols() {
+  public List<HostProtocol> getFromHostProtocols() {
     return _fromHostProtocols;
   }
 
-  public List<FwFromHostService> getFromHostServices() {
+  public List<HostSystemService> getFromHostServices() {
     return _fromHostServices;
   }
 

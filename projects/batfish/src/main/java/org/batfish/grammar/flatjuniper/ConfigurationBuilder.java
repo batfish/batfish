@@ -710,8 +710,6 @@ import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
 import org.batfish.representation.juniper.FwFromDscp;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
-import org.batfish.representation.juniper.FwFromHostProtocol;
-import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpType;
 import org.batfish.representation.juniper.FwFromIpOptions;
@@ -6292,7 +6290,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String termName = protocol.name();
     FwTerm newTerm = new FwTerm(termName);
     _currentZoneInboundFilter.getTerms().put(termName, newTerm);
-    newTerm.getFromHostProtocols().add(new FwFromHostProtocol(protocol));
+    newTerm.getFromHostProtocols().add(protocol);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
   }
 
@@ -6302,7 +6300,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String termName = service.name();
     FwTerm newTerm = new FwTerm(termName);
     _currentZoneInboundFilter.getTerms().put(termName, newTerm);
-    newTerm.getFromHostServices().add(new FwFromHostService(service));
+    newTerm.getFromHostServices().add(service);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
   }
 
