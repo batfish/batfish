@@ -419,7 +419,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocond_if_route_existsC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondi_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondi_tableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_ip6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_commonContext;
@@ -5055,11 +5054,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitPoplt_ip6(Poplt_ip6Context ctx) {
-    _currentPrefixList.setIpv6(true);
-  }
-
-  @Override
   public void exitPoplt_network(Poplt_networkContext ctx) {
     Prefix prefix = toPrefix(ctx.network);
     _currentPrefixList.getPrefixes().add(prefix);
@@ -5067,7 +5061,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPoplt_network6(Poplt_network6Context ctx) {
-    _currentPrefixList.setIpv6(true);
+    _currentPrefixList.setHasIpv6(true);
   }
 
   @Override

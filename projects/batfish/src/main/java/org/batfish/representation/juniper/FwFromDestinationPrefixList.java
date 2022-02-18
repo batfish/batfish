@@ -1,14 +1,11 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -30,11 +27,11 @@ public final class FwFromDestinationPrefixList implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(jc, c, w), getTraceElement());
+    return new MatchHeaderSpace(toHeaderSpace(jc, w), getTraceElement());
   }
 
   @VisibleForTesting
-  HeaderSpace toHeaderspace(JuniperConfiguration jc, Configuration c, Warnings w) {
+  HeaderSpace toHeaderSpace(JuniperConfiguration jc, Warnings w) {
     PrefixList pl = jc.getMasterLogicalSystem().getPrefixLists().get(_name);
 
     if (pl == null) {
@@ -43,25 +40,13 @@ public final class FwFromDestinationPrefixList implements FwFrom {
       return HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build();
     }
 
-    if (pl.getIpv6()) {
-      // do not handle Ipv6 for now, assume matching nothing
-      return HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build();
-    }
-
-    RouteFilterList destinationPrefixList = c.getRouteFilterLists().get(_name);
-
+    IpSpace space = pl.toIpSpace();
     // if referenced prefix list is empty, it should not match anything
-    if (destinationPrefixList.getLines().isEmpty()) {
-      return HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build();
+    if (space instanceof EmptyIpSpace && !pl.getHasIpv6()) {
+      w.redFlag(String.format("destination-prefix-list \"%s\" is empty", _name));
     }
 
-    return HeaderSpace.builder()
-        .setDstIps(
-            AclIpSpace.union(
-                destinationPrefixList.getMatchingIps().stream()
-                    .map(IpWildcard::toIpSpace)
-                    .collect(ImmutableList.toImmutableList())))
-        .build();
+    return HeaderSpace.builder().setDstIps(space).build();
   }
 
   private TraceElement getTraceElement() {
