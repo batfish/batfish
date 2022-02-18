@@ -7,13 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RouteFilterLine;
-import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Before;
@@ -26,32 +20,26 @@ public class FwFromSourcePrefixListExceptTest {
   private Configuration _c;
 
   private static final String BASE_PREFIX_LIST_NAME = "prefixList";
-  private static final String BASE_IP_PREFIX = "1.2.3.4/32";
+  private static final Prefix BASE_IP_PREFIX = Prefix.parse("1.2.3.4/32");
 
   @Before
   public void setup() {
     _jc = new JuniperConfiguration();
-    _jc.getMasterLogicalSystem()
-        .getPrefixLists()
-        .put(BASE_PREFIX_LIST_NAME, new PrefixList(BASE_PREFIX_LIST_NAME));
+    PrefixList pl = new PrefixList(BASE_PREFIX_LIST_NAME);
+    pl.getPrefixes().add(BASE_IP_PREFIX);
+    _jc.getMasterLogicalSystem().getPrefixLists().put(pl.getName(), pl);
     _w = new Warnings();
     _c = new Configuration("test", ConfigurationFormat.FLAT_JUNIPER);
-    RouteFilterList rflist = new RouteFilterList(BASE_PREFIX_LIST_NAME);
-    RouteFilterLine rfline =
-        new RouteFilterLine(LineAction.PERMIT, Prefix.parse(BASE_IP_PREFIX), SubRange.singleton(0));
-    rflist.addLine(rfline);
-    _c.getRouteFilterLists().put(BASE_PREFIX_LIST_NAME, rflist);
   }
 
   @Test
   public void testToHeaderSpace() {
-    IpSpace baseIpSpace = IpWildcard.parse(BASE_IP_PREFIX).toIpSpace();
-
     FwFromSourcePrefixListExcept fwFrom = new FwFromSourcePrefixListExcept(BASE_PREFIX_LIST_NAME);
 
     // Apply base IP prefix to headerSpace with null IpSpace
     assertEquals(
-        fwFrom.toHeaderSpace(_jc, _w), HeaderSpace.builder().setNotSrcIps(baseIpSpace).build());
+        fwFrom.toHeaderSpace(_jc, _w),
+        HeaderSpace.builder().setNotSrcIps(BASE_IP_PREFIX.toIpSpace()).build());
   }
 
   @Test
