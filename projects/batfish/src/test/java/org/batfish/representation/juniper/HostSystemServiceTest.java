@@ -19,12 +19,12 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.junit.Test;
 
-/** Test for {@link FwFromHostService} */
-public class FwFromHostServiceTest {
+/** Test for {@link HostSystemService} */
+public class HostSystemServiceTest {
 
   @Test
   public void testGetMatchExpr_bgp() {
-    FwFromHostService from = new FwFromHostService(HostSystemService.DNS);
+    HostSystemService from = HostSystemService.DNS;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
     assert matchExpr.isPresent();
 
@@ -41,11 +41,11 @@ public class FwFromHostServiceTest {
 
   @Test
   public void testGetMatchExpr_all_traceElement() {
-    FwFromHostService from = new FwFromHostService(HostSystemService.ALL);
+    HostSystemService from = HostSystemService.ALL;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
     assert matchExpr.isPresent();
 
-    TraceElement expectedTraceElement = HostSystemService.ALL.getTraceElement();
+    TraceElement expectedTraceElement = from.getTraceElement();
     assertThat(matchExpr.get().getTraceElement(), equalTo(expectedTraceElement));
 
     List<HostSystemService> unhandledServices =

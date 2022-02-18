@@ -2485,10 +2485,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     List<AclLineMatchExpr> fwFromProtocolAndServiceDisjuncts = new ArrayList<>();
-    for (FwFromHostProtocol from : term.getFromHostProtocols()) {
+    for (HostProtocol from : term.getFromHostProtocols()) {
       from.getMatchExpr().ifPresent(fwFromProtocolAndServiceDisjuncts::add);
     }
-    for (FwFromHostService from : term.getFromHostServices()) {
+    for (HostSystemService from : term.getFromHostServices()) {
       from.getMatchExpr().ifPresent(fwFromProtocolAndServiceDisjuncts::add);
     }
 

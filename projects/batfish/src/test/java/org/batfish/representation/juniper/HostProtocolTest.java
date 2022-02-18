@@ -18,12 +18,12 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.junit.Test;
 
-/** Test for {@link FwFromHostProtocol} */
-public class FwFromHostProtocolTest {
+/** Test for {@link HostProtocol} */
+public class HostProtocolTest {
 
   @Test
   public void testGetMatchExpr_bgp() {
-    FwFromHostProtocol from = new FwFromHostProtocol(HostProtocol.BGP);
+    HostProtocol from = HostProtocol.BGP;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
     assert matchExpr.isPresent();
 
@@ -40,13 +40,12 @@ public class FwFromHostProtocolTest {
 
   @Test
   public void testGetMatchExpr_all_traceElements() {
-    FwFromHostProtocol from = new FwFromHostProtocol(HostProtocol.ALL);
+    HostProtocol from = HostProtocol.ALL;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
     assert matchExpr.isPresent();
 
     TraceElement expectedTraceElement =
-        TraceElement.of(
-            String.format("Matched host-inbound-traffic protocol %s", HostProtocol.ALL.toString()));
+        TraceElement.of(String.format("Matched host-inbound-traffic protocol %s", from));
     assertThat(matchExpr.get().getTraceElement(), equalTo(expectedTraceElement));
 
     List<HostProtocol> unhandledProtocols =
