@@ -2441,7 +2441,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     List<ExprAclLine> lines =
         filter.getTerms().values().stream()
-            .flatMap(term -> convertFwTermToExprAclLines(filter.getName(), term, aclType).stream())
+            .map(term -> convertFwTermToExprAclLine(filter.getName(), term, aclType))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
 
     return IpAccessList.builder()
@@ -2452,12 +2454,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private List<ExprAclLine> convertFwTermToExprAclLines(
+  private Optional<ExprAclLine> convertFwTermToExprAclLine(
       String aclName, FwTerm term, JuniperStructureType aclType) {
     LineAction action = getLineAction(aclName, term);
-    List<ExprAclLine> lines = new ArrayList<>();
     if (action == null) {
-      return lines;
+      return Optional.empty();
     }
 
     // We do not support ip options for now. Simply return an empty list assuming this term is
@@ -2468,14 +2469,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
           && term.getFromApplicationSetMembers().isEmpty();
       // TODO: implement
       // For now, assume line is unmatchable.
-      return lines;
+      return Optional.empty();
     }
 
     List<AclLineMatchExpr> fwFromAndApplicationConjuncts = new ArrayList<>();
     if (!term.getFroms().isEmpty()) {
       fwFromAndApplicationConjuncts.add(toAclLineMatchExpr(term.getFroms(), null));
     }
-
     if (!term.getFromApplicationSetMembers().isEmpty()) {
       fwFromAndApplicationConjuncts.add(
           or(
@@ -2484,21 +2484,31 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   .collect(ImmutableList.toImmutableList())));
     }
 
-    // TODO: FwFromHostProtocol should be converted into AclLineMatchExpr
+    List<AclLineMatchExpr> fwFromProtocolAndServiceDisjuncts = new ArrayList<>();
     for (FwFromHostProtocol from : term.getFromHostProtocols()) {
-      from.applyTo(lines, _w);
+      from.getMatchExpr().ifPresent(fwFromProtocolAndServiceDisjuncts::add);
     }
-    // TODO: FwFromHostService should be converted into AclLineMatchExpr
     for (FwFromHostService from : term.getFromHostServices()) {
-      from.applyTo(lines, _w);
+      from.getMatchExpr().ifPresent(fwFromProtocolAndServiceDisjuncts::add);
     }
 
     if (!(term.getFromHostProtocols().isEmpty() && term.getFromHostServices().isEmpty())) {
       assert term.getFroms().isEmpty() && term.getFromApplicationSetMembers().isEmpty();
-      return lines;
+      return fwFromProtocolAndServiceDisjuncts.isEmpty()
+          ? Optional.empty()
+          : Optional.of(
+              ExprAclLine.builder()
+                  .setAction(action)
+                  .setMatchCondition(or(fwFromProtocolAndServiceDisjuncts))
+                  .setName(term.getName())
+                  .setTraceElement(
+                      matchingAbstractTerm(aclType, _filename, aclName, term.getName()))
+                  .setVendorStructureId(
+                      abstractTermVendorStructureId(aclType, _filename, aclName, term.getName()))
+                  .build());
     }
 
-    lines.add(
+    return Optional.of(
         ExprAclLine.builder()
             .setAction(action)
             .setMatchCondition(and(fwFromAndApplicationConjuncts))
@@ -2507,7 +2517,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setVendorStructureId(
                 abstractTermVendorStructureId(aclType, _filename, aclName, term.getName()))
             .build());
-    return lines;
   }
 
   @Nullable

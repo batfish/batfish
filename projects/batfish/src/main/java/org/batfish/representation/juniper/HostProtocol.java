@@ -4,18 +4,18 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
 
 public enum HostProtocol {
   ALL,
@@ -37,121 +37,139 @@ public enum HostProtocol {
   SAP,
   VRRP;
 
-  private final Supplier<List<ExprAclLine>> _lines;
+  private final Supplier<Optional<AclLineMatchExpr>> _matchExpr;
 
   HostProtocol() {
-    _lines = Suppliers.memoize(this::init);
+    _matchExpr = Suppliers.memoize(this::init);
   }
 
-  public List<ExprAclLine> getLines() {
-    return _lines.get();
+  public Optional<AclLineMatchExpr> getMatchExpr() {
+    return _matchExpr.get();
   }
 
-  private List<ExprAclLine> init() {
-    HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
+  private Optional<AclLineMatchExpr> init() {
+    TraceElement traceElement =
+        TraceElement.of(String.format("Matched host-inbound-traffic protocol %s", this));
     switch (this) {
       case ALL:
         {
-          ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
+          ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
           for (HostProtocol other : values()) {
             if (other != ALL) {
-              lines.addAll(other.getLines());
+              other.getMatchExpr().ifPresent(exprs::add);
             }
           }
-          return lines.build();
+          return Optional.of(new OrMatchExpr(exprs.build(), traceElement));
         }
 
       case BFD:
         {
-          headerSpaceBuilder
-              .setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP))
-              .setDstPorts(
-                  ImmutableSet.of(
-                      new SubRange(NamedPort.BFD_CONTROL.number(), NamedPort.BFD_ECHO.number())));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder()
+                  .setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP))
+                  .setDstPorts(
+                      ImmutableSet.of(
+                          new SubRange(
+                              NamedPort.BFD_CONTROL.number(), NamedPort.BFD_ECHO.number())))
+                  .build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case BGP:
         {
-          headerSpaceBuilder
-              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
-              .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.BGP.number())));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder()
+                  .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+                  .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.BGP.number())))
+                  .build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case DVMRP:
         {
           // TODO: DVMRP uses IGMP (an IP Protocol) type 3. need to add support
           // for IGMP types in packet headers
-          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.IGMP));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.IGMP)).build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case IGMP:
         {
-          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.IGMP));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.IGMP)).build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case LDP:
         {
-          headerSpaceBuilder
-              .setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP))
-              .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.LDP.number())));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder()
+                  .setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP))
+                  .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.LDP.number())))
+                  .build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case MSDP:
         {
-          headerSpaceBuilder
-              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
-              .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.MSDP.number())));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder()
+                  .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+                  .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.MSDP.number())))
+                  .build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case NHRP:
         {
-          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.NARP));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.NARP)).build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case OSPF:
         {
-          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.OSPF));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.OSPF)).build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case OSPF3:
         {
           // TODO: OSPFv3 is an IPV6-encapsulated protocol
-          return ImmutableList.of();
+          return Optional.empty();
         }
 
       case PGM:
         {
-          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.PGM));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.PGM)).build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case PIM:
         {
-          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.PIM));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.PIM)).build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case RIP:
         {
-          headerSpaceBuilder
-              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
-              .setDstPorts(
-                  ImmutableSet.of(SubRange.singleton(NamedPort.EFStcp_OR_RIPudp.number())));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder()
+                  .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+                  .setDstPorts(
+                      ImmutableSet.of(SubRange.singleton(NamedPort.EFStcp_OR_RIPudp.number())))
+                  .build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case RIPNG:
         {
           // TODO: RIPng is an IPV6-encapsulated protocol
-          return ImmutableList.of();
+          return Optional.empty();
         }
 
       case ROUTER_DISCOVERY:
@@ -159,30 +177,37 @@ public enum HostProtocol {
           // TODO: ROUTER_DISCOVERY uses ICMP (an IP Protocol) type 9. need to
           // add support
           // for ICMP types in packet headers
-          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.ICMP));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.ICMP)).build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case RSVP:
         {
-          headerSpaceBuilder.setIpProtocols(
-              ImmutableSortedSet.of(IpProtocol.RSVP, IpProtocol.RSVP_E2E_IGNORE));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder()
+                  .setIpProtocols(
+                      ImmutableSortedSet.of(IpProtocol.RSVP, IpProtocol.RSVP_E2E_IGNORE))
+                  .build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case SAP:
         {
-          headerSpaceBuilder
-              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
-              .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.SAP.number())))
-              .setDstIps(ImmutableSet.of(IpWildcard.parse("224.2.127.254/32")));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder()
+                  .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+                  .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.SAP.number())))
+                  .setDstIps(ImmutableSet.of(IpWildcard.parse("224.2.127.254/32")))
+                  .build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       case VRRP:
         {
-          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.VRRP));
-          break;
+          HeaderSpace hs =
+              HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.VRRP)).build();
+          return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
 
       default:
@@ -191,12 +216,5 @@ public enum HostProtocol {
               "missing definition for host-inbound-traffic protocol: \"" + name() + "\"");
         }
     }
-    return ImmutableList.of(
-        new ExprAclLine(
-            LineAction.PERMIT,
-            new MatchHeaderSpace(headerSpaceBuilder.build()),
-            null,
-            TraceElement.of(String.format("Matched host-inbound-traffic protocol %s", toString())),
-            null));
   }
 }

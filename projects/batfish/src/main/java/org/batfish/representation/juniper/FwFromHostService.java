@@ -1,9 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.List;
-import org.batfish.common.Warnings;
-import org.batfish.datamodel.ExprAclLine;
+import java.util.Optional;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 public class FwFromHostService implements Serializable {
 
@@ -13,7 +12,7 @@ public class FwFromHostService implements Serializable {
     _service = service;
   }
 
-  public void applyTo(List<? super ExprAclLine> lines, Warnings w) {
-    lines.addAll(_service.getLines());
+  public Optional<AclLineMatchExpr> getMatchExpr() {
+    return _service.getMatchExpr();
   }
 }
