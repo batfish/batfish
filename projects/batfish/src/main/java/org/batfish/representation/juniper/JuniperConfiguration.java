@@ -4282,7 +4282,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
       String name = e.getKey();
       PrefixList prefixList = e.getValue();
-      if (!prefixList.getIpv6() && prefixList.getPrefixes().isEmpty()) {
+      if (!prefixList.getHasIpv6() && prefixList.getPrefixes().isEmpty()) {
         _w.redFlag("Empty prefix-list: '" + name + "'");
       }
     }

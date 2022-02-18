@@ -109,11 +109,6 @@ poplt_apply_path
    APPLY_PATH path = DOUBLE_QUOTED_STRING
 ;
 
-poplt_ip6
-:
-   ip6 = IPV6_ADDRESS
-;
-
 poplt_network
 :
    network = ip_prefix

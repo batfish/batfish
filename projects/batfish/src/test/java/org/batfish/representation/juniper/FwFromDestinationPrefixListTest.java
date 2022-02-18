@@ -48,7 +48,7 @@ public class FwFromDestinationPrefixListTest {
 
     FwFromDestinationPrefixList fwFrom = new FwFromDestinationPrefixList(BASE_PREFIX_LIST_NAME);
 
-    HeaderSpace headerSpace = fwFrom.toHeaderspace(_jc, _c, _w);
+    HeaderSpace headerSpace = fwFrom.toHeaderSpace(_jc, _w);
 
     assertThat(headerSpace, hasDstIps(equalTo(baseIpSpace)));
   }

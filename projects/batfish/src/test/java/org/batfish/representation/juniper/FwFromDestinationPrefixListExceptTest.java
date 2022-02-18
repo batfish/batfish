@@ -48,6 +48,6 @@ public class FwFromDestinationPrefixListExceptTest {
     FwFromDestinationPrefixListExcept fwFrom =
         new FwFromDestinationPrefixListExcept(BASE_PREFIX_LIST_NAME);
 
-    assertThat(fwFrom.toHeaderspace(_jc, _c, _w), hasNotDstIps(equalTo(baseIpSpace)));
+    assertThat(fwFrom.toHeaderSpace(_jc, _w), hasNotDstIps(equalTo(baseIpSpace)));
   }
 }

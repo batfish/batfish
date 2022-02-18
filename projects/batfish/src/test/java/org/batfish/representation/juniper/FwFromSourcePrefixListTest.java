@@ -51,7 +51,7 @@ public class FwFromSourcePrefixListTest {
 
     // Apply base IP prefix to headerSpace with null IpSpace
     assertEquals(
-        fwFrom.toHeaderspace(_jc, _c, _w), HeaderSpace.builder().setSrcIps(baseIpSpace).build());
+        fwFrom.toHeaderSpace(_jc, _w), HeaderSpace.builder().setSrcIps(baseIpSpace).build());
   }
 
   @Test
@@ -59,7 +59,7 @@ public class FwFromSourcePrefixListTest {
     FwFromSourcePrefixList fwFrom = new FwFromSourcePrefixList("noName");
 
     assertEquals(
-        fwFrom.toHeaderspace(_jc, _c, _w),
+        fwFrom.toHeaderSpace(_jc, _w),
         HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build());
   }
 
@@ -70,7 +70,7 @@ public class FwFromSourcePrefixListTest {
     assertEquals(
         fwFrom.toAclLineMatchExpr(_jc, _c, _w),
         new MatchHeaderSpace(
-            fwFrom.toHeaderspace(_jc, _c, _w),
+            fwFrom.toHeaderSpace(_jc, _w),
             TraceElement.of("Matched source-prefix-list prefixList")));
   }
 }
