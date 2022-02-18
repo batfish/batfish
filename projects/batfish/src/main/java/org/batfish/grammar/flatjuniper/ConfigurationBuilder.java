@@ -2174,6 +2174,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
+    _configuration.setExtraLines(_parser.getExtraLines());
     setLogicalSystem(_configuration.getMasterLogicalSystem());
     _termRouteFilters = new HashMap<>();
     _w = warnings;
@@ -4382,6 +4383,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       _currentLogicalSystem.setDefaultInboundAction(LineAction.PERMIT);
     }
+    _configuration.setExtraLines(null);
   }
 
   @Override
