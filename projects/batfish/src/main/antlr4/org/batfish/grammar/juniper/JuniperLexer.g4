@@ -47,7 +47,7 @@ COMMENT_LINE
 
 MULTILINE_COMMENT
 :
-   '/*' .*? '*/'
+   '/*' .*? '*/' -> skip // so not counted as last token
 ;
 
 OPEN_BRACE

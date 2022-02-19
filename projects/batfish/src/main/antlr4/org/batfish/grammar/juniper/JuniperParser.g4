@@ -7,17 +7,17 @@ options {
 
 braced_clause
 :
-  OPEN_BRACE statement*
+  OPEN_BRACE statement* CLOSE_BRACE
 ;
 
 bracketed_clause
 :
-  OPEN_BRACKET word+
+  OPEN_BRACKET word+ CLOSE_BRACKET
 ;
 
 juniper_configuration
 :
-  statement+ MULTILINE_COMMENT? EOF
+  statement+ EOF
 ;
 
 statement
@@ -33,14 +33,13 @@ flat_statement
 
 hierarchical_statement
 :
-  MULTILINE_COMMENT?
   (
     INACTIVE
     | REPLACE
   )? words += word+
   (
-    braced_clause close = CLOSE_BRACE
-    | bracketed_clause close = CLOSE_BRACKET terminator
+    braced_clause
+    | bracketed_clause terminator
     | terminator
   )
 ;
