@@ -163,13 +163,13 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type, _structureName));
         return false;
       }
-      if (!_subMatcher.matches(
-          byStructureName.get(_structureName).getDefinitionLines().enumerate())) {
+      Set<Integer> definitionLines =
+          byStructureName.get(_structureName).getDefinitionLines().enumerate();
+      if (!_subMatcher.matches(definitionLines)) {
         mismatchDescription.appendText(
             String.format(
-                "File '%s' has no defined structure of type '%s' named '%s' matching definition"
-                    + " lines '%s'",
-                _filename, _type, _structureName, _subMatcher));
+                "File '%s' defined structure of type '%s' named '%s' definition lines were %s",
+                _filename, _type, _structureName, definitionLines));
         return false;
       }
       return true;

@@ -159,6 +159,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICA
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
@@ -2535,11 +2536,14 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FIREWALL_FILTER, "FILTER1", contains(6, 7, 8, 9, 11, 12)));
+            filename,
+            FIREWALL_FILTER,
+            "FILTER1",
+            contains(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 23)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19)));
+            filename, FIREWALL_FILTER, "FILTER2", contains(5, 16, 17, 18, 19, 20, 21, 22, 23)));
   }
 
   @Test
@@ -6742,5 +6746,20 @@ public final class FlatJuniperGrammarTest {
   public void testApplyGroupsParsing() {
     String hostname = "apply-groups";
     parseJuniperConfig(hostname);
+  }
+
+  @Test
+  public void testDefineStructureFromNested() throws IOException {
+    String hostname = "define-structure-from-nested";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            "configs/" + hostname,
+            FIREWALL_FILTER_TERM,
+            "foo default-deny-udp",
+            equalTo(IntegerSpace.unionOf(new SubRange(6, 19), new SubRange(25, 26)).enumerate())));
   }
 }
