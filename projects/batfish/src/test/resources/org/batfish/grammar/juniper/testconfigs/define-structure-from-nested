@@ -10,7 +10,7 @@ firewall {
          */
         term default-deny-udp {
             from {
-                protocol udp;
+                protocol udp /* ignore me */;
             }
             then {
                 count default-deny-udp;
