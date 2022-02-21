@@ -238,8 +238,6 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   }
 
   private void recordExtraLines(int originalLine) {
-    _lineMap.setExtraLines(
-        originalLine,
-        _extraLines.stream().flatMap(Set::stream).collect(ImmutableSet.toImmutableSet()));
+    _lineMap.setExtraLines(originalLine, _extraLines.get(_extraLines.size() - 1));
   }
 }
