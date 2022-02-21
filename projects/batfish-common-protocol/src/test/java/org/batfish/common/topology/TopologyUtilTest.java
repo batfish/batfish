@@ -1481,14 +1481,26 @@ public final class TopologyUtilTest {
 
     assertThat(
         computeIpInterfaceOwners(
-            nodeInterfaces, true, null, nc, PreDataPlaneTrackMethodEvaluator::new),
+            nodeInterfaces,
+            true,
+            GlobalBroadcastNoPointToPoint.instance(),
+            nc,
+            PreDataPlaneTrackMethodEvaluator::new,
+            null,
+            null),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
 
     assertThat(
         computeIpInterfaceOwners(
-            nodeInterfaces, false, null, nc, PreDataPlaneTrackMethodEvaluator::new),
+            nodeInterfaces,
+            false,
+            GlobalBroadcastNoPointToPoint.instance(),
+            nc,
+            PreDataPlaneTrackMethodEvaluator::new,
+            null,
+            null),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"),

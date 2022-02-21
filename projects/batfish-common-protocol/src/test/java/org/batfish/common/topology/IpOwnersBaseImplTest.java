@@ -1,5 +1,6 @@
 package org.batfish.common.topology;
 
+import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.topology.IpOwnersBaseImpl.computeHsrpPriority;
 import static org.batfish.common.topology.IpOwnersBaseImpl.computeInterfaceHostSubnetIps;
 import static org.batfish.common.topology.IpOwnersBaseImpl.computeInterfaceOwners;
@@ -12,6 +13,7 @@ import static org.batfish.common.topology.IpOwnersBaseImpl.extractVrrp;
 import static org.batfish.common.topology.IpOwnersBaseImpl.partitionCandidates;
 import static org.batfish.common.topology.IpOwnersBaseImpl.processHsrpGroups;
 import static org.batfish.common.topology.IpOwnersBaseImpl.processVrrpGroups;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
@@ -25,6 +27,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -35,6 +38,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.IpOwnersBaseImpl.ElectionDetails;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -54,6 +59,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /** Tests of {@link IpOwnersBaseImpl}. */
+@ParametersAreNonnullByDefault
 public class IpOwnersBaseImplTest {
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
@@ -338,7 +344,8 @@ public class IpOwnersBaseImplTest {
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
         NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
-        PreDataPlaneTrackMethodEvaluator::new);
+        PreDataPlaneTrackMethodEvaluator::new,
+        null);
     assertThat(ipOwners, hasKeys(ip1, ip22));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));
@@ -414,7 +421,8 @@ public class IpOwnersBaseImplTest {
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
         nc,
-        PreDataPlaneTrackMethodEvaluator::new);
+        PreDataPlaneTrackMethodEvaluator::new,
+        null);
     assertThat(ipOwners.get(hsrpIp).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
   }
 
@@ -564,7 +572,7 @@ public class IpOwnersBaseImplTest {
 
     // Only track 2 is triggered, so only track 2 decrement is applied
     assertThat(
-        computeHsrpPriority(i1, hsrpGroup, PreDataPlaneTrackMethodEvaluator::new),
+        computeHsrpPriority(i1, hsrpGroup, 1, PreDataPlaneTrackMethodEvaluator::new, null),
         equalTo(basePriority - track2Decrement));
   }
 
@@ -610,7 +618,7 @@ public class IpOwnersBaseImplTest {
 
     // Only track 2 is triggered, so only track 2 decrement is applied
     assertThat(
-        computeVrrpPriority(i1, vrrpGroup, PreDataPlaneTrackMethodEvaluator::new),
+        computeVrrpPriority(i1, vrrpGroup, 1, PreDataPlaneTrackMethodEvaluator::new, null),
         equalTo(basePriority - track2Decrement));
   }
 
@@ -751,7 +759,8 @@ public class IpOwnersBaseImplTest {
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
         NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
-        PreDataPlaneTrackMethodEvaluator::new);
+        PreDataPlaneTrackMethodEvaluator::new,
+        null);
     assertThat(ipOwners, hasKeys(ip1, ip22, ip3));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));
@@ -833,12 +842,160 @@ public class IpOwnersBaseImplTest {
         equalTo(ImmutableMap.of(Ip.ZERO, ImmutableSet.of("c1", "c2"))));
   }
 
-  private static class TestIpOwners extends IpOwnersBaseImpl {
+  private static final class TestIpOwners extends IpOwnersBaseImpl {
     protected TestIpOwners(Map<String, Configuration> configurations) {
       super(
           configurations,
           GlobalBroadcastNoPointToPoint.instance(),
-          PreDataPlaneTrackMethodEvaluator::new);
+          PreDataPlaneTrackMethodEvaluator::new,
+          false);
+    }
+  }
+
+  private static final class TestIpOwnersRecordElections extends IpOwnersBaseImpl {
+
+    protected TestIpOwnersRecordElections(Map<String, Configuration> configurations) {
+      super(
+          configurations,
+          GlobalBroadcastNoPointToPoint.instance(),
+          PreDataPlaneTrackMethodEvaluator::new,
+          true);
+    }
+  }
+
+  @Test
+  public void testRecordElections() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    c.setTrackingGroups(
+        ImmutableMap.of(
+            "true", alwaysTrue(),
+            "false", alwaysFalse()));
+    Vrf v = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    Interface i1 = Interface.builder().setName("i1").setOwner(c).setVrf(v).build();
+    Interface i2 = Interface.builder().setName("i2").setOwner(c).setVrf(v).build();
+    i1.setHsrpGroups(
+        ImmutableMap.of(
+            1,
+            HsrpGroup.builder()
+                .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("10.0.0.1"), 24))
+                .setTrackActions(ImmutableSortedMap.of("true", new DecrementPriority(10)))
+                .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.0.1.1")))
+                .setPriority(100)
+                .build()));
+    i1.setVrrpGroups(
+        ImmutableSortedMap.of(
+            2,
+            VrrpGroup.builder()
+                .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("10.0.0.1"), 24))
+                .setTrackActions(ImmutableSortedMap.of("false", new DecrementPriority(20)))
+                .addVirtualAddress("i2", Ip.parse("10.0.2.1"))
+                .setPriority(100)
+                .build()));
+    i2.setHsrpGroups(
+        ImmutableMap.of(
+            1,
+            HsrpGroup.builder()
+                .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("10.0.0.2"), 24))
+                .setTrackActions(ImmutableSortedMap.of("false", new DecrementPriority(10)))
+                .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.0.1.1")))
+                .setPriority(100)
+                .build()));
+    i2.setVrrpGroups(
+        ImmutableSortedMap.of(
+            2,
+            VrrpGroup.builder()
+                .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("10.0.0.2"), 24))
+                .setTrackActions(ImmutableSortedMap.of("true", new DecrementPriority(20)))
+                .addVirtualAddress("i2", Ip.parse("10.0.2.1"))
+                .setPriority(100)
+                .build()));
+    IpOwners ipOwners = new TestIpOwnersRecordElections(ImmutableMap.of(c.getHostname(), c));
+    NodeInterfacePair ni1 = NodeInterfacePair.of(i1);
+    NodeInterfacePair ni2 = NodeInterfacePair.of(i2);
+
+    {
+      ElectionDetails details = ipOwners.getHsrpElectionDetails();
+      assertNotNull(details);
+      assertThat(
+          details.getActualPriorities(),
+          equalTo(ImmutableMap.of(ni1, ImmutableMap.of(1, 90), ni2, ImmutableMap.of(1, 100))));
+      assertThat(
+          details.getWinnerByCandidate(),
+          equalTo(ImmutableMap.of(ni1, ImmutableMap.of(1, ni2), ni2, ImmutableMap.of(1, ni2))));
+      assertThat(
+          details.getCandidatesByCandidate(),
+          equalTo(
+              ImmutableMap.of(
+                  ni1,
+                  ImmutableMap.of(1, ImmutableSet.of(ni1, ni2)),
+                  ni2,
+                  ImmutableMap.of(1, ImmutableSet.of(ni1, ni2)))));
+      assertThat(
+          details.getSuccessfulTracks(),
+          equalTo(
+              ImmutableMap.of(
+                  ni1,
+                  ImmutableMap.of(
+                      1,
+                      ImmutableMap.of(
+                          "true", immutableEntry(alwaysTrue(), new DecrementPriority(10)))),
+                  ni2,
+                  ImmutableMap.of(1, ImmutableMap.of()))));
+      assertThat(
+          details.getFailedTracks(),
+          equalTo(
+              ImmutableMap.of(
+                  ni1,
+                  ImmutableMap.of(1, ImmutableMap.of()),
+                  ni2,
+                  ImmutableMap.of(
+                      1,
+                      ImmutableMap.of(
+                          "false", immutableEntry(alwaysFalse(), new DecrementPriority(10)))))));
+    }
+    {
+      ElectionDetails details = ipOwners.getVrrpElectionDetails();
+      assertNotNull(details);
+      assertThat(
+          details.getActualPriorities(),
+          equalTo(ImmutableMap.of(ni1, ImmutableMap.of(2, 100), ni2, ImmutableMap.of(2, 80))));
+      assertThat(
+          details.getWinnerByCandidate(),
+          equalTo(ImmutableMap.of(ni1, ImmutableMap.of(2, ni1), ni2, ImmutableMap.of(2, ni1))));
+      assertThat(
+          details.getCandidatesByCandidate(),
+          equalTo(
+              ImmutableMap.of(
+                  ni1,
+                  ImmutableMap.of(2, ImmutableSet.of(ni1, ni2)),
+                  ni2,
+                  ImmutableMap.of(2, ImmutableSet.of(ni1, ni2)))));
+      assertThat(
+          details.getSuccessfulTracks(),
+          equalTo(
+              ImmutableMap.of(
+                  ni1,
+                  ImmutableMap.of(2, ImmutableMap.of()),
+                  ni2,
+                  ImmutableMap.of(
+                      2,
+                      ImmutableMap.of(
+                          "true", immutableEntry(alwaysTrue(), new DecrementPriority(20)))))));
+      assertThat(
+          details.getFailedTracks(),
+          equalTo(
+              ImmutableMap.of(
+                  ni1,
+                  ImmutableMap.of(
+                      2,
+                      ImmutableMap.of(
+                          "false", immutableEntry(alwaysFalse(), new DecrementPriority(20)))),
+                  ni2,
+                  ImmutableMap.of(2, ImmutableMap.of()))));
     }
   }
 }
