@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
@@ -118,6 +120,33 @@ public class AutoCompleteUtilsTest {
         .build();
   }
 
+  private static @Nonnull List<AutocompleteSuggestion> autoComplete(
+      Type completionType, String query, int maxSuggestions) {
+    return AutoCompleteUtils.autoComplete(
+        null, null, completionType, query, maxSuggestions, null, null, null, true);
+  }
+
+  private static @Nonnull List<AutocompleteSuggestion> autoComplete(
+      @Nullable String network,
+      @Nullable String snapshot,
+      Type completionType,
+      String query,
+      int maxSuggestions,
+      @Nullable CompletionMetadata completionMetadata,
+      @Nullable NodeRolesData nodeRolesData,
+      @Nullable ReferenceLibrary referenceLibrary) {
+    return AutoCompleteUtils.autoComplete(
+        network,
+        snapshot,
+        completionType,
+        query,
+        maxSuggestions,
+        completionMetadata,
+        nodeRolesData,
+        referenceLibrary,
+        true);
+  }
+
   @Test
   public void testBaseAutoComplete() {
     Set<String> properties =
@@ -156,8 +185,7 @@ public class AutoCompleteUtilsTest {
 
     // empty matches all possibilities
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.ADDRESS_GROUP_NAME, "", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.ADDRESS_GROUP_NAME, "", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -165,8 +193,7 @@ public class AutoCompleteUtilsTest {
 
     // 'g' matches two groups
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.ADDRESS_GROUP_NAME, "G", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.ADDRESS_GROUP_NAME, "G", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -174,8 +201,7 @@ public class AutoCompleteUtilsTest {
 
     // 'g1' matches one group
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.ADDRESS_GROUP_NAME, "g1", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.ADDRESS_GROUP_NAME, "g1", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -185,7 +211,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpPeerPropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_PEER_PROPERTY_SPEC, "as", 5).stream()
+        autoComplete(Type.BGP_PEER_PROPERTY_SPEC, "as", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(LOCAL_AS, IS_PASSIVE, REMOTE_AS)));
@@ -194,7 +220,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpProcessPropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5).stream()
+        autoComplete(Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -205,7 +231,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpRouteStatusSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_ROUTE_STATUS_SPEC, "b", 5).stream()
+        autoComplete(Type.BGP_ROUTE_STATUS_SPEC, "b", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(BACKUP.toString(), BEST.toString())));
@@ -214,7 +240,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionCompatStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_COMPAT_STATUS_SPEC, "match", 5).stream()
+        autoComplete(Type.BGP_SESSION_COMPAT_STATUS_SPEC, "match", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -225,7 +251,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_STATUS_SPEC, "establish", 5).stream()
+        autoComplete(Type.BGP_SESSION_STATUS_SPEC, "establish", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(ESTABLISHED.toString(), NOT_ESTABLISHED.toString())));
@@ -234,7 +260,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionTypeAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE_SPEC, "bgp", 10).stream()
+        autoComplete(Type.BGP_SESSION_TYPE_SPEC, "bgp", 10).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -249,7 +275,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testDispositionSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.DISPOSITION_SPEC, "s", 5).stream()
+        autoComplete(Type.DISPOSITION_SPEC, "s", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -274,8 +300,7 @@ public class AutoCompleteUtilsTest {
             .build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.FILTER, "fil", 5, completionMetadata, null, null)
+        autoComplete(network, snapshot, Type.FILTER, "fil", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -296,8 +321,7 @@ public class AutoCompleteUtilsTest {
             .build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.INTERFACE, "int", 5, completionMetadata, null, null)
+        autoComplete(network, snapshot, Type.INTERFACE, "int", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -322,8 +346,7 @@ public class AutoCompleteUtilsTest {
 
     // empty matches all possibilities
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.INTERFACE_GROUP_NAME, "", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.INTERFACE_GROUP_NAME, "", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -331,8 +354,7 @@ public class AutoCompleteUtilsTest {
 
     // 'g' matches two groups
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.INTERFACE_GROUP_NAME, "G", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.INTERFACE_GROUP_NAME, "G", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -340,8 +362,7 @@ public class AutoCompleteUtilsTest {
 
     // 'g1' matches one group
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.INTERFACE_GROUP_NAME, "g1", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.INTERFACE_GROUP_NAME, "g1", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -351,7 +372,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testInterfacePropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.INTERFACE_PROPERTY_SPEC, "vlan", 5).stream()
+        autoComplete(Type.INTERFACE_PROPERTY_SPEC, "vlan", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -370,9 +391,7 @@ public class AutoCompleteUtilsTest {
             .build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.IP, "1.2", 5, completionMetadata, null, null)
-            .stream()
+        autoComplete(network, snapshot, Type.IP, "1.2", 5, completionMetadata, null, null).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("1.2.3.4", "1.23.4.5")));
@@ -381,7 +400,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testIpProtocolSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.IP_PROTOCOL_SPEC, "OSP", 5).stream()
+        autoComplete(Type.IP_PROTOCOL_SPEC, "OSP", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("OSPF")));
@@ -390,7 +409,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testIpsecSessionStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.IPSEC_SESSION_STATUS_SPEC, "phase", 5).stream()
+        autoComplete(Type.IPSEC_SESSION_STATUS_SPEC, "phase", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -404,8 +423,7 @@ public class AutoCompleteUtilsTest {
   public void testMlagIdAutocomplete() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.MLAG_ID, "ag", 10, completionMetadata, null, null)
+        autoComplete("network", "snapshot", Type.MLAG_ID, "ag", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -416,7 +434,7 @@ public class AutoCompleteUtilsTest {
   public void testMlagIdSpecAutocomplete() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network", "snapshot", Type.MLAG_ID_SPEC, "ag", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
@@ -427,7 +445,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testNamedStructureSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.NAMED_STRUCTURE_SPEC, "ike", 5).stream()
+        autoComplete(Type.NAMED_STRUCTURE_SPEC, "ike", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(IKE_PHASE1_KEYS, IKE_PHASE1_POLICIES, IKE_PHASE1_PROPOSALS)));
@@ -436,7 +454,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testNodePropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.NODE_PROPERTY_SPEC, "dns", 5).stream()
+        autoComplete(Type.NODE_PROPERTY_SPEC, "dns", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
@@ -445,7 +463,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testOspfSessionStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.OSPF_SESSION_STATUS_SPEC, "area", 5).stream()
+        autoComplete(Type.OSPF_SESSION_STATUS_SPEC, "area", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -462,10 +480,10 @@ public class AutoCompleteUtilsTest {
     // the query 'leax' does not match any node names so removing characters off the end should give
     // the same suggestions as the query 'lea'
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
             "network", "snapshot", Type.NODE_NAME, "leax", 10, completionMetadata, null, null),
         equalTo(
-            AutoCompleteUtils.autoComplete(
+            autoComplete(
                 "network", "snapshot", Type.NODE_NAME, "lea", 10, completionMetadata, null, null)));
   }
 
@@ -476,8 +494,7 @@ public class AutoCompleteUtilsTest {
 
     // All node names in alphabetical order with escaped names at the end
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.NODE_NAME, "", 10, completionMetadata, null, null)
+        autoComplete("network", "snapshot", Type.NODE_NAME, "", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(ImmutableList.toImmutableList()),
@@ -492,8 +509,7 @@ public class AutoCompleteUtilsTest {
 
     // All node names containing ‘o’ in alphabetical order with escaped names at the end
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.NODE_NAME, "o", 10, completionMetadata, null, null)
+        autoComplete("network", "snapshot", Type.NODE_NAME, "o", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(ImmutableList.toImmutableList()),
@@ -507,8 +523,7 @@ public class AutoCompleteUtilsTest {
     // “Spine” suggested first because the input string is a prefix of it; “host1” and “host2” come
     // after alphabetically because they contain the input string
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.NODE_NAME, "s", 10, completionMetadata, null, null)
+        autoComplete("network", "snapshot", Type.NODE_NAME, "s", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(ImmutableList.toImmutableList()),
@@ -522,7 +537,7 @@ public class AutoCompleteUtilsTest {
     // Node names where the input string is a prefix suggested first, then node names containing the
     // input
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network", "snapshot", Type.NODE_NAME, "lea", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
@@ -537,7 +552,7 @@ public class AutoCompleteUtilsTest {
     // “leax” does not match any of the node names so removing characters from the end until there
     // are suggestions would give us the same suggestions as “lea”
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network", "snapshot", Type.NODE_NAME, "leax", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
@@ -553,8 +568,7 @@ public class AutoCompleteUtilsTest {
     // None of the nodenames contain “x” so removing characters from the end of the input string
     // until there are suggestions would give us the same suggestions as the empty string
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.NODE_NAME, "x", 10, completionMetadata, null, null)
+        autoComplete("network", "snapshot", Type.NODE_NAME, "x", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(ImmutableList.toImmutableList()),
@@ -570,7 +584,7 @@ public class AutoCompleteUtilsTest {
     // ‘Leaxf’ does not result in any suggestions so removing characters off the end until there are
     // completions gives us the same suggestions as for ‘lea’
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network", "snapshot", Type.NODE_NAME, "leaxf", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
@@ -584,7 +598,7 @@ public class AutoCompleteUtilsTest {
 
     // Only one node name contains “/leaf” (escaped)
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.NODE_NAME,
@@ -605,7 +619,7 @@ public class AutoCompleteUtilsTest {
 
     // Unescaped input doesn’t match anything, adding quotes gives us one match
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network", "snapshot", Type.NODE_NAME, "/foo", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
@@ -619,7 +633,7 @@ public class AutoCompleteUtilsTest {
 
     // Since the input text ‘leaf’ is valid it is included as the first suggestion
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network", "snapshot", Type.NODE_NAME, "leaf", 10, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
@@ -631,7 +645,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testAlreadySpecifiedSuggestionsFilteredOut() {
     List<AutocompleteSuggestion> suggestions =
-        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "EIGRP-INT, EIGRP-", 10);
+        autoComplete(Type.ROUTING_PROTOCOL_SPEC, "EIGRP-INT, EIGRP-", 10);
 
     // should only suggest "EIGRP-EXT" because "EIGRP-INT" is already specified
     assertThat(suggestions.size(), equalTo(1));
@@ -643,7 +657,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testRoutingProtocolSpecifiedMultipleTimes() {
     List<AutocompleteSuggestion> suggestions =
-        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "EIGRP-INT, EIGRP-INT", 10);
+        autoComplete(Type.ROUTING_PROTOCOL_SPEC, "EIGRP-INT, EIGRP-INT", 10);
 
     // Since ‘EIGRP-INT’ has already been entered there are no valid completions here so removing
     // characters from the end gives us the same suggestions as for ‘EIGRP-INT, EIGRP-’
@@ -660,7 +674,7 @@ public class AutoCompleteUtilsTest {
     // Any Ips first in ascending order, then any node names in alphabetical order, then any partial
     // suggestions in alphabetical order
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -701,7 +715,7 @@ public class AutoCompleteUtilsTest {
     // first ip addresses that begin with 1 in ascending order followed by those that contain a 1,
     // then any node names containing a “1” in alphabetical order
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -726,7 +740,7 @@ public class AutoCompleteUtilsTest {
     // First Ip addresses that begin with ‘1.’, then addresses that contain the value 1 (as in
     // 00000001) as one of it’s octets, then addresses that contain a ‘1.’
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -749,7 +763,7 @@ public class AutoCompleteUtilsTest {
     // First any Ip addresses that begin with ‘1.2’, then addresses that contain the value 1 as one
     // of it’s octets followed by a ‘.2’, then addresses that contain a ‘1.2’
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -773,7 +787,7 @@ public class AutoCompleteUtilsTest {
     // provide completions for, then operators that we can’t provide completions for (we stop giving
     // suggestions if the user enters ‘:’ for an ip wildcard)
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -796,7 +810,7 @@ public class AutoCompleteUtilsTest {
     // Only Ip addresses that are greater than the address at the start of the range in ascending
     // order
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -820,7 +834,7 @@ public class AutoCompleteUtilsTest {
     // to end the range. Removing characters from the end gives us the same suggestions that would
     // be returned for ‘11.2.3.4’
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -844,7 +858,7 @@ public class AutoCompleteUtilsTest {
     // (disregarding @), then any node names that contain ‘e’, then partial suggestions that contain
     // ‘e’
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -876,7 +890,7 @@ public class AutoCompleteUtilsTest {
 
     // Just the valid function names in alphabetical order
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -904,7 +918,7 @@ public class AutoCompleteUtilsTest {
 
     // Just the valid function names in alphabetical order
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -931,7 +945,7 @@ public class AutoCompleteUtilsTest {
 
     // Just the valid function names in alphabetical order
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
@@ -954,7 +968,7 @@ public class AutoCompleteUtilsTest {
     // Alphabetical with interfaces first and then nodes, then functions with valid completions,
     // then operators
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.INTERFACES_SPEC,
@@ -1000,7 +1014,7 @@ public class AutoCompleteUtilsTest {
     // First interfaces beginning with 'e', then nodes beginning with 'e', then interfaces
     // containing 'e', then nodes containing 'e', then functions containing 'e'
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.INTERFACES_SPEC,
@@ -1039,7 +1053,7 @@ public class AutoCompleteUtilsTest {
     // “Router1” first because the input text is a prefix, then interfaces, nodes, functions
     // containing 'r'
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.INTERFACES_SPEC,
@@ -1072,7 +1086,7 @@ public class AutoCompleteUtilsTest {
     // Exact match first, then suggestions where input string is a prefix, then any remaining
     // interfaces/nodes containing the input string, and finally any partial suggestions
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.INTERFACES_SPEC,
@@ -1096,7 +1110,7 @@ public class AutoCompleteUtilsTest {
     // completions gives us the same suggestions as for ‘lea’: first interfaces that begin with
     // 'lea', then nodes that begin with 'lea', then interfaces, nodes that contain 'lea'
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.INTERFACES_SPEC,
@@ -1118,7 +1132,7 @@ public class AutoCompleteUtilsTest {
 
     // First any partial suggestions: first interfaces on the node, then functions, then operators
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.INTERFACES_SPEC,
@@ -1142,7 +1156,7 @@ public class AutoCompleteUtilsTest {
 
     // First any suggestions that would make a valid input, then any partial suggestions
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.INTERFACES_SPEC,
@@ -1174,7 +1188,7 @@ public class AutoCompleteUtilsTest {
             .build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 network,
                 "snapshot",
                 Type.NODE_ROLE_DIMENSION_NAME,
@@ -1214,7 +1228,7 @@ public class AutoCompleteUtilsTest {
             .build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 network,
                 "snapshot",
                 Type.NODE_ROLE_NAME,
@@ -1242,7 +1256,7 @@ public class AutoCompleteUtilsTest {
     NodeRolesData nodeRolesData = NodeRolesData.builder().build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 network, snapshot, Type.NODE_SPEC, "a", 5, completionMetadata, nodeRolesData, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
@@ -1253,7 +1267,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testOspfInterfacePropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.OSPF_INTERFACE_PROPERTY_SPEC, "area", 5).stream()
+        autoComplete(Type.OSPF_INTERFACE_PROPERTY_SPEC, "area", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(OspfInterfacePropertySpecifier.OSPF_AREA_NAME)));
@@ -1262,7 +1276,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testOspfProcessPropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.OSPF_PROCESS_PROPERTY_SPEC, "area", 5).stream()
+        autoComplete(Type.OSPF_PROCESS_PROPERTY_SPEC, "area", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(AREA_BORDER_ROUTER, AREAS)));
@@ -1279,8 +1293,7 @@ public class AutoCompleteUtilsTest {
             .build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.PREFIX, "1.2", 5, completionMetadata, null, null)
+        autoComplete(network, snapshot, Type.PREFIX, "1.2", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -1290,7 +1303,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testProtocolAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.PROTOCOL, "h", 5).stream()
+        autoComplete(Type.PROTOCOL, "h", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(HTTP.toString(), HTTPS.toString(), SSH.toString())));
@@ -1313,8 +1326,7 @@ public class AutoCompleteUtilsTest {
     // list all sources
     {
       assertThat(
-          AutoCompleteUtils.autoComplete(
-                  "network", "snapshot", Type.SOURCE_LOCATION, "", 5, metadata, null, null)
+          autoComplete("network", "snapshot", Type.SOURCE_LOCATION, "", 5, metadata, null, null)
               .stream()
               .map(AutocompleteSuggestion::getText)
               .collect(Collectors.toSet()),
@@ -1324,8 +1336,7 @@ public class AutoCompleteUtilsTest {
     // can match on node
     {
       assertThat(
-          AutoCompleteUtils.autoComplete(
-                  "network", "snapshot", Type.SOURCE_LOCATION, "n1", 5, metadata, null, null)
+          autoComplete("network", "snapshot", Type.SOURCE_LOCATION, "n1", 5, metadata, null, null)
               .stream()
               .map(AutocompleteSuggestion::getText)
               .collect(Collectors.toSet()),
@@ -1335,7 +1346,7 @@ public class AutoCompleteUtilsTest {
     // can match on interface
     {
       assertThat(
-          AutoCompleteUtils.autoComplete(
+          autoComplete(
                   "network", "snapshot", Type.SOURCE_LOCATION, "iface", 5, metadata, null, null)
               .stream()
               .map(AutocompleteSuggestion::getText)
@@ -1346,7 +1357,7 @@ public class AutoCompleteUtilsTest {
     // can match on @enter
     {
       assertThat(
-          AutoCompleteUtils.autoComplete(
+          autoComplete(
                   "network", "snapshot", Type.SOURCE_LOCATION, "enter", 5, metadata, null, null)
               .stream()
               .map(AutocompleteSuggestion::getText)
@@ -1357,7 +1368,7 @@ public class AutoCompleteUtilsTest {
     // can match on human name
     {
       assertThat(
-          AutoCompleteUtils.autoComplete(
+          autoComplete(
                   "network", "snapshot", Type.SOURCE_LOCATION, "human", 5, metadata, null, null)
               .stream()
               .map(AutocompleteSuggestion::getText)
@@ -1368,8 +1379,7 @@ public class AutoCompleteUtilsTest {
     // description is human name
     {
       assertThat(
-          AutoCompleteUtils.autoComplete(
-                  "network", "snapshot", Type.SOURCE_LOCATION, "", 5, metadata, null, null)
+          autoComplete("network", "snapshot", Type.SOURCE_LOCATION, "", 5, metadata, null, null)
               .stream()
               .map(AutocompleteSuggestion::getDescription)
               .collect(Collectors.toSet()),
@@ -1400,7 +1410,7 @@ public class AutoCompleteUtilsTest {
     // non-TR sources are not listed and sources are listed first
     {
       assertThat(
-          AutoCompleteUtils.autoComplete(
+          autoComplete(
                   "network",
                   "snapshot",
                   Type.TRACEROUTE_SOURCE_LOCATION,
@@ -1427,8 +1437,7 @@ public class AutoCompleteUtilsTest {
 
     // empty matches all possibilities
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.REFERENCE_BOOK_NAME, "", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.REFERENCE_BOOK_NAME, "", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -1436,8 +1445,7 @@ public class AutoCompleteUtilsTest {
 
     // 'g' matches two books
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.REFERENCE_BOOK_NAME, "B", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.REFERENCE_BOOK_NAME, "B", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -1445,8 +1453,7 @@ public class AutoCompleteUtilsTest {
 
     // 'g1' matches one book
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.REFERENCE_BOOK_NAME, "b1", 5, null, null, library)
+        autoComplete("network", "snapshot", Type.REFERENCE_BOOK_NAME, "b1", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -1467,7 +1474,7 @@ public class AutoCompleteUtilsTest {
             .build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 network,
                 snapshot,
                 Type.ROUTING_POLICY_NAME,
@@ -1485,7 +1492,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testRoutingProtocolSpecAutocompletePartialName() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bg", 5).stream()
+        autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bg", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("bgp", "ibgp", "ebgp")));
@@ -1494,7 +1501,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testRoutingProtocolSpecAutocompleteFullName() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
+        autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(",", "bgp", "ibgp", "ebgp")));
@@ -1583,7 +1590,7 @@ public class AutoCompleteUtilsTest {
             .build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 network, snapshot, Type.STRUCTURE_NAME, "str", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
@@ -1603,9 +1610,7 @@ public class AutoCompleteUtilsTest {
         CompletionMetadata.builder().setVrfs(ImmutableSet.of(suggested, notSuggested)).build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.VRF, "v", 5, completionMetadata, null, null)
-            .stream()
+        autoComplete(network, snapshot, Type.VRF, "v", 5, completionMetadata, null, null).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));
@@ -1623,9 +1628,7 @@ public class AutoCompleteUtilsTest {
         CompletionMetadata.builder().setZones(ImmutableSet.of(suggested, notSuggested)).build();
 
     assertThat(
-        AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.ZONE, "z", 5, completionMetadata, null, null)
-            .stream()
+        autoComplete(network, snapshot, Type.ZONE, "z", 5, completionMetadata, null, null).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));
@@ -1636,7 +1639,7 @@ public class AutoCompleteUtilsTest {
     Type type = Type.ANSWER_ELEMENT;
 
     assertThat(
-        AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null, null),
+        autoComplete("network", "snapshot", type, "blah", 5, null, null, null),
         equalTo(ImmutableList.of()));
   }
 
@@ -1751,7 +1754,7 @@ public class AutoCompleteUtilsTest {
 
     // an invalid IP will cause a parse error, which should be handled
     assertThat(
-        AutoCompleteUtils.autoComplete(
+        autoComplete(
                 "network",
                 "snapshot",
                 Type.IP_SPACE_SPEC,
