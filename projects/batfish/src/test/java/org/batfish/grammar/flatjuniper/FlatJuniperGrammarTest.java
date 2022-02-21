@@ -2536,14 +2536,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename,
-            FIREWALL_FILTER,
-            "FILTER1",
-            contains(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 23)));
+            filename, FIREWALL_FILTER, "FILTER1", contains(6, 7, 8, 9, 10, 11, 12, 13, 14, 15)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FIREWALL_FILTER, "FILTER2", contains(5, 16, 17, 18, 19, 20, 21, 22, 23)));
+            filename, FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19, 20, 21, 22)));
   }
 
   @Test
@@ -6760,6 +6757,6 @@ public final class FlatJuniperGrammarTest {
             "configs/" + hostname,
             FIREWALL_FILTER_TERM,
             "foo default-deny-udp",
-            equalTo(IntegerSpace.unionOf(new SubRange(6, 19), new SubRange(25, 26)).enumerate())));
+            equalTo(IntegerSpace.unionOf(new SubRange(8, 19)).enumerate())));
   }
 }

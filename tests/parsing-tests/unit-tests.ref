@@ -72871,125 +72871,125 @@
         "configs/gh-2658-juniper-vrf-import-export.cfg" : {
           "bgp group" : {
             "overlay" : {
-              "definitionLines" : "115-116,136-141,143-154,159",
+              "definitionLines" : "136-141,143-153",
               "numReferrers" : 4
             },
             "underlay" : {
-              "definitionLines" : "115-116,118,120-135,154,159",
+              "definitionLines" : "118,120-135",
               "numReferrers" : 3
             }
           },
           "community" : {
             "fabric" : {
-              "definitionLines" : "160,191,194",
+              "definitionLines" : "191",
               "numReferrers" : 1
             },
             "vni-100" : {
-              "definitionLines" : "160,192,194",
+              "definitionLines" : "192",
               "numReferrers" : 1
             },
             "vni-101" : {
-              "definitionLines" : "160,193-194",
+              "definitionLines" : "193",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "fxp0" : {
-              "definitionLines" : "52,75-81,103",
+              "definitionLines" : "75-81",
               "numReferrers" : 1
             },
             "fxp0.0" : {
-              "definitionLines" : "52,75-81,103",
+              "definitionLines" : "76-80",
               "numReferrers" : 1
             },
             "irb" : {
-              "definitionLines" : "52,82-90,103",
+              "definitionLines" : "82-90",
               "numReferrers" : 3
             },
             "irb.100" : {
-              "definitionLines" : "52,82-90,103",
+              "definitionLines" : "83-89",
               "numReferrers" : 3
             },
             "lo0" : {
-              "definitionLines" : "52,91-103",
+              "definitionLines" : "91-102",
               "numReferrers" : 2
             },
             "lo0.0" : {
-              "definitionLines" : "52,91-96,102-103",
+              "definitionLines" : "92-96",
               "numReferrers" : 3
             },
             "lo0.1" : {
-              "definitionLines" : "52,91,97-103",
+              "definitionLines" : "97-101",
               "numReferrers" : 2
             },
             "xe-0/0/2" : {
-              "definitionLines" : "52-59,103",
+              "definitionLines" : "53-59",
               "numReferrers" : 1
             },
             "xe-0/0/2.0" : {
-              "definitionLines" : "52-59,103",
+              "definitionLines" : "54-58",
               "numReferrers" : 1
             },
             "xe-0/0/3" : {
-              "definitionLines" : "52,60-66,103",
+              "definitionLines" : "60-66",
               "numReferrers" : 1
             },
             "xe-0/0/3.0" : {
-              "definitionLines" : "52,60-66,103",
+              "definitionLines" : "61-65",
               "numReferrers" : 1
             },
             "xe-0/0/4" : {
-              "definitionLines" : "52,67-74,103",
+              "definitionLines" : "67-74",
               "numReferrers" : 2
             },
             "xe-0/0/4.0" : {
-              "definitionLines" : "52,67,69-74,103",
+              "definitionLines" : "69-73",
               "numReferrers" : 1
             }
           },
           "policy-statement" : {
             "export-loopback" : {
-              "definitionLines" : "160-166,194",
+              "definitionLines" : "161-166",
               "numReferrers" : 1
             },
             "fabric" : {
-              "definitionLines" : "160,167-183,194",
+              "definitionLines" : "167-183",
               "numReferrers" : 1
             },
             "lbpp" : {
-              "definitionLines" : "160,184-190,194",
+              "definitionLines" : "184-190",
               "numReferrers" : 1
             }
           },
           "policy-statement term" : {
             "export-loopback lo0" : {
-              "definitionLines" : "160-166,194",
+              "definitionLines" : "162-165",
               "numReferrers" : 2
             },
             "fabric fabric" : {
-              "definitionLines" : "160,167-174,183,194",
+              "definitionLines" : "168-174",
               "numReferrers" : 3
             },
             "fabric vni-100" : {
-              "definitionLines" : "160,167,175-178,183,194",
+              "definitionLines" : "175-178",
               "numReferrers" : 2
             },
             "fabric vni-101" : {
-              "definitionLines" : "160,167,179-183,194",
+              "definitionLines" : "179-182",
               "numReferrers" : 2
             },
             "lbpp 1" : {
-              "definitionLines" : "160,184-190,194",
+              "definitionLines" : "185-189",
               "numReferrers" : 1
             }
           },
           "routing-instance" : {
             "fabric" : {
-              "definitionLines" : "195,200-238",
+              "definitionLines" : "200-237",
               "numReferrers" : 17
             },
             "vr" : {
-              "definitionLines" : "195-199,238",
+              "definitionLines" : "196-199",
               "numReferrers" : 2
             }
           }
