@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -40,6 +41,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 
 public abstract class VendorConfiguration implements Serializable {
 
+  private transient @Nullable Map<Integer, Set<Integer>> _extraLines;
   private transient @Nullable ConversionContext _conversionContext;
   private transient ConvertConfigurationAnswerElement _answerElement;
   protected String _filename;
@@ -435,15 +437,22 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   /* Recursively process children to find all relevant definition lines for the specified context */
-  private static IntStream collectLines(RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
+  private static IntStream collectLines(
+      RuleContext ctx, BatfishCombinedParser<?, ?> parser, Map<Integer, Set<Integer>> extraLines) {
     return IntStream.range(0, ctx.getChildCount())
         .flatMap(
             i -> {
               ParseTree child = ctx.getChild(i);
               if (child instanceof TerminalNode) {
-                return IntStream.of(parser.getLine(((TerminalNode) child).getSymbol()));
+                int originalLine = parser.getLine(((TerminalNode) child).getSymbol());
+                return IntStream.concat(
+                    IntStream.of(originalLine),
+                    Optional.ofNullable(extraLines)
+                        .map(el -> el.get(originalLine))
+                        .map(set -> set.stream().mapToInt(Integer::intValue))
+                        .orElse(IntStream.of()));
               } else if (child instanceof RuleContext) {
-                return collectLines((RuleContext) child, parser);
+                return collectLines((RuleContext) child, parser, extraLines);
               }
               return IntStream.empty();
             })
@@ -480,7 +489,7 @@ public abstract class VendorConfiguration implements Serializable {
    */
   public void defineFlattenedStructure(
       StructureType type, String name, RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
-    getStructureInfo(type, name).addDefinitionLines(collectLines(ctx, parser));
+    getStructureInfo(type, name).addDefinitionLines(collectLines(ctx, parser, _extraLines));
   }
 
   /**
@@ -524,5 +533,9 @@ public abstract class VendorConfiguration implements Serializable {
   @Nonnull
   public Set<Layer1Edge> getLayer1Edges() {
     return ImmutableSet.of();
+  }
+
+  public void setExtraLines(@Nullable Map<Integer, Set<Integer>> extraLines) {
+    _extraLines = extraLines;
   }
 }

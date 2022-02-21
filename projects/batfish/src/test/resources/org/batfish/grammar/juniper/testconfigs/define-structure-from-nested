@@ -1,0 +1,26 @@
+# RANCID-CONTENT-TYPE: juniper
+system {
+  host-name "define-structure-from-nested";
+}
+
+firewall {
+    filter foo {
+        /*
+         ** Count UDP denies.
+         */
+        term default-deny-udp {
+            from {
+                protocol udp /* ignore me */;
+            }
+            then {
+                count default-deny-udp;
+                discard;
+            }
+        }
+        term other {
+            then {
+                discard;
+            }
+        }
+    }
+}
