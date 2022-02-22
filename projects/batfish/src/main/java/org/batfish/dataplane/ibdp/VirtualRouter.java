@@ -731,6 +731,7 @@ public final class VirtualRouter {
 
   /** Compute the FIB from the main RIB */
   public void computeFib() {
+    _fib = null; // free the old one.
     _fib = new FibImpl(_mainRib, _resolutionRestriction);
   }
 
