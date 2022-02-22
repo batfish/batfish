@@ -367,6 +367,7 @@ final class IncrementalBdpEngine {
           }
 
           updateLayer3Vnis(vrs);
+          currentDataplane = null; // free the old one
           currentDataplane = nextDataplane(currentTopologyContext, nodes, vrs, currentIpOwners);
           TopologyContext nextTopologyContext =
               nextTopologyContext(
