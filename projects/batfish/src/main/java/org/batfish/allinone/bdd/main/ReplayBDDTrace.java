@@ -20,7 +20,7 @@ public final class ReplayBDDTrace {
       inputPath = Paths.get(wd).resolve(inputPath);
     }
 
-    JFactory factory = BDDPacket.defaultJFactory();
+    JFactory factory = BDDPacket.defaultJFactory(false);
     factory.replayTrace(inputPath);
   }
 }

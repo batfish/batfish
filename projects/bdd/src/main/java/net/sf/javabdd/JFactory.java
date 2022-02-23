@@ -4654,9 +4654,6 @@ public final class JFactory extends BDDFactory {
     bddfreenum--;
     bddproduced++;
     if (_tracing) {
-      if (bddproduced == 593) {
-        new IllegalStateException().printStackTrace();
-      }
       _indexToSequence.put(res, bddproduced);
     }
 
