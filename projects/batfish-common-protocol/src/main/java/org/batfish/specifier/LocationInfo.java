@@ -3,10 +3,14 @@ package org.batfish.specifier;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 
 /** Information about whether/how to treat a location as a source or sink of traffic. */
 public final class LocationInfo implements Serializable {
+  public static final LocationInfo NOTHING =
+      new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
+
   private final boolean _isSource;
   private final IpSpace _sourceIps;
   private final IpSpace _arpIps;

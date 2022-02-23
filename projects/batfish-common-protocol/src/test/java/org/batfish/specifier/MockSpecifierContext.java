@@ -82,7 +82,7 @@ public class MockSpecifierContext implements SpecifierContext {
 
   @Override
   public LocationInfo getLocationInfo(Location location) {
-    return _locationInfo.get(location);
+    return _locationInfo.getOrDefault(location, LocationInfo.NOTHING);
   }
 
   @Override
