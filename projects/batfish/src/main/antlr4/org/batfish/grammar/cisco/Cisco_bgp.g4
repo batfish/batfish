@@ -200,7 +200,7 @@ rb_bgp
   BGP
   (
     additional_paths_rb_stanza
-    | rbb_asnotation
+    | rbb_asnotation_null
     | cluster_id_bgp_tail
     | bgp_confederation_rb_stanza
     | bgp_enforce_first_as_stanza
@@ -211,7 +211,7 @@ rb_bgp
   )
 ;
 
-rbb_asnotation
+rbb_asnotation_null
 :
   ASNOTATION DOT NEWLINE
 ;
@@ -481,7 +481,7 @@ next_hop_self_bgp_tail
    NO? NEXT_HOP_SELF NEWLINE
 ;
 
-no_bgp_asnotation_dot
+no_bgp_asnotation_dot_null
 :
    NO BGP ASNOTATION DOT NEWLINE
 ;
@@ -863,7 +863,7 @@ router_bgp_stanza_tail
    | default_information_originate_rb_stanza
    | neighbor_flat_rb_stanza
    | neighbor_group_rb_stanza
-   | no_bgp_asnotation_dot
+   | no_bgp_asnotation_dot_null
    | no_bgp_consistency_checker
    | no_bgp_enforce_first_as_stanza
    | no_neighbor_activate_rb_stanza
