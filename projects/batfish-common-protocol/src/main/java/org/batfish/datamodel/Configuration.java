@@ -330,12 +330,8 @@ public final class Configuration implements Serializable {
     checkNotNull(hostname, "%s cannot be null", PROP_NAME);
     checkNotNull(configurationFormat, "%s cannot be null", PROP_CONFIGURATION_FORMAT);
     Configuration c = new Configuration(hostname, configurationFormat);
-    if (exportBgpFromBgpRib != null && exportBgpFromBgpRib) {
-      c.setExportBgpFromBgpRib(true);
-    }
-    if (generateBgpAggregatesFromMainRib != null && generateBgpAggregatesFromMainRib) {
-      c.setGenerateBgpAggregatesFromMainRib(true);
-    }
+    c.setExportBgpFromBgpRib(Boolean.TRUE.equals(exportBgpFromBgpRib));
+    c.setGenerateBgpAggregatesFromMainRib(Boolean.TRUE.equals(generateBgpAggregatesFromMainRib));
     return c;
   }
 
@@ -562,6 +558,7 @@ public final class Configuration implements Serializable {
     return _exportBgpFromBgpRib;
   }
 
+  @JsonIgnore
   public void setExportBgpFromBgpRib(boolean exportBgpFromBgpRib) {
     _exportBgpFromBgpRib = exportBgpFromBgpRib;
   }
@@ -575,6 +572,7 @@ public final class Configuration implements Serializable {
     return _generateBgpAggregatesFromMainRib;
   }
 
+  @JsonIgnore
   public void setGenerateBgpAggregatesFromMainRib(boolean generateBgpAggregatesFromMainRib) {
     _generateBgpAggregatesFromMainRib = generateBgpAggregatesFromMainRib;
   }

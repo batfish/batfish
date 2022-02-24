@@ -1358,7 +1358,7 @@ public class AristaGrammarTest {
      * - 10.10.0.0/16: Generated since there is a more specific static route
      * - 10.11.0.0/16: Not generated because there is a better static route for same prefix
      * - 10.12.0.0/16: Generated; the static route with same prefix has worse admin distance
-     * - 10.13.0.0/16: Not generated because there is a better static route (EBGP admin = 200)
+     * - 10.13.0.0/16: Not generated because there is a better static route (local admin = 200)
      *
      * BGP does NOT redistribute static routes; Arista generates aggregates from main RIB.
      */
