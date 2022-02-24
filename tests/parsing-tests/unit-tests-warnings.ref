@@ -276,8 +276,8 @@
       {
         "Filename" : "configs/cisco_bgp",
         "Line" : 27,
-        "Text" : "bgp redistribute-internal",
-        "Parser_Context" : "[bgp_redistribute_internal_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Text" : "redistribute-internal",
+        "Parser_Context" : "[bgp_redistribute_internal_rb_stanza rb_bgp router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {

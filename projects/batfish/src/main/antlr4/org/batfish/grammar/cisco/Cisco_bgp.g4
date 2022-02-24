@@ -54,7 +54,7 @@ address_family_rb_stanza
 
 address_family_inner
 :
-   additional_paths_rb_stanza
+   af_bgp
    | aggregate_address_rb_stanza
    | bgp_af_import
    | bgp_tail
@@ -65,7 +65,15 @@ address_family_inner
    | null_no_neighbor_rb_stanza
    | peer_group_assignment_rb_stanza
    | peer_group_creation_rb_stanza
-   | router_id_rb_stanza
+;
+
+af_bgp
+:
+  BGP
+  (
+    additional_paths_rb_stanza
+    | router_id_bgp_tail
+  )
 ;
 
 address_family_enable_rb_stanza
@@ -109,7 +117,7 @@ agg_suppress_map: SUPPRESS_MAP sup_map = variable;
 
 additional_paths_rb_stanza
 :
-   BGP ADDITIONAL_PATHS
+   ADDITIONAL_PATHS
    (
       INSTALL
       | SELECT ALL
@@ -187,12 +195,30 @@ bgp_afip_selection
    ) NEWLINE
 ;
 
-//confederations are not currently implemented
-//not putting this under null so we can warn the user
+rb_bgp
+:
+  BGP
+  (
+    additional_paths_rb_stanza
+    | rbb_asnotation
+    | cluster_id_bgp_tail
+    | bgp_confederation_rb_stanza
+    | bgp_enforce_first_as_stanza
+    | bgp_listen_range_rb_stanza
+    | bgp_maxas_limit_rb_stanza
+    | bgp_redistribute_internal_rb_stanza
+    | router_id_bgp_tail
+  )
+;
+
+rbb_asnotation
+:
+  ASNOTATION DOT NEWLINE
+;
 
 bgp_confederation_rb_stanza
 :
-   BGP CONFEDERATION
+   CONFEDERATION
    (
      bgp_conf_identifier_rb_stanza
      | bgp_conf_peers_rb_stanza
@@ -211,12 +237,12 @@ bgp_conf_peers_rb_stanza
 
 bgp_enforce_first_as_stanza
 :
-   BGP ENFORCE_FIRST_AS NEWLINE
+   ENFORCE_FIRST_AS NEWLINE
 ;
 
 bgp_listen_range_rb_stanza
 :
-   BGP LISTEN RANGE
+   LISTEN RANGE
    (
       IP_PREFIX
       | IPV6_PREFIX
@@ -228,12 +254,12 @@ bgp_listen_range_rb_stanza
 
 bgp_maxas_limit_rb_stanza
 :
-   BGP MAXAS_LIMIT limit = dec NEWLINE
+   MAXAS_LIMIT limit = dec NEWLINE
 ;
 
 bgp_redistribute_internal_rb_stanza
 :
-   BGP REDISTRIBUTE_INTERNAL NEWLINE
+   REDISTRIBUTE_INTERNAL NEWLINE
 ;
 
 bgp_scan_time_bgp_tail
@@ -291,11 +317,6 @@ cluster_id_bgp_tail
       dec
       | IP_ADDRESS
    ) NEWLINE
-;
-
-cluster_id_rb_stanza
-:
-   BGP cluster_id_bgp_tail
 ;
 
 compare_routerid_rb_stanza
@@ -830,20 +851,14 @@ router_bgp_stanza
 
 router_bgp_stanza_tail
 :
-   additional_paths_rb_stanza
-   | address_family_rb_stanza
+   address_family_rb_stanza
    | address_family_enable_rb_stanza
    | af_group_rb_stanza
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza
    | as_path_multipath_relax_rb_stanza
-   | bgp_confederation_rb_stanza
-   | bgp_enforce_first_as_stanza
-   | bgp_listen_range_rb_stanza
-   | bgp_maxas_limit_rb_stanza
-   | bgp_redistribute_internal_rb_stanza
+   | rb_bgp
    | bgp_tail
-   | cluster_id_rb_stanza
    | compare_routerid_rb_stanza
    | default_information_originate_rb_stanza
    | neighbor_flat_rb_stanza
@@ -857,7 +872,6 @@ router_bgp_stanza_tail
    | null_no_neighbor_rb_stanza
    | peer_group_assignment_rb_stanza
    | peer_group_creation_rb_stanza
-   | router_id_rb_stanza
    | session_group_rb_stanza
    | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
@@ -866,11 +880,6 @@ router_bgp_stanza_tail
 router_id_bgp_tail
 :
    ROUTER_ID routerid = IP_ADDRESS NEWLINE
-;
-
-router_id_rb_stanza
-:
-   BGP router_id_bgp_tail
 ;
 
 send_community_bgp_tail
