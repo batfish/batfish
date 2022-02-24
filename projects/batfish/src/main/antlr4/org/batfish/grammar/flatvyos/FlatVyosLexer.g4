@@ -1654,10 +1654,10 @@ DOUBLE_QUOTED_STRING
 
 FLOAT
 :
-   F_PositiveDigit* F_Digit '.'
+   F_PositiveDigit F_Digit* '.'
    (
       '0'
-      | F_Digit* F_PositiveDigit
+      | F_PositiveDigit F_Digit*
    )
 ;
 
