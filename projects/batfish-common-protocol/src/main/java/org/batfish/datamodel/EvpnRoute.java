@@ -12,7 +12,6 @@ import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 /**
  * A generic EVPN route containing the common properties among the different types of EVPN routes
@@ -85,42 +84,11 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
   protected EvpnRoute(
       Prefix network,
       NextHop nextHop,
-      AsPath asPath,
-      CommunitySet communities,
-      long localPreference,
-      long med,
-      Ip originatorIp,
-      Set<Long> clusterList,
-      boolean receivedFromRouteReflectorClient,
-      OriginMechanism originMechanism,
-      OriginType originType,
-      RoutingProtocol protocol,
-      @Nullable Ip receivedFromIp,
-      @Nullable RoutingProtocol srcProtocol,
+      BgpRouteAttributes attributes,
       long tag,
-      int weight,
       RouteDistinguisher routeDistinguisher,
       int vni) {
-    super(
-        network,
-        nextHop,
-        EVPN_ADMIN,
-        asPath,
-        communities,
-        localPreference,
-        med,
-        originatorIp,
-        clusterList,
-        receivedFromRouteReflectorClient,
-        originMechanism,
-        originType,
-        protocol,
-        receivedFromIp,
-        srcProtocol,
-        tag,
-        weight,
-        true,
-        true);
+    super(network, nextHop, EVPN_ADMIN, attributes, tag, true, true);
     _routeDistinguisher = routeDistinguisher;
     _vni = vni;
   }
@@ -139,7 +107,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
   /** Return extended communities that are route targets for this route */
   @JsonIgnore
   public Set<ExtendedCommunity> getRouteTargets() {
-    return _communities.getExtendedCommunities().stream()
+    return _attributes._communities.getExtendedCommunities().stream()
         .filter(ExtendedCommunity::isRouteTarget)
         .collect(ImmutableSet.toImmutableSet());
   }
