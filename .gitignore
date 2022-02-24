@@ -8,29 +8,9 @@
 dependency-reduced-pom.xml
 pom.xml.versionsBackup
 target/
-.project/
 
 # Ignore the list of java files to format-check
 /files_to_check
-
-# IntelliJ project files that should not be shared, per:
-# https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems
-workspace.xml
-tasks.xml
-# https://stackoverflow.com/questions/11968531/what-to-gitignore-from-the-idea-folder
-/.idea/uiDesigner.xml
-# Additionally, per the lower level section, we should also not share
-# the following files that are auto-generated from Maven.
-/.idea/dictionaries/
-/.idea/libraries/
-*.iml
-/.idea/modules.xml
-
-#Eclipse project files that oscillate for some reason and get generated anyway
-org.eclipse.core.resources.prefs
-.classpath
-.factorypath
-
 
 # Ignore all bazel-* symlinks. There is no full list since this can change
 # based on the name of the directory bazel is cloned into.
