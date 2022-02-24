@@ -1343,6 +1343,44 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testBgpAggregateGeneration() throws IOException {
+    /*
+     * Config has static routes:
+     * - 10.10.1.0/24
+     * - 10.11.0.0/16
+     * - 10.11.1.0/24
+     * - 10.12.0.0/16 with admin distance 254
+     * - 10.12.1.0/24
+     * - 10.13.0.0/16 with admin distance 199
+     * - 10.13.1.0/24
+     *
+     * And BGP aggregates:
+     * - 10.10.0.0/16: Generated since there is a more specific static route
+     * - 10.11.0.0/16: Not generated because there is a better static route for same prefix
+     * - 10.12.0.0/16: Generated; the static route with same prefix has worse admin distance
+     * - 10.13.0.0/16: Not generated because there is a better static route (EBGP admin = 200)
+     *
+     * BGP does NOT redistribute static routes; Arista generates aggregates from main RIB.
+     */
+    String hostname = "bgp_aggregate_generation";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // Sanity check: static routes were created
+    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(
+        mainRibRoutes.stream().filter(r -> r instanceof org.batfish.datamodel.StaticRoute).count(),
+        equalTo(6L));
+
+    Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, DEFAULT_VRF_NAME);
+    assertThat(
+        bgpRibRoutes,
+        containsInAnyOrder(
+            hasPrefix(Prefix.parse("10.10.0.0/16")), hasPrefix(Prefix.parse("10.12.0.0/16"))));
+  }
+
+  @Test
   public void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
     /*
      * Config has static routes:
