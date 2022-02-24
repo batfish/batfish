@@ -2154,6 +2154,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);
     c.setExportBgpFromBgpRib(true);
+    c.setGenerateBgpAggregatesFromMainRib(true);
     c.setNormalVlanRange(
         IntegerSpace.of(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO)));
     c.setTacacsServers(_tacacsServers);
