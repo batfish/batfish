@@ -96,11 +96,8 @@ public final class LocationInfoUtils {
                         Location linkLocation = new InterfaceLinkLocation(hostname, ifaceName);
 
                         if (!iface.getActive()) {
-                          LocationInfo info =
-                              new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
-                          return Stream.of(
-                              Maps.immutableEntry(ifaceLocation, info),
-                              Maps.immutableEntry(linkLocation, info));
+                          // Would get filtered out below, so just omit.
+                          return Stream.of();
                         }
 
                         return Stream.of(
@@ -119,6 +116,7 @@ public final class LocationInfoUtils {
                                     snapshotDeviceOwnedIps)));
                       });
             })
+        .filter(e -> !e.getValue().equals(LocationInfo.NOTHING))
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 

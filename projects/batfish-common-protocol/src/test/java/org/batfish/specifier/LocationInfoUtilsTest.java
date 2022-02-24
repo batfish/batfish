@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
@@ -175,13 +176,14 @@ public class LocationInfoUtilsTest {
     // iface3
     {
       LocationInfo info = locationInfo.get(iface3);
-      // since inactive, not a source (even though vendor LocationInfo says it is).
-      assertFalse(info.isSource());
+      // since inactive, has {@link LocationInfo.NOTHING}, which is eventually filtered out.
+      assertNull(info);
     }
     // link3
     {
       LocationInfo info = locationInfo.get(link3);
-      assertFalse(info.isSource());
+      // since inactive, has {@link LocationInfo.NOTHING}, which is eventually filtered out.
+      assertNull(info);
     }
   }
 }

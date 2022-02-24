@@ -227,7 +227,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             Function.identity(),
             iface -> {
               IpSpace externalArpIps =
-                  locationInfo.get(new InterfaceLinkLocation(node, iface)).getArpIps();
+                  locationInfo
+                      .getOrDefault(new InterfaceLinkLocation(node, iface), LocationInfo.NOTHING)
+                      .getArpIps();
 
               /* Compute ARP stuff bottom-up from _arpReplies. */
               IpSpace someoneReplies = computeSomeoneReplies(node, iface, topology, _arpReplies);
