@@ -6723,12 +6723,7 @@ EQUALS
    '='
 ;
 
-FLOAT
-:
-   (
-      F_PositiveDigit* F_Digit '.' F_Digit+
-   )
-;
+FLOAT: F_PositiveDigit F_Digit* '.' F_Digit+;
 
 FORWARD_SLASH
 :
