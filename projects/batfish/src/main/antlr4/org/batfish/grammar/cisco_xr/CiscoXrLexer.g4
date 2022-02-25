@@ -6097,7 +6097,7 @@ EQUALS
 FLOAT
 :
    (
-      F_PositiveDigit* F_Digit '.' F_Digit+
+      F_PositiveDigit F_Digit* '.' F_Digit+
    ) {lastTokenType() == SPEED}?
 ;
 
