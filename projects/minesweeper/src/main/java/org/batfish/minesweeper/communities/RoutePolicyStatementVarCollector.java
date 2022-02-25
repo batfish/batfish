@@ -12,6 +12,7 @@ import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
@@ -66,6 +67,12 @@ public class RoutePolicyStatementVarCollector
 
   @Override
   public Set<CommunityVar> visitPrependAsPath(PrependAsPath prependAsPath, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitReplaceAsesInAsSequence(
+      ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
     return ImmutableSet.of();
   }
 

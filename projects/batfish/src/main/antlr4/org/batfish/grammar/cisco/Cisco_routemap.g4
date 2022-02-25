@@ -221,6 +221,15 @@ set_as_path_prepend_rm_stanza
    )+ NEWLINE
 ;
 
+set_as_path_replace_rm_stanza
+:
+  SET AS_PATH REPLACE
+  (
+    ANY
+    | seq += uint16+ // only supports 2-byte ASes
+  ) NEWLINE
+;
+
 set_as_path_tag_rm_stanza
 :
    SET AS_PATH TAG NEWLINE
@@ -396,6 +405,7 @@ set_weight_rm_stanza
 set_rm_stanza
 :
    set_as_path_prepend_rm_stanza
+   | set_as_path_replace_rm_stanza
    | set_as_path_tag_rm_stanza
    | set_comm_list_delete_rm_stanza
    | set_community_rm_stanza
