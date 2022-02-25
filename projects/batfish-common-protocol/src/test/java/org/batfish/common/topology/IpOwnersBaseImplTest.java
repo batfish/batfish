@@ -535,7 +535,6 @@ public class IpOwnersBaseImplTest {
     int basePriority = 100;
     int track1Decrement = 50; // never applied
     int track2Decrement = 25; // always applied
-    int track3Decrement = 10; // not applied, since track method undefined
 
     Configuration c1 =
         Configuration.builder()
@@ -550,10 +549,7 @@ public class IpOwnersBaseImplTest {
                     "1", // never applied
                     new DecrementPriority(track1Decrement),
                     "2", // always applied
-                    new DecrementPriority(track2Decrement),
-                    "3", // undefined
-                    new DecrementPriority(track3Decrement)))
-            .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.10.10.1")))
+                    new DecrementPriority(track2Decrement)))
             .build();
     Interface i1 =
         Interface.builder()
@@ -581,7 +577,6 @@ public class IpOwnersBaseImplTest {
     int basePriority = 100;
     int track1Decrement = 50; // never applied
     int track2Decrement = 25; // always applied
-    int track3Decrement = 10; // not applied, since track method undefined
 
     Configuration c1 =
         Configuration.builder()
@@ -596,9 +591,7 @@ public class IpOwnersBaseImplTest {
                     "1", // never applied
                     new DecrementPriority(track1Decrement),
                     "2", // always applied
-                    new DecrementPriority(track2Decrement),
-                    "3", // undefined
-                    new DecrementPriority(track3Decrement)))
+                    new DecrementPriority(track2Decrement)))
             .addVirtualAddress("i1", Ip.parse("10.10.10.1"))
             .build();
     Interface i1 =
