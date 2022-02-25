@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname route-map-set-as-path-replace
+!
+
+route-map replace-any permit 100
+  set as-path replace any
+!
+
+route-map replace-seq permit 100
+  set as-path replace 2 3
+!

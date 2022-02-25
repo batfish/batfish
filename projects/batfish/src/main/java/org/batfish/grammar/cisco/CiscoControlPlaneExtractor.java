@@ -943,6 +943,7 @@ import org.batfish.grammar.cisco.CiscoParser.Service_specifier_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Service_specifier_tcp_udpContext;
 import org.batfish.grammar.cisco.CiscoParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_as_path_prepend_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Set_as_path_replace_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_comm_list_delete_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_additive_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_none_rm_stanzaContext;
@@ -1144,6 +1145,8 @@ import org.batfish.representation.cisco.RouteMapMatchSourceProtocolLine;
 import org.batfish.representation.cisco.RouteMapMatchTagLine;
 import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetAsPathPrependLine;
+import org.batfish.representation.cisco.RouteMapSetAsPathReplaceAnyLine;
+import org.batfish.representation.cisco.RouteMapSetAsPathReplaceSequenceLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
@@ -8768,6 +8771,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitSet_as_path_replace_rm_stanza(Set_as_path_replace_rm_stanzaContext ctx) {
+    if (ctx.ANY() != null) {
+      _currentRouteMapClause.addSetLine(RouteMapSetAsPathReplaceAnyLine.instance());
+    } else {
+      assert !ctx.seq.isEmpty();
+      List<Long> sequence =
+          ctx.seq.stream()
+              .map(CiscoControlPlaneExtractor::toLong)
+              .collect(ImmutableList.toImmutableList());
+      _currentRouteMapClause.addSetLine(new RouteMapSetAsPathReplaceSequenceLine(sequence));
+    }
+  }
+
+  @Override
   public void exitSet_comm_list_delete_rm_stanza(Set_comm_list_delete_rm_stanzaContext ctx) {
     String name = ctx.name.getText();
     RouteMapSetDeleteCommunityLine line = new RouteMapSetDeleteCommunityLine(name);
@@ -9987,6 +10004,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       return convProblem(Long.class, ctx, null);
     }
+  }
+
+  private static long toLong(Uint16Context ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   private static long toLong(Uint32Context ctx) {

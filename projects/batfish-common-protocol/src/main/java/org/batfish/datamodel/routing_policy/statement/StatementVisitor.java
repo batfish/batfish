@@ -51,4 +51,6 @@ public interface StatementVisitor<T, U> {
   T visitStaticStatement(StaticStatement staticStatement, U arg);
 
   T visitTraceableStatement(TraceableStatement traceableStatement, U arg);
+
+  T visitReplaceAsesInAsSequence(ReplaceAsesInAsSequence replaceAsesInAsPathSequence);
 }

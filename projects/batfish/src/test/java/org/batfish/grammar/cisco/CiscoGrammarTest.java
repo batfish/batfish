@@ -6801,4 +6801,41 @@ public final class CiscoGrammarTest {
         // null because track does not exist
         Iterables.getOnlyElement(c.getDefaultVrf().getStaticRoutes()).getTrack(), nullValue());
   }
+
+  @Test
+  public void testRouteMapSetAsPathReplace() throws IOException {
+    Configuration c = parseConfig("route-map-set-as-path-replace");
+    long localAs = 100;
+    BgpSessionProperties session =
+        BgpSessionProperties.builder()
+            .setSessionType(SessionType.EBGP_SINGLEHOP)
+            .setLocalAs(localAs)
+            .setRemoteAs(12345L)
+            .setLocalIp(Ip.ZERO)
+            .setRemoteIp(Ip.ZERO)
+            .build();
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(1L, 2L, 3L, 4L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setNetwork(Prefix.ZERO)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHop(NextHopDiscard.instance())
+            .build();
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("replace-any");
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.processBgpRoute(inputRoute, outputRoute, session, Direction.IN, null);
+      assertThat(
+          outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(100L, 100L, 100L, 100L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("replace-seq");
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.processBgpRoute(inputRoute, outputRoute, session, Direction.IN, null);
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 100L, 100L, 4L)));
+    }
+  }
 }

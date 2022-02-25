@@ -36,6 +36,7 @@ tokens {
    PENDING,
    PIPE,
    PROMPT_TIMEOUT,
+   REPLACE,
    QUOTED_TEXT,
    RAW_TEXT,
    SELF_SIGNED,
@@ -7283,6 +7284,8 @@ M_AsPath_PREPEND
 :
    'prepend' -> type ( PREPEND ) , popMode
 ;
+
+M_AsPath_REPLACE: 'replace' -> type(REPLACE), popMode;
 
 M_AsPath_REGEX_MODE
 :
