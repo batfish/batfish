@@ -6838,6 +6838,14 @@ public final class CiscoGrammarTest {
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 100L, 100L, 4L)));
     }
     {
+      RoutingPolicy rp = c.getRoutingPolicies().get("prepend-and-replace-seq");
+      Bgpv4Route.Builder outputRoute =
+          inputRoute.toBuilder().setAsPath(AsPath.ofSingletonAsSets(5L, 1L));
+      rp.processBgpRoute(inputRoute, outputRoute, ebgpSession, Direction.IN, null);
+      // the prepended as should not be replaced
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 5L, 100L)));
+    }
+    {
       BgpSessionProperties ibgpSession =
           BgpSessionProperties.builder()
               .setSessionType(SessionType.IBGP)

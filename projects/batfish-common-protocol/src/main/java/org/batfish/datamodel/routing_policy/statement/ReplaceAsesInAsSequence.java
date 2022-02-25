@@ -26,6 +26,7 @@ import org.batfish.datamodel.routing_policy.Result;
 @ParametersAreNonnullByDefault
 public final class ReplaceAsesInAsSequence extends Statement {
 
+  /** What to replace each AS in a matched sequence with. */
   @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
   public interface AsReplacementExpr extends Serializable {
     <T> T accept(AsReplacementExprVisitor<T> visitor);
@@ -40,6 +41,10 @@ public final class ReplaceAsesInAsSequence extends Statement {
         LocalAsOrConfedIfNeighborNotInConfed localAsOrConfederationIfNeighborInConfederation);
   }
 
+  /**
+   * An expression for a sequence to match. Every AS in the matched sequence will be replaced with
+   * the replacement AS.
+   */
   @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
   public interface AsSequenceExpr extends Serializable {
     <T> T accept(AsSequenceExprVisitor<T> visitor);
@@ -55,7 +60,8 @@ public final class ReplaceAsesInAsSequence extends Statement {
     T visitAsPathSequence(AsSequence asSequence);
   }
 
-  private static final class AnyAs implements AsSequenceExpr {
+  /** Match and replace every AS in the input path individually. */
+  public static final class AnyAs implements AsSequenceExpr {
 
     @Override
     public <T> T accept(AsSequenceExprVisitor<T> visitor) {
@@ -85,7 +91,11 @@ public final class ReplaceAsesInAsSequence extends Statement {
     return AnyAs.instance();
   }
 
-  private static final class AsSequence implements AsSequenceExpr {
+  /**
+   * Match a sequence of singleton AS numbers. Every AS in the matched sequence will be replaced
+   * with the replacement AS.
+   */
+  public static final class AsSequence implements AsSequenceExpr {
 
     public AsSequence(List<Long> sequence) {
       _sequence = sequence;
@@ -140,7 +150,12 @@ public final class ReplaceAsesInAsSequence extends Statement {
   private static final @Nonnull AsReplacementExpr LOCAL_AS_OR_CONFED_IF_NEIGHBOR_NOT_IN_CONFED =
       new LocalAsOrConfedIfNeighborNotInConfed();
 
-  private static final class LocalAsOrConfedIfNeighborNotInConfed implements AsReplacementExpr {
+  /**
+   * Replace each AS in the matched sequence with the local-AS if not in a confederation. If in a
+   * confederation, use local-AS if neighbor is in the confederation, else use confederation AS
+   * number.
+   */
+  public static final class LocalAsOrConfedIfNeighborNotInConfed implements AsReplacementExpr {
 
     @Override
     public <T> T accept(AsReplacementExprVisitor<T> visitor) {
@@ -240,22 +255,29 @@ public final class ReplaceAsesInAsSequence extends Statement {
       }
 
       @Override
+      @SuppressWarnings("PMD.AvoidReassigningLoopVariables")
       public AsPath visitAsPathSequence(AsSequence asSequence) {
         ImmutableList.Builder<AsSet> newAsSets = ImmutableList.builder();
         List<AsSet> sequenceAsAsSets =
             asSequence.getSequence().stream()
                 .map(AsSet::of)
                 .collect(ImmutableList.toImmutableList());
-        for (int i = 0; i < asPath.length(); i++) {
-          int end = i + sequenceAsAsSets.size();
-          if (end < asPath.length()
-              && sequenceAsAsSets.equals(asPath.getAsSets().subList(i, end))) {
-            i += (sequenceAsAsSets.size() - 1);
-            for (int j = 0; j < sequenceAsAsSets.size(); j++) {
+        for (int inputCursor = 0; inputCursor < asPath.length(); inputCursor++) {
+          int endInclusive = inputCursor + sequenceAsAsSets.size() - 1;
+          if (endInclusive < asPath.length()
+              && sequenceAsAsSets.equals(
+                  asPath.getAsSets().subList(inputCursor, endInclusive + 1))) {
+            for (int sequenceCursor = 0;
+                sequenceCursor < sequenceAsAsSets.size();
+                sequenceCursor++) {
               newAsSets.add(AsSet.of(replacementAs));
+              // Advance the cursor by 1 for every replacement
+              inputCursor++;
             }
+            // Rewind the cursor by 1, since it will be incremented at the beginning of the loop.
+            inputCursor--;
           } else {
-            newAsSets.add(asPath.getAsSets().get(i));
+            newAsSets.add(asPath.getAsSets().get(inputCursor));
           }
         }
         return AsPath.of(newAsSets.build());

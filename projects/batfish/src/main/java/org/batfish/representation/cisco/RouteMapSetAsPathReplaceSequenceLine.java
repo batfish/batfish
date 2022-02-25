@@ -27,7 +27,6 @@ public final class RouteMapSetAsPathReplaceSequenceLine extends RouteMapSetLine 
   @Override
   public void applyTo(
       List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
-    // TODO: confirm prepend occurs after replace
     statements.add(
         new If(
             new MatchBgpSessionType(Type.EBGP),

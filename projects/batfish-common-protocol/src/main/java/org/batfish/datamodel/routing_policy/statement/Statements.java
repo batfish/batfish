@@ -28,6 +28,7 @@ public enum Statements {
   SetReadIntermediateBgpAttributes,
   SetWriteIntermediateBgpAttributes,
   Suppress,
+  UnsetReadIntermediateBgpAttributes,
   UnsetWriteIntermediateBgpAttributes,
   Unsuppress;
 
@@ -151,6 +152,10 @@ public enum Statements {
 
         case Suppress:
           environment.setSuppressed(true);
+          break;
+
+        case UnsetReadIntermediateBgpAttributes:
+          environment.setReadFromIntermediateBgpAttributes(false);
           break;
 
         case UnsetWriteIntermediateBgpAttributes:
