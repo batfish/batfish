@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -33,9 +35,12 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.rib.RouteAdvertisement;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 
 /** Utility functions to convert dataplane {@link Node} into other structures */
 public final class DataplaneUtil {
+  private static final Logger LOGGER = LogManager.getLogger(DataplaneUtil.class);
 
   static @Nonnull Map<String, Configuration> computeConfigurations(Map<String, Node> nodes) {
     return nodes.entrySet().stream()
@@ -58,8 +63,9 @@ public final class DataplaneUtil {
       Map<String, Configuration> configs,
       Topology layer3Topology,
       IpOwners ipOwners) {
-    return new ForwardingAnalysisImpl(
-        configs, fibs, layer3Topology, computeLocationInfo(ipOwners, configs), ipOwners);
+    LOGGER.info("Computing location info");
+    Map<Location, LocationInfo> locationInfo = computeLocationInfo(ipOwners, configs);
+    return new ForwardingAnalysisImpl(configs, fibs, layer3Topology, locationInfo, ipOwners);
   }
 
   static @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>

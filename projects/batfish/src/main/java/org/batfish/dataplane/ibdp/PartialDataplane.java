@@ -13,6 +13,8 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
@@ -36,6 +38,7 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
  */
 @ParametersAreNonnullByDefault
 public final class PartialDataplane implements DataPlane {
+  private static final Logger LOGGER = LogManager.getLogger(PartialDataplane.class);
 
   @Override
   public Map<String, Map<String, Fib>> getFibs() {
@@ -152,10 +155,13 @@ public final class PartialDataplane implements DataPlane {
     checkArgument(builder._l3Adjacencies != null, "Dataplane must have an L3 adjacencies set");
 
     Map<String, Node> nodes = builder._nodes;
+    LOGGER.info("Building dataplane");
     Map<String, Configuration> configs = computeConfigurations(nodes);
     _fibs = computeFibs(nodes);
+    LOGGER.info("Building forwarding analysis");
     _forwardingAnalysis =
         computeForwardingAnalysis(_fibs, configs, builder._layer3Topology, builder._ipOwners);
+    LOGGER.info("Computing VNI settings");
     _layer2VniSettings = DataplaneUtil.computeLayer2VniSettings(nodes);
     _layer3VniSettings = DataplaneUtil.computeLayer3VniSettings(nodes);
     _l3Adjacencies = builder._l3Adjacencies;
