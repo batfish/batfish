@@ -6806,7 +6806,7 @@ public final class CiscoGrammarTest {
   public void testRouteMapSetAsPathReplace() throws IOException {
     Configuration c = parseConfig("route-map-set-as-path-replace");
     long localAs = 100;
-    BgpSessionProperties session =
+    BgpSessionProperties ebgpSession =
         BgpSessionProperties.builder()
             .setSessionType(SessionType.EBGP_SINGLEHOP)
             .setLocalAs(localAs)
@@ -6827,15 +6827,30 @@ public final class CiscoGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("replace-any");
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.processBgpRoute(inputRoute, outputRoute, session, Direction.IN, null);
+      rp.processBgpRoute(inputRoute, outputRoute, ebgpSession, Direction.IN, null);
       assertThat(
           outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(100L, 100L, 100L, 100L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("replace-seq");
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.processBgpRoute(inputRoute, outputRoute, session, Direction.IN, null);
+      rp.processBgpRoute(inputRoute, outputRoute, ebgpSession, Direction.IN, null);
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 100L, 100L, 4L)));
+    }
+    {
+      BgpSessionProperties ibgpSession =
+          BgpSessionProperties.builder()
+              .setSessionType(SessionType.IBGP)
+              .setLocalAs(localAs)
+              .setRemoteAs(localAs)
+              .setLocalIp(Ip.ZERO)
+              .setRemoteIp(Ip.ZERO)
+              .build();
+      RoutingPolicy rp = c.getRoutingPolicies().get("replace-any");
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.processBgpRoute(inputRoute, outputRoute, ibgpSession, Direction.IN, null);
+      // do nothing for iBGP sessions
+      assertThat(outputRoute.getAsPath(), equalTo(inputRoute.getAsPath()));
     }
   }
 }
