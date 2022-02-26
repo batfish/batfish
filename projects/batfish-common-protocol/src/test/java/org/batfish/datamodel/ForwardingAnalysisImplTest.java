@@ -875,6 +875,28 @@ public class ForwardingAnalysisImplTest {
             not(containsIp(Ip.ZERO)),
             not(containsIp(Ip.parse("2.0.0.0"))),
             not(containsIp(Ip.MAX))));
+
+    // Singleton is not converted to wildcard set
+    Fib singleton =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(Ip.ZERO, ImmutableSet.of(mockFibEntry(Prefix.parse("1.2.3.0/24")))))
+            .build();
+    assertThat(routableSpace(singleton), equalTo(Prefix.parse("1.2.3.0/24").toIpSpace()));
+
+    // Compressible to singleton is compressed and not converted to wildcard set
+    Fib compressibleToSingleton =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.ZERO,
+                    ImmutableSet.of(
+                        mockFibEntry(Prefix.parse("1.2.3.1/32")),
+                        mockFibEntry(Prefix.parse("1.2.3.0/24")),
+                        mockFibEntry(Prefix.parse("1.2.3.4/32")))))
+            .build();
+    assertThat(
+        routableSpace(compressibleToSingleton), equalTo(Prefix.parse("1.2.3.0/24").toIpSpace()));
   }
 
   @Test
@@ -890,14 +912,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, Fib>> fibs = ImmutableMap.of(c1, ImmutableMap.of(v1, fib));
     Map<String, Map<String, IpSpace>> result = ForwardingAnalysisImpl.computeRoutableIps(fibs);
 
-    assertThat(
-        result,
-        equalTo(
-            ImmutableMap.of(
-                c1,
-                ImmutableMap.of(
-                    v1,
-                    IpWildcardSetIpSpace.builder().including(IpWildcard.create(prefix)).build()))));
+    assertThat(result, equalTo(ImmutableMap.of(c1, ImmutableMap.of(v1, prefix.toIpSpace()))));
   }
 
   @Test
