@@ -96,21 +96,24 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
        * respond.
        */
       {
-        LOGGER.info("Computing ARP replies");
         // mapping: node name -> vrf name -> interface name -> dst ips which are routed to the
         // interface. Should only include active interfaces.
+        LOGGER.info("Computing IPs routed out interfaces");
         Map<String, Map<String, Map<String, IpSpace>>> ipsRoutedOutInterfaces =
             computeIpsRoutedOutInterfaces(matchingIps, routesWithNextHop);
+        LOGGER.info("Computing ARP replies");
         _arpReplies =
             computeArpReplies(
                 configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
       }
 
       // hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot
+      LOGGER.info("Computing interfaces with missing devices");
       Multimap<String, String> interfacesWithMissingDevices =
           computeInterfacesWithMissingDevices(locationInfo, ipSpaceToBDD, unownedIpsBDD);
 
       // ips belonging to any subnet in the network, including inactive interfaces.
+      LOGGER.info("Computing internal IPs");
       IpSpace internalIps = computeInternalIps(ipOwners.getAllInterfaceHostIps());
 
       // ips not belonging to any subnet in the network, including inactive interfaces.
