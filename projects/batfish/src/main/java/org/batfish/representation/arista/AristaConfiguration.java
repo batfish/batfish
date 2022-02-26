@@ -2741,15 +2741,9 @@ public final class AristaConfiguration extends VendorConfiguration {
     SortedSet<Ip> bumTransportIps =
         firstNonNull(vxlan.getVlanFloodAddresses().get(vlan), vxlan.getFloodAddresses());
 
-    // default to unicast flooding unless specified otherwise
+    // Up to at least 4.23, MULTICAST_GROUP is not supported for BUM traffic (only BM traffic),
+    // and it should never displace unicast VTEPs.
     BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
-
-    // Check if multicast is enabled
-    Ip multicastAddress = vxlan.getMulticastGroup();
-    if (bumTransportIps.isEmpty() && multicastAddress != null) {
-      bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
-      bumTransportIps = ImmutableSortedSet.of(multicastAddress);
-    }
 
     return Layer2Vni.builder()
         .setBumTransportIps(bumTransportIps)
