@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -15,8 +16,10 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.io.Serializable;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -106,35 +109,42 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // ips not belonging to any subnet in the network, including inactive interfaces.
       IpSpace externalIps = internalIps.complement();
 
+      // Compute VrfForwardingBehavior, parallelizing across all VRFs.
+      List<Map.Entry<String, String>> allVrfs =
+          configurations.values().stream()
+              .flatMap(
+                  c ->
+                      c.getVrfs().values().stream()
+                          .map(v -> new SimpleImmutableEntry<>(c.getHostname(), v.getName())))
+              .collect(Collectors.toCollection(ArrayList::new));
+      Collections.shuffle(allVrfs);
       _vrfForwardingBehavior =
-          configurations.values().parallelStream()
-              .map(
-                  config ->
-                      Maps.immutableEntry(
-                          config.getHostname(),
-                          toImmutableMap(
-                              config.getVrfs().keySet(),
-                              Function.identity(),
-                              vrf -> {
-                                String node = config.getHostname();
-                                return computeVrfForwardingBehavior(
-                                    node,
-                                    vrf,
-                                    topology,
-                                    locationInfo,
-                                    ipSpaceToBDD,
-                                    ipOwners,
-                                    fibs.get(node).get(vrf),
-                                    unownedArpIps,
-                                    matchingIps.get(node).get(vrf),
-                                    ownedIps,
-                                    interfacesWithMissingDevices,
-                                    internalIps,
-                                    externalIps,
-                                    routableIps,
-                                    routesWithNextHop.get(node).get(vrf));
-                              })))
-              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+          allVrfs.parallelStream()
+              .collect(
+                  ImmutableTable.toImmutableTable(
+                      Entry::getKey,
+                      Entry::getValue,
+                      e -> {
+                        String node = e.getKey();
+                        String vrf = e.getValue();
+                        return computeVrfForwardingBehavior(
+                            node,
+                            vrf,
+                            topology,
+                            locationInfo,
+                            ipSpaceToBDD,
+                            ipOwners,
+                            fibs.get(node).get(vrf),
+                            unownedArpIps,
+                            matchingIps.get(node).get(vrf),
+                            ownedIps,
+                            interfacesWithMissingDevices,
+                            internalIps,
+                            externalIps,
+                            routableIps,
+                            routesWithNextHop.get(node).get(vrf));
+                      }))
+              .rowMap();
 
       assert sanityCheck(configurations);
     } finally {
