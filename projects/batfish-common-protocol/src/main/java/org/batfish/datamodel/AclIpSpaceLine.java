@@ -2,14 +2,30 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Comparator;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable {
+  // Soft values: let them be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (16 bytes seems smallest possible entry (2 pointers), would be 16 MiB total).
+  private static final LoadingCache<IpSpace, AclIpSpaceLine> PERMIT_CACHE =
+      Caffeine.newBuilder()
+          .softValues()
+          .maximumSize(1 << 20)
+          .build(s -> new AclIpSpaceLine(s, LineAction.PERMIT));
+  private static final LoadingCache<IpSpace, AclIpSpaceLine> REJECT_CACHE =
+      Caffeine.newBuilder()
+          .softValues()
+          .maximumSize(1 << 20)
+          .build(s -> new AclIpSpaceLine(s, LineAction.DENY));
 
   public static class Builder {
 
@@ -17,14 +33,12 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
 
     private IpSpace _ipSpace;
 
-    private String _srcText;
-
     private Builder() {
       _action = LineAction.PERMIT;
     }
 
     public AclIpSpaceLine build() {
-      return new AclIpSpaceLine(_ipSpace, _action, _srcText);
+      return create(_ipSpace, _action);
     }
 
     public Builder setAction(@Nonnull LineAction action) {
@@ -36,11 +50,6 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
       _ipSpace = ipSpace;
       return this;
     }
-
-    public Builder setSrcText(@Nullable String srcText) {
-      _srcText = srcText;
-      return this;
-    }
   }
 
   public static final AclIpSpaceLine DENY_ALL = AclIpSpaceLine.reject(UniverseIpSpace.INSTANCE);
@@ -48,7 +57,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   public static final AclIpSpaceLine PERMIT_ALL = AclIpSpaceLine.permit(UniverseIpSpace.INSTANCE);
   private static final String PROP_ACTION = "action";
   private static final String PROP_IP_SPACE = "ipSpace";
-  private static final String PROP_SRC_TEXT = "srcText";
+  private static final String PROP_DEPRECATED_SRC_TEXT = "srcText";
 
   public static Builder builder() {
     return new Builder();
@@ -66,20 +75,26 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
 
   @Nonnull private final IpSpace _ipSpace;
 
-  private final String _srcText;
-
   @JsonCreator
-  private AclIpSpaceLine(
+  private static AclIpSpaceLine jsonCreator(
       @JsonProperty(PROP_IP_SPACE) @Nonnull IpSpace ipSpace,
       @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
-      @JsonProperty(PROP_SRC_TEXT) String srcText) {
-    _ipSpace = ipSpace;
+      @JsonProperty(PROP_DEPRECATED_SRC_TEXT) String unused) {
+    return create(ipSpace, action);
+  }
+
+  private static AclIpSpaceLine create(@Nonnull IpSpace space, @Nonnull LineAction action) {
+    return action == LineAction.PERMIT ? PERMIT_CACHE.get(space) : REJECT_CACHE.get(space);
+  }
+
+  @VisibleForTesting
+  AclIpSpaceLine(@Nonnull IpSpace space, @Nonnull LineAction action) {
+    _ipSpace = space;
     _action = action;
-    _srcText = srcText;
   }
 
   @Override
-  public int compareTo(AclIpSpaceLine o) {
+  public int compareTo(@Nonnull AclIpSpaceLine o) {
     return Comparator.comparing(AclIpSpaceLine::getAction)
         .thenComparing(AclIpSpaceLine::getIpSpace)
         .compare(this, o);
@@ -108,11 +123,6 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
     return _ipSpace;
   }
 
-  @JsonProperty(PROP_SRC_TEXT)
-  public String getSrcText() {
-    return _srcText;
-  }
-
   @Override
   public int hashCode() {
     return 31 * _action.ordinal() + _ipSpace.hashCode();
@@ -130,5 +140,10 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
     }
     helper.add(PROP_IP_SPACE, _ipSpace);
     return helper.toString();
+  }
+
+  /** Re-intern after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return create(_ipSpace, _action);
   }
 }
