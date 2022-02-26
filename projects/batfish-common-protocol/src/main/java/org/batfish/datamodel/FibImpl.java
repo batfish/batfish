@@ -333,7 +333,8 @@ public final class FibImpl implements Fib {
               subTriePrefixes = leftPrefixes;
             } else {
               subTriePrefixes =
-                  ImmutableSet.<IpWildcard>builder()
+                  ImmutableSet.<IpWildcard>builderWithExpectedSize(
+                          leftPrefixes.size() + rightPrefixes.size())
                       .addAll(leftPrefixes)
                       .addAll(rightPrefixes)
                       .build();
