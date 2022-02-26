@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Collection;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Ip;
@@ -27,7 +28,7 @@ public class VniMatchers {
    * subMatcher}.
    */
   public static @Nonnull Matcher<Layer2Vni> hasBumTransportIps(
-      @Nonnull Matcher<? super Iterable<Ip>> subMatcher) {
+      @Nonnull Matcher<? super Set<Ip>> subMatcher) {
     return new HasBumTransportIps(subMatcher);
   }
 

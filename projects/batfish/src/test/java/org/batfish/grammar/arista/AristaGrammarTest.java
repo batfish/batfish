@@ -270,6 +270,7 @@ import org.batfish.representation.arista.eos.AristaBgpVrfIpv6UnicastAddressFamil
 import org.batfish.representation.arista.eos.AristaEosVxlan;
 import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorStructureId;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -1798,9 +1799,10 @@ public class AristaGrammarTest {
     // Confirm VLAN<->VNI mapping is applied
     assertThat(vnisBase, hasVlan(equalTo(2)));
 
-    // Confirm multicast address is present
-    assertThat(vnisNoAddr, hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)));
-    assertThat(vnisNoAddr, hasBumTransportIps(contains(Ip.parse("227.10.1.1"))));
+    // https://github.com/batfish/batfish/issues/8061
+    // Confirm multicast address does not change BumTransport method nor VTEPs
+    assertThat(vnisNoAddr, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
+    assertThat(vnisNoAddr, hasBumTransportIps(Matchers.empty()));
     // Confirm no source address is present (no address specified for loopback interface)
     assertThat(vnisNoAddr, hasSourceAddress(nullValue()));
     // Confirm default UDP port is used even though none is supplied
