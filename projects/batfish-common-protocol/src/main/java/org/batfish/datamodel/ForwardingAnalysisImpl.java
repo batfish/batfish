@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -731,20 +732,35 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     if (entries.isEmpty()) {
       return EmptyIpSpace.INSTANCE;
     }
-    Set<Prefix> seen = new HashSet<>();
-    ImmutableSet.Builder<IpWildcard> ret = ImmutableSet.builder();
-    for (FibEntry entry : entries) {
-      Prefix network = entry.getTopLevelRoute().getNetwork();
+
+    // Order prefixes by length (shorter first), enabling us to build
+    // the simplest routable space.
+    List<Prefix> routablePrefixes =
+        entries.stream()
+            .map(e -> e.getTopLevelRoute().getNetwork())
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList());
+
+    PrefixSpace seen = new PrefixSpace();
+    List<Prefix> routable = new LinkedList<>();
+    for (Prefix network : routablePrefixes) {
       if (network.equals(Prefix.ZERO)) {
         // Default route -> all IPs are routable. Skip processing the rest.
         return UniverseIpSpace.INSTANCE;
-      }
-      if (seen.add(network)) {
-        // Only convert networks once.
-        ret.add(IpWildcard.create(network));
-      }
+      } else if (!seen.containsPrefix(network)) {
+        routable.add(network);
+        seen.addPrefixRange(PrefixRange.sameAsOrMoreSpecificThan(network));
+      } // else skip prefix already contained in output space
     }
-    return IpWildcardSetIpSpace.create(ImmutableSet.of(), ret.build());
+
+    if (routable.size() == 1) {
+      return routable.get(0).toIpSpace();
+    }
+
+    return IpWildcardSetIpSpace.create(
+        ImmutableSet.of(),
+        routable.stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet()));
   }
 
   @VisibleForTesting
