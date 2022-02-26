@@ -48,10 +48,8 @@ public class AclIpSpace extends IpSpace {
         return EmptyIpSpace.INSTANCE;
       } else if (lines.size() == 1) {
         AclIpSpaceLine line = lines.get(0);
-        if (line.getAction() == LineAction.PERMIT) {
-          return line.getIpSpace();
-        }
-        return EmptyIpSpace.INSTANCE;
+        assert line.getAction() == LineAction.PERMIT;
+        return line.getIpSpace();
       }
       return new AclIpSpace(lines);
     }
@@ -253,30 +251,36 @@ public class AclIpSpace extends IpSpace {
    * {@code null} ipSpaces are ignored. If all arguments are {@code null}, returns {@code null}.
    */
   public static @Nullable IpSpace union(Iterable<IpSpace> ipSpaces) {
-    IpSpace[] nonNullSpaces =
+    // In one pass, determine if the iterable contains a universe, contains anything, and filter out
+    // null/empty spaces. Have to do this complicated algorithm to properly flatten AclIpSpaces.
+    boolean[] hasUniverse = new boolean[] {false};
+    boolean[] hasAnything = new boolean[] {false};
+    IpSpace[] nonEmptySpaces =
         StreamSupport.stream(ipSpaces.spliterator(), false)
             .filter(Objects::nonNull)
             .flatMap(AclIpSpace::flattenAclIpSpacesForUnion)
+            .filter(
+                s -> {
+                  hasAnything[0] = true;
+                  if (s instanceof UniverseIpSpace) {
+                    hasUniverse[0] = true;
+                    return false; // can't fully exit from here, but don't include in array
+                  }
+                  return !(s instanceof EmptyIpSpace);
+                })
             .toArray(IpSpace[]::new);
-    if (nonNullSpaces.length == 0) {
+
+    if (hasUniverse[0]) {
+      return UniverseIpSpace.INSTANCE;
+    } else if (!hasAnything[0]) {
       // no constraint
       return null;
+    } else if (nonEmptySpaces.length == 0) {
+      return EmptyIpSpace.INSTANCE;
+    } else if (nonEmptySpaces.length == 1) {
+      return nonEmptySpaces[0];
     }
-    IpSpace[] nonEmptySpaces =
-        Arrays.stream(nonNullSpaces)
-            .filter(ipSpace -> ipSpace != EmptyIpSpace.INSTANCE)
-            .toArray(IpSpace[]::new);
-    return nonEmptySpaces.length == 0 ? EmptyIpSpace.INSTANCE : unionNonnull(nonEmptySpaces);
-  }
-
-  private static @Nullable IpSpace unionNonnull(IpSpace... ipSpaces) {
-    if (ipSpaces.length == 0) {
-      return null;
-    } else if (ipSpaces.length == 1) {
-      return ipSpaces[0];
-    } else {
-      return builder().thenPermitting(ipSpaces).build();
-    }
+    return builder().thenPermitting(nonEmptySpaces).build();
   }
 
   @Nonnull private final List<AclIpSpaceLine> _lines;
