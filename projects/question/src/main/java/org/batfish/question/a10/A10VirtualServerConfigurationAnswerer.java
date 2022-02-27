@@ -99,7 +99,12 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
                 COL_SERVICE_GROUP_TYPE, Schema.STRING, "Service Group Type", false, true))
         .add(
             new ColumnMetadata(
-                COL_SERVERS, Schema.set(Schema.list(Schema.STRING)), "Servers", false, true))
+                COL_SERVERS,
+                Schema.set(Schema.list(Schema.STRING)),
+                "List of Servers. Each item is a 4-tuple: Server Name, Port, IP Address, and Active"
+                    + " Status.",
+                false,
+                true))
         .add(
             new ColumnMetadata(
                 COL_SOURCE_NAT_POOL_NAME, Schema.STRING, "Source NAT Pool Name", false, true))
