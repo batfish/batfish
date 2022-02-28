@@ -2699,9 +2699,7 @@ public final class PaloAltoGrammarTest {
     assertThat(
         warn,
         hasRedFlag(
-            hasText(
-                containsString(
-                    "Cannot convert static route NO_NH, as it has no nexthop interface or IP."))));
+            hasText(containsString("Cannot convert static route NO_NH, as it has no nexthop."))));
     assertThat(
         warn,
         hasRedFlag(

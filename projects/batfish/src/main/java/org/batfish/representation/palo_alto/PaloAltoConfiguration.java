@@ -2758,11 +2758,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           continue;
         }
       }
-      if (sr.getNextHopIp() == null && sr.getNextHopInterface() == null) {
+      if (!sr.getNextHopDiscard()
+          && nextVrf == null
+          && sr.getNextHopIp() == null
+          && sr.getNextHopInterface() == null) {
         _w.redFlag(
-            String.format(
-                "Cannot convert static route %s, as it has no nexthop interface or IP.",
-                e.getKey()));
+            String.format("Cannot convert static route %s, as it has no nexthop.", e.getKey()));
         continue;
       }
       vrf.getStaticRoutes()
