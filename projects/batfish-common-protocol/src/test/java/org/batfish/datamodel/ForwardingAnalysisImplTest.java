@@ -1567,7 +1567,8 @@ public class ForwardingAnalysisImplTest {
       super(
           configurations,
           GlobalBroadcastNoPointToPoint.instance(),
-          PreDataPlaneTrackMethodEvaluator::new);
+          PreDataPlaneTrackMethodEvaluator::new,
+          false);
     }
   }
 }

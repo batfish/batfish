@@ -48,7 +48,6 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -75,6 +74,7 @@ import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEvaluatorProvider;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
+import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.version.BatfishVersion;
 
@@ -620,17 +620,8 @@ final class IncrementalBdpEngine {
 
   @VisibleForTesting
   static boolean evaluateTrackRoute(TrackRoute trackRoute, Node node) {
-    Set<AnnotatedRoute<AbstractRoute>> routesForPrefix =
-        node.getVirtualRouter(trackRoute.getVrf())
-            .get()
-            .getMainRib()
-            .getRoutes(trackRoute.getPrefix());
-    if (trackRoute.getProtocols().isEmpty()) {
-      return !routesForPrefix.isEmpty();
-    } else {
-      return routesForPrefix.stream()
-          .anyMatch(r -> trackRoute.getProtocols().contains(r.getRoute().getProtocol()));
-    }
+    Rib rib = node.getVirtualRouter(trackRoute.getVrf()).get().getMainRib();
+    return TrackRouteUtils.evaluateTrackRoute(trackRoute, rib);
   }
 
   /**

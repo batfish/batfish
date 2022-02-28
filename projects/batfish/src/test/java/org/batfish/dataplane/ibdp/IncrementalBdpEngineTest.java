@@ -468,7 +468,8 @@ public final class IncrementalBdpEngineTest {
       super(
           configurations,
           GlobalBroadcastNoPointToPoint.instance(),
-          PreDataPlaneTrackMethodEvaluator::new);
+          PreDataPlaneTrackMethodEvaluator::new,
+          false);
     }
   }
 }

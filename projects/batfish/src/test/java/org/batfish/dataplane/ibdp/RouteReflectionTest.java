@@ -484,7 +484,7 @@ public class RouteReflectionTest {
   private static class TestIpOwners extends IpOwnersBaseImpl {
     protected TestIpOwners(
         Map<String, Configuration> configurations, L3Adjacencies initialL3Adjacencies) {
-      super(configurations, initialL3Adjacencies, PreDataPlaneTrackMethodEvaluator::new);
+      super(configurations, initialL3Adjacencies, PreDataPlaneTrackMethodEvaluator::new, false);
     }
   }
 }
