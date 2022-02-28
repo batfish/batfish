@@ -2689,6 +2689,40 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testStaticRouteConvertWarnings() throws IOException {
+    String hostname = "static-route-convert-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    Warnings warn = ccae.getWarnings().get(hostname);
+
+    assertThat(
+        warn,
+        hasRedFlag(
+            hasText(containsString("Cannot convert static route NO_NH, as it has no nexthop."))));
+    assertThat(
+        warn,
+        hasRedFlag(
+            hasText(
+                containsString(
+                    "Cannot convert static route NO_DEST, as it does not have a destination."))));
+    assertThat(
+        warn,
+        hasRedFlag(
+            hasText(
+                containsString(
+                    "Cannot convert static route NEXT_VR_SELF, as its next-vr 'somename' is its own"
+                        + " virtual-router."))));
+    assertThat(
+        warn,
+        hasRedFlag(
+            hasText(
+                containsString(
+                    "Cannot convert static route NEXT_VR_UNDEF, as its next-vr 'UNDEFINED' is not a"
+                        + " virtual-router."))));
+  }
+
+  @Test
   public void testStaticRouteExtraction() {
     String hostname = "static-route";
     PaloAltoConfiguration vc = parsePaloAltoConfig(hostname);
