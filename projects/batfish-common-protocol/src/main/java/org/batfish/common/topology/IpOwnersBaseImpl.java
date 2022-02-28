@@ -1,6 +1,7 @@
 package org.batfish.common.topology;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
@@ -50,6 +51,73 @@ import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 @ParametersAreNonnullByDefault
 public abstract class IpOwnersBaseImpl implements IpOwners {
 
+  /** Details of HSRP or VRRP elections. */
+  public static class ElectionDetails {
+
+    /** Map: interface -> VRRP/HSRP group -> actual priority after tracks are applied */
+    public @Nonnull Map<NodeInterfacePair, Map<Integer, Integer>> getActualPriorities() {
+      return _actualPriorities;
+    }
+
+    /**
+     * Map: interface -> VRRP/HSRP group -> successful track method name -> (track method, track
+     * action)
+     */
+    public @Nonnull Map<
+            NodeInterfacePair, Map<Integer, Map<String, Entry<TrackMethod, TrackAction>>>>
+        getSuccessfulTracks() {
+      return _successfulTracks;
+    }
+
+    /** Map: interface -> VRRP/HSRP group -> election winner */
+    public @Nonnull Map<NodeInterfacePair, Map<Integer, NodeInterfacePair>> getWinnerByCandidate() {
+      return _winnerByCandidate;
+    }
+
+    /** Map: interface -> VRRP/HSRP group -> election candidates */
+    public @Nonnull Map<NodeInterfacePair, Map<Integer, Set<NodeInterfacePair>>>
+        getCandidatesByCandidate() {
+      return _candidatesByCandidate;
+    }
+
+    /**
+     * Map: interface -> VRRP/HSRP group -> failed track method name -> (track method, track action)
+     */
+    public @Nonnull Map<
+            NodeInterfacePair, Map<Integer, Map<String, Entry<TrackMethod, TrackAction>>>>
+        getFailedTracks() {
+      return _failedTracks;
+    }
+
+    private ElectionDetails() {
+      _actualPriorities = new HashMap<>();
+      _successfulTracks = new HashMap<>();
+      _failedTracks = new HashMap<>();
+      _candidatesByCandidate = new HashMap<>();
+      _winnerByCandidate = new HashMap<>();
+    }
+
+    private final @Nonnull Map<NodeInterfacePair, Map<Integer, Integer>> _actualPriorities;
+    private final @Nonnull Map<
+            NodeInterfacePair, Map<Integer, Map<String, Entry<TrackMethod, TrackAction>>>>
+        _successfulTracks;
+    private final @Nonnull Map<
+            NodeInterfacePair, Map<Integer, Map<String, Entry<TrackMethod, TrackAction>>>>
+        _failedTracks;
+    private final @Nonnull Map<NodeInterfacePair, Map<Integer, Set<NodeInterfacePair>>>
+        _candidatesByCandidate;
+    private final @Nonnull Map<NodeInterfacePair, Map<Integer, NodeInterfacePair>>
+        _winnerByCandidate;
+  }
+
+  // TODO: remove once downstream projects are migrated
+  protected IpOwnersBaseImpl(
+      Map<String, Configuration> configurations,
+      L3Adjacencies l3Adjacencies,
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
+    this(configurations, l3Adjacencies, trackMethodEvaluatorProvider, false);
+  }
+
   /**
    * Compute IP owners based on information in configurations, layer-3 adjencies, and a provider for
    * methods to evaluate track methods affecting HSRP/VRRP priorities.
@@ -66,7 +134,16 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
   protected IpOwnersBaseImpl(
       Map<String, Configuration> configurations,
       L3Adjacencies l3Adjacencies,
-      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider,
+      boolean recordElections) {
+    if (recordElections) {
+      _hsrpElectionDetails = new ElectionDetails();
+      _vrrpElectionDetails = new ElectionDetails();
+    } else {
+      _hsrpElectionDetails = null;
+      _vrrpElectionDetails = null;
+    }
+
     /* Mapping from a hostname to a set of all (including inactive) interfaces that node owns */
     Map<String, Set<Interface>> allInterfaces =
         ImmutableMap.copyOf(computeNodeInterfaces(configurations));
@@ -79,7 +156,9 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                   false,
                   l3Adjacencies,
                   NetworkConfigurations.of(configurations),
-                  trackMethodEvaluatorProvider));
+                  trackMethodEvaluatorProvider,
+                  null,
+                  null));
       _activeDeviceOwnedIps =
           ImmutableMap.copyOf(
               computeIpInterfaceOwners(
@@ -87,7 +166,9 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                   true,
                   l3Adjacencies,
                   NetworkConfigurations.of(configurations),
-                  trackMethodEvaluatorProvider));
+                  trackMethodEvaluatorProvider,
+                  _hsrpElectionDetails,
+                  _vrrpElectionDetails));
     }
 
     {
@@ -101,6 +182,16 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       _hostToInterfaceToIpSpace = computeInterfaceOwnedIpSpaces(_hostToVrfToInterfaceToIpSpace);
       _allInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, false);
     }
+  }
+
+  @Override
+  public @Nullable ElectionDetails getHsrpElectionDetails() {
+    return _hsrpElectionDetails;
+  }
+
+  @Override
+  public @Nullable ElectionDetails getVrrpElectionDetails() {
+    return _vrrpElectionDetails;
   }
 
   @Override
@@ -258,7 +349,9 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       boolean excludeInactive,
       L3Adjacencies l3Adjacencies,
       NetworkConfigurations nc,
-      TrackMethodEvaluatorProvider provider) {
+      TrackMethodEvaluatorProvider provider,
+      @Nullable ElectionDetails hsrpElectionDetails,
+      @Nullable ElectionDetails vrrpElectionDetails) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     // vrid -> sync interface -> interface to own IPs if sync interface wins election -> IPs
     Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups = new HashMap<>();
@@ -283,8 +376,8 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                                   .computeIfAbsent(hostname, k -> new HashSet<>())
                                   .add(i.getName()));
                 }));
-    processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies, nc, provider);
-    processHsrpGroups(ipOwners, hsrpGroups, l3Adjacencies, nc, provider);
+    processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies, nc, provider, vrrpElectionDetails);
+    processHsrpGroups(ipOwners, hsrpGroups, l3Adjacencies, nc, provider, hsrpElectionDetails);
 
     // freeze
     return toImmutableMap(
@@ -342,12 +435,9 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
               }
               ips.forEach(
                   ip -> {
-                    Map<NodeInterfacePair, Set<Ip>> candidates = hsrpGroups.get(groupNum);
-                    if (candidates == null) {
-                      candidates = new HashMap<>();
-                      hsrpGroups.put(groupNum, candidates);
-                    }
-                    candidates.put(NodeInterfacePair.of(i), hsrpGroup.getVirtualAddresses());
+                    hsrpGroups
+                        .computeIfAbsent(groupNum, k -> new HashMap<>())
+                        .put(NodeInterfacePair.of(i), hsrpGroup.getVirtualAddresses());
                   });
             });
   }
@@ -362,7 +452,8 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       Map<Integer, Map<NodeInterfacePair, Set<Ip>>> hsrpGroups,
       L3Adjacencies l3Adjacencies,
       NetworkConfigurations nc,
-      TrackMethodEvaluatorProvider provider) {
+      TrackMethodEvaluatorProvider provider,
+      @Nullable ElectionDetails electionDetails) {
     hsrpGroups.forEach(
         (groupNum, ipSpaceByCandidate) -> {
           assert groupNum != null;
@@ -393,9 +484,26 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                             Comparator.comparingInt(
                                     (Interface o) ->
                                         computeHsrpPriority(
-                                            o, o.getHsrpGroups().get(groupNum), provider))
+                                            o,
+                                            o.getHsrpGroups().get(groupNum),
+                                            groupNum,
+                                            provider,
+                                            electionDetails))
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
+                if (electionDetails != null) {
+                  cp.forEach(
+                      ni -> {
+                        electionDetails
+                            ._winnerByCandidate
+                            .computeIfAbsent(ni, n -> new HashMap<>())
+                            .put(groupNum, hsrpMaster);
+                        electionDetails
+                            ._candidatesByCandidate
+                            .computeIfAbsent(ni, n -> new HashMap<>())
+                            .put(groupNum, ImmutableSet.copyOf(cp));
+                      });
+                }
                 LOGGER.debug(
                     "{} elected HSRP master for groupNum {} among candidates {}",
                     hsrpMaster,
@@ -416,15 +524,25 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
   /** Compute priority for a given HSRP group and the interface it is associated with. */
   @VisibleForTesting
   static int computeHsrpPriority(
-      @Nonnull Interface iface, @Nonnull HsrpGroup group, TrackMethodEvaluatorProvider provider) {
-    return computePriority(iface, group.getPriority(), group.getTrackActions(), provider);
+      Interface iface,
+      HsrpGroup group,
+      int groupNum,
+      TrackMethodEvaluatorProvider provider,
+      @Nullable ElectionDetails electionDetails) {
+    return computePriority(
+        iface, group.getPriority(), groupNum, group.getTrackActions(), provider, electionDetails);
   }
 
   /** Compute priority for a given VRRP group and the interface it is associated with. */
   @VisibleForTesting
   static int computeVrrpPriority(
-      @Nonnull Interface iface, @Nonnull VrrpGroup group, TrackMethodEvaluatorProvider provider) {
-    return computePriority(iface, group.getPriority(), group.getTrackActions(), provider);
+      Interface iface,
+      VrrpGroup group,
+      int vrid,
+      TrackMethodEvaluatorProvider provider,
+      @Nullable ElectionDetails electionDetails) {
+    return computePriority(
+        iface, group.getPriority(), vrid, group.getTrackActions(), provider, electionDetails);
   }
 
   /**
@@ -460,12 +578,9 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                 return;
               }
               // sync interface -> interface to receive IPs -> IPs
-              Map<NodeInterfacePair, Map<String, Set<Ip>>> candidates = vrrpGroups.get(vrid);
-              if (candidates == null) {
-                candidates = new HashMap<>();
-                vrrpGroups.put(vrid, candidates);
-              }
-              candidates.put(NodeInterfacePair.of(i), vrrpGroup.getVirtualAddresses());
+              vrrpGroups
+                  .computeIfAbsent(vrid, k -> new HashMap<>())
+                  .put(NodeInterfacePair.of(i), vrrpGroup.getVirtualAddresses());
             });
   }
 
@@ -479,7 +594,8 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups,
       L3Adjacencies l3Adjacencies,
       NetworkConfigurations nc,
-      TrackMethodEvaluatorProvider provider) {
+      TrackMethodEvaluatorProvider provider,
+      @Nullable ElectionDetails electionDetails) {
     vrrpGroups.forEach(
         (vrid, ipSpaceByCandidate) -> {
           assert vrid != null;
@@ -510,9 +626,26 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                             Comparator.comparingInt(
                                     (Interface o) ->
                                         computeVrrpPriority(
-                                            o, o.getVrrpGroups().get(vrid), provider))
+                                            o,
+                                            o.getVrrpGroups().get(vrid),
+                                            vrid,
+                                            provider,
+                                            electionDetails))
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
+                if (electionDetails != null) {
+                  cp.forEach(
+                      ni -> {
+                        electionDetails
+                            ._winnerByCandidate
+                            .computeIfAbsent(ni, n -> new HashMap<>())
+                            .put(vrid, vrrpMaster);
+                        electionDetails
+                            ._candidatesByCandidate
+                            .computeIfAbsent(ni, n -> new HashMap<>())
+                            .put(vrid, ImmutableSet.copyOf(cp));
+                      });
+                }
                 LOGGER.debug(
                     "{} elected VRRP master for vrid {} among candidates {}",
                     vrrpMaster,
@@ -656,23 +789,61 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
   /** Mapping from an IP to hostname to set of VRFs that own that IP. */
   private final @Nonnull Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
+  private final @Nullable ElectionDetails _hsrpElectionDetails;
+  private final @Nullable ElectionDetails _vrrpElectionDetails;
+
   private static int computePriority(
       @Nonnull Interface iface,
       int initialPriority,
+      int groupOrVrid,
       @Nonnull Map<String, TrackAction> trackActions,
-      TrackMethodEvaluatorProvider provider) {
+      TrackMethodEvaluatorProvider provider,
+      @Nullable ElectionDetails electionDetails) {
     Configuration c = iface.getOwner();
     Map<String, TrackMethod> trackMethods = c.getTrackingGroups();
     GenericTrackMethodVisitor<Boolean> trackMethodEvaluator = provider.forConfiguration(c);
     PriorityEvaluator evaluator = new PriorityEvaluator(initialPriority);
+    Map<String, Entry<TrackMethod, TrackAction>> successfulTracks;
+    Map<String, Entry<TrackMethod, TrackAction>> failedTracks;
+    NodeInterfacePair ni;
+    if (electionDetails != null) {
+      ni = NodeInterfacePair.of(iface);
+      successfulTracks =
+          electionDetails
+              ._successfulTracks
+              .computeIfAbsent(ni, n -> new HashMap<>())
+              .computeIfAbsent(groupOrVrid, g -> new HashMap<>());
+      failedTracks =
+          electionDetails
+              ._failedTracks
+              .computeIfAbsent(ni, n -> new HashMap<>())
+              .computeIfAbsent(groupOrVrid, g -> new HashMap<>());
+    } else {
+      ni = null;
+      successfulTracks = null;
+      failedTracks = null;
+    }
     trackActions.forEach(
         (trackName, action) -> {
           TrackMethod trackMethod = trackMethods.get(trackName);
-          if (trackMethod != null && (trackMethod.accept(trackMethodEvaluator))) {
+          assert trackMethod != null;
+          if (trackMethod.accept(trackMethodEvaluator)) {
             action.accept(evaluator);
+            if (electionDetails != null) {
+              successfulTracks.put(trackName, immutableEntry(trackMethod, action));
+            }
+          } else if (electionDetails != null) {
+            failedTracks.put(trackName, immutableEntry(trackMethod, action));
           }
         });
-    return evaluator.getPriority();
+    int actualPriority = evaluator.getPriority();
+    if (electionDetails != null) {
+      electionDetails
+          ._actualPriorities
+          .computeIfAbsent(ni, n -> new HashMap<>())
+          .put(groupOrVrid, actualPriority);
+    }
+    return actualPriority;
   }
 
   /**

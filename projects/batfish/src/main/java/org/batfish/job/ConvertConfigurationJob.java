@@ -485,6 +485,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
   /** Remove and warn on undefined track references. */
   private static void removeUndefinedTrackReferences(Configuration c, Warnings w) {
+    removeUndefinedVrrpTrackReferences(c, w);
     removeUndefinedHsrpTrackReferences(c, w);
     removeUndefinedStaticRouteTrackReferences(c, w);
   }
@@ -545,6 +546,42 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       }
       if (groupsModified) {
         i.setHsrpGroups(newGroups.build());
+      }
+    }
+  }
+
+  private static void removeUndefinedVrrpTrackReferences(Configuration c, Warnings w) {
+    for (Interface i : c.getAllInterfaces().values()) {
+      boolean groupsModified = false;
+      ImmutableSortedMap.Builder<Integer, VrrpGroup> newGroups = ImmutableSortedMap.naturalOrder();
+      for (Entry<Integer, VrrpGroup> groupById : i.getVrrpGroups().entrySet()) {
+        int id = groupById.getKey();
+        ImmutableSortedMap.Builder<String, TrackAction> newActions =
+            ImmutableSortedMap.naturalOrder();
+        VrrpGroup group = groupById.getValue();
+        boolean tracksModified = false;
+        for (Entry<String, TrackAction> actionByTrack : group.getTrackActions().entrySet()) {
+          String track = actionByTrack.getKey();
+          if (!c.getTrackingGroups().containsKey(track)) {
+            tracksModified = true;
+            groupsModified = true;
+            w.redFlag(
+                String.format(
+                    "Removing reference to undefined track '%s' in VRRP group %d on '%s'",
+                    track, id, NodeInterfacePair.of(i)));
+          } else {
+            newActions.put(track, actionByTrack.getValue());
+          }
+        }
+        if (tracksModified) {
+          VrrpGroup newGroup = group.toBuilder().setTrackActions(newActions.build()).build();
+          newGroups.put(id, newGroup);
+        } else {
+          newGroups.put(id, group);
+        }
+      }
+      if (groupsModified) {
+        i.setVrrpGroups(newGroups.build());
       }
     }
   }
