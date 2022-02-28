@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.statement.AppendAsPath;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
@@ -77,6 +78,13 @@ public class RoutePolicyStatementAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitReplaceAsesInAsSequence(
       ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
+    // if/when we update TransferBDD to support AS-path replacing, we will need to update this as
+    // well
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<SymbolicAsPathRegex> visitAppendAsPath(AppendAsPath appendAsPath, Configuration arg) {
     // if/when we update TransferBDD to support AS-path replacing, we will need to update this as
     // well
     return ImmutableSet.of();

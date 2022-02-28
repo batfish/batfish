@@ -3,12 +3,15 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+@ParametersAreNonnullByDefault
 public final class PsTerm implements Serializable {
 
-  private final PsFroms _froms;
-  private final String _name;
-  private final Set<PsThen> _thens;
+  private final @Nonnull PsFroms _froms;
+  private final @Nonnull String _name;
+  private final @Nonnull Set<PsThen> _thens;
 
   public PsTerm(String name) {
     _froms = new PsFroms();
@@ -16,15 +19,15 @@ public final class PsTerm implements Serializable {
     _thens = new LinkedHashSet<>();
   }
 
-  public PsFroms getFroms() {
+  public @Nonnull PsFroms getFroms() {
     return _froms;
   }
 
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  public Set<PsThen> getThens() {
+  public @Nonnull Set<PsThen> getThens() {
     return _thens;
   }
 

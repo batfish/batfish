@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.statement.AppendAsPath;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
@@ -67,6 +68,11 @@ public class RoutePolicyStatementVarCollector
 
   @Override
   public Set<CommunityVar> visitPrependAsPath(PrependAsPath prependAsPath, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitAppendAsPath(AppendAsPath appendAsPath, Configuration arg) {
     return ImmutableSet.of();
   }
 
