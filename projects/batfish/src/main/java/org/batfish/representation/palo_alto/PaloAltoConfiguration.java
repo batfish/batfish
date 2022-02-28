@@ -2758,6 +2758,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           continue;
         }
       }
+      if (sr.getNextHopIp() == null && sr.getNextHopInterface() == null) {
+        _w.redFlag(
+            String.format(
+                "Cannot convert static route %s, as it has no nexthop interface or IP.",
+                e.getKey()));
+        continue;
+      }
       vrf.getStaticRoutes()
           .add(
               org.batfish.datamodel.StaticRoute.builder()
