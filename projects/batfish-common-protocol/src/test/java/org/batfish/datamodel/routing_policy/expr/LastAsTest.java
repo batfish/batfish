@@ -63,7 +63,7 @@ public final class LastAsTest {
     Bgpv4Route originalRoute =
         BGP_ROUTE.toBuilder().setAsPath(AsPath.ofSingletonAsSets(11111L, 22222L)).build();
     assertThat(
-        INSTANCE.evaluate(envBuilder.setOriginalRoute(originalRoute).build()), equalTo(22222L));
+        INSTANCE.evaluate(envBuilder.setOriginalRoute(originalRoute).build()), equalTo(11111L));
 
     // If readFromIntermediateBgpAttributes but not useOutputAttributes, use intermediate attrs
     Bgpv4Route.Builder intermediateAttrs =
@@ -74,19 +74,19 @@ public final class LastAsTest {
                 .setReadFromIntermediateBgpAttributes(true)
                 .setIntermediateBgpAttributes(intermediateAttrs)
                 .build()),
-        equalTo(44444L));
+        equalTo(33333L));
 
     // If useOutputAttributes but output route is not BGP, still use intermediate attrs
     StaticRoute.Builder sr =
         StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setAdministrativeCost(1);
     assertThat(
         INSTANCE.evaluate(envBuilder.setUseOutputAttributes(true).setOutputRoute(sr).build()),
-        equalTo(44444L));
+        equalTo(33333L));
 
     // If useOutputAttributes and output route is BGP, should use output route's AS path
     Bgpv4Route.Builder outputRoute =
         BGP_ROUTE.toBuilder().setAsPath(AsPath.ofSingletonAsSets(55555L, 66666L));
-    assertThat(INSTANCE.evaluate(envBuilder.setOutputRoute(outputRoute).build()), equalTo(66666L));
+    assertThat(INSTANCE.evaluate(envBuilder.setOutputRoute(outputRoute).build()), equalTo(55555L));
   }
 
   @Test(expected = AssertionError.class)
