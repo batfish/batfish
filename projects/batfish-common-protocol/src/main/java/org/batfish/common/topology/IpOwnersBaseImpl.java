@@ -110,14 +110,6 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
         _winnerByCandidate;
   }
 
-  // TODO: remove once downstream projects are migrated
-  protected IpOwnersBaseImpl(
-      Map<String, Configuration> configurations,
-      L3Adjacencies l3Adjacencies,
-      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
-    this(configurations, l3Adjacencies, trackMethodEvaluatorProvider, false);
-  }
-
   /**
    * Compute IP owners based on information in configurations, layer-3 adjencies, and a provider for
    * methods to evaluate track methods affecting HSRP/VRRP priorities.
