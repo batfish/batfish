@@ -11,7 +11,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.HasReadableAsPath;
 import org.batfish.datamodel.routing_policy.Environment;
 
-/** Represents the last AS of the route. */
+/** Represents the most "recent" AS of the route. */
 public final class LastAs extends AsExpr {
 
   private static final LastAs INSTANCE = new LastAs();
@@ -46,7 +46,7 @@ public final class LastAs extends AsExpr {
     List<AsSet> asSets = asPath.getAsSets();
     // Caller must guarantee this is not evaluated when as-path is empty.
     checkState(!asSets.isEmpty(), "Cannot be evaluated with an empty as-path.");
-    SortedSet<Long> lastAsSetAsns = asSets.get(asSets.size() - 1).getAsns();
+    SortedSet<Long> lastAsSetAsns = asSets.get(0).getAsns();
     // TODO: See if clients of AsExpr should really be provided the entire AsSet instead of a
     //       single AS. For now, arbitrarily use lowest AS in set.
     return lastAsSetAsns.first();

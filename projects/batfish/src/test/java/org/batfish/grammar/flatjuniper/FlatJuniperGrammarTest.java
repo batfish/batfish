@@ -401,6 +401,7 @@ import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
+import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenTag;
@@ -6774,7 +6775,7 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         vc.getMasterLogicalSystem().getPolicyStatements(),
-        hasKeys("last-as-no-count", "last-as-count-2", "as-list"));
+        hasKeys("last-as-no-count", "last-as-count-2", "as-list", "expand-then-prepend"));
     {
       PolicyStatement ps =
           vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-no-count");
@@ -6803,6 +6804,24 @@ public final class FlatJuniperGrammarTest {
           (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens());
       assertThat(then.getAsList(), contains(123L, (456L << 16) + 789L));
     }
+    {
+      PolicyStatement ps =
+          vc.getMasterLogicalSystem().getPolicyStatements().get("expand-then-prepend");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(
+          term.getThens(),
+          contains(
+              // reverse of declared order is expected
+              instanceOf(PsThenAsPathPrepend.class), instanceOf(PsThenAsPathExpandAsList.class)));
+
+      PsThenAsPathPrepend prepend = (PsThenAsPathPrepend) Iterables.get(term.getThens(), 0);
+      assertThat(prepend.getAsList(), contains(456L));
+
+      PsThenAsPathExpandAsList expand =
+          (PsThenAsPathExpandAsList) Iterables.get(term.getThens(), 1);
+      assertThat(expand.getAsList(), contains(123L));
+    }
   }
 
   @Test
@@ -6822,13 +6841,15 @@ public final class FlatJuniperGrammarTest {
             .build();
     Bgpv4Route inputRouteEmptyAsPath =
         inputRouteNonEmptyAsPath.toBuilder().setAsPath(AsPath.empty()).build();
-    assertThat(c.getRoutingPolicies(), hasKeys("last-as-no-count", "last-as-count-2", "as-list"));
+    assertThat(
+        c.getRoutingPolicies(),
+        hasKeys("last-as-no-count", "last-as-count-2", "as-list", "expand-then-prepend"));
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
       Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
       rp.process(inputRoute, outputRoute, Direction.IN);
-      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 2L, 2L)));
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 2L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
@@ -6842,7 +6863,7 @@ public final class FlatJuniperGrammarTest {
       Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
       rp.process(inputRoute, outputRoute, Direction.IN);
-      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 2L, 2L, 2L)));
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 1L, 2L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("as-list");
@@ -6851,7 +6872,17 @@ public final class FlatJuniperGrammarTest {
       rp.process(inputRoute, outputRoute, Direction.IN);
       assertThat(
           outputRoute.getAsPath(),
-          equalTo(AsPath.ofSingletonAsSets(1L, 2L, 123L, (456L << 16) + 789L)));
+          equalTo(AsPath.ofSingletonAsSets(123L, (456L << 16) + 789L, 1L, 2L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("expand-then-prepend");
+      Bgpv4Route inputRoute = inputRouteEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      // prepend 456
+      // expand 123
+      // The prepend is applied before the expand, even though it is declared after.
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(123L, 456L)));
     }
   }
 }

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -56,24 +55,27 @@ public final class PrependAsPath extends Statement {
       return new Result();
     }
     List<Long> toPrepend = _expr.evaluate(environment);
-    List<AsSet> newAsPaths = toPrepend.stream().map(AsSet::of).collect(Collectors.toList());
+    List<AsSet> newAsPaths =
+        toPrepend.stream().map(AsSet::of).collect(ImmutableList.toImmutableList());
 
     HasWritableAsPath<?, ?> outputRoute = (HasWritableAsPath<?, ?>) environment.getOutputRoute();
-    outputRoute.setAsPath(
+    AsPath inputAsPath =
+        environment.getReadFromIntermediateBgpAttributes()
+            ? environment.getIntermediateBgpAttributes().getAsPath()
+            : outputRoute.getAsPath();
+    AsPath newAsPath =
         AsPath.of(
             ImmutableList.<AsSet>builder()
                 .addAll(newAsPaths)
-                .addAll(outputRoute.getAsPath().getAsSets())
-                .build()));
+                .addAll(inputAsPath.getAsSets())
+                .build());
+    outputRoute.setAsPath(newAsPath);
 
+    // TODO: Clean up this paradigm. Currently all over we write to both output and intermediate
+    //       when write-to-intermediate is true. Using current paradigm.
     if (environment.getWriteToIntermediateBgpAttributes()) {
       BgpRoute.Builder<?, ?> ir = environment.getIntermediateBgpAttributes();
-      ir.setAsPath(
-          AsPath.of(
-              ImmutableList.<AsSet>builder()
-                  .addAll(newAsPaths)
-                  .addAll(ir.getAsPath().getAsSets())
-                  .build()));
+      ir.setAsPath(newAsPath);
     }
 
     return new Result();

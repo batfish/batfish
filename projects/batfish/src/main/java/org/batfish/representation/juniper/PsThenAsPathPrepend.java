@@ -2,6 +2,8 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
@@ -11,12 +13,11 @@ import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /** A {@link Statement} that prepends AS numbers to AS paths. */
+@ParametersAreNonnullByDefault
 public final class PsThenAsPathPrepend extends PsThen {
 
-  private final List<Long> _asPath;
-
-  public PsThenAsPathPrepend(Iterable<Long> asPath) {
-    _asPath = ImmutableList.copyOf(asPath);
+  public PsThenAsPathPrepend(List<Long> asList) {
+    _asList = ImmutableList.copyOf(asList);
   }
 
   @Override
@@ -26,7 +27,13 @@ public final class PsThenAsPathPrepend extends PsThen {
       Configuration c,
       Warnings w) {
     List<AsExpr> asList =
-        _asPath.stream().map(ExplicitAs::new).collect(ImmutableList.toImmutableList());
+        _asList.stream().map(ExplicitAs::new).collect(ImmutableList.toImmutableList());
     statements.add(new PrependAsPath(new LiteralAsList(asList)));
   }
+
+  public @Nonnull List<Long> getAsList() {
+    return _asList;
+  }
+
+  private final @Nonnull List<Long> _asList;
 }

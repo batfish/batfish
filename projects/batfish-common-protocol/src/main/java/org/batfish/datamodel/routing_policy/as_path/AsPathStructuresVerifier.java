@@ -42,7 +42,6 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.AppendAsPath;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
@@ -421,11 +420,6 @@ public final class AsPathStructuresVerifier {
 
     @Override
     public Void visitReplaceAsesInAsSequence(ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
-      return null;
-    }
-
-    @Override
-    public Void visitAppendAsPath(AppendAsPath appendAsPath, AsPathStructuresVerifierContext arg) {
       return null;
     }
 

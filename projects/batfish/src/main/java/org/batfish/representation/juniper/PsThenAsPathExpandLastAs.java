@@ -13,16 +13,16 @@ import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LastAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
-import org.batfish.datamodel.routing_policy.statement.AppendAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /**
- * A {@link Statement} that appends one or more copies of the last-as of the input as-path if
- * non-empty.
+ * A {@link Statement} that prepends one or more copies of the most recent AS of the input as-path
+ * if non-empty.
  */
 @ParametersAreNonnullByDefault
-public final class PsThenAsPathExpandLastAs extends PsThen {
+public final class PsThenAsPathExpandLastAs extends PsThenAsPathExpand {
 
   public PsThenAsPathExpandLastAs(int count) {
     _count = count;
@@ -40,7 +40,7 @@ public final class PsThenAsPathExpandLastAs extends PsThen {
                 InputAsPath.instance(),
                 HasAsPathLength.of(new IntComparison(IntComparator.GT, new LiteralInt(0)))),
             ImmutableList.of(
-                new AppendAsPath(new MultipliedAs(LastAs.instance(), new LiteralInt(_count))))));
+                new PrependAsPath(new MultipliedAs(LastAs.instance(), new LiteralInt(_count))))));
   }
 
   public int getCount() {

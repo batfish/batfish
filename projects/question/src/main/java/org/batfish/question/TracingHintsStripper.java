@@ -3,7 +3,6 @@ package org.batfish.question;
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.statement.AppendAsPath;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
@@ -70,11 +69,6 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
   @Override
   public Statement visitPrependAsPath(PrependAsPath prependAsPath, Void arg) {
     return prependAsPath;
-  }
-
-  @Override
-  public Statement visitAppendAsPath(AppendAsPath appendAsPath, Void arg) {
-    return appendAsPath;
   }
 
   @Override

@@ -819,6 +819,7 @@ import org.batfish.representation.juniper.PsFroms;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
+import org.batfish.representation.juniper.PsThenAsPathExpand;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
@@ -5255,23 +5256,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopst_as_path_prepend(Popst_as_path_prependContext ctx) {
     List<Long> asPaths =
         ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
+    _currentPsThens.removeIf(PsThenAsPathPrepend.class::isInstance);
     _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
+    Optional<PsThenAsPathExpand> expand =
+        _currentPsThens.stream()
+            .filter(PsThenAsPathExpand.class::isInstance)
+            .map(PsThenAsPathExpand.class::cast)
+            .findFirst();
+    if (expand.isPresent()) {
+      _currentPsThens.removeIf(PsThenAsPathExpand.class::isInstance);
+      _currentPsThens.add(expand.get());
+    }
   }
 
   @Override
   public void exitPopst_as_path_expand(Popst_as_path_expandContext ctx) {
+    PsThenAsPathExpand expand;
     if (ctx.LAST_AS() != null) {
       Optional<Integer> maybeCount = ctx.count != null ? toInteger(ctx, ctx.count) : Optional.of(1);
       if (!maybeCount.isPresent()) {
         return;
       }
-      _currentPsThens.add(new PsThenAsPathExpandLastAs(maybeCount.get()));
+      expand = new PsThenAsPathExpandLastAs(maybeCount.get());
     } else {
       assert !ctx.asns.isEmpty();
       List<Long> asPaths =
           ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
-      _currentPsThens.add(new PsThenAsPathExpandAsList(asPaths));
+      expand = new PsThenAsPathExpandAsList(asPaths);
     }
+    _currentPsThens.removeIf(PsThenAsPathExpand.class::isInstance);
+    _currentPsThens.add(expand);
   }
 
   private static final IntegerSpace AS_PATH_EXPAND_LAST_AS_COUNT_RANGE =
