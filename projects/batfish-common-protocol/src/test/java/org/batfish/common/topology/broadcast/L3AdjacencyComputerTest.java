@@ -49,6 +49,7 @@ import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.junit.Test;
 
 public class L3AdjacencyComputerTest {
@@ -757,7 +758,8 @@ public class L3AdjacencyComputerTest {
   public void testE2e_noL1() {
     Map<String, Configuration> configs = simple3InterfaceNetwork();
     // With no L1 topology, all 3 interfaces in same domain.
-    L3AdjacencyComputer l3 = new L3AdjacencyComputer(configs, Layer1Topologies.empty());
+    L3AdjacencyComputer l3 =
+        new L3AdjacencyComputer(configs, Layer1Topologies.empty(), VxlanTopology.EMPTY);
     Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
     assertThat("all interfaces have a domain", domains, aMapWithSize(3));
     assertThat("all interfaces in same domain", ImmutableSet.copyOf(domains.values()), hasSize(1));
@@ -776,7 +778,9 @@ public class L3AdjacencyComputerTest {
                 n1.getHostname(), n1.getInterface(), n3.getHostname(), n3.getInterface()));
     L3AdjacencyComputer l3 =
         new L3AdjacencyComputer(
-            configs, Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
+            configs,
+            Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs),
+            VxlanTopology.EMPTY);
     Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
     assertThat("all interfaces have a domain", domains, aMapWithSize(3));
     assertThat("connected ifaces in same domain", domains.get(n1), equalTo(domains.get(n3)));
@@ -798,7 +802,9 @@ public class L3AdjacencyComputerTest {
             new Layer1Edge(n1.getHostname(), n1.getInterface(), "no-such-host", "no-such-iface"));
     L3AdjacencyComputer l3 =
         new L3AdjacencyComputer(
-            configs, Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
+            configs,
+            Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs),
+            VxlanTopology.EMPTY);
     Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
     assertThat("all interfaces have a domain", domains, aMapWithSize(3));
     assertThat("global hub ifaces in same domain", domains.get(n2), equalTo(domains.get(n3)));
@@ -816,7 +822,8 @@ public class L3AdjacencyComputerTest {
     NodeInterfacePair n2 = NodeInterfacePair.of("c2", "i2");
     NodeInterfacePair n3 = NodeInterfacePair.of("c3", "i3");
     configs.get(n1.getHostname()).getAllInterfaces().get(n1.getInterface()).setEncapsulationVlan(4);
-    L3AdjacencyComputer l3 = new L3AdjacencyComputer(configs, Layer1Topologies.empty());
+    L3AdjacencyComputer l3 =
+        new L3AdjacencyComputer(configs, Layer1Topologies.empty(), VxlanTopology.EMPTY);
     Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
     assertThat("all interfaces have a domain", domains, aMapWithSize(3));
     assertThat(

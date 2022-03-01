@@ -25,7 +25,7 @@ public class BroadcastL3Adjacencies implements L3Adjacencies {
       Layer1Topologies l1, VxlanTopology vxlan, Map<String, Configuration> configs) {
     assert vxlan != null; // suppress unused warning.
     PointToPointInterfaces p2p = PointToPointComputer.compute(l1.getLogicalL1(), configs);
-    L3AdjacencyComputer adj = new L3AdjacencyComputer(configs, l1);
+    L3AdjacencyComputer adj = new L3AdjacencyComputer(configs, l1, vxlan);
     return new BroadcastL3Adjacencies(adj.findAllBroadcastDomains(), p2p);
   }
 

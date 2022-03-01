@@ -1,5 +1,7 @@
 package org.batfish.common.topology.broadcast;
 
+import static com.google.common.base.Verify.verify;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -8,12 +10,15 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.google.common.graph.EndpointPair;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +31,12 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.VniLayer;
+import org.batfish.datamodel.vxlan.VxlanNode;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.jgrapht.alg.util.UnionFind;
 
 /** Computes the set of L3 interfaces that are in the same broadcast domain as a given interface. */
@@ -39,6 +49,11 @@ public class L3AdjacencyComputer {
   @SuppressWarnings("unused")
   private final @Nonnull Map<String, EthernetHub> _ethernetHubs;
 
+  private final @Nonnull Map<VxlanNode, L2VNI> _l2vnis;
+
+  @SuppressWarnings("unused")
+  private final @Nonnull Map<String, L2VNIHub> _l2vniHubs;
+
   private final @Nonnull Map<String, DeviceBroadcastDomain> _deviceBroadcastDomains;
 
   private static final EnumSet<InterfaceType> PHYSICAL_INTERFACE_TYPES =
@@ -46,12 +61,16 @@ public class L3AdjacencyComputer {
   @VisibleForTesting static final String BATFISH_GLOBAL_HUB = "Batfish Global Ethernet Hub";
 
   public L3AdjacencyComputer(
-      Map<String, Configuration> configs, Layer1Topologies layer1Topologies) {
+      Map<String, Configuration> configs,
+      Layer1Topologies layer1Topologies,
+      VxlanTopology vxlanTopology) {
     _layer1Topologies = layer1Topologies;
     _physicalInterfaces = computePhysicalInterfaces(configs);
     _ethernetHubs =
         computeEthernetHubs(configs, _physicalInterfaces, _layer1Topologies.getLogicalL1());
     _deviceBroadcastDomains = computeDeviceBroadcastDomains(configs, _physicalInterfaces);
+    _l2vnis = computeL2VNIs(configs, _deviceBroadcastDomains);
+    _l2vniHubs = computeL2VNIHubs(_l2vnis, vxlanTopology);
     _layer3Interfaces =
         computeLayer3Interfaces(configs, _deviceBroadcastDomains, _physicalInterfaces);
   }
@@ -147,6 +166,69 @@ public class L3AdjacencyComputer {
     } else {
       return Optional.of(iface);
     }
+  }
+
+  private static Map<VxlanNode, L2VNI> computeL2VNIs(
+      Map<String, Configuration> configs, Map<String, DeviceBroadcastDomain> domains) {
+    ImmutableMap.Builder<VxlanNode, L2VNI> ret = ImmutableMap.builder();
+    for (Configuration c : configs.values()) {
+      DeviceBroadcastDomain domain = domains.get(c.getHostname());
+      verify(domain != null, "Broadcast domain not yet created for device %s", c.getHostname());
+      for (Vrf vrf : c.getVrfs().values()) {
+        for (Layer2Vni vniSettings : vrf.getLayer2Vnis().values()) {
+          VxlanNode node = new VxlanNode(c.getHostname(), vniSettings.getVni(), VniLayer.LAYER_2);
+          L2VNI vni = new L2VNI(node);
+          ret.put(node, vni);
+          L2VniToVlan connection = new L2VniToVlan(vniSettings.getVlan());
+          vni.connectToVlan(domain, connection::receiveFromVxlan);
+          domain.attachL2VNI(vni, connection::sendToVxlan);
+        }
+      }
+    }
+    return ret.build();
+  }
+
+  @VisibleForTesting
+  static Map<String, L2VNIHub> computeL2VNIHubs(
+      Map<VxlanNode, L2VNI> l2vnis, VxlanTopology vxlanTopology) {
+    Set<EndpointPair<VxlanNode>> l2edges =
+        vxlanTopology.getLayer2VniEdges().collect(Collectors.toSet());
+    if (l2vnis.isEmpty() || l2edges.isEmpty()) {
+      return ImmutableMap.of();
+    }
+
+    // Build a hub for every L2VNI cluster.
+    Set<VxlanNode> nodesWithEdges =
+        l2edges.stream().flatMap(e -> Stream.of(e.nodeU(), e.nodeV())).collect(Collectors.toSet());
+    UnionFind<VxlanNode> clusters = new UnionFind<>(nodesWithEdges);
+    for (EndpointPair<VxlanNode> edge : l2edges) {
+      clusters.union(edge.nodeU(), edge.nodeV());
+    }
+
+    // Build up the set of L2VNIs attached to each hub.
+    Multimap<VxlanNode, VxlanNode> groups = LinkedListMultimap.create(clusters.numberOfSets());
+    for (VxlanNode node : nodesWithEdges) {
+      groups.put(clusters.find(node), node);
+    }
+    // Create one L2VNIHub for each group.
+    ImmutableMap.Builder<String, L2VNIHub> ret = ImmutableMap.builder();
+    groups
+        .asMap()
+        .forEach(
+            (id, nodes) -> {
+              L2VNIHub hub = new L2VNIHub("Hub for " + id);
+              L2VNI[] vnis = new L2VNI[nodes.size()];
+              int i = 0;
+              for (VxlanNode node : nodes) {
+                L2VNI vni = l2vnis.get(node);
+                assert vni != null;
+                vnis[i] = vni;
+                ++i;
+              }
+              Edges.connectToL2VNIHub(hub, vnis);
+              ret.put(hub.getName(), hub);
+            });
+    return ret.build();
   }
 
   private static Map<NodeInterfacePair, PhysicalInterface> computePhysicalInterfaces(
