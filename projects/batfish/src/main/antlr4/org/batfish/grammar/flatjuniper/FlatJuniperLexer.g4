@@ -3725,7 +3725,7 @@ M_AsPathExpand2_UINT16: F_Uint16 -> type(UINT16);
 M_AsPathExpand2_UINT32: F_Uint32 -> type(UINT32);
 M_AsPathExpand2_PERIOD: '.' -> type(PERIOD);
 M_AsPathExpand2_DOUBLE_QUOTE: '"' -> skip, mode(M_AsPathExpand_Inner);
-M_asPathExpand3_LAST_AS: 'last-as' -> type(LAST_AS), mode(M_AsPathExpandLastAs);
+M_AsPathExpand2_LAST_AS: 'last-as' -> type(LAST_AS), mode(M_AsPathExpandLastAs);
 M_AsPathExpand2_WS: F_WhitespaceChar+ -> skip, popMode;
 
 mode M_AsPathExpand_Inner;
