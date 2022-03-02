@@ -14,9 +14,10 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /** A {@link Statement} that prepends AS numbers to AS paths. */
 @ParametersAreNonnullByDefault
-public final class PsThenAsPathPrepend extends PsThen {
+public final class PsThenAsPathExpandAsList extends PsThenAsPathExpand {
 
-  public PsThenAsPathPrepend(List<Long> asList) {
+  public PsThenAsPathExpandAsList(List<Long> asList) {
+    assert !asList.isEmpty();
     _asList = ImmutableList.copyOf(asList);
   }
 

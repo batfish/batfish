@@ -3104,23 +3104,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
+  private static boolean isFinalThen(PsThen then) {
+    return then instanceof PsThenAccept
+        || then instanceof PsThenReject
+        || then instanceof PsThenDefaultActionAccept
+        || then instanceof PsThenDefaultActionReject
+        || then instanceof PsThenNextPolicy;
+  }
+
   private List<Statement> toStatements(Set<PsThen> thens) {
     List<Statement> thenStatements = new ArrayList<>();
-    List<PsThen> reorderedThens = new LinkedList<>();
-    for (PsThen then : thens) {
-      if (then instanceof PsThenAccept
-          || then instanceof PsThenReject
-          || then instanceof PsThenDefaultActionAccept
-          || then instanceof PsThenDefaultActionReject
-          || then instanceof PsThenNextPolicy) {
-        reorderedThens.add(then);
-      } else {
-        reorderedThens.add(0, then);
-      }
-    }
-    for (PsThen then : reorderedThens) {
-      then.applyTo(thenStatements, this, _c, _w);
-    }
+    Stream.concat(
+            thens.stream().filter(then -> !isFinalThen(then)),
+            thens.stream().filter(JuniperConfiguration::isFinalThen))
+        .forEach(then -> then.applyTo(thenStatements, this, _c, _w));
     return thenStatements;
   }
 

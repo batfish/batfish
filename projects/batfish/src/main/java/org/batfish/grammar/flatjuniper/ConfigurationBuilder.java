@@ -208,6 +208,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifier_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_expand_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_exprContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_externalContext;
@@ -449,6 +450,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_thenContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_expandContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_color2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_colorContext;
@@ -817,6 +819,9 @@ import org.batfish.representation.juniper.PsFroms;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
+import org.batfish.representation.juniper.PsThenAsPathExpand;
+import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
+import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunityDelete;
@@ -5259,7 +5264,60 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopst_as_path_prepend(Popst_as_path_prependContext ctx) {
     List<Long> asPaths =
         ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
+    _currentPsThens.removeIf(PsThenAsPathPrepend.class::isInstance);
     _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
+    Optional<PsThenAsPathExpand> expand =
+        _currentPsThens.stream()
+            .filter(PsThenAsPathExpand.class::isInstance)
+            .map(PsThenAsPathExpand.class::cast)
+            .findFirst();
+    if (expand.isPresent()) {
+      _currentPsThens.removeIf(PsThenAsPathExpand.class::isInstance);
+      _currentPsThens.add(expand.get());
+    }
+  }
+
+  @Override
+  public void exitPopst_as_path_expand(Popst_as_path_expandContext ctx) {
+    PsThenAsPathExpand expand;
+    if (ctx.LAST_AS() != null) {
+      Optional<Integer> maybeCount = ctx.count != null ? toInteger(ctx, ctx.count) : Optional.of(1);
+      if (!maybeCount.isPresent()) {
+        return;
+      }
+      expand = new PsThenAsPathExpandLastAs(maybeCount.get());
+    } else {
+      assert !ctx.asns.isEmpty();
+      List<Long> asPaths =
+          ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
+      expand = new PsThenAsPathExpandAsList(asPaths);
+    }
+    _currentPsThens.removeIf(PsThenAsPathExpand.class::isInstance);
+    _currentPsThens.add(expand);
+  }
+
+  private static final IntegerSpace AS_PATH_EXPAND_LAST_AS_COUNT_RANGE =
+      IntegerSpace.of(new SubRange(1, 32));
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, As_path_expand_countContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx, AS_PATH_EXPAND_LAST_AS_COUNT_RANGE, "as-path-expand last-as count");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
   }
 
   @Override

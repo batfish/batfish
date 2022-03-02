@@ -1,0 +1,10 @@
+#
+set system host-name juniper_as_path_expand
+#
+set policy-options policy-statement last-as-no-count term t then as-path-expand last-as
+set policy-options policy-statement last-as-count-2 term t then as-path-expand last-as count 2
+set policy-options policy-statement as-list term t then as-path-expand "123 456.789"
+
+set policy-options policy-statement expand-then-prepend term t then as-path-expand "123"
+set policy-options policy-statement expand-then-prepend term t then as-path-prepend "456"
+#
