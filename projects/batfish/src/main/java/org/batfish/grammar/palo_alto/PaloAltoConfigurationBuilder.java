@@ -2233,8 +2233,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSpc_type(PaloAltoParser.Spc_typeContext ctx) {
-    if (!getText(ctx.type).equals("URL List")) {
-      warn(ctx, "Currently only 'URL List' custom-url-category type is supported by Batfish.");
+    if (!getText(ctx.type).equals(CustomUrlCategory.TYPE_URL_LIST)) {
+      warn(
+          ctx,
+          String.format(
+              "Currently only '%s' custom-url-category type is supported by Batfish.",
+              CustomUrlCategory.TYPE_URL_LIST));
     }
   }
 

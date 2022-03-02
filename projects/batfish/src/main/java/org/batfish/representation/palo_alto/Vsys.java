@@ -32,7 +32,7 @@ public final class Vsys implements Serializable {
 
   private final SortedMap<String, ApplicationGroup> _applicationGroups;
 
-  @Nonnull private final Map<String, CustomUrlCategory> _customUrlCategory;
+  @Nonnull private final Map<String, CustomUrlCategory> _customUrlCategories;
 
   private String _displayName;
 
@@ -76,7 +76,7 @@ public final class Vsys implements Serializable {
     _addressObjects = new TreeMap<>();
     _applications = new TreeMap<>();
     _applicationGroups = new TreeMap<>();
-    _customUrlCategory = new HashMap<>();
+    _customUrlCategories = new HashMap<>();
     _importedInterfaces = new HashSet<>();
     _importedVsyses = new HashSet<>();
     _rulebase = new Rulebase();
@@ -109,14 +109,14 @@ public final class Vsys implements Serializable {
     return _applicationGroups;
   }
 
-  /** Returns a map of custom-url-category names to {@link CustomUrlCategory}. */
-  public @Nonnull Map<String, CustomUrlCategory> getCustomUrlCategory() {
-    return _customUrlCategory;
+  /** Returns a map of custom-url-category name to {@link CustomUrlCategory}. */
+  public @Nonnull Map<String, CustomUrlCategory> getCustomUrlCategories() {
+    return _customUrlCategories;
   }
 
   /** Returns the specified {@link CustomUrlCategory}, creating it if it doesn't already exist. */
   public @Nonnull CustomUrlCategory getOrCreateCustomUrlCategory(String name) {
-    return _customUrlCategory.computeIfAbsent(name, CustomUrlCategory::new);
+    return _customUrlCategories.computeIfAbsent(name, CustomUrlCategory::new);
   }
 
   /** Returns the display name for this vsys. */

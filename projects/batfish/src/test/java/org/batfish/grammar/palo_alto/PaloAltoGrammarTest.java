@@ -2730,7 +2730,7 @@ public final class PaloAltoGrammarTest {
     PaloAltoConfiguration vc = parsePaloAltoConfig("profiles");
     Vsys vsys = vc.getVirtualSystems().get(DEFAULT_VSYS_NAME);
 
-    Map<String, CustomUrlCategory> customUrlCategoryMap = vsys.getCustomUrlCategory();
+    Map<String, CustomUrlCategory> customUrlCategoryMap = vsys.getCustomUrlCategories();
     assertThat(customUrlCategoryMap.keySet(), containsInAnyOrder("CAT1", "CAT2"));
 
     CustomUrlCategory cat1 = customUrlCategoryMap.get("CAT1");
@@ -2750,15 +2750,15 @@ public final class PaloAltoGrammarTest {
     assertNotNull(dg);
     Vsys panorama = dg.getPanorama();
     assertNotNull(panorama);
-    assertThat(panorama.getCustomUrlCategory(), hasKey("DG1_CAT1"));
-    CustomUrlCategory cat1 = panorama.getOrCreateCustomUrlCategory("DG1_CAT1");
+    assertThat(panorama.getCustomUrlCategories(), hasKey("DG1_CAT1"));
+    CustomUrlCategory cat1 = panorama.getCustomUrlCategories().get("DG1_CAT1");
     assertNull(cat1.getDescription());
     assertThat(cat1.getList(), contains("github.com"));
 
     Vsys shared = vc.getShared();
     assertNotNull(shared);
-    assertThat(shared.getCustomUrlCategory(), hasKey("SHARED_CAT1"));
-    CustomUrlCategory sharedCat1 = shared.getOrCreateCustomUrlCategory("SHARED_CAT1");
+    assertThat(shared.getCustomUrlCategories(), hasKey("SHARED_CAT1"));
+    CustomUrlCategory sharedCat1 = shared.getCustomUrlCategories().get("SHARED_CAT1");
     assertThat(sharedCat1.getDescription(), equalTo("descr"));
     assertThat(sharedCat1.getList(), contains("example.com"));
   }
