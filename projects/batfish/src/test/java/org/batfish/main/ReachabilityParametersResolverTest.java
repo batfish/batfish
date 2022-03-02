@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
@@ -48,7 +49,12 @@ public class ReachabilityParametersResolverTest {
     NetworkFactory nf = new NetworkFactory();
     _node = nf.configurationBuilder().setConfigurationFormat(CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(_node).build();
-    nf.interfaceBuilder().setOwner(_node).setVrf(vrf).build();
+    nf.interfaceBuilder()
+        .setOwner(_node)
+        .setVrf(vrf)
+        .setSwitchport(false)
+        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+        .build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(_node.getHostname(), _node);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     _snapshot = _batfish.getSnapshot();
@@ -122,7 +128,7 @@ public class ReachabilityParametersResolverTest {
         new ReachabilityParametersResolver(_batfish, reachabilityParameters, _snapshot);
 
     exception.expect(InvalidReachabilityParametersException.class);
-    exception.expectMessage("No matching source locations");
+    exception.expectMessage("No matching active IPv4 source locations");
     resolver.resolveSourceIpSpaceAssignment();
   }
 
@@ -133,7 +139,7 @@ public class ReachabilityParametersResolverTest {
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
-            .setDestinationIpSpaceSpecifier(
+            .setSourceIpSpaceSpecifier(
                 new ConstantIpSpaceAssignmentSpecifier(EmptyIpSpace.INSTANCE))
             .setSourceLocationSpecifier(
                 new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile(".*")))

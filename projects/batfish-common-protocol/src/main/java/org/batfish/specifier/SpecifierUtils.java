@@ -5,15 +5,19 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Utility methods for specifiers. */
 public final class SpecifierUtils {
   private SpecifierUtils() {}
 
-  /** Returns {@code true} iff the given {@link Location} is active (aka, interface is up). */
+  /**
+   * Returns {@code true} iff the given {@link Location} is active (aka, interface is up) and L3
+   * (aka, not switchport AND has addresses).
+   */
   @VisibleForTesting
-  static boolean isActive(Location l, Map<String, Configuration> configs) {
+  static boolean isActiveL3Interface(Location l, Map<String, Configuration> configs) {
     NodeInterfacePair iface;
     if (l instanceof InterfaceLocation) {
       iface =
@@ -26,17 +30,14 @@ public final class SpecifierUtils {
               ((InterfaceLinkLocation) l).getNodeName(),
               ((InterfaceLinkLocation) l).getInterfaceName());
     }
-    return configs
-        .get(iface.getHostname())
-        .getAllInterfaces()
-        .get(iface.getInterface())
-        .getActive();
+    Interface i = configs.get(iface.getHostname()).getAllInterfaces().get(iface.getInterface());
+    return i.getActive() && !i.getSwitchport() && !i.getAllAddresses().isEmpty();
   }
 
-  public static Set<Location> resolveActiveLocations(
+  public static Set<Location> resolveActiveL3Locations(
       LocationSpecifier locationSpecifier, SpecifierContext context) {
     return locationSpecifier.resolve(context).stream()
-        .filter(l -> isActive(l, context.getConfigs()))
+        .filter(l -> isActiveL3Interface(l, context.getConfigs()))
         .collect(ImmutableSet.toImmutableSet());
   }
 }

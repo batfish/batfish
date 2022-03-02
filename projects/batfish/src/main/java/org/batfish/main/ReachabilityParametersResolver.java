@@ -3,7 +3,7 @@ package org.batfish.main;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
-import static org.batfish.specifier.SpecifierUtils.resolveActiveLocations;
+import static org.batfish.specifier.SpecifierUtils.resolveActiveL3Locations;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -117,9 +117,9 @@ public final class ReachabilityParametersResolver {
   @VisibleForTesting
   IpSpaceAssignment resolveSourceIpSpaceAssignment() throws InvalidReachabilityParametersException {
     Set<Location> sourceLocations =
-        resolveActiveLocations(_params.getSourceLocationSpecifier(), _context);
+        resolveActiveL3Locations(_params.getSourceLocationSpecifier(), _context);
     if (sourceLocations.isEmpty()) {
-      throw new InvalidReachabilityParametersException("No matching source locations");
+      throw new InvalidReachabilityParametersException("No matching active IPv4 source locations");
     }
 
     // resolve the IpSpaceAssignmentSpecifier, and filter out entries with empty IpSpaces

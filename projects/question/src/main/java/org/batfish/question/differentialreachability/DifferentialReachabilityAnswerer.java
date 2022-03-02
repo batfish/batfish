@@ -4,7 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 import static org.batfish.question.traceroute.TracerouteAnswerer.diffFlowTracesToRows;
 import static org.batfish.question.traceroute.TracerouteAnswerer.metadata;
-import static org.batfish.specifier.SpecifierUtils.resolveActiveLocations;
+import static org.batfish.specifier.SpecifierUtils.resolveActiveL3Locations;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -75,8 +75,8 @@ public class DifferentialReachabilityAnswerer extends Answerer {
     // only consider startLocations that are present+active in both snapshots
     Set<Location> startLocations =
         Sets.intersection(
-            resolveActiveLocations(pathConstraints.getStartLocation(), snapshotCtxt),
-            resolveActiveLocations(pathConstraints.getStartLocation(), referenceCtxt));
+            resolveActiveL3Locations(pathConstraints.getStartLocation(), snapshotCtxt),
+            resolveActiveL3Locations(pathConstraints.getStartLocation(), referenceCtxt));
     if (startLocations.isEmpty()) {
       throw new BatfishException(
           "no matching startLocation is present and active in both snapshots");
