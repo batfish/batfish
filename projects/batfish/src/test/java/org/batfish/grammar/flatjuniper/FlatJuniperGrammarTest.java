@@ -16,6 +16,7 @@ import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
@@ -172,6 +173,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anything;
@@ -202,6 +204,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
@@ -232,6 +235,7 @@ import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -394,6 +398,10 @@ import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCondition;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsTerm;
+import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
+import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
+import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenTag;
@@ -6765,5 +6773,123 @@ public final class FlatJuniperGrammarTest {
             FIREWALL_FILTER_TERM,
             "foo default-deny-udp",
             equalTo(IntegerSpace.unionOf(new SubRange(8, 19)).enumerate())));
+  }
+
+  @Test
+  public void testAsPathExpandExtraction() {
+    String hostname = "juniper_as_path_expand";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+
+    assertThat(
+        vc.getMasterLogicalSystem().getPolicyStatements(),
+        hasKeys("last-as-no-count", "last-as-count-2", "as-list", "expand-then-prepend"));
+    {
+      PolicyStatement ps =
+          vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-no-count");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      PsThenAsPathExpandLastAs then =
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+      assertThat(then.getCount(), equalTo(1));
+    }
+    {
+      PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-count-2");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      PsThenAsPathExpandLastAs then =
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+      assertThat(then.getCount(), equalTo(2));
+    }
+    {
+      PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("as-list");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandAsList.class)));
+      PsThenAsPathExpandAsList then =
+          (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens());
+      assertThat(then.getAsList(), contains(123L, (456L << 16) + 789L));
+    }
+    {
+      PolicyStatement ps =
+          vc.getMasterLogicalSystem().getPolicyStatements().get("expand-then-prepend");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(
+          term.getThens(),
+          contains(
+              // reverse of declared order is expected
+              instanceOf(PsThenAsPathPrepend.class), instanceOf(PsThenAsPathExpandAsList.class)));
+
+      PsThenAsPathPrepend prepend = (PsThenAsPathPrepend) Iterables.get(term.getThens(), 0);
+      assertThat(prepend.getAsList(), contains(456L));
+
+      PsThenAsPathExpandAsList expand =
+          (PsThenAsPathExpandAsList) Iterables.get(term.getThens(), 1);
+      assertThat(expand.getAsList(), contains(123L));
+    }
+  }
+
+  @Test
+  public void testAsPathExpandConversion() {
+    String hostname = "juniper_as_path_expand";
+    Configuration c = parseConfig(hostname);
+
+    Bgpv4Route inputRouteNonEmptyAsPath =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setNetwork(Prefix.ZERO)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHop(NextHopDiscard.instance())
+            .build();
+    Bgpv4Route inputRouteEmptyAsPath =
+        inputRouteNonEmptyAsPath.toBuilder().setAsPath(AsPath.empty()).build();
+    assertThat(
+        c.getRoutingPolicies(),
+        hasKeys("last-as-no-count", "last-as-count-2", "as-list", "expand-then-prepend"));
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
+      Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 2L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
+      Bgpv4Route inputRoute = inputRouteEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.empty()));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("last-as-count-2");
+      Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 1L, 2L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("as-list");
+      Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      assertThat(
+          outputRoute.getAsPath(),
+          equalTo(AsPath.ofSingletonAsSets(123L, (456L << 16) + 789L, 1L, 2L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("expand-then-prepend");
+      Bgpv4Route inputRoute = inputRouteEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      // prepend 456
+      // expand 123
+      // The prepend is applied before the expand, even though it is declared after.
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(123L, 456L)));
+    }
   }
 }
