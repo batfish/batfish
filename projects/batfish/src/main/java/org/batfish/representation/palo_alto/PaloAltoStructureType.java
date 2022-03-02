@@ -16,6 +16,7 @@ public enum PaloAltoStructureType implements StructureType {
   APPLICATION_GROUP_OR_APPLICATION_OR_NONE("application-group or application or none"),
   APPLICATION_OR_NONE("application or none"),
   APPLICATION_OVERRIDE_RULE("application-override rule"),
+  CUSTOM_URL_CATEGORY("custom-url-category"),
   EXTERNAL_LIST("external-list"),
   GLOBAL_PROTECT_APP_CRYPTO_PROFILE("global-protect-app-crypto-profile"),
   IKE_CRYPTO_PROFILE("ike-crypto-profile"),

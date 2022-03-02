@@ -1,0 +1,10 @@
+set deviceconfig system hostname panorama-profiles
+!
+set shared profiles custom-url-category SHARED_CAT1 description descr
+set shared profiles custom-url-category SHARED_CAT1 list example.com
+set shared profiles custom-url-category SHARED_CAT1 type "URL List"
+!
+set device-group DG1 profiles custom-url-category DG1_CAT1 list github.com
+set device-group DG1 profiles custom-url-category DG1_CAT1 type "URL List"
+!
+set device-group DG1 devices 00000001

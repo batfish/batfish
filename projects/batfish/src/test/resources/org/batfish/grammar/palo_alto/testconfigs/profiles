@@ -1,0 +1,9 @@
+set deviceconfig system hostname profiles
+
+set profiles custom-url-category CAT1 description "category description"
+set profiles custom-url-category CAT1 list [ *.batfish.org/ example.com ]
+# This appends to the existing list
+set profiles custom-url-category CAT1 list github.com
+set profiles custom-url-category CAT1 type "URL List"
+
+set profiles custom-url-category CAT2 list github.com

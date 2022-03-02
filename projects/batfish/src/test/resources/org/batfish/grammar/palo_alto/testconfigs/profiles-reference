@@ -1,0 +1,4 @@
+set deviceconfig system hostname profiles-reference
+
+set profiles custom-url-category CAT1 description description1
+set profiles custom-url-category CAT2 description description2
