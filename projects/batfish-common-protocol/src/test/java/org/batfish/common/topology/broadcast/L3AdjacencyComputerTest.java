@@ -7,6 +7,8 @@ import static org.batfish.common.topology.broadcast.L3AdjacencyComputer.connectL
 import static org.batfish.common.topology.broadcast.L3AdjacencyComputer.findCorrespondingPhysicalInterface;
 import static org.batfish.common.topology.broadcast.L3AdjacencyComputer.shouldCreateL3Interface;
 import static org.batfish.common.topology.broadcast.L3AdjacencyComputer.shouldCreatePhysicalInterface;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.InterfaceType.LOGICAL;
 import static org.batfish.datamodel.InterfaceType.LOOPBACK;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
@@ -32,10 +34,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
@@ -48,8 +52,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.VxlanTopology;
+import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.junit.Test;
 
 public class L3AdjacencyComputerTest {
@@ -832,5 +839,200 @@ public class L3AdjacencyComputerTest {
         "encapsulated interface not connected to unencapsulated interfaces",
         domains.get(n2),
         not(equalTo(domains.get(n1))));
+  }
+
+  @Test
+  public void testE2e_vxlan() {
+    // Topology:
+    // h11 <=>           <=> h21
+    //     vlan10     vlan10
+    //         r1 <=> r2
+    //     vlan20     vlan20
+    // h12 <=>           <=> h22
+    //
+    // r1 and r2 only have underlay and vxlan tunnel between them - no vlans
+    // vlans 10 and 20 should be bridged across vxlan so that:
+    // - h11 and h21 are in the same broadcast domain
+    // - h12 and h22 are in the same broadcast domain
+    // vlan 10 <=> vxlan 10010 on c1 and c2
+    Configuration h11 =
+        Configuration.builder().setHostname("h11").setConfigurationFormat(CISCO_IOS).build();
+    Vrf h11Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h11).build();
+    Interface h11i =
+        Interface.builder()
+            .setName("h11i")
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.10.1/24"))
+            .setType(PHYSICAL)
+            .setVrf(h11Vrf)
+            .setOwner(h11)
+            .build();
+
+    Configuration h12 =
+        Configuration.builder().setHostname("h12").setConfigurationFormat(CISCO_IOS).build();
+    Vrf h12Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h12).build();
+    Interface h12i =
+        Interface.builder()
+            .setName("h12i")
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.20.1/24"))
+            .setType(PHYSICAL)
+            .setVrf(h12Vrf)
+            .setOwner(h12)
+            .build();
+
+    Configuration h21 =
+        Configuration.builder().setHostname("h21").setConfigurationFormat(CISCO_IOS).build();
+    Vrf h21Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h21).build();
+    Interface h21i =
+        Interface.builder()
+            .setName("h21i")
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.10.2/24"))
+            .setType(PHYSICAL)
+            .setVrf(h21Vrf)
+            .setOwner(h21)
+            .build();
+
+    Configuration h22 =
+        Configuration.builder().setHostname("h22").setConfigurationFormat(CISCO_IOS).build();
+    Vrf h22Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h22).build();
+    Interface h22i =
+        Interface.builder()
+            .setName("h22i")
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.20.2/24"))
+            .setType(PHYSICAL)
+            .setVrf(h22Vrf)
+            .setOwner(h22)
+            .build();
+
+    Configuration r1 =
+        Configuration.builder().setHostname("r1").setConfigurationFormat(CISCO_IOS).build();
+    Vrf r1Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(r1).build();
+    Interface r1h11 =
+        Interface.builder()
+            .setName("r1h11")
+            .setSwitchport(true)
+            .setSwitchportMode(SwitchportMode.ACCESS)
+            .setAccessVlan(10)
+            .setType(PHYSICAL)
+            .setVrf(r1Vrf)
+            .setOwner(r1)
+            .build();
+    Interface r1h12 =
+        Interface.builder()
+            .setName("r1h12")
+            .setSwitchport(true)
+            .setSwitchportMode(SwitchportMode.ACCESS)
+            .setAccessVlan(20)
+            .setType(PHYSICAL)
+            .setVrf(r1Vrf)
+            .setOwner(r1)
+            .build();
+    Interface r1r2 =
+        Interface.builder()
+            .setName("r1r2")
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+            .setType(PHYSICAL)
+            .setVrf(r1Vrf)
+            .setOwner(r1)
+            .build();
+    r1Vrf.addLayer2Vni(
+        Layer2Vni.builder()
+            .setVni(10010)
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .setVlan(10)
+            .setSourceAddress(Ip.parse("10.0.0.1"))
+            .setBumTransportIps(ImmutableSet.of(Ip.parse("10.0.0.2")))
+            .build());
+    r1Vrf.addLayer2Vni(
+        Layer2Vni.builder()
+            .setVni(10020)
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .setVlan(20)
+            .setSourceAddress(Ip.parse("10.0.0.1"))
+            .setBumTransportIps(ImmutableSet.of(Ip.parse("10.0.0.2")))
+            .build());
+
+    Configuration r2 =
+        Configuration.builder().setHostname("r2").setConfigurationFormat(CISCO_IOS).build();
+    Vrf r2Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(r2).build();
+    Interface r2h21 =
+        Interface.builder()
+            .setName("r2h21")
+            .setSwitchport(true)
+            .setSwitchportMode(SwitchportMode.ACCESS)
+            .setAccessVlan(10)
+            .setType(PHYSICAL)
+            .setVrf(r2Vrf)
+            .setOwner(r2)
+            .build();
+    Interface r2h22 =
+        Interface.builder()
+            .setName("r2h22")
+            .setSwitchport(true)
+            .setSwitchportMode(SwitchportMode.ACCESS)
+            .setAccessVlan(20)
+            .setType(PHYSICAL)
+            .setVrf(r2Vrf)
+            .setOwner(r2)
+            .build();
+    Interface r2r1 =
+        Interface.builder()
+            .setName("r2r1")
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.0.2/24"))
+            .setType(PHYSICAL)
+            .setVrf(r2Vrf)
+            .setOwner(r2)
+            .build();
+    r2Vrf.addLayer2Vni(
+        Layer2Vni.builder()
+            .setVni(10010)
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .setVlan(10)
+            .setSourceAddress(Ip.parse("10.0.0.2"))
+            .setBumTransportIps(ImmutableSet.of(Ip.parse("10.0.0.1")))
+            .build());
+    r2Vrf.addLayer2Vni(
+        Layer2Vni.builder()
+            .setVni(10020)
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .setVlan(20)
+            .setSourceAddress(Ip.parse("10.0.0.2"))
+            .setBumTransportIps(ImmutableSet.of(Ip.parse("10.0.0.1")))
+            .build());
+
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(
+            h11.getHostname(), h11,
+            h12.getHostname(), h12,
+            h21.getHostname(), h21,
+            h22.getHostname(), h22,
+            r1.getHostname(), r1,
+            r2.getHostname(), r2);
+    Set<Layer1Edge> l1EdgesOneSided =
+        ImmutableSet.of(
+            new Layer1Edge(h11.getHostname(), h11i.getName(), r1.getHostname(), r1h11.getName()),
+            new Layer1Edge(h12.getHostname(), h12i.getName(), r1.getHostname(), r1h12.getName()),
+            new Layer1Edge(r1.getHostname(), r1r2.getName(), r2.getHostname(), r2r1.getName()),
+            new Layer1Edge(h21.getHostname(), h21i.getName(), r2.getHostname(), r2h21.getName()),
+            new Layer1Edge(h22.getHostname(), h22i.getName(), r2.getHostname(), r2h22.getName()));
+    Set<Layer1Edge> l1Edges =
+        l1EdgesOneSided.stream()
+            .flatMap(e -> Stream.of(e, e.reverse()))
+            .collect(ImmutableSet.toImmutableSet());
+    Layer1Topology l1 = new Layer1Topology(l1Edges);
+    Layer1Topologies layer1Topologies =
+        Layer1TopologiesFactory.create(l1, Layer1Topology.EMPTY, configurations);
+    VxlanTopology vxlanTopology = VxlanTopologyUtils.computeInitialVxlanTopology(configurations);
+    L3AdjacencyComputer l3 =
+        new L3AdjacencyComputer(configurations, layer1Topologies, vxlanTopology);
+    Map<NodeInterfacePair, Integer> bds = l3.findAllBroadcastDomains();
+
+    assertThat(bds.get(NodeInterfacePair.of(h11i)), equalTo(bds.get(NodeInterfacePair.of(h21i))));
+    assertThat(bds.get(NodeInterfacePair.of(h12i)), equalTo(bds.get(NodeInterfacePair.of(h22i))));
+    assertThat(
+        bds.get(NodeInterfacePair.of(h11i)), not(equalTo(bds.get(NodeInterfacePair.of(h22i)))));
   }
 }
