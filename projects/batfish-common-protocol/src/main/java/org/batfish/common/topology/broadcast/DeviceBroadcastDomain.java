@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.common.topology.broadcast.L3Interface.Unit;
 
 /**
  * Represents the switch running inside a device and modeling its broadcast domain.
@@ -22,11 +21,17 @@ public final class DeviceBroadcastDomain extends Node<Integer> {
   public DeviceBroadcastDomain(String hostname) {
     _hostname = hostname;
     _l3Interfaces = new HashMap<>();
+    _l2VNIs = new HashMap<>();
     _physicalInterfaces = new HashMap<>();
   }
 
-  public void deliverToL3(L3Interface iface, Edge<Integer, Unit> edge) {
-    Edge<Integer, Unit> previous = _l3Interfaces.putIfAbsent(iface, edge);
+  public void attachL2VNI(L2VNI vni, Edge<Integer, L2VNI.Unit> edge) {
+    Edge<Integer, L2VNI.Unit> previous = _l2VNIs.putIfAbsent(vni, edge);
+    checkArgument(previous == null, "Cannot connect the same vni %s twice", vni.getNode());
+  }
+
+  public void deliverToL3(L3Interface iface, Edge<Integer, L3Interface.Unit> edge) {
+    Edge<Integer, L3Interface.Unit> previous = _l3Interfaces.putIfAbsent(iface, edge);
     checkArgument(previous == null, "Cannot connect the same interface %s twice", iface.getIface());
   }
 
@@ -48,6 +53,8 @@ public final class DeviceBroadcastDomain extends Node<Integer> {
     _physicalInterfaces.forEach(
         (iface, edge) ->
             edge.traverse(vlan).ifPresent(tag -> iface.transmit(tag, domain, visited)));
+    _l2VNIs.forEach(
+        (vni, edge) -> edge.traverse(vlan).ifPresent(unit -> vni.exit(unit, domain, visited)));
     _l3Interfaces.forEach(
         (iface, edge) -> edge.traverse(vlan).ifPresent(v -> iface.reached(domain, visited)));
   }
@@ -69,7 +76,7 @@ public final class DeviceBroadcastDomain extends Node<Integer> {
   }
 
   @VisibleForTesting
-  Map<L3Interface, Edge<Integer, Unit>> getL3InterfacesForTest() {
+  Map<L3Interface, Edge<Integer, L3Interface.Unit>> getL3InterfacesForTest() {
     return _l3Interfaces;
   }
 
@@ -79,6 +86,7 @@ public final class DeviceBroadcastDomain extends Node<Integer> {
   }
 
   private final @Nonnull String _hostname;
-  private final @Nonnull Map<L3Interface, Edge<Integer, Unit>> _l3Interfaces;
+  private final @Nonnull Map<L2VNI, Edge<Integer, L2VNI.Unit>> _l2VNIs;
+  private final @Nonnull Map<L3Interface, Edge<Integer, L3Interface.Unit>> _l3Interfaces;
   private final @Nonnull Map<PhysicalInterface, Edge<Integer, EthernetTag>> _physicalInterfaces;
 }
