@@ -899,7 +899,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
-import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_interface_definitionContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_default_gatewayContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_dhcpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domainContext;
@@ -3149,7 +3149,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterS_interface(S_interfaceContext ctx) {
+  public void enterS_interface_definition(S_interface_definitionContext ctx) {
     String nameAlpha = ctx.iname.name_prefix_alpha.getText();
     String canonicalNamePrefix;
     try {
@@ -8511,7 +8511,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitS_interface(S_interfaceContext ctx) {
+  public void exitS_interface_definition(S_interface_definitionContext ctx) {
     _currentInterfaces = null;
   }
 

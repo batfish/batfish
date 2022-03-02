@@ -1691,7 +1691,16 @@ ifvrrp_priority_level
 
 s_interface
 :
-   INTERFACE PRECONFIGURE? iname = interface_name
+  INTERFACE
+  (
+    s_interface_definition
+    | s_interface_nve1_null
+  )
+;
+
+s_interface_definition
+:
+   PRECONFIGURE? iname = interface_name
    (
       L2TRANSPORT
       | MULTIPOINT

@@ -3877,6 +3877,7 @@ NTP: 'ntp';
 NULL: 'null';
 NUM_PACKETS: 'num-packets';
 NV: 'nv';
+NVE1: 'nve1';
 
 OAM: 'oam';
 
@@ -8008,6 +8009,12 @@ M_Interface_PIPE
 M_Interface_PRECFONFIGURE
 :
    'preconfigure' -> type ( PRECONFIGURE )
+;
+
+// M_Interface_NVE1 must come before M_Interface_PREFIX
+M_Interface_NVE1
+:
+   [Nn][Vv][Ee] '1' -> type (NVE1)
 ;
 
 // M_Interface_VXLAN must come before M_Interface_PREFIX

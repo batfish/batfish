@@ -26,6 +26,7 @@ Cisco_sla,
 Cisco_snmp,
 Cisco_static,
 Cisco_track,
+Cisco_vxlan,
 Cisco_zone;
 
 

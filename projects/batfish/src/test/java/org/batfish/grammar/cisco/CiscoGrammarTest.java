@@ -4404,21 +4404,13 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testInterfaceNames() throws IOException {
-    String testrigName = "interface-names";
-    String iosHostname = "ios";
-    String i1Name = "Ethernet0/0";
+    String e00 = "Ethernet0/0";
 
-    List<String> configurationNames = ImmutableList.of(iosHostname);
+    Configuration c = parseConfig("interface-names");
+    assertThat(c.getAllInterfaces().keySet(), contains(e00, "Ethernet0/1"));
+    // This also checks that it does NOT have nve1.
 
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
-
-    Interface i1 = configurations.get(iosHostname).getAllInterfaces().get(i1Name);
+    Interface i1 = c.getAllInterfaces().get(e00);
     assertThat(i1, hasDeclaredNames("Ethernet0/0", "e0/0", "Eth0/0", "ether0/0-1"));
   }
 

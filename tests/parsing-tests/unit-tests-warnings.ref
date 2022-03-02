@@ -354,28 +354,28 @@
         "Filename" : "configs/cisco_interface",
         "Line" : 77,
         "Text" : "no ip forward",
-        "Parser_Context" : "[if_ip_forward if_inner s_interface stanza cisco_configuration]",
+        "Parser_Context" : "[if_ip_forward if_inner s_interface_definition s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_interface",
         "Line" : 125,
         "Text" : "summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map",
-        "Parser_Context" : "[if_ip_summary_address if_ip if_inner s_interface stanza cisco_configuration]",
+        "Parser_Context" : "[if_ip_summary_address if_ip if_inner s_interface_definition s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_interface",
         "Line" : 277,
         "Text" : "zone-member t1",
-        "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
+        "Parser_Context" : "[if_zone_member if_inner s_interface_definition s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_interface",
         "Line" : 308,
         "Text" : "mode gre multipoint",
-        "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
+        "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface_definition s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
