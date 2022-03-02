@@ -2745,9 +2745,9 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testPanoramaProfilesExtraction() {
     PaloAltoConfiguration vc = parsePaloAltoConfig("panorama-profiles");
+
     DeviceGroup dg = vc.getDeviceGroup("DG1");
     assertNotNull(dg);
-
     Vsys panorama = dg.getPanorama();
     assertNotNull(panorama);
     assertThat(panorama.getCustomUrlCategory(), hasKey("DG1_CAT1"));
@@ -2793,7 +2793,7 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasDefinedStructure(filename, CUSTOM_URL_CATEGORY, category1Name));
     assertThat(ccae, hasDefinedStructure(filename, CUSTOM_URL_CATEGORY, category2Name));
 
-    // TODO references and undefined references
+    // TODO references and undefined references once refs are added
   }
 
   @Test

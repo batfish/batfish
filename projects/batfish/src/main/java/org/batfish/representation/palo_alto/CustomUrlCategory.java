@@ -8,17 +8,6 @@ import javax.annotation.Nullable;
 
 /** Represents configuration of a PaloAlto custom-url-category. */
 public final class CustomUrlCategory implements Serializable {
-  /**
-   * Returns a boolean indicating if the specified custom-url-category url contains an unbounded
-   * wildcard. This corresponds to potentially unwanted behavior, where <b>the entry will match any
-   * additional subdomains at the beginning or end of the URL</b> (see Palo Alto docs:
-   * https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-admin/url-filtering/block-and-allow-lists.html).
-   */
-  public static boolean unboundedWildcard(String url) {
-
-    return false;
-  }
-
   public @Nullable String getDescription() {
     return _description;
   }
