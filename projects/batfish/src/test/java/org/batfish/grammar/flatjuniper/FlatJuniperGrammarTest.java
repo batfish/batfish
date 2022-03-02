@@ -2969,9 +2969,6 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(
         c, hasInterface("ge-0/3/0.0", hasAllowedVlans(IntegerSpace.of(new SubRange("1-5")))));
-    // Expecting an Interface in TRUNK mode with VLANs 6
-    assertThat(c, hasInterface("ge-0/3/0.1", hasSwitchPortMode(SwitchportMode.TRUNK)));
-    assertThat(c, hasInterface("ge-0/3/0.1", hasAllowedVlans(IntegerSpace.of(6))));
 
     // Expecting interface with encapsulation VLAN set to .0:1000 .1:1
     assertThat(c, hasInterface("ge-0/4/0.0", hasEncapsulationVlan(1000)));
@@ -2979,6 +2976,16 @@ public final class FlatJuniperGrammarTest {
 
     // Without vlan-tagging enabled, encapsulation vlan is ignored
     assertThat(c, hasInterface("ge-0/5/0.7", hasEncapsulationVlan(nullValue())));
+
+    // Expecting an Interface in TRUNK mode with VLANs 6
+    assertThat(c, hasInterface("ge-0/6/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(c, hasInterface("ge-0/6/0.0", hasAllowedVlans(IntegerSpace.of(6))));
+    assertThat(c, hasInterface("ge-0/6/0.1", hasEncapsulationVlan(100)));
+
+    // Cannot configure trunk mode on unit 1
+    assertThat(c, hasInterface("ge-0/7/0.1", hasSwitchPortMode(SwitchportMode.NONE)));
+    assertThat(c, hasInterface("ge-0/7/0.1", hasAllowedVlans(IntegerSpace.EMPTY)));
+    assertThat(c, hasInterface("ge-0/7/0.1", hasAccessVlan(nullValue())));
   }
 
   @Test
