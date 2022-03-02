@@ -5249,14 +5249,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private double toBandwidth(Eos_bandwidth_specifierContext ctx) {
     if (ctx.FORTYG_FULL() != null) {
       return 40E9D;
-    } else if (ctx.TEN_THOUSAND_FULL() != null) {
-      return 10E9D;
     } else if (ctx.ONE_HUNDRED_FULL() != null) {
       return 100E6D;
     } else if (ctx.ONE_THOUSAND_FULL() != null) {
       return 1E9D;
     } else if (ctx.ONE_HUNDREDG_FULL() != null) {
       return 100E9D;
+    } else if (ctx.TEN_THOUSAND_FULL() != null) {
+      return 10E9D;
+    } else if (ctx.TWENTY_FIVEG_FULL() != null) {
+      return 25E9D;
     } else {
       throw convError(Double.class, ctx);
     }
