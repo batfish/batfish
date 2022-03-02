@@ -21,6 +21,7 @@ interface Ethernet1/1
    no mac timestamp
    speed auto
    speed auto 100full
+   speed forced 25gfull
    speed forced 40gfull
    speed forced 100gfull
    speed forced 1000full
