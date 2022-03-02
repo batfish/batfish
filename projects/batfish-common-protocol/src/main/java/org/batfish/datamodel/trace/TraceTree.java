@@ -23,7 +23,7 @@ public final class TraceTree {
   private final @Nullable TraceElement _traceElement;
   private final @Nonnull List<TraceTree> _children;
 
-  TraceTree(TraceElement traceElement, List<TraceTree> children) {
+  public TraceTree(TraceElement traceElement, List<TraceTree> children) {
     _traceElement = traceElement;
     _children = ImmutableList.copyOf(children);
   }
