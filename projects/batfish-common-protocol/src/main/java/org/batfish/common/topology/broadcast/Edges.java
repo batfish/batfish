@@ -46,5 +46,12 @@ public final class Edges {
     }
   }
 
+  public static void connectToL2VNIHub(L2VNIHub hub, L2VNI... vnis) {
+    for (L2VNI v : vnis) {
+      hub.attachL2VNI(v, Preserve.get());
+      v.attachToHub(hub, Preserve.get());
+    }
+  }
+
   private Edges() {} // prevent instantiation
 }
