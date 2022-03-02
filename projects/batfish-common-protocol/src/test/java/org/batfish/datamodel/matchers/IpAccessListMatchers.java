@@ -47,7 +47,8 @@ public final class IpAccessListMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the IpAccessList's
    * lines.
    */
-  public static HasLines hasLines(@Nonnull Matcher<? super List<AclLine>> subMatcher) {
+  public static @Nonnull Matcher<IpAccessList> hasLines(
+      @Nonnull Matcher<? super List<AclLine>> subMatcher) {
     return new HasLines(subMatcher);
   }
 
@@ -57,7 +58,8 @@ public final class IpAccessListMatchers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public static HasLines hasLines(@Nonnull Matcher<? super AclLine>... subMatchers) {
+  public static @Nonnull Matcher<IpAccessList> hasLines(
+      @Nonnull Matcher<? super AclLine>... subMatchers) {
     return new HasLines(contains(subMatchers));
   }
 

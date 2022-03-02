@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_access_list_invalid
+!
+ip access-list foo
+  10 deny tcp

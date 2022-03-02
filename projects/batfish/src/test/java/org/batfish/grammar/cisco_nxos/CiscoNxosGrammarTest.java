@@ -53,6 +53,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
@@ -83,6 +84,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isAdminUp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
@@ -9890,5 +9892,17 @@ public final class CiscoNxosGrammarTest {
             isActive(false),
             hasInactiveReason(ADMIN_DOWN),
             hasVrfName("disabledvrf")));
+  }
+
+  @Test
+  public void testIpAccessListNoCrashOnInvalidInput() throws IOException {
+    String hostname = "nxos_ip_access_list_invalid";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Settings settings = batfish.getSettings();
+    settings.setDisableUnrecognized(false);
+    settings.setThrowOnLexerError(false);
+    settings.setThrowOnParserError(false);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(c, hasIpAccessList("foo", hasLines(empty())));
   }
 }
