@@ -854,7 +854,8 @@ public class L3AdjacencyComputerTest {
     // vlans 10 and 20 should be bridged across vxlan so that:
     // - h11 and h21 are in the same broadcast domain
     // - h12 and h22 are in the same broadcast domain
-    // vlan 10 <=> vxlan 10010 on c1 and c2
+    // vlan 10 corresponds to VNI 10010
+    // vlan 20 corresponds to VNI 10020
     Configuration h11 =
         Configuration.builder().setHostname("h11").setConfigurationFormat(CISCO_IOS).build();
     Vrf h11Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h11).build();
