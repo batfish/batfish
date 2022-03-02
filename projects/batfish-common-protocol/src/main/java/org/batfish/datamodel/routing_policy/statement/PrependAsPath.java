@@ -70,14 +70,10 @@ public final class PrependAsPath extends Statement {
                 .addAll(inputAsPath.getAsSets())
                 .build());
     outputRoute.setAsPath(newAsPath);
-
-    // TODO: Clean up this paradigm. Currently all over we write to both output and intermediate
-    //       when write-to-intermediate is true. Using current paradigm.
     if (environment.getWriteToIntermediateBgpAttributes()) {
       BgpRoute.Builder<?, ?> ir = environment.getIntermediateBgpAttributes();
       ir.setAsPath(newAsPath);
     }
-
     return new Result();
   }
 
