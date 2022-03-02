@@ -4499,6 +4499,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIfe_interface_mode(Ife_interface_modeContext ctx) {
+    if (!_currentInterfaceOrRange.getName().endsWith(".0")) {
+      warn(ctx, "Interface mode can only be configured on unit 0");
+      return;
+    }
     if (ctx.ACCESS() != null) {
       _currentInterfaceOrRange.getEthernetSwitching().setSwitchportMode(SwitchportMode.ACCESS);
     } else if (ctx.TRUNK() != null) {
@@ -4522,6 +4526,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIfe_vlan(Ife_vlanContext ctx) {
+    if (!_currentInterfaceOrRange.getName().endsWith(".0")) {
+      warn(ctx, "Vlan members can only be configured on unit 0");
+      return;
+    }
     if (ctx.range() != null) {
       IntegerSpace range = IntegerSpace.unionOf(toRange(ctx.range()).toArray(new SubRange[] {}));
       _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(new VlanRange(range));
