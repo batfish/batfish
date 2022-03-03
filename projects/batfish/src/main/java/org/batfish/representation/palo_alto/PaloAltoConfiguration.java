@@ -1737,7 +1737,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static final ReferenceInVsys REFERENCE_IN_VSYS = new ReferenceInVsys();
+  @VisibleForTesting static final ReferenceInVsys REFERENCE_IN_VSYS = new ReferenceInVsys();
 
   /** Visitor that determines if a {@link Reference} exists in the specified {@link Vsys}. */
   public static class ReferenceInVsys implements ReferenceVisitor<Boolean, Vsys> {
