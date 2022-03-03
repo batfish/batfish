@@ -3984,9 +3984,9 @@ public final class PaloAltoGrammarTest {
     assertThat(rule1.getCategory(), containsInAnyOrder(cat1, cat2));
     assertThat(rule1.getApplications(), containsInAnyOrder(ssh, ssl));
 
+    // Check default values
     assertNotNull(rule2);
     assertThat(rule2.getAction(), equalTo(LineAction.PERMIT));
-    // Check default values
     assertFalse(rule2.getNegateSource());
     assertFalse(rule2.getNegateDestination());
     assertThat(rule2.getCategory(), emptyIterable());
