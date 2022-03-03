@@ -26,11 +26,6 @@ sdg_profile_group
     PROFILE_GROUP null_rest_of_line
 ;
 
-sdg_profiles
-:
-    PROFILES null_rest_of_line
-;
-
 sdgd_vsys
 :
     VSYS name = variable
