@@ -4,6 +4,7 @@ import
     PaloAlto_application,
     PaloAlto_common,
     PaloAlto_log_settings,
+    PaloAlto_profiles,
     PaloAlto_service,
     PaloAlto_service_group,
     PaloAlto_tag;
@@ -27,6 +28,7 @@ ss_common
     | s_application_group
     | s_external_list
     | s_log_settings
+    | s_profiles
     | s_post_rulebase
     | s_pre_rulebase
     | s_service

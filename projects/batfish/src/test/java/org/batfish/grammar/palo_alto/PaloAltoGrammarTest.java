@@ -72,6 +72,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.compute
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.CUSTOM_URL_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
@@ -238,6 +239,7 @@ import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.CustomUrlCategory;
 import org.batfish.representation.palo_alto.DeviceGroup;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
@@ -2755,6 +2757,77 @@ public final class PaloAltoGrammarTest {
     Configuration c = parseConfig("static-route-misc");
     // don't warn, and do install the route
     assertThat(c.getVrfs().get("somename"), hasStaticRoutes(contains(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
+  public void testProfilesExtraction() {
+    PaloAltoConfiguration vc = parsePaloAltoConfig("profiles");
+    Vsys vsys = vc.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+
+    Map<String, CustomUrlCategory> customUrlCategoryMap = vsys.getCustomUrlCategories();
+    assertThat(customUrlCategoryMap.keySet(), containsInAnyOrder("CAT1", "CAT2"));
+
+    CustomUrlCategory cat1 = customUrlCategoryMap.get("CAT1");
+    CustomUrlCategory cat2 = customUrlCategoryMap.get("CAT2");
+
+    assertThat(cat1.getDescription(), equalTo("category description"));
+    assertThat(cat1.getList(), contains("*.batfish.org/", "example.com", "github.com"));
+    assertNull(cat2.getDescription());
+    assertThat(cat2.getList(), contains("github.com"));
+  }
+
+  @Test
+  public void testPanoramaProfilesExtraction() {
+    PaloAltoConfiguration vc = parsePaloAltoConfig("panorama-profiles");
+
+    DeviceGroup dg = vc.getDeviceGroup("DG1");
+    assertNotNull(dg);
+    Vsys panorama = dg.getPanorama();
+    assertNotNull(panorama);
+    assertThat(panorama.getCustomUrlCategories(), hasKey("DG1_CAT1"));
+    CustomUrlCategory cat1 = panorama.getCustomUrlCategories().get("DG1_CAT1");
+    assertNull(cat1.getDescription());
+    assertThat(cat1.getList(), contains("github.com"));
+
+    Vsys shared = vc.getShared();
+    assertNotNull(shared);
+    assertThat(shared.getCustomUrlCategories(), hasKey("SHARED_CAT1"));
+    CustomUrlCategory sharedCat1 = shared.getCustomUrlCategories().get("SHARED_CAT1");
+    assertThat(sharedCat1.getDescription(), equalTo("descr"));
+    assertThat(sharedCat1.getList(), contains("example.com"));
+  }
+
+  @Test
+  public void testProfilesWarning() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("profiles-warning");
+    List<ParseWarning> parseWarnings = c.getWarnings().getParseWarnings();
+    assertThat(
+        parseWarnings,
+        containsInAnyOrder(
+            hasComment(
+                "Currently only 'URL List' custom-url-category type is supported by Batfish."),
+            hasComment(
+                "Expected custom-url-category with length in range 1-31, but got"
+                    + " 'THIS_NAME_IS_TOO_LONG_FOR_CATEGOR'")));
+  }
+
+  @Test
+  public void testProfilesReference() throws IOException {
+    String hostname = "profiles-reference";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String category1Name = computeObjectName(DEFAULT_VSYS_NAME, "CAT1");
+    String category2Name = computeObjectName(DEFAULT_VSYS_NAME, "CAT2");
+
+    // Confirm structure definitions are tracked
+    assertThat(ccae, hasDefinedStructure(filename, CUSTOM_URL_CATEGORY, category1Name));
+    assertThat(ccae, hasDefinedStructure(filename, CUSTOM_URL_CATEGORY, category2Name));
+
+    // TODO references and undefined references once refs are added
   }
 
   @Test
