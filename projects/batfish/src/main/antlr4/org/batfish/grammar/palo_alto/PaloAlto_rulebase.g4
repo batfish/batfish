@@ -88,8 +88,7 @@ srs_application
 
 srs_category
 :
-    CATEGORY
-    null_rest_of_line
+    CATEGORY variable_list
 ;
 
 srs_description

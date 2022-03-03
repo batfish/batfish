@@ -1754,6 +1754,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       return vsys.getApplications().containsKey(reference.getName())
           || vsys.getApplicationGroups().containsKey(reference.getName());
     }
+
+    @Override
+    public Boolean visitCustomUrlCategoryReference(
+        CustomUrlCategoryReference reference, Vsys vsys) {
+      return vsys.getCustomUrlCategories().containsKey(reference.getName());
+    }
   }
 
   /**
@@ -3357,6 +3363,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureType.APPLICATION,
         ImmutableList.of(PaloAltoStructureType.APPLICATION),
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_APPLICATION);
+    // Custom URL Categories
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.CUSTOM_URL_CATEGORY,
+        ImmutableList.of(PaloAltoStructureType.CUSTOM_URL_CATEGORY),
+        PaloAltoStructureUsage.SECURITY_RULE_CATEGORY);
 
     return _c;
   }
