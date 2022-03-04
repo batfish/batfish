@@ -656,6 +656,36 @@ public final class Interface extends ComparableStructure<String> {
     return new Builder(nameGenerator);
   }
 
+  /**
+   * Returns {@code true} if this {@link Interface} can be the source of an IPv4 packet.
+   *
+   * <p>Note that this means originating traffic in the VRF, not that traffic can be forwarded out a
+   * Layer 3 link attached to this interface.
+   */
+  public boolean canOriginateIpTraffic() {
+    return getActive() && !getSwitchport() && !getAllAddresses().isEmpty();
+  }
+
+  /** Returns {@code true} if this {@link Interface} can receive an IPv4 packet on an L3 link. */
+  public boolean canReceiveIpTraffic() {
+    if (!canOriginateIpTraffic()) {
+      return false;
+    } else if (isLoopback()) {
+      // Loopbacks cannot have Layer 3 edges.
+      return false;
+    } else if (getLinkLocalAddress() != null) {
+      // An LLA implies a link.
+      return true;
+    }
+    for (ConcreteInterfaceAddress addr : getAllConcreteAddresses()) {
+      if (addr.getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
+        // Any prefix shorter than /32 implies a possible (even if not in snapshot) L3 link.
+        return true;
+      }
+    }
+    return false;
+  }
+
   private static InterfaceType computeAosInteraceType(String name) {
     if (name.startsWith("vlan")) {
       return InterfaceType.VLAN;
