@@ -1,0 +1,19 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+    host-name juniper_nested_multiline_comments;
+}
+policy-options {
+    /* descriptive comment1 */
+    policy-statement p {
+        /* descriptive comment2 */
+        term t {
+            from {
+                protocol bgp;
+                rib inet.0;
+                /* not a description because no non-comment follows before end brace */
+                /* community [ foo ]; */
+            }
+            then reject;
+        }
+    }
+}

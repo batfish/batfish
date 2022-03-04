@@ -33,13 +33,13 @@ flat_statement
 
 hierarchical_statement
 :
-  MULTILINE_COMMENT?
+  descriptive_comment = MULTILINE_COMMENT?
   (
     INACTIVE
     | REPLACE
   )? words += word+
   (
-    braced_clause close = CLOSE_BRACE
+    braced_clause MULTILINE_COMMENT* close = CLOSE_BRACE
     | bracketed_clause close = CLOSE_BRACKET terminator
     | terminator
   )

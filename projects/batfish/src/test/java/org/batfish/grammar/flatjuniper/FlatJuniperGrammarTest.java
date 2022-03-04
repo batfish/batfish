@@ -6892,4 +6892,11 @@ public final class FlatJuniperGrammarTest {
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(123L, 456L)));
     }
   }
+
+  @Test
+  public void testNestedMultilineComments() {
+    String hostname = "juniper_nested_multiline_comments";
+    // don't crash
+    parseConfig(hostname);
+  }
 }
