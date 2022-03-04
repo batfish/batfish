@@ -656,6 +656,11 @@ public final class Interface extends ComparableStructure<String> {
     return new Builder(nameGenerator);
   }
 
+  /** Returns {@code true} if this {@link Interface} is active and has L3 configuration. */
+  public boolean isActiveL3() {
+    return getActive() && !getSwitchport() && !getAllAddresses().isEmpty();
+  }
+
   /**
    * Returns {@code true} if this {@link Interface} can be the source of an IPv4 packet.
    *
@@ -663,12 +668,15 @@ public final class Interface extends ComparableStructure<String> {
    * Layer 3 link attached to this interface.
    */
   public boolean canOriginateIpTraffic() {
-    return getActive() && !getSwitchport() && !getAllAddresses().isEmpty();
+    return isActiveL3();
   }
 
-  /** Returns {@code true} if this {@link Interface} can receive an IPv4 packet on an L3 link. */
-  public boolean canReceiveIpTraffic() {
-    if (!canOriginateIpTraffic()) {
+  /**
+   * Returns {@code true} if this {@link Interface} can send or receive an IPv4 packet on an L3 link
+   * (which may not be in the snapshot).
+   */
+  public boolean canSendOrReceiveIpTraffic() {
+    if (!isActiveL3()) {
       return false;
     } else if (isLoopback()) {
       // Loopbacks cannot have Layer 3 edges.
