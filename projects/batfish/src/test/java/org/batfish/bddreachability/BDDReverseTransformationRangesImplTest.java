@@ -16,6 +16,7 @@ import org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Key;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -84,7 +85,7 @@ public class BDDReverseTransformationRangesImplTest {
 
   @Test
   public void testIncomingTransformationRange() {
-    Interface iface = _ib.build();
+    Interface iface = _ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     String iName = iface.getName();
 
     Map<String, BDDSourceManager> srcManagers =
@@ -193,7 +194,7 @@ public class BDDReverseTransformationRangesImplTest {
   /** Test that source and last hop constraints are erased. */
   @Test
   public void testEraseNonPacketVars() {
-    Interface iface = _ib.build();
+    Interface iface = _ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     String iName = iface.getName();
 
     Map<String, BDDSourceManager> srcManagers =
