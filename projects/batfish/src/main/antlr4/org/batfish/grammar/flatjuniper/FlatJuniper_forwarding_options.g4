@@ -43,7 +43,10 @@ fo_null
 
 fo_vxlan_routing
 :
-   OVERLAY_ECMP
+   VXLAN_ROUTING
+   (
+      fov_overlay_ecmp
+   )
 ;
 
 fod_active_server_group
@@ -151,6 +154,11 @@ fohb_server_null
    (
       ROUTING_INSTANCE ri = junos_name
    )?
+;
+
+fov_overlay_ecmp
+:
+   OVERLAY_ECMP
 ;
 
 s_forwarding_options

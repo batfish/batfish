@@ -2388,6 +2388,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitFo_vxlan_routing(Fo_vxlan_routingContext ctx) {
+    warn(ctx, "Batfish does not enable two-level equal-cost multipath next hops.");
+  }
+
+  @Override
   public void enterFo_dhcp_relay(Fo_dhcp_relayContext ctx) {
     _currentDhcpRelayGroup =
         _currentRoutingInstance

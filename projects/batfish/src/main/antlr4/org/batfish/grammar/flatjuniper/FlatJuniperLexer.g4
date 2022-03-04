@@ -2865,6 +2865,8 @@ VTEP_SOURCE_INTERFACE
 
 VXLAN: 'vxlan';
 
+VXLAN_ROUTING: 'vxlan-routing';
+
 WEB_MANAGEMENT: 'web-management';
 
 WEBAPI: 'webapi';
