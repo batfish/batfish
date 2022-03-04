@@ -657,6 +657,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /** Returns {@code true} if this {@link Interface} is active and has L3 configuration. */
+  @JsonIgnore
   public boolean isActiveL3() {
     return getActive() && !getSwitchport() && !getAllAddresses().isEmpty();
   }
@@ -667,6 +668,7 @@ public final class Interface extends ComparableStructure<String> {
    * <p>Note that this means originating traffic in the VRF, not that traffic can be forwarded out a
    * Layer 3 link attached to this interface.
    */
+  @JsonIgnore
   public boolean canOriginateIpTraffic() {
     return isActiveL3();
   }
@@ -675,6 +677,7 @@ public final class Interface extends ComparableStructure<String> {
    * Returns {@code true} if this {@link Interface} can send or receive an IPv4 packet on an L3 link
    * (which may not be in the snapshot).
    */
+  @JsonIgnore
   public boolean canSendOrReceiveIpTraffic() {
     if (!isActiveL3()) {
       return false;

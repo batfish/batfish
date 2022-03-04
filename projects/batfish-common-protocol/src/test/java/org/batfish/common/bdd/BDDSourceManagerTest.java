@@ -5,6 +5,7 @@ import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -147,49 +149,59 @@ public class BDDSourceManagerTest {
             IFACE4, others));
   }
 
+  /**
+   * A test that with no ACLs referencing interfaces but some interface with session info, the
+   * source manager tracks all interfaces that can send/receive packets.
+   */
   @Test
   public void testInitializeSessions() {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
-    ib.setName(IFACE1).build();
-    ib.setName(IFACE2).build();
-    ib.setName(IFACE3)
+    ib.setName(IFACE1)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
                 Action.FORWARD_OUT_IFACE, ImmutableList.of(IFACE3), null, null))
         .build();
+    ib.setName(IFACE2).setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/32")).build();
+    ib.setName(IFACE3).build();
 
     String hostname = config.getHostname();
     Map<String, Configuration> configs = ImmutableMap.of(hostname, config);
     BDDSourceManager mgr = BDDSourceManager.forNetwork(_pkt, configs, true).get(hostname);
     assertFalse(mgr.isTrivial());
     assertTrue(mgr.allSourcesTracked());
-    assertEquals(
-        mgr.getSourceBDDs().keySet(),
-        ImmutableSet.of(IFACE1, IFACE2, IFACE3, SOURCE_ORIGINATING_FROM_DEVICE));
-    assertEquals(mgr.getSourceBDDs().values().stream().distinct().count(), 4);
+    assertThat(
+        mgr.getSourceBDDs().keySet(), containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE));
+    assertEquals(mgr.getSourceBDDs().values().stream().distinct().count(), 2);
   }
 
+  /**
+   * A test that with no ACLs referencing interfaces and no session info, the source manager is
+   * trivial. The trivial source manager still only tracks active sources that can send/receive
+   * packets.
+   */
   @Test
   public void testInitializeSessions_noSessionInfo() {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
-    ib.setName(IFACE1).build();
-    ib.setName(IFACE2).build();
-    ib.setName(IFACE3).build();
+    ib.setName(IFACE1).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+    ib.setName(IFACE2)
+        .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/32"))
+        .build(); // /32 will not be tracked
+    ib.setName(IFACE3).build(); // no address will not be tracked
 
     String hostname = config.getHostname();
     Map<String, Configuration> configs = ImmutableMap.of(hostname, config);
     BDDSourceManager mgr = BDDSourceManager.forNetwork(_pkt, configs, true).get(hostname);
     assertTrue(mgr.isTrivial());
     assertFalse(mgr.allSourcesTracked());
-    assertEquals(
-        mgr.getSourceBDDs().keySet(),
-        ImmutableSet.of(IFACE1, IFACE2, IFACE3, SOURCE_ORIGINATING_FROM_DEVICE));
+    assertThat(
+        mgr.getSourceBDDs().keySet(), containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE));
     assertEquals(mgr.getSourceBDDs().values().stream().distinct().count(), 1);
   }
 }
