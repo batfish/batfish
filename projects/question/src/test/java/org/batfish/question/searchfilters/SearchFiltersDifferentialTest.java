@@ -16,6 +16,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -66,8 +67,8 @@ public class SearchFiltersDifferentialTest {
     Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
-    _ib.setOwner(baseConfig).build();
-    _ib.setOwner(deltaConfig).build();
+    _ib.setOwner(baseConfig).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+    _ib.setOwner(deltaConfig).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     _ab.setOwner(baseConfig).build();
     _ab.setOwner(deltaConfig)
         .setLines(
@@ -102,8 +103,8 @@ public class SearchFiltersDifferentialTest {
     Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
-    _ib.setOwner(baseConfig).build();
-    _ib.setOwner(deltaConfig).build();
+    _ib.setOwner(baseConfig).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+    _ib.setOwner(deltaConfig).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     _ab.setName("aclName");
     _ab.setOwner(baseConfig).build();
     _ab.setOwner(deltaConfig)
