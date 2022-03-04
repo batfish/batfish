@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
@@ -423,10 +422,6 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_AUTHENTICATION_KEY_CHAINS)
   public Map<String, AuthenticationKeyChain> getAuthenticationKeyChains() {
     return _authenticationKeyChains;
-  }
-
-  public Set<String> activeInterfaceNames() {
-    return activeInterfaces().map(Interface::getName).collect(ImmutableSet.toImmutableSet());
   }
 
   public @Nonnull Stream<Interface> activeInterfaces() {

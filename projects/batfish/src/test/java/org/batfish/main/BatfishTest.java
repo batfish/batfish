@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -51,6 +52,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -577,8 +579,8 @@ public class BatfishTest {
 
     // all of the interfaces should still be active
     assertThat(
-        config1.activeInterfaceNames(),
-        equalTo(ImmutableSet.of(notIgnored, notIgnored2, notIgnored3, notIgnored4, notIgnored5)));
+        config1.activeInterfaces().collect(Collectors.toSet()),
+        containsInAnyOrder(notIgnored, notIgnored2, notIgnored3, notIgnored4, notIgnored5));
   }
 
   // all of these interfaces should be ignored by processManagementInterfaces()
@@ -610,7 +612,7 @@ public class BatfishTest {
     Batfish.processManagementInterfaces(configs);
 
     // none of the interfaces should be active
-    assertThat(config1.activeInterfaceNames(), equalTo(ImmutableSet.of()));
+    assertThat(config1.activeInterfaces().collect(Collectors.toSet()), empty());
   }
 
   @Test
