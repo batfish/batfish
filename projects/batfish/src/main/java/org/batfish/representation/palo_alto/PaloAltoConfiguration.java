@@ -472,9 +472,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * <p>Note that {@code nameWithNamespace} is expected to have the user object name
    * <strong>first</strong> to enable users to recognize their objects in Batfish output.
    */
-  private static String extractObjectName(String nameWithNamespace) {
+  public static String extractObjectName(String nameWithNamespace) {
     String[] parts = nameWithNamespace.split("~", -1);
     return parts[0];
+  }
+
+  public static String extractVsysName(String nameWithNamespace) {
+    String[] parts = nameWithNamespace.split("~", -1);
+    return parts[1];
   }
 
   /**
@@ -807,7 +812,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Build map of (overridden) application name to AclLine matching that application. This map is
    * used by security rules.
    */
-  private Map<String, AclLineMatchExpr> buildApplicationOverrideMap(
+  public Map<String, AclLineMatchExpr> buildApplicationOverrideMap(
       Vsys vsys, String fromZone, String toZone) {
     // Ordered list of rules that are applicable to the current fromZone, toZone, and vsys
     List<ApplicationOverrideRule> rules =
@@ -1503,7 +1508,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   // constraints, and service (aka Protocol + Ports) constraints.
   //   However, services are a bit complicated when `service application-default` is used. In that
   //   case, we extract service definitions from the application that matches.
-  private ExprAclLine toIpAccessListLine(
+  public ExprAclLine toIpAccessListLine(
       SecurityRule rule, Vsys vsys, Map<String, AclLineMatchExpr> appOverrideAcls) {
     assert !rule.getDisabled(); // handled by caller.
 
