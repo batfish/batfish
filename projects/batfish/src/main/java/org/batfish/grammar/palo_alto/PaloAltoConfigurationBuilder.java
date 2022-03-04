@@ -2232,10 +2232,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         warn(
             ctx,
             String.format(
-                "Custom-url-category '%s' will match additional trailing domains beyond the"
-                    + " specified domain, which may be unintended. For example '*.github.com' would"
-                    + " match 'www.github.com.malicious.example.com'.",
-                url));
+                "Did you mean '%s/'? Without the trailing slash, the url will match additional"
+                    + " trailing domains, such as '%s.evil'.",
+                url, url));
       }
       _currentCustomUrlCategory.addToList(url);
     }

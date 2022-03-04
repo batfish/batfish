@@ -2810,9 +2810,9 @@ public final class PaloAltoGrammarTest {
                 "Expected custom-url-category with length in range 1-31, but got"
                     + " 'THIS_NAME_IS_TOO_LONG_FOR_CATEGOR'"),
             hasComment(
-                "Custom-url-category '*.paloaltonetworks.com' will match additional trailing"
-                    + " domains beyond the specified domain, which may be unintended. For example"
-                    + " '*.github.com' would match 'www.github.com.malicious.example.com'.")));
+                "Did you mean '*.paloaltonetworks.com/'? Without the trailing slash, the url will"
+                    + " match additional trailing domains, such as"
+                    + " '*.paloaltonetworks.com.evil'.")));
   }
 
   @Test
