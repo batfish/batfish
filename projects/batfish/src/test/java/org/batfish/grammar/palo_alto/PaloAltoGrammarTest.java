@@ -2808,7 +2808,11 @@ public final class PaloAltoGrammarTest {
                 "Currently only 'URL List' custom-url-category type is supported by Batfish."),
             hasComment(
                 "Expected custom-url-category with length in range 1-31, but got"
-                    + " 'THIS_NAME_IS_TOO_LONG_FOR_CATEGOR'")));
+                    + " 'THIS_NAME_IS_TOO_LONG_FOR_CATEGOR'"),
+            hasComment(
+                "Custom-url-category '*.paloaltonetworks.com' will match additional trailing"
+                    + " domains beyond the specified domain, which may be unintended. For example"
+                    + " '*.github.com' would match 'www.github.com.malicious.example.com'.")));
   }
 
   @Test

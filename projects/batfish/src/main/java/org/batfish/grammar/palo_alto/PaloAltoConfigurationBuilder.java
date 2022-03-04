@@ -2227,7 +2227,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitSpc_list(PaloAltoParser.Spc_listContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
-      _currentCustomUrlCategory.addToList(getText(var));
+      String url = getText(var);
+      if (PaloAltoConfiguration.unexpectedUnboundedCustomUrlWildcard(url)) {
+        warn(
+            ctx,
+            String.format(
+                "Custom-url-category '%s' will match additional trailing domains beyond the"
+                    + " specified domain, which may be unintended. For example '*.github.com' would"
+                    + " match 'www.github.com.malicious.example.com'.",
+                url));
+      }
+      _currentCustomUrlCategory.addToList(url);
     }
   }
 
