@@ -579,7 +579,7 @@ public class BatfishTest {
 
     // all of the interfaces should still be active
     assertThat(
-        config1.activeInterfaces().collect(Collectors.toSet()),
+        config1.activeInterfaces().map(Interface::getName).collect(Collectors.toSet()),
         containsInAnyOrder(notIgnored, notIgnored2, notIgnored3, notIgnored4, notIgnored5));
   }
 
