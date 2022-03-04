@@ -1979,6 +1979,8 @@ OUTPUT_VLAN_MAP: 'output-vlan-map';
 
 OUTER: 'outer';
 
+OVERLAY_ECMP: 'overlay-ecmp';
+
 OVERLOAD: 'overload';
 
 OVERRIDE_METRIC: 'override-metric';

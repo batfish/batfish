@@ -291,6 +291,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.FilterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Filter_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fo_dhcp_relayContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fo_vxlan_routingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_active_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext;
@@ -672,6 +673,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vni_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ZoneContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
@@ -6460,6 +6462,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
     int vlan = toInt(ctx.id);
     _currentNamedVlan.setVlanId(vlan);
+  }
+
+  @Override
+  public void exitVlt_vni_id(Vlt_vni_idContext ctx) {
+    int vni = toInt(ctx.id);
+    _currentNamedVlan.setVniId(vni);
   }
 
   @Override
