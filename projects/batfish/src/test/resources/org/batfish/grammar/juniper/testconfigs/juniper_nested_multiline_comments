@@ -3,6 +3,7 @@ system {
     host-name juniper_nested_multiline_comments;
 }
 policy-options {
+    /* comment only */
     /* descriptive comment1 */
     policy-statement p {
         /* descriptive comment2 */

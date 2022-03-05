@@ -33,7 +33,7 @@ flat_statement
 
 hierarchical_statement
 :
-  descriptive_comment = MULTILINE_COMMENT?
+  descriptive_comment = MULTILINE_COMMENT*
   (
     INACTIVE
     | REPLACE
