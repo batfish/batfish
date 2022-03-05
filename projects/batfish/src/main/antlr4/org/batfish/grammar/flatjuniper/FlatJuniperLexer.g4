@@ -3275,10 +3275,11 @@ F_InterfaceMediaType
    'ixgbe' |
    'iw' |
    'lc' |
+   'lm' |
    'lo' |
    'ls' |
    'lsi' |
-   'lm' |
+   'lt' |
    'me' |
    'mo' |
    'ms' |
