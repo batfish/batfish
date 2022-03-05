@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.RangeSet;
 import java.io.Serializable;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -18,7 +18,10 @@ import org.batfish.datamodel.Ip;
 public final class IpCompletionMetadata implements Serializable {
   @Nullable private final RangeSet<Ip> _ipSubset;
 
-  @Nonnull private final List<IpCompletionRelevance> _relevances;
+  // TODO: Why does insertion order matter?
+  @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
+  @Nonnull
+  private final LinkedHashSet<IpCompletionRelevance> _relevances;
 
   public IpCompletionMetadata() {
     this(null, ImmutableList.of());
@@ -35,14 +38,12 @@ public final class IpCompletionMetadata implements Serializable {
   public IpCompletionMetadata(
       @Nullable RangeSet<Ip> ipSubset, List<IpCompletionRelevance> relevances) {
     _ipSubset = ipSubset == null ? null : ImmutableRangeSet.copyOf(ipSubset);
-    _relevances = new LinkedList<>(relevances);
+    _relevances = new LinkedHashSet<>(relevances);
   }
 
   /** Add another relevance with the specified display and match tags. */
   public void addRelevance(IpCompletionRelevance relevance) {
-    if (!_relevances.contains(relevance)) {
-      _relevances.add(relevance);
-    }
+    _relevances.add(relevance);
   }
 
   @Override
