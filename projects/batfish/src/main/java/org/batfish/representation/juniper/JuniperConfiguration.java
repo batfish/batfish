@@ -1156,7 +1156,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       boolean level1,
       boolean level2,
       boolean isLoopback) {
-    IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
+    IsisInterfaceSettings interfaceSettings = iface.getEffectiveIsisSettings();
     if (interfaceSettings == null || !interfaceSettings.getEnabled()) {
       return null;
     }
