@@ -21,7 +21,8 @@ is_interface
 :
   INTERFACE
   (
-    id = interface_id
+    ALL
+    | id = interface_id
     | wildcard
   )
   (
