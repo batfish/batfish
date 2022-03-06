@@ -6923,4 +6923,10 @@ public final class FlatJuniperGrammarTest {
     // don't crash
     parseConfig(hostname);
   }
+
+  @Test
+  public void testInterfaceMediaTypes() {
+    // don't crash
+    parseConfig("interface-media-types");
+  }
 }
