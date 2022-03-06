@@ -755,6 +755,7 @@ import org.batfish.representation.juniper.IpsecPolicy;
 import org.batfish.representation.juniper.IpsecProposal;
 import org.batfish.representation.juniper.IpsecVpn;
 import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
+import org.batfish.representation.juniper.IsisInterfaceSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperAuthenticationKey;
@@ -2068,7 +2069,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private IpsecVpn _currentIpsecVpn;
 
-  private Interface _currentIsisInterface;
+  private IsisInterfaceSettings _currentIsisInterfaceSettings;
 
   private IsisInterfaceLevelSettings _currentIsisInterfaceLevelSettings;
 
@@ -2569,10 +2570,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
-    _currentIsisInterface = initRoutingInterface(ctx.id);
-    _currentIsisInterface.getOrInitIsisSettings();
-    _configuration.referenceStructure(
-        INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
+    if (ctx.ALL() != null) {
+      _currentIsisInterfaceSettings = _currentRoutingInstance.getInterfaceAllIsisSettings();
+      if (_currentIsisInterfaceSettings == null) {
+        _currentIsisInterfaceSettings = new IsisInterfaceSettings();
+        _currentRoutingInstance.setInterfaceAllIsisSettings(_currentIsisInterfaceSettings);
+      }
+    } else {
+      Interface iface = initRoutingInterface(ctx.id);
+      _currentIsisInterfaceSettings = iface.getOrInitIsisSettings();
+      _configuration.referenceStructure(
+          INTERFACE, iface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
+    }
   }
 
   @Override
@@ -2596,12 +2605,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     int level = toInt(ctx.dec());
     switch (level) {
       case 1:
-        _currentIsisInterfaceLevelSettings =
-            _currentIsisInterface.getIsisSettings().getLevel1Settings();
+        _currentIsisInterfaceLevelSettings = _currentIsisInterfaceSettings.getLevel1Settings();
         break;
       case 2:
-        _currentIsisInterfaceLevelSettings =
-            _currentIsisInterface.getIsisSettings().getLevel2Settings();
+        _currentIsisInterfaceLevelSettings = _currentIsisInterfaceSettings.getLevel2Settings();
         break;
       default:
         throw new BatfishException("invalid IS-IS level: " + level);
@@ -4703,7 +4710,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIs_interface(Is_interfaceContext ctx) {
-    _currentIsisInterface = null;
+    _currentIsisInterfaceSettings = null;
   }
 
   @Override
@@ -4732,7 +4739,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIsi_disable(Isi_disableContext ctx) {
-    _currentIsisInterface.getIsisSettings().setEnabled(false);
+    _currentIsisInterfaceSettings.setEnabled(false);
   }
 
   @Override
@@ -4742,24 +4749,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIsi_passive(Isi_passiveContext ctx) {
-    _currentIsisInterface.getIsisSettings().setPassive(true);
+    _currentIsisInterfaceSettings.setPassive(true);
   }
 
   @Override
   public void exitIsi_point_to_point(Isi_point_to_pointContext ctx) {
-    _currentIsisInterface.getIsisSettings().setPointToPoint(true);
+    _currentIsisInterfaceSettings.setPointToPoint(true);
   }
 
   @Override
   public void exitIsib_minimum_interval(Isib_minimum_intervalContext ctx) {
-    _currentIsisInterface
-        .getIsisSettings()
-        .setBfdLivenessDetectionMinimumInterval(toInt(ctx.dec()));
+    _currentIsisInterfaceSettings.setBfdLivenessDetectionMinimumInterval(toInt(ctx.dec()));
   }
 
   @Override
   public void exitIsib_multiplier(Isib_multiplierContext ctx) {
-    _currentIsisInterface.getIsisSettings().setBfdLivenessDetectionMultiplier(toInt(ctx.dec()));
+    _currentIsisInterfaceSettings.setBfdLivenessDetectionMultiplier(toInt(ctx.dec()));
   }
 
   @Override
