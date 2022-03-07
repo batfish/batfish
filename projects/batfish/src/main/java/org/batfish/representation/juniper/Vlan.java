@@ -42,8 +42,9 @@ public class Vlan implements Serializable {
     return _vlanId;
   }
 
-  public @Nullable Integer getVniId() { return _vniId; }
-
+  public @Nullable Integer getVniId() {
+    return _vniId;
+  }
 
   public void setVlanId(int vlanId) {
     _vlanId = vlanId;

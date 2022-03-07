@@ -4992,7 +4992,9 @@ public final class FlatJuniperGrammarTest {
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
         pvcae,
-        hasParseWarning("configs/" + hostname, equalTo("Batfish does not enable two-level equal-cost multipath next hops.")));
+        hasParseWarning(
+            "configs/" + hostname,
+            equalTo("Batfish does not enable two-level equal-cost multipath next hops.")));
   }
 
   @Test
