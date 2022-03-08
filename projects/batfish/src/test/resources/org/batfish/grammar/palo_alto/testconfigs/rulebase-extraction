@@ -31,9 +31,8 @@ set rulebase security rules RULE1 description descr
 # No-op's - these items already exist
 set rulebase security rules RULE1 from z2
 set rulebase security rules RULE1 to z3
-# TODO uncomment these when they are also no-op's
-#set rulebase security rules RULE1 source ADDR2
-#set rulebase security rules RULE1 destination ADDR3
+set rulebase security rules RULE1 source ADDR2
+set rulebase security rules RULE1 destination ADDR3
 set rulebase security rules RULE1 service SERVICE2
 set rulebase security rules RULE1 category CAT2
 set rulebase security rules RULE1 application ssl
