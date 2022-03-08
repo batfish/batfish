@@ -98,7 +98,7 @@ public final class FibImpl implements Fib {
 
   public <R extends AbstractRouteDecorator> FibImpl(
       GenericRib<R> rib, ResolutionRestriction<R> restriction) {
-    _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    _root = new PrefixTrieMultiMap<>();
     rib.getTypedRoutes().stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
         .filter(r -> !r.getNonForwarding())
