@@ -6544,9 +6544,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitVlt_vni_id(Vlt_vni_idContext ctx) {
-    //    int vni = toInteger(ctx, ctx);
-    //    _currentNamedVlan.setVniId(vni);
-
     Optional<Integer> maybeVniNumber = toInteger(ctx, ctx.vni_number());
     if (!maybeVniNumber.isPresent()) {
       // already warned
