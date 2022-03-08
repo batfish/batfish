@@ -123,7 +123,6 @@ set device-group DGNAME profiles hip-objects NAME firewall criteria is-enabled y
 set device-group DGNAME profiles hip-profiles NAME match NAME2
 set device-group DGNAME profiles sctp NAME sctp-filtering sctp-ss7 VALUE action block
 set device-group DGNAME profiles spyware NAME rules NAME2 packet-capture disable
-set device-group DGNAME profiles url-filtering NAME credential-enforcement mode disabled
 set device-group DGNAME profiles virus NAME decoder http action reset-both
 set device-group DGNAME profiles vulnerability NAME rules NAME2 action alert
 set device-group DGNAME profiles wildfire-analysis NAME rules NAME2 direction both
