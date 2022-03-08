@@ -84,6 +84,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -3434,6 +3435,21 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             }
           });
     }
+  }
+
+  // Any URL with a `*` in the domain, without a URI/directory after the domain
+  private static final Pattern UNBOUNDED_CUSTOM_URL_WILDCARD_PATTERN =
+      Pattern.compile("[^/]*\\*\\.[^/?*]+$");
+
+  /**
+   * Returns a boolean indicating if the specified custom-url-category url contains an
+   * <b>unexpected</b>, unbounded wildcard. This corresponds to potentially unwanted behavior, where
+   * <b>the entry will match any additional domains at the end of the URL</b> (see Palo Alto docs:
+   * https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-admin/url-filtering/block-and-allow-lists.html).
+   */
+  public static boolean unexpectedUnboundedCustomUrlWildcard(String url) {
+    // Assumes url is a valid URL with wildcards
+    return UNBOUNDED_CUSTOM_URL_WILDCARD_PATTERN.matcher(url).matches();
   }
 
   public @Nullable Vsys getPanorama() {

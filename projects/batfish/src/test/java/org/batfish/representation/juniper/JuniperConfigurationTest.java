@@ -281,6 +281,8 @@ public class JuniperConfigurationTest {
       Interface vsIface2 = new Interface(iface2Name);
       vsIface1.getOrInitIsisSettings().getLevel1Settings().setEnabled(false);
       vsIface2.getOrInitIsisSettings().getLevel2Settings().setEnabled(false);
+      vsIface1.setRoutingInstance(routingInstance);
+      vsIface2.setRoutingInstance(routingInstance);
       routingInstance.getInterfaces().put(iface1Name, vsIface1);
       routingInstance.getInterfaces().put(iface2Name, vsIface2);
       assertThat(
@@ -301,6 +303,8 @@ public class JuniperConfigurationTest {
       Interface vsIface1 = new Interface(iface1Name);
       Interface vsIface2 = new Interface(iface2Name);
       vsIface1.getOrInitIsisSettings().getLevel2Settings().setEnabled(false);
+      vsIface1.setRoutingInstance(routingInstance);
+      vsIface2.setRoutingInstance(routingInstance);
       routingInstance.getInterfaces().put(iface1Name, vsIface1);
       routingInstance.getInterfaces().put(iface2Name, vsIface2);
       assertThat(
@@ -313,6 +317,8 @@ public class JuniperConfigurationTest {
       Interface vsIface1 = new Interface(iface1Name);
       Interface vsIface2 = new Interface(iface2Name);
       vsIface1.getOrInitIsisSettings().getLevel1Settings().setEnabled(false);
+      vsIface1.setRoutingInstance(routingInstance);
+      vsIface2.setRoutingInstance(routingInstance);
       routingInstance.getInterfaces().put(iface1Name, vsIface1);
       routingInstance.getInterfaces().put(iface2Name, vsIface2);
       assertThat(

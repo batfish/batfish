@@ -1,0 +1,23 @@
+set system host-name isis-interface-all
+
+set interfaces lo0 unit 0 family iso address 12.1234.1234.1234.1234.00
+
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/31
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.1/31
+set interfaces ge-0/0/2 unit 0 family inet address 10.0.2.1/31
+set interfaces ge-0/0/3 unit 0 family inet address 10.0.3.1/31
+
+# explicitly add ge-0/0/0 to isis; no additional settings
+set protocols isis interface ge-0/0/0
+
+# explicitly add ge-0/0/1 to isis; some additional settings
+set protocols isis interface ge-0/0/1 level 1 disable
+
+# ge-0/0/2 is not explicitly added to isis
+
+# ge-0/0/3 is not explicitly added but is in a different routing instance
+set routing-instances ri interface ge-0/0/3
+set routing-instances ri protocols isis interface ge-0/0/3 level 1 disable
+
+# these settings should only apply to interfaces in the routing instance that have not been explicitly added to an area
+set protocols isis interface all level 2 disable

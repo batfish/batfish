@@ -6388,6 +6388,30 @@ public final class FlatJuniperGrammarTest {
 
   /** Test that interfaces inherit OSPF settings inside a routing instance. */
   @Test
+  public void testIsisInterfaceAll() {
+    String hostname = "isis-interface-all";
+    Configuration c = parseConfig(hostname);
+
+    // ge-0/0/0.0 does not inherit from "all" -- both level1 and level2 enabled
+    assertThat(c.getAllInterfaces().get("ge-0/0/0.0").getIsis().getLevel1(), notNullValue());
+    assertThat(c.getAllInterfaces().get("ge-0/0/0.0").getIsis().getLevel2(), notNullValue());
+
+    // ge-0/0/1.0 does not inherit from "all" -- level 1 disabled, level 2 enabled
+    assertThat(c.getAllInterfaces().get("ge-0/0/1.0").getIsis().getLevel1(), nullValue());
+    assertThat(c.getAllInterfaces().get("ge-0/0/1.0").getIsis().getLevel2(), notNullValue());
+
+    // ge-0/0/2.0 inherits from "all" -- level 1 is enabled, level 2 is disabled
+    assertThat(c.getAllInterfaces().get("ge-0/0/2.0").getIsis().getLevel1(), notNullValue());
+    assertThat(c.getAllInterfaces().get("ge-0/0/2.0").getIsis().getLevel2(), nullValue());
+
+    // ge-0/0/3.0 does not inherit from "all" (different routing instance) -- level 1 is disabled,
+    // level 2 enabled
+    assertThat(c.getAllInterfaces().get("ge-0/0/3.0").getIsis().getLevel1(), nullValue());
+    assertThat(c.getAllInterfaces().get("ge-0/0/3.0").getIsis().getLevel2(), notNullValue());
+  }
+
+  /** Test that interfaces inherit OSPF settings inside a routing instance. */
+  @Test
   public void testOspfInterfaceAll() {
     String hostname = "ospf-area-interface-all";
     Configuration c = parseConfig(hostname);
@@ -6891,5 +6915,18 @@ public final class FlatJuniperGrammarTest {
       // The prepend is applied before the expand, even though it is declared after.
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(123L, 456L)));
     }
+  }
+
+  @Test
+  public void testNestedMultilineComments() {
+    String hostname = "juniper_nested_multiline_comments";
+    // don't crash
+    parseConfig(hostname);
+  }
+
+  @Test
+  public void testInterfaceMediaTypes() {
+    // don't crash
+    parseConfig("interface-media-types");
   }
 }
