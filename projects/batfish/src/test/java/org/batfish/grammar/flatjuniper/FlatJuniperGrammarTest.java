@@ -190,6 +190,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -1528,6 +1529,12 @@ public final class FlatJuniperGrammarTest {
     /* esfilter should be referred, while esfilter2 should be unreferred */
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter", 1));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter2", 0));
+  }
+
+  @Test
+  public void testEvpn() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn");
+    // TODO
   }
 
   @Test
@@ -2878,6 +2885,14 @@ public final class FlatJuniperGrammarTest {
             containsString(
                 "Cannot make em0.2 as the primary interface. em0.0 is already configured as"
                     + " primary.")));
+  }
+
+  @Test
+  public void testInterfaceVni() {
+    JuniperConfiguration c = parseJuniperConfig("interface-vni");
+    Integer vni = c.getMasterLogicalSystem().getNamedVlans().get("VLAN_TEST").getVniId();
+    Integer vni0 = 10101;
+    assertEquals(vni, vni0);
   }
 
   @Test

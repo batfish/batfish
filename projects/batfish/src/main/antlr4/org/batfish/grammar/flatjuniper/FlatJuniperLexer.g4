@@ -569,6 +569,8 @@ DTCP_ONLY: 'dtcp-only';
 
 DUMP_ON_PANIC: 'dump-on-panic';
 
+DUPLICATE_MAC_DETECTION: 'duplicate-mac-detection';
+
 DVMRP: 'dvmrp';
 
 DYNAMIC: 'dynamic';

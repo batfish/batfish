@@ -674,6 +674,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vni_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ZoneContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
@@ -891,6 +892,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
 
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
+
+  private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
@@ -1816,6 +1819,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return getNamedPort(ctx).number();
   }
 
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vni_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VNI_NUMBER_RANGE, "vni");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
   private static @Nonnull IpOptions toIpOptions(Ip_optionContext ctx) {
     if (ctx.LOOSE_SOURCE_ROUTE() != null) {
       return IpOptions.LOOSE_SOURCE_ROUTE;
@@ -2389,7 +2412,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFo_vxlan_routing(Fo_vxlan_routingContext ctx) {
-    warn(ctx, "Batfish does not enable two-level equal-cost multipath next hops.");
+    todo(ctx);
   }
 
   @Override
@@ -6471,7 +6494,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitVlt_vni_id(Vlt_vni_idContext ctx) {
-    int vni = toInt(ctx.id);
+    //    int vni = toInteger(ctx, ctx);
+    //    _currentNamedVlan.setVniId(vni);
+
+    Optional<Integer> maybeVniNumber = toInteger(ctx, ctx.vni_number());
+    if (!maybeVniNumber.isPresent()) {
+      // already warned
+      return;
+    }
+    int vni = maybeVniNumber.get();
     _currentNamedVlan.setVniId(vni);
   }
 

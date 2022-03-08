@@ -224,5 +224,5 @@ vlt_vlan_id
 
 vlt_vni_id
 :
-   VXLAN VNI id = dec
+   VXLAN VNI vni_number
 ;

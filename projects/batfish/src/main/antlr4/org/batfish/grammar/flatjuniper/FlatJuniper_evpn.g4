@@ -18,7 +18,15 @@ e_encapsulation
 
 e_extended_vni_list
 :
-    EXTENDED_VNI_LIST range
+    EXTENDED_VNI_LIST (
+        range
+        | ALL
+    )
+;
+
+e_duplicate_mac_detection_null
+:
+    DUPLICATE_MAC_DETECTION null_filler
 ;
 
 e_multicast_mode
@@ -80,6 +88,7 @@ p_evpn
         | e_extended_vni_list
         | e_multicast_mode
         | e_vni_options
+        | e_duplicate_mac_detection_null
     )
 ;
 
