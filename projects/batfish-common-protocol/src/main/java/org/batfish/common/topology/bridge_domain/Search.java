@@ -23,6 +23,10 @@ import org.batfish.common.topology.bridge_domain.function.TranslateVlanImpl;
 import org.batfish.common.topology.bridge_domain.node.L3Interface;
 import org.batfish.common.topology.bridge_domain.node.Node;
 
+/**
+ * Functionality for finding the {@link L3Interface}s in the broadcast domain of an originating
+ * {@link L3Interface}.
+ */
 final class Search {
 
   /** Returns the broadcast domain reachable from a given {@code originator}. */
@@ -30,20 +34,25 @@ final class Search {
     return new Search(originator).getBroadcastDomain();
   }
 
+  /** The discovered broadcast domain. */
   private @Nonnull Set<L3Interface> getBroadcastDomain() {
     return _broadcastDomain;
   }
 
   private void search() {
+    // Add the originator to the broadcast domain
     _broadcastDomain.add(_originator);
+    // Add the origination node and empty state to the seen <node, state> pairs.
     NodeAndState initialNodeAndState = NodeAndState.of(_originator, State.empty());
     _visited.add(initialNodeAndState);
+    // Queue a traversal of the out-edge of the origination node
     _originator
         .getOutEdges()
         .forEach(
             (nextNode, edgeToNextNode) ->
                 _remainingTraversals.add(
                     () -> traverseEdge(initialNodeAndState, edgeToNextNode, nextNode)));
+    // Keep traversing queued edges until none remain.
     // TODO: parallelize
     while (!_remainingTraversals.empty()) {
       _remainingTraversals.pop().run();
@@ -53,32 +62,58 @@ final class Search {
   private void traverseEdge(NodeAndState currentNodeAndState, Edge edge, Node toNode) {
     Node currentNode = currentNodeAndState.getNode();
     STATE_FUNCTION_EVALUATOR
+        // Get the new state resulting from traversing the edge
         .visit(edge.getStateFunction(), currentNodeAndState.getState())
+        // If no state is returned, the edge cannot be traversed given the current state.
+        // Else, visit the destination node of the edge using resulting state.
         .ifPresent(nextState -> visit(currentNode, NodeAndState.of(toNode, nextState)));
   }
 
   private void visit(Node lastNode, NodeAndState nodeAndState) {
     if (_visited.contains(nodeAndState)) {
+      // Terminate this branch since we have reached a cycle. This is a common situation, since
+      // we do not cut the graph into a tree with STP.
       return;
     }
+    // Record the current node and state so we can terminate traversal at a cycle above.
     _visited.add(nodeAndState);
     if (nodeAndState.getNode() instanceof L3Interface) {
+      // We have reached a layer-3 interface, which is a terminal node. Add it to the broadcast
+      // domain and terminate traversal of this branch.
       _broadcastDomain.add((L3Interface) nodeAndState.getNode());
     } else {
+      // We have reached a non-terminal intermediate node. Split the traversal into branches for
+      // based on the out-edges from this node.
       nodeAndState
           .getNode()
           .getOutEdges()
           .forEach(
               (nextNode, edgeToNextNode) -> {
                 if (nextNode.equals(lastNode)) {
+                  // Do not go backwards, for two reasons:
+                  // 1. Frames should not be reflected.
+                  // 2. Applying the back-edge state function is not guaranteed to preserve state
+                  //    invariants.
                   return;
                 }
+                // Queue traversals of the remaining out edges.
                 _remainingTraversals.push(
                     () -> traverseEdge(nodeAndState, edgeToNextNode, nextNode));
               });
     }
   }
 
+  /**
+   * A visitor that evaluates the state function of an out-edge of a node on the state at that node,
+   * yielding either:
+   *
+   * <ul>
+   *   <li>{@link Optional#empty()}, indicating that the edge may not be traversed given the current
+   *       {@link State} at the node.
+   *   <li>{@link Optional#of(Object)} of a new {@link State} at the destination node of the
+   *       out-edge.
+   * </ul>
+   */
   static class StateFunctionEvaluator implements StateFunctionVisitor<Optional<State>, State> {
 
     @Override
