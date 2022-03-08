@@ -92,10 +92,14 @@ public final class SecurityRule implements Serializable {
   }
 
   public void addCategory(String category) {
+    CustomUrlCategoryReference ref = new CustomUrlCategoryReference(category);
+    if (_category.contains(ref)) {
+      return;
+    }
     _category =
         ImmutableSet.<CustomUrlCategoryReference>builderWithExpectedSize(_category.size() + 1)
             .addAll(_category)
-            .add(new CustomUrlCategoryReference(category))
+            .add(ref)
             .build();
   }
 

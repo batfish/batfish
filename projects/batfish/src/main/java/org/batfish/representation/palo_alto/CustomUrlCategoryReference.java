@@ -3,8 +3,7 @@ package org.batfish.representation.palo_alto;
 import javax.annotation.Nonnull;
 
 /** Represents a reference to a custom-url-category. */
-public final class CustomUrlCategoryReference
-    implements Comparable<CustomUrlCategoryReference>, Reference {
+public final class CustomUrlCategoryReference implements Reference {
 
   @Override
   public <T, U> T accept(ReferenceVisitor<T, U> visitor, U arg) {
@@ -13,11 +12,6 @@ public final class CustomUrlCategoryReference
 
   public CustomUrlCategoryReference(String name) {
     _name = name;
-  }
-
-  @Override
-  public int compareTo(CustomUrlCategoryReference o) {
-    return _name.compareTo(o._name);
   }
 
   @Override
