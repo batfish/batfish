@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -27,6 +28,9 @@ public final class SecurityRule implements Serializable {
   @Nonnull private final String _name;
   // Action of the rule
   @Nonnull private LineAction _action;
+
+  @Nonnull private Set<CustomUrlCategoryReference> _category;
+
   // Owning Vsys of this rule
   @Nonnull private final Vsys _vsys;
 
@@ -59,6 +63,7 @@ public final class SecurityRule implements Serializable {
   public SecurityRule(String name, Vsys vsys) {
     _action = LineAction.DENY;
     _applications = new TreeSet<>();
+    _category = ImmutableSet.of();
     _destination = new LinkedList<>();
     _negateDestination = false;
     _disabled = false;
@@ -86,9 +91,26 @@ public final class SecurityRule implements Serializable {
     _applications.add(new ApplicationOrApplicationGroupReference(application));
   }
 
+  public void addCategory(String category) {
+    CustomUrlCategoryReference ref = new CustomUrlCategoryReference(category);
+    if (_category.contains(ref)) {
+      return;
+    }
+    _category =
+        ImmutableSet.<CustomUrlCategoryReference>builderWithExpectedSize(_category.size() + 1)
+            .addAll(_category)
+            .add(ref)
+            .build();
+  }
+
   @Nonnull
   public SortedSet<ApplicationOrApplicationGroupReference> getApplications() {
     return ImmutableSortedSet.copyOf(_applications);
+  }
+
+  @Nonnull
+  public Set<CustomUrlCategoryReference> getCategory() {
+    return _category;
   }
 
   @Nullable

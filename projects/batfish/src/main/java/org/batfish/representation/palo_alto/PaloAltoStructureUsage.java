@@ -28,6 +28,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   NAT_RULE_TO_ZONE("rulebase nat rules to"),
   REDIST_RULE_REDIST_PROFILE("redist-rule redist-profile"),
   SECURITY_RULE_APPLICATION("rulebase security rules application"),
+  SECURITY_RULE_CATEGORY("rulebase security rules category"),
   SECURITY_RULE_DESTINATION("rulebase security rules destination"),
   SECURITY_RULE_FROM_ZONE("rulebase security rules from"),
   SECURITY_RULE_SOURCE("rulebase security rules source"),
