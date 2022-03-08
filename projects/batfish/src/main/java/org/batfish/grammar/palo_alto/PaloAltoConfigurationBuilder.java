@@ -2227,7 +2227,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitSpc_list(PaloAltoParser.Spc_listContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
-      _currentCustomUrlCategory.addToList(getText(var));
+      String url = getText(var);
+      if (PaloAltoConfiguration.unexpectedUnboundedCustomUrlWildcard(url)) {
+        warn(
+            ctx,
+            String.format(
+                "Did you mean '%s/'? Without the trailing slash, the url will match additional"
+                    + " trailing domains, such as '%s.evil'.",
+                url, url));
+      }
+      _currentCustomUrlCategory.addToList(url);
     }
   }
 

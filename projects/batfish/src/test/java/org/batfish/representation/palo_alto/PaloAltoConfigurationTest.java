@@ -23,6 +23,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generat
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSharedGatewayOutgoingFilter;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateVsysSharedGatewayCalls;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.securityRuleApplies;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.unexpectedUnboundedCustomUrlWildcard;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.hamcrest.Matchers.contains;
@@ -721,5 +722,21 @@ public final class PaloAltoConfigurationTest {
     assertTrue(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.ONE, 1));
 
     // TODO test PRIMARY once that is better supported
+  }
+
+  @Test
+  public void testUnexpectedUnboundedCustomUrlWildcard() {
+    // Unexpected and unbounded
+    assertTrue(unexpectedUnboundedCustomUrlWildcard("*.github.com"));
+    assertTrue(unexpectedUnboundedCustomUrlWildcard("www.*.github.com"));
+
+    // Not unexpected
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.*"));
+
+    // Not unbounded
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.com/"));
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.com?"));
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("www.*.github.com/"));
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.com/foobar.something"));
   }
 }
