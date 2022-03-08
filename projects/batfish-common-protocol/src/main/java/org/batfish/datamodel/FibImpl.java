@@ -98,7 +98,7 @@ public final class FibImpl implements Fib {
 
   public <R extends AbstractRouteDecorator> FibImpl(
       GenericRib<R> rib, ResolutionRestriction<R> restriction) {
-    _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    _root = new PrefixTrieMultiMap<>();
     rib.getTypedRoutes().stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
         .filter(r -> !r.getNonForwarding())
@@ -223,31 +223,26 @@ public final class FibImpl implements Fib {
 
       @Override
       public Void visitNextHopIp(NextHopIp nextHopIp) {
-        Set<AbstractRoute> lpmRoutes;
-        lpmRoutes =
-            rib
-                .longestPrefixMatch(
-                    nextHopIp.getIp(),
-                    r -> {
-                      if (route.getProtocol() == RoutingProtocol.STATIC) {
-                        // TODO: factor out common code with
-                        // StaticRouteHelper.shouldActivateNextHopIpRoute
-                        if (r.getAbstractRoute().getProtocol() == RoutingProtocol.CONNECTED) {
-                          // All static routes can be activated by a connected route.
-                          return true;
-                        }
-                        if (!((StaticRoute) route).getRecursive()) {
-                          // Non-recursive static routes cannot be activated by non-connected
-                          // routes.
-                          return false;
-                        }
-                      }
-                      // Recursive routes must pass restriction if present.
-                      return restriction.test(r);
-                    })
-                .stream()
-                .map(AbstractRouteDecorator::getAbstractRoute)
-                .collect(ImmutableSet.toImmutableSet());
+        Set<R> lpmRoutes =
+            rib.longestPrefixMatch(
+                nextHopIp.getIp(),
+                r -> {
+                  if (route.getProtocol() == RoutingProtocol.STATIC) {
+                    // TODO: factor out common code with
+                    // StaticRouteHelper.shouldActivateNextHopIpRoute
+                    if (r.getAbstractRoute().getProtocol() == RoutingProtocol.CONNECTED) {
+                      // All static routes can be activated by a connected route.
+                      return true;
+                    }
+                    if (!((StaticRoute) route).getRecursive()) {
+                      // Non-recursive static routes cannot be activated by non-connected
+                      // routes.
+                      return false;
+                    }
+                  }
+                  // Recursive routes must pass restriction if present.
+                  return restriction.test(r);
+                });
 
         if (lpmRoutes.isEmpty()
             || newSeenNetworks.contains(lpmRoutes.iterator().next().getNetwork())) {
@@ -260,14 +255,15 @@ public final class FibImpl implements Fib {
           return null;
         }
         // We have at least one longest-prefix match, and have not looped yet.
-        for (AbstractRoute nextHopLongestPrefixMatchRoute : lpmRoutes) {
+        for (R nextHopLongestPrefixMatchRoute : lpmRoutes) {
+          AbstractRoute genericRoute = nextHopLongestPrefixMatchRoute.getAbstractRoute();
           buildResolutionTree(
               rib,
-              nextHopLongestPrefixMatchRoute,
+              genericRoute,
               nextHopIp.getIp(),
               newSeenNetworks,
               depth + 1,
-              ResolutionTreeNode.withParent(nextHopLongestPrefixMatchRoute, treeNode, null),
+              ResolutionTreeNode.withParent(genericRoute, treeNode, null),
               restriction);
         }
         return null;
@@ -337,7 +333,8 @@ public final class FibImpl implements Fib {
               subTriePrefixes = leftPrefixes;
             } else {
               subTriePrefixes =
-                  ImmutableSet.<IpWildcard>builder()
+                  ImmutableSet.<IpWildcard>builderWithExpectedSize(
+                          leftPrefixes.size() + rightPrefixes.size())
                       .addAll(leftPrefixes)
                       .addAll(rightPrefixes)
                       .build();

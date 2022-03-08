@@ -28,6 +28,6 @@ import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 final class PreDataPlaneIpOwners extends IpOwnersBaseImpl {
 
   PreDataPlaneIpOwners(Map<String, Configuration> configurations, L3Adjacencies l3Adjacencies) {
-    super(configurations, l3Adjacencies, PreDataPlaneTrackMethodEvaluator::new);
+    super(configurations, l3Adjacencies, PreDataPlaneTrackMethodEvaluator::new, false);
   }
 }

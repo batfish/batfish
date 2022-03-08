@@ -347,6 +347,15 @@ public class Interface implements Serializable {
   }
 
   /**
+   * Returns effective ISIS settings, that is, those are directly configured for the interface or
+   * those inherited via "interface all" in the routing instance.
+   */
+  // This behavior wasn't lab tested but assumed to be identical to (lab tested) OSPF
+  public @Nullable IsisInterfaceSettings getEffectiveIsisSettings() {
+    return _isisSettings != null ? _isisSettings : _routingInstance.getInterfaceAllIsisSettings();
+  }
+
+  /**
    * Returns effective OSPF settings, that is, those are directly configured for the interface or
    * those inherited via "interface all" in the routing instance.
    */

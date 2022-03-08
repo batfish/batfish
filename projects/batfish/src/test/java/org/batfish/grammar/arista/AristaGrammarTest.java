@@ -270,6 +270,7 @@ import org.batfish.representation.arista.eos.AristaBgpVrfIpv6UnicastAddressFamil
 import org.batfish.representation.arista.eos.AristaEosVxlan;
 import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorStructureId;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -1343,6 +1344,44 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testBgpAggregateGeneration() throws IOException {
+    /*
+     * Config has static routes:
+     * - 10.10.1.0/24
+     * - 10.11.0.0/16
+     * - 10.11.1.0/24
+     * - 10.12.0.0/16 with admin distance 254
+     * - 10.12.1.0/24
+     * - 10.13.0.0/16 with admin distance 199
+     * - 10.13.1.0/24
+     *
+     * And BGP aggregates:
+     * - 10.10.0.0/16: Generated since there is a more specific static route
+     * - 10.11.0.0/16: Not generated because there is a better static route for same prefix
+     * - 10.12.0.0/16: Generated; the static route with same prefix has worse admin distance
+     * - 10.13.0.0/16: Not generated because there is a better static route (local admin = 200)
+     *
+     * BGP does NOT redistribute static routes; Arista generates aggregates from main RIB.
+     */
+    String hostname = "bgp_aggregate_generation";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // Sanity check: static routes were created
+    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(
+        mainRibRoutes.stream().filter(r -> r instanceof org.batfish.datamodel.StaticRoute).count(),
+        equalTo(6L));
+
+    Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, DEFAULT_VRF_NAME);
+    assertThat(
+        bgpRibRoutes,
+        containsInAnyOrder(
+            hasPrefix(Prefix.parse("10.10.0.0/16")), hasPrefix(Prefix.parse("10.12.0.0/16"))));
+  }
+
+  @Test
   public void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
     /*
      * Config has static routes:
@@ -1760,9 +1799,10 @@ public class AristaGrammarTest {
     // Confirm VLAN<->VNI mapping is applied
     assertThat(vnisBase, hasVlan(equalTo(2)));
 
-    // Confirm multicast address is present
-    assertThat(vnisNoAddr, hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)));
-    assertThat(vnisNoAddr, hasBumTransportIps(contains(Ip.parse("227.10.1.1"))));
+    // https://github.com/batfish/batfish/issues/8061
+    // Confirm multicast address does not change BumTransport method nor VTEPs
+    assertThat(vnisNoAddr, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
+    assertThat(vnisNoAddr, hasBumTransportIps(Matchers.empty()));
     // Confirm no source address is present (no address specified for loopback interface)
     assertThat(vnisNoAddr, hasSourceAddress(nullValue()));
     // Confirm default UDP port is used even though none is supplied

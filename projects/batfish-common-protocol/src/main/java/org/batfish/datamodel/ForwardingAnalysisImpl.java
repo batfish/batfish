@@ -5,9 +5,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -15,22 +17,28 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.io.Serializable;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
@@ -42,11 +50,26 @@ import org.batfish.specifier.LocationInfo;
 
 /** Implementation of {@link ForwardingAnalysis}. */
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Serializable {
+  private static final Logger LOGGER = LogManager.getLogger(ForwardingAnalysisImpl.class);
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
   // node -> vrf -> forwarding behavior for that VRF.
   private final Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior;
+
+  /** Helper function to materialize in random order the list of keys in Map of Maps. */
+  @VisibleForTesting
+  static @Nonnull <T> List<Map.Entry<String, String>> sparseKeys(Map<String, Map<String, T>> map) {
+    List<Map.Entry<String, String>> sparseKeys =
+        map.entrySet().parallelStream()
+            .flatMap(
+                e ->
+                    e.getValue().entrySet().parallelStream()
+                        .map(v -> new SimpleImmutableEntry<>(e.getKey(), v.getKey())))
+            .collect(Collectors.toCollection(ArrayList::new));
+    Collections.shuffle(sparseKeys);
+    return ImmutableList.copyOf(sparseKeys);
+  }
 
   public ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
@@ -58,10 +81,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
+      List<Map.Entry<String, String>> allVrfs = sparseKeys(fibs);
+
       // TODO accept IpSpaceToBDD as parameter
       IpSpaceToBDD ipSpaceToBDD =
           new MemoizedIpSpaceToBDD(new BDDPacket().getDstIp(), ImmutableMap.of());
 
+      LOGGER.info("Computing owned and unowned IPs");
       // IPs belonging to any interface in the network, even inactive interfaces
       // node -> interface -> IPs owned by that interface
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps = ipOwners.getInterfaceOwners(false);
@@ -74,14 +100,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // ARP ips not belonging to any subnet in the network
       Set<Ip> unownedArpIps = computeUnownedArpIps(fibs, ipSpaceToBDD, unownedIpsBDD);
 
+      LOGGER.info("Aggregating information about routing entries");
       // IpSpaces matched by each prefix
       // -- only will have entries for active interfaces if FIB is correct
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(fibs);
+      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps =
+          computeMatchingIps(fibs, allVrfs);
       // Set of routes that forward out each interface
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
-          computeRoutesWithNextHop(fibs);
+          computeRoutesWithNextHop(fibs, allVrfs);
       // Node -> vrf -> destination IPs that can be routed
-      Map<String, Map<String, IpSpace>> routableIps = computeRoutableIps(fibs);
+      Map<String, Map<String, IpSpace>> routableIps = computeRoutableIps(fibs, allVrfs);
 
       /* Compute _arpReplies: for each interface, the set of arp IPs for which that interface will
        * respond.
@@ -89,52 +117,67 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       {
         // mapping: node name -> vrf name -> interface name -> dst ips which are routed to the
         // interface. Should only include active interfaces.
+        LOGGER.info("Computing IPs routed out interfaces");
         Map<String, Map<String, Map<String, IpSpace>>> ipsRoutedOutInterfaces =
-            computeIpsRoutedOutInterfaces(matchingIps, routesWithNextHop);
+            computeIpsRoutedOutInterfaces(matchingIps, routesWithNextHop, allVrfs);
+        LOGGER.info("Computing ARP replies");
         _arpReplies =
             computeArpReplies(
                 configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
       }
 
       // hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot
+      LOGGER.info("Computing interfaces with missing devices");
       Multimap<String, String> interfacesWithMissingDevices =
           computeInterfacesWithMissingDevices(locationInfo, ipSpaceToBDD, unownedIpsBDD);
 
       // ips belonging to any subnet in the network, including inactive interfaces.
+      LOGGER.info("Computing internal IPs");
       IpSpace internalIps = computeInternalIps(ipOwners.getAllInterfaceHostIps());
 
       // ips not belonging to any subnet in the network, including inactive interfaces.
       IpSpace externalIps = internalIps.complement();
 
+      // Compute VrfForwardingBehavior, parallelizing across all VRFs.
+      LOGGER.info("Computing VRF forwarding behavior for {} VRFs", allVrfs.size());
+      AtomicInteger done = new AtomicInteger();
       _vrfForwardingBehavior =
-          configurations.values().parallelStream()
-              .map(
-                  config ->
-                      Maps.immutableEntry(
-                          config.getHostname(),
-                          toImmutableMap(
-                              config.getVrfs().keySet(),
-                              Function.identity(),
-                              vrf -> {
-                                String node = config.getHostname();
-                                return computeVrfForwardingBehavior(
-                                    node,
-                                    vrf,
-                                    topology,
-                                    locationInfo,
-                                    ipSpaceToBDD,
-                                    ipOwners,
-                                    fibs.get(node).get(vrf),
-                                    unownedArpIps,
-                                    matchingIps.get(node).get(vrf),
-                                    ownedIps,
-                                    interfacesWithMissingDevices,
-                                    internalIps,
-                                    externalIps,
-                                    routableIps,
-                                    routesWithNextHop.get(node).get(vrf));
-                              })))
-              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+          allVrfs.parallelStream()
+              .collect(
+                  ImmutableTable.toImmutableTable(
+                      Entry::getKey,
+                      Entry::getValue,
+                      e -> {
+                        String node = e.getKey();
+                        String vrf = e.getValue();
+                        VrfForwardingBehavior ret =
+                            computeVrfForwardingBehavior(
+                                node,
+                                vrf,
+                                topology,
+                                locationInfo,
+                                ipSpaceToBDD,
+                                ipOwners,
+                                fibs.get(node).get(vrf),
+                                unownedArpIps,
+                                matchingIps.get(node).get(vrf),
+                                ownedIps,
+                                interfacesWithMissingDevices,
+                                internalIps,
+                                externalIps,
+                                routableIps,
+                                routesWithNextHop.get(node).get(vrf));
+                        int processed = done.incrementAndGet();
+                        if (processed % 100 == 0) {
+                          LOGGER.info(
+                              "Computed VRF forwarding behavior for {}/{} vrfs",
+                              processed,
+                              allVrfs.size());
+                        }
+                        return ret;
+                      }))
+              .rowMap();
+      LOGGER.info("Done computing VRF forwarding behavior for {} devices", configurations.size());
 
       assert sanityCheck(configurations);
     } finally {
@@ -227,7 +270,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             Function.identity(),
             iface -> {
               IpSpace externalArpIps =
-                  locationInfo.get(new InterfaceLinkLocation(node, iface)).getArpIps();
+                  locationInfo
+                      .getOrDefault(new InterfaceLinkLocation(node, iface), LocationInfo.NOTHING)
+                      .getArpIps();
 
               /* Compute ARP stuff bottom-up from _arpReplies. */
               IpSpace someoneReplies = computeSomeoneReplies(node, iface, topology, _arpReplies);
@@ -603,41 +648,42 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeIpsRoutedOutInterfaces(
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop,
+      List<Map.Entry<String, String>> allVrfs) {
     Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeIpsRoutedOutInterfaces")
             .start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          routesWithNextHop,
-          Entry::getKey /* hostname */,
-          nodeEntry -> {
-            String hostname = nodeEntry.getKey();
-            return toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey,
-                vrfEntry -> {
-                  String vrf = vrfEntry.getKey();
-                  Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(hostname).get(vrf);
-                  return vrfEntry.getValue().entrySet().stream()
-                      /*
-                       *  Cannot determine IPs for null interface here because it is
-                       *  not tied to a single VRF.
-                       */
-                      .filter(
-                          ifaceEntry -> !ifaceEntry.getKey().equals(Interface.NULL_INTERFACE_NAME))
-                      .map(
-                          ifaceEntry -> {
-                            String iface = ifaceEntry.getKey();
-                            Set<AbstractRoute> routes = ifaceEntry.getValue();
-                            return Maps.immutableEntry(
-                                iface, computeRouteMatchConditions(routes, vrfMatchingIps));
-                          })
-                      .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-                });
-          });
+      return allVrfs.parallelStream()
+          .collect(
+              ImmutableTable.toImmutableTable(
+                  Entry::getKey,
+                  Entry::getValue,
+                  e -> {
+                    String hostname = e.getKey();
+                    String vrf = e.getValue();
+                    Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(hostname).get(vrf);
+                    return (Map<String, IpSpace>)
+                        routesWithNextHop.get(hostname).get(vrf).entrySet().stream()
+                            /*
+                             *  Cannot determine IPs for null interface here because it is
+                             *  not tied to a single VRF.
+                             */
+                            .filter(
+                                ifaceEntry ->
+                                    !ifaceEntry.getKey().equals(Interface.NULL_INTERFACE_NAME))
+                            .map(
+                                ifaceEntry -> {
+                                  String iface = ifaceEntry.getKey();
+                                  Set<AbstractRoute> routes = ifaceEntry.getValue();
+                                  return Maps.immutableEntry(
+                                      iface, computeRouteMatchConditions(routes, vrfMatchingIps));
+                                })
+                            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+                  }))
+          .rowMap();
     } finally {
       span.finish();
     }
@@ -697,54 +743,67 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     if (entries.isEmpty()) {
       return EmptyIpSpace.INSTANCE;
     }
-    Set<Prefix> seen = new HashSet<>();
-    ImmutableSet.Builder<IpWildcard> ret = ImmutableSet.builder();
-    for (FibEntry entry : entries) {
-      Prefix network = entry.getTopLevelRoute().getNetwork();
+
+    // Order prefixes by length (shorter first), enabling us to build
+    // the simplest routable space.
+    List<Prefix> routablePrefixes =
+        entries.stream()
+            .map(e -> e.getTopLevelRoute().getNetwork())
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList());
+
+    PrefixSpace seen = new PrefixSpace();
+    List<Prefix> routable = new LinkedList<>();
+    for (Prefix network : routablePrefixes) {
       if (network.equals(Prefix.ZERO)) {
         // Default route -> all IPs are routable. Skip processing the rest.
         return UniverseIpSpace.INSTANCE;
-      }
-      if (seen.add(network)) {
-        // Only convert networks once.
-        ret.add(IpWildcard.create(network));
-      }
+      } else if (!seen.containsPrefix(network)) {
+        routable.add(network);
+        seen.addPrefixRange(PrefixRange.sameAsOrMoreSpecificThan(network));
+      } // else skip prefix already contained in output space
     }
-    return IpWildcardSetIpSpace.create(ImmutableSet.of(), ret.build());
+
+    if (routable.size() == 1) {
+      return routable.get(0).toIpSpace();
+    }
+
+    return IpWildcardSetIpSpace.create(
+        ImmutableSet.of(),
+        routable.stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet()));
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeRoutableIps(Map<String, Map<String, Fib>> fibs) {
+  static Map<String, Map<String, IpSpace>> computeRoutableIps(
+      Map<String, Map<String, Fib>> fibs, List<Map.Entry<String, String>> allVrfs) {
     Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutableIps").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          fibs,
-          Entry::getKey, // node
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
-                  Entry::getKey, // vrf
-                  vrfEntry -> routableSpace(vrfEntry.getValue())));
+      return allVrfs.parallelStream()
+          .collect(
+              ImmutableTable.toImmutableTable(
+                  Entry::getKey,
+                  Entry::getValue,
+                  e -> routableSpace(fibs.get(e.getKey()).get(e.getValue()))))
+          .rowMap();
     } finally {
       span.finish();
     }
   }
 
-  @VisibleForTesting
   static Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
-      Map<String, Map<String, Fib>> fibs) {
+      Map<String, Map<String, Fib>> fibs, List<Entry<String, String>> allVrfs) {
     Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeMatchingIps").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          fibs,
-          Entry::getKey, // node
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
-                  Entry::getKey, // vrf
-                  vrfEntry -> vrfEntry.getValue().getMatchingIps()));
+      return allVrfs.parallelStream()
+          .collect(
+              ImmutableTable.toImmutableTable(
+                  Entry::getKey,
+                  Entry::getValue,
+                  e -> fibs.get(e.getKey()).get(e.getValue()).getMatchingIps()))
+          .rowMap();
     } finally {
       span.finish();
     }
@@ -812,27 +871,26 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * routes that use the interface as outgoing interface */
   @VisibleForTesting
   static Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHop(
-      Map<String, Map<String, Fib>> fibs) {
+      Map<String, Map<String, Fib>> fibs, List<Map.Entry<String, String>> allVrfs) {
     Span span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutesWithNextHop").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          fibs,
-          Entry::getKey,
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
+      return allVrfs.parallelStream()
+          .collect(
+              ImmutableTable.toImmutableTable(
                   Entry::getKey,
-                  vrfEntry ->
-                      vrfEntry.getValue().allEntries().stream()
+                  Entry::getValue,
+                  e ->
+                      fibs.get(e.getKey()).get(e.getValue()).allEntries().stream()
                           .filter(fibEntry -> fibEntry.getAction() instanceof FibForward)
                           .collect(
                               Collectors.groupingBy(
                                   fibEntry ->
                                       ((FibForward) fibEntry.getAction()).getInterfaceName(),
                                   Collectors.mapping(
-                                      FibEntry::getTopLevelRoute, Collectors.toSet())))));
+                                      FibEntry::getTopLevelRoute, Collectors.toSet())))))
+          .rowMap();
     } finally {
       span.finish();
     }
@@ -987,8 +1045,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       assert scope != null; // avoid unused warning
       return firstNonNull(
           AclIpSpace.union(
-              interfaceHostSubnetIps.values().stream()
-                  .flatMap(ifaceSubnetIps -> ifaceSubnetIps.values().stream())
+              interfaceHostSubnetIps.values().parallelStream()
+                  .flatMap(ifaceSubnetIps -> ifaceSubnetIps.values().parallelStream())
                   .collect(Collectors.toList())),
           EmptyIpSpace.INSTANCE);
     } finally {
@@ -1143,6 +1201,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * Run sanity checks over the computed variables. Can be slow so only run in debug/assertion mode.
    */
   private boolean sanityCheck(Map<String, Configuration> configurations) {
+    LOGGER.info("Running expensive sanity checks");
     // Sanity check internal properties.
     assertAllInterfacesActiveNodeInterface(_arpReplies, configurations);
     assertAllInterfacesActiveVrfForwardingBehavior(_vrfForwardingBehavior, configurations);

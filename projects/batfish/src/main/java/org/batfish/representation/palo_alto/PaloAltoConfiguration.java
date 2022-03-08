@@ -84,6 +84,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -1737,7 +1738,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static final ReferenceInVsys REFERENCE_IN_VSYS = new ReferenceInVsys();
+  @VisibleForTesting static final ReferenceInVsys REFERENCE_IN_VSYS = new ReferenceInVsys();
 
   /** Visitor that determines if a {@link Reference} exists in the specified {@link Vsys}. */
   public static class ReferenceInVsys implements ReferenceVisitor<Boolean, Vsys> {
@@ -1753,6 +1754,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         ApplicationOrApplicationGroupReference reference, Vsys vsys) {
       return vsys.getApplications().containsKey(reference.getName())
           || vsys.getApplicationGroups().containsKey(reference.getName());
+    }
+
+    @Override
+    public Boolean visitCustomUrlCategoryReference(
+        CustomUrlCategoryReference reference, Vsys vsys) {
+      return vsys.getCustomUrlCategories().containsKey(reference.getName());
     }
   }
 
@@ -2758,6 +2765,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           continue;
         }
       }
+      if (!sr.getNextHopDiscard()
+          && nextVrf == null
+          && sr.getNextHopIp() == null
+          && sr.getNextHopInterface() == null) {
+        _w.redFlag(
+            String.format("Cannot convert static route %s, as it has no nexthop.", e.getKey()));
+        continue;
+      }
       vrf.getStaticRoutes()
           .add(
               org.batfish.datamodel.StaticRoute.builder()
@@ -3349,6 +3364,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureType.APPLICATION,
         ImmutableList.of(PaloAltoStructureType.APPLICATION),
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_APPLICATION);
+    // Custom URL Categories
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.CUSTOM_URL_CATEGORY,
+        ImmutableList.of(PaloAltoStructureType.CUSTOM_URL_CATEGORY),
+        PaloAltoStructureUsage.SECURITY_RULE_CATEGORY);
 
     return _c;
   }
@@ -3415,6 +3435,21 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             }
           });
     }
+  }
+
+  // Any URL with a `*` in the domain, without a URI/directory after the domain
+  private static final Pattern UNBOUNDED_CUSTOM_URL_WILDCARD_PATTERN =
+      Pattern.compile("[^/]*\\*\\.[^/?*]+$");
+
+  /**
+   * Returns a boolean indicating if the specified custom-url-category url contains an
+   * <b>unexpected</b>, unbounded wildcard. This corresponds to potentially unwanted behavior, where
+   * <b>the entry will match any additional domains at the end of the URL</b> (see Palo Alto docs:
+   * https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-admin/url-filtering/block-and-allow-lists.html).
+   */
+  public static boolean unexpectedUnboundedCustomUrlWildcard(String url) {
+    // Assumes url is a valid URL with wildcards
+    return UNBOUNDED_CUSTOM_URL_WILDCARD_PATTERN.matcher(url).matches();
   }
 
   public @Nullable Vsys getPanorama() {

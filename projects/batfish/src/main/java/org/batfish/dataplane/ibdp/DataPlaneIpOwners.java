@@ -22,6 +22,6 @@ final class DataPlaneIpOwners extends IpOwnersBaseImpl {
       Map<String, Configuration> configurations,
       L3Adjacencies l3Adjacencies,
       DataPlaneTrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
-    super(configurations, l3Adjacencies, trackMethodEvaluatorProvider);
+    super(configurations, l3Adjacencies, trackMethodEvaluatorProvider, false);
   }
 }

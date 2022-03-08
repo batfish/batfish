@@ -109,11 +109,6 @@ poplt_apply_path
    APPLY_PATH path = DOUBLE_QUOTED_STRING
 ;
 
-poplt_ip6
-:
-   ip6 = IPV6_ADDRESS
-;
-
 poplt_network
 :
    network = ip_prefix
@@ -434,7 +429,17 @@ popst_accept
 
 popst_as_path_expand
 :
-   AS_PATH_EXPAND LAST_AS COUNT dec
+  AS_PATH_EXPAND
+  (
+    LAST_AS (COUNT count = as_path_expand_count)?
+    | asns += bgp_asn+
+  )
+;
+
+as_path_expand_count
+:
+  // 1-32
+  uint8
 ;
 
 popst_as_path_prepend

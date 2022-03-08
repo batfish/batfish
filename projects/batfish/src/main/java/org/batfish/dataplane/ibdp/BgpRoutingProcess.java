@@ -129,6 +129,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   private final boolean _exportFromBgpRib;
 
+  /**
+   * Whether {@link BgpAggregate BGP aggregates} should be generated using routes in the main RIB
+   * (Arista-like behavior) or in the BGP RIB (Cisco-like behavior).
+   */
+  private final boolean _generateAggregatesFromMainRib;
+
   @Nonnull private final PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
   @Nonnull private final RoutingPolicies _policies;
@@ -291,6 +297,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _prefixTracer = prefixTracer;
 
     _exportFromBgpRib = configuration.getExportBgpFromBgpRib();
+    _generateAggregatesFromMainRib = configuration.getGenerateBgpAggregatesFromMainRib();
 
     // Message queues start out empty
     _bgpv4Edges = ImmutableSortedSet.of();
@@ -1253,13 +1260,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // Nothing to do, so don't bother with unnecessary prep.
       return RibDelta.empty();
     }
-    Set<Bgpv4Route> currentRoutes = _bgpv4Rib.getTypedRoutes();
+    Set<? extends AbstractRoute> currentRoutes =
+        _generateAggregatesFromMainRib ? _mainRib.getRoutes() : _bgpv4Rib.getTypedRoutes();
     RibDelta.Builder<Bgpv4Route> aggDeltaBuilder = RibDelta.builder();
     // Withdraw old aggregates. Withdrawals may be canceled out by activated aggregates below.
-    currentRoutes.stream()
+    _bgpv4Rib.getTypedRoutes().stream()
         .filter(r -> r.getProtocol() == RoutingProtocol.AGGREGATE)
         .forEach(prevAggregate -> aggDeltaBuilder.remove(prevAggregate, Reason.WITHDRAW));
-    Multimap<Prefix, Bgpv4Route> potentialContributorsByAggregatePrefix =
+    Multimap<Prefix, AbstractRoute> potentialContributorsByAggregatePrefix =
         MultimapBuilder.hashKeys(_process.getAggregates().size()).linkedListValues().build();
     // Map each non-aggregate potential contributor to its most specific containing aggregate if it
     // exists.
@@ -1278,10 +1286,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             return;
           }
           BgpAggregate aggregate = Iterables.getOnlyElement(aggregatesAtNode);
-          Collection<Bgpv4Route> potentialContributors =
+          Collection<AbstractRoute> potentialContributors =
               potentialContributorsByAggregatePrefix.get(aggNet);
           Bgpv4Route activatedAggregate = null;
-          for (Bgpv4Route potentialContributor : potentialContributors) {
+          for (AbstractRoute potentialContributor : potentialContributors) {
             // TODO: apply suppressionPolicy
             // TODO: apply and merge transformations of generationPolicy
             RoutingPolicy generationPolicy =
@@ -1300,10 +1308,33 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                           .orElse(null),
                       admin,
                       _process.getRouterId());
-              aggDeltaBuilder.add(activatedAggregate);
               break;
             }
           }
+
+          // If generating aggregates from main RIB routes, the aggregate should only be generated
+          // if there is not already a better route for its prefix in the main RIB.
+          if (_generateAggregatesFromMainRib && activatedAggregate != null) {
+            Set<AnnotatedRoute<AbstractRoute>> mainRibRoutesWithAggNetwork =
+                _mainRib.getRoutes(aggNet);
+            // TODO Will the aggregate activate if there's an equally-preferred route?
+            // Note that the equally-preferred route case captures two scenarios:
+            // 1. there is a separate but equally-preferred route in the main RIB
+            // 2. this aggregate route has already been activated and we see it in the main RIB
+            // Case 1 hasn't been tested, but in case 2 the route should be activated.
+            if (!mainRibRoutesWithAggNetwork.isEmpty()
+                && _mainRib.comparePreference(
+                        annotateRoute(activatedAggregate),
+                        mainRibRoutesWithAggNetwork.iterator().next())
+                    < 0) {
+              activatedAggregate = null;
+            }
+          }
+
+          if (activatedAggregate != null) {
+            aggDeltaBuilder.add(activatedAggregate);
+          }
+
           BgpAggregate moreGeneralAggregate = getMostSpecificAggregate(aggNet).orElse(null);
           if (moreGeneralAggregate != null) {
             Prefix moreGeneralAggregatePrefix = moreGeneralAggregate.getNetwork();
@@ -1325,8 +1356,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   private void mapPotentialContributorToMostSpecificAggregate(
-      Multimap<Prefix, Bgpv4Route> potentialContributorsByAggregatePrefix,
-      Bgpv4Route potentialContributor) {
+      Multimap<Prefix, AbstractRoute> potentialContributorsByAggregatePrefix,
+      AbstractRoute potentialContributor) {
     Optional<BgpAggregate> maybeAggregate =
         getMostSpecificAggregate(potentialContributor.getNetwork());
     if (!maybeAggregate.isPresent()) {
@@ -1336,6 +1367,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         maybeAggregate.get().getNetwork(), potentialContributor);
   }
 
+  /**
+   * Returns the most specific aggregate that could be activated by the given prefix, i.e. whose
+   * network contains but does not equal the given prefix.
+   */
   private @Nonnull Optional<BgpAggregate> getMostSpecificAggregate(
       Prefix potentialContributingPrefix) {
     if (potentialContributingPrefix.equals(Prefix.ZERO)) {

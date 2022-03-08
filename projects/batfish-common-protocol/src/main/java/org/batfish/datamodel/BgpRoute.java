@@ -9,6 +9,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,8 +36,138 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         HasReadableSourceProtocol,
         HasReadableWeight {
 
+  /**
+   * Holds the common properties of BGP routes that are likely to be identical across many different
+   * routes.
+   *
+   * <p>Interned for memory overhead.
+   */
+  protected static class BgpRouteAttributes implements Serializable {
+    public static BgpRouteAttributes create(
+        @Nullable AsPath asPath,
+        @Nullable Set<Long> clusterList,
+        CommunitySet communities,
+        long localPreference,
+        long med,
+        Ip originatorIp,
+        OriginMechanism originMechanism,
+        OriginType originType,
+        RoutingProtocol protocol,
+        boolean receivedFromRouteReflectorClient,
+        @Nullable RoutingProtocol srcProtocol,
+        int weight) {
+      // Intern.
+      return ATTRIBUTE_CACHE.get(
+          new BgpRouteAttributes(
+              asPath,
+              clusterList,
+              communities,
+              localPreference,
+              med,
+              originatorIp,
+              originMechanism,
+              originType,
+              protocol,
+              receivedFromRouteReflectorClient,
+              srcProtocol,
+              weight));
+    }
+
+    private BgpRouteAttributes(
+        @Nullable AsPath asPath,
+        @Nullable Set<Long> clusterList,
+        CommunitySet communities,
+        long localPreference,
+        long med,
+        Ip originatorIp,
+        OriginMechanism originMechanism,
+        OriginType originType,
+        RoutingProtocol protocol,
+        boolean receivedFromRouteReflectorClient,
+        @Nullable RoutingProtocol srcProtocol,
+        int weight) {
+      _asPath = firstNonNull(asPath, AsPath.empty());
+      _clusterList = clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.get(clusterList);
+      _communities = communities;
+      _localPreference = localPreference;
+      _med = med;
+      _originatorIp = originatorIp;
+      _originMechanism = originMechanism;
+      _originType = originType;
+      _protocol = protocol;
+      _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
+      _srcProtocol = srcProtocol;
+      _weight = weight;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      BgpRouteAttributes that = (BgpRouteAttributes) o;
+      return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
+          && _protocol == that._protocol
+          && _localPreference == that._localPreference
+          && _med == that._med
+          && _receivedFromRouteReflectorClient == that._receivedFromRouteReflectorClient
+          && _weight == that._weight
+          && _asPath.equals(that._asPath)
+          && _clusterList.equals(that._clusterList)
+          && _communities.equals(that._communities)
+          && _originatorIp.equals(that._originatorIp)
+          && _originMechanism == that._originMechanism
+          && _originType == that._originType
+          && _srcProtocol == that._srcProtocol;
+    }
+
+    private transient int _hashCode;
+
+    @Override
+    public int hashCode() {
+      int h = _hashCode;
+      if (h == 0) {
+        h = _asPath.hashCode();
+        h = h * 31 + _clusterList.hashCode();
+        h = h * 31 + _communities.hashCode();
+        h = h * 31 + Long.hashCode(_localPreference);
+        h = h * 31 + Long.hashCode(_med);
+        h = h * 31 + _originatorIp.hashCode();
+        h = h * 31 + _originMechanism.ordinal();
+        h = h * 31 + _originType.ordinal();
+        h = h * 31 + _protocol.ordinal();
+        h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
+        h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
+        h = h * 31 + _weight;
+        _hashCode = h;
+      }
+      return h;
+    }
+
+    protected final @Nonnull AsPath _asPath;
+    protected final @Nonnull Set<Long> _clusterList;
+    protected final @Nonnull CommunitySet _communities;
+    protected final long _localPreference;
+    protected final long _med;
+    protected final @Nonnull Ip _originatorIp;
+    protected final @Nonnull OriginMechanism _originMechanism;
+    protected final @Nonnull OriginType _originType;
+    protected final @Nonnull RoutingProtocol _protocol;
+    protected final boolean _receivedFromRouteReflectorClient;
+    protected final @Nullable RoutingProtocol _srcProtocol;
+    protected final int _weight;
+  }
+
   /** Local-preference has a maximum value of u32 max. */
   public static final long MAX_LOCAL_PREFERENCE = (1L << 32) - 1;
+
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (100 bytes seems smallest possible object size, would be 100 MiB total).
+  private static final LoadingCache<BgpRouteAttributes, BgpRouteAttributes> ATTRIBUTE_CACHE =
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(a -> a);
 
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
@@ -64,6 +195,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nullable protected OriginType _originType;
     @Nullable protected RoutingProtocol _protocol;
     @Nullable protected Ip _receivedFromIp;
+
     protected boolean _receivedFromRouteReflectorClient;
     @Nullable protected RoutingProtocol _srcProtocol;
     protected int _weight;
@@ -292,15 +424,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_SRC_PROTOCOL = "srcProtocol";
   static final String PROP_WEIGHT = "weight";
 
-  @Nonnull protected final AsPath _asPath;
-  @Nonnull protected final Set<Long> _clusterList;
-  @Nonnull protected final CommunitySet _communities;
-  protected final long _localPreference;
-  protected final long _med;
-  @Nonnull protected final Ip _originatorIp;
-  @Nonnull protected final OriginMechanism _originMechanism;
-  @Nonnull protected final OriginType _originType;
-  @Nonnull protected final RoutingProtocol _protocol;
+  protected final @Nonnull BgpRouteAttributes _attributes;
 
   /**
    * The {@link Ip} address of the (I)BGP peer from which the route was learned, or {@link Ip#ZERO}
@@ -308,124 +432,97 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
    *
    * <p>Set on origination and on import.
    */
-  @Nullable protected final Ip _receivedFromIp;
-
-  protected final boolean _receivedFromRouteReflectorClient;
-  @Nullable protected final RoutingProtocol _srcProtocol;
-  /* NOTE: Cisco-only attribute */
-  protected final int _weight;
+  protected final @Nullable Ip _receivedFromIp;
 
   protected BgpRoute(
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
       int admin,
-      @Nullable AsPath asPath,
-      @Nonnull CommunitySet communities,
-      long localPreference,
-      long med,
-      Ip originatorIp,
-      @Nullable Set<Long> clusterList,
-      boolean receivedFromRouteReflectorClient,
-      OriginMechanism originMechanism,
-      OriginType originType,
-      RoutingProtocol protocol,
+      BgpRouteAttributes attributes,
       @Nullable Ip receivedFromIp,
-      @Nullable RoutingProtocol srcProtocol,
       long tag,
-      int weight,
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, admin, tag, nonRouting, nonForwarding);
     checkArgument(
-        protocol == RoutingProtocol.BGP
-            || protocol == RoutingProtocol.IBGP
-            || protocol == RoutingProtocol.AGGREGATE,
+        attributes._protocol == RoutingProtocol.BGP
+            || attributes._protocol == RoutingProtocol.IBGP
+            || attributes._protocol == RoutingProtocol.AGGREGATE,
         "Invalid BgpRoute protocol");
-    _asPath = firstNonNull(asPath, AsPath.empty());
-    _clusterList = clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.get(clusterList);
-    _communities = communities;
-    _localPreference = localPreference;
-    _med = med;
+    _attributes = attributes;
     _nextHop = nextHop;
-    _originatorIp = originatorIp;
-    _originMechanism = originMechanism;
-    _originType = originType;
-    _protocol = protocol;
     _receivedFromIp = receivedFromIp;
-    _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
-    _srcProtocol = srcProtocol;
-    _weight = weight;
   }
 
   @Nonnull
   @JsonProperty(PROP_AS_PATH)
   @Override
   public AsPath getAsPath() {
-    return _asPath;
+    return _attributes._asPath;
   }
 
   public @Nonnull Set<Long> getClusterList() {
-    return _clusterList;
+    return _attributes._clusterList;
   }
 
   /** Return the set of all community attributes */
   @Nonnull
   @Override
   public final CommunitySet getCommunities() {
-    return _communities;
+    return _attributes._communities;
   }
 
   /** Return the set of all community attributes */
   @Nonnull
   @Override
   public final Set<Community> getCommunitiesAsSet() {
-    return _communities.getCommunities();
+    return _attributes._communities.getCommunities();
   }
 
   /** Return only standard community attributes */
   @Nonnull
   @JsonIgnore
   public Set<StandardCommunity> getStandardCommunities() {
-    return _communities.getStandardCommunities();
+    return _attributes._communities.getStandardCommunities();
   }
 
   /** Return only extended community attributes */
   @Nonnull
   @JsonIgnore
   public Set<ExtendedCommunity> getExtendedCommunities() {
-    return _communities.getExtendedCommunities();
+    return _attributes._communities.getExtendedCommunities();
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)
   @Override
   public long getLocalPreference() {
-    return _localPreference;
+    return _attributes._localPreference;
   }
 
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
   public long getMetric() {
-    return _med;
+    return _attributes._med;
   }
 
   @Nonnull
   @JsonProperty(PROP_ORIGINATOR_IP)
   public Ip getOriginatorIp() {
-    return _originatorIp;
+    return _attributes._originatorIp;
   }
 
   @Nonnull
   @JsonProperty(PROP_ORIGIN_MECHANISM)
   public OriginMechanism getOriginMechanism() {
-    return _originMechanism;
+    return _attributes._originMechanism;
   }
 
   @Nonnull
   @JsonProperty(PROP_ORIGIN_TYPE)
   @Override
   public OriginType getOriginType() {
-    return _originType;
+    return _attributes._originType;
   }
 
   @Nonnull
@@ -433,7 +530,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonProperty(PROP_PROTOCOL)
   @Override
   public RoutingProtocol getProtocol() {
-    return _protocol;
+    return _attributes._protocol;
   }
 
   @Nullable
@@ -444,19 +541,19 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
   @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
   public boolean getReceivedFromRouteReflectorClient() {
-    return _receivedFromRouteReflectorClient;
+    return _attributes._receivedFromRouteReflectorClient;
   }
 
   @JsonProperty(PROP_SRC_PROTOCOL)
   @Override
   public @Nullable RoutingProtocol getSrcProtocol() {
-    return _srcProtocol;
+    return _attributes._srcProtocol;
   }
 
   @JsonProperty(PROP_WEIGHT)
   @Override
   public int getWeight() {
-    return _weight;
+    return _attributes._weight;
   }
 
   @Override
@@ -464,18 +561,18 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
   @JsonProperty(PROP_CLUSTER_LIST)
   private @Nonnull SortedSet<Long> getJsonClusterList() {
-    return ImmutableSortedSet.copyOf(_clusterList);
+    return ImmutableSortedSet.copyOf(_attributes._clusterList);
   }
 
   @JsonProperty(PROP_COMMUNITIES)
   private @Nonnull CommunitySet getJsonCommunities() {
-    return _communities;
+    return _attributes._communities;
   }
 
   /** Whether the route is a trackable redistributed local route. */
   @JsonIgnore
   public boolean isTrackableLocalRoute() {
-    switch (_originMechanism) {
+    switch (_attributes._originMechanism) {
       case NETWORK:
       case REDISTRIBUTE:
         return true;
@@ -484,7 +581,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         return false;
       default:
         throw new IllegalArgumentException(
-            String.format("Unhandled OriginMechanism: %s", _originMechanism));
+            String.format("Unhandled OriginMechanism: %s", _attributes._originMechanism));
     }
   }
 }

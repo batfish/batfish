@@ -59,34 +59,6 @@ public final class AutoCompleteUtils {
 
   private static final int MAX_SUGGESTIONS_PER_TYPE = 5;
 
-  @Nonnull
-  public static List<AutocompleteSuggestion> autoComplete(
-      Variable.Type completionType, String query, int maxSuggestions) {
-    return autoComplete(null, null, completionType, query, maxSuggestions, null, null, null);
-  }
-
-  @Nonnull
-  public static List<AutocompleteSuggestion> autoComplete(
-      @Nullable String network,
-      @Nullable String snapshot,
-      Variable.Type completionType,
-      String query,
-      int maxSuggestions,
-      @Nullable CompletionMetadata completionMetadata,
-      @Nullable NodeRolesData nodeRolesData,
-      @Nullable ReferenceLibrary referenceLibrary) {
-    return autoComplete(
-        network,
-        snapshot,
-        completionType,
-        query,
-        maxSuggestions,
-        completionMetadata,
-        nodeRolesData,
-        referenceLibrary,
-        true);
-  }
-
   /**
    * @param network name of network
    * @param snapshot name of snapshot

@@ -94,10 +94,8 @@ public final class CompletionMetadataUtils {
   }
 
   static RangeSet<Ip> unownedSubnetHostIps(Prefix prefix, RangeSet<Ip> ownedIps) {
-    TreeRangeSet<Ip> result = TreeRangeSet.create();
-    result.add(Range.closed(prefix.getFirstHostIp(), prefix.getLastHostIp()));
-    result.removeAll(ownedIps);
-    return ImmutableRangeSet.copyOf(result);
+    Range<Ip> prefixRange = Range.closed(prefix.getFirstHostIp(), prefix.getLastHostIp());
+    return ImmutableRangeSet.copyOf(ownedIps.complement().subRangeSet(prefixRange));
   }
 
   public static PrefixTrieMultiMap<IpCompletionMetadata> getIps(

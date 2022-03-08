@@ -9,6 +9,7 @@ import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
@@ -68,6 +69,12 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
   @Override
   public Statement visitPrependAsPath(PrependAsPath prependAsPath, Void arg) {
     return prependAsPath;
+  }
+
+  @Override
+  public Statement visitReplaceAsesInAsSequence(
+      ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
+    return replaceAsesInAsPathSequence;
   }
 
   @Override

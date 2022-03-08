@@ -13,6 +13,7 @@ import
     PaloAlto_interface,
     PaloAlto_network,
     PaloAlto_ospf,
+    PaloAlto_profiles,
     PaloAlto_readonly,
     PaloAlto_response,
     PaloAlto_rip,
@@ -109,6 +110,7 @@ statement_config_devices
     | s_deviceconfig
     | s_network
     | s_null
+    | s_profiles
     | s_rulebase
     | s_service
     | s_service_group
@@ -200,6 +202,7 @@ statement_device_group
     | s_address_group
     | s_application
     | s_application_group
+    | s_profiles
     | s_service
     | s_service_group
     | s_tag
@@ -210,7 +213,6 @@ statement_device_group
     | sdg_description
     | sdg_devices
     | sdg_parent_dg
-    | sdg_profiles
     | sdg_profile_group
 ;
 

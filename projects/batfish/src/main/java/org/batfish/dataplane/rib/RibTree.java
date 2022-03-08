@@ -35,7 +35,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   @Nonnull private final AbstractRib<R> _owner;
 
   RibTree(AbstractRib<R> owner) {
-    _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    _root = new PrefixTrieMultiMap<>();
     _owner = owner;
   }
 

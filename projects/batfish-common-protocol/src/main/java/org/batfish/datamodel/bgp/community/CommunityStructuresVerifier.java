@@ -93,6 +93,7 @@ import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
@@ -677,6 +678,11 @@ public final class CommunityStructuresVerifier {
       if1.getFalseStatements().stream().forEach(s -> s.accept(this, arg));
       if1.getTrueStatements().stream().forEach(s -> s.accept(this, arg));
       if1.getGuard().accept(BOOLEAN_EXPR_VERIFIER, arg);
+      return null;
+    }
+
+    @Override
+    public Void visitReplaceAsesInAsSequence(ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
       return null;
     }
 

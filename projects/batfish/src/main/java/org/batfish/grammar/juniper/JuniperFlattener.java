@@ -1,10 +1,12 @@
 package org.batfish.grammar.juniper;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.grammar.flattener.Flattener;
@@ -35,6 +37,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   private List<List<WordContext>> _stack;
   private final String _text;
   private boolean _inEmptyBracedClause;
+  private final List<Set<Integer>> _extraLines;
 
   public JuniperFlattener(String header, String text) {
     _header = header;
@@ -45,6 +48,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _stack = new ArrayList<>();
     _root = new FlatStatementTree();
     _allFlatStatements = new ArrayList<>();
+    _extraLines = new ArrayList<>();
   }
 
   @Override
@@ -73,6 +77,9 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   @Override
   public void exitBracketed_clause(Bracketed_clauseContext ctx) {
     if (_inactiveStatement == null) {
+      for (WordContext word : ctx.word()) {
+        recordExtraLines(word.getStart().getLine());
+      }
       _inBrackets = false;
     }
   }
@@ -102,6 +109,17 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
       if (ctx.INACTIVE() != null) {
         _inactiveStatement = ctx;
       } else {
+        int firstWordLine = ctx.words.get(0).getStart().getLine();
+        ImmutableSet.Builder<Integer> extraLinesBuilder =
+            ImmutableSet.<Integer>builder().add(firstWordLine);
+        if (ctx.descriptive_comment != null) {
+          IntStream.range(ctx.descriptive_comment.getLine(), firstWordLine)
+              .forEach(extraLinesBuilder::add);
+        }
+        if (ctx.close != null) {
+          extraLinesBuilder.add(ctx.close.getLine());
+        }
+        _extraLines.add(extraLinesBuilder.build());
         String statementTextAtCurrentDepth =
             ctx.words.stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
         if (ctx.REPLACE() != null) {
@@ -120,7 +138,11 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
   @Override
   public void exitHierarchical_statement(Hierarchical_statementContext ctx) {
+
     if (_inactiveStatement == null) {
+      int firstWordLine = ctx.words.get(0).getStart().getLine();
+      recordExtraLines(firstWordLine);
+      _extraLines.remove(_extraLines.size() - 1);
       _stack.remove(_stack.size() - 1);
       // Finished recording set lines for this node key, so pop up
       _currentTree = _currentTree.getParent();
@@ -185,13 +207,11 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     StringBuilder sb = new StringBuilder();
     sb.append("set");
     for (List<WordContext> line : _stack) {
+      int originalLine = _allFlatStatements.size() + _headerLineCount;
       for (WordContext wordCtx : line) {
         sb.append(" ");
         // Offset new line number by header line count
-        _lineMap.setOriginalLine(
-            _allFlatStatements.size() + _headerLineCount,
-            sb.length(),
-            wordCtx.WORD().getSymbol().getLine());
+        _lineMap.setOriginalLine(originalLine, sb.length(), wordCtx.WORD().getSymbol().getLine());
         sb.append(wordCtx.getText());
       }
     }
@@ -215,5 +235,9 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
     return _text.substring(start, end + 1);
+  }
+
+  private void recordExtraLines(int originalLine) {
+    _lineMap.setExtraLines(originalLine, _extraLines.get(_extraLines.size() - 1));
   }
 }

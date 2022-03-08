@@ -18,6 +18,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_OVERRIDE_RULE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.CUSTOM_URL_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.NAT_RULE;
@@ -55,6 +56,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RU
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.REDIST_RULE_REDIST_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_FROM_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_SELF_REF;
@@ -398,6 +400,7 @@ import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.CustomUrlCategory;
 import org.batfish.representation.palo_alto.DestinationTranslation;
 import org.batfish.representation.palo_alto.DeviceGroup;
 import org.batfish.representation.palo_alto.DynamicIpAndPort;
@@ -490,6 +493,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private BgpVr _currentBgpVr;
   private PaloAltoConfiguration _currentConfiguration;
   private CryptoProfile _currentCrytoProfile;
+  private CustomUrlCategory _currentCustomUrlCategory;
   private DeviceGroup _currentDeviceGroup;
   private String _currentDeviceGroupVsys;
   private String _currentDeviceName;
@@ -2199,6 +2203,56 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void enterSp_custom_url_category(PaloAltoParser.Sp_custom_url_categoryContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.custom_url_category_name());
+    if (maybeName.isPresent()) {
+      String name = maybeName.get();
+      _currentCustomUrlCategory = _currentVsys.getOrCreateCustomUrlCategory(name);
+      defineFlattenedStructure(
+          CUSTOM_URL_CATEGORY, computeObjectName(_currentVsys.getName(), name), ctx);
+    } else {
+      _currentCustomUrlCategory = new CustomUrlCategory(getText(ctx.custom_url_category_name()));
+    }
+  }
+
+  @Override
+  public void exitSp_custom_url_category(PaloAltoParser.Sp_custom_url_categoryContext ctx) {
+    _currentCustomUrlCategory = null;
+  }
+
+  @Override
+  public void exitSpc_description(PaloAltoParser.Spc_descriptionContext ctx) {
+    _currentCustomUrlCategory.setDescription(getText(ctx.description));
+  }
+
+  @Override
+  public void exitSpc_list(PaloAltoParser.Spc_listContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String url = getText(var);
+      if (PaloAltoConfiguration.unexpectedUnboundedCustomUrlWildcard(url)) {
+        warn(
+            ctx,
+            String.format(
+                "Did you mean '%s/'? Without the trailing slash, the url will match additional"
+                    + " trailing domains, such as '%s.evil'.",
+                url, url));
+      }
+      _currentCustomUrlCategory.addToList(url);
+    }
+  }
+
+  @Override
+  public void exitSpc_type(PaloAltoParser.Spc_typeContext ctx) {
+    if (!getText(ctx.type).equals(CustomUrlCategory.TYPE_URL_LIST)) {
+      warn(
+          ctx,
+          String.format(
+              "Currently only '%s' custom-url-category type is supported by Batfish.",
+              CustomUrlCategory.TYPE_URL_LIST));
+    }
+  }
+
+  @Override
   public void exitSniv_unit(Sniv_unitContext ctx) {
     _currentInterface = _currentParentInterface;
   }
@@ -2786,6 +2840,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     String uniqueName = computeObjectName(_currentVsys, name);
     defineFlattenedStructure(SECURITY_RULE, uniqueName, ctx);
     referenceStructure(SECURITY_RULE, uniqueName, SECURITY_RULE_SELF_REF, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitSrs_category(PaloAltoParser.Srs_categoryContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentSecurityRule.addCategory(name);
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys, name);
+      referenceStructure(
+          CUSTOM_URL_CATEGORY, uniqueName, SECURITY_RULE_CATEGORY, getLine(var.start));
+    }
   }
 
   @Override
@@ -3377,6 +3443,15 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   private @Nonnull Optional<String> toString(ParserRuleContext ctx, Bgp_peer_nameContext peer) {
     return toStringWithLengthInSpace(ctx, peer, BGP_PEER_NAME_LENGTH_SPACE, "bgp peer");
+  }
+
+  private static final IntegerSpace CUSTOM_URL_CATEGORY_NAME_LENGTH_SPACE =
+      IntegerSpace.of(Range.closed(1, 31));
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext ctx, PaloAltoParser.Custom_url_category_nameContext name) {
+    return toStringWithLengthInSpace(
+        ctx, name, CUSTOM_URL_CATEGORY_NAME_LENGTH_SPACE, "custom-url-category");
   }
 
   /**

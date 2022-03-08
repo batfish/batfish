@@ -10,6 +10,8 @@ import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejectsByDefault;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.REFERENCE_IN_VSYS;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.checkIntrazoneValidityAndWarn;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.deviceBindingAndIdCompatible;
@@ -23,6 +25,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generat
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSharedGatewayOutgoingFilter;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateVsysSharedGatewayCalls;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.securityRuleApplies;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.unexpectedUnboundedCustomUrlWildcard;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.hamcrest.Matchers.contains;
@@ -721,5 +724,67 @@ public final class PaloAltoConfigurationTest {
     assertTrue(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.ONE, 1));
 
     // TODO test PRIMARY once that is better supported
+  }
+
+  @Test
+  public void testReferenceInVsys() {
+    String objName = "objName";
+    // Service or service-group
+    {
+      ServiceOrServiceGroupReference ref = new ServiceOrServiceGroupReference(objName);
+      Vsys vsys = new Vsys(DEFAULT_VSYS_NAME);
+      assertFalse(REFERENCE_IN_VSYS.visit(ref, vsys));
+
+      vsys = new Vsys(DEFAULT_VSYS_NAME);
+      vsys.getServices().put(objName, new Service("service"));
+      assertTrue(REFERENCE_IN_VSYS.visit(ref, vsys));
+
+      vsys = new Vsys(DEFAULT_VSYS_NAME);
+      vsys.getServiceGroups().put(objName, new ServiceGroup("serviceGroup"));
+      assertTrue(REFERENCE_IN_VSYS.visit(ref, vsys));
+    }
+
+    // Application or application-group
+    {
+      ApplicationOrApplicationGroupReference ref =
+          new ApplicationOrApplicationGroupReference(objName);
+      Vsys vsys = new Vsys(DEFAULT_VSYS_NAME);
+      assertFalse(REFERENCE_IN_VSYS.visit(ref, vsys));
+
+      vsys = new Vsys(DEFAULT_VSYS_NAME);
+      vsys.getApplications().put(objName, Application.builder("app").build());
+      assertTrue(REFERENCE_IN_VSYS.visit(ref, vsys));
+
+      vsys = new Vsys(DEFAULT_VSYS_NAME);
+      vsys.getApplicationGroups().put(objName, new ApplicationGroup("appGroup"));
+      assertTrue(REFERENCE_IN_VSYS.visit(ref, vsys));
+    }
+
+    // Custom-url-category
+    {
+      CustomUrlCategoryReference ref = new CustomUrlCategoryReference(objName);
+      Vsys vsys = new Vsys(DEFAULT_VSYS_NAME);
+      assertFalse(REFERENCE_IN_VSYS.visit(ref, vsys));
+
+      vsys = new Vsys(DEFAULT_VSYS_NAME);
+      vsys.getCustomUrlCategories().put(objName, new CustomUrlCategory("category"));
+      assertTrue(REFERENCE_IN_VSYS.visit(ref, vsys));
+    }
+  }
+
+  @Test
+  public void testUnexpectedUnboundedCustomUrlWildcard() {
+    // Unexpected and unbounded
+    assertTrue(unexpectedUnboundedCustomUrlWildcard("*.github.com"));
+    assertTrue(unexpectedUnboundedCustomUrlWildcard("www.*.github.com"));
+
+    // Not unexpected
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.*"));
+
+    // Not unbounded
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.com/"));
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.com?"));
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("www.*.github.com/"));
+    assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.com/foobar.something"));
   }
 }

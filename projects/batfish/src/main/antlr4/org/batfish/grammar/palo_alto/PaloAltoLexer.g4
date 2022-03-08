@@ -144,6 +144,8 @@ CONTENT_PREVIEW: 'content-preview';
 
 CRYPTO_PROFILES: 'crypto-profiles';
 
+CUSTOM_URL_CATEGORY: 'custom-url-category';
+
 DAMPENING_PROFILE: 'dampening-profile';
 
 DAYS: 'days';
@@ -378,6 +380,8 @@ LINK_SPEED: 'link-speed';
 LINK_STATE: 'link-state';
 
 LINK_TYPE: 'link-type';
+
+LIST: 'list';
 
 LLDP: 'lldp';
 
@@ -637,6 +641,8 @@ SOURCE_TRANSLATION: 'source-translation';
 
 SOURCE_USER: 'source-user';
 
+SPYWARE: 'spyware';
+
 SSL
 :
     [Ss][Ss][Ll]
@@ -743,6 +749,8 @@ VISIBLE_VSYS: 'visible-vsys';
 VLAN: 'vlan';
 
 VSYS: 'vsys';
+
+VULNERABILITY: 'vulnerability';
 
 WEIGHT: 'weight';
 

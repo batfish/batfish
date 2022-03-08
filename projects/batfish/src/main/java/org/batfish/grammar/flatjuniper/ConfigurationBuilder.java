@@ -208,6 +208,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifier_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_expand_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_exprContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_externalContext;
@@ -420,7 +421,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocond_if_route_existsC
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondi_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondi_tableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_ip6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_commonContext;
@@ -451,6 +451,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_thenContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_expandContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_color2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_colorContext;
@@ -714,8 +715,6 @@ import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
 import org.batfish.representation.juniper.FwFromDscp;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
-import org.batfish.representation.juniper.FwFromHostProtocol;
-import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpType;
 import org.batfish.representation.juniper.FwFromIpOptions;
@@ -759,6 +758,7 @@ import org.batfish.representation.juniper.IpsecPolicy;
 import org.batfish.representation.juniper.IpsecProposal;
 import org.batfish.representation.juniper.IpsecVpn;
 import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
+import org.batfish.representation.juniper.IsisInterfaceSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperAuthenticationKey;
@@ -823,6 +823,9 @@ import org.batfish.representation.juniper.PsFroms;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
+import org.batfish.representation.juniper.PsThenAsPathExpand;
+import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
+import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunityDelete;
@@ -2091,7 +2094,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private IpsecVpn _currentIpsecVpn;
 
-  private Interface _currentIsisInterface;
+  private IsisInterfaceSettings _currentIsisInterfaceSettings;
 
   private IsisInterfaceLevelSettings _currentIsisInterfaceLevelSettings;
 
@@ -2200,6 +2203,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
+    _configuration.setExtraLines(_parser.getExtraLines());
     setLogicalSystem(_configuration.getMasterLogicalSystem());
     _termRouteFilters = new HashMap<>();
     _w = warnings;
@@ -2596,10 +2600,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
-    _currentIsisInterface = initRoutingInterface(ctx.id);
-    _currentIsisInterface.getOrInitIsisSettings();
-    _configuration.referenceStructure(
-        INTERFACE, _currentIsisInterface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
+    if (ctx.ALL() != null) {
+      _currentIsisInterfaceSettings = _currentRoutingInstance.getInterfaceAllIsisSettings();
+      if (_currentIsisInterfaceSettings == null) {
+        _currentIsisInterfaceSettings = new IsisInterfaceSettings();
+        _currentRoutingInstance.setInterfaceAllIsisSettings(_currentIsisInterfaceSettings);
+      }
+    } else {
+      Interface iface = initRoutingInterface(ctx.id);
+      _currentIsisInterfaceSettings = iface.getOrInitIsisSettings();
+      _configuration.referenceStructure(
+          INTERFACE, iface.getName(), ISIS_INTERFACE, getLine(ctx.id.getStop()));
+    }
   }
 
   @Override
@@ -2623,12 +2635,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     int level = toInt(ctx.dec());
     switch (level) {
       case 1:
-        _currentIsisInterfaceLevelSettings =
-            _currentIsisInterface.getIsisSettings().getLevel1Settings();
+        _currentIsisInterfaceLevelSettings = _currentIsisInterfaceSettings.getLevel1Settings();
         break;
       case 2:
-        _currentIsisInterfaceLevelSettings =
-            _currentIsisInterface.getIsisSettings().getLevel2Settings();
+        _currentIsisInterfaceLevelSettings = _currentIsisInterfaceSettings.getLevel2Settings();
         break;
       default:
         throw new BatfishException("invalid IS-IS level: " + level);
@@ -4413,6 +4423,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       _currentLogicalSystem.setDefaultInboundAction(LineAction.PERMIT);
     }
+    _configuration.setExtraLines(null);
   }
 
   @Override
@@ -4530,6 +4541,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIfe_interface_mode(Ife_interface_modeContext ctx) {
+    if (!_currentInterfaceOrRange.getName().endsWith(".0")) {
+      warn(ctx, "Interface mode can only be configured on unit 0");
+      return;
+    }
     if (ctx.ACCESS() != null) {
       _currentInterfaceOrRange.getEthernetSwitching().setSwitchportMode(SwitchportMode.ACCESS);
     } else if (ctx.TRUNK() != null) {
@@ -4553,6 +4568,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIfe_vlan(Ife_vlanContext ctx) {
+    if (!_currentInterfaceOrRange.getName().endsWith(".0")) {
+      warn(ctx, "Vlan members can only be configured on unit 0");
+      return;
+    }
     if (ctx.range() != null) {
       IntegerSpace range = IntegerSpace.unionOf(toRange(ctx.range()).toArray(new SubRange[] {}));
       _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(new VlanRange(range));
@@ -4721,7 +4740,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIs_interface(Is_interfaceContext ctx) {
-    _currentIsisInterface = null;
+    _currentIsisInterfaceSettings = null;
   }
 
   @Override
@@ -4750,7 +4769,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIsi_disable(Isi_disableContext ctx) {
-    _currentIsisInterface.getIsisSettings().setEnabled(false);
+    _currentIsisInterfaceSettings.setEnabled(false);
   }
 
   @Override
@@ -4760,24 +4779,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIsi_passive(Isi_passiveContext ctx) {
-    _currentIsisInterface.getIsisSettings().setPassive(true);
+    _currentIsisInterfaceSettings.setPassive(true);
   }
 
   @Override
   public void exitIsi_point_to_point(Isi_point_to_pointContext ctx) {
-    _currentIsisInterface.getIsisSettings().setPointToPoint(true);
+    _currentIsisInterfaceSettings.setPointToPoint(true);
   }
 
   @Override
   public void exitIsib_minimum_interval(Isib_minimum_intervalContext ctx) {
-    _currentIsisInterface
-        .getIsisSettings()
-        .setBfdLivenessDetectionMinimumInterval(toInt(ctx.dec()));
+    _currentIsisInterfaceSettings.setBfdLivenessDetectionMinimumInterval(toInt(ctx.dec()));
   }
 
   @Override
   public void exitIsib_multiplier(Isib_multiplierContext ctx) {
-    _currentIsisInterface.getIsisSettings().setBfdLivenessDetectionMultiplier(toInt(ctx.dec()));
+    _currentIsisInterfaceSettings.setBfdLivenessDetectionMultiplier(toInt(ctx.dec()));
   }
 
   @Override
@@ -5085,11 +5102,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitPoplt_ip6(Poplt_ip6Context ctx) {
-    _currentPrefixList.setIpv6(true);
-  }
-
-  @Override
   public void exitPoplt_network(Poplt_networkContext ctx) {
     Prefix prefix = toPrefix(ctx.network);
     _currentPrefixList.getPrefixes().add(prefix);
@@ -5097,7 +5109,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPoplt_network6(Poplt_network6Context ctx) {
-    _currentPrefixList.setIpv6(true);
+    _currentPrefixList.setHasIpv6(true);
   }
 
   @Override
@@ -5287,7 +5299,60 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopst_as_path_prepend(Popst_as_path_prependContext ctx) {
     List<Long> asPaths =
         ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
+    _currentPsThens.removeIf(PsThenAsPathPrepend.class::isInstance);
     _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
+    Optional<PsThenAsPathExpand> expand =
+        _currentPsThens.stream()
+            .filter(PsThenAsPathExpand.class::isInstance)
+            .map(PsThenAsPathExpand.class::cast)
+            .findFirst();
+    if (expand.isPresent()) {
+      _currentPsThens.removeIf(PsThenAsPathExpand.class::isInstance);
+      _currentPsThens.add(expand.get());
+    }
+  }
+
+  @Override
+  public void exitPopst_as_path_expand(Popst_as_path_expandContext ctx) {
+    PsThenAsPathExpand expand;
+    if (ctx.LAST_AS() != null) {
+      Optional<Integer> maybeCount = ctx.count != null ? toInteger(ctx, ctx.count) : Optional.of(1);
+      if (!maybeCount.isPresent()) {
+        return;
+      }
+      expand = new PsThenAsPathExpandLastAs(maybeCount.get());
+    } else {
+      assert !ctx.asns.isEmpty();
+      List<Long> asPaths =
+          ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
+      expand = new PsThenAsPathExpandAsList(asPaths);
+    }
+    _currentPsThens.removeIf(PsThenAsPathExpand.class::isInstance);
+    _currentPsThens.add(expand);
+  }
+
+  private static final IntegerSpace AS_PATH_EXPAND_LAST_AS_COUNT_RANGE =
+      IntegerSpace.of(new SubRange(1, 32));
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, As_path_expand_countContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx, AS_PATH_EXPAND_LAST_AS_COUNT_RANGE, "as-path-expand last-as count");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
   }
 
   @Override
@@ -6328,7 +6393,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String termName = protocol.name();
     FwTerm newTerm = new FwTerm(termName);
     _currentZoneInboundFilter.getTerms().put(termName, newTerm);
-    newTerm.getFromHostProtocols().add(new FwFromHostProtocol(protocol));
+    newTerm.getFromHostProtocols().add(protocol);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
   }
 
@@ -6338,7 +6403,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String termName = service.name();
     FwTerm newTerm = new FwTerm(termName);
     _currentZoneInboundFilter.getTerms().put(termName, newTerm);
-    newTerm.getFromHostServices().add(new FwFromHostService(service));
+    newTerm.getFromHostServices().add(service);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
   }
 

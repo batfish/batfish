@@ -3,6 +3,8 @@ package org.batfish.common.topology;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.common.topology.IpOwnersBaseImpl.ElectionDetails;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
@@ -66,4 +68,12 @@ public interface IpOwners {
    */
   @Nonnull
   Map<String, Map<String, Map<String, IpSpace>>> getVrfIfaceOwnedIpSpaces();
+
+  /** Returns election data for HSRP, if recorded. */
+  @Nullable
+  ElectionDetails getHsrpElectionDetails();
+
+  /** Returns election data for VRRP, if recorded. */
+  @Nullable
+  ElectionDetails getVrrpElectionDetails();
 }

@@ -161,7 +161,8 @@ public class IBatfishTestAdapter implements IBatfish {
         super(
             _batfish.loadConfigurations(snapshot),
             getInitialL3Adjacencies(snapshot),
-            PreDataPlaneTrackMethodEvaluator::new);
+            PreDataPlaneTrackMethodEvaluator::new,
+            false);
       }
     }
   }
