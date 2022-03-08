@@ -2938,7 +2938,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       RuleEndpoint endpoint = toRuleEndpoint(var);
-      _currentSecurityRule.getDestination().add(endpoint);
+      _currentSecurityRule.addDestination(endpoint);
 
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
@@ -2997,7 +2997,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void exitSrs_source(Srs_sourceContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       RuleEndpoint endpoint = toRuleEndpoint(var);
-      _currentSecurityRule.getSource().add(endpoint);
+      _currentSecurityRule.addSource(endpoint);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
 
