@@ -5016,19 +5016,6 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOverlayEcmp() throws IOException {
-    String hostname = "juniper-overlay-ecmp";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
-    assertThat(
-        pvcae,
-        hasParseWarning(
-            "configs/" + hostname,
-            equalTo("Batfish does not enable two-level equal-cost multipath next hops.")));
-  }
-
-  @Test
   public void testParsingRecovery() {
     String recoveryText = readResource("org/batfish/grammar/juniper/testconfigs/recovery", UTF_8);
     Settings settings = new Settings();
