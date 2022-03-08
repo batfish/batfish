@@ -300,10 +300,6 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
   private @Nullable Node<T> _root;
 
-  public PrefixTrieMultiMap(Prefix prefix) {
-    _root = new Node<T>(prefix);
-  }
-
   public PrefixTrieMultiMap() {
     _root = null;
   }
@@ -334,7 +330,11 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   private void traverseEntriesImpl(
       BiConsumer<Prefix, Set<T>> consumer, @Nullable BiPredicate<Prefix, Set<T>> visitNode) {
     Consumer<Node<T>> nodeConsumer =
-        node -> consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements));
+        node -> {
+          if (!node._elements.isEmpty()) {
+            consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements));
+          }
+        };
     if (visitNode == null) {
       traverseNodes(nodeConsumer);
     } else {
@@ -537,6 +537,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    * trie and the provided {@code prefixSpace}.
    */
   public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
-    return prefixSpace.getPrefixRanges().stream().anyMatch(_root::intersectsPrefixRange);
+    return _root != null
+        && prefixSpace.getPrefixRanges().stream().anyMatch(_root::intersectsPrefixRange);
   }
 }

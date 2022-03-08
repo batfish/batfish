@@ -16,6 +16,7 @@ import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
@@ -159,6 +160,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICA
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
@@ -171,6 +173,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anything;
@@ -201,6 +204,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
@@ -231,6 +235,7 @@ import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -393,6 +398,10 @@ import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCondition;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsTerm;
+import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
+import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
+import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenTag;
@@ -2535,11 +2544,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FIREWALL_FILTER, "FILTER1", contains(6, 7, 8, 9, 11, 12)));
+            filename, FIREWALL_FILTER, "FILTER1", contains(6, 7, 8, 9, 10, 11, 12, 13, 14, 15)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19)));
+            filename, FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19, 20, 21, 22)));
   }
 
   @Test
@@ -2968,9 +2977,6 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(
         c, hasInterface("ge-0/3/0.0", hasAllowedVlans(IntegerSpace.of(new SubRange("1-5")))));
-    // Expecting an Interface in TRUNK mode with VLANs 6
-    assertThat(c, hasInterface("ge-0/3/0.1", hasSwitchPortMode(SwitchportMode.TRUNK)));
-    assertThat(c, hasInterface("ge-0/3/0.1", hasAllowedVlans(IntegerSpace.of(6))));
 
     // Expecting interface with encapsulation VLAN set to .0:1000 .1:1
     assertThat(c, hasInterface("ge-0/4/0.0", hasEncapsulationVlan(1000)));
@@ -2978,6 +2984,16 @@ public final class FlatJuniperGrammarTest {
 
     // Without vlan-tagging enabled, encapsulation vlan is ignored
     assertThat(c, hasInterface("ge-0/5/0.7", hasEncapsulationVlan(nullValue())));
+
+    // Expecting an Interface in TRUNK mode with VLANs 6
+    assertThat(c, hasInterface("ge-0/6/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(c, hasInterface("ge-0/6/0.0", hasAllowedVlans(IntegerSpace.of(6))));
+    assertThat(c, hasInterface("ge-0/6/0.1", hasEncapsulationVlan(100)));
+
+    // Cannot configure trunk mode on unit 1
+    assertThat(c, hasInterface("ge-0/7/0.1", hasSwitchPortMode(SwitchportMode.NONE)));
+    assertThat(c, hasInterface("ge-0/7/0.1", hasAllowedVlans(IntegerSpace.EMPTY)));
+    assertThat(c, hasInterface("ge-0/7/0.1", hasAccessVlan(nullValue())));
   }
 
   @Test
@@ -6385,6 +6401,30 @@ public final class FlatJuniperGrammarTest {
 
   /** Test that interfaces inherit OSPF settings inside a routing instance. */
   @Test
+  public void testIsisInterfaceAll() {
+    String hostname = "isis-interface-all";
+    Configuration c = parseConfig(hostname);
+
+    // ge-0/0/0.0 does not inherit from "all" -- both level1 and level2 enabled
+    assertThat(c.getAllInterfaces().get("ge-0/0/0.0").getIsis().getLevel1(), notNullValue());
+    assertThat(c.getAllInterfaces().get("ge-0/0/0.0").getIsis().getLevel2(), notNullValue());
+
+    // ge-0/0/1.0 does not inherit from "all" -- level 1 disabled, level 2 enabled
+    assertThat(c.getAllInterfaces().get("ge-0/0/1.0").getIsis().getLevel1(), nullValue());
+    assertThat(c.getAllInterfaces().get("ge-0/0/1.0").getIsis().getLevel2(), notNullValue());
+
+    // ge-0/0/2.0 inherits from "all" -- level 1 is enabled, level 2 is disabled
+    assertThat(c.getAllInterfaces().get("ge-0/0/2.0").getIsis().getLevel1(), notNullValue());
+    assertThat(c.getAllInterfaces().get("ge-0/0/2.0").getIsis().getLevel2(), nullValue());
+
+    // ge-0/0/3.0 does not inherit from "all" (different routing instance) -- level 1 is disabled,
+    // level 2 enabled
+    assertThat(c.getAllInterfaces().get("ge-0/0/3.0").getIsis().getLevel1(), nullValue());
+    assertThat(c.getAllInterfaces().get("ge-0/0/3.0").getIsis().getLevel2(), notNullValue());
+  }
+
+  /** Test that interfaces inherit OSPF settings inside a routing instance. */
+  @Test
   public void testOspfInterfaceAll() {
     String hostname = "ospf-area-interface-all";
     Configuration c = parseConfig(hostname);
@@ -6755,5 +6795,151 @@ public final class FlatJuniperGrammarTest {
   public void testApplyGroupsParsing() {
     String hostname = "apply-groups";
     parseJuniperConfig(hostname);
+  }
+
+  @Test
+  public void testDefineStructureFromNested() throws IOException {
+    String hostname = "define-structure-from-nested";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            "configs/" + hostname,
+            FIREWALL_FILTER_TERM,
+            "foo default-deny-udp",
+            equalTo(IntegerSpace.unionOf(new SubRange(8, 19)).enumerate())));
+  }
+
+  @Test
+  public void testAsPathExpandExtraction() {
+    String hostname = "juniper_as_path_expand";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+
+    assertThat(
+        vc.getMasterLogicalSystem().getPolicyStatements(),
+        hasKeys("last-as-no-count", "last-as-count-2", "as-list", "expand-then-prepend"));
+    {
+      PolicyStatement ps =
+          vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-no-count");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      PsThenAsPathExpandLastAs then =
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+      assertThat(then.getCount(), equalTo(1));
+    }
+    {
+      PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-count-2");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      PsThenAsPathExpandLastAs then =
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+      assertThat(then.getCount(), equalTo(2));
+    }
+    {
+      PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("as-list");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandAsList.class)));
+      PsThenAsPathExpandAsList then =
+          (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens());
+      assertThat(then.getAsList(), contains(123L, (456L << 16) + 789L));
+    }
+    {
+      PolicyStatement ps =
+          vc.getMasterLogicalSystem().getPolicyStatements().get("expand-then-prepend");
+      assertThat(ps.getTerms(), aMapWithSize(1));
+      PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
+      assertThat(
+          term.getThens(),
+          contains(
+              // reverse of declared order is expected
+              instanceOf(PsThenAsPathPrepend.class), instanceOf(PsThenAsPathExpandAsList.class)));
+
+      PsThenAsPathPrepend prepend = (PsThenAsPathPrepend) Iterables.get(term.getThens(), 0);
+      assertThat(prepend.getAsList(), contains(456L));
+
+      PsThenAsPathExpandAsList expand =
+          (PsThenAsPathExpandAsList) Iterables.get(term.getThens(), 1);
+      assertThat(expand.getAsList(), contains(123L));
+    }
+  }
+
+  @Test
+  public void testAsPathExpandConversion() {
+    String hostname = "juniper_as_path_expand";
+    Configuration c = parseConfig(hostname);
+
+    Bgpv4Route inputRouteNonEmptyAsPath =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setNetwork(Prefix.ZERO)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHop(NextHopDiscard.instance())
+            .build();
+    Bgpv4Route inputRouteEmptyAsPath =
+        inputRouteNonEmptyAsPath.toBuilder().setAsPath(AsPath.empty()).build();
+    assertThat(
+        c.getRoutingPolicies(),
+        hasKeys("last-as-no-count", "last-as-count-2", "as-list", "expand-then-prepend"));
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
+      Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 2L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
+      Bgpv4Route inputRoute = inputRouteEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.empty()));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("last-as-count-2");
+      Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 1L, 2L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("as-list");
+      Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      assertThat(
+          outputRoute.getAsPath(),
+          equalTo(AsPath.ofSingletonAsSets(123L, (456L << 16) + 789L, 1L, 2L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("expand-then-prepend");
+      Bgpv4Route inputRoute = inputRouteEmptyAsPath;
+      Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+      rp.process(inputRoute, outputRoute, Direction.IN);
+      // prepend 456
+      // expand 123
+      // The prepend is applied before the expand, even though it is declared after.
+      assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(123L, 456L)));
+    }
+  }
+
+  @Test
+  public void testNestedMultilineComments() {
+    String hostname = "juniper_nested_multiline_comments";
+    // don't crash
+    parseConfig(hostname);
+  }
+
+  @Test
+  public void testInterfaceMediaTypes() {
+    // don't crash
+    parseConfig("interface-media-types");
   }
 }

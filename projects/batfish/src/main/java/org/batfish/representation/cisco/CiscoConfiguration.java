@@ -2226,9 +2226,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ifExpr.setComment(clausePolicyName);
       ifExpr.setGuard(conj);
       List<Statement> matchStatements = new LinkedList<>();
-      for (RouteMapSetLine rmSet : rmClause.getSetList()) {
-        rmSet.applyTo(matchStatements, this, c, _w);
-      }
+      // Put as-path prepend at the end
+      Streams.concat(
+              rmClause.getSetList().stream()
+                  .filter(l -> !(l instanceof RouteMapSetAsPathPrependLine)),
+              rmClause.getSetList().stream().filter(RouteMapSetAsPathPrependLine.class::isInstance))
+          .forEach(rmSet -> rmSet.applyTo(matchStatements, this, c, _w));
       switch (rmClause.getAction()) {
         case PERMIT:
           matchStatements.add(Statements.ReturnTrue.toStaticStatement());

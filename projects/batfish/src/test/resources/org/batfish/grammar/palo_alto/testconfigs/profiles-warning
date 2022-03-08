@@ -1,0 +1,10 @@
+set deviceconfig system hostname profiles-warning
+
+# Non-URL List types not supported yet
+set profiles custom-url-category UNSUPPORTED_TYPE type "Category Match"
+set profiles custom-url-category THIS_NAME_IS_TOO_LONG_FOR_CATEGOR description "name is too long"
+
+# Potentially problematic wildcard
+# Matches URL under other domains as well, e.g. `www.paloaltonetworks.com.fake.example.com`
+# see https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-admin/url-filtering/block-and-allow-lists.html
+set profiles custom-url-category CAT1 list *.paloaltonetworks.com

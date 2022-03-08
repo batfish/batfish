@@ -9,11 +9,14 @@ options {
 ip_access_list
 :
   ACCESS_LIST name = ip_access_list_name NEWLINE
-  (
-    acl_fragments
-    | acl_line
-    | acl_null
-  )*
+  ip_access_list_inner*
+;
+
+ip_access_list_inner
+:
+  acl_fragments
+  | acl_line
+  | acl_null
 ;
 
 acl_fragments
@@ -46,10 +49,11 @@ acll_action
 :
   action = line_action
   (
-  // DO NOT REORDER
-  // If not using l4 options for l4 protocol, should be considered l3 line.
-    aclla_l3
-    | aclla_l4
+    aclla_icmp
+    | aclla_igmp
+    | aclla_tcp
+    | aclla_udp
+    | aclla_l3
   )
 ;
 
@@ -65,24 +69,20 @@ aclla_l3
 acllal3_protocol_spec
 :
   IP
-  | prot = ip_protocol
+  | prot = acl_l3_protocol
 ;
 
-ip_protocol
+acl_l3_protocol
 :
   num = uint8
   | AHP
   | EIGRP
   | ESP
   | GRE
-  | ICMP
-  | IGMP
   | NOS
   | OSPF
   | PCP
   | PIM
-  | TCP
-  | UDP
 ;
 
 acllal3_src_address
@@ -210,15 +210,7 @@ packet_length
   | UINT16
 ;
 
-aclla_l4
-:
-  acllal4_icmp
-  | acllal4_igmp
-  | acllal4_tcp
-  | acllal4_udp
-;
-
-acllal4_icmp
+aclla_icmp
 :
   ICMP acllal3_src_address acllal3_dst_address
   // NX-OS allows multiple l3 options but only one l4 option, interleaved in any order.
@@ -277,7 +269,7 @@ acllal4icmp_option
   | UNREACHABLE
 ;
 
-acllal4_igmp
+aclla_igmp
 :
   IGMP acllal3_src_address acllal3_dst_address
   (
@@ -301,7 +293,7 @@ igmp_message_type_number
   UINT8
 ;
 
-acllal4_tcp
+aclla_tcp
 :
   TCP acllal3_src_address acllal4tcp_source_port? acllal3_dst_address
   acllal4tcp_destination_port?
@@ -448,7 +440,7 @@ tcp_option_length
   UINT8
 ;
 
-acllal4_udp
+aclla_udp
 :
   UDP acllal3_src_address acllal4udp_source_port? acllal3_dst_address
   acllal4udp_destination_port?

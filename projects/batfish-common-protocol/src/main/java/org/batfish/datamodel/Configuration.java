@@ -30,6 +30,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -169,6 +170,8 @@ public final class Configuration implements Serializable {
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
   private static final String PROP_DOMAIN_NAME = "domainName";
   private static final String PROP_EXPORT_BGP_FROM_BGP_RIB = "exportBgpFromBgpRib";
+  private static final String PROP_GENERATE_BGP_AGGREGATES_FROM_MAIN_RIB =
+      "generateBgpAggregatesFromMainRib";
   private static final String PROP_GENERATED_REFERENCE_BOOKS = "generatedReferenceBooks";
   private static final String PROP_HUMAN_NAME = "humanName";
   private static final String PROP_IKE_PHASE1_KEYS = "ikePhase1Keys";
@@ -239,6 +242,12 @@ public final class Configuration implements Serializable {
    * BGP RIB routes (Cisco-like behavior).
    */
   private boolean _exportBgpFromBgpRib;
+
+  /**
+   * Whether {@link BgpAggregate BGP aggregates} should be generated using routes in the main RIB
+   * (Arista-like behavior) or routes in the BGP RIB (Cisco-like behavior).
+   */
+  private boolean _generateBgpAggregatesFromMainRib;
 
   private Map<String, ReferenceBook> _generatedReferenceBooks;
 
@@ -315,13 +324,14 @@ public final class Configuration implements Serializable {
   private static Configuration makeConfiguration(
       @Nullable @JsonProperty(PROP_NAME) String hostname,
       @Nullable @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat,
-      @Nullable @JsonProperty(PROP_EXPORT_BGP_FROM_BGP_RIB) Boolean exportBgpFromBgpRib) {
+      @Nullable @JsonProperty(PROP_EXPORT_BGP_FROM_BGP_RIB) Boolean exportBgpFromBgpRib,
+      @Nullable @JsonProperty(PROP_GENERATE_BGP_AGGREGATES_FROM_MAIN_RIB)
+          Boolean generateBgpAggregatesFromMainRib) {
     checkNotNull(hostname, "%s cannot be null", PROP_NAME);
     checkNotNull(configurationFormat, "%s cannot be null", PROP_CONFIGURATION_FORMAT);
     Configuration c = new Configuration(hostname, configurationFormat);
-    if (exportBgpFromBgpRib != null && exportBgpFromBgpRib) {
-      c.setExportBgpFromBgpRib(true);
-    }
+    c.setExportBgpFromBgpRib(Boolean.TRUE.equals(exportBgpFromBgpRib));
+    c.setGenerateBgpAggregatesFromMainRib(Boolean.TRUE.equals(generateBgpAggregatesFromMainRib));
     return c;
   }
 
@@ -548,8 +558,23 @@ public final class Configuration implements Serializable {
     return _exportBgpFromBgpRib;
   }
 
+  @JsonIgnore
   public void setExportBgpFromBgpRib(boolean exportBgpFromBgpRib) {
     _exportBgpFromBgpRib = exportBgpFromBgpRib;
+  }
+
+  /**
+   * Whether {@link BgpAggregate BGP aggregates} should be generated using routes in the main RIB
+   * (Arista-like behavior) or in the BGP RIB (Cisco-like behavior).
+   */
+  @JsonProperty(PROP_GENERATE_BGP_AGGREGATES_FROM_MAIN_RIB)
+  public boolean getGenerateBgpAggregatesFromMainRib() {
+    return _generateBgpAggregatesFromMainRib;
+  }
+
+  @JsonIgnore
+  public void setGenerateBgpAggregatesFromMainRib(boolean generateBgpAggregatesFromMainRib) {
+    _generateBgpAggregatesFromMainRib = generateBgpAggregatesFromMainRib;
   }
 
   /** Dictionary of Reference Books generated from device configurations (e.g., F5 Pools). */

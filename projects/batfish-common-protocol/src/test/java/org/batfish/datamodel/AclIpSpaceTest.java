@@ -54,6 +54,8 @@ public class AclIpSpaceTest {
     assertThat(union(null, null), nullValue());
     assertThat(union(EmptyIpSpace.INSTANCE), equalTo(EmptyIpSpace.INSTANCE));
     assertThat(union(EmptyIpSpace.INSTANCE, ipSpace), equalTo(ipSpace));
+    assertThat(union(UniverseIpSpace.INSTANCE, ipSpace), equalTo(UniverseIpSpace.INSTANCE));
+    assertThat(union(ipSpace, UniverseIpSpace.INSTANCE), equalTo(UniverseIpSpace.INSTANCE));
   }
 
   @Test

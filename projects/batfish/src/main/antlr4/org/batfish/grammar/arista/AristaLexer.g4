@@ -4641,6 +4641,7 @@ TUNNEL_RIB: 'tunnel-rib';
 
 TUNNELED: 'tunneled';
 
+TWENTY_FIVEG_FULL: '25gfull';
 TWENTY_FIVE_GBASE_CR: '25gbase-cr';
 
 TX_QUEUE: 'tx-queue';

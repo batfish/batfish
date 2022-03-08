@@ -899,7 +899,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
-import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_interface_definitionContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_default_gatewayContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_dhcpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domainContext;
@@ -943,6 +943,7 @@ import org.batfish.grammar.cisco.CiscoParser.Service_specifier_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Service_specifier_tcp_udpContext;
 import org.batfish.grammar.cisco.CiscoParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_as_path_prepend_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Set_as_path_replace_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_comm_list_delete_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_additive_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_none_rm_stanzaContext;
@@ -1144,6 +1145,8 @@ import org.batfish.representation.cisco.RouteMapMatchSourceProtocolLine;
 import org.batfish.representation.cisco.RouteMapMatchTagLine;
 import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetAsPathPrependLine;
+import org.batfish.representation.cisco.RouteMapSetAsPathReplaceAnyLine;
+import org.batfish.representation.cisco.RouteMapSetAsPathReplaceSequenceLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
@@ -3146,7 +3149,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterS_interface(S_interfaceContext ctx) {
+  public void enterS_interface_definition(S_interface_definitionContext ctx) {
     String nameAlpha = ctx.iname.name_prefix_alpha.getText();
     String canonicalNamePrefix;
     try {
@@ -8508,7 +8511,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitS_interface(S_interfaceContext ctx) {
+  public void exitS_interface_definition(S_interface_definitionContext ctx) {
     _currentInterfaces = null;
   }
 
@@ -8765,6 +8768,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     RouteMapSetAsPathPrependLine line = new RouteMapSetAsPathPrependLine(asList);
     _currentRouteMapClause.addSetLine(line);
+  }
+
+  @Override
+  public void exitSet_as_path_replace_rm_stanza(Set_as_path_replace_rm_stanzaContext ctx) {
+    if (ctx.ANY() != null) {
+      _currentRouteMapClause.addSetLine(RouteMapSetAsPathReplaceAnyLine.instance());
+    } else {
+      assert !ctx.seq.isEmpty();
+      List<Long> sequence =
+          ctx.seq.stream()
+              .map(CiscoControlPlaneExtractor::toLong)
+              .collect(ImmutableList.toImmutableList());
+      _currentRouteMapClause.addSetLine(new RouteMapSetAsPathReplaceSequenceLine(sequence));
+    }
   }
 
   @Override
@@ -9987,6 +10004,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       return convProblem(Long.class, ctx, null);
     }
+  }
+
+  private static long toLong(Uint16Context ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   private static long toLong(Uint32Context ctx) {

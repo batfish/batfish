@@ -976,7 +976,8 @@ public class VirtualRouterTest {
       super(
           configurations,
           GlobalBroadcastNoPointToPoint.instance(),
-          PreDataPlaneTrackMethodEvaluator::new);
+          PreDataPlaneTrackMethodEvaluator::new,
+          false);
     }
   }
 }

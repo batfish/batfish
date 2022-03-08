@@ -253,9 +253,13 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_use_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagt_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagt_use_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acl_fragmentsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acl_l3_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acl_lineContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acll_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acll_remarkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aclla_icmpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aclla_tcpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aclla_udpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3_address_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3_dst_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3_fragmentsContext;
@@ -267,12 +271,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3o_packet_lengthCont
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3o_packet_length_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3o_precedenceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3o_ttlContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4_icmpContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4_tcpContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4_udpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4icmp_optionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4igmp_optionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4tcp_destination_portContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4tcp_optionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4tcp_port_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4tcp_port_spec_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4tcp_port_spec_port_groupContext;
@@ -281,6 +283,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4tcpo_establishedCon
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4tcpo_flagsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4tcpo_tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_destination_portContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_optionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_port_groupContext;
@@ -437,7 +440,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_description
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_prefix_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipp_rp_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipp_rp_candidateContext;
@@ -1114,7 +1116,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return Ip6.parse(ctx.getText());
   }
 
-  private static @Nonnull IpProtocol toIpProtocol(Ip_protocolContext ctx) {
+  private static @Nonnull IpProtocol toIpProtocol(Acl_l3_protocolContext ctx) {
     if (ctx.num != null) {
       return IpProtocol.fromNumber(toInteger(ctx.num));
     } else if (ctx.AHP() != null) {
@@ -1125,10 +1127,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return IpProtocol.ESP;
     } else if (ctx.GRE() != null) {
       return IpProtocol.GRE;
-    } else if (ctx.ICMP() != null) {
-      return IpProtocol.ICMP;
-    } else if (ctx.IGMP() != null) {
-      return IpProtocol.IGMP;
     } else if (ctx.NOS() != null) {
       return IpProtocol.IPIP;
     } else if (ctx.OSPF() != null) {
@@ -1137,10 +1135,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return IpProtocol.IPCOMP;
     } else if (ctx.PIM() != null) {
       return IpProtocol.PIM;
-    } else if (ctx.TCP() != null) {
-      return IpProtocol.TCP;
-    } else if (ctx.UDP() != null) {
-      return IpProtocol.UDP;
     } else {
       // All variants should be covered, so just throw if we get here
       throw new IllegalArgumentException(String.format("Unsupported protocol: %s", ctx.getText()));
@@ -1495,15 +1489,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void enterAcllal4_tcp(Acllal4_tcpContext ctx) {
+  public void enterAclla_tcp(Aclla_tcpContext ctx) {
     _currentActionIpAccessListLineBuilder.setProtocol(IpProtocol.TCP);
-    _currentTcpOptionsBuilder = TcpOptions.builder();
   }
 
   @Override
-  public void enterAcllal4_udp(Acllal4_udpContext ctx) {
+  public void enterAclla_udp(Aclla_udpContext ctx) {
     _currentActionIpAccessListLineBuilder.setProtocol(IpProtocol.UDP);
-    _currentUdpOptionsBuilder = UdpOptions.builder();
   }
 
   @Override
@@ -5199,23 +5191,27 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitAcllal4_icmp(Acllal4_icmpContext ctx) {
+  public void exitAclla_icmp(Aclla_icmpContext ctx) {
     _currentActionIpAccessListLineBuilder.setProtocol(IpProtocol.ICMP);
   }
 
   @Override
-  public void exitAcllal4_tcp(Acllal4_tcpContext ctx) {
-    if (_currentTcpFlagsBuilder != null) {
-      _currentTcpOptionsBuilder.setTcpFlags(_currentTcpFlagsBuilder.build());
-      _currentTcpFlagsBuilder = null;
+  public void exitAclla_tcp(Aclla_tcpContext ctx) {
+    if (_currentTcpOptionsBuilder != null) {
+      if (_currentTcpFlagsBuilder != null) {
+        _currentTcpOptionsBuilder.setTcpFlags(_currentTcpFlagsBuilder.build());
+        _currentTcpFlagsBuilder = null;
+      }
+      _currentActionIpAccessListLineBuilder.setL4Options(_currentTcpOptionsBuilder.build());
     }
-    _currentActionIpAccessListLineBuilder.setL4Options(_currentTcpOptionsBuilder.build());
     _currentTcpOptionsBuilder = null;
   }
 
   @Override
-  public void exitAcllal4_udp(Acllal4_udpContext ctx) {
-    _currentActionIpAccessListLineBuilder.setL4Options(_currentUdpOptionsBuilder.build());
+  public void exitAclla_udp(Aclla_udpContext ctx) {
+    if (_currentUdpOptionsBuilder != null) {
+      _currentActionIpAccessListLineBuilder.setL4Options(_currentUdpOptionsBuilder.build());
+    }
     _currentUdpOptionsBuilder = null;
   }
 
@@ -5372,6 +5368,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _currentActionIpAccessListLineUnusable = true;
       return;
     }
+    if (_currentTcpOptionsBuilder == null) {
+      _currentTcpOptionsBuilder = TcpOptions.builder();
+    }
     PortSpec spec = portSpec.get();
     _currentTcpOptionsBuilder.setDstPortSpec(spec);
     if (spec instanceof PortGroupPortSpec) {
@@ -5384,6 +5383,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void enterAcllal4tcp_option(Acllal4tcp_optionContext ctx) {
+    if (_currentTcpOptionsBuilder == null) {
+      _currentTcpOptionsBuilder = TcpOptions.builder();
+    }
+  }
+
+  @Override
   public void exitAcllal4tcp_source_port(Acllal4tcp_source_portContext ctx) {
     Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
     if (!portSpec.isPresent()) {
@@ -5391,6 +5397,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     PortSpec spec = portSpec.get();
+    if (_currentTcpOptionsBuilder == null) {
+      _currentTcpOptionsBuilder = TcpOptions.builder();
+    }
     _currentTcpOptionsBuilder.setSrcPortSpec(spec);
     if (spec instanceof PortGroupPortSpec) {
       _c.referenceStructure(
@@ -5447,6 +5456,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _currentActionIpAccessListLineUnusable = true;
       return;
     }
+    if (_currentUdpOptionsBuilder == null) {
+      _currentUdpOptionsBuilder = UdpOptions.builder();
+    }
     PortSpec spec = portSpec.get();
     _currentUdpOptionsBuilder.setDstPortSpec(spec);
     if (spec instanceof PortGroupPortSpec) {
@@ -5459,11 +5471,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void enterAcllal4udp_option(Acllal4udp_optionContext ctx) {
+    if (_currentUdpOptionsBuilder == null) {
+      _currentUdpOptionsBuilder = UdpOptions.builder();
+    }
+  }
+
+  @Override
   public void exitAcllal4udp_source_port(Acllal4udp_source_portContext ctx) {
     Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
     if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
       return;
+    }
+    if (_currentUdpOptionsBuilder == null) {
+      _currentUdpOptionsBuilder = UdpOptions.builder();
     }
     PortSpec spec = portSpec.get();
     _currentUdpOptionsBuilder.setSrcPortSpec(spec);

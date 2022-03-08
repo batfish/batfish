@@ -824,6 +824,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
+    LOGGER.info("Starting data plane computation");
     // If already present, invalidate a dataplane for this snapshot.
     // (unlikely, only when devs force recomputation)
     _cachedDataPlanes.invalidate(snapshot);
@@ -840,6 +841,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     result = null; // let it be garbage collected.
 
     saveDataPlane(snapshot, dataplane, topologyContainer);
+    LOGGER.info("Finished data plane computation successfully");
     return answerElement;
   }
 

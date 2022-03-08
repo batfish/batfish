@@ -229,7 +229,8 @@ public class NodeColoredScheduleTest {
       super(
           configurations,
           GlobalBroadcastNoPointToPoint.instance(),
-          PreDataPlaneTrackMethodEvaluator::new);
+          PreDataPlaneTrackMethodEvaluator::new,
+          false);
     }
   }
 }

@@ -13,7 +13,6 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInsufficientIn
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceArpReplies;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsAssignedToThisInterfaceForArpReplies;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsRoutedOutInterfaces;
-import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNeighborUnreachable;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNextVrfIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNullRoutedIps;
@@ -24,6 +23,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNext
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeSomeoneReplies;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.routableSpace;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.sparseKeys;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.union;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
@@ -46,7 +46,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -82,6 +84,11 @@ public class ForwardingAnalysisImplTest {
   private Interface.Builder _ib;
 
   private Vrf.Builder _vb;
+
+  private static Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
+      Map<String, Map<String, Fib>> fibs) {
+    return ForwardingAnalysisImpl.computeMatchingIps(fibs, ForwardingAnalysisImpl.sparseKeys(fibs));
+  }
 
   @Before
   public void setup() {
@@ -604,8 +611,10 @@ public class ForwardingAnalysisImplTest {
                     ImmutableSet.of(r1),
                     Interface.NULL_INTERFACE_NAME,
                     ImmutableSet.of(nullRoute))));
+    List<Entry<String, String>> allVrfs = sparseKeys(fibs);
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeIpsRoutedOutInterfaces(computeMatchingIps(fibs), routesWithNextHop);
+        computeIpsRoutedOutInterfaces(
+            ForwardingAnalysisImpl.computeMatchingIps(fibs, allVrfs), routesWithNextHop, allVrfs);
 
     /* Should contain IPs matching the route */
     assertThat(
@@ -875,6 +884,28 @@ public class ForwardingAnalysisImplTest {
             not(containsIp(Ip.ZERO)),
             not(containsIp(Ip.parse("2.0.0.0"))),
             not(containsIp(Ip.MAX))));
+
+    // Singleton is not converted to wildcard set
+    Fib singleton =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(Ip.ZERO, ImmutableSet.of(mockFibEntry(Prefix.parse("1.2.3.0/24")))))
+            .build();
+    assertThat(routableSpace(singleton), equalTo(Prefix.parse("1.2.3.0/24").toIpSpace()));
+
+    // Compressible to singleton is compressed and not converted to wildcard set
+    Fib compressibleToSingleton =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.ZERO,
+                    ImmutableSet.of(
+                        mockFibEntry(Prefix.parse("1.2.3.1/32")),
+                        mockFibEntry(Prefix.parse("1.2.3.0/24")),
+                        mockFibEntry(Prefix.parse("1.2.3.4/32")))))
+            .build();
+    assertThat(
+        routableSpace(compressibleToSingleton), equalTo(Prefix.parse("1.2.3.0/24").toIpSpace()));
   }
 
   @Test
@@ -888,16 +919,10 @@ public class ForwardingAnalysisImplTest {
             .setFibEntries(ImmutableMap.of(Ip.ZERO, ImmutableSet.of(mockFibEntry(prefix))))
             .build();
     Map<String, Map<String, Fib>> fibs = ImmutableMap.of(c1, ImmutableMap.of(v1, fib));
-    Map<String, Map<String, IpSpace>> result = ForwardingAnalysisImpl.computeRoutableIps(fibs);
+    Map<String, Map<String, IpSpace>> result =
+        ForwardingAnalysisImpl.computeRoutableIps(fibs, sparseKeys(fibs));
 
-    assertThat(
-        result,
-        equalTo(
-            ImmutableMap.of(
-                c1,
-                ImmutableMap.of(
-                    v1,
-                    IpWildcardSetIpSpace.builder().including(IpWildcard.create(prefix)).build()))));
+    assertThat(result, equalTo(ImmutableMap.of(c1, ImmutableMap.of(v1, prefix.toIpSpace()))));
   }
 
   @Test
@@ -983,7 +1008,7 @@ public class ForwardingAnalysisImplTest {
     _vb.setName(v2).setOwner(config).build();
     _ib.setName(i1).setVrf(vrf1).setOwner(config).build();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        ForwardingAnalysisImpl.computeRoutesWithNextHop(fibs);
+        ForwardingAnalysisImpl.computeRoutesWithNextHop(fibs, sparseKeys(fibs));
 
     assertThat(
         result,
@@ -1552,7 +1577,8 @@ public class ForwardingAnalysisImplTest {
       super(
           configurations,
           GlobalBroadcastNoPointToPoint.instance(),
-          PreDataPlaneTrackMethodEvaluator::new);
+          PreDataPlaneTrackMethodEvaluator::new,
+          false);
     }
   }
 }

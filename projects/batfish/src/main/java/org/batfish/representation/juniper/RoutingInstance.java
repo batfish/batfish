@@ -42,6 +42,7 @@ public class RoutingInstance implements Serializable {
   private final Map<String, Interface> _interfaces;
   private Map<Prefix, IpBgpGroup> _ipBgpGroups;
   @Nonnull private final IsisSettings _isisSettings;
+  @Nullable private IsisInterfaceSettings _interfaceAllIsisSettings;
   @Nullable private Integer _loops;
   private BgpGroup _masterBgpGroup;
   private final @Nonnull String _name;
@@ -153,6 +154,15 @@ public class RoutingInstance implements Serializable {
     return _interfaceAllOspfSettings;
   }
 
+  /**
+   * Returns ISIS settings configured for "interface all" in this routing instance.
+   *
+   * <p>Returns null if "interface all" wasn't used in the configuration.
+   */
+  public @Nullable IsisInterfaceSettings getInterfaceAllIsisSettings() {
+    return _interfaceAllIsisSettings;
+  }
+
   public String getHostname() {
     return _hostname;
   }
@@ -256,6 +266,11 @@ public class RoutingInstance implements Serializable {
   /** Sets the OSPF settings configures for "interface all" */
   public void setInterfaceAllOspfSettings(OspfInterfaceSettings interfaceAllOspfSettings) {
     _interfaceAllOspfSettings = interfaceAllOspfSettings;
+  }
+
+  /** Sets the ISIS settings configures for "interface all" */
+  public void setInterfaceAllIsisSettings(IsisInterfaceSettings interfaceAllIsisSettings) {
+    _interfaceAllIsisSettings = interfaceAllIsisSettings;
   }
 
   public void setOspfDisable(boolean ospfDisable) {

@@ -47,7 +47,16 @@ COMMENT_LINE
 
 MULTILINE_COMMENT
 :
-   '/*' .*? '*/' -> skip // so not counted as last token
+  '/*' .*? '*/'
+  {
+    switch(lastTokenType()) {
+      case -1:
+      case NEWLINE:
+        break;
+      default:
+        skip();
+    }
+  }
 ;
 
 OPEN_BRACE

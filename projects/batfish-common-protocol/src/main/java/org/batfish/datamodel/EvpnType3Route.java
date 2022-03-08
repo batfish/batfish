@@ -51,24 +51,25 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       checkArgument(_vni != null, "Missing %s", PROP_VNI);
       checkArgument(_nextHop != null, "Missing next hop");
       return new EvpnType3Route(
-          _asPath,
-          _clusterList,
-          _communities,
-          _localPreference,
-          getMetric(),
-          _nextHop,
-          _originatorIp,
-          _originMechanism,
-          _originType,
-          _protocol,
+          BgpRouteAttributes.create(
+              _asPath,
+              _clusterList,
+              _communities,
+              _localPreference,
+              getMetric(),
+              _originatorIp,
+              _originMechanism,
+              _originType,
+              _protocol,
+              _receivedFromRouteReflectorClient,
+              _srcProtocol,
+              _weight),
           _receivedFromIp,
-          _receivedFromRouteReflectorClient,
+          _nextHop,
           _routeDistinguisher,
           _vni,
-          _srcProtocol,
           getTag(),
-          _vniIp,
-          _weight);
+          _vniIp);
     }
 
     public Builder setVniIp(@Nonnull Ip vniIp) {
@@ -130,64 +131,36 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     checkArgument(vni != null, "Missing %s", PROP_VNI);
     checkArgument(vniIp != null, "Missing %s", PROP_VNI_IP);
     return new EvpnType3Route(
-        firstNonNull(asPath, AsPath.empty()),
-        firstNonNull(clusterList, ImmutableSet.of()),
-        firstNonNull(communities, CommunitySet.empty()),
-        localPreference,
-        med,
-        NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        originatorIp,
-        originMechanism,
-        originType,
-        protocol,
+        BgpRouteAttributes.create(
+            firstNonNull(asPath, AsPath.empty()),
+            firstNonNull(clusterList, ImmutableSet.of()),
+            firstNonNull(communities, CommunitySet.empty()),
+            localPreference,
+            med,
+            originatorIp,
+            originMechanism,
+            originType,
+            protocol,
+            receivedFromRouteReflectorClient,
+            srcProtocol,
+            weight),
         receivedFromIp,
-        receivedFromRouteReflectorClient,
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         routeDistinguisher,
         vni,
-        srcProtocol,
         tag,
-        vniIp,
-        weight);
+        vniIp);
   }
 
   private EvpnType3Route(
-      AsPath asPath,
-      Set<Long> clusterList,
-      CommunitySet communities,
-      long localPreference,
-      long med,
-      NextHop nextHop,
-      Ip originatorIp,
-      OriginMechanism originMechanism,
-      OriginType originType,
-      RoutingProtocol protocol,
+      BgpRouteAttributes attributes,
       @Nullable Ip receivedFromIp,
-      boolean receivedFromRouteReflectorClient,
+      NextHop nextHop,
       RouteDistinguisher routeDistinguisher,
       int vni,
-      @Nullable RoutingProtocol srcProtocol,
       long tag,
-      Ip vniIp,
-      int weight) {
-    super(
-        vniIp.toPrefix(),
-        nextHop,
-        asPath,
-        communities,
-        localPreference,
-        med,
-        originatorIp,
-        clusterList,
-        receivedFromRouteReflectorClient,
-        originMechanism,
-        originType,
-        protocol,
-        receivedFromIp,
-        srcProtocol,
-        tag,
-        weight,
-        routeDistinguisher,
-        vni);
+      Ip vniIp) {
+    super(vniIp.toPrefix(), nextHop, attributes, receivedFromIp, tag, routeDistinguisher, vni);
     _vniIp = vniIp;
   }
 
@@ -210,24 +183,24 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setAsPath(_asPath)
-        .setClusterList(_clusterList)
-        .setCommunities(_communities)
-        .setLocalPreference(_localPreference)
-        .setMetric(_med)
+        .setAsPath(_attributes._asPath)
+        .setClusterList(_attributes._clusterList)
+        .setCommunities(_attributes._communities)
+        .setLocalPreference(_attributes._localPreference)
+        .setMetric(_attributes._med)
         .setNextHop(_nextHop)
-        .setOriginatorIp(_originatorIp)
-        .setOriginMechanism(_originMechanism)
-        .setOriginType(_originType)
-        .setProtocol(_protocol)
+        .setOriginatorIp(_attributes._originatorIp)
+        .setOriginMechanism(_attributes._originMechanism)
+        .setOriginType(_attributes._originType)
+        .setProtocol(_attributes._protocol)
         .setReceivedFromIp(_receivedFromIp)
-        .setReceivedFromRouteReflectorClient(_receivedFromRouteReflectorClient)
+        .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setRouteDistinguisher(_routeDistinguisher)
-        .setSrcProtocol(_srcProtocol)
+        .setSrcProtocol(_attributes._srcProtocol)
         .setTag(_tag)
         .setVni(_vni)
         .setVniIp(_vniIp)
-        .setWeight(_weight);
+        .setWeight(_attributes._weight);
   }
 
   @Override
@@ -240,23 +213,12 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     }
     EvpnType3Route other = (EvpnType3Route) o;
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
-        && Objects.equals(_network, other._network)
-        && _localPreference == other._localPreference
-        && _med == other._med
-        && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
-        && _weight == other._weight
-        && Objects.equals(_asPath, other._asPath)
-        && Objects.equals(_clusterList, other._clusterList)
-        && Objects.equals(_communities, other._communities)
-        && Objects.equals(_nextHop, other._nextHop)
-        && Objects.equals(_originatorIp, other._originatorIp)
-        && _originMechanism == other._originMechanism
-        && _originType == other._originType
-        && _protocol == other._protocol
+        && _network.equals(other._network)
+        && _attributes.equals(other._attributes)
         && Objects.equals(_receivedFromIp, other._receivedFromIp)
+        && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
-        && _srcProtocol == other._srcProtocol
         && _tag == other._tag
         && Objects.equals(_vniIp, other._vniIp);
   }
@@ -265,25 +227,14 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = _asPath.hashCode();
-      h = h * 31 + _clusterList.hashCode();
-      h = h * 31 + _communities.hashCode();
-      h = h * 31 + Long.hashCode(_localPreference);
-      h = h * 31 + Long.hashCode(_med);
+      h = _attributes.hashCode();
+      h = h * 31 + (_receivedFromIp == null ? 0 : _receivedFromIp.hashCode());
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
-      h = h * 31 + _originatorIp.hashCode();
-      h = h * 31 + _originMechanism.ordinal();
-      h = h * 31 + _originType.ordinal();
-      h = h * 31 + _protocol.ordinal();
-      h = h * 31 + Objects.hashCode(_receivedFromIp);
-      h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
-      h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
       h = h * 31 + Long.hashCode(_tag);
       h = h * 31 + _vniIp.hashCode();
-      h = h * 31 + _weight;
 
       _hashCode = h;
     }

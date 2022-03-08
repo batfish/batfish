@@ -72,6 +72,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.compute
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.CUSTOM_URL_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
@@ -82,6 +83,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLAT
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
@@ -229,6 +231,7 @@ import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AddressPrefix;
 import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
+import org.batfish.representation.palo_alto.ApplicationOrApplicationGroupReference;
 import org.batfish.representation.palo_alto.ApplicationOverrideRule;
 import org.batfish.representation.palo_alto.BgpConnectionOptions;
 import org.batfish.representation.palo_alto.BgpPeer;
@@ -238,6 +241,8 @@ import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.CustomUrlCategory;
+import org.batfish.representation.palo_alto.CustomUrlCategoryReference;
 import org.batfish.representation.palo_alto.DeviceGroup;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
@@ -2689,6 +2694,40 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testStaticRouteConvertWarnings() throws IOException {
+    String hostname = "static-route-convert-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    Warnings warn = ccae.getWarnings().get(hostname);
+
+    assertThat(
+        warn,
+        hasRedFlag(
+            hasText(containsString("Cannot convert static route NO_NH, as it has no nexthop."))));
+    assertThat(
+        warn,
+        hasRedFlag(
+            hasText(
+                containsString(
+                    "Cannot convert static route NO_DEST, as it does not have a destination."))));
+    assertThat(
+        warn,
+        hasRedFlag(
+            hasText(
+                containsString(
+                    "Cannot convert static route NEXT_VR_SELF, as its next-vr 'somename' is its own"
+                        + " virtual-router."))));
+    assertThat(
+        warn,
+        hasRedFlag(
+            hasText(
+                containsString(
+                    "Cannot convert static route NEXT_VR_UNDEF, as its next-vr 'UNDEFINED' is not a"
+                        + " virtual-router."))));
+  }
+
+  @Test
   public void testStaticRouteExtraction() {
     String hostname = "static-route";
     PaloAltoConfiguration vc = parsePaloAltoConfig(hostname);
@@ -2721,6 +2760,87 @@ public final class PaloAltoGrammarTest {
     Configuration c = parseConfig("static-route-misc");
     // don't warn, and do install the route
     assertThat(c.getVrfs().get("somename"), hasStaticRoutes(contains(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
+  public void testProfilesExtraction() {
+    PaloAltoConfiguration vc = parsePaloAltoConfig("profiles");
+    Vsys vsys = vc.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+
+    Map<String, CustomUrlCategory> customUrlCategoryMap = vsys.getCustomUrlCategories();
+    assertThat(customUrlCategoryMap.keySet(), containsInAnyOrder("CAT1", "CAT2"));
+
+    CustomUrlCategory cat1 = customUrlCategoryMap.get("CAT1");
+    CustomUrlCategory cat2 = customUrlCategoryMap.get("CAT2");
+
+    assertThat(cat1.getDescription(), equalTo("category description"));
+    assertThat(cat1.getList(), contains("*.batfish.org/", "example.com", "github.com"));
+    assertNull(cat2.getDescription());
+    assertThat(cat2.getList(), contains("github.com"));
+  }
+
+  @Test
+  public void testPanoramaProfilesExtraction() {
+    PaloAltoConfiguration vc = parsePaloAltoConfig("panorama-profiles");
+
+    DeviceGroup dg = vc.getDeviceGroup("DG1");
+    assertNotNull(dg);
+    Vsys panorama = dg.getPanorama();
+    assertNotNull(panorama);
+    assertThat(panorama.getCustomUrlCategories(), hasKey("DG1_CAT1"));
+    CustomUrlCategory cat1 = panorama.getCustomUrlCategories().get("DG1_CAT1");
+    assertNull(cat1.getDescription());
+    assertThat(cat1.getList(), contains("github.com"));
+
+    Vsys shared = vc.getShared();
+    assertNotNull(shared);
+    assertThat(shared.getCustomUrlCategories(), hasKey("SHARED_CAT1"));
+    CustomUrlCategory sharedCat1 = shared.getCustomUrlCategories().get("SHARED_CAT1");
+    assertThat(sharedCat1.getDescription(), equalTo("descr"));
+    assertThat(sharedCat1.getList(), contains("example.com"));
+  }
+
+  @Test
+  public void testProfilesWarning() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("profiles-warning");
+    List<ParseWarning> parseWarnings = c.getWarnings().getParseWarnings();
+    assertThat(
+        parseWarnings,
+        containsInAnyOrder(
+            hasComment(
+                "Currently only 'URL List' custom-url-category type is supported by Batfish."),
+            hasComment(
+                "Expected custom-url-category with length in range 1-31, but got"
+                    + " 'THIS_NAME_IS_TOO_LONG_FOR_CATEGOR'"),
+            hasComment(
+                "Did you mean '*.paloaltonetworks.com/'? Without the trailing slash, the url will"
+                    + " match additional trailing domains, such as"
+                    + " '*.paloaltonetworks.com.evil'.")));
+  }
+
+  @Test
+  public void testProfilesReference() throws IOException {
+    String hostname = "profiles-reference";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String category1Name = computeObjectName(DEFAULT_VSYS_NAME, "CAT1");
+    String category2Name = computeObjectName(DEFAULT_VSYS_NAME, "CAT2");
+
+    // Confirm structure definitions are tracked
+    assertThat(ccae, hasDefinedStructure(filename, CUSTOM_URL_CATEGORY, category1Name));
+    assertThat(ccae, hasDefinedStructure(filename, CUSTOM_URL_CATEGORY, category2Name));
+
+    // Structure references are tracked
+    assertThat(ccae, hasNumReferrers(filename, CUSTOM_URL_CATEGORY, category1Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, CUSTOM_URL_CATEGORY, category2Name, 0));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, CUSTOM_URL_CATEGORY, "CAT_UNDEFINED", SECURITY_RULE_CATEGORY));
   }
 
   @Test
@@ -3836,6 +3956,44 @@ public final class PaloAltoGrammarTest {
     String hostname = "virtual-router-ecmp";
     // Do not crash (i.e., no warnings generated)
     parsePaloAltoConfig(hostname);
+  }
+
+  @Test
+  public void testRulebaseExtraction() {
+    String hostname = "rulebase-extraction";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    Map<String, SecurityRule> rules =
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules();
+    RuleEndpoint addr1 = new RuleEndpoint(REFERENCE, "ADDR1");
+    RuleEndpoint addr2 = new RuleEndpoint(REFERENCE, "ADDR2");
+    RuleEndpoint addr3 = new RuleEndpoint(REFERENCE, "ADDR3");
+    CustomUrlCategoryReference cat1 = new CustomUrlCategoryReference("CAT1");
+    CustomUrlCategoryReference cat2 = new CustomUrlCategoryReference("CAT2");
+    ApplicationOrApplicationGroupReference ssh = new ApplicationOrApplicationGroupReference("ssh");
+    ApplicationOrApplicationGroupReference ssl = new ApplicationOrApplicationGroupReference("ssl");
+
+    assertThat(rules.keySet(), contains("RULE1", "RULE2"));
+    SecurityRule rule1 = rules.get("RULE1");
+    SecurityRule rule2 = rules.get("RULE2");
+
+    assertNotNull(rule1);
+    assertThat(rule1.getAction(), equalTo(LineAction.DENY));
+    assertThat(rule1.getDescription(), equalTo("descr"));
+    assertThat(rule1.getFrom(), containsInAnyOrder("z1", "z2"));
+    assertThat(rule1.getTo(), containsInAnyOrder("z1", "z3"));
+    assertThat(rule1.getSource(), containsInAnyOrder(addr1, addr2));
+    assertThat(rule1.getDestination(), containsInAnyOrder(addr1, addr3));
+    assertTrue(rule1.getNegateDestination());
+    assertTrue(rule1.getNegateSource());
+    assertThat(rule1.getCategory(), containsInAnyOrder(cat1, cat2));
+    assertThat(rule1.getApplications(), containsInAnyOrder(ssh, ssl));
+
+    // Check default values
+    assertNotNull(rule2);
+    assertThat(rule2.getAction(), equalTo(LineAction.PERMIT));
+    assertFalse(rule2.getNegateSource());
+    assertFalse(rule2.getNegateDestination());
+    assertThat(rule2.getCategory(), emptyIterable());
   }
 
   @Test

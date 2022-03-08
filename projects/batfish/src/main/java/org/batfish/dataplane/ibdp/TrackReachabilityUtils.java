@@ -38,7 +38,7 @@ public final class TrackReachabilityUtils {
    * <p>The originating node's FIBs and the starting VRF in the provided {@link TrackReachability}
    * are used to determine potential source IPs for the test flow(s).
    */
-  static boolean evaluateTrackReachability(
+  public static boolean evaluateTrackReachability(
       TrackReachability trackReachability,
       Configuration c,
       Map<String, Fib> fibsByVrf,

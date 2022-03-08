@@ -10,9 +10,10 @@ eos_bandwidth_specifier
 :
    FORTYG_FULL
    | ONE_HUNDREDG_FULL
-   | TEN_THOUSAND_FULL
    | ONE_HUNDRED_FULL
    | ONE_THOUSAND_FULL
+   | TEN_THOUSAND_FULL
+   | TWENTY_FIVEG_FULL
 ;
 
 eos_vxlan_if_inner

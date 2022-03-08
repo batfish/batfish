@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Collection;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Ip;
@@ -14,13 +15,13 @@ public class VniMatchersImpl {
 
   private VniMatchersImpl() {}
 
-  static final class HasBumTransportIps extends FeatureMatcher<Layer2Vni, Iterable<Ip>> {
-    HasBumTransportIps(@Nonnull Matcher<? super Iterable<Ip>> subMatcher) {
+  static final class HasBumTransportIps extends FeatureMatcher<Layer2Vni, Set<Ip>> {
+    HasBumTransportIps(@Nonnull Matcher<? super Set<Ip>> subMatcher) {
       super(subMatcher, "Layer2Vni with BUM transport IPs:", "bumTransportIps");
     }
 
     @Override
-    protected Iterable<Ip> featureValueOf(Layer2Vni actual) {
+    protected Set<Ip> featureValueOf(Layer2Vni actual) {
       return actual.getBumTransportIps();
     }
   }
