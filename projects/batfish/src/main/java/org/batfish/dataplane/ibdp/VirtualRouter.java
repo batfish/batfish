@@ -1304,6 +1304,9 @@ public final class VirtualRouter {
               .get(edge.getNode1().getNode())
               .getVirtualRouterOrThrow(edge.getNode1().getInterface(nc).getVrfName());
       Queue<RouteAdvertisement<IsisRoute>> queue = remoteVr._isisIncomingRoutes.get(edge.reverse());
+      if (queue == null) {
+        continue;
+      }
       IsisLevel circuitType = edge.getCircuitType();
       if (circuitType.includes(IsisLevel.LEVEL_1) && activeLevels.includes(IsisLevel.LEVEL_1)) {
         queueDelta(queue, correctedL1Delta);
