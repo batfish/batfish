@@ -56,6 +56,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RU
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.REDIST_RULE_REDIST_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_FROM_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_SELF_REF;
@@ -2839,6 +2840,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     String uniqueName = computeObjectName(_currentVsys, name);
     defineFlattenedStructure(SECURITY_RULE, uniqueName, ctx);
     referenceStructure(SECURITY_RULE, uniqueName, SECURITY_RULE_SELF_REF, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitSrs_category(PaloAltoParser.Srs_categoryContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentSecurityRule.addCategory(name);
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys, name);
+      referenceStructure(
+          CUSTOM_URL_CATEGORY, uniqueName, SECURITY_RULE_CATEGORY, getLine(var.start));
+    }
   }
 
   @Override

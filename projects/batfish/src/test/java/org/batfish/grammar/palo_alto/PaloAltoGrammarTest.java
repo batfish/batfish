@@ -83,6 +83,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLAT
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
@@ -230,6 +231,7 @@ import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AddressPrefix;
 import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
+import org.batfish.representation.palo_alto.ApplicationOrApplicationGroupReference;
 import org.batfish.representation.palo_alto.ApplicationOverrideRule;
 import org.batfish.representation.palo_alto.BgpConnectionOptions;
 import org.batfish.representation.palo_alto.BgpPeer;
@@ -240,6 +242,7 @@ import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.CustomUrlCategory;
+import org.batfish.representation.palo_alto.CustomUrlCategoryReference;
 import org.batfish.representation.palo_alto.DeviceGroup;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
@@ -2831,7 +2834,13 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasDefinedStructure(filename, CUSTOM_URL_CATEGORY, category1Name));
     assertThat(ccae, hasDefinedStructure(filename, CUSTOM_URL_CATEGORY, category2Name));
 
-    // TODO references and undefined references once refs are added
+    // Structure references are tracked
+    assertThat(ccae, hasNumReferrers(filename, CUSTOM_URL_CATEGORY, category1Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, CUSTOM_URL_CATEGORY, category2Name, 0));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, CUSTOM_URL_CATEGORY, "CAT_UNDEFINED", SECURITY_RULE_CATEGORY));
   }
 
   @Test
@@ -3947,6 +3956,44 @@ public final class PaloAltoGrammarTest {
     String hostname = "virtual-router-ecmp";
     // Do not crash (i.e., no warnings generated)
     parsePaloAltoConfig(hostname);
+  }
+
+  @Test
+  public void testRulebaseExtraction() {
+    String hostname = "rulebase-extraction";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    Map<String, SecurityRule> rules =
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules();
+    RuleEndpoint addr1 = new RuleEndpoint(REFERENCE, "ADDR1");
+    RuleEndpoint addr2 = new RuleEndpoint(REFERENCE, "ADDR2");
+    RuleEndpoint addr3 = new RuleEndpoint(REFERENCE, "ADDR3");
+    CustomUrlCategoryReference cat1 = new CustomUrlCategoryReference("CAT1");
+    CustomUrlCategoryReference cat2 = new CustomUrlCategoryReference("CAT2");
+    ApplicationOrApplicationGroupReference ssh = new ApplicationOrApplicationGroupReference("ssh");
+    ApplicationOrApplicationGroupReference ssl = new ApplicationOrApplicationGroupReference("ssl");
+
+    assertThat(rules.keySet(), contains("RULE1", "RULE2"));
+    SecurityRule rule1 = rules.get("RULE1");
+    SecurityRule rule2 = rules.get("RULE2");
+
+    assertNotNull(rule1);
+    assertThat(rule1.getAction(), equalTo(LineAction.DENY));
+    assertThat(rule1.getDescription(), equalTo("descr"));
+    assertThat(rule1.getFrom(), containsInAnyOrder("z1", "z2"));
+    assertThat(rule1.getTo(), containsInAnyOrder("z1", "z3"));
+    assertThat(rule1.getSource(), containsInAnyOrder(addr1, addr2));
+    assertThat(rule1.getDestination(), containsInAnyOrder(addr1, addr3));
+    assertTrue(rule1.getNegateDestination());
+    assertTrue(rule1.getNegateSource());
+    assertThat(rule1.getCategory(), containsInAnyOrder(cat1, cat2));
+    assertThat(rule1.getApplications(), containsInAnyOrder(ssh, ssl));
+
+    // Check default values
+    assertNotNull(rule2);
+    assertThat(rule2.getAction(), equalTo(LineAction.PERMIT));
+    assertFalse(rule2.getNegateSource());
+    assertFalse(rule2.getNegateDestination());
+    assertThat(rule2.getCategory(), emptyIterable());
   }
 
   @Test

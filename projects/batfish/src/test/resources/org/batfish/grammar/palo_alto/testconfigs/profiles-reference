@@ -2,3 +2,12 @@ set deviceconfig system hostname profiles-reference
 
 set profiles custom-url-category CAT1 description description1
 set profiles custom-url-category CAT2 description description2
+
+set rulebase security rules RULE1 from any
+set rulebase security rules RULE1 to any
+set rulebase security rules RULE1 source any
+set rulebase security rules RULE1 destination any
+set rulebase security rules RULE1 service any
+set rulebase security rules RULE1 category [ CAT1 CAT_UNDEFINED ]
+set rulebase security rules RULE1 application any
+set rulebase security rules RULE1 action deny
