@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -44,8 +42,8 @@ public final class SecurityRule implements Serializable {
   @Nonnull private final SortedSet<String> _to;
 
   // IPs
-  @Nonnull private final List<RuleEndpoint> _source;
-  @Nonnull private final List<RuleEndpoint> _destination;
+  @Nonnull private Set<RuleEndpoint> _source;
+  @Nonnull private Set<RuleEndpoint> _destination;
   private boolean _negateSource;
   private boolean _negateDestination;
 
@@ -64,12 +62,12 @@ public final class SecurityRule implements Serializable {
     _action = LineAction.DENY;
     _applications = new TreeSet<>();
     _category = ImmutableSet.of();
-    _destination = new LinkedList<>();
+    _destination = ImmutableSet.of();
     _negateDestination = false;
     _disabled = false;
     _from = new TreeSet<>();
     _service = new TreeSet<>();
-    _source = new LinkedList<>();
+    _source = ImmutableSet.of();
     _negateSource = false;
     _to = new TreeSet<>();
     _tags = new HashSet<>(1);
@@ -118,8 +116,19 @@ public final class SecurityRule implements Serializable {
     return _description;
   }
 
+  public void addDestination(RuleEndpoint endpoint) {
+    if (_destination.contains(endpoint)) {
+      return;
+    }
+    _destination =
+        ImmutableSet.<RuleEndpoint>builderWithExpectedSize(_destination.size() + 1)
+            .addAll(_destination)
+            .add(endpoint)
+            .build();
+  }
+
   @Nonnull
-  public List<RuleEndpoint> getDestination() {
+  public Set<RuleEndpoint> getDestination() {
     return _destination;
   }
 
@@ -153,8 +162,19 @@ public final class SecurityRule implements Serializable {
     return _service;
   }
 
+  public void addSource(RuleEndpoint endpoint) {
+    if (_source.contains(endpoint)) {
+      return;
+    }
+    _source =
+        ImmutableSet.<RuleEndpoint>builderWithExpectedSize(_source.size() + 1)
+            .addAll(_source)
+            .add(endpoint)
+            .build();
+  }
+
   @Nonnull
-  public List<RuleEndpoint> getSource() {
+  public Set<RuleEndpoint> getSource() {
     return _source;
   }
 
