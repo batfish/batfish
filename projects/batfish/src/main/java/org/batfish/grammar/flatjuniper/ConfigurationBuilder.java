@@ -1827,21 +1827,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return toIntegerInSpace(messageCtx, ctx, VNI_NUMBER_RANGE, "vni");
   }
 
-  /**
-   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
-   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
-   * {@link Optional#empty}.
-   */
-  private @Nonnull Optional<Integer> toIntegerInSpace(
-      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
-    int num = Integer.parseInt(ctx.getText());
-    if (!space.contains(num)) {
-      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
-      return Optional.empty();
-    }
-    return Optional.of(num);
-  }
-
   private static @Nonnull IpOptions toIpOptions(Ip_optionContext ctx) {
     if (ctx.LOOSE_SOURCE_ROUTE() != null) {
       return IpOptions.LOOSE_SOURCE_ROUTE;
