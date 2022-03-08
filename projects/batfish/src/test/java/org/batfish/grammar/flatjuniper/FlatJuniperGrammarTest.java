@@ -1541,7 +1541,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEvpn() {
+  public void testEvpnExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn");
     // TODO
   }
@@ -2897,7 +2897,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceVni() {
+  public void testInterfaceVniExtraction() {
     JuniperConfiguration c = parseJuniperConfig("interface-vni");
     Integer vni = c.getMasterLogicalSystem().getNamedVlans().get("VLAN_TEST").getVniId();
     Integer vni0 = 10101;
