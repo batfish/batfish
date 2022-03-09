@@ -23,6 +23,7 @@ e_extended_vni_list
         vni_range+
         ) CLOSE_BRACKET
         | ALL
+        | vni_range
     )
 ;
 
