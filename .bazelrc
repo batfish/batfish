@@ -1,2 +1,3 @@
 # Test targets are required to depend on our junit rather than using the one provided by Bazel
 build --explicit_java_test_deps
+build --java_language_version=11

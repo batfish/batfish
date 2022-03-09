@@ -47,7 +47,7 @@ public class AsPathRegex extends BaseParser<String> {
             IgnoreSpace(),
             Term(), // pop()
             push(String.format("%s%s", pop(1), pop()))),
-        push(String.format("^%s$", pop())));
+        push(String.format("^(%s)$", pop())));
   }
 
   Rule Term() {
@@ -110,7 +110,7 @@ public class AsPathRegex extends BaseParser<String> {
 
   // BareOr, with () around it. BareOr does all the stack manipulation.
   Rule T_Or() {
-    return Sequence('(', BareOr(), ')');
+    return Sequence('(', BareOr(), ')', push(match()));
   }
 
   Rule T_Group() {
@@ -205,6 +205,7 @@ public class AsPathRegex extends BaseParser<String> {
     if (!result.matched) {
       throw new IllegalArgumentException("Unhandled input: " + regex + "\n" + runner.getLog());
     }
+    System.err.println(runner.getLog());
     return result.resultValue;
   }
 }
