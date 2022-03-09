@@ -1543,19 +1543,19 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testEvpnVniListAllExtraction() {
-    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-all");
+    parseJuniperConfig("juniper-evpn-vni-list-all");
     // TODO
   }
 
   @Test
   public void testEvpnVniListNoRangeExtraction() {
-    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-no-range");
+    parseJuniperConfig("juniper-evpn-vni-list-no-range");
     // TODO
   }
 
   @Test(expected = ParserBatfishException.class)
   public void testEvpnVniListWithRangeExtraction() {
-    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-with-range");
+    parseJuniperConfig("juniper-evpn-vni-list-with-range");
     // TODO
   }
 
