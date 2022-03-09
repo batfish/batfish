@@ -18,6 +18,7 @@ java_binary(
     runtime_deps = [
         "//projects/allinone",
         "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
 )
 
@@ -27,5 +28,16 @@ java_binary(
     runtime_deps = [
         "//projects/allinone",
         "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
+)
+
+java_binary(
+    name = "replay_bdd_trace",
+    main_class = "org.batfish.allinone.bdd.main.ReplayBDDTrace",
+    runtime_deps = [
+        "//projects/allinone",
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
 )
