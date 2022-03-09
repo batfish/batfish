@@ -46,6 +46,7 @@ import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TunnelTopology;
+import org.batfish.common.topology.bridge_domain.BridgeDomainL3Adjacencies;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -195,8 +196,11 @@ final class IncrementalBdpEngine {
       LOGGER.info("Updating Layer 3 adjacencies");
       if (L3Adjacencies.USE_NEW_METHOD) {
         newAdjacencies =
-            BroadcastL3Adjacencies.create(
-                initialTopologyContext.getLayer1Topologies(), newVxlanTopology, configurations);
+            L3Adjacencies.USE_NEW_NEW_METHOD
+                ? BridgeDomainL3Adjacencies.create(
+                    initialTopologyContext.getLayer1Topologies(), newVxlanTopology, configurations)
+                : BroadcastL3Adjacencies.create(
+                    initialTopologyContext.getLayer1Topologies(), newVxlanTopology, configurations);
       } else {
         Layer1Topologies topologies = initialTopologyContext.getLayer1Topologies();
         if (topologies.getCombinedL1().isEmpty()) {

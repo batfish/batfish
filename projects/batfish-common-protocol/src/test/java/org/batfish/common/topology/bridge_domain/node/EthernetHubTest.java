@@ -3,13 +3,15 @@ package org.batfish.common.topology.bridge_domain.node;
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
 
-public class EthernetHubTest {
+/** Test of {@link EthernetHub}. */
+public final class EthernetHubTest {
 
   @Test
   public void testEquals() {
+    EthernetHub obj = new EthernetHub("a");
     new EqualsTester()
-        .addEqualityGroup(new EthernetHub("5"), new EthernetHub("5"))
-        .addEqualityGroup(new EthernetHub("6"))
+        .addEqualityGroup(obj, new EthernetHub("a"))
+        .addEqualityGroup(new EthernetHub("b"))
         .testEquals();
   }
 }

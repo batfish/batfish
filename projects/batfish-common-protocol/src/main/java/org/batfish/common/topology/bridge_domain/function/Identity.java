@@ -1,21 +1,38 @@
 package org.batfish.common.topology.bridge_domain.function;
 
-import java.util.Optional;
-import org.batfish.common.topology.bridge_domain.edge.Edge;
+import javax.annotation.Nonnull;
+import org.batfish.common.topology.bridge_domain.edge.BridgeDomainToBridgedL3;
+import org.batfish.common.topology.bridge_domain.edge.BridgeDomainToL2;
+import org.batfish.common.topology.bridge_domain.edge.BridgeDomainToL2Vni;
+import org.batfish.common.topology.bridge_domain.edge.BridgedL3ToBridgeDomain;
+import org.batfish.common.topology.bridge_domain.edge.L2ToPhysical;
+import org.batfish.common.topology.bridge_domain.edge.L2VniToBridgeDomain;
+import org.batfish.common.topology.bridge_domain.edge.NonBridgedL3ToPhysical;
+import org.batfish.common.topology.bridge_domain.edge.PhysicalToL2;
 
-/** Preserves data as-is. */
-public final class Identity<D> implements Edge<D, D> {
-  @SuppressWarnings("unchecked")
-  public static <D> Identity<D> get() {
-    return (Identity<D>) INSTANCE;
-  }
+/** The identity {@link StateFunction}. */
+public final class Identity
+    implements BridgeDomainToL2.Function,
+        BridgeDomainToL2Vni.Function,
+        BridgeDomainToBridgedL3.Function,
+        L2ToPhysical.Function,
+        L2VniToBridgeDomain.Function,
+        BridgedL3ToBridgeDomain.Function,
+        PhysicalToL2.Function,
+        NonBridgedL3ToPhysical.Function,
+        FilterByOuterTag,
+        FilterByVlanId,
+        PopTag,
+        TranslateVlan {
 
   @Override
-  public Optional<D> traverse(D data) {
-    return Optional.of(data);
+  public <T, U> T accept(StateFunctionVisitor<T, U> visitor, U arg) {
+    return visitor.visitIdentity(this, arg);
   }
 
-  private Identity() {} // prevent instantiation
+  static @Nonnull Identity instance() {
+    return INSTANCE;
+  }
 
-  private static final Identity<Void> INSTANCE = new Identity<>();
+  private static final Identity INSTANCE = new Identity();
 }

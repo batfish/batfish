@@ -1,23 +1,35 @@
 package org.batfish.common.topology.bridge_domain.edge;
 
-import java.util.Optional;
+import static org.batfish.common.topology.bridge_domain.function.StateFunctions.filterByOuterTag;
+
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
-import org.batfish.common.topology.bridge_domain.EthernetTag;
-import org.batfish.common.topology.bridge_domain.node.L3Interface.Unit;
+import javax.annotation.Nullable;
+import org.batfish.common.topology.bridge_domain.function.StateFunction;
+import org.batfish.datamodel.IntegerSpace;
 
-/** Only received packets with a specific tag are delivered. */
-public final class PhysicalToNonBridgedL3 implements Edge<EthernetTag, Unit> {
-  public PhysicalToNonBridgedL3(EthernetTag tag) {
-    _tag = tag;
+/**
+ * An edge from a {@link org.batfish.common.topology.bridge_domain.node.PhysicalInterface} to a
+ * {@link org.batfish.common.topology.bridge_domain.node.NonBridgedL3Interface}.
+ */
+public final class PhysicalToNonBridgedL3 extends Edge {
+  public interface Function extends StateFunction {}
+
+  /** Helper for creating an edge from a physical interface to a non-bridged layer-3 interface. */
+  public static @Nonnull PhysicalToNonBridgedL3 physicalToNonBridgedL3(
+      @Nullable Integer allowedTag) {
+    return of(
+        allowedTag != null
+            ? filterByOuterTag(IntegerSpace.of(allowedTag), false)
+            : filterByOuterTag(IntegerSpace.EMPTY, true));
   }
 
-  @Override
-  public Optional<Unit> traverse(EthernetTag data) {
-    if (data.equals(_tag)) {
-      return Optional.of(Unit.VALUE);
-    }
-    return Optional.empty();
+  @VisibleForTesting
+  public static @Nonnull PhysicalToNonBridgedL3 of(Function stateFunction) {
+    return new PhysicalToNonBridgedL3(stateFunction);
   }
 
-  private final @Nonnull EthernetTag _tag;
+  private PhysicalToNonBridgedL3(Function stateFunction) {
+    super(stateFunction);
+  }
 }

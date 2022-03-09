@@ -2,23 +2,27 @@ package org.batfish.common.topology.bridge_domain;
 
 import static org.batfish.common.topology.bridge_domain.L3AdjacencyComputer.BATFISH_GLOBAL_HUB;
 import static org.batfish.common.topology.bridge_domain.L3AdjacencyComputer.computeEthernetHubs;
-import static org.batfish.common.topology.bridge_domain.L3AdjacencyComputer.connectL2InterfaceToBroadcastDomain;
+import static org.batfish.common.topology.bridge_domain.L3AdjacencyComputer.connectL2InterfaceToBridgeDomainAndPhysicalInterface;
 import static org.batfish.common.topology.bridge_domain.L3AdjacencyComputer.connectL3InterfaceToPhysicalOrDomain;
 import static org.batfish.common.topology.bridge_domain.L3AdjacencyComputer.findCorrespondingPhysicalInterface;
 import static org.batfish.common.topology.bridge_domain.L3AdjacencyComputer.shouldCreateL3Interface;
 import static org.batfish.common.topology.bridge_domain.L3AdjacencyComputer.shouldCreatePhysicalInterface;
+import static org.batfish.common.topology.bridge_domain.node.BridgeDomain.newVlanAwareBridge;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.InterfaceType.LOGICAL;
 import static org.batfish.datamodel.InterfaceType.LOOPBACK;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
@@ -40,8 +44,11 @@ import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.bridge_domain.node.BridgeDomain;
+import org.batfish.common.topology.bridge_domain.node.BridgedL3Interface;
 import org.batfish.common.topology.bridge_domain.node.EthernetHub;
+import org.batfish.common.topology.bridge_domain.node.L2Interface;
 import org.batfish.common.topology.bridge_domain.node.L3Interface;
+import org.batfish.common.topology.bridge_domain.node.NonBridgedL3Interface;
 import org.batfish.common.topology.bridge_domain.node.PhysicalInterface;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -137,7 +144,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL2InterfaceToBroadcastDomain_l3() {
+  public void testConnectL2InterfaceToBridgeDomain_l3() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface l3 =
@@ -149,21 +156,21 @@ public class L3AdjacencyComputerTest {
             .setSwitchportMode(SwitchportMode.NONE)
             .build();
     NodeInterfacePair nip = NodeInterfacePair.of(l3);
-    BridgeDomain domain = new BridgeDomain(c.getHostname());
-    PhysicalInterface iface = new PhysicalInterface(nip);
+    BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+    PhysicalInterface physicalInterface = new PhysicalInterface(nip);
 
-    // Since L3 interface, no edges should be established.
-    connectL2InterfaceToBroadcastDomain(
-        l3, c.getAllInterfaces(), ImmutableMap.of(nip, iface), domain);
-    assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
-    assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-    assertThat(iface.getAttachedHubForTest(), nullValue());
-    assertThat(iface.getSwitchForTest(), nullValue());
-    assertThat(iface.getL3InterfacesForTest(), anEmptyMap());
+    // Since L3 non-bridged interface, no edges should be established.
+    connectL2InterfaceToBridgeDomainAndPhysicalInterface(
+        l3, c.getAllInterfaces(), ImmutableMap.of(nip, physicalInterface), domain);
+    assertThat(domain.getToL2ForTest(), anEmptyMap());
+    assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+    assertThat(physicalInterface.getAttachedHubForTest(), nullValue());
+    assertThat(physicalInterface.getToL2ForTest(), anEmptyMap());
+    assertThat(physicalInterface.getToNonBridgedL3ForTest(), anEmptyMap());
   }
 
   @Test
-  public void testConnectL2InterfaceToBroadcastDomain_access() {
+  public void testConnectL2InterfaceToBridgeDomain_access() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface access =
@@ -178,29 +185,35 @@ public class L3AdjacencyComputerTest {
 
     {
       // Access should be attached
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      PhysicalInterface iface = new PhysicalInterface(nip);
-      connectL2InterfaceToBroadcastDomain(
-          access, c.getAllInterfaces(), ImmutableMap.of(nip, iface), domain);
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(domain.getPhysicalInterfacesForTest().keySet(), contains(sameInstance(iface)));
-      assertThat(iface.getAttachedHubForTest(), nullValue());
-      assertThat(iface.getSwitchForTest(), sameInstance(domain));
-      assertThat(iface.getL3InterfacesForTest(), anEmptyMap());
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      PhysicalInterface physicalInterface = new PhysicalInterface(nip);
+      Optional<L2Interface> maybeL2 =
+          connectL2InterfaceToBridgeDomainAndPhysicalInterface(
+              access, c.getAllInterfaces(), ImmutableMap.of(nip, physicalInterface), domain);
+      assertTrue(maybeL2.isPresent());
+      L2Interface l2Interface = maybeL2.get();
+      assertThat(l2Interface.getBridgeDomainForTest(), sameInstance(domain));
+      assertThat(l2Interface.getToBridgeDomainForTest(), notNullValue());
+      assertThat(l2Interface.getPhysicalInterfaceForTest(), sameInstance(physicalInterface));
+      assertThat(l2Interface.getToPhysicalForTest(), notNullValue());
+      assertThat(domain.getToL2ForTest(), hasKeys(l2Interface));
+      assertThat(physicalInterface.getAttachedHubForTest(), nullValue());
+      assertThat(physicalInterface.getToL2ForTest(), hasKeys(l2Interface));
+      assertThat(physicalInterface.getToNonBridgedL3ForTest(), anEmptyMap());
     }
 
     {
       // Missing access vlan should be no results
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      PhysicalInterface iface = new PhysicalInterface(nip);
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      PhysicalInterface physicalInterface = new PhysicalInterface(nip);
       access.setAccessVlan(null);
-      connectL2InterfaceToBroadcastDomain(
-          access, c.getAllInterfaces(), ImmutableMap.of(nip, iface), domain);
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(iface.getAttachedHubForTest(), nullValue());
-      assertThat(iface.getSwitchForTest(), nullValue());
-      assertThat(iface.getL3InterfacesForTest(), anEmptyMap());
+      Optional<L2Interface> maybeL2 =
+          connectL2InterfaceToBridgeDomainAndPhysicalInterface(
+              access, c.getAllInterfaces(), ImmutableMap.of(nip, physicalInterface), domain);
+      assertFalse(maybeL2.isPresent());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
+      assertThat(physicalInterface.getAttachedHubForTest(), nullValue());
+      assertThat(physicalInterface.getToL2ForTest(), anEmptyMap());
     }
   }
 
@@ -220,15 +233,21 @@ public class L3AdjacencyComputerTest {
     NodeInterfacePair nip = NodeInterfacePair.of(trunk);
 
     // Trunk should be attached
-    BridgeDomain domain = new BridgeDomain(c.getHostname());
-    PhysicalInterface iface = new PhysicalInterface(nip);
-    connectL2InterfaceToBroadcastDomain(
-        trunk, c.getAllInterfaces(), ImmutableMap.of(nip, iface), domain);
-    assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
-    assertThat(domain.getPhysicalInterfacesForTest().keySet(), contains(sameInstance(iface)));
-    assertThat(iface.getAttachedHubForTest(), nullValue());
-    assertThat(iface.getSwitchForTest(), sameInstance(domain));
-    assertThat(iface.getL3InterfacesForTest(), anEmptyMap());
+    BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+    PhysicalInterface physicalInterface = new PhysicalInterface(nip);
+    Optional<L2Interface> maybeL2 =
+        connectL2InterfaceToBridgeDomainAndPhysicalInterface(
+            trunk, c.getAllInterfaces(), ImmutableMap.of(nip, physicalInterface), domain);
+    assertTrue(maybeL2.isPresent());
+    L2Interface l2Interface = maybeL2.get();
+    assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+    assertThat(domain.getToL2ForTest().keySet(), contains(sameInstance(l2Interface)));
+    assertThat(l2Interface.getPhysicalInterfaceForTest(), sameInstance(physicalInterface));
+    assertThat(l2Interface.getToPhysicalForTest(), notNullValue());
+    assertThat(l2Interface.getBridgeDomainForTest(), sameInstance(domain));
+    assertThat(l2Interface.getToBridgeDomainForTest(), notNullValue());
+    assertThat(physicalInterface.getAttachedHubForTest(), nullValue());
+    assertThat(physicalInterface.getToL2ForTest().keySet(), contains(sameInstance(l2Interface)));
   }
 
   @Test
@@ -249,28 +268,35 @@ public class L3AdjacencyComputerTest {
 
     {
       // Should be attached to physical iface
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      PhysicalInterface iface = new PhysicalInterface(physicalNip);
-      connectL2InterfaceToBroadcastDomain(
-          subif, c.getAllInterfaces(), ImmutableMap.of(physicalNip, iface), domain);
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(domain.getPhysicalInterfacesForTest().keySet(), contains(sameInstance(iface)));
-      assertThat(iface.getAttachedHubForTest(), nullValue());
-      assertThat(iface.getSwitchForTest(), sameInstance(domain));
-      assertThat(iface.getL3InterfacesForTest(), anEmptyMap());
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      PhysicalInterface physicalInterface = new PhysicalInterface(physicalNip);
+      Optional<L2Interface> maybeL2 =
+          connectL2InterfaceToBridgeDomainAndPhysicalInterface(
+              subif, c.getAllInterfaces(), ImmutableMap.of(physicalNip, physicalInterface), domain);
+      assertTrue(maybeL2.isPresent());
+      L2Interface l2Interface = maybeL2.get();
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest().keySet(), contains(sameInstance(l2Interface)));
+      assertThat(l2Interface.getPhysicalInterfaceForTest(), sameInstance(physicalInterface));
+      assertThat(l2Interface.getToPhysicalForTest(), notNullValue());
+      assertThat(l2Interface.getBridgeDomainForTest(), sameInstance(domain));
+      assertThat(l2Interface.getToBridgeDomainForTest(), notNullValue());
+      assertThat(physicalInterface.getAttachedHubForTest(), nullValue());
+      assertThat(physicalInterface.getToL2ForTest().keySet(), contains(sameInstance(l2Interface)));
     }
     {
       // Clear the dependency, should find nothing
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      PhysicalInterface iface = new PhysicalInterface(physicalNip);
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      PhysicalInterface physicalInterface = new PhysicalInterface(physicalNip);
       subif.setDependencies(ImmutableSet.of());
-      connectL2InterfaceToBroadcastDomain(
-          subif, c.getAllInterfaces(), ImmutableMap.of(physicalNip, iface), domain);
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(iface.getAttachedHubForTest(), nullValue());
-      assertThat(iface.getSwitchForTest(), nullValue());
-      assertThat(iface.getL3InterfacesForTest(), anEmptyMap());
+      Optional<L2Interface> maybeL2 =
+          connectL2InterfaceToBridgeDomainAndPhysicalInterface(
+              subif, c.getAllInterfaces(), ImmutableMap.of(physicalNip, physicalInterface), domain);
+      assertFalse(maybeL2.isPresent());
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
+      assertThat(physicalInterface.getAttachedHubForTest(), nullValue());
+      assertThat(physicalInterface.getToL2ForTest(), anEmptyMap());
     }
   }
 
@@ -287,15 +313,16 @@ public class L3AdjacencyComputerTest {
             .build();
     NodeInterfacePair nip = NodeInterfacePair.of(unhandledMode);
 
-    BridgeDomain domain = new BridgeDomain(c.getHostname());
-    PhysicalInterface iface = new PhysicalInterface(nip);
-    connectL2InterfaceToBroadcastDomain(
-        unhandledMode, c.getAllInterfaces(), ImmutableMap.of(nip, iface), domain);
-    assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
-    assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-    assertThat(iface.getAttachedHubForTest(), nullValue());
-    assertThat(iface.getSwitchForTest(), nullValue());
-    assertThat(iface.getL3InterfacesForTest(), anEmptyMap());
+    BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+    PhysicalInterface physicalInterface = new PhysicalInterface(nip);
+    Optional<L2Interface> maybeL2 =
+        connectL2InterfaceToBridgeDomainAndPhysicalInterface(
+            unhandledMode, c.getAllInterfaces(), ImmutableMap.of(nip, physicalInterface), domain);
+    assertFalse(maybeL2.isPresent());
+    assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+    assertThat(domain.getToL2ForTest(), anEmptyMap());
+    assertThat(physicalInterface.getAttachedHubForTest(), nullValue());
+    assertThat(physicalInterface.getToL2ForTest(), anEmptyMap());
   }
 
   @Test
@@ -428,41 +455,43 @@ public class L3AdjacencyComputerTest {
     Configuration c = nf.configurationBuilder().build();
     Interface physical =
         nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setAddress(CONCRETE).build();
+    NodeInterfacePair nip = NodeInterfacePair.of(physical);
     {
       // Connect to physical interface and not domain
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(physical));
-      PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(physical));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          physical,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(physicalInterface.getIface(), physicalInterface),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), sameInstance(physicalInterface));
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest().keySet(), contains(iface));
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
+      PhysicalInterface physicalInterface = new PhysicalInterface(nip);
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              physical,
+              c.getAllInterfaces(),
+              ImmutableMap.of(nip, physicalInterface),
+              ImmutableMap.of(domain.getId(), domain));
+      assertTrue(maybeL3.isPresent());
+      L3Interface l3Interface = maybeL3.get();
+      assertThat(l3Interface, instanceOf(NonBridgedL3Interface.class));
+      NonBridgedL3Interface nbl3Interface = (NonBridgedL3Interface) l3Interface;
+      assertThat(nbl3Interface.getPhysicalInterfaceForTest(), sameInstance(physicalInterface));
+      assertThat(nbl3Interface.getToPhysicalForTest(), notNullValue());
+      assertThat(
+          physicalInterface.getToNonBridgedL3ForTest().keySet(),
+          contains(sameInstance(nbl3Interface)));
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
     {
       // Missing physical interface
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(physical));
-      PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(physical));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          physical,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), nullValue());
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
+      PhysicalInterface physicalInterface = new PhysicalInterface(nip);
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              physical,
+              c.getAllInterfaces(),
+              ImmutableMap.of(),
+              ImmutableMap.of(domain.getId(), domain));
+      assertFalse(maybeL3.isPresent());
+      assertThat(physicalInterface.getToNonBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
   }
 
@@ -481,76 +510,78 @@ public class L3AdjacencyComputerTest {
             .build();
     {
       // Connect to physical interface and not domain
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(subif));
       PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(physical));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          subif,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(physicalInterface.getIface(), physicalInterface),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), sameInstance(physicalInterface));
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest().keySet(), contains(iface));
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              subif,
+              c.getAllInterfaces(),
+              ImmutableMap.of(physicalInterface.getInterface(), physicalInterface),
+              ImmutableMap.of(domain.getId(), domain));
+      assertTrue(maybeL3.isPresent());
+      L3Interface l3Interface = maybeL3.get();
+      assertThat(l3Interface, instanceOf(NonBridgedL3Interface.class));
+      NonBridgedL3Interface nbl3Interface = (NonBridgedL3Interface) l3Interface;
+      assertThat(nbl3Interface.getPhysicalInterfaceForTest(), sameInstance(physicalInterface));
+      assertThat(nbl3Interface.getToPhysicalForTest(), notNullValue());
+      assertThat(
+          physicalInterface.getToNonBridgedL3ForTest().keySet(),
+          contains(sameInstance(nbl3Interface)));
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
     {
       // Parent is missing on config
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(subif));
       PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(physical));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          subif,
-          iface,
-          ImmutableMap.of(),
-          ImmutableMap.of(physicalInterface.getIface(), physicalInterface),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), nullValue());
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              subif,
+              ImmutableMap.of(),
+              ImmutableMap.of(physicalInterface.getInterface(), physicalInterface),
+              ImmutableMap.of(domain.getId(), domain));
+      assertFalse(maybeL3.isPresent());
+      assertThat(physicalInterface.getToNonBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
     {
       // Parent is missing PhysicalInterface
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(subif));
       PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(physical));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          subif,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), nullValue());
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              subif,
+              c.getAllInterfaces(),
+              ImmutableMap.of(),
+              ImmutableMap.of(domain.getId(), domain));
+      assertFalse(maybeL3.isPresent());
+      assertThat(physicalInterface.getToNonBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
     {
       // Subif handles untagged frames
       subif.setEncapsulationVlan(null);
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(subif));
       PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(physical));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          subif,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(physicalInterface.getIface(), physicalInterface),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), sameInstance(physicalInterface));
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest().keySet(), contains(iface));
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              subif,
+              c.getAllInterfaces(),
+              ImmutableMap.of(physicalInterface.getInterface(), physicalInterface),
+              ImmutableMap.of(domain.getId(), domain));
+      assertTrue(maybeL3.isPresent());
+      L3Interface l3Interface = maybeL3.get();
+      assertThat(l3Interface, instanceOf(NonBridgedL3Interface.class));
+      NonBridgedL3Interface nbl3Interface = (NonBridgedL3Interface) l3Interface;
+      assertThat(nbl3Interface.getPhysicalInterfaceForTest(), sameInstance(physicalInterface));
+      assertThat(nbl3Interface.getToPhysicalForTest(), notNullValue());
+      assertThat(
+          physicalInterface.getToNonBridgedL3ForTest().keySet(),
+          contains(sameInstance(nbl3Interface)));
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
   }
 
@@ -567,58 +598,55 @@ public class L3AdjacencyComputerTest {
             .build();
     {
       // Connect to domain and not physical interface
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(vlan));
       // Should not create physical iface for VLAN, but ensure the connection doesn't happen anyway.
       PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(vlan));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          vlan,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(physicalInterface.getIface(), physicalInterface),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), nullValue());
-      assertThat(iface.getSendToSwitchForTesting(), sameInstance(domain));
-      assertThat(physicalInterface.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest().keySet(), contains(iface));
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              vlan,
+              c.getAllInterfaces(),
+              ImmutableMap.of(physicalInterface.getInterface(), physicalInterface),
+              ImmutableMap.of(domain.getId(), domain));
+      assertTrue(maybeL3.isPresent());
+      L3Interface l3Interface = maybeL3.get();
+      assertThat(l3Interface, instanceOf(BridgedL3Interface.class));
+      BridgedL3Interface bridgedL3Interface = (BridgedL3Interface) l3Interface;
+      assertThat(bridgedL3Interface.getBridgeDomainForTest(), sameInstance(domain));
+      assertThat(bridgedL3Interface.getToBridgeDomainForTest(), notNullValue());
+      assertThat(physicalInterface.getToNonBridgedL3ForTest(), anEmptyMap());
+      assertThat(
+          domain.getToBridgedL3ForTest().keySet(), contains(sameInstance(bridgedL3Interface)));
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
     {
       // Missing domain
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(vlan));
       // Should not create physical iface for VLAN, but ensure the connection doesn't happen anyway.
       PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(vlan));
-      connectL3InterfaceToPhysicalOrDomain(
-          vlan,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(physicalInterface.getIface(), physicalInterface),
-          ImmutableMap.of());
-      assertThat(iface.getSendToInterfaceForTesting(), nullValue());
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              vlan,
+              c.getAllInterfaces(),
+              ImmutableMap.of(physicalInterface.getInterface(), physicalInterface),
+              ImmutableMap.of());
+      assertFalse(maybeL3.isPresent());
+      assertThat(physicalInterface.getToNonBridgedL3ForTest(), anEmptyMap());
     }
     {
       // Missing VLAN
       vlan.setVlan(null);
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(vlan));
       // Should not create physical iface for VLAN, but ensure the connection doesn't happen anyway.
       PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(vlan));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          vlan,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(physicalInterface.getIface(), physicalInterface),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), nullValue());
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest(), anEmptyMap());
-      assertThat(physicalInterface.getSwitchForTest(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              vlan,
+              c.getAllInterfaces(),
+              ImmutableMap.of(physicalInterface.getInterface(), physicalInterface),
+              ImmutableMap.of(domain.getId(), domain));
+      assertFalse(maybeL3.isPresent());
+      assertThat(physicalInterface.getToNonBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
   }
 
@@ -631,18 +659,16 @@ public class L3AdjacencyComputerTest {
     {
       // Loopback should be filtered out ahead of time, but if it makes it here
       // then there should still be no issues.
-      L3Interface iface = new L3Interface(NodeInterfacePair.of(loopback));
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      connectL3InterfaceToPhysicalOrDomain(
-          loopback,
-          iface,
-          c.getAllInterfaces(),
-          ImmutableMap.of(),
-          ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), nullValue());
-      assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
-      assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
+      BridgeDomain domain = newVlanAwareBridge(c.getHostname());
+      Optional<L3Interface> maybeL3 =
+          connectL3InterfaceToPhysicalOrDomain(
+              loopback,
+              c.getAllInterfaces(),
+              ImmutableMap.of(),
+              ImmutableMap.of(domain.getId(), domain));
+      assertFalse(maybeL3.isPresent());
+      assertThat(domain.getToBridgedL3ForTest(), anEmptyMap());
+      assertThat(domain.getToL2ForTest(), anEmptyMap());
     }
   }
 
@@ -655,7 +681,7 @@ public class L3AdjacencyComputerTest {
 
   private static Set<NodeInterfacePair> getPairs(Collection<PhysicalInterface> interfaces) {
     return interfaces.stream()
-        .map(PhysicalInterface::getIface)
+        .map(PhysicalInterface::getInterface)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -676,7 +702,7 @@ public class L3AdjacencyComputerTest {
           computeEthernetHubs(ImmutableMap.of(c.getHostname(), c), physical, Layer1Topology.EMPTY);
       assertThat(hubs.keySet(), contains(BATFISH_GLOBAL_HUB));
       assertThat(
-          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getAttachedInterfacesForTesting().keySet()),
+          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToPhysicalForTest().keySet()),
           containsInAnyOrder(n1, n2, n3));
     }
     {
@@ -694,11 +720,9 @@ public class L3AdjacencyComputerTest {
           Iterables.getOnlyElement(
               Sets.difference(hubs.keySet(), ImmutableSet.of(BATFISH_GLOBAL_HUB)));
       assertThat(
-          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getAttachedInterfacesForTesting().keySet()),
-          contains(n3));
+          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToPhysicalForTest().keySet()), contains(n3));
       assertThat(
-          getPairs(hubs.get(otherKey).getAttachedInterfacesForTesting().keySet()),
-          containsInAnyOrder(n1, n2));
+          getPairs(hubs.get(otherKey).getToPhysicalForTest().keySet()), containsInAnyOrder(n1, n2));
     }
     {
       // One interface with disconnected edge.
@@ -715,10 +739,9 @@ public class L3AdjacencyComputerTest {
           Iterables.getOnlyElement(
               Sets.difference(hubs.keySet(), ImmutableSet.of(BATFISH_GLOBAL_HUB)));
       assertThat(
-          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getAttachedInterfacesForTesting().keySet()),
+          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToPhysicalForTest().keySet()),
           containsInAnyOrder(n2, n3));
-      assertThat(
-          getPairs(hubs.get(otherKey).getAttachedInterfacesForTesting().keySet()), contains(n1));
+      assertThat(getPairs(hubs.get(otherKey).getToPhysicalForTest().keySet()), contains(n1));
     }
     {
       // Line.
@@ -733,8 +756,7 @@ public class L3AdjacencyComputerTest {
                           c.getHostname(), i3.getName(), c.getHostname(), i2.getName()))));
       assertThat(hubs, aMapWithSize(1));
       assertThat(
-          getPairs(
-              Iterables.getOnlyElement(hubs.values()).getAttachedInterfacesForTesting().keySet()),
+          getPairs(Iterables.getOnlyElement(hubs.values()).getToPhysicalForTest().keySet()),
           containsInAnyOrder(n1, n2, n3));
     }
   }

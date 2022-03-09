@@ -26,6 +26,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
+import org.batfish.common.topology.bridge_domain.BridgeDomainL3Adjacencies;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -259,8 +260,11 @@ public final class TopologyProviderImpl implements TopologyProvider {
       assert scope != null; // avoid unused warning
       Layer1Topologies l1 = getLayer1Topologies(networkSnapshot);
       if (L3Adjacencies.USE_NEW_METHOD) {
-        return BroadcastL3Adjacencies.create(
-            l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot));
+        return L3Adjacencies.USE_NEW_NEW_METHOD
+            ? BridgeDomainL3Adjacencies.create(
+                l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot))
+            : BroadcastL3Adjacencies.create(
+                l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot));
       }
       if (l1.getCombinedL1().isEmpty()) {
         return GlobalBroadcastNoPointToPoint.instance();

@@ -20,18 +20,12 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
  *
  * @see L3AdjacencyComputer
  */
-public class BridgeDomainL3Adjacencies implements L3Adjacencies {
-  public static BridgeDomainL3Adjacencies create(
+public final class BridgeDomainL3Adjacencies implements L3Adjacencies {
+  public static @Nonnull BridgeDomainL3Adjacencies create(
       Layer1Topologies l1, VxlanTopology vxlan, Map<String, Configuration> configs) {
     PointToPointInterfaces p2p = PointToPointComputer.compute(l1.getLogicalL1(), configs);
     L3AdjacencyComputer adj = new L3AdjacencyComputer(configs, l1, vxlan);
     return new BridgeDomainL3Adjacencies(adj.findAllBroadcastDomains(), p2p);
-  }
-
-  private BridgeDomainL3Adjacencies(
-      Map<NodeInterfacePair, Integer> domains, PointToPointInterfaces pointToPointInterfaces) {
-    _domains = ImmutableMap.copyOf(domains);
-    _pointToPointInterfaces = pointToPointInterfaces;
   }
 
   @Override
@@ -58,6 +52,12 @@ public class BridgeDomainL3Adjacencies implements L3Adjacencies {
       ret = otherIf;
     }
     return Optional.ofNullable(ret);
+  }
+
+  private BridgeDomainL3Adjacencies(
+      Map<NodeInterfacePair, Integer> domains, PointToPointInterfaces pointToPointInterfaces) {
+    _domains = ImmutableMap.copyOf(domains);
+    _pointToPointInterfaces = pointToPointInterfaces;
   }
 
   private final @Nonnull Map<NodeInterfacePair, Integer> _domains;

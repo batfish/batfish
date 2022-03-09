@@ -1,21 +1,40 @@
 package org.batfish.common.topology.bridge_domain.edge;
 
-import java.util.Optional;
-import org.batfish.common.topology.bridge_domain.node.L3Interface.Unit;
+import static org.batfish.common.topology.bridge_domain.function.StateFunctions.filterByOuterTag;
+import static org.batfish.common.topology.bridge_domain.function.StateFunctions.filterByVlanId;
 
-/** Only switched packets in a specific vlan are delivered. */
-public final class BridgeDomainToBridgedL3 implements Edge<Integer, Unit> {
-  public BridgeDomainToBridgedL3(int vlan) {
-    _vlan = vlan;
+import com.google.common.annotations.VisibleForTesting;
+import javax.annotation.Nonnull;
+import org.batfish.common.topology.bridge_domain.function.StateFunction;
+import org.batfish.datamodel.IntegerSpace;
+
+/**
+ * An edge from a {@link org.batfish.common.topology.bridge_domain.node.BridgeDomain} to a {@link
+ * org.batfish.common.topology.bridge_domain.node.BridgedL3Interface}.
+ */
+public final class BridgeDomainToBridgedL3 extends Edge {
+
+  public interface Function extends StateFunction {}
+
+  /**
+   * Helper for creating an edge from an IOS-XR named bridge domain to its BVI (bridged virtual
+   * interface).
+   */
+  public static @Nonnull BridgeDomainToBridgedL3 bridgeDomainToBvi() {
+    return of(filterByOuterTag(IntegerSpace.EMPTY, true));
   }
 
-  @Override
-  public Optional<Unit> traverse(Integer data) {
-    if (_vlan == data) {
-      return Optional.of(Unit.VALUE);
-    }
-    return Optional.empty();
+  /** Helper for creating an edge from a vlan-aware bridge to an IRB/Vlan interface. */
+  public static @Nonnull BridgeDomainToBridgedL3 bridgeDomainToIrb(int vlanId) {
+    return of(filterByVlanId(IntegerSpace.of(vlanId)));
   }
 
-  private final int _vlan;
+  @VisibleForTesting
+  public static @Nonnull BridgeDomainToBridgedL3 of(Function stateFunction) {
+    return new BridgeDomainToBridgedL3(stateFunction);
+  }
+
+  private BridgeDomainToBridgedL3(Function stateFunction) {
+    super(stateFunction);
+  }
 }

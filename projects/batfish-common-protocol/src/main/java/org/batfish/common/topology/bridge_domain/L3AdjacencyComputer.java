@@ -1,6 +1,7 @@
 package org.batfish.common.topology.bridge_domain;
 
-import static com.google.common.base.Verify.verify;
+import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.common.topology.bridge_domain.node.BridgeDomain.newVlanAwareBridge;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -12,12 +13,11 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.graph.EndpointPair;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
@@ -26,12 +26,16 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.bridge_domain.edge.Edges;
-import org.batfish.common.topology.bridge_domain.edge.L2VniToBridgeDomain;
 import org.batfish.common.topology.bridge_domain.node.BridgeDomain;
+import org.batfish.common.topology.bridge_domain.node.BridgeDomain.BridgeId;
+import org.batfish.common.topology.bridge_domain.node.BridgedL3Interface;
+import org.batfish.common.topology.bridge_domain.node.DisconnectedL3Interface;
 import org.batfish.common.topology.bridge_domain.node.EthernetHub;
+import org.batfish.common.topology.bridge_domain.node.L2Interface;
 import org.batfish.common.topology.bridge_domain.node.L2Vni;
 import org.batfish.common.topology.bridge_domain.node.L2VniHub;
 import org.batfish.common.topology.bridge_domain.node.L3Interface;
+import org.batfish.common.topology.bridge_domain.node.NonBridgedL3Interface;
 import org.batfish.common.topology.bridge_domain.node.PhysicalInterface;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -48,7 +52,7 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.jgrapht.alg.util.UnionFind;
 
 /** Computes the set of L3 interfaces that are in the same broadcast domain as a given interface. */
-public class L3AdjacencyComputer {
+final class L3AdjacencyComputer {
   private static final Logger LOGGER = LogManager.getLogger(L3AdjacencyComputer.class);
   private final @Nonnull Layer1Topologies _layer1Topologies;
   private final @Nonnull Map<NodeInterfacePair, PhysicalInterface> _physicalInterfaces;
@@ -57,18 +61,19 @@ public class L3AdjacencyComputer {
   @SuppressWarnings("unused")
   private final @Nonnull Map<String, EthernetHub> _ethernetHubs;
 
-  private final @Nonnull Map<VxlanNode, L2Vni> _l2vnis;
+  private final @Nonnull Map<VxlanNode, L2Vni> _l2Vnis;
 
   @SuppressWarnings("unused")
-  private final @Nonnull Map<String, L2VniHub> _l2vniHubs;
+  private final @Nonnull Map<String, L2VniHub> _l2VniHubs;
 
-  private final @Nonnull Map<String, BridgeDomain> _deviceBroadcastDomains;
+  @SuppressWarnings("unused")
+  private final @Nonnull Map<BridgeId, BridgeDomain> _bridgeDomains;
 
-  private static final EnumSet<InterfaceType> PHYSICAL_INTERFACE_TYPES =
+  private static final @Nonnull EnumSet<InterfaceType> PHYSICAL_INTERFACE_TYPES =
       EnumSet.of(InterfaceType.PHYSICAL, InterfaceType.AGGREGATED);
   @VisibleForTesting static final String BATFISH_GLOBAL_HUB = "Batfish Global Ethernet Hub";
 
-  public L3AdjacencyComputer(
+  L3AdjacencyComputer(
       Map<String, Configuration> configs,
       Layer1Topologies layer1Topologies,
       VxlanTopology vxlanTopology) {
@@ -76,37 +81,38 @@ public class L3AdjacencyComputer {
     _physicalInterfaces = computePhysicalInterfaces(configs);
     _ethernetHubs =
         computeEthernetHubs(configs, _physicalInterfaces, _layer1Topologies.getLogicalL1());
-    _deviceBroadcastDomains = computeDeviceBroadcastDomains(configs, _physicalInterfaces);
-    _l2vnis = computeL2VNIs(configs, _deviceBroadcastDomains);
-    _l2vniHubs = computeL2VNIHubs(_l2vnis, vxlanTopology);
-    _layer3Interfaces =
-        computeLayer3Interfaces(configs, _deviceBroadcastDomains, _physicalInterfaces);
+    _bridgeDomains = computeBridgeDomains(configs, _physicalInterfaces);
+    _l2Vnis = computeL2Vnis(configs, _bridgeDomains);
+    _l2VniHubs = computeL2VniHubs(_l2Vnis, vxlanTopology);
+    _layer3Interfaces = computeLayer3Interfaces(configs, _bridgeDomains, _physicalInterfaces);
   }
 
-  private static Map<String, BridgeDomain> computeDeviceBroadcastDomains(
+  private static @Nonnull Map<BridgeId, BridgeDomain> computeBridgeDomains(
       Map<String, Configuration> configs,
       Map<NodeInterfacePair, PhysicalInterface> physicalInterfaces) {
-    ImmutableMap.Builder<String, BridgeDomain> ret = ImmutableMap.builder();
+    ImmutableMap.Builder<BridgeId, BridgeDomain> ret = ImmutableMap.builder();
     for (Configuration c : configs.values()) {
-      BridgeDomain domain = new BridgeDomain(c.getHostname());
-      ret.put(c.getHostname(), domain);
+      // TODO: do something different for devices with bridge interfaces or named bridge domains.
+      BridgeDomain vlanAwareBridge = newVlanAwareBridge(c.getHostname());
+      ret.put(vlanAwareBridge.getId(), vlanAwareBridge);
       for (Interface i : c.getAllInterfaces().values()) {
-        connectL2InterfaceToBroadcastDomain(i, c.getAllInterfaces(), physicalInterfaces, domain);
+        connectL2InterfaceToBridgeDomainAndPhysicalInterface(
+            i, c.getAllInterfaces(), physicalInterfaces, vlanAwareBridge);
       }
     }
     return ret.build();
   }
 
   @VisibleForTesting
-  static void connectL2InterfaceToBroadcastDomain(
+  static @Nonnull Optional<L2Interface> connectL2InterfaceToBridgeDomainAndPhysicalInterface(
       Interface i,
       Map<String, Interface> allInterfaces,
       Map<NodeInterfacePair, PhysicalInterface> physicalInterfaces,
-      BridgeDomain domain) {
+      BridgeDomain bridgeDomain) {
     NodeInterfacePair nip = NodeInterfacePair.of(i);
     if (!i.getSwitchport()) {
       LOGGER.debug("Skipping non-L2 interface {}: switchport is not set", nip);
-      return;
+      return Optional.empty();
     }
 
     // Identify the physical interface corresponding to this L2 interface.
@@ -114,26 +120,30 @@ public class L3AdjacencyComputer {
         findCorrespondingPhysicalInterface(i, nip, allInterfaces, physicalInterfaces);
     if (!maybeIface.isPresent()) {
       // Already warned/logged inside the prior function.
-      return;
+      return Optional.empty();
     }
-    PhysicalInterface iface = maybeIface.get();
-    if (!iface.getIface().equals(nip)) {
-      // TODO: allow multiple L2 subinterfaces of a given physical interface
-      LOGGER.warn("Faking L2 connection for subinterface {} to parent {}", nip, iface.getIface());
-    }
+    PhysicalInterface physicalInterface = maybeIface.get();
+    L2Interface l2Interface = new L2Interface(nip);
 
-    // Connect physical interface to domain based on L2 config.
+    // Connect L2 interface to domain and physical interface based on L2 config.
     if (i.getSwitchportMode() == SwitchportMode.ACCESS) {
       Integer vlan = i.getAccessVlan();
       if (vlan == null) {
         LOGGER.warn("Skipping L2 connection for {}: access mode vlan is missing", nip);
-        return;
+        return Optional.empty();
       }
-      Edges.connectInAccessMode(vlan, iface, domain);
+      Edges.connectAccessToBridgeDomainAndPhysical(
+          vlan, l2Interface, bridgeDomain, physicalInterface, i.getAccessVlan());
+      return Optional.of(l2Interface);
     } else if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
-      Edges.connectTrunk(iface, domain, i.getAllowedVlans(), i.getNativeVlan());
+      assert i.getAllowedVlans() != null;
+      Edges.connectTrunkToBridgeDomainAndPhysical(
+          l2Interface, bridgeDomain, physicalInterface, i.getNativeVlan(), i.getAllowedVlans());
+      return Optional.of(l2Interface);
     } else {
-      LOGGER.warn("Surprised by L2 interface {}: unsure how to connect", nip);
+      // TODO: l2transport
+      LOGGER.warn("Unsupported L2 interface {}: unsure how to connect", nip);
+      return Optional.empty();
     }
   }
 
@@ -146,7 +156,7 @@ public class L3AdjacencyComputer {
    * value will be {@link Optional#empty()}.
    */
   @VisibleForTesting
-  static Optional<PhysicalInterface> findCorrespondingPhysicalInterface(
+  static @Nonnull Optional<PhysicalInterface> findCorrespondingPhysicalInterface(
       Interface i,
       NodeInterfacePair nip,
       Map<String, Interface> deviceInterfaces,
@@ -176,20 +186,22 @@ public class L3AdjacencyComputer {
     }
   }
 
-  private static Map<VxlanNode, L2Vni> computeL2VNIs(
-      Map<String, Configuration> configs, Map<String, BridgeDomain> domains) {
+  private static @Nonnull Map<VxlanNode, L2Vni> computeL2Vnis(
+      Map<String, Configuration> configs, Map<BridgeId, BridgeDomain> bridgeDomains) {
     ImmutableMap.Builder<VxlanNode, L2Vni> ret = ImmutableMap.builder();
     for (Configuration c : configs.values()) {
-      BridgeDomain domain = domains.get(c.getHostname());
-      verify(domain != null, "Broadcast domain not yet created for device %s", c.getHostname());
+      // TODO: support other bridge domains
+      BridgeDomain bridgeDomain = bridgeDomains.get(BridgeId.vlanAwareBridgeId(c.getHostname()));
+      checkState(
+          bridgeDomain != null,
+          "Device bridge domain not yet created for device %s",
+          c.getHostname());
       for (Vrf vrf : c.getVrfs().values()) {
         for (Layer2Vni vniSettings : vrf.getLayer2Vnis().values()) {
           VxlanNode node = new VxlanNode(c.getHostname(), vniSettings.getVni(), VniLayer.LAYER_2);
-          L2Vni vni = new L2Vni(node);
+          L2Vni vni = L2Vni.of(node);
           ret.put(node, vni);
-          L2VniToBridgeDomain connection = new L2VniToBridgeDomain(vniSettings.getVlan());
-          vni.connectToVlan(domain, connection::receiveFromVxlan);
-          domain.attachL2VNI(vni, connection::sendToVxlan);
+          Edges.connectVniToVlanAwareBridgeDomain(vni, bridgeDomain, vniSettings.getVlan());
         }
       }
     }
@@ -197,17 +209,19 @@ public class L3AdjacencyComputer {
   }
 
   @VisibleForTesting
-  static Map<String, L2VniHub> computeL2VNIHubs(
+  static @Nonnull Map<String, L2VniHub> computeL2VniHubs(
       Map<VxlanNode, L2Vni> l2vnis, VxlanTopology vxlanTopology) {
     Set<EndpointPair<VxlanNode>> l2edges =
-        vxlanTopology.getLayer2VniEdges().collect(Collectors.toSet());
+        vxlanTopology.getLayer2VniEdges().collect(ImmutableSet.toImmutableSet());
     if (l2vnis.isEmpty() || l2edges.isEmpty()) {
       return ImmutableMap.of();
     }
 
     // Build a hub for every L2VNI cluster.
     Set<VxlanNode> nodesWithEdges =
-        l2edges.stream().flatMap(e -> Stream.of(e.nodeU(), e.nodeV())).collect(Collectors.toSet());
+        l2edges.stream()
+            .flatMap(e -> Stream.of(e.nodeU(), e.nodeV()))
+            .collect(ImmutableSet.toImmutableSet());
     UnionFind<VxlanNode> clusters = new UnionFind<>(nodesWithEdges);
     for (EndpointPair<VxlanNode> edge : l2edges) {
       clusters.union(edge.nodeU(), edge.nodeV());
@@ -233,7 +247,7 @@ public class L3AdjacencyComputer {
                 vnis[i] = vni;
                 ++i;
               }
-              Edges.connectToL2VNIHub(hub, vnis);
+              Edges.connectToL2VniHub(hub, vnis);
               ret.put(hub.getName(), hub);
             });
     return ret.build();
@@ -276,9 +290,9 @@ public class L3AdjacencyComputer {
     return true;
   }
 
-  private static Map<NodeInterfacePair, L3Interface> computeLayer3Interfaces(
+  private static @Nonnull Map<NodeInterfacePair, L3Interface> computeLayer3Interfaces(
       Map<String, Configuration> configs,
-      Map<String, BridgeDomain> deviceBroadcastDomains,
+      Map<BridgeId, BridgeDomain> bridgeDomains,
       Map<NodeInterfacePair, PhysicalInterface> physicalInterfaces) {
     ImmutableMap.Builder<NodeInterfacePair, L3Interface> ret = ImmutableMap.builder();
     for (Configuration c : configs.values()) {
@@ -286,11 +300,11 @@ public class L3AdjacencyComputer {
         if (!shouldCreateL3Interface(i)) {
           continue;
         }
-        NodeInterfacePair nip = NodeInterfacePair.of(i);
-        L3Interface iface = new L3Interface(nip);
-        ret.put(nip, iface);
-        connectL3InterfaceToPhysicalOrDomain(
-            i, iface, c.getAllInterfaces(), physicalInterfaces, deviceBroadcastDomains);
+        L3Interface l3Interface =
+            connectL3InterfaceToPhysicalOrDomain(
+                    i, c.getAllInterfaces(), physicalInterfaces, bridgeDomains)
+                .orElse(new DisconnectedL3Interface(NodeInterfacePair.of(i)));
+        ret.put(l3Interface.getInterface(), l3Interface);
       }
     }
     return ret.build();
@@ -317,34 +331,33 @@ public class L3AdjacencyComputer {
   }
 
   @VisibleForTesting
-  static void connectL3InterfaceToPhysicalOrDomain(
+  static @Nonnull Optional<L3Interface> connectL3InterfaceToPhysicalOrDomain(
       Interface i,
-      L3Interface iface,
       Map<String, Interface> deviceInterfaces,
       Map<NodeInterfacePair, PhysicalInterface> physicalInterfaces,
-      Map<String, BridgeDomain> deviceBroadcastDomains) {
-    NodeInterfacePair nip = iface.getIface();
+      Map<BridgeId, BridgeDomain> bridgeDomains) {
+    NodeInterfacePair nip = NodeInterfacePair.of(i);
     if (PHYSICAL_INTERFACE_TYPES.contains(i.getInterfaceType())) {
-      PhysicalInterface physIface = physicalInterfaces.get(nip);
-      if (physIface == null) {
+      PhysicalInterface physicalInterface = physicalInterfaces.get(nip);
+      if (physicalInterface == null) {
         LOGGER.warn("L3 interface {}: surprised not to find physical interface; skipping", nip);
-        return;
+        return Optional.empty();
       }
       // This is a physical interface with an IP address. Either it has encapsulation or
       // it sends out untagged.
-      if (i.getEncapsulationVlan() == null) {
+      NonBridgedL3Interface l3Interface = new NonBridgedL3Interface(nip);
+      Integer encapsulationVlan = i.getEncapsulationVlan();
+      if (encapsulationVlan == null) {
         LOGGER.debug("L3 interface {} connected to physical interface {} untagged", nip, nip);
-        Edges.connectL3Untagged(iface, physIface);
-        return;
       } else {
         LOGGER.debug(
             "L3 interface {} connected to physical interface {} in vlan {}",
             nip,
             nip,
             i.getEncapsulationVlan());
-        Edges.connectL3Dot1q(iface, physIface, i.getEncapsulationVlan());
-        return;
       }
+      Edges.connectNonBridgedL3ToPhysical(l3Interface, physicalInterface, encapsulationVlan);
+      return Optional.of(l3Interface);
     }
 
     Optional<Dependency> parent =
@@ -354,7 +367,7 @@ public class L3AdjacencyComputer {
       NodeInterfacePair parentNip = NodeInterfacePair.of(nip.getHostname(), parentName);
       if (!deviceInterfaces.containsKey(parentName)) {
         LOGGER.warn("Not connecting L3 interface {} to parent: {} not found", nip, parentNip);
-        return;
+        return Optional.empty();
       }
       PhysicalInterface parentIface = physicalInterfaces.get(parentNip);
       if (parentIface == null) {
@@ -362,55 +375,59 @@ public class L3AdjacencyComputer {
             "Not connecting L3 interface {} to parent {}: physical interface not found",
             nip,
             parentNip);
-        return;
-      } else if (i.getEncapsulationVlan() == null) {
-        LOGGER.debug("L3 interface {} connected to physical interface {} untagged", nip, parentNip);
-        Edges.connectL3Untagged(iface, parentIface);
-        return;
+        return Optional.empty();
       }
-      LOGGER.debug(
-          "Connecting L3 interface {} to physical interface {} in vlan {}",
-          nip,
-          parentNip,
-          i.getEncapsulationVlan());
-      Edges.connectL3Dot1q(iface, parentIface, i.getEncapsulationVlan());
-      return;
+      NonBridgedL3Interface l3Interface = new NonBridgedL3Interface(nip);
+      Integer encapsulationVlan = i.getEncapsulationVlan();
+      if (encapsulationVlan == null) {
+        LOGGER.debug("L3 interface {} connected to physical interface {} untagged", nip, parentNip);
+      } else {
+        LOGGER.debug(
+            "Connecting L3 interface {} to physical interface {} in vlan {}",
+            nip,
+            parentNip,
+            i.getEncapsulationVlan());
+      }
+      Edges.connectNonBridgedL3ToPhysical(l3Interface, parentIface, encapsulationVlan);
+      return Optional.of(l3Interface);
     }
 
     if (i.getInterfaceType() == InterfaceType.TUNNEL) {
       // These interfaces do not use L2 broadcast domains / adjacency to establish edges
-      return;
+      return Optional.empty();
     }
 
     if (i.getInterfaceType() == InterfaceType.VLAN) {
       Integer vlan = i.getVlan();
       if (vlan == null) {
         LOGGER.warn("Not connecting L3 interface {}: surprised vlan is not set", nip);
-        return;
+        return Optional.empty();
       }
-      BridgeDomain domain = deviceBroadcastDomains.get(nip.getHostname());
-      if (domain == null) {
-        LOGGER.warn(
-            "Not connecting L3 interface {}: surprised not to find device broadcast domain", nip);
-        return;
+      // TODO: store bridge domain in interface
+      BridgeDomain bridgeDomain = bridgeDomains.get(BridgeId.vlanAwareBridgeId(nip.getHostname()));
+      if (bridgeDomain == null) {
+        LOGGER.warn("Not connecting L3 interface {}: surprised not to find vlan-aware bridge", nip);
+        return Optional.empty();
       }
       LOGGER.debug(
-          "Connecting L3 interface {} to broadcast domain {} in vlan {}",
+          "Connecting L3 interface {} to bridge domain {} in vlan {}",
           nip,
-          domain.getHostname(),
+          bridgeDomain.getId(),
           vlan);
-      Edges.connectIRB(iface, domain, vlan);
-      return;
+      BridgedL3Interface bridgedL3Interface = new BridgedL3Interface(nip);
+      Edges.connectIrbToBridgeDomain(bridgedL3Interface, bridgeDomain, vlan);
+      return Optional.of(bridgedL3Interface);
     }
 
     LOGGER.warn(
         "Surprised by L3 interface {} of type {}: unsure how to connect",
         nip,
         i.getInterfaceType());
+    return Optional.empty();
   }
 
   @VisibleForTesting
-  static Map<String, EthernetHub> computeEthernetHubs(
+  static @Nonnull Map<String, EthernetHub> computeEthernetHubs(
       Map<String, Configuration> configs,
       Map<NodeInterfacePair, PhysicalInterface> physicalInterfaces,
       Layer1Topology layer1Topology) {
@@ -515,9 +532,9 @@ public class L3AdjacencyComputer {
     return ret.build();
   }
 
-  public Map<NodeInterfacePair, Integer> findAllBroadcastDomains() {
+  public @Nonnull Map<NodeInterfacePair, Integer> findAllBroadcastDomains() {
     ImmutableMap.Builder<NodeInterfacePair, Integer> ret = ImmutableMap.builder();
-    TreeSet<NodeInterfacePair> unchecked = new TreeSet<>(_layer3Interfaces.keySet());
+    SortedSet<NodeInterfacePair> unchecked = new TreeSet<>(_layer3Interfaces.keySet());
     while (!unchecked.isEmpty()) {
       Set<NodeInterfacePair> domain = findBroadcastDomain(unchecked.first());
       int cur = unchecked.size();
@@ -529,10 +546,9 @@ public class L3AdjacencyComputer {
 
   private Set<NodeInterfacePair> findBroadcastDomain(NodeInterfacePair first) {
     L3Interface originator = _layer3Interfaces.get(first);
-    Set<L3Interface> domain = new HashSet<>();
-    Set<NodeAndState<?, ?>> visited = new HashSet<>();
-    originator.originate(domain, visited);
-    return domain.stream().map(L3Interface::getIface).collect(ImmutableSet.toImmutableSet());
+    return Search.originate(originator).stream()
+        .map(L3Interface::getInterface)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   private static boolean isAggregated(Interface i) {

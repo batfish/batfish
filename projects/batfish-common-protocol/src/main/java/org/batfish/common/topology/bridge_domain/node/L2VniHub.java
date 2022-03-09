@@ -1,46 +1,47 @@
 package org.batfish.common.topology.bridge_domain.node;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
-import java.util.HashMap;
+import com.google.common.collect.ImmutableMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
-import org.batfish.common.topology.bridge_domain.NodeAndState;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.bridge_domain.edge.Edge;
-import org.batfish.common.topology.bridge_domain.node.L2Vni.Unit;
+import org.batfish.common.topology.bridge_domain.edge.L2VniHubToL2Vni;
 
 /**
- * Represents the connection between a set of {@link L2Vni L2 VNIs}. Used to turn cycles (for 3+
- * {@link L2Vni VNIs}) into a graph.
+ * Sends all VxLAN encapsulated frames received out to all VNIs. Used to reduce quadratic complexity
+ * to linear for L2VNI-L2VNI links.
+ *
+ * <p>Only connects to {@link PhysicalInterface}.
  */
-public final class L2VniHub extends Node<Unit> {
+public final class L2VniHub implements Node {
+
   public L2VniHub(String name) {
     _name = name;
-    _attachedVNIs = new HashMap<>();
+    _attachedVNIs = new HashSet<>();
+  }
+
+  @Override
+  public @Nonnull Map<Node, Edge> getOutEdges() {
+    return _attachedVNIs.stream()
+        .collect(ImmutableMap.toImmutableMap(Function.identity(), l -> L2VniHubToL2Vni.instance()));
   }
 
   public @Nonnull String getName() {
     return _name;
   }
 
-  public void attachL2VNI(L2Vni vni, Edge<Unit, Unit> edge) {
-    Edge<L2Vni.Unit, L2Vni.Unit> previous = _attachedVNIs.putIfAbsent(vni, edge);
-    checkArgument(previous == null, "Cannot connect the same L2VNI %s twice", vni.getNode());
+  public void attachL2Vni(L2Vni l2Vni) {
+    boolean added = _attachedVNIs.add(l2Vni);
+    checkState(added, "Already attached to l2vni: %s", l2Vni.getNode());
   }
 
-  public void broadcast(L2Vni.Unit unit, Set<L3Interface> domain, Set<NodeAndState<?, ?>> visited) {
-    if (!visited.add(new NodeAndState<>(this, L2Vni.Unit.VALUE))) {
-      return;
-    }
-
-    _attachedVNIs.forEach(
-        (vni, edge) -> edge.traverse(unit).ifPresent(u -> vni.enter(u, domain, visited)));
-  }
-
-  // Internal details
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     } else if (!(o instanceof L2VniHub)) {
@@ -52,9 +53,9 @@ public final class L2VniHub extends Node<Unit> {
 
   @Override
   public int hashCode() {
-    return 31 * L2VniHub.class.hashCode() + _name.hashCode();
+    return L2VniHub.class.hashCode() * 31 + _name.hashCode();
   }
 
-  private final @Nonnull Map<L2Vni, Edge<L2Vni.Unit, L2Vni.Unit>> _attachedVNIs;
+  private final @Nonnull Set<L2Vni> _attachedVNIs;
   private final @Nonnull String _name;
 }

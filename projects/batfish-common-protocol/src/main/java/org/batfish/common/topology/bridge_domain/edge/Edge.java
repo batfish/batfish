@@ -1,17 +1,22 @@
 package org.batfish.common.topology.bridge_domain.edge;
 
-import java.util.Optional;
-import org.batfish.common.topology.bridge_domain.node.Node;
+import javax.annotation.Nonnull;
+import org.batfish.common.topology.bridge_domain.function.StateFunction;
 
 /**
- * Represents a directional edge from a {@link Node} with data {@code D1} to a {@link Node} with
- * data {@code D2}, modeling how data present in one location will be received at the other.
+ * A directed edge between two {@link org.batfish.common.topology.bridge_domain.node.Node}s in the
+ * L3 adjacencies computation graph.
  */
-public interface Edge<D1, D2> {
+public abstract class Edge {
 
-  /**
-   * Returns the data that {@code to} will receive if {@code from} has the given {@code data}.
-   * Returns {@link Optional#empty()} if nothing.
-   */
-  Optional<D2> traverse(D1 data);
+  /** A transformation on state to be performed when this edge is traversed. */
+  public final @Nonnull StateFunction getStateFunction() {
+    return _stateFunction;
+  }
+
+  protected Edge(StateFunction stateFunction) {
+    _stateFunction = stateFunction;
+  }
+
+  private final @Nonnull StateFunction _stateFunction;
 }

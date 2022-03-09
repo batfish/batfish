@@ -1,81 +1,60 @@
 package org.batfish.common.topology.bridge_domain.node;
 
-import java.util.Set;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.topology.bridge_domain.NodeAndState;
 import org.batfish.common.topology.bridge_domain.edge.Edge;
-import org.batfish.common.topology.bridge_domain.node.L2Vni.Unit;
+import org.batfish.common.topology.bridge_domain.edge.L2VniToBridgeDomain;
+import org.batfish.common.topology.bridge_domain.edge.L2VniToL2VniHub;
+import org.batfish.datamodel.vxlan.VniLayer;
 import org.batfish.datamodel.vxlan.VxlanNode;
 
 /**
- * Represents a Layer-2 VNI (virtual network identifier).
+ * A node-specific VNI associated with a bridge domain:
  *
- * <p>Each VNI connects to one {@link BridgeDomain} on a particular VLAN.
- *
- * <p>VNIs connect to each other via {@link L2VniHub}.
+ * <p>If the associated bridge domain is vlan-aware, then the VNI should be associated with a VLAN.
  */
-public final class L2Vni extends Node<Unit> {
-  /** There is no data needed for {@link L2Vni}, but we can't have a non-null {@link Void} */
-  public enum Unit {
-    /** The only legal value. */
-    VALUE
+public final class L2Vni implements Node {
+
+  public static @Nonnull L2Vni of(VxlanNode vxlanNode) {
+    checkArgument(vxlanNode.getVniLayer() == VniLayer.LAYER_2, "Expected a layer-2 VNI");
+    return new L2Vni(vxlanNode);
   }
 
-  public L2Vni(VxlanNode node) {
-    _node = node;
+  @Override
+  public @Nonnull Map<Node, Edge> getOutEdges() {
+    ImmutableMap.Builder<Node, Edge> builder =
+        ImmutableMap.<Node, Edge>builder().put(_bridgeDomain, _toBridgeDomain);
+    if (_l2VniHub != null) {
+      assert _toL2VniHub != null;
+      builder.put(_l2VniHub, _toL2VniHub);
+    }
+    return builder.build();
   }
 
   public @Nonnull VxlanNode getNode() {
     return _node;
   }
 
-  public void connectToVlan(BridgeDomain sw, Edge<Unit, Integer> edge) {
-    if (_connectedVlan != null) {
-      throw new IllegalArgumentException(
-          String.format(
-              "L2 VNI %s is already connected to switch %s, cannot connect to switch %s",
-              _node, _connectedVlan.getHostname(), sw.getHostname()));
-    }
-    _connectedVlan = sw;
-    _connectedVlanEdge = edge;
+  public void connectToBridgeDomain(BridgeDomain bridgeDomain, L2VniToBridgeDomain edge) {
+    checkState(
+        _bridgeDomain == null, "Already attached to bridge domain: %s", bridgeDomain.getId());
+    _bridgeDomain = bridgeDomain;
+    _toBridgeDomain = edge;
   }
 
-  public void attachToHub(L2VniHub hub, Edge<Unit, Unit> edge) {
-    if (_attachedHub != null) {
-      throw new IllegalArgumentException(
-          String.format(
-              "L2 VNI %s is already connected to hub %s, cannot connect to hub %s",
-              _node, _attachedHub.getName(), hub.getName()));
-    }
-    _attachedHub = hub;
-    _attachedHubEdge = edge;
+  public void connectToL2VniHub(L2VniHub l2VniHub) {
+    checkState(_l2VniHub == null, "Already attached to L2VniHub: %s", l2VniHub.getName());
+    _l2VniHub = l2VniHub;
+    _toL2VniHub = L2VniToL2VniHub.instance();
   }
-
-  public void enter(Unit unit, Set<L3Interface> domain, Set<NodeAndState<?, ?>> visited) {
-    if (_connectedVlan != null) {
-      assert _connectedVlanEdge != null; // contract
-      _connectedVlanEdge
-          .traverse(unit)
-          .ifPresent(vlan -> _connectedVlan.broadcast(vlan, domain, visited));
-    }
-  }
-
-  public void exit(Unit unit, Set<L3Interface> domain, Set<NodeAndState<?, ?>> visited) {
-    if (_attachedHub != null) {
-      assert _attachedHubEdge != null; // contract
-      _attachedHubEdge.traverse(unit).ifPresent(u -> _attachedHub.broadcast(u, domain, visited));
-    }
-  }
-
-  // Internal details
-  private @Nullable BridgeDomain _connectedVlan;
-  private @Nullable Edge<Unit, Integer> _connectedVlanEdge;
-  private @Nullable L2VniHub _attachedHub;
-  private @Nullable Edge<Unit, Unit> _attachedHubEdge;
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     } else if (!(o instanceof L2Vni)) {
@@ -87,8 +66,16 @@ public final class L2Vni extends Node<Unit> {
 
   @Override
   public int hashCode() {
-    return 31 * L2Vni.class.hashCode() + _node.hashCode();
+    return L2Vni.class.hashCode() * 31 + _node.hashCode();
+  }
+
+  private L2Vni(VxlanNode node) {
+    _node = node;
   }
 
   private final @Nonnull VxlanNode _node;
+  private L2VniHub _l2VniHub;
+  private L2VniToL2VniHub _toL2VniHub;
+  private BridgeDomain _bridgeDomain;
+  private L2VniToBridgeDomain _toBridgeDomain;
 }

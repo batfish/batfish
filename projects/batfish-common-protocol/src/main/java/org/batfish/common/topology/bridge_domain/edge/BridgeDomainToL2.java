@@ -1,93 +1,71 @@
 package org.batfish.common.topology.bridge_domain.edge;
 
-import java.util.Objects;
-import java.util.Optional;
-import javax.annotation.Nullable;
-import org.batfish.common.topology.bridge_domain.EthernetTag;
-import org.batfish.common.topology.bridge_domain.node.BridgeDomain;
-import org.batfish.common.topology.bridge_domain.node.PhysicalInterface;
+import static org.batfish.common.topology.bridge_domain.function.StateFunctions.filterByVlanId;
+import static org.batfish.common.topology.bridge_domain.function.StateFunctions.identity;
+import static org.batfish.common.topology.bridge_domain.function.StateFunctions.translateVlan;
+
+import com.google.common.annotations.VisibleForTesting;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import org.batfish.common.topology.bridge_domain.function.ComposeBaseImpl;
+import org.batfish.common.topology.bridge_domain.function.StateFunction;
 import org.batfish.datamodel.IntegerSpace;
 
-/** Models {@link BridgeDomain} and {@link PhysicalInterface} connections */
-public interface BridgeDomainToL2 {
-  /**
-   * Returns the VLAN that a frame with the given tag will be modeled as, or {@link
-   * Optional#empty()} if the frame will not be processed.
-   */
-  Optional<Integer> receiveTag(EthernetTag tag);
+/**
+ * An edge from a {@link org.batfish.common.topology.bridge_domain.node.BridgeDomain} to an {@link
+ * org.batfish.common.topology.bridge_domain.node.L2Interface}.
+ */
+public final class BridgeDomainToL2 extends Edge {
+
+  public interface Function extends StateFunction {}
 
   /**
-   * Returns the {@link EthernetTag} that data in the given VLAN will be sent as, or {@link
-   * Optional#empty()} if data will not be sent out the interface.
+   * Helper for creating an edge from a vlan-aware bridge domain to a traditional access-mode
+   * switchport.
    */
-  Optional<EthernetTag> sendFromVlan(int vlan);
-
-  /**
-   * A switchport in access mode will only accept untagged frames, and will send frames from the
-   * specific vlan without a tag.
-   */
-  class AccessMode implements BridgeDomainToL2 {
-    public AccessMode(int vlan) {
-      _vlan = vlan;
-    }
-
-    @Override
-    public Optional<Integer> receiveTag(EthernetTag tag) {
-      if (!tag.hasTag()) {
-        // Untagged -> the access vlan.
-        return Optional.of(_vlan);
-      }
-      return Optional.empty();
-    }
-
-    @Override
-    public Optional<EthernetTag> sendFromVlan(int vlan) {
-      if (vlan != _vlan) {
-        // Not in this vlan.
-        return Optional.empty();
-      }
-      // Send untagged frames.
-      return Optional.of(EthernetTag.untagged());
-    }
-
-    private final int _vlan;
+  public static @Nonnull BridgeDomainToL2 bridgeDomainToAccess(int accessVlan) {
+    return new BridgeDomainToL2(filterByVlanId(IntegerSpace.of(accessVlan)));
   }
 
   /**
-   * A switchport in trunk mode will accept untagged frames in the native vlan (if present), will
-   * accept tagged frames in any allowed vlan. The reverse is true: native vlan will be sent
-   * untagged, all tagged frames in an allowed vlan will also be accepted.
+   * Helper for creating an edge from a vlan-aware bridge domain to a traditional trunk-mode
+   * switchport.
    */
-  class Trunk implements BridgeDomainToL2 {
-    public Trunk(IntegerSpace allowedVlans, @Nullable Integer nativeVlanId) {
-      _allowedVlans = allowedVlans;
-      _nativeVlanId = nativeVlanId;
+  public static @Nonnull BridgeDomainToL2 bridgeDomainToTrunk(
+      Map<Integer, Integer> translations, IntegerSpace allowedVlans) {
+    Function filter = filterByVlanId(allowedVlans);
+    return new BridgeDomainToL2(
+        translations.isEmpty() ? filter : compose(filter, translateVlan(translations)));
+  }
+
+  /**
+   * Helper for creating an edge from a vlan-aware bridge domain to an IOS-XR-style l2transport
+   * interface.
+   */
+  public static @Nonnull BridgeDomainToL2 bridgeDomainToL2Transport() {
+    return new BridgeDomainToL2(identity());
+  }
+
+  @VisibleForTesting
+  public static @Nonnull Function compose(Function func1, Function func2) {
+    return func1.equals(identity())
+        ? func2
+        : func2.equals(identity()) ? func1 : new Compose(func1, func2);
+  }
+
+  @VisibleForTesting
+  public static @Nonnull BridgeDomainToL2 of(Function stateFunction) {
+    return new BridgeDomainToL2(stateFunction);
+  }
+
+  private BridgeDomainToL2(Function stateFunction) {
+    super(stateFunction);
+  }
+
+  private static final class Compose extends ComposeBaseImpl<Function> implements Function {
+
+    private Compose(Function func1, Function func2) {
+      super(func1, func2);
     }
-
-    @Override
-    public Optional<Integer> receiveTag(EthernetTag tag) {
-      if (tag.hasTag() && Objects.equals(tag.getTag(), _nativeVlanId)) {
-        // Trunks reject frames tagged with native VLAN.
-        return Optional.empty();
-      }
-
-      // Present if 1) tag is present and allowed, or 2) no tag, native vlan is allowed.
-      Integer effectiveVlan = tag.hasTag() ? (Integer) tag.getTag() : _nativeVlanId;
-      return Optional.ofNullable(effectiveVlan).filter(_allowedVlans::contains);
-    }
-
-    @Override
-    public Optional<EthernetTag> sendFromVlan(int vlan) {
-      if (!_allowedVlans.contains(vlan)) {
-        return Optional.empty();
-      }
-      if (_nativeVlanId != null && _nativeVlanId == vlan) {
-        return Optional.of(EthernetTag.untagged());
-      }
-      return Optional.of(EthernetTag.tagged(vlan));
-    }
-
-    private final @Nullable Integer _nativeVlanId;
-    private final IntegerSpace _allowedVlans;
   }
 }

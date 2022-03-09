@@ -1,40 +1,51 @@
 package org.batfish.common.topology.bridge_domain;
 
-import java.util.Objects;
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.bridge_domain.node.Node;
 
-/** Represents a specific piece of data being processed at a specific node. */
-public final class NodeAndState<D, N extends Node<D>> {
-  public NodeAndState(N node, D data) {
-    _node = node;
-    _data = data;
+final class NodeAndState {
+
+  public static @Nonnull NodeAndState of(Node node, State state) {
+    return new NodeAndState(node, state);
   }
 
-  public @Nonnull N getNode() {
+  public @Nonnull Node getNode() {
     return _node;
   }
 
-  public @Nonnull D getData() {
-    return _data;
+  public @Nonnull State getState() {
+    return _state;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     } else if (!(o instanceof NodeAndState)) {
       return false;
     }
-    NodeAndState<?, ?> that = (NodeAndState<?, ?>) o;
-    return _node.equals(that._node) && _data.equals(that._data);
+    NodeAndState that = (NodeAndState) o;
+    return _node.equals(that._node) && _state.equals(that._state);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_node, _data);
+    return _node.hashCode() * 31 + _state.hashCode();
   }
 
-  private final @Nonnull N _node;
-  private final @Nonnull D _data;
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_node", _node).add("_state", _state).toString();
+  }
+
+  private NodeAndState(Node node, State state) {
+    _node = node;
+    _state = state;
+  }
+
+  private final @Nonnull Node _node;
+  private final @Nonnull State _state;
 }

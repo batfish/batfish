@@ -10,6 +10,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 @ParametersAreNonnullByDefault
 public interface L3Adjacencies extends Serializable {
   boolean USE_NEW_METHOD = false;
+  boolean USE_NEW_NEW_METHOD = true;
 
   /**
    * Return whether the two interfaces are in the same broadcast domain.

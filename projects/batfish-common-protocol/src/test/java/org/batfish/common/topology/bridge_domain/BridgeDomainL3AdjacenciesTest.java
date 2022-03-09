@@ -16,7 +16,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.junit.Test;
 
-public class BridgeDomainL3AdjacenciesTest {
+/** Test of {@link BridgeDomainL3Adjacencies}. */
+public final class BridgeDomainL3AdjacenciesTest {
   /** A simple test that the code works end-to-end. */
   @Test
   public void testE2e() {
