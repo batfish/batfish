@@ -1217,9 +1217,15 @@ sepctxpt_permit
    PERMIT
    (
       apply
+      | sepctxptp_application_services
       | sepctxptp_services_offload
       | sepctxptp_tunnel
    )
+;
+
+sepctxptp_application_services
+:
+  APPLICATION_SERVICES null_filler
 ;
 
 sepctxpt_trace
