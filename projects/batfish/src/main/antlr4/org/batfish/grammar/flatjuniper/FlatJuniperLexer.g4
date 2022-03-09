@@ -177,7 +177,7 @@ ANY_SERVICE: 'any-service';
 APPLICATION: 'application' -> pushMode(M_Application);
 
 APPLICATION_PROTOCOL: 'application-protocol';
-
+APPLICATION_SERVICES: 'application-services';
 APPLICATION_SET: 'application-set' -> pushMode(M_ApplicationSet);
 
 APPLICATION_TRACKING: 'application-tracking';
