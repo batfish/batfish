@@ -13,4 +13,6 @@ public interface ReferenceVisitor<T, U> {
 
   T visitApplicationOrApplicationGroupReference(
       ApplicationOrApplicationGroupReference reference, U arg);
+
+  T visitCustomUrlCategoryReference(CustomUrlCategoryReference reference, U arg);
 }

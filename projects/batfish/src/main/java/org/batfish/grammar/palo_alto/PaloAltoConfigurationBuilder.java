@@ -56,6 +56,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RU
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.REDIST_RULE_REDIST_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_FROM_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_SELF_REF;
@@ -2227,7 +2228,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitSpc_list(PaloAltoParser.Spc_listContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
-      _currentCustomUrlCategory.addToList(getText(var));
+      String url = getText(var);
+      if (PaloAltoConfiguration.unexpectedUnboundedCustomUrlWildcard(url)) {
+        warn(
+            ctx,
+            String.format(
+                "Did you mean '%s/'? Without the trailing slash, the url will match additional"
+                    + " trailing domains, such as '%s.evil'.",
+                url, url));
+      }
+      _currentCustomUrlCategory.addToList(url);
     }
   }
 
@@ -2833,6 +2843,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSrs_category(PaloAltoParser.Srs_categoryContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentSecurityRule.addCategory(name);
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys, name);
+      referenceStructure(
+          CUSTOM_URL_CATEGORY, uniqueName, SECURITY_RULE_CATEGORY, getLine(var.start));
+    }
+  }
+
+  @Override
   public void exitSrs_definition(Srs_definitionContext ctx) {
     _currentSecurityRule = null;
   }
@@ -2916,7 +2938,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       RuleEndpoint endpoint = toRuleEndpoint(var);
-      _currentSecurityRule.getDestination().add(endpoint);
+      _currentSecurityRule.addDestination(endpoint);
 
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
@@ -2975,7 +2997,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void exitSrs_source(Srs_sourceContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
       RuleEndpoint endpoint = toRuleEndpoint(var);
-      _currentSecurityRule.getSource().add(endpoint);
+      _currentSecurityRule.addSource(endpoint);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
 

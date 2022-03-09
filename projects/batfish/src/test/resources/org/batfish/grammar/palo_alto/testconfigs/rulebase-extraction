@@ -1,0 +1,47 @@
+set deviceconfig system hostname rulebase
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 1.1.3.1/24
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+set zone z3 network layer3 ethernet1/2
+
+set address ADDR1 ip-netmask 10.1.1.1/24
+set address ADDR2 ip-netmask 10.2.1.1/24
+set address ADDR3 ip-netmask 10.2.1.1/24
+
+set service SERVICE1 protocol tcp port 999
+set service SERVICE2 protocol tcp port 9999
+
+set profiles custom-url-category CAT1 list github.com
+set profiles custom-url-category CAT2 list example.com
+
+# All supported fields populated
+set rulebase security rules RULE1 from [ z1 z2 ]
+set rulebase security rules RULE1 to [ z1 z3 ]
+set rulebase security rules RULE1 source [ ADDR1 ADDR2]
+set rulebase security rules RULE1 negate-source yes
+set rulebase security rules RULE1 destination [ ADDR1 ADDR3 ]
+set rulebase security rules RULE1 negate-destination yes
+set rulebase security rules RULE1 service [ SERVICE1 SERVICE2 ]
+set rulebase security rules RULE1 category [ CAT1 CAT2 ]
+set rulebase security rules RULE1 application [ ssh ssl ]
+set rulebase security rules RULE1 action deny
+set rulebase security rules RULE1 description descr
+# No-op's - these items already exist
+set rulebase security rules RULE1 from z2
+set rulebase security rules RULE1 to z3
+set rulebase security rules RULE1 source ADDR2
+set rulebase security rules RULE1 destination ADDR3
+set rulebase security rules RULE1 service SERVICE2
+set rulebase security rules RULE1 category CAT2
+set rulebase security rules RULE1 application ssl
+
+# Only required fields are populated
+set rulebase security rules RULE2 from any
+set rulebase security rules RULE2 to any
+set rulebase security rules RULE2 source any
+set rulebase security rules RULE2 destination any
+set rulebase security rules RULE2 service any
+set rulebase security rules RULE2 application any
+set rulebase security rules RULE2 action allow

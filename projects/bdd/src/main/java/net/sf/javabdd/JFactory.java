@@ -56,7 +56,7 @@ import org.apache.logging.log4j.Logger;
  * <p>It was originally authored by John Whaley, and has since been heavily modified and improved by
  * the Batfish Authors.
  */
-public final class JFactory extends BDDFactory {
+public class JFactory extends BDDFactory {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
   private static final boolean CACHESTATS = false;
@@ -82,7 +82,7 @@ public final class JFactory extends BDDFactory {
    */
   private static final boolean VERIFY_ASSERTIONS = false;
 
-  private JFactory() {
+  protected JFactory() {
     supportSet = new int[0];
     bddrefstack = new IntStack();
   }
@@ -118,7 +118,7 @@ public final class JFactory extends BDDFactory {
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
-  private class BDDImpl extends BDD {
+  protected class BDDImpl extends BDD {
     int _index;
 
     BDDImpl(int index) {
@@ -267,7 +267,7 @@ public final class JFactory extends BDDFactory {
       int a = bdd_restrict(x, y);
       bdd_delref(x);
       if (this != that) {
-        that.freeInternal();
+        that.free();
       }
       bdd_addref(a);
       _index = a;
@@ -319,7 +319,7 @@ public final class JFactory extends BDDFactory {
       int a = bdd_apply(x, y, z);
       bdd_delref(x);
       if (this != that) {
-        that.freeInternal();
+        that.free();
       }
       bdd_addref(a);
       _index = a;
@@ -437,11 +437,6 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public void free() {
-      freeInternal();
-    }
-
-    @Override
-    protected void freeInternal() {
       bdd_delref(_index);
       _index = INVALID_BDD;
       ++freedBDDs;
@@ -900,7 +895,7 @@ public final class JFactory extends BDDFactory {
             .toArray();
     int ret = bdd_andAll(operands);
     if (free) {
-      bddOperands.forEach(BDD::freeInternal);
+      bddOperands.forEach(BDD::free);
     }
     return makeBDD(ret);
   }
@@ -937,7 +932,7 @@ public final class JFactory extends BDDFactory {
             .toArray();
     int ret = bdd_orAll(operands);
     if (free) {
-      bddOperands.forEach(BDD::freeInternal);
+      bddOperands.forEach(BDD::free);
     }
     return makeBDD(ret);
   }
@@ -3900,6 +3895,7 @@ public final class JFactory extends BDDFactory {
     bddfreepos = NEXT(bddfreepos);
     bddfreenum--;
     bddproduced++;
+    newNodeIndex(res);
 
     SETLEVELANDMARK(res, level);
     SETLOW(res, low);
@@ -3911,6 +3907,9 @@ public final class JFactory extends BDDFactory {
 
     return res;
   }
+
+  /** Called whenever a new BDD node is created, with the given (previously free) index. */
+  protected void newNodeIndex(int index) {}
 
   private void bdd_noderesize(boolean doRehash) {
     int oldsize = bddnodesize;
@@ -4488,7 +4487,7 @@ public final class JFactory extends BDDFactory {
           sb.append('=');
           BDDImpl b = new BDDImpl(result[i]);
           sb.append(b);
-          b.freeInternal();
+          b.free();
         }
       }
       sb.append('}');
@@ -4557,16 +4556,6 @@ public final class JFactory extends BDDFactory {
   @Override
   public boolean isInitialized() {
     return bddrunning;
-  }
-
-  @Override
-  public void setError(int code) {
-    bdderrorcond = code;
-  }
-
-  @Override
-  public void clearError() {
-    bdderrorcond = 0;
   }
 
   @Override
