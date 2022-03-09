@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -104,13 +105,27 @@ public class BDDPacket {
   private final Supplier<BDDFlowConstraintGenerator> _flowConstraintGeneratorSupplier =
       Suppliers.memoize(() -> new BDDFlowConstraintGenerator(this));
 
-  /*
-   * Creates a collection of BDD variables representing the
-   * various attributes of a control plane advertisement.
+  public static BDDFactory defaultFactory(BiFunction<Integer, Integer, BDDFactory> init) {
+    BDDFactory factory =
+        init.apply(JFACTORY_INITIAL_NODE_TABLE_SIZE, JFACTORY_INITIAL_NODE_CACHE_SIZE);
+    factory.setCacheRatio(JFACTORY_CACHE_RATIO);
+    return factory;
+  }
+
+  /**
+   * Creates a collection of BDD variables representing the various attributes of a control plane
+   * advertisement.
    */
   public BDDPacket() {
-    _factory = JFactory.init(JFACTORY_INITIAL_NODE_TABLE_SIZE, JFACTORY_INITIAL_NODE_CACHE_SIZE);
-    _factory.setCacheRatio(JFACTORY_CACHE_RATIO);
+    this(defaultFactory(JFactory::init));
+  }
+
+  /**
+   * Creates a collection of BDD variables representing the various attributes of a control plane
+   * advertisement using the given existing {@link BDDFactory}.
+   */
+  public BDDPacket(BDDFactory factory) {
+    _factory = factory;
     // Make sure we have the right number of variables
     int numNeeded =
         IP_LENGTH * 2
