@@ -355,6 +355,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.ParserBatfishException;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
@@ -1541,8 +1542,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEvpnExtraction() {
-    JuniperConfiguration c = parseJuniperConfig("juniper-evpn");
+  public void testEvpnVniListAllExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-all");
+    // TODO
+  }
+
+  @Test
+  public void testEvpnVniListNoRangeExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-no-range");
+    // TODO
+  }
+
+  @Test(expected = ParserBatfishException.class)
+  public void testEvpnVniListWithRangeExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-with-range");
     // TODO
   }
 
@@ -5013,6 +5026,24 @@ public final class FlatJuniperGrammarTest {
                     new SubRange(blockPrefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH)),
                 new RouteFilterLine(
                     LineAction.PERMIT, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)))));
+  }
+
+  @Test
+  public void testOverlayEcmp() throws IOException {
+    String hostname = "juniper-overlay-ecmp";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    List<ParseWarning> parseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getParseWarnings();
+    assertThat(
+        parseWarnings,
+        hasItem(
+            allOf(
+                hasComment("This feature is not currently supported"),
+                hasText("vxlan-routing overlay-ecmp"))));
   }
 
   @Test

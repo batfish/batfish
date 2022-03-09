@@ -678,3 +678,13 @@ vni_number
   // https://www.juniper.net/documentation/us/en/software/junos/evpn-vxlan/topics/ref/statement/vni-vxlan.html#id-vni__d49551e60
   uint32
 ;
+
+
+vni_range
+:
+  // Example extended-vni-list [ 10-50 60 70]
+
+  vni_number
+  | WS
+  | start = vni_number (DASH end = vni_number)?
+;
