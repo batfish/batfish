@@ -366,6 +366,7 @@ import org.batfish.representation.juniper.FwFromDestinationPort;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromSourcePort;
 import org.batfish.representation.juniper.FwTerm;
+import org.batfish.representation.juniper.FwThenAccept;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -1906,6 +1907,21 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         aclTrustOut,
         rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testFirewallApplicationServicesExtraction() {
+    String hostname = "firewall-application-services";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    assertThat(
+        vc.getMasterLogicalSystem()
+            .getSecurityPolicies()
+            .get(zoneToZoneFilter("trust", "untrust"))
+            .getTerms()
+            .get("PNAME")
+            .getThens()
+            .get(0),
+        instanceOf(FwThenAccept.class));
   }
 
   @Test
