@@ -15,6 +15,7 @@ public class Vlan implements Serializable {
   private @Nonnull Set<String> _interfaces;
   private @Nullable String _l3Interface;
   private @Nullable Integer _vlanId;
+  private @Nullable Integer _vniId;
 
   public Vlan(String name) {
     _name = name;
@@ -41,8 +42,16 @@ public class Vlan implements Serializable {
     return _vlanId;
   }
 
+  public @Nullable Integer getVniId() {
+    return _vniId;
+  }
+
   public void setVlanId(int vlanId) {
     _vlanId = vlanId;
+  }
+
+  public void setVniId(int vniId) {
+    _vniId = vniId;
   }
 
   public void setL3Interface(String l3Interface) {

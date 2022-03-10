@@ -1,0 +1,18 @@
+#
+set system host-name juniper-evpn-vni-list-no-range
+#
+set interfaces ge-0/0/0 unit 0 family ethernet-switching vlan members VLAN_TEST
+set interfaces ge-0/0/0 unit 0 family ethernet-switching interface-mode trunk
+
+set vlans VLAN_TEST vlan-id 101
+
+set vlans VLAN_TEST vlan-id 101
+set vlans VLAN_TEST vxlan vni 10101
+
+
+set protocols evpn vni-options vni 10101 vrf-target target:65310:11003
+set protocols evpn encapsulation vxlan
+set protocols evpn multicast-mode ingress-replication
+set protocols evpn default-gateway no-gateway-community
+set protocols evpn extended-vni-list [ 10101 10103 10105 ]
+set protocols evpn duplicate-mac-detection auto-recovery-time 15

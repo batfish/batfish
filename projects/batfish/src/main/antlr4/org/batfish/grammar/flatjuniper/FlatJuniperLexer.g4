@@ -570,6 +570,8 @@ DTCP_ONLY: 'dtcp-only';
 
 DUMP_ON_PANIC: 'dump-on-panic';
 
+DUPLICATE_MAC_DETECTION: 'duplicate-mac-detection';
+
 DVMRP: 'dvmrp';
 
 DYNAMIC: 'dynamic';
@@ -649,7 +651,7 @@ EXPORT_RIB: 'export-rib' -> pushMode(M_Name);
 
 EXPRESSION: 'expression';
 
-EXTENDED_VNI_LIST: 'extended-vni-list';
+EXTENDED_VNI_LIST: 'extended-vni-list' -> pushMode(M_ExtendedVniList);
 
 EXTENSIBLE_SUBSCRIBER: 'extensible-subscriber';
 
@@ -1978,6 +1980,8 @@ OUTPUT_VLAN_MAP: 'output-vlan-map';
 
 OUTER: 'outer';
 
+OVERLAY_ECMP: 'overlay-ecmp';
+
 OVERLOAD: 'overload';
 
 OVERRIDE_METRIC: 'override-metric';
@@ -2861,6 +2865,8 @@ VTEP_SOURCE_INTERFACE
 ;
 
 VXLAN: 'vxlan';
+
+VXLAN_ROUTING: 'vxlan-routing';
 
 WEB_MANAGEMENT: 'web-management';
 
@@ -4752,3 +4758,21 @@ M_Port_DASH: '-' -> type(DASH);
 
 // Not a range. We can continue in default mode since words need not be broken up.
 M_Port_NON_RANGE: [A-Za-z]+ {less();} -> popMode;
+
+mode M_ExtendedVniList;
+M_ExtendedVniList_WS: F_WhitespaceChar+ -> skip;
+M_ExtendedVniList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_ExtendedVniList_ALL: 'all' -> type(ALL), popMode;
+M_ExtendedVniList_OPEN_BRACKET: '[' -> type(OPEN_BRACKET);
+M_ExtendedVniList_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET), popMode;
+M_ExtendedVniList_UINT32: F_Uint32 -> type(UINT32), mode(M_ExtendedVniListNumber);
+
+mode M_ExtendedVniListNumber;
+M_ExtendedVniListNumber_WS: F_WhitespaceChar+ -> skip, mode(M_ExtendedVniList);
+M_ExtendedVniListNumber_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_ExtendedVniListNumber_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET), popMode;
+M_ExtendedVniListNumber_DASH: '-' -> type(DASH), mode(M_ExtendedVniListDash);
+
+mode M_ExtendedVniListDash;
+M_ExtendedVniListDash_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_ExtendedVniListDash_UINT32: F_Uint32 -> type(UINT32), mode(M_ExtendedVniList);

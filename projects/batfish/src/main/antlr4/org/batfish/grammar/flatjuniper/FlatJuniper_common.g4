@@ -671,3 +671,19 @@ wildcard
   WILDCARD
   | WILDCARD_ARTIFACT
 ;
+
+vni_number
+:
+  // 0 through 16,777,215
+  // https://www.juniper.net/documentation/us/en/software/junos/evpn-vxlan/topics/ref/statement/vni-vxlan.html#id-vni__d49551e60
+  uint32
+;
+
+
+vni_range
+:
+  // Example extended-vni-list [ 10-50 60 70]
+
+  start = vni_number
+  | start = vni_number (DASH end = vni_number)?
+;
