@@ -397,6 +397,7 @@ public final class VendorConfigurationFormatDetector {
         return ConfigurationFormat.IBM_BNT;
       case "juniper":
       case "juniper-srx":
+      case "junos": // not documented but seen in the wild in multiple organizations
         return checkJuniper(true);
       case "mrv":
         return ConfigurationFormat.MRV;
