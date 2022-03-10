@@ -4770,7 +4770,6 @@ mode M_ExtendedVniListNumber;
 M_ExtendedVniListNumber_WS: F_WhitespaceChar+ -> skip, mode(M_ExtendedVniList);
 M_ExtendedVniListNumber_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_ExtendedVniListNumber_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET), popMode;
-M_ExtendedVniListNumber_UINT32: F_Uint32 -> type(UINT32);
 M_ExtendedVniListNumber_DASH: '-' -> type(DASH), mode(M_ExtendedVniListDash);
 
 mode M_ExtendedVniListDash;
