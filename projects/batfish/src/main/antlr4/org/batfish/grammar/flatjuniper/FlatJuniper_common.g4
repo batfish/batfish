@@ -684,7 +684,6 @@ vni_range
 :
   // Example extended-vni-list [ 10-50 60 70]
 
-  vni_number
-  | WS
+  start = vni_number
   | start = vni_number (DASH end = vni_number)?
 ;

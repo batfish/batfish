@@ -19,9 +19,7 @@ e_encapsulation
 e_extended_vni_list
 :
     EXTENDED_VNI_LIST (
-        OPEN_BRACKET (
-        vni_range+
-        ) CLOSE_BRACKET
+        OPEN_BRACKET vni_range+ CLOSE_BRACKET
         | ALL
         | vni_range
     )
