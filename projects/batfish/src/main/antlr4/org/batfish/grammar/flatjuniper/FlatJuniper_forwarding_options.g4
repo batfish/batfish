@@ -41,6 +41,14 @@ fo_null
    ) null_filler
 ;
 
+fo_vxlan_routing
+:
+   VXLAN_ROUTING
+   (
+      fov_overlay_ecmp
+   )
+;
+
 fod_active_server_group
 :
    ACTIVE_SERVER_GROUP name = junos_name
@@ -148,6 +156,11 @@ fohb_server_null
    )?
 ;
 
+fov_overlay_ecmp
+:
+   OVERLAY_ECMP
+;
+
 s_forwarding_options
 :
    FORWARDING_OPTIONS
@@ -156,5 +169,6 @@ s_forwarding_options
       | fo_dhcp_relay
       | fo_helpers
       | fo_null
+      | fo_vxlan_routing
    )
 ;

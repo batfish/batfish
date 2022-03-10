@@ -193,6 +193,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -1538,6 +1539,24 @@ public final class FlatJuniperGrammarTest {
     /* esfilter should be referred, while esfilter2 should be unreferred */
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter", 1));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter2", 0));
+  }
+
+  @Test
+  public void testEvpnVniListAllExtraction() {
+    parseJuniperConfig("juniper-evpn-vni-list-all");
+    // TODO
+  }
+
+  @Test
+  public void testEvpnVniListNoRangeExtraction() {
+    parseJuniperConfig("juniper-evpn-vni-list-no-range");
+    // TODO
+  }
+
+  @Test
+  public void testEvpnVniListWithRangeExtraction() {
+    parseJuniperConfig("juniper-evpn-vni-list-with-range");
+    // TODO
   }
 
   @Test
@@ -2903,6 +2922,14 @@ public final class FlatJuniperGrammarTest {
             containsString(
                 "Cannot make em0.2 as the primary interface. em0.0 is already configured as"
                     + " primary.")));
+  }
+
+  @Test
+  public void testInterfaceVniExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("interface-vni");
+    Integer vni = c.getMasterLogicalSystem().getNamedVlans().get("VLAN_TEST").getVniId();
+    Integer vni0 = 10101;
+    assertEquals(vni, vni0);
   }
 
   @Test
@@ -5014,6 +5041,24 @@ public final class FlatJuniperGrammarTest {
                     new SubRange(blockPrefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH)),
                 new RouteFilterLine(
                     LineAction.PERMIT, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)))));
+  }
+
+  @Test
+  public void testOverlayEcmp() throws IOException {
+    String hostname = "juniper-overlay-ecmp";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    List<ParseWarning> parseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getParseWarnings();
+    assertThat(
+        parseWarnings,
+        hasItem(
+            allOf(
+                hasComment("This feature is not currently supported"),
+                hasText("vxlan-routing overlay-ecmp"))));
   }
 
   @Test

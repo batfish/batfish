@@ -177,6 +177,7 @@ s_vlans_named
     | vlt_interface
     | vlt_l3_interface
     | vlt_vlan_id
+    | vlt_vni_id
   )
 ;
 
@@ -219,4 +220,9 @@ vlt_l3_interface
 vlt_vlan_id
 :
    VLAN_ID id = dec
+;
+
+vlt_vni_id
+:
+   VXLAN VNI vni_number
 ;

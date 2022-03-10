@@ -292,6 +292,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.FilterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Filter_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fo_dhcp_relayContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fo_vxlan_routingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_active_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext;
@@ -674,6 +675,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vni_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ZoneContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
@@ -893,6 +896,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
 
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
+
+  private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
@@ -1818,6 +1823,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return getNamedPort(ctx).number();
   }
 
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vni_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VNI_NUMBER_RANGE, "vni");
+  }
+
   private static @Nonnull IpOptions toIpOptions(Ip_optionContext ctx) {
     if (ctx.LOOSE_SOURCE_ROUTE() != null) {
       return IpOptions.LOOSE_SOURCE_ROUTE;
@@ -2388,6 +2398,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
     _configuration.referenceStructure(
         FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitFo_vxlan_routing(Fo_vxlan_routingContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -6531,6 +6546,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
     int vlan = toInt(ctx.id);
     _currentNamedVlan.setVlanId(vlan);
+  }
+
+  @Override
+  public void exitVlt_vni_id(Vlt_vni_idContext ctx) {
+    Optional<Integer> maybeVniNumber = toInteger(ctx, ctx.vni_number());
+    if (!maybeVniNumber.isPresent()) {
+      // already warned
+      return;
+    }
+    int vni = maybeVniNumber.get();
+    _currentNamedVlan.setVniId(vni);
   }
 
   @Override
