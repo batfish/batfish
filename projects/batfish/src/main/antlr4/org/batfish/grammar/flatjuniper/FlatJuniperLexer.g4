@@ -4763,8 +4763,16 @@ mode M_ExtendedVniList;
 M_ExtendedVniList_WS: F_WhitespaceChar+ -> skip;
 M_ExtendedVniList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_ExtendedVniList_OPEN_BRACKET: '[' -> type(OPEN_BRACKET);
-M_ExtendedVniList_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET);
-M_ExtendedVniList_DASH: '-' -> type(DASH);
-M_ExtendedVniList_UINT32: F_Uint32 -> type(UINT32);
+M_ExtendedVniList_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET), popMode;
+M_ExtendedVniList_UINT32: F_Uint32 -> type(UINT32), mode(M_ExtendedVniListNumber);
 
+mode M_ExtendedVniListNumber;
+M_ExtendedVniListNumber_WS: F_WhitespaceChar+ -> skip, mode(M_ExtendedVniList);
+M_ExtendedVniListNumber_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_ExtendedVniListNumber_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET), popMode;
+M_ExtendedVniListNumber_UINT32: F_Uint32 -> type(UINT32);
+M_ExtendedVniListNumber_DASH: '-' -> type(DASH), mode(M_ExtendedVniListDash);
 
+mode M_ExtendedVniListDash;
+M_ExtendedVniListDash_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_ExtendedVniListDash_UINT32: F_Uint32 -> type(UINT32), mode(M_ExtendedVniList);
