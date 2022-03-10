@@ -4762,6 +4762,7 @@ M_Port_NON_RANGE: [A-Za-z]+ {less();} -> popMode;
 mode M_ExtendedVniList;
 M_ExtendedVniList_WS: F_WhitespaceChar+ -> skip;
 M_ExtendedVniList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_ExtendedVniList_ALL: 'all' -> type(ALL), popMode;
 M_ExtendedVniList_OPEN_BRACKET: '[' -> type(OPEN_BRACKET);
 M_ExtendedVniList_CLOSE_BRACKET: ']' -> type(CLOSE_BRACKET), popMode;
 M_ExtendedVniList_UINT32: F_Uint32 -> type(UINT32), mode(M_ExtendedVniListNumber);
