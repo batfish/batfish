@@ -113,8 +113,20 @@ set template T1 config shared
 set template T1 config devices localhost.localdomain network vlan
 set template T1 config devices localhost.localdomain network virtual-wire
 
+set device-group DGNAME profiles data-filtering NAME rules NAME2 application any
+set device-group DGNAME profiles data-objects NAME pattern-type regex pattern NAME2
+set device-group DGNAME profiles decryption NAME ssl-no-proxy block-expired-certificate yes
+set device-group DGNAME profiles dos-protection NAME flood icmp enable yes
+set device-group DGNAME profiles file-blocking NAME rules NAME2 action alert
+set device-group DGNAME profiles gtp NAME filtering apn VALUE action block
+set device-group DGNAME profiles hip-objects NAME firewall criteria is-enabled yes
+set device-group DGNAME profiles hip-profiles NAME match NAME2
+set device-group DGNAME profiles sctp NAME sctp-filtering sctp-ss7 VALUE action block
 set device-group DGNAME profiles spyware NAME rules NAME2 packet-capture disable
+set device-group DGNAME profiles virus NAME decoder http action reset-both
 set device-group DGNAME profiles vulnerability NAME rules NAME2 action alert
+set device-group DGNAME profiles wildfire-analysis NAME rules NAME2 direction both
+
 set device-group DGNAME profile-group GROUPNAME spyware NAME2
 set device-group DGNAME profile-group GROUPNAME vulnerability NAME2
 

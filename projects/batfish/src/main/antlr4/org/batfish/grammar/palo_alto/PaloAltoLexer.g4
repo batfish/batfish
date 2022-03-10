@@ -148,9 +148,15 @@ CUSTOM_URL_CATEGORY: 'custom-url-category';
 
 DAMPENING_PROFILE: 'dampening-profile';
 
+DATA_FILTERING: 'data-filtering';
+
+DATA_OBJECTS: 'data-objects';
+
 DAYS: 'days';
 
 DEAD_COUNTS: 'dead-counts';
+
+DECRYPTION: 'decryption';
 
 DEFAULT: 'default';
 
@@ -201,6 +207,8 @@ DNS_SETTING: 'dns-setting';
 
 DOMAIN: 'domain';
 
+DOS_PROTECTION: 'dos-protection';
+
 DOWN: 'down';
 
 DROP: 'drop';
@@ -249,6 +257,8 @@ FACILITY: 'facility';
 
 FAILURE_CONDITION: 'failure-condition';
 
+FILE_BLOCKING: 'file-blocking';
+
 FILTER: 'filter';
 
 FORMAT: 'format';
@@ -287,6 +297,8 @@ GROUP20: 'group20';
 
 GROUP_ID: 'group-id';
 
+GTP: 'gtp';
+
 HALF: 'half';
 
 HA: 'ha';
@@ -300,6 +312,8 @@ HELLO_INTERVAL: 'hello-interval';
 HELPER_ENABLE: 'helper-enable';
 
 HIGH_AVAILABILITY: 'high-availability';
+
+HIP_OBJECTS: 'hip-objects';
 
 HIP_PROFILES: 'hip-profiles';
 
@@ -728,6 +742,8 @@ UPDATE_SERVER: 'update-server';
 
 URL: 'url';
 
+URL_FILTERING: 'url-filtering';
+
 USE_PEER: 'use-peer';
 
 USE_SELF: 'use-self';
@@ -744,6 +760,8 @@ VIRTUAL_ROUTER: 'virtual-router';
 
 VIRTUAL_WIRE: 'virtual-wire';
 
+VIRUS: 'virus';
+
 VISIBLE_VSYS: 'visible-vsys';
 
 VLAN: 'vlan';
@@ -753,6 +771,8 @@ VSYS: 'vsys';
 VULNERABILITY: 'vulnerability';
 
 WEIGHT: 'weight';
+
+WILDFIRE_ANALYSIS: 'wildfire-analysis';
 
 YES: 'yes';
 
