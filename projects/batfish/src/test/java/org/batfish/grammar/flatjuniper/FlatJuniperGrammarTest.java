@@ -355,7 +355,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.main.ParserBatfishException;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
@@ -1553,7 +1552,7 @@ public final class FlatJuniperGrammarTest {
     // TODO
   }
 
-  @Test(expected = ParserBatfishException.class)
+  @Test
   public void testEvpnVniListWithRangeExtraction() {
     parseJuniperConfig("juniper-evpn-vni-list-with-range");
     // TODO
