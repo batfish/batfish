@@ -1,0 +1,26 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname crypto-vrf
+!
+
+crypto keyring Keyring-Sales vrf Internet
+  pre-shared-key address 1.1.1.1 key xxx
+  pre-shared-key address 1.1.1.2 key xxx
+  pre-shared-key address 1.1.1.3 key xxx
+  pre-shared-key address 1.1.1.4 key xxx
+!
+crypto isakmp profile IKE-Sales
+   vrf Sales
+   keyring Keyring-Sales
+   match identity address 1.1.1.1 Internet
+   match identity address 1.1.1.2 Internet
+   match identity address 1.1.1.3 Internet
+   match identity address 1.1.1.4 Internet
+!
+crypto map Sales-VPN 10 ipsec-isakmp !Similar config for the 3 other peers
+ set peer 1.1.1.1
+ set security-association lifetime seconds 28800
+ set transform-set <transform_set>
+ set isakmp-profile IKE-Sales
+ match address ACL-Sales
+!
