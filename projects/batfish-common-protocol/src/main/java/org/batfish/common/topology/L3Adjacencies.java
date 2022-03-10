@@ -9,8 +9,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /** Something that can tell whether two different L3 interfaces are in the same broadcast domain. */
 @ParametersAreNonnullByDefault
 public interface L3Adjacencies extends Serializable {
-  boolean USE_NEW_METHOD = false;
-  boolean USE_NEW_NEW_METHOD = true;
+  enum Method {
+    OLD,
+    NEW_BROADCAST,
+    NEW_NEW_BRIDGE_DOMAIN
+  }
+
+  Method METHOD = Method.OLD;
 
   /**
    * Return whether the two interfaces are in the same broadcast domain.
