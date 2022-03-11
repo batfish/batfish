@@ -175,7 +175,7 @@ public final class SourcesReferencedOnDevice {
   private static void collectAllTransformationReferences(
       Configuration c, Set<Object> visited, Set<String> referenced) {
     for (Interface i : c.getActiveInterfaces().values()) {
-      if (!i.canSendOrReceiveIpTraffic()) {
+      if (!i.canSendIpTraffic() && !i.canReceiveIpTraffic()) {
         // Transformations can only be reached for sent/received traffic.
         continue;
       }

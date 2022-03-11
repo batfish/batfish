@@ -455,7 +455,7 @@ public final class BDDReachabilityAnalysisFactory {
             TransformationToTransition toTransition =
                 new TransformationToTransition(_bddPacket, ipAccessListToBddForNode(node));
             return node.activeL3Interfaces()
-                .filter(Interface::canSendOrReceiveIpTraffic)
+                .filter(Interface::canReceiveIpTraffic)
                 .collect(
                     ImmutableMap.toImmutableMap(
                         Interface::getName,
@@ -481,7 +481,7 @@ public final class BDDReachabilityAnalysisFactory {
             TransformationToTransition toTransition =
                 new TransformationToTransition(_bddPacket, ipAccessListToBddForNode(node));
             return node.activeL3Interfaces()
-                .filter(Interface::canSendOrReceiveIpTraffic)
+                .filter(Interface::canSendIpTraffic)
                 .collect(
                     ImmutableMap.toImmutableMap(
                         Interface::getName,
@@ -783,7 +783,7 @@ public final class BDDReachabilityAnalysisFactory {
         .map(_configs::get)
         .filter(Objects::nonNull) // remove finalNodes that don't exist on this network
         .flatMap(Configuration::activeL3Interfaces)
-        .filter(Interface::canSendOrReceiveIpTraffic)
+        .filter(Interface::canSendIpTraffic)
         .map(
             iface -> {
               String node = iface.getOwner().getHostname();
@@ -819,7 +819,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRules_PostInInterface_NodeDropAclIn() {
     return getAllL3Interfaces()
-        .filter(Interface::canSendOrReceiveIpTraffic)
+        .filter(Interface::canReceiveIpTraffic)
         .filter(iface -> iface.getPostTransformationIncomingFilter() != null)
         .map(
             i -> {
@@ -843,7 +843,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRules_PostInInterface_PostInVrf() {
     return getAllL3Interfaces()
-        .filter(Interface::canSendOrReceiveIpTraffic)
+        .filter(Interface::canReceiveIpTraffic)
         .map(
             iface -> {
               IpAccessList acl = iface.getPostTransformationIncomingFilter();
@@ -862,7 +862,7 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting
   Stream<Edge> generateRules_PreInInterface_NodeDropAclIn() {
     return getAllL3Interfaces()
-        .filter(Interface::canSendOrReceiveIpTraffic)
+        .filter(Interface::canReceiveIpTraffic)
         .filter(iface -> iface.getPacketPolicyName() == null && iface.getIncomingFilter() != null)
         .map(
             i -> {
@@ -896,7 +896,7 @@ public final class BDDReachabilityAnalysisFactory {
               Multimap<String, String> convertedPolicies = HashMultimap.create();
               return config
                   .activeL3Interfaces()
-                  .filter(Interface::canSendOrReceiveIpTraffic)
+                  .filter(Interface::canReceiveIpTraffic)
                   .filter(iface -> iface.getPacketPolicyName() != null)
                   .flatMap(
                       iface -> {
@@ -962,7 +962,7 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting
   Stream<Edge> generateRules_PreInInterface_PostInInterface() {
     return getAllL3Interfaces()
-        .filter(Interface::canSendOrReceiveIpTraffic)
+        .filter(Interface::canReceiveIpTraffic)
         // Policy-based routing edges handled elsewhere
         .filter(iface -> iface.getPacketPolicyName() == null)
         .map(
@@ -1008,7 +1008,7 @@ public final class BDDReachabilityAnalysisFactory {
               String iface2 = edge.getInt2();
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
-              assert i1.canSendOrReceiveIpTraffic();
+              assert i1.canSendIpTraffic();
               IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
               BDD denyPreNat = ignorableAclDenyBDD(node1, preNatAcl);
 
@@ -1039,7 +1039,7 @@ public final class BDDReachabilityAnalysisFactory {
               String iface2 = edge.getInt2();
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
-              assert i1.canSendOrReceiveIpTraffic();
+              assert i1.canSendIpTraffic();
               IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
 
               BDD aclPermit = ignorableAclPermitBDD(node1, preNatAcl);
@@ -1073,7 +1073,7 @@ public final class BDDReachabilityAnalysisFactory {
               String iface2 = edge.getInt2();
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
-              assert i1.canSendOrReceiveIpTraffic();
+              assert i1.canSendIpTraffic();
               IpAccessList acl = i1.getOutgoingFilter();
               BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
 
@@ -1109,7 +1109,7 @@ public final class BDDReachabilityAnalysisFactory {
               String iface2 = edge.getInt2();
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
-              assert i1.canSendOrReceiveIpTraffic();
+              assert i1.canSendIpTraffic();
               BDD aclPermitBDD = ignorableAclPermitBDD(node1, i1.getOutgoingFilter());
 
               BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
@@ -1151,7 +1151,7 @@ public final class BDDReachabilityAnalysisFactory {
                         return nodeEntry
                             .getValue()
                             .activeL3Interfaces()
-                            .filter(Interface::canSendOrReceiveIpTraffic)
+                            .filter(Interface::canSendIpTraffic)
                             .filter(
                                 iface ->
                                     iface.getOutgoingOriginalFlowFilter() != null
@@ -1233,7 +1233,7 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting
   Stream<Edge> generateRules_PreOutInterfaceDisposition_SetupSessionDisposition() {
     return getAllL3Interfaces()
-        .filter(Interface::canSendOrReceiveIpTraffic) // no incoming edge means no outgoing edge
+        .filter(Interface::canSendIpTraffic) // no incoming edge means no outgoing edge
         .flatMap(
             iface -> {
               String node = iface.getOwner().getHostname();
@@ -1320,7 +1320,7 @@ public final class BDDReachabilityAnalysisFactory {
                * see generateRules_PreOutInterfaceDisposition_SetupSessionDisposition
                */
               return c.activeInterfaces()
-                  .filter(Interface::canSendOrReceiveIpTraffic)
+                  .filter(Interface::canSendIpTraffic)
                   .flatMap(
                       iface -> {
                         String ifaceName = iface.getName();
@@ -1800,7 +1800,7 @@ public final class BDDReachabilityAnalysisFactory {
     // Transformations can live in interfaces.
     c.activeL3Interfaces()
         // Transformations in interfaces can only be reached on transiting traffic
-        .filter(Interface::canSendOrReceiveIpTraffic)
+        .filter(i -> i.canSendIpTraffic() || i.canReceiveIpTraffic())
         .forEach(
             iface -> {
               visitTransformationSteps(iface.getIncomingTransformation(), rangeComputer);
@@ -1810,7 +1810,7 @@ public final class BDDReachabilityAnalysisFactory {
     // interfaces, so only visit each once.
     c.activeL3Interfaces()
         // Packet policies in interfaces can only be reached on transiting traffic
-        .filter(Interface::canSendOrReceiveIpTraffic)
+        .filter(i -> i.canSendIpTraffic() || i.canReceiveIpTraffic())
         .map(i -> Optional.ofNullable(i.getPacketPolicyName()).map(c.getPacketPolicies()::get))
         .filter(Optional::isPresent)
         .map(Optional::get)

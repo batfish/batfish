@@ -387,7 +387,7 @@ public final class CompletionMetadataUtils {
     @Nullable Interface iface = ifaceName != null ? config.getAllInterfaces().get(ifaceName) : null;
 
     return iface != null
-        && ((location instanceof InterfaceLinkLocation && iface.canSendOrReceiveIpTraffic())
+        && ((location instanceof InterfaceLinkLocation && iface.canReceiveIpTraffic())
             || (location instanceof InterfaceLocation && iface.canOriginateIpTraffic()));
   }
 

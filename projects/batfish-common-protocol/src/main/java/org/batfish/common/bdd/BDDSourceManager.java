@@ -150,7 +150,7 @@ public final class BDDSourceManager {
               if (initializeSessions
                   && config
                       .activeInterfaces()
-                      .filter(Interface::canSendOrReceiveIpTraffic)
+                      .filter(Interface::canReceiveIpTraffic)
                       .anyMatch(iface -> iface.getFirewallSessionInterfaceInfo() != null)) {
                 // This node may initialize sessions -- have to track all active sources
                 return activeSources.get(config.getHostname());

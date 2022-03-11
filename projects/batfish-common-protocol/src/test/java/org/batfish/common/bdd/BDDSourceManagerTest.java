@@ -25,6 +25,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.junit.Test;
@@ -151,22 +152,27 @@ public class BDDSourceManagerTest {
 
   /**
    * A test that with no ACLs referencing interfaces but some interface with session info, the
-   * source manager tracks all interfaces that can send/receive packets.
+   * source manager tracks all interfaces that can send or can receive packets.
    */
   @Test
   public void testInitializeSessions() {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
-    ib.setName(IFACE1)
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setName(IFACE1)
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
                 Action.FORWARD_OUT_IFACE, ImmutableList.of(IFACE3), null, null))
         .build();
-    ib.setName(IFACE2).setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/32")).build();
-    ib.setName(IFACE3).build();
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setName(IFACE2)
+        .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/32"))
+        .build();
+    nf.interfaceBuilder().setOwner(config).setName(IFACE3).build();
 
     String hostname = config.getHostname();
     Map<String, Configuration> configs = ImmutableMap.of(hostname, config);
@@ -174,8 +180,9 @@ public class BDDSourceManagerTest {
     assertFalse(mgr.isTrivial());
     assertTrue(mgr.allSourcesTracked());
     assertThat(
-        mgr.getSourceBDDs().keySet(), containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE));
-    assertEquals(mgr.getSourceBDDs().values().stream().distinct().count(), 2);
+        mgr.getSourceBDDs().keySet(),
+        containsInAnyOrder(IFACE1, IFACE2, SOURCE_ORIGINATING_FROM_DEVICE));
+    assertThat(mgr.getSourceBDDs().values().stream().distinct().count(), equalTo(3L));
   }
 
   /**
@@ -188,12 +195,26 @@ public class BDDSourceManagerTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
-    ib.setName(IFACE1).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
-    ib.setName(IFACE2)
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setName(IFACE1)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .build();
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setName(IFACE2)
         .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/32"))
-        .build(); // /32 will not be tracked
-    ib.setName(IFACE3).build(); // no address will not be tracked
+        .build(); // /32 will be tracked, as it can send packets
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setName("lo")
+        .setType(InterfaceType.LOOPBACK)
+        .setAddress(ConcreteInterfaceAddress.parse("3.3.3.3/32"))
+        .build(); // loopback cannot send or receive, so it will not be tracked
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setName(IFACE3)
+        .build(); // no address will not be tracked
 
     String hostname = config.getHostname();
     Map<String, Configuration> configs = ImmutableMap.of(hostname, config);
@@ -201,7 +222,8 @@ public class BDDSourceManagerTest {
     assertTrue(mgr.isTrivial());
     assertFalse(mgr.allSourcesTracked());
     assertThat(
-        mgr.getSourceBDDs().keySet(), containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE));
+        mgr.getSourceBDDs().keySet(),
+        containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE, IFACE2));
     assertEquals(mgr.getSourceBDDs().values().stream().distinct().count(), 1);
   }
 }

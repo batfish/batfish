@@ -678,7 +678,7 @@ public final class Interface extends ComparableStructure<String> {
    * (which may not be in the snapshot).
    */
   @JsonIgnore
-  public boolean canSendOrReceiveIpTraffic() {
+  public boolean canReceiveIpTraffic() {
     if (!isActiveL3()) {
       return false;
     } else if (isLoopback()) {
@@ -695,6 +695,19 @@ public final class Interface extends ComparableStructure<String> {
       }
     }
     return false;
+  }
+
+  /**
+   * Returns {@code true} if this {@link Interface} can send an IPv4 packet on an L3 link (which may
+   * not be in the snapshot).
+   */
+  @JsonIgnore
+  public boolean canSendIpTraffic() {
+    // TODO: intuitively, it feels like sending and receiving should be symmetric. However,
+    // NHint routes will send arps that can be answered by any same-broadcast-domain device,
+    // regardless of L3 compatibility. We are not yet able to fix this for the `enter[iface]`
+    // case, but we can for the `exit[iface]` case.
+    return isActiveL3() && !isLoopback();
   }
 
   private static InterfaceType computeAosInteraceType(String name) {

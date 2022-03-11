@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Utility methods for specifiers. */
 public final class SpecifierUtils {
@@ -14,7 +13,6 @@ public final class SpecifierUtils {
   /** Returns {@code true} iff the given {@link Location} is active (aka, interface is up). */
   @VisibleForTesting
   static boolean isActive(Location l, Map<String, Configuration> configs) {
-    NodeInterfacePair iface;
     Configuration c = configs.get(l.getNodeName());
     if (l instanceof InterfaceLocation) {
       return c.getAllInterfaces()
@@ -24,7 +22,7 @@ public final class SpecifierUtils {
       assert l instanceof InterfaceLinkLocation;
       return c.getAllInterfaces()
           .get(((InterfaceLinkLocation) l).getInterfaceName())
-          .canSendOrReceiveIpTraffic();
+          .canReceiveIpTraffic();
     }
   }
 

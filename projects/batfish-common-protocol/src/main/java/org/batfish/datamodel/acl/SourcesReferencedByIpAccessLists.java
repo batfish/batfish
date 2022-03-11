@@ -34,7 +34,7 @@ public final class SourcesReferencedByIpAccessLists {
     ImmutableSet.Builder<String> ret = ImmutableSet.builder();
     ret.add(SOURCE_ORIGINATING_FROM_DEVICE);
     for (Interface i : c.getAllInterfaces().values()) {
-      if (i.canSendOrReceiveIpTraffic()) {
+      if (i.canSendIpTraffic() || i.canReceiveIpTraffic()) {
         ret.add(i.getName());
       }
     }
