@@ -75,7 +75,9 @@ fft_from
       | fftf_fragment_offset
       | fftf_fragment_offset_except
       | fftf_icmp_code
+      | fftf_icmp_code_except
       | fftf_icmp_type
+      | fftf_icmp_type_except
       | fftf_ip_options
       | fftf_ip_protocol
       | fftf_is_fragment
@@ -196,9 +198,28 @@ fftf_icmp_code
    )
 ;
 
+fftf_icmp_code_except
+:
+   ICMP_CODE_EXCEPT
+   (
+      icmp_code
+      | subrange
+   )
+;
+
 fftf_icmp_type
 :
    ICMP_TYPE
+   (
+      icmp_type
+      | icmp6_only_type
+      | subrange
+   )
+;
+
+fftf_icmp_type_except
+:
+   ICMP_TYPE_EXCEPT
    (
       icmp_type
       | icmp6_only_type

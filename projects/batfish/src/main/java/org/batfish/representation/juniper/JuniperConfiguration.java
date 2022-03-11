@@ -2898,6 +2898,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   switch (field) {
                     case DESTINATION_EXCEPT:
                     case FRAGMENT_OFFSET_EXCEPT:
+                    case ICMP_CODE_EXCEPT:
+                    case ICMP_TYPE_EXCEPT:
                     case PACKET_LENGTH_EXCEPT:
                     case SOURCE_EXCEPT:
                       // FOO_EXCEPT is already compiled to a list of (Not(MatchFoo),
