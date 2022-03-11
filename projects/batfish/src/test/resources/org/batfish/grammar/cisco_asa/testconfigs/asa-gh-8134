@@ -1,0 +1,13 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-gh-8134
+! test for https://github.com/batfish/batfish/issues/8134
+!
+interface GigabitEthernet0/1
+  nameif UNPROTECTED
+  security-level 95
+  ip address 10.0.0.1 255.255.255.0
+!
+route UNPROTECTED 20.0.0.0 255.255.255.248 0.0.0.0 5
+!
