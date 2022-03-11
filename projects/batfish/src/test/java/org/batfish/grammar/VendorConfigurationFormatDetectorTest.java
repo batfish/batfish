@@ -10,6 +10,7 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
 import static org.batfish.datamodel.ConfigurationFormat.CUMULUS_CONCATENATED;
 import static org.batfish.datamodel.ConfigurationFormat.F5_BIGIP_STRUCTURED;
 import static org.batfish.datamodel.ConfigurationFormat.FLAT_JUNIPER;
+import static org.batfish.datamodel.ConfigurationFormat.FRR;
 import static org.batfish.datamodel.ConfigurationFormat.IBM_BNT;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER_SWITCH;
@@ -304,6 +305,16 @@ public class VendorConfigurationFormatDetectorTest {
     String basic = "stack unit 2\n" + "  module 1 icx7450-48p-poe-management-module\n";
     for (String fileText : ImmutableList.of(basic)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(RUCKUS_ICX));
+    }
+  }
+
+  @Test
+  public void testFrr() {
+    String rancidZebra = "!RANCID-CONTENT-TYPE: zebra\n";
+    String rancidFrr = "!RANCID-CONTENT-TYPE: frr\n";
+
+    for (String fileText : ImmutableList.of(rancidZebra, rancidFrr)) {
+      assertThat(identifyConfigurationFormat(fileText), equalTo(FRR));
     }
   }
 

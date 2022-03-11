@@ -376,32 +376,135 @@ public final class VendorConfigurationFormatDetector {
     if (!m.find()) {
       return null;
     }
+    // Based on types and aliases defined in
+    // https://github.com/haussli/rancid/blob/dc27e9bbb9972e475d66b4abbea981b7da6eeb23/etc/rancid.types.base
     switch (m.group(1)) {
+      case "a10":
+        return ConfigurationFormat.A10_ACOS;
+      case "agm":
+        return ConfigurationFormat.CISCO_AGM;
+      case "alteon":
+        return ConfigurationFormat.ALTEON;
+      case "arbor":
+        return ConfigurationFormat.ARBOR;
+      case "arcos":
+        return ConfigurationFormat.ARRCUS;
       case "arista":
         return ConfigurationFormat.ARISTA;
-      case "bigip":
-        return ConfigurationFormat.F5_BIGIP_STRUCTURED;
+      case "axis":
+        return ConfigurationFormat.AXIS;
+      case "baynet":
+        return ConfigurationFormat.BAYNET;
+      case "brocade":
+        return ConfigurationFormat.BROCADE;
+      case "ciena-ws":
+        return ConfigurationFormat.CIENA_WS;
+      case "cat5":
+        return ConfigurationFormat.CISCO_CATOS;
       case "cisco":
         // unfortunately, old RANCID cannot distinguish subtypes and also often does other vendors
         // like Arista
         return null;
+      case "ios":
+      case "cisco-ncs": // cisco NCS running ios-xe
+        return ConfigurationFormat.CISCO_IOS;
+      case "ios-nx":
       case "cisco-nx":
         return ConfigurationFormat.CISCO_NX;
+      case "ios-sb":
+      case "cisco-sb":
+        return ConfigurationFormat.CISCO_SB;
+      case "ios-xr":
       case "cisco-xr":
+      case "ios-xr7":
+      case "cisco-xr7":
+      case "ios-exr":
+      case "cisco-exr":
         return ConfigurationFormat.CISCO_IOS_XR;
+      case "cisco-wlc4":
+      case "cisco-wlc5":
+      case "cisco-wlc8":
+        return ConfigurationFormat.CISCO_WLC;
+      case "css":
+        return ConfigurationFormat.HUAWEI_CSS;
+      case "dell":
+        return ConfigurationFormat.DELL;
+      case "dnos9":
+      case "dnos10":
       case "force10":
         return ConfigurationFormat.FORCE10;
+      case "edgemax":
+        return ConfigurationFormat.UBIQUITI_EDGEMAX;
+      case "edgerouter":
+        return ConfigurationFormat.UBIQUITI_EDGEROUTER;
+      case "enterasys":
+        return ConfigurationFormat.ENTERASYS;
+      case "erx":
+        return ConfigurationFormat.UBIQUITI_EDGEROUTER_X;
+      case "extreme":
+        return ConfigurationFormat.EXTREME;
+      case "ezt3":
+        return ConfigurationFormat.EZT3;
+      case "f5": // <=v10
+      case "bigip": // v11
+      case "bigip13": // v13
+        return ConfigurationFormat.F5_BIGIP_STRUCTURED; // v13
+      case "fortigate":
+      case "fortigate-full":
+        return ConfigurationFormat.FORTIOS;
       case "foundry":
         return ConfigurationFormat.FOUNDRY;
-      case "ibmbnt":
+      case "fss2":
+        return ConfigurationFormat.FUJITSU_FSS;
+      case "fxos":
+        return ConfigurationFormat.CISCO_FX;
+      case "hitachi":
+        return ConfigurationFormat.HITACHI;
+      case "hp":
+        return ConfigurationFormat.HP;
+      case "ibmbnt": // legacy; not present in latest RANCID file
         return ConfigurationFormat.IBM_BNT;
       case "juniper":
       case "juniper-srx":
+      case "junos":
         return checkJuniper(true);
-      case "mrv":
+      case "junos-evo":
+        return ConfigurationFormat.JUNIPER_EVO;
+      case "microtik":
+      case "routeros":
+        return ConfigurationFormat.MICROTIK;
+      case "mrtd":
+        return ConfigurationFormat.MRTD;
+      case "mrv": // legacy; not present in latest RANCID file
         return ConfigurationFormat.MRV;
+      case "netopia":
+        return ConfigurationFormat.NETOPIA;
+      case "netscreen":
+        return ConfigurationFormat.NETSCREEN;
       case "paloalto":
+      case "paloaltoxml":
         return checkPaloAlto(true);
+      case "redback":
+        return ConfigurationFormat.REDBACK;
+      case "riverbed":
+        return ConfigurationFormat.RIVERBED;
+      case "riverstone":
+        return ConfigurationFormat.RIVERSTONE;
+      case "smc":
+        return ConfigurationFormat.DELL_SMC;
+      case "sros":
+      case "sros-md":
+        return ConfigurationFormat.NOKIA_SROS;
+      case "avocent":
+        return ConfigurationFormat.AVOCENT;
+      case "vrp":
+        return ConfigurationFormat.HUAWEI_VRP;
+      case "xirrus":
+        return ConfigurationFormat.XIRRUS;
+      case "zebra":
+      case "frr":
+        // Will this interfere with Cumulus detection?
+        return ConfigurationFormat.FRR;
       default:
         // We don't recognize the RANCID string, assert this config is unknown.
         return ConfigurationFormat.UNKNOWN;
