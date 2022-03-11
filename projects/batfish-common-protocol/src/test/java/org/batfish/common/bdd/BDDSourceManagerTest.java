@@ -170,7 +170,8 @@ public class BDDSourceManagerTest {
     nf.interfaceBuilder()
         .setOwner(config)
         .setName(IFACE2)
-        .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/32"))
+        .setAddress(
+            ConcreteInterfaceAddress.parse("2.2.2.2/32")) // only a /32, so cannot receive packets
         .build();
     nf.interfaceBuilder().setOwner(config).setName(IFACE3).build();
 
@@ -180,15 +181,13 @@ public class BDDSourceManagerTest {
     assertFalse(mgr.isTrivial());
     assertTrue(mgr.allSourcesTracked());
     assertThat(
-        mgr.getSourceBDDs().keySet(),
-        containsInAnyOrder(IFACE1, IFACE2, SOURCE_ORIGINATING_FROM_DEVICE));
-    assertThat(mgr.getSourceBDDs().values().stream().distinct().count(), equalTo(3L));
+        mgr.getSourceBDDs().keySet(), containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE));
+    assertThat(mgr.getSourceBDDs().values().stream().distinct().count(), equalTo(2L));
   }
 
   /**
    * A test that with no ACLs referencing interfaces and no session info, the source manager is
-   * trivial. The trivial source manager still only tracks active sources that can send/receive
-   * packets.
+   * trivial. The trivial source manager still only tracks active sources that can receive packets.
    */
   @Test
   public void testInitializeSessions_noSessionInfo() {
@@ -204,7 +203,7 @@ public class BDDSourceManagerTest {
         .setOwner(config)
         .setName(IFACE2)
         .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/32"))
-        .build(); // /32 will be tracked, as it can send packets
+        .build(); // /32 will not be tracked, as it cannot receive packets
     nf.interfaceBuilder()
         .setOwner(config)
         .setName("lo")
@@ -222,8 +221,7 @@ public class BDDSourceManagerTest {
     assertTrue(mgr.isTrivial());
     assertFalse(mgr.allSourcesTracked());
     assertThat(
-        mgr.getSourceBDDs().keySet(),
-        containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE, IFACE2));
+        mgr.getSourceBDDs().keySet(), containsInAnyOrder(IFACE1, SOURCE_ORIGINATING_FROM_DEVICE));
     assertEquals(mgr.getSourceBDDs().values().stream().distinct().count(), 1);
   }
 }

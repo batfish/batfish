@@ -1233,7 +1233,7 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting
   Stream<Edge> generateRules_PreOutInterfaceDisposition_SetupSessionDisposition() {
     return getAllL3Interfaces()
-        .filter(Interface::canSendIpTraffic) // no incoming edge means no outgoing edge
+        .filter(Interface::canSendIpTraffic)
         .flatMap(
             iface -> {
               String node = iface.getOwner().getHostname();
