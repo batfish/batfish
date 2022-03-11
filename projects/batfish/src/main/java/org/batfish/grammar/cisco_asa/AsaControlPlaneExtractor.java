@@ -7982,7 +7982,12 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
         return;
       }
       Ip nextHopIp = toIp(ctx.gateway);
-      nextHop = NextHopInterface.of(nextHopInterface, nextHopIp);
+      if (nextHopIp.equals(Ip.ZERO)) {
+        // https://github.com/batfish/batfish/issues/8134: ASA uses this for dynamic
+        nextHop = NextHopInterface.of(nextHopInterface);
+      } else {
+        nextHop = NextHopInterface.of(nextHopInterface, nextHopIp);
+      }
     }
 
     int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
