@@ -263,7 +263,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_first_fragmentCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offsetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offset_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_codeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_code_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_type_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_is_fragmentContext;
@@ -717,7 +719,9 @@ import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
 import org.batfish.representation.juniper.FwFromDscp;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
 import org.batfish.representation.juniper.FwFromIcmpCode;
+import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
+import org.batfish.representation.juniper.FwFromIcmpTypeExcept;
 import org.batfish.representation.juniper.FwFromIpOptions;
 import org.batfish.representation.juniper.FwFromJunosApplication;
 import org.batfish.representation.juniper.FwFromJunosApplicationSet;
@@ -4210,6 +4214,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitFftf_icmp_code_except(Fftf_icmp_code_exceptContext ctx) {
+    if (_currentFirewallFamily == Family.INET6) {
+      // TODO: support icmpv6
+      return;
+    }
+    SubRange icmpCodeRange = null;
+    if (ctx.subrange() != null) {
+      icmpCodeRange = toSubRange(ctx.subrange());
+    } else if (ctx.icmp_code() != null) {
+      Integer icmpCode = toIcmpCode(ctx.icmp_code(), _w);
+      if (icmpCode != null) {
+        icmpCodeRange = SubRange.singleton(icmpCode);
+      }
+    } else {
+      _w.redFlag(String.format("Invalid icmp-code-except: '%s'", ctx.getText()));
+    }
+    if (icmpCodeRange != null) {
+      FwFrom from = new FwFromIcmpCodeExcept(icmpCodeRange);
+      _currentFwTerm.getFroms().add(from);
+    }
+  }
+
+  @Override
   public void exitFftf_icmp_type(Fftf_icmp_typeContext ctx) {
     if (_currentFirewallFamily == Family.INET6) {
       // TODO: support icmpv6
@@ -4223,6 +4250,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       if (icmpType != null) {
         SubRange icmpTypeRange = SubRange.singleton(icmpType);
         _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
+      }
+    } else {
+      todo(ctx);
+    }
+  }
+
+  @Override
+  public void exitFftf_icmp_type_except(Fftf_icmp_type_exceptContext ctx) {
+    if (_currentFirewallFamily == Family.INET6) {
+      // TODO: support icmpv6
+      return;
+    }
+    if (ctx.subrange() != null) {
+      SubRange icmpTypeRange = toSubRange(ctx.subrange());
+      _currentFwTerm.getFroms().add(new FwFromIcmpTypeExcept(icmpTypeRange));
+    } else if (ctx.icmp_type() != null) {
+      Integer icmpType = toIcmpType(ctx.icmp_type(), _w);
+      if (icmpType != null) {
+        SubRange icmpTypeRange = SubRange.singleton(icmpType);
+        _currentFwTerm.getFroms().add(new FwFromIcmpTypeExcept(icmpTypeRange));
       }
     } else {
       todo(ctx);

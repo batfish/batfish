@@ -867,8 +867,10 @@ ICCP: 'iccp';
 ICMP: 'icmp';
 
 ICMP_CODE: 'icmp-code';
+ICMP_CODE_EXCEPT: 'icmp-code-except';
 
 ICMP_TYPE: 'icmp-type';
+ICMP_TYPE_EXCEPT: 'icmp-type-except';
 
 ICMP6: 'icmp6';
 
