@@ -75,12 +75,16 @@ public class DifferentialReachabilityParameters {
     return _headerSpace;
   }
 
-  /** @return When true, ignore filters/ACLs and only analyze forwarding behavior. */
+  /**
+   * @return When true, ignore filters/ACLs and only analyze forwarding behavior.
+   */
   public boolean getIgnoreFilters() {
     return _ignoreFilters;
   }
 
-  /** @return When true, search for differences outside the specified headerspace. */
+  /**
+   * @return When true, search for differences outside the specified headerspace.
+   */
   public boolean getInvertSearch() {
     return _invertSearch;
   }

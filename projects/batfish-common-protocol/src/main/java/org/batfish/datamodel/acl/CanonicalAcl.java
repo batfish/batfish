@@ -46,7 +46,9 @@ public final class CanonicalAcl {
     _interfaces = ImmutableSet.copyOf(interfaces);
   }
 
-  /** @return The sanitized version of the ACL represented by this {@link CanonicalAcl} */
+  /**
+   * @return The sanitized version of the ACL represented by this {@link CanonicalAcl}
+   */
   public IpAccessList getSanitizedAcl() {
     return _sanitizedAcl;
   }
@@ -62,7 +64,9 @@ public final class CanonicalAcl {
     return _dependencies;
   }
 
-  /** @return Set of interface names referenced by this ACL. */
+  /**
+   * @return Set of interface names referenced by this ACL.
+   */
   public Set<String> getInterfaces() {
     return _interfaces;
   }

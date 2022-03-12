@@ -46,7 +46,9 @@ public final class LocationInfoUtils {
         EmptyIpSpace.INSTANCE);
   }
 
-  /** @return the host IP space of all connected subnets. */
+  /**
+   * @return the host IP space of all connected subnets.
+   */
   @Nonnull
   public static IpSpace connectedSubnetHostIps(Interface iface) {
     return firstNonNull(

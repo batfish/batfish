@@ -217,7 +217,9 @@ public class NodesSpecifier {
     return suggestions;
   }
 
-  /** @return The input {@link String} expression. */
+  /**
+   * @return The input {@link String} expression.
+   */
   public String getExpression() {
     return _expression;
   }

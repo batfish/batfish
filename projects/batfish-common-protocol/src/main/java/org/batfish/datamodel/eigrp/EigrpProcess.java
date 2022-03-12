@@ -89,7 +89,9 @@ public final class EigrpProcess implements Serializable {
     return new Builder();
   }
 
-  /** @return The AS number for this process */
+  /**
+   * @return The AS number for this process
+   */
   @JsonProperty(PROP_ASN)
   public long getAsn() {
     return _asn;
@@ -105,28 +107,36 @@ public final class EigrpProcess implements Serializable {
     return _redistributionPolicy;
   }
 
-  /** @return All EIGRP neighbors in this process */
+  /**
+   * @return All EIGRP neighbors in this process
+   */
   @Nonnull
   @JsonProperty(PROP_NEIGHBORS)
   public SortedMap<String, EigrpNeighborConfig> getNeighbors() {
     return _neighbors;
   }
 
-  /** @return The router-id of this EIGRP process */
+  /**
+   * @return The router-id of this EIGRP process
+   */
   @Nonnull
   @JsonProperty(PROP_ROUTER_ID)
   public Ip getRouterId() {
     return _routerId;
   }
 
-  /** @return The {@link EigrpMetricVersion} used by this process */
+  /**
+   * @return The {@link EigrpMetricVersion} used by this process
+   */
   @Nonnull
   @JsonProperty(PROP_METRIC_VERSION)
   public EigrpMetricVersion getMetricVersion() {
     return _metricVersion;
   }
 
-  /** @return The EIGRP mode for this process */
+  /**
+   * @return The EIGRP mode for this process
+   */
   @Nonnull
   @JsonProperty(PROP_MODE)
   public EigrpProcessMode getMode() {

@@ -76,40 +76,52 @@ public class EigrpInterfaceSettings implements Serializable {
         && _passive == rhs._passive;
   }
 
-  /** @return The AS number for this interface */
+  /**
+   * @return The AS number for this interface
+   */
   @JsonProperty(PROP_ASN)
   public long getAsn() {
     return _asn;
   }
 
-  /** @return Whether EIGRP is enabled on this interface */
+  /**
+   * @return Whether EIGRP is enabled on this interface
+   */
   @JsonProperty(PROP_ENABLED)
   public boolean getEnabled() {
     return _enabled;
   }
 
-  /** @return Name of the export policy for this interface if there is any */
+  /**
+   * @return Name of the export policy for this interface if there is any
+   */
   @Nullable
   @JsonProperty(PROP_EXPORT_POLICY)
   public String getExportPolicy() {
     return _exportPolicy;
   }
 
-  /** @return Name of the import policy for this interface if there is any */
+  /**
+   * @return Name of the import policy for this interface if there is any
+   */
   @Nullable
   @JsonProperty(PROP_IMPORT_POLICY)
   public String getImportPolicy() {
     return _importPolicy;
   }
 
-  /** @return The interface metric */
+  /**
+   * @return The interface metric
+   */
   @JsonProperty(PROP_METRIC)
   @Nonnull
   public EigrpMetric getMetric() {
     return _metric;
   }
 
-  /** @return Whether interface is passive */
+  /**
+   * @return Whether interface is passive
+   */
   @JsonProperty(PROP_PASSIVE)
   public boolean getPassive() {
     return _passive;

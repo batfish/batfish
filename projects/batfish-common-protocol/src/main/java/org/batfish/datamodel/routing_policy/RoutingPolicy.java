@@ -205,7 +205,9 @@ public class RoutingPolicy implements Serializable {
     return processBgpRoute(inputRoute, Bgpv4Route.builder(), null, Direction.OUT, null);
   }
 
-  /** @return True if the policy accepts the route. */
+  /**
+   * @return True if the policy accepts the route.
+   */
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
@@ -213,7 +215,9 @@ public class RoutingPolicy implements Serializable {
     return process(inputRoute, outputRoute, null, null, direction, null, null);
   }
 
-  /** @return True if the policy accepts the route. */
+  /**
+   * @return True if the policy accepts the route.
+   */
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
@@ -222,7 +226,9 @@ public class RoutingPolicy implements Serializable {
     return process(inputRoute, outputRoute, null, null, direction, null, tracer);
   }
 
-  /** @return True if the policy accepts the route. */
+  /**
+   * @return True if the policy accepts the route.
+   */
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
