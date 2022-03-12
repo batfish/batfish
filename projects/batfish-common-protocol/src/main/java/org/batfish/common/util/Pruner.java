@@ -109,7 +109,9 @@ public class Pruner<T> {
     return ImmutableList.copyOf(selectedObjects);
   }
 
-  /** @param <T> The type of objects being pruned. */
+  /**
+   * @param <T> The type of objects being pruned.
+   */
   public static class Builder<T> {
     private final ImmutableList.Builder<Function<T, ?>> _propertyExtractors =
         ImmutableList.builder();

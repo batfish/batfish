@@ -15,12 +15,16 @@ public final class DifferentialSearchFiltersResult {
     _increasedFlow = increasedFlow;
   }
 
-  /** @return The result for the decreased space. */
+  /**
+   * @return The result for the decreased space.
+   */
   public Optional<Flow> getDecreasedFlow() {
     return Optional.ofNullable(_decreasedFlow);
   }
 
-  /** @return The result for the decreased space. */
+  /**
+   * @return The result for the decreased space.
+   */
   public Optional<Flow> getIncreasedFlow() {
     return Optional.ofNullable(_increasedFlow);
   }

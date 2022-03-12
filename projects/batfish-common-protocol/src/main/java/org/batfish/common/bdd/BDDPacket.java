@@ -244,7 +244,9 @@ public class BDDPacket {
     return _srcIpSpaceToBDD;
   }
 
-  /** @return The {@link BDDFactory} used by this packet. */
+  /**
+   * @return The {@link BDDFactory} used by this packet.
+   */
   public BDDFactory getFactory() {
     return _factory;
   }

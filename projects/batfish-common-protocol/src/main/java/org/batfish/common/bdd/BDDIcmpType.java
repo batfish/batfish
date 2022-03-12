@@ -15,7 +15,9 @@ public final class BDDIcmpType {
     _var = var;
   }
 
-  /** @return a constraint that the IcmpType have the specified value. */
+  /**
+   * @return a constraint that the IcmpType have the specified value.
+   */
   public BDD value(int icmpType) {
     return icmpType == IcmpType.UNSET ? _var.getFactory().one() : _var.value(icmpType);
   }
@@ -38,12 +40,16 @@ public final class BDDIcmpType {
     return _var.satAssignmentToLong(satAssignment).intValue();
   }
 
-  /** @return a constraint that the IcmpType be greater than or equal to the specified value. */
+  /**
+   * @return a constraint that the IcmpType be greater than or equal to the specified value.
+   */
   public BDD geq(int start) {
     return start == IcmpType.UNSET ? _var.getFactory().one() : _var.geq(start);
   }
 
-  /** @return a constraint that the IcmpType be less than or equal to the specified value. */
+  /**
+   * @return a constraint that the IcmpType be less than or equal to the specified value.
+   */
   public BDD leq(int end) {
     return end == IcmpType.UNSET ? _var.getFactory().one() : _var.leq(end);
   }

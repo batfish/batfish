@@ -397,7 +397,9 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     return node == null ? ImmutableSet.of() : ImmutableSet.copyOf(node._elements);
   }
 
-  /** @return all elements in the trie. */
+  /**
+   * @return all elements in the trie.
+   */
   @Nonnull
   public Set<T> getAllElements() {
     Builder<T> b = ImmutableSet.builder();

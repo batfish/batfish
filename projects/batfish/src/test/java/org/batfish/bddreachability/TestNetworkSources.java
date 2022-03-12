@@ -103,7 +103,9 @@ public class TestNetworkSources {
     return config;
   }
 
-  /** @return A one-node network. For testing traffic originating from the device or its links. */
+  /**
+   * @return A one-node network. For testing traffic originating from the device or its links.
+   */
   public static SortedMap<String, Configuration> oneNodeNetwork() {
     Configuration config = makeConfigWithAcls(new NetworkFactory());
     return ImmutableSortedMap.of(config.getHostname(), config);

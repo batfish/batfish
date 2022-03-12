@@ -35,7 +35,9 @@ public final class Node {
     _routingPolicies = RoutingPolicies.from(configuration);
   }
 
-  /** @return The {@link Configuration} backing this Node */
+  /**
+   * @return The {@link Configuration} backing this Node
+   */
   @Nonnull
   public Configuration getConfiguration() {
     return _c;

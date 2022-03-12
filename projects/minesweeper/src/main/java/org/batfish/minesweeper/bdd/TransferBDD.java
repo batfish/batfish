@@ -90,7 +90,9 @@ import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
-/** @author Ryan Beckett */
+/**
+ * @author Ryan Beckett
+ */
 public class TransferBDD {
 
   /**

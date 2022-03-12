@@ -13,11 +13,15 @@ import org.batfish.role.NodeRoleDimension;
  * LocationSpecifier}s, and {@link IpSpaceAssignmentSpecifier}s to resolve themselves.
  */
 public interface SpecifierContext {
-  /** @return The network configurations. */
+  /**
+   * @return The network configurations.
+   */
   @Nonnull
   Map<String, Configuration> getConfigs();
 
-  /** @return the set of {@link ReferenceBook} with name {@code bookName}. */
+  /**
+   * @return the set of {@link ReferenceBook} with name {@code bookName}.
+   */
   Optional<ReferenceBook> getReferenceBook(String bookName);
 
   /**
@@ -27,9 +31,13 @@ public interface SpecifierContext {
   @Nonnull
   Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension);
 
-  /** @return the {@link LocationInfo} for the input {@link Location}. */
+  /**
+   * @return the {@link LocationInfo} for the input {@link Location}.
+   */
   LocationInfo getLocationInfo(Location location);
 
-  /** @return the {@link LocationInfo} for all {@link Location locations}. */
+  /**
+   * @return the {@link LocationInfo} for all {@link Location locations}.
+   */
   Map<Location, LocationInfo> getLocationInfo();
 }
