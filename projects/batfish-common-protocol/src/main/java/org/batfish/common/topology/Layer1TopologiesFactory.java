@@ -145,7 +145,9 @@ public final class Layer1TopologiesFactory {
     return new Layer1Node(c.getHostname(), aggregate.getName());
   }
 
-  /** @see Layer1Topologies#getLogicalL1() */
+  /**
+   * @see Layer1Topologies#getLogicalL1()
+   */
   private static @Nonnull Layer1Topology toLogicalTopology(
       Layer1Topology userProvidedL1,
       Layer1Topology syntheticL1,

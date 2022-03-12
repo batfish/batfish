@@ -213,7 +213,9 @@ public class Warnings implements Serializable {
     _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, comment));
   }
 
-  /** @see #addWarning(ParserRuleContext, String, BatfishCombinedParser, String) */
+  /**
+   * @see #addWarning(ParserRuleContext, String, BatfishCombinedParser, String)
+   */
   public void todo(
       @Nonnull ParserRuleContext ctx,
       @Nonnull String line,

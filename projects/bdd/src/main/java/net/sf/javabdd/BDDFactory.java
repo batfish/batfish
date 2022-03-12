@@ -323,7 +323,9 @@ public abstract class BDDFactory {
     return andAll(bddOperands, false);
   }
 
-  /** @see #andAllAndFree(Iterable) */
+  /**
+   * @see #andAllAndFree(Iterable)
+   */
   public final BDD andAllAndFree(BDD... bddOperands) {
     return andAll(Arrays.asList(bddOperands), true);
   }
@@ -344,7 +346,9 @@ public abstract class BDDFactory {
   /** Implementation of {@link #andAll(Iterable)} and {@link #andAllAndFree(Iterable)}. */
   protected abstract BDD andAll(Iterable<BDD> bdds, boolean free);
 
-  /** @see #orAll(Iterable) */
+  /**
+   * @see #orAll(Iterable)
+   */
   public final BDD orAll(BDD... bddOperands) {
     return orAll(Arrays.asList(bddOperands), false);
   }
@@ -360,7 +364,9 @@ public abstract class BDDFactory {
     return orAll(bddOperands, false);
   }
 
-  /** @see #orAllAndFree(Iterable) */
+  /**
+   * @see #orAllAndFree(Iterable)
+   */
   public final BDD orAllAndFree(BDD... bddOperands) {
     return orAll(Arrays.asList(bddOperands), true);
   }

@@ -20,18 +20,24 @@ public final class PList<E> extends AbstractSequentialList<E> {
   //// STATIC FACTORY METHODS ////
   private static final PList<Object> EMPTY = new PList<>();
 
-  /** @return an empty stack */
+  /**
+   * @return an empty stack
+   */
   @SuppressWarnings("unchecked")
   public static <E> PList<E> empty() {
     return (PList<E>) EMPTY;
   }
 
-  /** @return empty().plus(e) */
+  /**
+   * @return empty().plus(e)
+   */
   public static <E> PList<E> singleton(final E e) {
     return PList.<E>empty().plus(e);
   }
 
-  /** @return a stack consisting of the elements of list in the order of list.iterator() */
+  /**
+   * @return a stack consisting of the elements of list in the order of list.iterator()
+   */
   @SuppressWarnings("unchecked")
   public static <E> PList<E> from(final Collection<? extends E> list) {
     if (list instanceof PList) {

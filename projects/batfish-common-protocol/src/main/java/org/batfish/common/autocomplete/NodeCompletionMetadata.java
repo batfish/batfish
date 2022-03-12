@@ -42,7 +42,9 @@ public final class NodeCompletionMetadata implements Serializable {
     return Objects.hashCode(_humanName);
   }
 
-  /** @return The node's {@link Configuration#getHumanName() human-readable name}. */
+  /**
+   * @return The node's {@link Configuration#getHumanName() human-readable name}.
+   */
   @JsonProperty(PROP_HUMAN_NAME)
   public @Nullable String getHumanName() {
     return _humanName;

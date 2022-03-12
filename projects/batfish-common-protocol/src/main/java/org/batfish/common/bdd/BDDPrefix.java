@@ -85,7 +85,9 @@ public final class BDDPrefix {
     return result;
   }
 
-  /** @return The {@link BDDFactory} used by this {@link BDDPrefix}. */
+  /**
+   * @return The {@link BDDFactory} used by this {@link BDDPrefix}.
+   */
   public @Nonnull BDDFactory getFactory() {
     return _ip.getFactory();
   }

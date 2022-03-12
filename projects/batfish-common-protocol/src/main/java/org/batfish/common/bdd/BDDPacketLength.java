@@ -14,25 +14,33 @@ public final class BDDPacketLength {
     _var = var;
   }
 
-  /** @return a constraint that the packet length have the specified value. */
+  /**
+   * @return a constraint that the packet length have the specified value.
+   */
   public BDD value(int v) {
     checkArgument(v <= 65535, "Maximum packet length is 65535");
     return _var.value(v);
   }
 
-  /** @return a constraint that the packet length have the specified value. */
+  /**
+   * @return a constraint that the packet length have the specified value.
+   */
   public BDD geq(int v) {
     checkArgument(v <= 65535, "Maximum packet length is 65535");
     return _var.geq(v);
   }
 
-  /** @return a constraint that the packet length have the specified value. */
+  /**
+   * @return a constraint that the packet length have the specified value.
+   */
   public BDD leq(int v) {
     checkArgument(v <= 65535, "Maximum packet length is 65535");
     return _var.leq(v);
   }
 
-  /** @return a constraint that the packet length be within the specified range. */
+  /**
+   * @return a constraint that the packet length be within the specified range.
+   */
   public BDD range(int low, int high) {
     return geq(low).and(leq(high));
   }
@@ -60,7 +68,9 @@ public final class BDDPacketLength {
     return Integer.max(_var.satAssignmentToLong(satAssignment).intValue(), 20);
   }
 
-  /** @return the {@link BDDInteger} backing this. */
+  /**
+   * @return the {@link BDDInteger} backing this.
+   */
   public BDDInteger getBDDInteger() {
     return _var;
   }

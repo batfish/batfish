@@ -44,7 +44,9 @@ public final class PointToPointInterfaces implements Serializable {
     return _physicalToInterfaces.get(neighbor);
   }
 
-  /** @see PointToPointComputer#compute */
+  /**
+   * @see PointToPointComputer#compute
+   */
   @VisibleForTesting
   public static PointToPointInterfaces createForTesting(
       Map<NodeInterfacePair, NodeInterfacePair> pointToPointPhysical,
