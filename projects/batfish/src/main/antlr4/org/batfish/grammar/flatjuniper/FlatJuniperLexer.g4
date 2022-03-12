@@ -1331,6 +1331,8 @@ JUNOS_RADACCT: 'junos-radacct';
 
 JUNOS_RADIUS: 'junos-radius';
 
+JUNOS_RDP: 'junos-rdp';
+
 JUNOS_REALAUDIO: 'junos-realaudio';
 
 JUNOS_RIP: 'junos-rip';

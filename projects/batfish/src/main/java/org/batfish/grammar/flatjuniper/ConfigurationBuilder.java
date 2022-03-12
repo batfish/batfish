@@ -1294,6 +1294,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return JunosApplication.JUNOS_RADIUS;
     } else if (ctx.JUNOS_REALAUDIO() != null) {
       return JunosApplication.JUNOS_REALAUDIO;
+    } else if (ctx.JUNOS_RDP() != null) {
+      return JunosApplication.JUNOS_RDP;
     } else if (ctx.JUNOS_RIP() != null) {
       return JunosApplication.JUNOS_RIP;
     } else if (ctx.JUNOS_RSH() != null) {

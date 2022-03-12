@@ -333,6 +333,7 @@ junos_application
   | JUNOS_RADACCT
   | JUNOS_RADIUS
   | JUNOS_REALAUDIO
+  | JUNOS_RDP
   | JUNOS_RIP
   | JUNOS_RSH
   | JUNOS_RTSP

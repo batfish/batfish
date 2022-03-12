@@ -134,6 +134,7 @@ public enum JunosApplication implements Application {
   JUNOS_RADACCT,
   JUNOS_RADIUS,
   JUNOS_REALAUDIO,
+  JUNOS_RDP,
   JUNOS_RIP,
   JUNOS_RSH,
   JUNOS_RTSP,
@@ -540,6 +541,20 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_IMAP:
+        {
+          portRangeStart = NamedPort.IMAP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_IMAPS:
+        {
+          portRangeStart = NamedPort.IMAPS.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_LDAP:
         {
           portRangeStart = NamedPort.LDAP.number();
@@ -751,6 +766,13 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_POP3:
+        {
+          portRangeStart = NamedPort.POP3.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_PPTP:
         {
           portRangeStart = NamedPort.PPTP.number();
@@ -770,6 +792,13 @@ public enum JunosApplication implements Application {
         {
           portRangeStart = NamedPort.RADIUS_2_AUTH.number();
           ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_RDP:
+        {
+          portRangeStart = NamedPort.RDP.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 

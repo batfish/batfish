@@ -118,6 +118,7 @@ set security policies global policy policy-name match application junos-r2cp
 set security policies global policy policy-name match application junos-radacct
 set security policies global policy policy-name match application junos-radius
 set security policies global policy policy-name match application junos-realaudio
+set security policies global policy policy-name match application junos-rdp
 set security policies global policy policy-name match application junos-rip
 set security policies global policy policy-name match application junos-routing-inbound
 set security policies global policy policy-name match application junos-rsh
