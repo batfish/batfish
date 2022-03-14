@@ -50,6 +50,11 @@ public final class Or implements Transition {
   }
 
   @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitOr(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

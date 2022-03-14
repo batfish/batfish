@@ -13,7 +13,7 @@ import org.batfish.common.bdd.BDDSourceManager;
  * exiting.
  */
 @ParametersAreNonnullByDefault
-final class RemoveSourceConstraint implements Transition {
+public final class RemoveSourceConstraint implements Transition {
   private final @Nonnull BDDSourceManager _mgr;
 
   RemoveSourceConstraint(BDDSourceManager mgr) {
@@ -52,6 +52,11 @@ final class RemoveSourceConstraint implements Transition {
   @Override
   public BDD transitBackward(BDD bdd) {
     return bdd.and(_mgr.isValidValue());
+  }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitRemoveSourceConstraint(this);
   }
 
   @Override

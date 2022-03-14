@@ -4,10 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
 
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 
-final class Reverse implements Transition {
-  private final Transition _inner;
+public final class Reverse implements Transition {
+  private final @Nonnull Transition _inner;
 
   Reverse(Transition inner) {
     checkArgument(
@@ -24,5 +25,14 @@ final class Reverse implements Transition {
   @Override
   public BDD transitBackward(BDD bdd) {
     return _inner.transitForward(bdd);
+  }
+
+  public @Nonnull Transition getInner() {
+    return _inner;
+  }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitReverse(this);
   }
 }

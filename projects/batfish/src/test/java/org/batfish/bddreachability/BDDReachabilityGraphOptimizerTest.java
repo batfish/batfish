@@ -14,6 +14,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
 import org.batfish.bddreachability.transition.Transition;
+import org.batfish.bddreachability.transition.TransitionVisitor;
 import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
@@ -63,6 +64,11 @@ public class BDDReachabilityGraphOptimizerTest {
 
     @Override
     public BDD transitBackward(BDD bdd) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T accept(TransitionVisitor<T> visitor) {
       throw new UnsupportedOperationException();
     }
   }

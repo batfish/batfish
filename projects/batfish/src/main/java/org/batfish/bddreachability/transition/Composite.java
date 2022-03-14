@@ -11,11 +11,11 @@ import net.sf.javabdd.BDD;
 public final class Composite implements Transition {
   private final List<Transition> _transitions;
 
-  Composite(Transition... transitions) {
+  public Composite(Transition... transitions) {
     this(ImmutableList.copyOf(transitions));
   }
 
-  Composite(List<Transition> transitions) {
+  public Composite(List<Transition> transitions) {
     checkArgument(!transitions.isEmpty(), "Cannot compose 0 Transitions. Use Identity instead");
     checkArgument(
         transitions.size() != 1,
@@ -47,6 +47,11 @@ public final class Composite implements Transition {
       result = nextResult;
     }
     return result;
+  }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitComposite(this);
   }
 
   @Override
