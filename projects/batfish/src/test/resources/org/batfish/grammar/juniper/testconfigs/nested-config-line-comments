@@ -3,5 +3,5 @@
 #this is a line comment
 # this is another line comment
 system {
-    host-name nested-config-line-comments;
+    host-name nested-config-line-comments; ## foo 'bar' baz
 }

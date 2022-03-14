@@ -36,14 +36,8 @@ INACTIVE
    'inactive:'
 ;
 
-// Handle Juniper-style and RANCID-header-style line comments
-COMMENT_LINE
-:
-  F_WhitespaceChar* [!#]
-  {lastTokenType() == -1 || lastTokenType() == NEWLINE}?
-  F_NonNewlineChar* (F_NewlineChar+ | EOF)
-    -> skip // so not counted as last token
-;
+// Handle Juniper-style and RANCID-header-style line comments, as well as end-of-line comments
+COMMENT_LINE: F_WhitespaceChar* [!#] F_NonNewlineChar* -> skip;
 
 MULTILINE_COMMENT
 :
