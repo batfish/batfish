@@ -419,8 +419,6 @@ public final class VendorConfigurationFormatDetector {
       case "juniper-srx":
       case "junos":
         return checkJuniper(true);
-      case "mrtd":
-        return ConfigurationFormat.MRTD;
       case "mrv": // legacy; not present in latest RANCID file
         return ConfigurationFormat.MRV;
       case "paloalto":
@@ -431,10 +429,12 @@ public final class VendorConfigurationFormatDetector {
       case "arbor":
       case "arcos":
       case "axis":
+      case "avocent":
       case "baynet":
       case "brocade":
       case "ciena-ws":
       case "cat5":
+      case "cisco-sb":
       case "cisco-wlc4":
       case "cisco-wlc5":
       case "cisco-wlc8":
@@ -446,14 +446,15 @@ public final class VendorConfigurationFormatDetector {
       case "erx":
       case "extreme":
       case "ezt3":
+      case "frr": // stand-alone FRR (not cumulus, sonic)
       case "fss2":
       case "fxos":
       case "hitachi":
       case "hp":
       case "ios-sb":
-      case "cisco-sb":
       case "junos-evo":
       case "microtik":
+      case "mrtd":
       case "netopia":
       case "netscreen":
       case "redback":
@@ -463,12 +464,9 @@ public final class VendorConfigurationFormatDetector {
       case "smc":
       case "sros":
       case "sros-md":
-      case "avocent":
       case "vrp":
       case "xirrus":
       case "zebra":
-      case "frr":
-        // Will this interfere with Cumulus detection?
         return ConfigurationFormat.UNSUPPORTED;
       default:
         // We don't recognize the RANCID string, assert this config is unknown.
