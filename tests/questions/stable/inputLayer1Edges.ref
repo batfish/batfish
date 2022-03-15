@@ -9,7 +9,7 @@
   "instance" : {
     "description" : "Returns normalized Layer 1 edges that were input to Batfish.",
     "instanceName" : "qname",
-    "longDescription" : "Lists Layer 1 edges after normalizing node and interface names. Node names are lower-cased. Interface names are canonicalized based on the vendor, for nodes are appear in the snapshot.",
+    "longDescription" : "Lists Layer 1 edges after potentially normalizing node and interface names. Node names are lower-cased, and for nodes and interfaces that appear in the snapshot, interface names are canonicalized based on the vendor. All input edges are in the output, including nodes and interfaces that do not appear in the snapshot.",
     "orderedVariableNames" : [
       "nodes",
       "remoteNodes"
