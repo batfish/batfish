@@ -10,7 +10,6 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
 import static org.batfish.datamodel.ConfigurationFormat.CUMULUS_CONCATENATED;
 import static org.batfish.datamodel.ConfigurationFormat.F5_BIGIP_STRUCTURED;
 import static org.batfish.datamodel.ConfigurationFormat.FLAT_JUNIPER;
-import static org.batfish.datamodel.ConfigurationFormat.FRR;
 import static org.batfish.datamodel.ConfigurationFormat.IBM_BNT;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER_SWITCH;
@@ -18,6 +17,7 @@ import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
 import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
+import static org.batfish.datamodel.ConfigurationFormat.UNSUPPORTED;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -314,7 +314,7 @@ public class VendorConfigurationFormatDetectorTest {
     String rancidFrr = "!RANCID-CONTENT-TYPE: frr\n";
 
     for (String fileText : ImmutableList.of(rancidZebra, rancidFrr)) {
-      assertThat(identifyConfigurationFormat(fileText), equalTo(FRR));
+      assertThat(identifyConfigurationFormat(fileText), equalTo(UNSUPPORTED));
     }
   }
 
