@@ -44,7 +44,7 @@ public final class Layer1TopologiesFactory {
    * Attempts to line up the user-provided {@link Layer1Node} with an actual interface.
    *
    * <p>If no match is found (the device does not exist in this snapshot, or no corresponding
-   * interface), then the original node is returned but the values are lowercased.
+   * interface), then the original node is returned.
    */
   private static @Nonnull Layer1Node canonicalizeUserNode(
       Layer1Node node, Map<String, Configuration> configurations, Set<String> missingDevices) {
@@ -54,8 +54,7 @@ public final class Layer1TopologiesFactory {
         LOGGER.info(
             "Layer 1 topology has node {}, but device {} not found", node, node.getHostname());
       }
-      // Host unknown, return node with the hostname in lowercase.
-      return new Layer1Node(node.getHostname(), node.getInterfaceName().toLowerCase());
+      return node;
     }
 
     // Find a matching interface on the host, perhaps with a slightly different interface name.
