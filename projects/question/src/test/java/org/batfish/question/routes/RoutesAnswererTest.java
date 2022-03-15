@@ -3,6 +3,8 @@ package org.batfish.question.routes;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableSortedMap.toImmutableSortedMap;
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
+import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasWarnings;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
@@ -30,13 +32,14 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_WEIGHT;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -83,7 +86,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -205,9 +207,13 @@ public class RoutesAnswererTest {
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
     RoutesQuestion routesQuestion =
         new RoutesQuestion(null, "differentNode", null, null, null, null, null);
-    StringAnswerElement answer =
-        (StringAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
-    assertEquals(RoutesAnswerer.ERROR_NO_MATCHING_NODES, answer.getAnswer());
+    TableAnswerElement answer =
+        (TableAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
+    assertThat(
+        answer,
+        allOf(
+            hasWarnings(contains(RoutesAnswerer.WARNING_NO_MATCHING_NODES)),
+            hasRows(emptyIterable())));
   }
 
   @Test
@@ -226,9 +232,13 @@ public class RoutesAnswererTest {
     NetworkSnapshot snapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
     RoutesQuestion routesQuestion = new RoutesQuestion(null, "n1", "v2", null, null, null, null);
-    StringAnswerElement answer =
-        (StringAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
-    assertEquals(RoutesAnswerer.ERROR_NO_MATCHING_VRFS, answer.getAnswer());
+    TableAnswerElement answer =
+        (TableAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
+    assertThat(
+        answer,
+        allOf(
+            hasWarnings(contains(RoutesAnswerer.WARNING_NO_MATCHING_VRFS)),
+            hasRows(emptyIterable())));
   }
 
   @Test
