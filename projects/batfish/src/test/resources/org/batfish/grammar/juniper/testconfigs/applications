@@ -10,6 +10,8 @@ set applications application a2 source-port 78
 set applications application a3 protocol udp
 set applications application a3 destination-port 56
 set applications application a3 source-port pop3
+set applications application a4 protocol icmp icmp-type 5 inactivity-timeout 60
+set applications application a5 protocol icmp icmp-code 6
 set security policies from-zone trust to-zone untrust policy p1 match application a1
 set security policies from-zone trust to-zone untrust policy p1 match application a_undef
 set security policies global policy p1 match application a3

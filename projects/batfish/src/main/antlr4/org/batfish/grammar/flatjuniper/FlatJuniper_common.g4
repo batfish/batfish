@@ -114,8 +114,13 @@ extended_community
 
 icmp_code
 :
-  dec
-  | COMMUNICATION_PROHIBITED_BY_FILTERING
+  uint8
+  | named_icmp_code
+;
+
+named_icmp_code
+:
+  COMMUNICATION_PROHIBITED_BY_FILTERING
   | DESTINATION_HOST_PROHIBITED
   | DESTINATION_HOST_UNKNOWN
   | DESTINATION_NETWORK_PROHIBITED
@@ -143,8 +148,13 @@ icmp_code
 
 icmp_type
 :
-  dec
-  | DESTINATION_UNREACHABLE
+  uint8
+  | named_icmp_type
+;
+
+named_icmp_type
+:
+  DESTINATION_UNREACHABLE
   | ECHO_REPLY
   | ECHO_REQUEST
   | INFO_REPLY
