@@ -10,7 +10,7 @@ a_application
 :
    APPLICATION name = junos_name
    (
-      aa_common
+      aa_common+
       | aa_description
       | aa_term
    )

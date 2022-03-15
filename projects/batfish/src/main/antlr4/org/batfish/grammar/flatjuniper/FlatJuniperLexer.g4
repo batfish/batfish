@@ -3437,6 +3437,12 @@ F_NameQuoted
 ;
 
 fragment
+F_Alpha
+:
+  [A-Za-z]
+;
+
+fragment
 F_NameChar
 :
   [0-9A-Za-z_]
@@ -4673,10 +4679,10 @@ M_QueueNumber2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 mode M_SubRange;
 M_SubRange_WS: F_WhitespaceChar+ -> skip;
 M_SubRange_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-M_SubRange_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
 M_SubRange_UINT8: F_Uint8 -> type(UINT8);
 M_SubRange_UINT16: F_Uint16 -> type(UINT16);
 M_SubRange_DASH: '-' -> type(DASH), mode(M_SubRangeDash);
+M_SubRange_OTHER: F_Alpha F_NonWhitespaceChar* { less(); } -> popMode;
 
 mode M_SubRangeDash;
 M_SubRangeDash_NEWLINE: F_Newline -> type(NEWLINE), popMode;

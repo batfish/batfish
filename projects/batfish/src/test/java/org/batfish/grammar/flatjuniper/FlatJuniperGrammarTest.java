@@ -14,6 +14,7 @@ import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
+import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
@@ -21,6 +22,9 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpCode;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpType;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
@@ -237,6 +241,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -358,6 +363,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
+import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DscpUtil;
@@ -510,7 +516,28 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplications() throws IOException {
+  public void testApplicationsExtraction() {
+    String hostname = "applications";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    assertThat(
+        vc.getMasterLogicalSystem().getApplications(), hasKeys("a1", "a2", "a3", "a4", "a5"));
+    // TODO: a1-a3
+    {
+      BaseApplication application = vc.getMasterLogicalSystem().getApplications().get("a4");
+      assertThat(
+          _b.toBDD(application.getMainTerm().getHeaderSpace()),
+          equalTo(_b.toBDD(and(matchIpProtocol(ICMP), matchIcmpType(5)))));
+    }
+    {
+      BaseApplication application = vc.getMasterLogicalSystem().getApplications().get("a5");
+      assertThat(
+          _b.toBDD(application.getMainTerm().getHeaderSpace()),
+          equalTo(_b.toBDD(and(matchIpProtocol(ICMP), matchIcmpCode(6)))));
+    }
+  }
+
+  @Test
+  public void testApplicationsReferences() throws IOException {
     String hostname = "applications";
     String filename = "configs/" + hostname;
 
@@ -7102,4 +7129,6 @@ public final class FlatJuniperGrammarTest {
     // don't crash
     parseConfig("interface-media-types");
   }
+
+  private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

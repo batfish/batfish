@@ -231,13 +231,19 @@ public final class AclLineMatchExprs {
   }
 
   public static @Nonnull AclLineMatchExpr matchIcmp(int icmpType, int icmpCode) {
+    return and(matchIcmpType(icmpType), matchIcmpType(icmpCode));
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIcmpCode(int icmpType) {
+    return matchIcmpCode(icmpType, null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIcmpCode(
+      int icmpCode, @Nullable TraceElement traceElement) {
     checkArgument(0 <= icmpCode && icmpCode <= 255, "Invalid ICMP code: %s", icmpCode);
-    return and(
-        matchIcmpType(icmpType),
-        new MatchHeaderSpace(
-            HeaderSpace.builder()
-                .setIcmpCodes(ImmutableList.of(SubRange.singleton(icmpCode)))
-                .build()));
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setIcmpCodes(ImmutableList.of(SubRange.singleton(icmpCode))).build(),
+        traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchIcmpType(int icmpType) {
