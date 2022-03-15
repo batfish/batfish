@@ -39,6 +39,7 @@ public enum ConfigurationFormat {
   PALO_ALTO_NESTED("paloalto"),
   RUCKUS_ICX("ruckus_icx"),
   UNKNOWN("unknown"),
+  UNSUPPORTED("unsupported"),
   VXWORKS("vxworks"),
   VYOS("vyos");
 
