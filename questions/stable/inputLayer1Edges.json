@@ -1,0 +1,33 @@
+{
+    "class": "org.batfish.question.edges.EdgesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns normalized Layer 1 edges that were input to Batfish.",
+        "instanceName": "inputLayer1Edges",
+        "longDescription": "Lists Layer 1 edges after normalizing node and interface names. Node names are lower-cased. Interface names are canonicalized based on the vendor, for nodes are appear in the snapshot.",
+        "orderedVariableNames": [
+            "nodes",
+            "remoteNodes"
+        ],
+        "tags": [
+            "topology"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include edges whose first node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "remoteNodes": {
+                "description": "Include edges whose second node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Remote Nodes"
+            }
+        }
+    },
+    "edgeType": "user_provided_layer1",
+    "nodes": "${nodes}",
+    "remoteNodes": "${remoteNodes}"
+}
