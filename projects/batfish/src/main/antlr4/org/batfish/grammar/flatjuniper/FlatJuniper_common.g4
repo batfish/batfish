@@ -653,11 +653,15 @@ uint8
   UINT8
 ;
 
+uint8_range: start = uint8 (DASH end = uint8)?;
+
 uint16
 :
   UINT8
   | UINT16
 ;
+
+uint16_range: start = uint16 (DASH end = uint16)?;
 
 uint32
 :
