@@ -17,6 +17,7 @@ import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
 import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
+import static org.batfish.datamodel.ConfigurationFormat.UNSUPPORTED;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -209,6 +210,7 @@ public class VendorConfigurationFormatDetectorTest {
             "!RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper-srx\n!\nsomething {\n blah;\n}\n",
+            "#RANCID-CONTENT-TYPE: junos\n!\nsomething {\n blah;\n}\n",
             "snmp {\n}\n")) {
       assertThat(fileText, identifyConfigurationFormat(fileText), equalTo(JUNIPER));
     }
@@ -220,6 +222,7 @@ public class VendorConfigurationFormatDetectorTest {
             "!RANCID-CONTENT-TYPE: juniper\n!\nset blah\n",
             "#RANCID-CONTENT-TYPE: juniper\n!\nset blah\n",
             "#RANCID-CONTENT-TYPE: juniper-srx\n!\nset blah\n",
+            "#RANCID-CONTENT-TYPE: junos\n!\nset blah\n",
             "#\nset apply-groups blah\n",
             "####BATFISH FLATTENED JUNIPER CONFIG####\n")) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(FLAT_JUNIPER));
@@ -304,6 +307,16 @@ public class VendorConfigurationFormatDetectorTest {
     String basic = "stack unit 2\n" + "  module 1 icx7450-48p-poe-management-module\n";
     for (String fileText : ImmutableList.of(basic)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(RUCKUS_ICX));
+    }
+  }
+
+  @Test
+  public void testFrr() {
+    String rancidZebra = "!RANCID-CONTENT-TYPE: zebra\n";
+    String rancidFrr = "!RANCID-CONTENT-TYPE: frr\n";
+
+    for (String fileText : ImmutableList.of(rancidZebra, rancidFrr)) {
+      assertThat(identifyConfigurationFormat(fileText), equalTo(UNSUPPORTED));
     }
   }
 

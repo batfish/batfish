@@ -376,32 +376,98 @@ public final class VendorConfigurationFormatDetector {
     if (!m.find()) {
       return null;
     }
+    // Based on types and aliases defined in
+    // https://github.com/haussli/rancid/blob/dc27e9bbb9972e475d66b4abbea981b7da6eeb23/etc/rancid.types.base
     switch (m.group(1)) {
+      case "a10":
+        return ConfigurationFormat.A10_ACOS;
       case "arista":
         return ConfigurationFormat.ARISTA;
-      case "bigip":
-        return ConfigurationFormat.F5_BIGIP_STRUCTURED;
       case "cisco":
         // unfortunately, old RANCID cannot distinguish subtypes and also often does other vendors
         // like Arista
         return null;
+      case "ios":
+      case "cisco-ncs": // cisco NCS running ios-xe
+        return ConfigurationFormat.CISCO_IOS;
+      case "ios-nx":
       case "cisco-nx":
         return ConfigurationFormat.CISCO_NX;
+      case "ios-xr":
       case "cisco-xr":
+      case "ios-xr7":
+      case "cisco-xr7":
+      case "ios-exr":
+      case "cisco-exr":
         return ConfigurationFormat.CISCO_IOS_XR;
+      case "dnos9":
+      case "dnos10":
       case "force10":
         return ConfigurationFormat.FORCE10;
+      case "f5": // <=v10
+      case "bigip": // v11
+      case "bigip13": // v13
+        return ConfigurationFormat.F5_BIGIP_STRUCTURED; // v13
+      case "fortigate":
+      case "fortigate-full":
+        return ConfigurationFormat.FORTIOS;
       case "foundry":
         return ConfigurationFormat.FOUNDRY;
-      case "ibmbnt":
+      case "ibmbnt": // legacy; not present in latest RANCID file
         return ConfigurationFormat.IBM_BNT;
       case "juniper":
       case "juniper-srx":
+      case "junos":
         return checkJuniper(true);
-      case "mrv":
+      case "mrv": // legacy; not present in latest RANCID file
         return ConfigurationFormat.MRV;
       case "paloalto":
         return checkPaloAlto(true);
+      case "agm":
+      case "alteon":
+      case "arbor":
+      case "arcos":
+      case "axis":
+      case "avocent":
+      case "baynet":
+      case "brocade":
+      case "ciena-ws":
+      case "cat5":
+      case "cisco-sb":
+      case "cisco-wlc4":
+      case "cisco-wlc5":
+      case "cisco-wlc8":
+      case "css":
+      case "dell":
+      case "edgemax":
+      case "edgerouter":
+      case "enterasys":
+      case "erx":
+      case "extreme":
+      case "ezt3":
+      case "frr": // stand-alone FRR (not cumulus, sonic)
+      case "fss2":
+      case "fxos":
+      case "hitachi":
+      case "hp":
+      case "ios-sb":
+      case "junos-evo":
+      case "microtik":
+      case "mrtd":
+      case "netopia":
+      case "netscreen":
+      case "paloaltoxml":
+      case "redback":
+      case "riverbed":
+      case "riverstone":
+      case "routeros":
+      case "smc":
+      case "sros":
+      case "sros-md":
+      case "vrp":
+      case "xirrus":
+      case "zebra":
+        return ConfigurationFormat.UNSUPPORTED;
       default:
         // We don't recognize the RANCID string, assert this config is unknown.
         return ConfigurationFormat.UNKNOWN;
