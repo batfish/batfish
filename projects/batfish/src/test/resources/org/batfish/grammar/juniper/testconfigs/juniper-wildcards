@@ -15,4 +15,8 @@ set routing-options autonomous-system 1
 set protocols bgp group <SCRUBBED> neighbor 2.2.2.2 peer-as 2
 set protocols ospf apply-groups g3
 set protocols ospf area 0.0.0.1 interface et-0/0/0.0 passive
+## p4 should have all addresses from both communities
+set policy-options prefix-list p4 apply-path "snmp community <*> clients <*>"
+set snmp community "foo" clients 4.4.4.4/32
+set snmp community "<removed>" clients 5.5.5.5/32
 #
