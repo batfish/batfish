@@ -422,7 +422,6 @@ public final class VendorConfigurationFormatDetector {
       case "mrv": // legacy; not present in latest RANCID file
         return ConfigurationFormat.MRV;
       case "paloalto":
-      case "paloaltoxml":
         return checkPaloAlto(true);
       case "agm":
       case "alteon":
@@ -457,6 +456,7 @@ public final class VendorConfigurationFormatDetector {
       case "mrtd":
       case "netopia":
       case "netscreen":
+      case "paloaltoxml":
       case "redback":
       case "riverbed":
       case "riverstone":

@@ -210,6 +210,7 @@ public class VendorConfigurationFormatDetectorTest {
             "!RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper-srx\n!\nsomething {\n blah;\n}\n",
+            "#RANCID-CONTENT-TYPE: junos\n!\nsomething {\n blah;\n}\n",
             "snmp {\n}\n")) {
       assertThat(fileText, identifyConfigurationFormat(fileText), equalTo(JUNIPER));
     }
@@ -221,6 +222,7 @@ public class VendorConfigurationFormatDetectorTest {
             "!RANCID-CONTENT-TYPE: juniper\n!\nset blah\n",
             "#RANCID-CONTENT-TYPE: juniper\n!\nset blah\n",
             "#RANCID-CONTENT-TYPE: juniper-srx\n!\nset blah\n",
+            "#RANCID-CONTENT-TYPE: junos\n!\nset blah\n",
             "#\nset apply-groups blah\n",
             "####BATFISH FLATTENED JUNIPER CONFIG####\n")) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(FLAT_JUNIPER));
