@@ -20,6 +20,7 @@ public class Keyring implements Serializable {
   private String _key;
 
   private final String _name;
+  private @Nullable String _vrf;
 
   public Keyring(String name) {
     _name = name;
@@ -76,5 +77,13 @@ public class Keyring implements Serializable {
 
   public void setRemoteIdentity(IpWildcard remoteIdentity) {
     _remoteIdentity = remoteIdentity;
+  }
+
+  public @Nullable String getVrf() {
+    return _vrf;
+  }
+
+  public void setVrf(@Nullable String vrf) {
+    _vrf = vrf;
   }
 }

@@ -289,6 +289,20 @@
       },
       {
         "Filename" : "configs/cisco_crypto",
+        "Line" : 194,
+        "Text" : "match identity address 1.2.3.4",
+        "Parser_Context" : "[cisprf_match cis_profile crypto_isakmp s_crypto stanza cisco_configuration]",
+        "Comment" : "Batfish currently only supports a single match identity statement. Keeping the last only."
+      },
+      {
+        "Filename" : "configs/cisco_crypto",
+        "Line" : 197,
+        "Text" : "vrf VRF:MMS:RMT:UPM:1143",
+        "Parser_Context" : "[cisprf_vrf cis_profile crypto_isakmp s_crypto stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cisco_crypto",
         "Line" : 232,
         "Text" : "address someacl",
         "Parser_Context" : "[crypto_map_t_match_address crypto_map_t_match crypto_map_tail crypto_map s_crypto stanza cisco_configuration]",
@@ -1339,10 +1353,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 185 results",
+      "notes" : "Found 187 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 185
+      "numResults" : 187
     }
   }
 ]

@@ -488,6 +488,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cisprf_keyringContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_local_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_matchContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_self_identityContext;
+import org.batfish.grammar.cisco.CiscoParser.Cisprf_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckp_named_keyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckpn_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckpn_key_stringContext;
@@ -2017,8 +2018,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCisprf_vrf(Cisprf_vrfContext ctx) {
+    todo(ctx);
+    _currentIsakmpProfile.setVrf(toString(ctx.name));
+  }
+
+  @Override
   public void exitCisprf_match(Cisprf_matchContext ctx) {
+    if (ctx.vrf != null) {
+      todo(ctx);
+    }
     Ip mask = (ctx.mask == null) ? Ip.parse("255.255.255.255") : toIp(ctx.mask);
+    if (_currentIsakmpProfile.getMatchIdentity() != null) {
+      warn(
+          ctx,
+          "Batfish currently only supports a single match identity statement. Keeping the last"
+              + " only.");
+    }
     _currentIsakmpProfile.setMatchIdentity(
         IpWildcard.ipWithWildcardMask(toIp(ctx.address), mask.inverted()));
   }
@@ -2049,6 +2065,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitCkr_psk(Ckr_pskContext ctx) {
     Ip wildCardMask = ctx.wildcard_mask == null ? Ip.MAX : toIp(ctx.wildcard_mask);
+    if (_currentKeyring.getKey() != null) {
+      warn(
+          ctx,
+          "Batfish currently only supports a single pre-shared-key statement. Keeping the last"
+              + " only.");
+    }
     _currentKeyring.setKey(
         CommonUtil.sha256Digest(ctx.variable_permissive().getText() + CommonUtil.salt()));
     _currentKeyring.setRemoteIdentity(
@@ -2093,6 +2115,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("Keyring should be null!");
     }
     _currentKeyring = new Keyring(ctx.name.getText());
+    if (ctx.vrf != null) {
+      todo(ctx);
+      _currentKeyring.setVrf(toString(ctx.vrf));
+    }
     _configuration.defineStructure(KEYRING, ctx.name.getText(), ctx);
   }
 
