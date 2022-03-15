@@ -20,6 +20,8 @@ public class IsakmpProfile implements Serializable {
 
   private final String _name;
 
+  private @Nullable String _vrf;
+
   @Nullable private Ip _selfIdentity;
 
   public IsakmpProfile(String name) {
@@ -71,5 +73,13 @@ public class IsakmpProfile implements Serializable {
 
   public void setSelfIdentity(Ip selfIdentity) {
     _selfIdentity = selfIdentity;
+  }
+
+  public void setVrf(@Nullable String vrf) {
+    _vrf = vrf;
+  }
+
+  public @Nullable String getVrf() {
+    return _vrf;
   }
 }
