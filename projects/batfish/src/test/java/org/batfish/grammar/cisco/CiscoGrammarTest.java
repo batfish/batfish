@@ -6853,4 +6853,18 @@ public final class CiscoGrammarTest {
       assertThat(outputRoute.getAsPath(), equalTo(inputRoute.getAsPath()));
     }
   }
+
+  @Test
+  public void testCryptoVrfExtraction() {
+    // GH 8104
+    CiscoConfiguration vc = parseCiscoConfig("crypto-vrf", ConfigurationFormat.CISCO_IOS);
+
+    // keyring
+    assertThat(vc.getKeyrings(), hasKeys("Keyring-Sales"));
+    assertThat(vc.getKeyrings().get("Keyring-Sales").getVrf(), equalTo("Internet"));
+
+    // isakmp profile
+    assertThat(vc.getIsakmpProfiles(), hasKeys("IKE-Sales"));
+    assertThat(vc.getIsakmpProfiles().get("IKE-Sales").getVrf(), equalTo("Sales"));
+  }
 }
