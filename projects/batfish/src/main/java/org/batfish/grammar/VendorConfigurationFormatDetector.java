@@ -419,9 +419,6 @@ public final class VendorConfigurationFormatDetector {
       case "juniper-srx":
       case "junos":
         return checkJuniper(true);
-      case "microtik":
-      case "routeros":
-        return ConfigurationFormat.MICROTIK;
       case "mrtd":
         return ConfigurationFormat.MRTD;
       case "mrv": // legacy; not present in latest RANCID file
@@ -456,11 +453,13 @@ public final class VendorConfigurationFormatDetector {
       case "ios-sb":
       case "cisco-sb":
       case "junos-evo":
+      case "microtik":
       case "netopia":
       case "netscreen":
       case "redback":
       case "riverbed":
       case "riverstone":
+      case "routeros":
       case "smc":
       case "sros":
       case "sros-md":

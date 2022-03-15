@@ -31,8 +31,6 @@ public enum ConfigurationFormat {
   JUNIPER("juniper"),
   JUNIPER_SWITCH("juniper"),
   METAMAKO("metamako"),
-  MICROTIK("mirotik"),
-  MRTD("mtr"), // multi-threaded routing
   MRV("mrv"),
   MRV_COMMANDS("mrv_commands"),
   MSS("mss"),
