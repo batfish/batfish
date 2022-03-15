@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+/** Visitor interface for {@link Transition} */
 public interface TransitionVisitor<T> {
   default T visit(Transition transition) {
     return transition.accept(this);
