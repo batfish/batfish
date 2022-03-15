@@ -204,6 +204,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aa_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_destination_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_icmp_codeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifierContext;
@@ -381,6 +383,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Name_or_ipContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_codeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_pool_default_port_rangeContext;
@@ -1655,57 +1659,55 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    * unknown strings. See
    * https://www.juniper.net/documentation/en_US/junos/topics/usage-guidelines/services-configuring-application-protocol-properties.html#id-10141121
    */
-  @Nullable
-  private static Integer toIcmpCode(Icmp_codeContext ctx, Warnings w) {
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Named_icmp_codeContext ctx) {
     if (ctx.COMMUNICATION_PROHIBITED_BY_FILTERING() != null) {
-      return IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
-    } else if (ctx.dec() != null) {
-      return Integer.parseInt(ctx.dec().getText());
+      return Optional.of(IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED);
     } else if (ctx.DESTINATION_HOST_PROHIBITED() != null) {
-      return IcmpCode.DESTINATION_HOST_PROHIBITED;
+      return Optional.of(IcmpCode.DESTINATION_HOST_PROHIBITED);
     } else if (ctx.DESTINATION_HOST_UNKNOWN() != null) {
-      return IcmpCode.DESTINATION_HOST_UNKNOWN;
+      return Optional.of(IcmpCode.DESTINATION_HOST_UNKNOWN);
     } else if (ctx.FRAGMENTATION_NEEDED() != null) {
-      return IcmpCode.FRAGMENTATION_NEEDED;
+      return Optional.of(IcmpCode.FRAGMENTATION_NEEDED);
     } else if (ctx.HOST_PRECEDENCE_VIOLATION() != null) {
-      return IcmpCode.HOST_PRECEDENCE_VIOLATION;
+      return Optional.of(IcmpCode.HOST_PRECEDENCE_VIOLATION);
     } else if (ctx.HOST_UNREACHABLE() != null) {
-      return IcmpCode.HOST_UNREACHABLE;
+      return Optional.of(IcmpCode.HOST_UNREACHABLE);
     } else if (ctx.HOST_UNREACHABLE_FOR_TOS() != null) {
-      return IcmpCode.HOST_UNREACHABLE_FOR_TOS;
+      return Optional.of(IcmpCode.HOST_UNREACHABLE_FOR_TOS);
     } else if (ctx.IP_HEADER_BAD() != null) {
-      return IcmpCode.INVALID_IP_HEADER;
+      return Optional.of(IcmpCode.INVALID_IP_HEADER);
     } else if (ctx.NETWORK_UNREACHABLE() != null) {
-      return IcmpCode.NETWORK_UNREACHABLE;
+      return Optional.of(IcmpCode.NETWORK_UNREACHABLE);
     } else if (ctx.NETWORK_UNREACHABLE_FOR_TOS() != null) {
-      return IcmpCode.NETWORK_UNREACHABLE_FOR_TOS;
+      return Optional.of(IcmpCode.NETWORK_UNREACHABLE_FOR_TOS);
     } else if (ctx.PORT_UNREACHABLE() != null) {
-      return IcmpCode.PORT_UNREACHABLE;
+      return Optional.of(IcmpCode.PORT_UNREACHABLE);
     } else if (ctx.PRECEDENCE_CUTOFF_IN_EFFECT() != null) {
-      return IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT;
+      return Optional.of(IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT);
     } else if (ctx.PROTOCOL_UNREACHABLE() != null) {
-      return IcmpCode.PROTOCOL_UNREACHABLE;
+      return Optional.of(IcmpCode.PROTOCOL_UNREACHABLE);
     } else if (ctx.REDIRECT_FOR_HOST() != null) {
-      return IcmpCode.HOST_ERROR;
+      return Optional.of(IcmpCode.HOST_ERROR);
     } else if (ctx.REDIRECT_FOR_NETWORK() != null) {
-      return IcmpCode.NETWORK_ERROR;
+      return Optional.of(IcmpCode.NETWORK_ERROR);
     } else if (ctx.REDIRECT_FOR_TOS_AND_HOST() != null) {
-      return IcmpCode.TOS_AND_HOST_ERROR;
+      return Optional.of(IcmpCode.TOS_AND_HOST_ERROR);
     } else if (ctx.REDIRECT_FOR_TOS_AND_NET() != null) {
-      return IcmpCode.TOS_AND_NETWORK_ERROR;
+      return Optional.of(IcmpCode.TOS_AND_NETWORK_ERROR);
     } else if (ctx.REQUIRED_OPTION_MISSING() != null) {
-      return IcmpCode.REQUIRED_OPTION_MISSING;
+      return Optional.of(IcmpCode.REQUIRED_OPTION_MISSING);
     } else if (ctx.SOURCE_HOST_ISOLATED() != null) {
-      return IcmpCode.SOURCE_HOST_ISOLATED;
+      return Optional.of(IcmpCode.SOURCE_HOST_ISOLATED);
     } else if (ctx.SOURCE_ROUTE_FAILED() != null) {
-      return IcmpCode.SOURCE_ROUTE_FAILED;
+      return Optional.of(IcmpCode.SOURCE_ROUTE_FAILED);
     } else if (ctx.TTL_EQ_ZERO_DURING_REASSEMBLY() != null) {
-      return IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY;
+      return Optional.of(IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY);
     } else if (ctx.TTL_EQ_ZERO_DURING_TRANSIT() != null) {
-      return IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
+      return Optional.of(IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT);
     } else {
-      w.redFlag(String.format("Missing mapping for icmp-code: '%s'", ctx.getText()));
-      return null;
+      warn(messageCtx, String.format("Missing mapping for icmp-code: '%s'", ctx.getText()));
+      return Optional.empty();
     }
   }
 
@@ -1714,41 +1716,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    * unknown strings. See
    * https://www.juniper.net/documentation/en_US/junos/topics/usage-guidelines/services-configuring-application-protocol-properties.html#id-10141121
    */
-  @Nullable
-  private static Integer toIcmpType(Icmp_typeContext ctx, Warnings w) {
-    if (ctx.dec() != null) {
-      return Integer.parseInt(ctx.dec().getText());
-    } else if (ctx.DESTINATION_UNREACHABLE() != null) {
-      return IcmpType.DESTINATION_UNREACHABLE;
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Named_icmp_typeContext ctx) {
+    if (ctx.DESTINATION_UNREACHABLE() != null) {
+      return Optional.of(IcmpType.DESTINATION_UNREACHABLE);
     } else if (ctx.ECHO_REPLY() != null) {
-      return IcmpType.ECHO_REPLY;
+      return Optional.of(IcmpType.ECHO_REPLY);
     } else if (ctx.ECHO_REQUEST() != null) {
-      return IcmpType.ECHO_REQUEST;
+      return Optional.of(IcmpType.ECHO_REQUEST);
     } else if (ctx.INFO_REPLY() != null) {
-      return IcmpType.INFO_REPLY;
+      return Optional.of(IcmpType.INFO_REPLY);
     } else if (ctx.INFO_REQUEST() != null) {
-      return IcmpType.INFO_REQUEST;
+      return Optional.of(IcmpType.INFO_REQUEST);
     } else if (ctx.PARAMETER_PROBLEM() != null) {
-      return IcmpType.PARAMETER_PROBLEM;
+      return Optional.of(IcmpType.PARAMETER_PROBLEM);
     } else if (ctx.REDIRECT() != null) {
-      return IcmpType.REDIRECT_MESSAGE;
+      return Optional.of(IcmpType.REDIRECT_MESSAGE);
     } else if (ctx.ROUTER_ADVERTISEMENT() != null) {
-      return IcmpType.ROUTER_ADVERTISEMENT;
+      return Optional.of(IcmpType.ROUTER_ADVERTISEMENT);
     } else if (ctx.ROUTER_SOLICIT() != null) {
-      return IcmpType.ROUTER_SOLICITATION;
+      return Optional.of(IcmpType.ROUTER_SOLICITATION);
     } else if (ctx.SOURCE_QUENCH() != null) {
-      return IcmpType.SOURCE_QUENCH;
+      return Optional.of(IcmpType.SOURCE_QUENCH);
     } else if (ctx.TIME_EXCEEDED() != null) {
-      return IcmpType.TIME_EXCEEDED;
+      return Optional.of(IcmpType.TIME_EXCEEDED);
     } else if (ctx.TIMESTAMP() != null) {
-      return IcmpType.TIMESTAMP_REQUEST;
+      return Optional.of(IcmpType.TIMESTAMP_REQUEST);
     } else if (ctx.TIMESTAMP_REPLY() != null) {
-      return IcmpType.TIMESTAMP_REPLY;
+      return Optional.of(IcmpType.TIMESTAMP_REPLY);
     } else if (ctx.UNREACHABLE() != null) {
-      return IcmpType.DESTINATION_UNREACHABLE;
+      return Optional.of(IcmpType.DESTINATION_UNREACHABLE);
     } else {
-      w.redFlag(String.format("Missing mapping for icmp-type: '%s'", ctx.getText()));
-      return null;
+      warn(messageCtx, String.format("Missing mapping for icmp-type: '%s'", ctx.getText()));
+      return Optional.empty();
     }
   }
 
@@ -3890,6 +3890,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitAat_icmp_code(Aat_icmp_codeContext ctx) {
+    Optional<Integer> maybeIcmpCode = toInteger(ctx, ctx.icmp_code());
+    if (!maybeIcmpCode.isPresent()) {
+      return;
+    }
+    HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
+    _currentApplicationTerm.setHeaderSpace(
+        oldHeaderSpace.toBuilder().setIcmpCodes(maybeIcmpCode.get()).build());
+  }
+
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Icmp_codeContext ctx) {
+    if (ctx.uint8() != null) {
+      return Optional.of(toInteger(ctx.uint8()));
+    } else {
+      assert ctx.named_icmp_code() != null;
+      return toInteger(messageCtx, ctx.named_icmp_code());
+    }
+  }
+
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Icmp_typeContext ctx) {
+    if (ctx.uint8() != null) {
+      return Optional.of(toInteger(ctx.uint8()));
+    } else {
+      assert ctx.named_icmp_type() != null;
+      return toInteger(messageCtx, ctx.named_icmp_type());
+    }
+  }
+
+  @Override
+  public void exitAat_icmp_type(Aat_icmp_typeContext ctx) {
+    Optional<Integer> maybeIcmpType = toInteger(ctx, ctx.icmp_type());
+    if (!maybeIcmpType.isPresent()) {
+      return;
+    }
+    HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
+    _currentApplicationTerm.setHeaderSpace(
+        oldHeaderSpace.toBuilder().setIcmpTypes(maybeIcmpType.get()).build());
+  }
+
+  @Override
   public void exitAat_protocol(Aat_protocolContext ctx) {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
@@ -4229,21 +4269,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // TODO: support icmpv6
       return;
     }
-    SubRange icmpCodeRange = null;
+    SubRange icmpCodeRange;
     if (ctx.uint8_range() != null) {
       icmpCodeRange = toSubRange(ctx.uint8_range());
-    } else if (ctx.icmp_code() != null) {
-      Integer icmpCode = toIcmpCode(ctx.icmp_code(), _w);
-      if (icmpCode != null) {
-        icmpCodeRange = SubRange.singleton(icmpCode);
-      }
     } else {
-      _w.redFlag(String.format("Invalid icmp-code: '%s'", ctx.getText()));
+      assert ctx.icmp_code() != null;
+      Optional<Integer> maybeIcmpCode = toInteger(ctx, ctx.icmp_code());
+      if (!maybeIcmpCode.isPresent()) {
+        return;
+      }
+      icmpCodeRange = SubRange.singleton(maybeIcmpCode.get());
     }
-    if (icmpCodeRange != null) {
-      FwFrom from = new FwFromIcmpCode(icmpCodeRange);
-      _currentFwTerm.getFroms().add(from);
-    }
+    FwFrom from = new FwFromIcmpCode(icmpCodeRange);
+    _currentFwTerm.getFroms().add(from);
   }
 
   private static @Nonnull SubRange toSubRange(Uint8_rangeContext ctx) {
@@ -4261,21 +4299,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // TODO: support icmpv6
       return;
     }
-    SubRange icmpCodeRange = null;
+    SubRange icmpCodeRange;
     if (ctx.uint8_range() != null) {
       icmpCodeRange = toSubRange(ctx.uint8_range());
-    } else if (ctx.icmp_code() != null) {
-      Integer icmpCode = toIcmpCode(ctx.icmp_code(), _w);
-      if (icmpCode != null) {
-        icmpCodeRange = SubRange.singleton(icmpCode);
-      }
     } else {
-      _w.redFlag(String.format("Invalid icmp-code-except: '%s'", ctx.getText()));
+      assert ctx.icmp_code() != null;
+      Optional<Integer> maybeIcmpCode = toInteger(ctx, ctx.icmp_code());
+      if (!maybeIcmpCode.isPresent()) {
+        return;
+      }
+      icmpCodeRange = SubRange.singleton(maybeIcmpCode.get());
     }
-    if (icmpCodeRange != null) {
-      FwFrom from = new FwFromIcmpCodeExcept(icmpCodeRange);
-      _currentFwTerm.getFroms().add(from);
-    }
+    FwFrom from = new FwFromIcmpCodeExcept(icmpCodeRange);
+    _currentFwTerm.getFroms().add(from);
   }
 
   @Override
@@ -4284,18 +4320,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // TODO: support icmpv6
       return;
     }
+    SubRange icmpTypeRange;
     if (ctx.uint8_range() != null) {
-      SubRange icmpTypeRange = toSubRange(ctx.uint8_range());
-      _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
+      icmpTypeRange = toSubRange(ctx.uint8_range());
     } else if (ctx.icmp_type() != null) {
-      Integer icmpType = toIcmpType(ctx.icmp_type(), _w);
-      if (icmpType != null) {
-        SubRange icmpTypeRange = SubRange.singleton(icmpType);
-        _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
+      Optional<Integer> maybeIcmpType = toInteger(ctx, ctx.icmp_type());
+      if (!maybeIcmpType.isPresent()) {
+        return;
       }
+      icmpTypeRange = SubRange.singleton(maybeIcmpType.get());
     } else {
+      assert ctx.icmp6_only_type() != null;
       todo(ctx);
+      return;
     }
+    _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
   }
 
   @Override
@@ -4304,18 +4343,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // TODO: support icmpv6
       return;
     }
+    SubRange icmpTypeRange;
     if (ctx.uint8_range() != null) {
-      SubRange icmpTypeRange = toSubRange(ctx.uint8_range());
-      _currentFwTerm.getFroms().add(new FwFromIcmpTypeExcept(icmpTypeRange));
+      icmpTypeRange = toSubRange(ctx.uint8_range());
     } else if (ctx.icmp_type() != null) {
-      Integer icmpType = toIcmpType(ctx.icmp_type(), _w);
-      if (icmpType != null) {
-        SubRange icmpTypeRange = SubRange.singleton(icmpType);
-        _currentFwTerm.getFroms().add(new FwFromIcmpTypeExcept(icmpTypeRange));
+      Optional<Integer> maybeIcmpType = toInteger(ctx, ctx.icmp_type());
+      if (!maybeIcmpType.isPresent()) {
+        return;
       }
+      icmpTypeRange = SubRange.singleton(maybeIcmpType.get());
     } else {
+      assert ctx.icmp6_only_type() != null;
       todo(ctx);
+      return;
     }
+    _currentFwTerm.getFroms().add(new FwFromIcmpTypeExcept(icmpTypeRange));
   }
 
   @Override
