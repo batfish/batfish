@@ -25,6 +25,9 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
 
   private boolean _enablePathRecording;
 
+  /** Whether wildcards are valid in the rest of the current line, or normal text otherwise. */
+  private boolean _enableWildcards;
+
   private final Hierarchy _hierarchy;
 
   private List<ParseTree> _newConfigurationLines;
@@ -62,10 +65,12 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterS_groups_named(S_groups_namedContext ctx) {
     _currentPath = new HierarchyPath();
+    _enableWildcards = true;
   }
 
   @Override
   public void exitS_groups_named(S_groups_namedContext ctx) {
+    _enableWildcards = false;
     HierarchyPath path = _currentPath;
     assert path != null;
     _currentPath = null;
@@ -97,7 +102,7 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
     if (_enablePathRecording) {
       String text = node.getText();
       int line = node.getSymbol().getLine();
-      if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
+      if (_enableWildcards && node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
         _currentPath.addWildcardNode(text, line);
       } else {
         _currentPath.addNode(text, line);
