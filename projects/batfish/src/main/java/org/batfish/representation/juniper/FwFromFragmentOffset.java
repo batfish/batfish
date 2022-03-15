@@ -2,6 +2,8 @@ package org.batfish.representation.juniper;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -12,6 +14,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from fragment-offset with/without except */
+@ParametersAreNonnullByDefault
 public class FwFromFragmentOffset implements FwFrom {
 
   private boolean _except;
@@ -21,6 +24,14 @@ public class FwFromFragmentOffset implements FwFrom {
   public FwFromFragmentOffset(SubRange offsetRange, boolean except) {
     _offsetRange = offsetRange;
     _except = except;
+  }
+
+  public @Nonnull SubRange getOffsetRange() {
+    return _offsetRange;
+  }
+
+  public boolean getExcept() {
+    return _except;
   }
 
   @Override

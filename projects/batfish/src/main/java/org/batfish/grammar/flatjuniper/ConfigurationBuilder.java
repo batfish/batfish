@@ -299,6 +299,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_active_server_group
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offsetContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offset_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hello_authentication_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceContext;
@@ -673,7 +675,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
@@ -902,6 +907,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
 
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
+
+  private static final IntegerSpace FRAGMENT_OFFSET_RANGE = IntegerSpace.of(new SubRange(0, 8191));
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
@@ -4180,16 +4187,40 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_fragment_offset(Fftf_fragment_offsetContext ctx) {
-    SubRange subRange = toSubRange(ctx.subrange());
-    FwFrom from = new FwFromFragmentOffset(subRange, false);
+    Optional<SubRange> maybeRange = toSubRange(ctx, ctx.fragment_offset_range());
+    if (!maybeRange.isPresent()) {
+      return;
+    }
+    FwFrom from = new FwFromFragmentOffset(maybeRange.get(), false);
     _currentFwTerm.getFroms().add(from);
   }
 
   @Override
   public void exitFftf_fragment_offset_except(Fftf_fragment_offset_exceptContext ctx) {
-    SubRange subRange = toSubRange(ctx.subrange());
-    FwFrom from = new FwFromFragmentOffset(subRange, true);
+    Optional<SubRange> maybeRange = toSubRange(ctx, ctx.fragment_offset_range());
+    if (!maybeRange.isPresent()) {
+      return;
+    }
+    FwFrom from = new FwFromFragmentOffset(maybeRange.get(), true);
     _currentFwTerm.getFroms().add(from);
+  }
+
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Fragment_offset_rangeContext ctx) {
+    Optional<Integer> maybeStart = toInteger(messageCtx, ctx.start);
+    if (!maybeStart.isPresent()) {
+      return Optional.empty();
+    }
+    int start = maybeStart.get();
+    if (ctx.end == null) {
+      return Optional.of(SubRange.singleton(start));
+    }
+    return toInteger(messageCtx, ctx.end).map(end -> new SubRange(start, end));
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Fragment_offsetContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, FRAGMENT_OFFSET_RANGE, "fragment offset");
   }
 
   @Override
@@ -4199,8 +4230,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     SubRange icmpCodeRange = null;
-    if (ctx.subrange() != null) {
-      icmpCodeRange = toSubRange(ctx.subrange());
+    if (ctx.uint8_range() != null) {
+      icmpCodeRange = toSubRange(ctx.uint8_range());
     } else if (ctx.icmp_code() != null) {
       Integer icmpCode = toIcmpCode(ctx.icmp_code(), _w);
       if (icmpCode != null) {
@@ -4215,6 +4246,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
   }
 
+  private static @Nonnull SubRange toSubRange(Uint8_rangeContext ctx) {
+    int start = toInteger(ctx.start);
+    return ctx.end != null ? new SubRange(start, toInteger(ctx.end)) : SubRange.singleton(start);
+  }
+
+  private static int toInteger(Uint8Context ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
   @Override
   public void exitFftf_icmp_code_except(Fftf_icmp_code_exceptContext ctx) {
     if (_currentFirewallFamily == Family.INET6) {
@@ -4222,8 +4262,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     SubRange icmpCodeRange = null;
-    if (ctx.subrange() != null) {
-      icmpCodeRange = toSubRange(ctx.subrange());
+    if (ctx.uint8_range() != null) {
+      icmpCodeRange = toSubRange(ctx.uint8_range());
     } else if (ctx.icmp_code() != null) {
       Integer icmpCode = toIcmpCode(ctx.icmp_code(), _w);
       if (icmpCode != null) {
@@ -4244,8 +4284,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // TODO: support icmpv6
       return;
     }
-    if (ctx.subrange() != null) {
-      SubRange icmpTypeRange = toSubRange(ctx.subrange());
+    if (ctx.uint8_range() != null) {
+      SubRange icmpTypeRange = toSubRange(ctx.uint8_range());
       _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
     } else if (ctx.icmp_type() != null) {
       Integer icmpType = toIcmpType(ctx.icmp_type(), _w);
@@ -4264,8 +4304,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // TODO: support icmpv6
       return;
     }
-    if (ctx.subrange() != null) {
-      SubRange icmpTypeRange = toSubRange(ctx.subrange());
+    if (ctx.uint8_range() != null) {
+      SubRange icmpTypeRange = toSubRange(ctx.uint8_range());
       _currentFwTerm.getFroms().add(new FwFromIcmpTypeExcept(icmpTypeRange));
     } else if (ctx.icmp_type() != null) {
       Integer icmpType = toIcmpType(ctx.icmp_type(), _w);
@@ -4305,16 +4345,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_packet_length(Fftf_packet_lengthContext ctx) {
-    List<SubRange> range = toRange(ctx.range());
+    SubRange range = toSubRange(ctx.uint16_range());
     FwFrom from = new FwFromPacketLength(range, false);
     _currentFwTerm.getFroms().add(from);
   }
 
   @Override
   public void exitFftf_packet_length_except(Fftf_packet_length_exceptContext ctx) {
-    List<SubRange> range = toRange(ctx.range());
+    SubRange range = toSubRange(ctx.uint16_range());
     FwFrom from = new FwFromPacketLength(range, true);
     _currentFwTerm.getFroms().add(from);
+  }
+
+  private static @Nonnull SubRange toSubRange(Uint16_rangeContext ctx) {
+    int start = toInteger(ctx.start);
+    return ctx.end != null ? new SubRange(start, toInteger(ctx.end)) : SubRange.singleton(start);
+  }
+
+  private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   @Override

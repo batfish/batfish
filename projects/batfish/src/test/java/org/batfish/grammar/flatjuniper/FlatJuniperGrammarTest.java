@@ -364,6 +364,12 @@ import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationPort;
+import org.batfish.representation.juniper.FwFromFragmentOffset;
+import org.batfish.representation.juniper.FwFromIcmpCode;
+import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
+import org.batfish.representation.juniper.FwFromIcmpType;
+import org.batfish.representation.juniper.FwFromIcmpTypeExcept;
+import org.batfish.representation.juniper.FwFromPacketLength;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromSourcePort;
 import org.batfish.representation.juniper.FwTerm;
@@ -1630,6 +1636,112 @@ public final class FlatJuniperGrammarTest {
       assertThat(iface.getIncomingFilterList(), contains("FILTER1", "FILTER2"));
       assertThat(iface.getOutgoingFilter(), nullValue());
       assertThat(iface.getOutgoingFilterList(), contains("FILTER2", "FILTER1"));
+    }
+
+    // filter definitions
+    assertThat(c.getMasterLogicalSystem().getFirewallFilters(), hasKey("PARSING"));
+    FirewallFilter f = c.getMasterLogicalSystem().getFirewallFilters().get("PARSING");
+    assertThat(f, instanceOf(ConcreteFirewallFilter.class));
+    ConcreteFirewallFilter cf = (ConcreteFirewallFilter) f;
+    assertThat(
+        cf.getTerms(), hasKeys("FRAGMENT_OFFSET", "ICMP_TYPE", "ICMP_CODE", "PACKET_LENGTH"));
+    {
+      FwTerm term = cf.getTerms().get("FRAGMENT_OFFSET");
+      assertThat(term.getFroms(), hasSize(4));
+      term.getFroms().forEach(from -> assertThat(from, instanceOf(FwFromFragmentOffset.class)));
+      {
+        FwFromFragmentOffset from = (FwFromFragmentOffset) term.getFroms().get(0);
+        assertFalse(from.getExcept());
+        assertThat(from.getOffsetRange(), equalTo(SubRange.singleton(1)));
+      }
+      {
+        FwFromFragmentOffset from = (FwFromFragmentOffset) term.getFroms().get(1);
+        assertFalse(from.getExcept());
+        assertThat(from.getOffsetRange(), equalTo(new SubRange(3, 12)));
+      }
+      {
+        FwFromFragmentOffset from = (FwFromFragmentOffset) term.getFroms().get(2);
+        assertTrue(from.getExcept());
+        assertThat(from.getOffsetRange(), equalTo(SubRange.singleton(5)));
+      }
+      {
+        FwFromFragmentOffset from = (FwFromFragmentOffset) term.getFroms().get(3);
+        assertTrue(from.getExcept());
+        assertThat(from.getOffsetRange(), equalTo(new SubRange(10, 11)));
+      }
+    }
+    {
+      FwTerm term = cf.getTerms().get("ICMP_TYPE");
+      assertThat(term.getFroms(), hasSize(4));
+      assertThat(term.getFroms().get(0), instanceOf(FwFromIcmpType.class));
+      assertThat(term.getFroms().get(1), instanceOf(FwFromIcmpType.class));
+      assertThat(term.getFroms().get(2), instanceOf(FwFromIcmpTypeExcept.class));
+      assertThat(term.getFroms().get(3), instanceOf(FwFromIcmpTypeExcept.class));
+      {
+        FwFromIcmpType from = (FwFromIcmpType) term.getFroms().get(0);
+        assertThat(from.getIcmpTypeRange(), equalTo(SubRange.singleton(0)));
+      }
+      {
+        FwFromIcmpType from = (FwFromIcmpType) term.getFroms().get(1);
+        assertThat(from.getIcmpTypeRange(), equalTo(new SubRange(10, 20)));
+      }
+      {
+        FwFromIcmpTypeExcept from = (FwFromIcmpTypeExcept) term.getFroms().get(2);
+        assertThat(from.getIcmpTypeRange(), equalTo(SubRange.singleton(11)));
+      }
+      {
+        FwFromIcmpTypeExcept from = (FwFromIcmpTypeExcept) term.getFroms().get(3);
+        assertThat(from.getIcmpTypeRange(), equalTo(new SubRange(13, 14)));
+      }
+    }
+    {
+      FwTerm term = cf.getTerms().get("ICMP_CODE");
+      assertThat(term.getFroms(), hasSize(4));
+      assertThat(term.getFroms().get(0), instanceOf(FwFromIcmpCode.class));
+      assertThat(term.getFroms().get(1), instanceOf(FwFromIcmpCode.class));
+      assertThat(term.getFroms().get(2), instanceOf(FwFromIcmpCodeExcept.class));
+      assertThat(term.getFroms().get(3), instanceOf(FwFromIcmpCodeExcept.class));
+      {
+        FwFromIcmpCode from = (FwFromIcmpCode) term.getFroms().get(0);
+        assertThat(from.getIcmpCodeRange(), equalTo(SubRange.singleton(0)));
+      }
+      {
+        FwFromIcmpCode from = (FwFromIcmpCode) term.getFroms().get(1);
+        assertThat(from.getIcmpCodeRange(), equalTo(new SubRange(30, 40)));
+      }
+      {
+        FwFromIcmpCodeExcept from = (FwFromIcmpCodeExcept) term.getFroms().get(2);
+        assertThat(from.getIcmpCodeRange(), equalTo(SubRange.singleton(31)));
+      }
+      {
+        FwFromIcmpCodeExcept from = (FwFromIcmpCodeExcept) term.getFroms().get(3);
+        assertThat(from.getIcmpCodeRange(), equalTo(new SubRange(33, 34)));
+      }
+    }
+    {
+      FwTerm term = cf.getTerms().get("PACKET_LENGTH");
+      assertThat(term.getFroms(), hasSize(4));
+      term.getFroms().forEach(from -> assertThat(from, instanceOf(FwFromPacketLength.class)));
+      {
+        FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(0);
+        assertFalse(from.getExcept());
+        assertThat(from.getRange(), equalTo(SubRange.singleton(50)));
+      }
+      {
+        FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(1);
+        assertFalse(from.getExcept());
+        assertThat(from.getRange(), equalTo(new SubRange(100, 200)));
+      }
+      {
+        FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(2);
+        assertTrue(from.getExcept());
+        assertThat(from.getRange(), equalTo(SubRange.singleton(70)));
+      }
+      {
+        FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(3);
+        assertTrue(from.getExcept());
+        assertThat(from.getRange(), equalTo(new SubRange(80, 90)));
+      }
     }
   }
 
