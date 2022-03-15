@@ -2891,7 +2891,7 @@ KEYPAIR: 'keypair';
 
 KEYPATH: 'keypath';
 
-KEYRING: 'keyring';
+KEYRING: 'keyring' -> pushMode(M_Name);
 
 KEYSTORE: 'keystore';
 

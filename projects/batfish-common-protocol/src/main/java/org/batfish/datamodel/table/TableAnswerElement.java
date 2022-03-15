@@ -25,11 +25,13 @@ public final class TableAnswerElement extends AnswerElement {
   private static final String PROP_EXCLUDED_ROWS = "excludedRows";
   private static final String PROP_METADATA = "metadata";
   private static final String PROP_ROWS = "rows";
+  private static final String PROP_WARNINGS = "warnings";
 
   private List<ExcludedRows> _excludedRows;
   private Set<String> _columnNames;
   private Rows _rows;
   private TableMetadata _tableMetadata;
+  private List<String> _warnings;
 
   @JsonCreator
   public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
@@ -40,6 +42,7 @@ public final class TableAnswerElement extends AnswerElement {
             .collect(ImmutableSet.toImmutableSet());
     _rows = new Rows();
     _excludedRows = new LinkedList<>();
+    _warnings = new LinkedList<>();
   }
 
   /**
@@ -78,6 +81,12 @@ public final class TableAnswerElement extends AnswerElement {
     ExcludedRows rows = new ExcludedRows(exclusionName);
     rows.addRow(row);
     _excludedRows.add(rows);
+    return this;
+  }
+
+  /** Adds a warning to the answer. */
+  public @Nonnull TableAnswerElement addWarning(String warning) {
+    _warnings.add(warning);
     return this;
   }
 
@@ -149,6 +158,11 @@ public final class TableAnswerElement extends AnswerElement {
   @JsonProperty(PROP_ROWS)
   public List<Row> getRowsList() {
     return ImmutableList.copyOf(_rows.iterator());
+  }
+
+  @JsonProperty(PROP_WARNINGS)
+  public List<String> getWarnings() {
+    return _warnings;
   }
 
   /**

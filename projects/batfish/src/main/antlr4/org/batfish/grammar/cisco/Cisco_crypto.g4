@@ -404,6 +404,7 @@ cis_profile
       | cisprf_match
       | cisprf_null
       | cisprf_self_identity
+      | cisprf_vrf
    )*
 ;
 
@@ -470,7 +471,7 @@ cisprf_local_address
 
 cisprf_match
 :
-   MATCH IDENTITY ADDRESS address = IP_ADDRESS mask = IP_ADDRESS? NEWLINE
+   MATCH IDENTITY ADDRESS address = IP_ADDRESS mask = IP_ADDRESS? vrf = variable? NEWLINE
 ;
 
 cisprf_null
@@ -479,7 +480,6 @@ cisprf_null
    (
       KEEPALIVE
       | REVERSE_ROUTE
-      | VRF
    ) null_rest_of_line
 ;
 
@@ -488,6 +488,7 @@ cisprf_self_identity
    SELF_IDENTITY IP_ADDRESS NEWLINE
 ;
 
+cisprf_vrf: VRF name = variable NEWLINE;
 
 ck_null
 :
@@ -715,7 +716,7 @@ crypto_key
 
 crypto_keyring
 :
-   KEYRING name = variable_permissive NEWLINE
+   KEYRING name = variable (VRF vrf = variable)? NEWLINE
    (
       ckr_local_address
       | ckr_psk

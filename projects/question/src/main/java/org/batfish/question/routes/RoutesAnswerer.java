@@ -37,7 +37,6 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.BgpRouteStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -87,8 +86,8 @@ public class RoutesAnswerer extends Answerer {
   // Diff Only
   static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
 
-  static final String ERROR_NO_MATCHING_NODES = "No matching nodes found.";
-  static final String ERROR_NO_MATCHING_VRFS = "No matching VRFs found on matching nodes.";
+  static final String WARNING_NO_MATCHING_NODES = "No matching nodes found.";
+  static final String WARNING_NO_MATCHING_VRFS = "No matching VRFs found on matching nodes.";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -110,18 +109,17 @@ public class RoutesAnswerer extends Answerer {
     Set<String> matchingNodes =
         question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
 
-    if (matchingNodes.isEmpty()) {
-      return new StringAnswerElement(ERROR_NO_MATCHING_NODES);
-    }
-
     Prefix network = question.getNetwork();
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
 
     Multimap<String, String> matchingVrfsByNode =
         computeMatchingVrfsByNode(_batfish.loadConfigurations(snapshot), matchingNodes, vrfRegex);
-    if (matchingVrfsByNode.isEmpty()) {
-      return new StringAnswerElement(ERROR_NO_MATCHING_VRFS);
+
+    if (matchingNodes.isEmpty()) {
+      answer.addWarning(WARNING_NO_MATCHING_NODES);
+    } else if (matchingVrfsByNode.isEmpty()) {
+      answer.addWarning(WARNING_NO_MATCHING_VRFS);
     }
 
     List<Row> rows = new ArrayList<>();

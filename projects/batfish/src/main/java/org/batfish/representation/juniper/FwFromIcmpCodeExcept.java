@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -13,12 +14,17 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from icmp-code-except */
+@ParametersAreNonnullByDefault
 public class FwFromIcmpCodeExcept implements FwFrom {
 
   private final @Nonnull SubRange _icmpCodeRange;
 
   public FwFromIcmpCodeExcept(@Nonnull SubRange icmpCodeRange) {
     _icmpCodeRange = icmpCodeRange;
+  }
+
+  public @Nonnull SubRange getIcmpCodeRange() {
+    return _icmpCodeRange;
   }
 
   @Override
