@@ -231,7 +231,7 @@ public final class AclLineMatchExprs {
   }
 
   public static @Nonnull AclLineMatchExpr matchIcmp(int icmpType, int icmpCode) {
-    return and(matchIcmpType(icmpType), matchIcmpType(icmpCode));
+    return and(matchIcmpType(icmpType), matchIcmpCode(icmpCode));
   }
 
   public static @Nonnull AclLineMatchExpr matchIcmpCode(int icmpCode) {
