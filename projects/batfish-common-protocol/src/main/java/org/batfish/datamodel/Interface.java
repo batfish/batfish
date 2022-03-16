@@ -656,6 +656,60 @@ public final class Interface extends ComparableStructure<String> {
     return new Builder(nameGenerator);
   }
 
+  /** Returns {@code true} if this {@link Interface} is active and has L3 configuration. */
+  @JsonIgnore
+  public boolean isActiveL3() {
+    return getActive() && !getSwitchport() && !getAllAddresses().isEmpty();
+  }
+
+  /**
+   * Returns {@code true} if this {@link Interface} can be the source of an IPv4 packet.
+   *
+   * <p>Note that this means originating traffic in the VRF, not that traffic can be forwarded out a
+   * Layer 3 link attached to this interface.
+   */
+  @JsonIgnore
+  public boolean canOriginateIpTraffic() {
+    return isActiveL3();
+  }
+
+  /**
+   * Returns {@code true} if this {@link Interface} can send or receive an IPv4 packet on an L3 link
+   * (which may not be in the snapshot).
+   */
+  @JsonIgnore
+  public boolean canReceiveIpTraffic() {
+    if (!isActiveL3()) {
+      return false;
+    } else if (isLoopback()) {
+      // Loopbacks cannot have Layer 3 edges.
+      return false;
+    } else if (getLinkLocalAddress() != null) {
+      // An LLA implies a link.
+      return true;
+    }
+    for (ConcreteInterfaceAddress addr : getAllConcreteAddresses()) {
+      if (addr.getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
+        // Any prefix shorter than /32 implies a possible (even if not in snapshot) L3 link.
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns {@code true} if this {@link Interface} can send an IPv4 packet on an L3 link (which may
+   * not be in the snapshot).
+   */
+  @JsonIgnore
+  public boolean canSendIpTraffic() {
+    // TODO: intuitively, it feels like sending and receiving should be symmetric. However,
+    // NHint routes will send arps that can be answered by any same-broadcast-domain device,
+    // regardless of L3 compatibility. We are not yet able to fix this for the `enter[iface]`
+    // case, but we can for the `exit[iface]` case.
+    return isActiveL3() && !isLoopback();
+  }
+
   private static InterfaceType computeAosInteraceType(String name) {
     if (name.startsWith("vlan")) {
       return InterfaceType.VLAN;

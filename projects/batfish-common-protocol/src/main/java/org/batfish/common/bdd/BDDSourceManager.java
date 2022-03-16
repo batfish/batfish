@@ -3,6 +3,7 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.activeAclSources;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -137,13 +138,7 @@ public final class BDDSourceManager {
       BDDPacket pkt, Map<String, Configuration> configs, boolean initializeSessions) {
     Map<String, Set<String>> activeSources =
         toImmutableMap(
-            configs.entrySet(),
-            Entry::getKey,
-            entry ->
-                ImmutableSet.<String>builder()
-                    .add(SOURCE_ORIGINATING_FROM_DEVICE)
-                    .addAll(entry.getValue().activeInterfaceNames())
-                    .build());
+            configs.entrySet(), Entry::getKey, entry -> activeAclSources(entry.getValue()));
 
     Map<String, Set<String>> activeAndReferenced =
         toImmutableMap(
@@ -153,8 +148,9 @@ public final class BDDSourceManager {
               Configuration config = entry.getValue();
 
               if (initializeSessions
-                  && config.getAllInterfaces().values().stream()
-                      .filter(Interface::getActive)
+                  && config
+                      .activeInterfaces()
+                      .filter(Interface::canReceiveIpTraffic)
                       .anyMatch(iface -> iface.getFirewallSessionInterfaceInfo() != null)) {
                 // This node may initialize sessions -- have to track all active sources
                 return activeSources.get(config.getHostname());

@@ -13,6 +13,7 @@ import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.activeAclSources;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -183,7 +184,7 @@ final class BDDReachabilityAnalysisSessionFactory {
 
     Map<String, Map<NodeInterfacePair, BDD>> lastHopOutgoingInterfaceBdds =
         toImmutableMap(
-            config.activeInterfaceNames(),
+            activeAclSources(config),
             Function.identity(),
             iface ->
                 Optional.ofNullable(

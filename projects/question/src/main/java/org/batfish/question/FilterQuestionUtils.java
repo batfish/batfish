@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.activeAclSources;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 
 import com.google.common.collect.ImmutableMultimap;
@@ -65,26 +66,26 @@ public final class FilterQuestionUtils {
     String hostname = baseConfig.getHostname();
 
     // resolve specified source interfaces that exist in both configs.
-    Set<String> commonSources =
+    Set<String> baseActiveSources =
         Sets.intersection(
             resolveSources(baseSpecifierContext, startLocationSpecifier, hostname),
-            resolveSources(refSpecifierContext, startLocationSpecifier, hostname));
-
-    Set<String> inactiveInterfaces =
-        Sets.union(
-            Sets.difference(
-                baseConfig.getAllInterfaces().keySet(), baseConfig.activeInterfaceNames()),
-            Sets.difference(
-                refConfig.getAllInterfaces().keySet(), refConfig.activeInterfaceNames()));
+            activeAclSources(baseConfig));
+    Set<String> refActiveSources =
+        Sets.intersection(
+            resolveSources(refSpecifierContext, startLocationSpecifier, hostname),
+            activeAclSources(refConfig));
 
     // effectively active sources are those of interest that are active in both configs.
-    Set<String> activeSources = Sets.difference(commonSources, inactiveInterfaces);
-    Set<String> referencedSources =
-        Sets.union(
-            referencedSources(baseConfig.getIpAccessLists(), aclNames),
-            referencedSources(refConfig.getIpAccessLists(), aclNames));
+    Set<String> commonActiveSources = Sets.intersection(baseActiveSources, refActiveSources);
 
-    return BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
+    Set<String> referencedActiveSources =
+        Sets.union(
+            Sets.intersection(
+                referencedSources(baseConfig.getIpAccessLists(), aclNames), baseActiveSources),
+            Sets.intersection(
+                referencedSources(refConfig.getIpAccessLists(), aclNames), refActiveSources));
+
+    return BDDSourceManager.forSources(bddPacket, commonActiveSources, referencedActiveSources);
   }
 
   /** Return a concrete flow satisfying the input {@link BDD}, if one exists. */

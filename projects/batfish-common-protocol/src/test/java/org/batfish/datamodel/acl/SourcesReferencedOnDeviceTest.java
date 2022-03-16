@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Set;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
@@ -45,12 +46,24 @@ public class SourcesReferencedOnDeviceTest {
     Interface.builder()
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
         .setName("in-incoming-trans") // so one is active
         .setType(InterfaceType.LOGICAL)
         .setIncomingTransformation(
             when(and(matchSrcInterface("in-incoming-trans"), OriginatingFromDevice.INSTANCE))
                 .build())
         .setOutgoingTransformation(when(matchSrcInterface("in-outgoing-trans")).build())
+        .build();
+    Interface.builder()
+        .setOwner(c)
+        .setAdminUp(false)
+        .setVrf(c.getDefaultVrf())
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .setName("in-inactive-iface")
+        .setType(InterfaceType.LOGICAL)
+        .setIncomingTransformation(
+            when(and(matchSrcInterface("in-inactive-iface"), OriginatingFromDevice.INSTANCE))
+                .build())
         .build();
     PacketPolicy p =
         new PacketPolicy(
@@ -64,6 +77,7 @@ public class SourcesReferencedOnDeviceTest {
     assertThat(
         allReferencedSources(c),
         containsInAnyOrder(
+            // Also testing does not contain in-inactive-iface
             "in-acl",
             "in-incoming-trans",
             "in-outgoing-trans",

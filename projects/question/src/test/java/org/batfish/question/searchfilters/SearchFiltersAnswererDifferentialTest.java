@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -67,7 +68,10 @@ public class SearchFiltersAnswererDifferentialTest {
   public void testMatchSrcInterface() {
     Configuration config = _cb.build();
     Configuration refConfig = _cb.build();
-    _ib.setName(IFACE1).setOwner(config).build();
+    _ib.setName(IFACE1)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .setOwner(config)
+        .build();
     _ib.setOwner(refConfig).build();
     String aclName = "aclName";
     IpAccessList refAcl = _ab.setName(aclName).setOwner(config).build();
@@ -167,9 +171,15 @@ public class SearchFiltersAnswererDifferentialTest {
   public void testSourceInterfaceParameter() {
     Configuration refConfig = _cb.build();
     Configuration config = _cb.build();
-    _ib.setName(IFACE1).setOwner(refConfig).build();
+    _ib.setName(IFACE1)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .setOwner(refConfig)
+        .build();
     _ib.setOwner(config).build();
-    _ib.setName(IFACE2).setOwner(refConfig).build();
+    _ib.setName(IFACE2)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .setOwner(refConfig)
+        .build();
     _ib.setOwner(config).build();
     String aclName = "acl";
     IpAccessList refAcl = _ab.setName(aclName).setOwner(refConfig).build();
