@@ -782,13 +782,14 @@ public class RoutesAnswererUtil {
    * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  public static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupBgpRoutes(
-      @Nullable Table<String, String, Set<Bgpv4Route>> bgpBestRoutes,
-      @Nullable Table<String, String, Set<Bgpv4Route>> bgpBackupRoutes,
-      Set<String> matchingNodes,
-      String vrfRegex,
-      @Nullable Prefix network,
-      RoutingProtocolSpecifier protocolSpec) {
+  public static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
+      groupBgpRoutes(
+          @Nullable Table<String, String, Set<Bgpv4Route>> bgpBestRoutes,
+          @Nullable Table<String, String, Set<Bgpv4Route>> bgpBackupRoutes,
+          Set<String> matchingNodes,
+          String vrfRegex,
+          @Nullable Prefix network,
+          RoutingProtocolSpecifier protocolSpec) {
     checkArgument(
         bgpBestRoutes != null || bgpBackupRoutes != null,
         "At least one of best routes or backup routes is required.");
