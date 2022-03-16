@@ -97,17 +97,19 @@ When you transition to running Batfish on your own network, we recommend a serve
 
 Batfish supports configurations for a large and growing set of (physical and virtual) devices, including:
 
+* A10 Networks
 * Arista
 * AWS (VPCs, Network ACLs, VPN GW, NAT GW, Internet GW, Security Groups, etc…)
 * Cisco (All Cisco NX-OS, IOS, IOS-XE, IOS-XR and ASA devices)
 * Check Point 
 * [Cumulus](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-cumulus-configuration-files)
 * [F5 BIG-IP](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-f5-big-ip-configuration-files)
+* Fortinet
+* Free-Range Routing (FRR)
 * [iptables (on hosts)](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-host-json-files)
 * Juniper (All JunOS platforms: MX, EX, QFX, SRX, T-series, PTX)
 * Palo Alto Networks
-* Free-Range Routing (FRR)
-* Fortinet
+* SONiC
 
 Batfish has limited support for the following platforms:
 
