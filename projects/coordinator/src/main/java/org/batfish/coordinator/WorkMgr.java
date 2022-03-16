@@ -2238,7 +2238,8 @@ public class WorkMgr extends AbstractCoordinator {
                 .limit(options.getMaxRows())
                 .map(row -> new TableViewRow(rowIds.get(row), row))
                 .collect(ImmutableList.toImmutableList()),
-            tableMetadata);
+            tableMetadata,
+            rawTable.getWarnings());
     tableView.setSummary(
         rawTable.getSummary() != null ? rawTable.getSummary() : new AnswerSummary());
     tableView.getSummary().setNumResults(filteredRows.size());
