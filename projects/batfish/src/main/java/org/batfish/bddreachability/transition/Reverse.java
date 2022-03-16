@@ -10,7 +10,7 @@ import net.sf.javabdd.BDD;
 public final class Reverse implements Transition {
   private final @Nonnull Transition _inner;
 
-  public Reverse(Transition inner) {
+  Reverse(Transition inner) {
     checkArgument(
         inner != IDENTITY && inner != ZERO && !(inner instanceof Constraint),
         "Reverse is not allowed for bijective Transitions. Use the transition itself.");
