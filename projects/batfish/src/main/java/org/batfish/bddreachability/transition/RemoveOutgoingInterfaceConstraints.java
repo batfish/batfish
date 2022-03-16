@@ -38,4 +38,9 @@ public final class RemoveOutgoingInterfaceConstraints implements Transition {
     assert !_mgr.isConstrained(bdd);
     return bdd.id();
   }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitRemoveOutgoingInterfaceConstraints(this);
+  }
 }

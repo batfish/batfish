@@ -48,6 +48,11 @@ public final class Constraint implements Transition {
   }
 
   @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitConstraint(this);
+  }
+
+  @Override
   public String toString() {
     return MoreObjects.toStringHelper(Constraint.class).add("topVar", _constraint.var()).toString();
   }

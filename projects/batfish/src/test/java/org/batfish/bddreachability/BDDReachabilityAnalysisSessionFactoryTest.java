@@ -31,6 +31,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Key;
 import org.batfish.bddreachability.transition.Transition;
+import org.batfish.bddreachability.transition.TransitionVisitor;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -262,12 +263,17 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     @Override
     public BDD transitForward(BDD bdd) {
-      throw new IllegalStateException("Should never be called");
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public BDD transitBackward(BDD bdd) {
-      throw new IllegalStateException("Should never be called");
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T accept(TransitionVisitor<T> visitor) {
+      throw new UnsupportedOperationException();
     }
 
     @Override
