@@ -12,7 +12,7 @@ public final class EraseAndSet implements Transition {
   private final BDD _eraseVars;
   private final BDD _setValue;
 
-  EraseAndSet(BDD eraseVars, BDD setValue) {
+  public EraseAndSet(BDD eraseVars, BDD setValue) {
     checkArgument(!setValue.isZero(), "Value is zero BDD. Use ZERO instead");
     checkArgument(
         (!eraseVars.isOne() && !eraseVars.isZero()),

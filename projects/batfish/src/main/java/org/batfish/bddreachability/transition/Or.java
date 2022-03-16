@@ -15,7 +15,7 @@ import net.sf.javabdd.BDD;
 public final class Or implements Transition {
   private final List<Transition> _transitions;
 
-  Or(Collection<Transition> transitions) {
+  public Or(Collection<Transition> transitions) {
     checkArgument(!transitions.isEmpty(), "Cannot construct Or of 0 Transitions. Use Zero instead");
     checkArgument(
         transitions.size() != 1,
@@ -23,7 +23,7 @@ public final class Or implements Transition {
     _transitions = ImmutableList.copyOf(transitions);
   }
 
-  Or(Transition... transitions) {
+  public Or(Transition... transitions) {
     this(ImmutableList.copyOf(transitions));
   }
 
