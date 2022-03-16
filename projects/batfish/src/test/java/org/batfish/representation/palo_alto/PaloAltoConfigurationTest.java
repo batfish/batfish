@@ -800,8 +800,8 @@ public final class PaloAltoConfigurationTest {
     source.getServices().put("service", new Service("service"));
     source.getServiceGroups().put("serviceGroup", new ServiceGroup("serviceGroup"));
     source.getTags().put("tag", new Tag("tag"));
-    Vsys dest = new Vsys("dest");
 
+    Vsys dest = new Vsys("dest");
     applyVsysObjects(source, dest);
 
     assertTrue(dest.getApplications().containsKey("app"));
