@@ -2844,7 +2844,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Copy object configuration from specified source vsys to specified target vsys. Any previously
    * made changes will be overwritten in this process.
    */
-  private void applyVsysObjects(@Nullable Vsys source, Vsys target) {
+  @VisibleForTesting
+  static void applyVsysObjects(@Nullable Vsys source, Vsys target) {
     if (source == null) {
       return;
     }
@@ -2853,6 +2854,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getApplicationGroups().putAll(source.getApplicationGroups());
     target.getAddressObjects().putAll(source.getAddressObjects());
     target.getAddressGroups().putAll(source.getAddressGroups());
+    target.getCustomUrlCategories().putAll(source.getCustomUrlCategories());
     target.getServices().putAll(source.getServices());
     target.getServiceGroups().putAll(source.getServiceGroups());
     target.getTags().putAll(source.getTags());
