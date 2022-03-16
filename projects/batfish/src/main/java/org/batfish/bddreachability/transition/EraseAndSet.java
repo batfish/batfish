@@ -59,6 +59,11 @@ public final class EraseAndSet implements Transition {
   }
 
   @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitEraseAndSet(this);
+  }
+
+  @Override
   public String toString() {
     return MoreObjects.toStringHelper(EraseAndSet.class)
         .add("eraseVars", _eraseVars)

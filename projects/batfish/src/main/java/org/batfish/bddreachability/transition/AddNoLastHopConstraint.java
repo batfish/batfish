@@ -35,4 +35,9 @@ public final class AddNoLastHopConstraint implements Transition {
      */
     return _mgr.existsLastHop(bdd);
   }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitAddNoLastHopConstraint(this);
+  }
 }

@@ -22,4 +22,9 @@ public final class Zero implements Transition {
   public BDD transitBackward(BDD bdd) {
     return bdd.getFactory().zero();
   }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitZero(this);
+  }
 }

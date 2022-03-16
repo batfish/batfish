@@ -52,6 +52,11 @@ public final class AddSourceConstraint implements Transition {
   }
 
   @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitAddSourceConstraint(this);
+  }
+
+  @Override
   public String toString() {
     return MoreObjects.toStringHelper(AddSourceConstraint.class)
         .add("iface", _mgr.getSourceFromAssignment(_sourceBdd).orElse("missing"))

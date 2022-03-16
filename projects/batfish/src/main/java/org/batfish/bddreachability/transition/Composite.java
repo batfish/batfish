@@ -50,6 +50,11 @@ public final class Composite implements Transition {
   }
 
   @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitComposite(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
