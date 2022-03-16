@@ -1,4 +1,4 @@
-b{
+{
   "class" : "org.batfish.question.edges.EdgesQuestion",
   "edgeType" : "USER_PROVIDED_LAYER1",
   "initial" : false,
