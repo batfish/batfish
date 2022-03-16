@@ -8,10 +8,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 
 /**
@@ -20,6 +23,23 @@ import org.batfish.datamodel.IpAccessList;
  */
 public final class SourcesReferencedByIpAccessLists {
   public static final String SOURCE_ORIGINATING_FROM_DEVICE = "DEVICE IS THE SOURCE";
+
+  /**
+   * Returns the active sources that can be referred to by an {@link IpAccessList} or collection of
+   * them, where source is either originating on the device ({@link
+   * #SOURCE_ORIGINATING_FROM_DEVICE}) or entering an interface (aka, {@link
+   * org.batfish.specifier.InterfaceLinkLocation}.
+   */
+  public static @Nonnull Set<String> activeAclSources(Configuration c) {
+    ImmutableSet.Builder<String> ret = ImmutableSet.builder();
+    ret.add(SOURCE_ORIGINATING_FROM_DEVICE);
+    for (Interface i : c.getAllInterfaces().values()) {
+      if (i.canReceiveIpTraffic()) {
+        ret.add(i.getName());
+      }
+    }
+    return ret.build();
+  }
 
   private static final class ReferenceSourcesVisitor
       implements GenericAclLineMatchExprVisitor<Void>, GenericAclLineVisitor<Void> {
