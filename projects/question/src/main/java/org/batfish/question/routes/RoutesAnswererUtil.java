@@ -782,7 +782,7 @@ public class RoutesAnswererUtil {
    * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupBgpRoutes(
+  public static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupBgpRoutes(
       @Nullable Table<String, String, Set<Bgpv4Route>> bgpBestRoutes,
       @Nullable Table<String, String, Set<Bgpv4Route>> bgpBackupRoutes,
       Set<String> matchingNodes,
