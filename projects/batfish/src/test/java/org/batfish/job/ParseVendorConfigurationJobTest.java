@@ -6,16 +6,19 @@ import static org.batfish.job.ParseVendorConfigurationJob.detectFormat;
 import static org.batfish.job.ParseVendorConfigurationJob.getSonicFrrFilename;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import java.util.Optional;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.junit.Rule;
@@ -52,6 +55,24 @@ public class ParseVendorConfigurationJobTest {
     ParseVendorConfigurationResult result = parseHost(HOST_TESTCONFIGS_PREFIX + "hostInvalid.json");
     // Confirm a bad host file does not cause a crash but results in failure cause
     assertThat(result.getFailureCause(), not(equalTo(null)));
+  }
+
+  @Test
+  public void testFormatUnsupported() {
+    ParseResult result =
+        new ParseVendorConfigurationJob(
+                new Settings(),
+                new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss")),
+                ImmutableMap.of("config", "some nonempty content"),
+                new Warnings.Settings(false, false, false),
+                ConfigurationFormat.UNSUPPORTED,
+                ImmutableMultimap.of(),
+                null)
+            .parse();
+    assertThat(result.getFormat(), equalTo(ConfigurationFormat.UNSUPPORTED));
+    assertThat(result.getFailureCause(), nullValue());
+    assertThat(result.getConfig(), nullValue());
+    assertThat(result.getParseStatus("config"), equalTo(Optional.of(ParseStatus.UNSUPPORTED)));
   }
 
   // Tests that empty files are detected as empty, even when another format is provided.

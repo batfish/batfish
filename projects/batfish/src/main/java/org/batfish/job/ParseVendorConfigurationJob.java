@@ -100,6 +100,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ConfigurationFormat.MRV_COMMANDS,
           ConfigurationFormat.MSS,
           ConfigurationFormat.RUCKUS_ICX,
+          ConfigurationFormat.UNSUPPORTED,
           ConfigurationFormat.VXWORKS);
 
   /**
