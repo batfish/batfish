@@ -2312,7 +2312,7 @@ public final class WorkMgrTest {
     AnswerRowsOptions optionsFiltered =
         new AnswerRowsOptions(
             ImmutableSet.of(),
-            ImmutableList.of(new ColumnFilter(columnName, whitelistedValue)),
+            ImmutableList.of(new ColumnFilter(columnName, whitelistedValue, false)),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(),
@@ -2347,7 +2347,7 @@ public final class WorkMgrTest {
     AnswerRowsOptions optionsFiltered =
         new AnswerRowsOptions(
             ImmutableSet.of("value"), // project onto the value column
-            ImmutableList.of(new ColumnFilter("value", "2")),
+            ImmutableList.of(new ColumnFilter("value", "2", false)),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(),
@@ -2381,7 +2381,7 @@ public final class WorkMgrTest {
     AnswerRowsOptions optionsFiltered =
         new AnswerRowsOptions(
             ImmutableSet.of(),
-            ImmutableList.of(new ColumnFilter(columnName, whitelistedValue)),
+            ImmutableList.of(new ColumnFilter(columnName, whitelistedValue, false)),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(),
