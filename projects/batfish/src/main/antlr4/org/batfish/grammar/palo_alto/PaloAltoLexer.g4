@@ -179,6 +179,8 @@ DESCRIPTION
 
 DESTINATION: 'destination';
 
+DESTINATION_HIP: 'destination-hip';
+
 DESTINATION_TRANSLATION: 'destination-translation';
 
 DETERMINISTIC_MED_COMPARISON: 'deterministic-med-comparison';
@@ -648,6 +650,8 @@ SHARED: 'shared';
 SHARED_GATEWAY: 'shared-gateway';
 
 SOURCE: 'source';
+
+SOURCE_HIP: 'source-hip';
 
 SOURCE_PORT: 'source-port';
 
