@@ -593,7 +593,7 @@ public class WorkMgrServiceTest {
             questionName,
             new AnswerRowsOptions(
                 ImmutableSet.of(columnName),
-                ImmutableList.of(new ColumnFilter(columnName, "")),
+                ImmutableList.of(new ColumnFilter(columnName, "", false)),
                 Integer.MAX_VALUE,
                 0,
                 ImmutableList.of(new ColumnSortOption(columnName, false)),
@@ -794,7 +794,7 @@ public class WorkMgrServiceTest {
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
             ImmutableSet.of(columnName),
-            ImmutableList.of(new ColumnFilter(columnName, "")),
+            ImmutableList.of(new ColumnFilter(columnName, "", false)),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, false)),
@@ -886,7 +886,7 @@ public class WorkMgrServiceTest {
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
             ImmutableSet.of(columnName),
-            ImmutableList.of(new ColumnFilter(columnName, "")),
+            ImmutableList.of(new ColumnFilter(columnName, "", false)),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, false)),
@@ -956,7 +956,7 @@ public class WorkMgrServiceTest {
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
             ImmutableSet.of(columnName),
-            ImmutableList.of(new ColumnFilter(columnName, "")),
+            ImmutableList.of(new ColumnFilter(columnName, "", false)),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, false)),
@@ -1043,7 +1043,7 @@ public class WorkMgrServiceTest {
     AnswerRowsOptions answersRowsOptions =
         new AnswerRowsOptions(
             ImmutableSet.of(columnName),
-            ImmutableList.of(new ColumnFilter(columnName, "")),
+            ImmutableList.of(new ColumnFilter(columnName, "", false)),
             Integer.MAX_VALUE,
             0,
             ImmutableList.of(new ColumnSortOption(columnName, false)),

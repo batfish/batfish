@@ -9,10 +9,12 @@ public final class AnswerRowsOptionsTest {
 
   @Test
   public void testEquals() {
+    ColumnFilter cf1 = new ColumnFilter("a", "1", false);
+    ColumnFilter cf2 = new ColumnFilter("a", "1", true);
     AnswerRowsOptions group1Elem1 =
         new AnswerRowsOptions(
             ImmutableSet.of("a"),
-            ImmutableList.of(new ColumnFilter("a", "1")),
+            ImmutableList.of(cf1),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
@@ -20,7 +22,7 @@ public final class AnswerRowsOptionsTest {
     AnswerRowsOptions group1Elem2 =
         new AnswerRowsOptions(
             ImmutableSet.of("a"),
-            ImmutableList.of(new ColumnFilter("a", "1")),
+            ImmutableList.of(cf1),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
@@ -28,7 +30,7 @@ public final class AnswerRowsOptionsTest {
     AnswerRowsOptions group2Elem1 =
         new AnswerRowsOptions(
             ImmutableSet.of("b"),
-            ImmutableList.of(new ColumnFilter("a", "1")),
+            ImmutableList.of(cf1),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
@@ -36,7 +38,7 @@ public final class AnswerRowsOptionsTest {
     AnswerRowsOptions group3Elem1 =
         new AnswerRowsOptions(
             ImmutableSet.of("a"),
-            ImmutableList.of(new ColumnFilter("a", "2")),
+            ImmutableList.of(cf2),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
@@ -44,7 +46,7 @@ public final class AnswerRowsOptionsTest {
     AnswerRowsOptions group4Elem1 =
         new AnswerRowsOptions(
             ImmutableSet.of("a"),
-            ImmutableList.of(new ColumnFilter("a", "1")),
+            ImmutableList.of(cf1),
             3,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
@@ -52,7 +54,7 @@ public final class AnswerRowsOptionsTest {
     AnswerRowsOptions group5Elem1 =
         new AnswerRowsOptions(
             ImmutableSet.of("a"),
-            ImmutableList.of(new ColumnFilter("a", "1")),
+            ImmutableList.of(cf1),
             1,
             4,
             ImmutableList.of(new ColumnSortOption("c", false)),
@@ -60,7 +62,7 @@ public final class AnswerRowsOptionsTest {
     AnswerRowsOptions group6Elem1 =
         new AnswerRowsOptions(
             ImmutableSet.of("a"),
-            ImmutableList.of(new ColumnFilter("a", "1")),
+            ImmutableList.of(cf1),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("d", false)),
@@ -68,7 +70,7 @@ public final class AnswerRowsOptionsTest {
     AnswerRowsOptions group7Elem1 =
         new AnswerRowsOptions(
             ImmutableSet.of("a"),
-            ImmutableList.of(new ColumnFilter("a", "1")),
+            ImmutableList.of(cf1),
             1,
             2,
             ImmutableList.of(new ColumnSortOption("c", false)),
