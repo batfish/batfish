@@ -464,7 +464,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Bgp_conf_peers_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Bgp_enforce_first_as_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Bgp_redistribute_internal_rb_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Cadant_stdacl_nameContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cd_match_addressContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cd_set_isakmp_profileContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cd_set_peerContext;
@@ -3894,12 +3893,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   public void exitBgp_redistribute_internal_rb_stanza(
       Bgp_redistribute_internal_rb_stanzaContext ctx) {
     todo(ctx); // TODO(https://github.com/batfish/batfish/issues/3230)
-  }
-
-  @Override
-  public void exitCadant_stdacl_name(Cadant_stdacl_nameContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getStandardAcls().put(name, _currentStandardAcl);
   }
 
   @Override
