@@ -1483,9 +1483,10 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public void forkSnapshot(String networkName, ForkSnapshotBean forkSnapshotBean)
       throws IllegalArgumentException, IOException {
-
     String baseSnapshotName = forkSnapshotBean.baseSnapshot;
     String snapshotName = forkSnapshotBean.newSnapshot;
+    LOGGER.info(
+        "Beginning fork snapshot from {}/{} to {}", networkName, baseSnapshotName, snapshotName);
 
     // Fail early if the new snapshot already exists or the base snapshot does not
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(networkName);
