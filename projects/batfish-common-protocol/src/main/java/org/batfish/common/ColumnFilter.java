@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.re2j.Pattern;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,11 +29,20 @@ public final class ColumnFilter {
   private final @Nonnull String _column;
   private final boolean _exact;
   private final @Nonnull String _filterText;
+  private final @Nonnull Pattern _pattern;
 
   public ColumnFilter(@Nonnull String column, @Nonnull String filterText, boolean exact) {
     _column = column;
     _filterText = filterText;
     _exact = exact;
+    String escapedText = Pattern.quote(_filterText);
+    if (_exact) {
+      _pattern =
+          Pattern.compile(
+              String.format("^(%s|\"%s\")$", escapedText, escapedText), Pattern.CASE_INSENSITIVE);
+    } else {
+      _pattern = Pattern.compile(escapedText, Pattern.CASE_INSENSITIVE);
+    }
   }
 
   @Override
@@ -71,13 +81,7 @@ public final class ColumnFilter {
 
   public boolean matches(@Nonnull Row row) {
     String rowText = row.get(_column).toString();
-    if (_exact) {
-      // rowText is a stringified JSON type, so strings have extra "", but numbers won't. Accept
-      // either.
-      return rowText.equalsIgnoreCase(_filterText)
-          || rowText.equalsIgnoreCase('"' + _filterText + '"');
-    }
-    return rowText.toLowerCase().contains(_filterText.toLowerCase());
+    return _pattern.matcher(rowText).find();
   }
 
   @Override

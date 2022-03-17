@@ -47,6 +47,11 @@ public final class ColumnFilterTest {
     ColumnFilter filterInt = new ColumnFilter(columnName, "123", true);
     assertTrue(filterInt.matches(Row.builder().put(columnName, 123).build()));
     assertFalse(filterInt.matches(Row.builder().put(columnName, 1234).build()));
+
+    // Verify regex-like text is not filtered
+    ColumnFilter filterRegex = new ColumnFilter(columnName, "1.3", true);
+    assertTrue(filterRegex.matches(Row.builder().put(columnName, "1.3").build()));
+    assertFalse(filterRegex.matches(Row.builder().put(columnName, "123").build()));
   }
 
   @Test
