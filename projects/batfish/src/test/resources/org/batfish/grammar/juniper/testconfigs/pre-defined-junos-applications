@@ -49,5 +49,6 @@ set security policies global policy policy-name match application junos-radius
 set security policies global policy policy-name match application junos-rdp
 set security policies global policy policy-name match application junos-smb
 set security policies global policy policy-name match application junos-smtp
+set security policies global policy policy-name match application junos-smtps
 set security policies global policy policy-name match application junos-ssh
 set security policies global policy policy-name match application junos-syslog
