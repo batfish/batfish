@@ -1518,16 +1518,19 @@ public class WorkMgr extends AbstractCoordinator {
 
     try (Stream<String> baseInputObjectKeys =
         _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, baseSnapshotId))) {
-      baseInputObjectKeys.forEach(
-          key -> {
-            try (InputStream baseObjectStream =
-                _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
-              writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
-            } catch (IOException e) {
-              throw new UncheckedIOException(
-                  String.format("Unable to copy base snapshot input object with key: %s", key), e);
-            }
-          });
+      List<String> allKeys = baseInputObjectKeys.collect(Collectors.toList());
+      allKeys.parallelStream()
+          .forEach(
+              key -> {
+                try (InputStream baseObjectStream =
+                    _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
+                  writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
+                } catch (IOException e) {
+                  throw new UncheckedIOException(
+                      String.format("Unable to copy base snapshot input object with key: %s", key),
+                      e);
+                }
+              });
     }
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
     if (forkSnapshotBean.zipFile != null) {
