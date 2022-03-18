@@ -1,6 +1,7 @@
 package org.batfish.representation.frr;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.groupingBy;
@@ -450,9 +451,8 @@ public final class FrrConversions {
     Iterables.concat(ImmutableSet.of(bgpProcess.getDefaultVrf()), bgpProcess.getVrfs().values())
         .forEach(
             bgpVrf -> {
-              bgpVrf
-                  .getNeighbors()
-                  .values()
+              bgpVrf.getNeighbors().values().stream()
+                  .filter(neighbor -> !(neighbor instanceof BgpPeerGroupNeighbor))
                   .forEach(neighbor -> addBgpNeighbor(c, vc, frr, bgpVrf, neighbor, w));
             });
   }
@@ -530,6 +530,9 @@ public final class FrrConversions {
       BgpVrf bgpVrf,
       BgpNeighbor neighbor,
       Warnings w) {
+    checkArgument(
+        !(neighbor instanceof BgpPeerGroupNeighbor),
+        "addBgpNeighbor should not be called on BgpPeerGroupNeighbor");
 
     org.batfish.datamodel.BgpProcess viBgpProcess =
         c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
@@ -563,9 +566,7 @@ public final class FrrConversions {
     } else if (neighbor instanceof BgpDynamicNeighbor) {
       BgpDynamicNeighbor passiveNeighbor = (BgpDynamicNeighbor) neighbor;
       addPassiveBgpNeighbor(c, vc, frr, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
-    } else if (!(neighbor instanceof BgpPeerGroupNeighbor
-        || neighbor instanceof BgpIpv6Neighbor
-        || neighbor instanceof BgpDynamic6Neighbor)) {
+    } else if (!(neighbor instanceof BgpIpv6Neighbor || neighbor instanceof BgpDynamic6Neighbor)) {
       throw new IllegalArgumentException(
           "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
     }
