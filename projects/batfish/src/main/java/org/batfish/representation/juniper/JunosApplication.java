@@ -843,6 +843,22 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_SMTPS:
+        {
+          // this junos application uses both 587 and 465
+          portRangeStart = NamedPort.SUBMISSION.number();
+          ipProtocol = IpProtocol.TCP;
+
+          String t2Name = "t2";
+          Term t2 = new Term();
+          HeaderSpace.Builder l2 = t2.getHeaderSpace().toBuilder();
+          setHeaderSpaceInfo(l2, IpProtocol.TCP, NamedPort.SMTPS.number(), null);
+          t2.setHeaderSpace(l2.build());
+
+          terms.put(t2Name, t2);
+          break;
+        }
+
       case JUNOS_SSH:
         {
           portRangeStart = NamedPort.SSH.number();
