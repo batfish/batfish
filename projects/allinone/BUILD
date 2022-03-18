@@ -9,6 +9,7 @@ java_binary(
     main_class = "org.batfish.allinone.Main",
     runtime_deps = [
         ":allinone",
+        "//projects/minesweeper",
         "//projects/question",
         "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:org_apache_logging_log4j_log4j_core",
@@ -16,6 +17,7 @@ java_binary(
     ],
 )
 
+# Deprecated
 java_binary(
     name = "allinone_with_minesweeper_main",
     main_class = "org.batfish.allinone.Main",
