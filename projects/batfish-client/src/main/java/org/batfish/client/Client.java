@@ -2110,7 +2110,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isDeltaReady()) {
       return false;
     }
-    _logger.outputf("Reference snapshot is %s->%s\n", _currDeltaTestrig);
+    _logger.outputf("Reference snapshot is %s%n", _currDeltaTestrig);
     return true;
   }
 
@@ -2118,7 +2118,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_LOGLEVEL)) {
       return false;
     }
-    _logger.outputf("Current client log level is %s\n", _logger.getLogLevelStr());
+    _logger.outputf("Current client log level is %s%n", _logger.getLogLevelStr());
     return true;
   }
 
@@ -2178,7 +2178,7 @@ public class Client extends AbstractClient implements IClient {
     String[] testCommand =
         parameters.subList(testCommandIndex, parameters.size()).toArray(new String[0]);
 
-    _logger.debugf("Ref file is %s. \n", referenceFileName, parameters.size());
+    _logger.debugf("Ref file is %s (%d bytes).\n", referenceFileName, parameters.size());
     _logger.debugf("Test command is %s\n", Arrays.toString(testCommand));
 
     File referenceFile = new File(referenceFileName);

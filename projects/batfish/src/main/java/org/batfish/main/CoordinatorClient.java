@@ -56,10 +56,10 @@ public final class CoordinatorClient {
         throw new BatfishException("Unrecoverable connection error", e);
       }
       logger.errorf("BF: unable to connect to coordinator pool mgr at %s\n", url);
-      logger.debug(Throwables.getStackTraceAsString(e) + "\n");
+      logger.debugf("%s%n", Throwables.getStackTraceAsString(e));
       return null;
     } catch (Exception e) {
-      logger.errorf("exception: " + Throwables.getStackTraceAsString(e));
+      logger.errorf("exception: %s", Throwables.getStackTraceAsString(e));
       return null;
     } finally {
       if (client != null) {

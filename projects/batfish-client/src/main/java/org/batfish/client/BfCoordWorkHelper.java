@@ -324,8 +324,7 @@ public class BfCoordWorkHelper {
           webTarget
               .request(MediaType.APPLICATION_JSON)
               .post(Entity.entity(multiPart, multiPart.getMediaType()))) {
-        _logger.debugf(
-            response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
+        _logger.debugf("%s %s %s%n", response.getStatus(), response.getStatusInfo(), response);
         if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
           System.err.print("PostData: Did not get an OK response\n");
           return null;
