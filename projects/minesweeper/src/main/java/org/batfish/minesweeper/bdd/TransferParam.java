@@ -6,7 +6,6 @@ import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.minesweeper.collections.PList;
 
 public class TransferParam {
-
   public enum CallContext {
     EXPR_CALL,
     STMT_CALL,
@@ -35,7 +34,7 @@ public class TransferParam {
 
   private SetDefaultPolicy _defaultPolicy;
 
-  private boolean _debug;
+  private final boolean _debug;
 
   public TransferParam(BDDRoute data, boolean debug) {
     _data = data;
@@ -152,7 +151,7 @@ public class TransferParam {
     return ret;
   }
 
-  public void debug(String str) {
+  public void debug(String fmt, Object... args) {
     if (_debug) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < _indent; i++) {
@@ -163,7 +162,7 @@ public class TransferParam {
       sb.append("[");
       sb.append(scope);
       sb.append("]: ");
-      sb.append(str);
+      sb.append(String.format(fmt, args));
       System.out.println(sb);
     }
   }
