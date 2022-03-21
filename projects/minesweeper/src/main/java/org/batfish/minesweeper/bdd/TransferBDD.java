@@ -172,7 +172,7 @@ public class TransferBDD {
   private BDDInteger applyLongExprModification(TransferParam p, BDDInteger x, LongExpr e) {
     checkArgument(e instanceof LiteralLong, "Unsupported integer update: " + e);
     LiteralLong z = (LiteralLong) e;
-    p.debug("LiteralLong: " + z.getValue());
+    p.debug("LiteralLong: %s", z.getValue());
     return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
 
     /* TODO: These old cases are not correct; removing for now since they are not currently used.
@@ -181,22 +181,22 @@ public class TransferBDD {
 
     if (e instanceof DecrementMetric) {
       DecrementMetric z = (DecrementMetric) e;
-      p.debug("Decrement: " + z.getSubtrahend());
+      p.debug("Decrement: %s", z.getSubtrahend());
       return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
     if (e instanceof IncrementMetric) {
       IncrementMetric z = (IncrementMetric) e;
-      p.debug("Increment: " + z.getAddend());
+      p.debug("Increment: %s", z.getAddend());
       return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
     if (e instanceof IncrementLocalPreference) {
       IncrementLocalPreference z = (IncrementLocalPreference) e;
-      p.debug("IncrementLocalPreference: " + z.getAddend());
+      p.debug("IncrementLocalPreference: %s", z.getAddend());
       return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
     if (e instanceof DecrementLocalPreference) {
       DecrementLocalPreference z = (DecrementLocalPreference) e;
-      p.debug("DecrementLocalPreference: " + z.getSubtrahend());
+      p.debug("DecrementLocalPreference: %s", z.getSubtrahend());
       return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
      */
@@ -250,7 +250,7 @@ public class TransferBDD {
         result = ite(acc, newResult, result);
         acc = acc.and(newResult.getReturnValue().getSecond());
       }
-      p.debug("Conjunction return: " + acc);
+      p.debug("Conjunction return: %s", acc);
       return result.setReturnValueBDD(acc);
 
     } else if (expr instanceof Disjunction) {
@@ -265,7 +265,7 @@ public class TransferBDD {
         result = ite(acc, result, newResult);
         acc = acc.or(result.getReturnValue().getSecond());
       }
-      p.debug("Disjunction return: " + acc);
+      p.debug("Disjunction return: %s", acc);
       return result.setReturnValueBDD(acc);
 
     } else if (expr instanceof ConjunctionChain) {
@@ -603,7 +603,7 @@ public class TransferBDD {
       result = ite(alreadyReturned, result, newResult);
       curP = ite(curP, alreadyReturned, curP, newCurP);
 
-      curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
+      curP.debug("If return: %s", result.getReturnValue().getFirst().hashCode());
 
     } else if (stmt instanceof SetDefaultPolicy) {
       curP.debug("SetDefaultPolicy");
@@ -910,7 +910,7 @@ public class TransferBDD {
     if (e instanceof NamedAsPathSet) {
       NamedAsPathSet namedAsPathSet = (NamedAsPathSet) e;
       AsPathAccessList accessList = conf.getAsPathAccessLists().get(namedAsPathSet.getName());
-      p.debug("Named As Path Set: " + namedAsPathSet.getName());
+      p.debug("Named As Path Set: %s", namedAsPathSet.getName());
       return matchAsPathAccessList(accessList, other);
     }
     // TODO: handle other kinds of AsPathSetExprs
@@ -952,8 +952,8 @@ public class TransferBDD {
       if (!PrefixUtils.isContainedBy(pfx, _ignoredNetworks)) {
         SubRange r = line.getLengthRange();
         PrefixRange range = new PrefixRange(pfx, r);
-        p.debug("Prefix Range: " + range);
-        p.debug("Action: " + line.getAction());
+        p.debug("Prefix Range: %s", range);
+        p.debug("Action: %s", line.getAction());
         BDD matches = symbolicMatcher.apply(other, range);
         BDD action = mkBDD(line.getAction() == LineAction.PERMIT);
         acc = ite(matches, action, acc);
@@ -992,7 +992,7 @@ public class TransferBDD {
       Set<PrefixRange> ranges = x.getPrefixSpace().getPrefixRanges();
       BDD acc = _factory.zero();
       for (PrefixRange range : ranges) {
-        p.debug("Prefix Range: " + range);
+        p.debug("Prefix Range: %s", range);
         if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
           acc = acc.or(symbolicMatcher.apply(other, range));
         }
@@ -1001,7 +1001,7 @@ public class TransferBDD {
 
     } else if (e instanceof NamedPrefixSet) {
       NamedPrefixSet x = (NamedPrefixSet) e;
-      p.debug("Named: " + x.getName());
+      p.debug("Named: %s", x.getName());
       String name = x.getName();
       RouteFilterList fl = conf.getRouteFilterLists().get(name);
       return matchFilterList(p, fl, other, symbolicMatcher);
@@ -1064,10 +1064,10 @@ public class TransferBDD {
     BDD newCommVal = mkBDD(add);
     BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
     for (int ap : commAPs.enumerate()) {
-      curP.indent().debug("Value: " + ap);
+      curP.indent().debug("Value: %s", ap);
       BDD comm = commAPBDDs[ap];
       BDD newValue = ite(unreachable(result), comm, newCommVal);
-      curP.indent().debug("New Value: " + newValue);
+      curP.indent().debug("New Value: %s", newValue);
       commAPBDDs[ap] = newValue;
     }
   }
