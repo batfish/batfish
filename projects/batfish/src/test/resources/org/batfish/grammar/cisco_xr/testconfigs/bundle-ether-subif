@@ -13,7 +13,7 @@ interface TenGigE0/1
  bundle id 500 mode active
 !
 !
-! Since Bundle-Ether600 is shut down, should cascade to Bundle-Ether600.2.
+! Since Bundle-Ether600 is shut down, should cascade to Bundle-Ether600.3.
 interface Bundle-Ether600
  shutdown
  mtu 9216

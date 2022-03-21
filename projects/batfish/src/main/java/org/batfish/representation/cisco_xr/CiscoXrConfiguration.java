@@ -95,6 +95,7 @@ import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -2049,6 +2050,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
               if (viIface != null) {
                 viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
+                if (viIface.getActive() && !parentInterface.getActive()) {
+                  viIface.deactivate(InactiveReason.PARENT_DOWN);
+                }
               }
             }
           }
