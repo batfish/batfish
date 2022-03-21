@@ -43,10 +43,12 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -656,7 +658,30 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     warnDuplicateClagIds();
 
+    disableInvalidInterfaces(_c, _w);
+
     return _c;
+  }
+
+  private static void disableInvalidInterfaces(Configuration c, Warnings w) {
+    for (org.batfish.datamodel.Interface i : c.getActiveInterfaces().values()) {
+      if (!i.getAllAddresses().isEmpty()) {
+        String name = i.getName();
+        if (i.getSwitchport()) {
+          w.redFlag(
+              String.format(
+                  "Disabling invalid interface '%s' because it has both L2 and L3 settings", name));
+          i.deactivate(InactiveReason.INVALID);
+        } else if (i.getChannelGroup() != null) {
+          w.redFlag(
+              String.format(
+                  "Disabling invalid interface '%s' because has L3 settings but is a bond slave of"
+                      + " '%s'",
+                  name, i.getChannelGroup()));
+          i.deactivate(InactiveReason.INVALID);
+        }
+      }
+    }
   }
 
   @Override

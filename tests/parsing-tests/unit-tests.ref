@@ -85288,6 +85288,18 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Disabling invalid interface 'swp1' because has L3 settings but is a bond slave of 'bond1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Disabling invalid interface 'swp2' because has L3 settings but is a bond slave of 'bond1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Disabling invalid interface 'swp3' because has L3 settings but is a bond slave of 'bond1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond1'"
             },
             {
