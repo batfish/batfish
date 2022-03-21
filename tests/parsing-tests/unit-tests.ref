@@ -70699,7 +70699,7 @@
         "host1" : "PASSED",
         "host2" : "PASSED",
         "if_tag_is" : "PASSED",
-        "interface-reth" : "PASSED",
+        "interface-reth" : "WARNINGS",
         "interface_exit" : "PASSED",
         "interface_sdr" : "PASSED",
         "interfacemtu" : "PASSED",
@@ -70819,7 +70819,7 @@
         "variables" : "PASSED",
         "variables_dos" : "PASSED",
         "vlan_access_map4" : "PASSED",
-        "vmx4" : "PASSED",
+        "vmx4" : "WARNINGS",
         "xr_dhcp" : "PASSED",
         "xr_ipsla" : "PASSED",
         "xr_multicast" : "PASSED",
@@ -85404,6 +85404,18 @@
             }
           ]
         },
+        "interface-reth" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Disabling illegal unit 'ge-0/0/0.0' on parent that is a member of a redundant ethernet group 'reth0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Disabling illegal unit 'ge-0/0/1.0' on parent that is a member of a redundant ethernet group 'reth0'"
+            }
+          ]
+        },
         "internet" : { },
         "ios_xe_bgp" : {
           "Red flags" : [
@@ -85530,6 +85542,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Configuration will not actually commit. Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Deactivating irb.5 because it has no assigned vlan"
             }
           ]
         },
@@ -85670,6 +85686,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "NAT rule MISSING_TO ignored because it has no to zone configured"
+            }
+          ]
+        },
+        "vmx4" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Deactivating irb.100 because it has no assigned vlan"
             }
           ]
         }
