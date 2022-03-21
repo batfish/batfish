@@ -667,12 +667,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     for (org.batfish.datamodel.Interface i : c.getActiveInterfaces().values()) {
       if (!i.getAllAddresses().isEmpty()) {
         String name = i.getName();
-        if (i.getSwitchport()) {
-          w.redFlag(
-              String.format(
-                  "Disabling invalid interface '%s' because it has both L2 and L3 settings", name));
-          i.deactivate(InactiveReason.INVALID);
-        } else if (i.getChannelGroup() != null) {
+        if (i.getChannelGroup() != null) {
           w.redFlag(
               String.format(
                   "Disabling invalid interface '%s' because has L3 settings but is a bond slave of"
