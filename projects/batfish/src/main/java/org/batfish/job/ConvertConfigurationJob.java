@@ -44,6 +44,9 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
@@ -716,6 +719,34 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       if (i.getSwitchport() && !i.getAllAddresses().isEmpty()) {
         w.redFlag(String.format("Interface %s is a switchport, but it has L3 addresses", name));
         c.getAllInterfaces().remove(name);
+      }
+      if (i.getActive()) {
+        if (i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() == null) {
+          w.redFlag(String.format("Interface %s is a VLAN interface but has no vlan set", name));
+          c.getAllInterfaces().remove(name);
+        } else if (i.getChannelGroup() != null && !i.getAllAddresses().isEmpty()) {
+          w.redFlag(
+              String.format(
+                  "Interface %s is a member of an aggregate or redundancy group but it has L3"
+                      + " addresses",
+                  name));
+          c.getAllInterfaces().remove(name);
+        } else if (i.getInterfaceType() == InterfaceType.LOGICAL) {
+          for (Dependency dependency : i.getDependencies()) {
+            if (dependency.getType() == DependencyType.BIND) {
+              Interface parent = c.getAllInterfaces().get(dependency.getInterfaceName());
+              if (parent.getChannelGroup() != null && !i.getAllAddresses().isEmpty()) {
+                w.redFlag(
+                    String.format(
+                        "Interface %s is a child of a member of an aggregate or redundancy group"
+                            + " but it has L3 addresses",
+                        name));
+                c.getAllInterfaces().remove(name);
+                break;
+              }
+            }
+          }
+        }
       }
     }
   }

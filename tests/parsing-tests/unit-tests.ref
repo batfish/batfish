@@ -70520,6 +70520,16 @@
             }
           ]
         },
+        "configs/palo_alto/interfaces" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 49,
+              "Parser_Context" : "[sniv_unit sniv_units sni_vlan sn_interface s_network statement_config_devices set_line_config_devices set_line_tail set_line palo_alto_configuration]",
+              "Text" : "vlan.1"
+            }
+          ]
+        },
         "configs/palo_alto/nat" : {
           "Parse warnings" : [
             {
@@ -70699,7 +70709,7 @@
         "host1" : "PASSED",
         "host2" : "PASSED",
         "if_tag_is" : "PASSED",
-        "interface-reth" : "PASSED",
+        "interface-reth" : "WARNINGS",
         "interface_exit" : "PASSED",
         "interface_sdr" : "PASSED",
         "interfacemtu" : "PASSED",
@@ -70819,7 +70829,7 @@
         "variables" : "PASSED",
         "variables_dos" : "PASSED",
         "vlan_access_map4" : "PASSED",
-        "vmx4" : "PASSED",
+        "vmx4" : "WARNINGS",
         "xr_dhcp" : "PASSED",
         "xr_ipsla" : "PASSED",
         "xr_multicast" : "PASSED",
@@ -85288,6 +85298,18 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Disabling invalid interface 'swp1' because has L3 settings but is a bond slave of 'bond1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Disabling invalid interface 'swp2' because has L3 settings but is a bond slave of 'bond1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Disabling invalid interface 'swp3' because has L3 settings but is a bond slave of 'bond1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond1'"
             },
             {
@@ -85401,6 +85423,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '10.0.0.1'"
+            }
+          ]
+        },
+        "interface-reth" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Disabling illegal unit 'ge-0/0/0.0' on parent that is a member of a redundant ethernet group 'reth0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Disabling illegal unit 'ge-0/0/1.0' on parent that is a member of a redundant ethernet group 'reth0'"
             }
           ]
         },
@@ -85530,6 +85564,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Configuration will not actually commit. Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Deactivating irb.5 because it has no assigned vlan"
             }
           ]
         },
@@ -85670,6 +85708,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "NAT rule MISSING_TO ignored because it has no to zone configured"
+            }
+          ]
+        },
+        "vmx4" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Deactivating irb.100 because it has no assigned vlan"
             }
           ]
         }
