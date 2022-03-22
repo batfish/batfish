@@ -2040,14 +2040,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       case LOOPBACK:
         return InterfaceType.LOOPBACK;
       case TUNNEL:
-        // TODO: temporary hack until bind dependencies are removed
-        return InterfaceType.LOOPBACK;
-      case TUNNEL_UNIT:
         return InterfaceType.TUNNEL;
       case VLAN:
-        // TODO: temporary hack until bind dependencies are removed
-        return InterfaceType.LOOPBACK;
-      case VLAN_UNIT:
         return InterfaceType.VLAN;
       default:
         w.unimplemented("Unknown Palo Alto interface type " + panType);
@@ -3221,12 +3215,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Batfish cannot handle interfaces without a Vrf
     // So put orphaned interfaces in a constructed Vrf and shut them down
     Vrf nullVrf = new Vrf(NULL_VRF_NAME);
-    int orphanedInterfaces = 0;
+    int oraphnedInterfaces = 0;
     for (Entry<String, org.batfish.datamodel.Interface> i : _c.getAllInterfaces().entrySet()) {
       org.batfish.datamodel.Interface iface = i.getValue();
       if (iface.getVrf() == null) {
         iface.setVrf(nullVrf);
-        orphanedInterfaces++;
+        oraphnedInterfaces++;
         if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
           // This is a child interface. Just shut it down.
           iface.deactivate(INCOMPLETE);
@@ -3270,7 +3264,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
     }
     // Don't pollute VI model will null VRF unless we have to.
-    if (orphanedInterfaces > 0) {
+    if (oraphnedInterfaces > 0) {
       _c.getVrfs().put(nullVrf.getName(), nullVrf);
     }
 

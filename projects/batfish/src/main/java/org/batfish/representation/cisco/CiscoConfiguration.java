@@ -103,7 +103,6 @@ import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -1376,16 +1375,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (!iface.getActive()) {
       newIface.adminDown();
     }
-    String channelGroup = iface.getChannelGroup();
-    newIface.setChannelGroup(channelGroup);
-    if (iface.getActive() && channelGroup != null && !_interfaces.containsKey(channelGroup)) {
-      _w.redFlag(
-          String.format(
-              "Deactivating interface %s that refers to undefined channel-group %s",
-              ifaceName, channelGroup));
-      newIface.deactivate(InactiveReason.INVALID);
-    }
-
+    newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setVrf(c.getVrfs().get(vrfName));

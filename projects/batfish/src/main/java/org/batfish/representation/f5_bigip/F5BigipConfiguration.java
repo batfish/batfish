@@ -56,7 +56,6 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
-import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -1508,12 +1507,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setType(InterfaceType.VLAN)
             .build();
     // TODO: Possibly add dependencies on ports allowing this VLAN
-    Integer vlanId = vlan.getTag();
-    newIface.setVlan(vlanId);
-    if (vlanId == null) {
-      _w.redFlag(String.format("Deactivating vlan %s because it has no tag set", vlan.getName()));
-      newIface.deactivate(InactiveReason.INCOMPLETE);
-    }
+    newIface.setVlan(vlan.getTag());
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);
     newIface.setVrf(_c.getDefaultVrf());
     // Assume each interface has its own session info (sessions are not shared by interfaces).
