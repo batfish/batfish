@@ -3449,6 +3449,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // convert interfaces. Before policies because some policies depend on interfaces
     convertInterfaces();
+    convertBridgeDomains();
 
     // convert conditions to RoutingPolicy objects
     _masterLogicalSystem
@@ -3740,6 +3741,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.BGP_GROUP,
         JuniperStructureUsage.BGP_ALLOW,
         JuniperStructureUsage.BGP_NEIGHBOR);
+    markConcreteStructure(JuniperStructureType.BRIDGE_DOMAIN);
     markConcreteStructure(
         JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS,
         JuniperStructureUsage.FIREWALL_FILTER_DSCP);
@@ -3758,23 +3760,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER,
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST);
     markConcreteStructure(JuniperStructureType.FIREWALL_FILTER_TERM);
-    markConcreteStructure(
-        JuniperStructureType.INTERFACE,
-        JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE,
-        JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE,
-        JuniperStructureUsage.INTERFACE_SELF_REFERENCE,
-        JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE,
-        JuniperStructureUsage.ISIS_INTERFACE,
-        JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE,
-        JuniperStructureUsage.NAT_RULE_SET_TO_INTERFACE,
-        JuniperStructureUsage.OSPF_AREA_INTERFACE,
-        JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE,
-        JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE,
-        JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
-        JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE,
-        JuniperStructureUsage.VLAN_INTERFACE,
-        JuniperStructureUsage.VLAN_L3_INTERFACE,
-        JuniperStructureUsage.VTEP_SOURCE_INTERFACE);
+    markConcreteStructure(JuniperStructureType.INTERFACE);
     markConcreteStructure(
         JuniperStructureType.POLICY_STATEMENT,
         JuniperStructureUsage.BGP_EXPORT_POLICY,
@@ -3827,6 +3813,69 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.computeRoutingPolicySources(_w);
 
     return _c;
+  }
+
+  private void convertBridgeDomains() {
+    _masterLogicalSystem
+        .getDefaultRoutingInstance()
+        .getBridgeDomains()
+        .forEach(
+            (name, bd) ->
+                convertBridgeDomain(name, bd, _masterLogicalSystem.getDefaultRoutingInstance()));
+    _masterLogicalSystem
+        .getRoutingInstances()
+        .values()
+        .forEach(
+            ri ->
+                ri.getBridgeDomains().forEach((bdName, bd) -> convertBridgeDomain(bdName, bd, ri)));
+  }
+
+  @SuppressWarnings("unused")
+  private void convertBridgeDomain(String bdName, BridgeDomain bd, RoutingInstance ri) {
+    BridgeDomainVlanId vlanId = bd.getVlanId();
+    if (vlanId == null) {
+      return;
+    }
+    String routingInterfaceName = bd.getRoutingInterface();
+    if (routingInterfaceName == null) {
+      return;
+    }
+    // TODO: does RI matter?
+    org.batfish.datamodel.Interface viRoutingInterface =
+        _c.getAllInterfaces().get(routingInterfaceName);
+    if (viRoutingInterface == null) {
+      return;
+    }
+    // TODO: optimize
+    new BridgeDomainVlanIdVoidVisitor() {
+      @Override
+      public void visitBridgeDomainVlanIdAll() {
+        // nothing to do for now
+      }
+
+      @Override
+      public void visitBridgeDomainVlanIdNone() {
+        // nothing to do for now
+      }
+
+      @Override
+      public void visitBridgeDomainVlanIdNumber(BridgeDomainVlanIdNumber bridgeDomainVlanIdNumber) {
+        int vlan = bridgeDomainVlanIdNumber.getVlan();
+        // TODO: Need to determine whether a physical interface is necessary. If so, need to process
+        //       several other configuration constructs, at least:
+        //       Method 1:
+        //       - interfaces <name> unit <num> family bridge interface-mode trunk
+        //       - interfaces <name> unit <num> family bridge vlan-id-list <vlan-num>
+        //       Method 2:
+        //       - interfaces <name> encapsulation extended-vlan-bridge
+        //       - interfaces <name> unit <num> vlan-id <vlan-num>
+        //       Method 3:
+        //       - routing-options bridge-domains <name> interface
+        //       Until then, we disable autostate by modifying normal vlan range.
+        viRoutingInterface.setVlan(vlan);
+        _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlan)));
+      }
+    }.visit(vlanId);
   }
 
   private static @Nonnull VrfLeakConfig getOrInitVrfLeakConfig(Vrf vrf) {

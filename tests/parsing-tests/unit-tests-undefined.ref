@@ -2573,6 +2573,18 @@
         }
       },
       {
+        "File_Name" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "irb.101",
+        "Context" : "bridge-domains routing-interface",
+        "Lines" : {
+          "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+          "lines" : [
+            85
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/ios_bgp",
         "Struct_Type" : "ipv6 prefix-list",
         "Ref_Name" : "VPNV6_PL",
@@ -4351,10 +4363,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 353 results",
+      "notes" : "Found 354 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 353
+      "numResults" : 354
     }
   }
 ]

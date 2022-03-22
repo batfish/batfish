@@ -61,6 +61,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
@@ -90,7 +91,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfEnabled;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
@@ -161,6 +164,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
@@ -364,6 +368,8 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.BaseApplication;
+import org.batfish.representation.juniper.BridgeDomain;
+import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DscpUtil;
@@ -7128,6 +7134,49 @@ public final class FlatJuniperGrammarTest {
   public void testInterfaceMediaTypes() {
     // don't crash
     parseConfig("interface-media-types");
+  }
+
+  @Test
+  public void testBridgeDomainsExtraction() {
+    String hostname = "bridge-domains";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    assertThat(
+        vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains(),
+        hasKeys("bd1", "bd3", "bd4", "bd5"));
+    assertThat(
+        vc.getMasterLogicalSystem().getRoutingInstances().get("ri1").getBridgeDomains(),
+        hasKeys("bd2"));
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains().get("bd1");
+      assertThat(bd.getRoutingInterface(), equalTo("irb.1"));
+      assertThat(bd.getVlanId(), equalTo(BridgeDomainVlanIdNumber.of(1)));
+    }
+    // TODO: other bridge domain configurations, i.e. bd2-5
+  }
+
+  @Test
+  public void testBridgeDomainsConversion() {
+    String hostname = "bridge-domains";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("irb.1", allOf(hasVlan(1), isActive())));
+    // TODO: Update assertions if we should instead require an active physical/l2 interface in the
+    //       bridge domain. See JuniperConfiguration.convertBridgeDomain.
+    assertFalse(c.getNormalVlanRange().contains(1));
+  }
+
+  @Test
+  public void testBridgeDomainsReferences() throws IOException {
+    String hostname = "bridge-domains";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasDefinedStructure(filename, BRIDGE_DOMAIN, "bd1"));
+    // self ref
+    assertThat(ccae, hasNumReferrers(filename, BRIDGE_DOMAIN, "bd1", 1));
+    // self plus routing-interface
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "irb.1", 2));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

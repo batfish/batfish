@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -58,6 +59,7 @@ public class RoutingInstance implements Serializable {
   private SnmpServer _snmpServer;
   private final JuniperSystem _system;
   @Nullable private Resolution _resolution;
+  private @Nonnull Map<String, BridgeDomain> _bridgeDomains;
 
   public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -101,6 +103,7 @@ public class RoutingInstance implements Serializable {
         RoutingInformationBase.RIB_ISIS,
         new RoutingInformationBase(RoutingInformationBase.RIB_ISIS));
     _system = new JuniperSystem();
+    _bridgeDomains = ImmutableMap.of();
   }
 
   @Nullable
@@ -350,5 +353,22 @@ public class RoutingInstance implements Serializable {
       _resolution = new Resolution();
     }
     return _resolution;
+  }
+
+  public @Nonnull Map<String, BridgeDomain> getBridgeDomains() {
+    return _bridgeDomains;
+  }
+
+  public @Nonnull BridgeDomain getOrAddBridgeDomain(String name) {
+    BridgeDomain bd = _bridgeDomains.get(name);
+    if (bd == null) {
+      bd = new BridgeDomain();
+      _bridgeDomains =
+          ImmutableMap.<String, BridgeDomain>builderWithExpectedSize(_bridgeDomains.size() + 1)
+              .putAll(_bridgeDomains)
+              .put(name, bd)
+              .build();
+    }
+    return bd;
   }
 }

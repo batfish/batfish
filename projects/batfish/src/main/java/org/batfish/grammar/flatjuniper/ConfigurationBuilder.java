@@ -15,6 +15,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GR
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
@@ -51,6 +52,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPOR
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_FAMILY_INET_UNICAST_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAINS_ROUTING_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAIN_SELF_REF;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DSCP;
@@ -236,6 +239,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_routing_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_rib_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
@@ -245,6 +250,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_no_prepend_global_as
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bridge_domain_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DecContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DescriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dh_groupContext;
@@ -558,6 +564,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_offContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefix_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_bridge_domainsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
@@ -683,6 +690,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8_rangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlan_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
@@ -708,6 +716,11 @@ import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.BridgeDomain;
+import org.batfish.representation.juniper.BridgeDomainVlanId;
+import org.batfish.representation.juniper.BridgeDomainVlanIdAll;
+import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
+import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.CommunityMember;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
@@ -911,6 +924,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
 
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
+
+  private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
 
   private static final IntegerSpace FRAGMENT_OFFSET_RANGE = IntegerSpace.of(new SubRange(0, 8191));
 
@@ -2192,6 +2207,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private Resolution _currentResolution;
 
   private ResolutionRib _currentResolutionRib;
+
+  private BridgeDomain _currentBridgeDomain;
 
   public ConfigurationBuilder(
       FlatJuniperCombinedParser parser,
@@ -6756,6 +6773,74 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.referenceStructure(
         CONDITION, name, POLICY_STATEMENT_FROM_CONDITION, getLine(ctx.getStart()));
     _currentPsTerm.getFroms().addFromCondition(new PsFromCondition(name));
+  }
+
+  @Override
+  public void enterS_bridge_domains(S_bridge_domainsContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.name);
+    if (!maybeName.isPresent()) {
+      _currentBridgeDomain = new BridgeDomain();
+      return;
+    }
+    String name = maybeName.get();
+    if (!_currentRoutingInstance.getBridgeDomains().containsKey(name)) {
+      _configuration.referenceStructure(
+          BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, ctx.getStart().getLine());
+    }
+    _currentBridgeDomain = _currentRoutingInstance.getOrAddBridgeDomain(name);
+    _configuration.defineFlattenedStructure(BRIDGE_DOMAIN, name, ctx, _parser);
+    // until we support bridge domains generally
+    todo(ctx);
+  }
+
+  @Override
+  public void exitS_bridge_domains(S_bridge_domainsContext ctx) {
+    _currentBridgeDomain = null;
+  }
+
+  @Override
+  public void exitBd_routing_interface(Bd_routing_interfaceContext ctx) {
+    String iface = new InterfaceId(ctx.interface_id()).getFullName();
+    if (!iface.startsWith("irb")) {
+      warn(ctx, "Only IRB interfaces are supported for routing-interface");
+      return;
+    }
+    _configuration.referenceStructure(
+        INTERFACE, iface, BRIDGE_DOMAINS_ROUTING_INTERFACE, ctx.getStart().getLine());
+    _currentBridgeDomain.setRoutingInterface(iface);
+  }
+
+  @Override
+  public void exitBd_vlan_id(Bd_vlan_idContext ctx) {
+    BridgeDomainVlanId vlanId;
+    if (ctx.ALL() != null) {
+      vlanId = BridgeDomainVlanIdAll.instance();
+    } else if (ctx.NONE() != null) {
+      vlanId = BridgeDomainVlanIdNone.instance();
+    } else {
+      assert ctx.vlan_number() != null;
+      Optional<Integer> maybeNum = toInteger(ctx, ctx.vlan_number());
+      if (!maybeNum.isPresent()) {
+        return;
+      }
+      vlanId = BridgeDomainVlanIdNumber.of(maybeNum.get());
+    }
+    _currentBridgeDomain.setVlanId(vlanId);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vlan_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "vlan number");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Bridge_domain_nameContext ctx) {
+    String name = toString(ctx.junos_name());
+    if (name.contains("/")) {
+      warn(messageCtx, "bridge-domain name cannot contain '/'");
+      return Optional.empty();
+    }
+    return Optional.of(name);
   }
 
   @Nullable
