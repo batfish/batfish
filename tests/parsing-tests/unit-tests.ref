@@ -70627,7 +70627,7 @@
         "cisco_enable" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
-        "cisco_interface" : "PASSED",
+        "cisco_interface" : "WARNINGS",
         "cisco_ios_neighbor" : "PASSED",
         "cisco_ip" : "PASSED",
         "cisco_ip_nat" : "PASSED",
@@ -85246,6 +85246,14 @@
             }
           ]
         },
+        "cisco_interface" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface Ethernet0 has an undefined channel group Port-channel1"
+            }
+          ]
+        },
         "cisco_ip_route" : {
           "Red flags" : [
             {
@@ -85430,11 +85438,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Disabling illegal unit 'ge-0/0/0.0' on parent that is a member of a redundant ethernet group 'reth0'"
+              "text" : "Refusing to convert illegal unit 'ge-0/0/0.0' on parent that is a member of a redundant ethernet group 'reth0'"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Disabling illegal unit 'ge-0/0/1.0' on parent that is a member of a redundant ethernet group 'reth0'"
+              "text" : "Refusing to convert illegal unit 'ge-0/0/1.0' on parent that is a member of a redundant ethernet group 'reth0'"
             }
           ]
         },
