@@ -1829,6 +1829,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
     String name = iface.getName();
+    if (iface.getParent().getRedundantParentInterface() != null) {
+      _w.redFlag(
+          String.format(
+              "Refusing to convert illegal unit '%s' on parent that is a member of a redundant"
+                  + " ethernet group '%s'",
+              name, iface.getParent().getRedundantParentInterface()));
+      return null;
+    }
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder().setName(name).setOwner(_c).build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
@@ -1928,14 +1936,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setAddress(iface.getPrimaryAddress());
     }
     newIface.setAllAddresses(iface.getAllAddresses());
-    if (iface.getParent().getRedundantParentInterface() != null) {
-      _w.redFlag(
-          String.format(
-              "Refusing to convert illegal unit '%s' on parent that is a member of a redundant"
-                  + " ethernet group '%s'",
-              name, iface.getParent().getRedundantParentInterface()));
-      return null;
-    } else if (!iface.getActive()) {
+    if (!iface.getActive()) {
       newIface.adminDown();
     }
     EthernetSwitching es = iface.getEthernetSwitching();
