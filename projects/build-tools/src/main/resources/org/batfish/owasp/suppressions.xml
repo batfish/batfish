@@ -4,4 +4,8 @@
     <notes>This is a SUSE packaging bug, nothing to do with jar.</notes>
     <cve>CVE-2020-8022</cve>
   </suppress>
+  <suppress>
+    <notes>This is a non-issue.</notes>
+    <cve>CVE-2020-36518</cve>
+  </suppress>
 </suppressions>
