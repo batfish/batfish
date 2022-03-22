@@ -51,19 +51,16 @@ net vlan /Common/vlan_active {
     interfaces {
         1.1 { }
     }
-    tag 1
 }
 net vlan /Common/vlan_active_nbma {
     interfaces {
         1.2 { }
     }
-    tag 2
 }
 net vlan /Common/vlan_passive {
     interfaces {
         2.1 { }
     }
-    tag 3
 }
 
 security firewall rule-list /Common/_sys_self_allow_defaults {

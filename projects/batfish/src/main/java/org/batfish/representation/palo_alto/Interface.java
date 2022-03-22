@@ -20,9 +20,7 @@ public final class Interface implements Serializable {
     LOOPBACK,
     PHYSICAL,
     TUNNEL,
-    TUNNEL_UNIT,
     VLAN,
-    VLAN_UNIT,
   }
 
   public static final int DEFAULT_INTERFACE_MTU = 1500;

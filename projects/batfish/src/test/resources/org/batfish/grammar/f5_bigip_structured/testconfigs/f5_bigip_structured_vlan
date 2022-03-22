@@ -15,21 +15,12 @@ net interface 3.0 {
     bundle enabled
     bundle-speed 40G
 }
-net interface 4.0 {
-    bundle enabled
-    bundle-speed 40G
-}
 net vlan /Common/MYVLAN {
     interfaces {
         1.0 { }
         trunk1 { }
     }
     tag 123
-}
-net vlan /Common/MISSINGTAG {
-    interfaces {
-        4.0 { }
-    }
 }
 net self /Common/MYSELF {
     address 10.0.0.1/24

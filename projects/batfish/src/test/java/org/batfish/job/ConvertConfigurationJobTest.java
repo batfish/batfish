@@ -16,22 +16,17 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedMap;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Interface.Dependency;
-import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -39,7 +34,6 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -338,150 +332,5 @@ public final class ConvertConfigurationJobTest {
             hasText(
                 "Removing reference to undefined track 'missing' on static route for prefix"
                     + " 0.0.0.0/0 in vrf 'default'")));
-  }
-
-  @Test
-  public void testVerifyInterfaces() {
-    InterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
-
-    Configuration c =
-        Configuration.builder()
-            .setHostname("c")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .setDefaultCrossZoneAction(LineAction.PERMIT)
-            .setDefaultInboundAction(LineAction.PERMIT)
-            .build();
-    Vrf v = Vrf.builder().setName("v").setOwner(c).build();
-    // good
-    Interface.builder()
-        .setName("switchportOnModeAccess")
-        .setSwitchport(true)
-        .setSwitchportMode(SwitchportMode.ACCESS)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // bad
-    Interface.builder()
-        .setName("switchportOnModeNone")
-        .setSwitchport(true)
-        .setSwitchportMode(SwitchportMode.NONE)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // bad
-    Interface.builder()
-        .setName("switchportOffModeAccess")
-        .setSwitchport(false)
-        .setSwitchportMode(SwitchportMode.ACCESS)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // bad
-    Interface.builder()
-        .setName("switchportAndL3")
-        .setSwitchport(true)
-        .setSwitchportMode(SwitchportMode.ACCESS)
-        .setAddress(address)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // bad
-    Interface.builder()
-        .setName("vlanNoVlan")
-        .setType(InterfaceType.VLAN)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // good
-    Interface.builder()
-        .setName("vlanWithVlan")
-        .setType(InterfaceType.VLAN)
-        .setVlan(5)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // bad
-    Interface.builder()
-        .setName("channelGroupAndL3")
-        .setType(InterfaceType.PHYSICAL)
-        .setChannelGroup("aggregated")
-        .setAddress(address)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // good
-    Interface.builder()
-        .setName("aggregated")
-        .setType(InterfaceType.AGGREGATED)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // good
-    Interface.builder()
-        .setName("channelGroup")
-        .setType(InterfaceType.PHYSICAL)
-        .setChannelGroup("aggregated")
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // bad
-    Interface.builder()
-        .setName("l3AndParentChannelGroup")
-        .setType(InterfaceType.LOGICAL)
-        .setDependencies(ImmutableSet.of(new Dependency("channelGroup", DependencyType.BIND)))
-        .setAddress(address)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // bad
-    Interface.builder()
-        .setName("missingBindDep")
-        .setType(InterfaceType.LOGICAL)
-        .setDependencies(ImmutableSet.of(new Dependency("undefined", DependencyType.BIND)))
-        .setVrf(v)
-        .setOwner(c)
-        .build();
-    // bad
-    Interface missingAggregateDep =
-        Interface.builder()
-            .setName("missingAggregateDep")
-            .setType(InterfaceType.AGGREGATED)
-            .setDependencies(ImmutableSet.of(new Dependency("undefined", DependencyType.AGGREGATE)))
-            .setVrf(v)
-            .setOwner(c)
-            .build();
-
-    Warnings w = new Warnings(false, true, false);
-    finalizeConfiguration(c, w);
-
-    assertThat(
-        w.getRedFlagWarnings(),
-        containsInAnyOrder(
-            hasText("Interface switchportOnModeNone has switchport true but switchport mode NONE"),
-            hasText(
-                "Interface switchportOffModeAccess has switchport false but switchport mode"
-                    + " ACCESS"),
-            hasText("Interface switchportAndL3 is a switchport, but it has L3 addresses"),
-            hasText("Interface vlanNoVlan is a VLAN interface but has no vlan set"),
-            hasText(
-                "Interface channelGroupAndL3 is a member of AGGREGATED interface aggregated but it"
-                    + " has L3 addresses"),
-            hasText(
-                "Interface l3AndParentChannelGroup is a child of a member of AGGREGATED interface"
-                    + " aggregated but it has L3 addresses"),
-            hasText(
-                "Interface missingBindDep has a bind dependency on missing interface undefined"),
-            hasText(
-                "Interface missingAggregateDep has an aggregate dependency on missing interface"
-                    + " undefined")));
-    assertThat(
-        c.getAllInterfaces(),
-        hasKeys(
-            "switchportOnModeAccess",
-            "vlanWithVlan",
-            "aggregated",
-            "channelGroup",
-            "missingAggregateDep"));
-    assertThat(missingAggregateDep.getDependencies(), empty());
   }
 }
