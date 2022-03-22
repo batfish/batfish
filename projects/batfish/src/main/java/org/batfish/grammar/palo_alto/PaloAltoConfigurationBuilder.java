@@ -2181,7 +2181,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     _currentInterface =
         _currentParentInterface
             .getUnits()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.TUNNEL_UNIT));
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.TUNNEL));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2197,11 +2197,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     _currentInterface =
         _currentParentInterface
             .getUnits()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN_UNIT));
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
-    // TODO: convert vlan ID for created vlan units
-    todo(ctx);
   }
 
   @Override

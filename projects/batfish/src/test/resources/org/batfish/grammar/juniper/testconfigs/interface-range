@@ -13,5 +13,3 @@ set interfaces interface-range ae2-members description dodo
 set interfaces interface-range ae2-members member xe-8/1/2
 set interfaces interface-range ae2-members gigether-options redundant-parent reth0
 set interfaces interface-range ae2-members gigether-options 802.3ad ae1
-
-set interfaces reth0 mtu 1500

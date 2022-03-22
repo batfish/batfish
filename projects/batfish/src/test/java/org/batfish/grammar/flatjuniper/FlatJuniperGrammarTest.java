@@ -3132,7 +3132,9 @@ public final class FlatJuniperGrammarTest {
 
     // all interfaces should show up; no need to test their specific settings here
     Configuration c = parseConfig("interface-range");
-    assertThat(c.getAllInterfaces(), hasKeys("xe-0/0/0", "xe-0/0/1", "xe-8/1/2", "reth0"));
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of("xe-0/0/0", "xe-0/0/1", "xe-8/1/2")));
   }
 
   @Test

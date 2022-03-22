@@ -4,7 +4,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.InactiveReason.INCOMPLETE;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
@@ -36,7 +35,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInactiveReason;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -1372,10 +1370,8 @@ public final class CumulusNcluGrammarTest {
 
     // vlan-id
     assertThat(c, hasInterface("vlan2", hasVlan(2)));
-    assertThat(
-        c, hasInterface("vlan3", allOf(hasVlan(nullValue()), hasInactiveReason(INCOMPLETE))));
-    assertThat(
-        c, hasInterface("vlan4", allOf(hasVlan(nullValue()), hasInactiveReason(INCOMPLETE))));
+    assertThat(c, hasInterface("vlan3", hasVlan(nullValue())));
+    assertThat(c, hasInterface("vlan4", hasVlan(nullValue())));
     assertThat(c, hasInterface("vlan5", hasVlan(6)));
 
     // ip address
