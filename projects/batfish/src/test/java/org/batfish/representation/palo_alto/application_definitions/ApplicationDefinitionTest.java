@@ -92,5 +92,22 @@ public class ApplicationDefinitionTest {
       assertNotNull(appDef.getUseApplications());
       assertThat(appDef.getUseApplications().getMember(), contains("something-base"));
     }
+
+    // App definition for an ip-protocol based app
+    {
+      String appDefJson =
+          "{"
+              + "  \"@name\": \"dcn-meas\","
+              + "  \"default\": {"
+              + "    \"ident-by-ip-protocol\": \"19\""
+              + "  }"
+              + "}";
+      ApplicationDefinition appDef =
+          BatfishObjectMapper.ignoreUnknownMapper()
+              .readValue(appDefJson, ApplicationDefinition.class);
+      assertNotNull(appDef);
+      assertNotNull(appDef.getDefault());
+      assertThat(appDef.getDefault().getIdentByIpProtocol(), equalTo("19"));
+    }
   }
 }

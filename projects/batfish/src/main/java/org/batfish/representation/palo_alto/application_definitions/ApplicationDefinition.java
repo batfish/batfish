@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Data model for Palo Alto application definition. */
+/** Data model for a Palo Alto application definition. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class ApplicationDefinition {
   private static final String PROP_NAME = "@name";
@@ -19,6 +19,7 @@ public final class ApplicationDefinition {
   private static final String PROP_IMPLICIT_USE_APPLICATIONS = "implicit-use-applications";
   private static final String PROP_DEFAULT = "default";
 
+  /** Get the name of the application. */
   @Nonnull
   public String getName() {
     return _name;
@@ -48,7 +49,7 @@ public final class ApplicationDefinition {
     return _implicitUseApplications;
   }
 
-  /** Get information about default IP protocol and port. */
+  /** Get information about default application properties, specifically IP protocol and port. */
   @Nullable
   public Default getDefault() {
     return _default;

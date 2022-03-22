@@ -17,10 +17,10 @@ import javax.annotation.Nullable;
 
 /**
  * Data model class containing information about a Palo Alto application's "{@code
- * use-applications}". These correspond to related applications (details TBD).
+ * use-applications}". These correspond to applications used by / related to others (details TBD).
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UseApplications {
+public final class UseApplications {
   @Nonnull
   public List<String> getMember() {
     return _member;

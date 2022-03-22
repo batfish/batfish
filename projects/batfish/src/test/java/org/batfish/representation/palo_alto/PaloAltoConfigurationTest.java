@@ -29,9 +29,12 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.securit
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.unexpectedUnboundedCustomUrlWildcard;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -51,6 +54,8 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Zone.Type;
+import org.batfish.representation.palo_alto.application_definitions.ApplicationDefinition;
+import org.batfish.representation.palo_alto.application_definitions.ApplicationDefinitions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -812,5 +817,12 @@ public final class PaloAltoConfigurationTest {
     assertTrue(dest.getServices().containsKey("service"));
     assertTrue(dest.getServiceGroups().containsKey("serviceGroup"));
     assertTrue(dest.getTags().containsKey("tag"));
+  }
+
+  @Test
+  public void testingStuff() {
+    Map<String, ApplicationDefinition> a = ApplicationDefinitions.INSTANCE.getApplications();
+    assertThat(a, notNullValue());
+    assertThat(a, not(anEmptyMap()));
   }
 }

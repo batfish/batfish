@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 
-public class ApplicationDefinitions {
+/** Helper class that stores all built-in application definitions for a Palo Alto device. */
+public final class ApplicationDefinitions {
   public static ApplicationDefinitions INSTANCE = new ApplicationDefinitions();
 
   public Map<String, ApplicationDefinition> getApplications() {

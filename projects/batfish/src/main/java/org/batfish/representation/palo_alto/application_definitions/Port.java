@@ -16,7 +16,8 @@ import javax.annotation.Nullable;
  * Data model class containing information about a Palo Alto application's default port(s) and IP
  * protocol(s).
  */
-public class Port {
+public final class Port {
+  /** Get the list of protocol/port combinations that make up this "port". */
   @Nonnull
   public List<String> getMember() {
     return _member;
