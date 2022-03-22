@@ -13,7 +13,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInactiveReason
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isBlacklisted;
-import static org.batfish.main.Batfish.makeSonicFilePairs;
+import static org.batfish.main.Batfish.makeSonicFileGroups;
 import static org.batfish.main.Batfish.mergeInternetAndIspNodes;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
 import static org.batfish.main.Batfish.processNodeBlacklist;
@@ -806,23 +806,27 @@ public class BatfishTest {
     {
       // "normal" case
       assertThat(
-          makeSonicFilePairs(
+          makeSonicFileGroups(
               ImmutableSet.of(
                   "sonic_configs/dev1/frr",
                   "sonic_configs/dev1/configdb",
                   "sonic_configs/dev2/frr",
-                  "sonic_configs/dev2/configdb"),
+                  "sonic_configs/dev2/configdb",
+                  "sonic_configs/dev2/snmp.yml"),
               null),
           equalTo(
               ImmutableList.of(
                   ImmutableSet.of("sonic_configs/dev1/frr", "sonic_configs/dev1/configdb"),
-                  ImmutableSet.of("sonic_configs/dev2/frr", "sonic_configs/dev2/configdb"))));
+                  ImmutableSet.of(
+                      "sonic_configs/dev2/frr",
+                      "sonic_configs/dev2/configdb",
+                      "sonic_configs/dev2/snmp.yml"))));
     }
     {
       // file not in a subdirectory
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       assertThat(
-          makeSonicFilePairs(ImmutableSet.of("sonic_configs/frr"), pvcae),
+          makeSonicFileGroups(ImmutableSet.of("sonic_configs/frr"), pvcae),
           equalTo(ImmutableList.of()));
       assertThat(
           pvcae.getParseStatus(),
@@ -838,7 +842,7 @@ public class BatfishTest {
       // Only 1 file in a subdirectory
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       assertThat(
-          makeSonicFilePairs(ImmutableSet.of("sonic_configs/dev/frr"), pvcae),
+          makeSonicFileGroups(ImmutableSet.of("sonic_configs/dev/frr"), pvcae),
           equalTo(ImmutableList.of()));
       assertThat(
           pvcae.getParseStatus(),
@@ -847,46 +851,14 @@ public class BatfishTest {
           pvcae.getWarnings().get("sonic_configs/dev/frr").getRedFlagWarnings(),
           contains(
               hasText(
-                  "Unexpected packaging: File appears by itself; SONiC files must have their"
-                      + " counterpart in the same directory.")));
-    }
-    {
-      // 2+ files in a subdirectory
-      ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-      assertThat(
-          makeSonicFilePairs(
-              ImmutableSet.of(
-                  "sonic_configs/dev/frr1", "sonic_configs/dev/frr2", "sonic_configs/dev/frr3"),
-              pvcae),
-          equalTo(ImmutableList.of()));
-      assertThat(
-          pvcae.getParseStatus(),
-          equalTo(
-              ImmutableMap.of(
-                  "sonic_configs/dev/frr1",
-                  ParseStatus.UNEXPECTED_PACKAGING,
-                  "sonic_configs/dev/frr2",
-                  ParseStatus.UNEXPECTED_PACKAGING,
-                  "sonic_configs/dev/frr3",
-                  ParseStatus.UNEXPECTED_PACKAGING)));
-      String message =
-          "Unexpected packaging: File appears in a directory with 2 other files; SONiC files must"
-              + " have only their counterpart in the same directory.";
-      assertThat(
-          pvcae.getWarnings().get("sonic_configs/dev/frr1").getRedFlagWarnings(),
-          contains(hasText(message)));
-      assertThat(
-          pvcae.getWarnings().get("sonic_configs/dev/frr2").getRedFlagWarnings(),
-          contains(hasText(message)));
-      assertThat(
-          pvcae.getWarnings().get("sonic_configs/dev/frr2").getRedFlagWarnings(),
-          contains(hasText(message)));
+                  "Unexpected packaging: There must be at least two files in each SONiC device"
+                      + " folder.")));
     }
     {
       // mix of good and bad situations
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       assertThat(
-          makeSonicFilePairs(
+          makeSonicFileGroups(
               ImmutableSet.of(
                   "sonic_configs/dev1/frr",
                   "sonic_configs/dev1/configdb",
@@ -902,8 +874,8 @@ public class BatfishTest {
           pvcae.getWarnings().get("sonic_configs/dev2/frr").getRedFlagWarnings(),
           contains(
               hasText(
-                  "Unexpected packaging: File appears by itself; SONiC files must have their"
-                      + " counterpart in the same directory.")));
+                  "Unexpected packaging: There must be at least two files in each SONiC device"
+                      + " folder.")));
     }
   }
 

@@ -3,7 +3,7 @@ package org.batfish.job;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.job.ParseVendorConfigurationJob.detectFormat;
-import static org.batfish.job.ParseVendorConfigurationJob.getSonicFrrFilename;
+import static org.batfish.job.ParseVendorConfigurationJob.getSonicFileMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -21,6 +21,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.job.ParseVendorConfigurationJob.SonicFileType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -128,36 +129,104 @@ public class ParseVendorConfigurationJobTest {
   }
 
   @Test
-  public void testGetSonicFrrFilename() {
+  public void testGetSonicFileMap() {
     assertEquals(
-        "frr", getSonicFrrFilename(ImmutableMap.of("frr", "hello", "configdb.json", "{}")));
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF, "frr.conf", SonicFileType.CONFIG_DB_JSON, "config_db.json"),
+        getSonicFileMap(ImmutableMap.of("frr.conf", "hello", "config_db.json", "{}")));
 
-    // leading whitespace
+    // cfg variant for frr
     assertEquals(
-        "frr", getSonicFrrFilename(ImmutableMap.of("frr", "hello", "configdb.json", " \n  {}")));
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF, "frr.cfg", SonicFileType.CONFIG_DB_JSON, "config_db.json"),
+        getSonicFileMap(ImmutableMap.of("frr.cfg", "hello", "config_db.json", "{}")));
+
+    // non-empty prefixes
+    assertEquals(
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF,
+            "device_frr.cfg",
+            SonicFileType.CONFIG_DB_JSON,
+            "device_config_db.json"),
+        getSonicFileMap(ImmutableMap.of("device_frr.cfg", "hello", "device_config_db.json", "{}")));
   }
 
   @Test
-  public void testGetSonicFrrFilename_twoJsonFiles() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFrrFilename(ImmutableMap.of("f1", "{}", "f2", "{}"));
+  public void testGetSonicFileMap_Snmp() {
+    assertEquals(
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF,
+            "frr.conf",
+            SonicFileType.CONFIG_DB_JSON,
+            "config_db.json",
+            SonicFileType.SNMP_YML,
+            "snmp.yml"),
+        getSonicFileMap(
+            ImmutableMap.of("frr.conf", "hello", "config_db.json", "{}", "snmp.yml", "blah")));
+
+    // non-empty prefix
+    assertEquals(
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF,
+            "frr.conf",
+            SonicFileType.CONFIG_DB_JSON,
+            "config_db.json",
+            SonicFileType.SNMP_YML,
+            "device_snmp.yml"),
+        getSonicFileMap(
+            ImmutableMap.of(
+                "frr.conf", "hello", "config_db.json", "{}", "device_snmp.yml", "blah")));
   }
 
   @Test
-  public void testGetSonicFrrFilename_noJsonFiles() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFrrFilename(ImmutableMap.of("f1", "aa", "f2", "ab"));
+  public void testGetSonicFileMap_Resolve() {
+    assertEquals(
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF,
+            "frr.conf",
+            SonicFileType.CONFIG_DB_JSON,
+            "config_db.json",
+            SonicFileType.RESOLVE_CONF,
+            "resolve.conf"),
+        getSonicFileMap(
+            ImmutableMap.of("frr.conf", "hello", "config_db.json", "{}", "resolve.conf", "blah")));
+
+    // non-empty prefix
+    assertEquals(
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF,
+            "frr.conf",
+            SonicFileType.CONFIG_DB_JSON,
+            "config_db.json",
+            SonicFileType.RESOLVE_CONF,
+            "device_resolve.conf"),
+        getSonicFileMap(
+            ImmutableMap.of(
+                "frr.conf", "hello", "config_db.json", "{}", "device_resolve.conf", "blah")));
   }
 
   @Test
-  public void testGetSonicFrrFilename_oneFile() {
+  public void testGetSonicFileMap_missingConfigDb() {
     _thrown.expect(IllegalArgumentException.class);
-    getSonicFrrFilename(ImmutableMap.of("frr", "hello"));
+    getSonicFileMap(ImmutableMap.of("frr.conf", "hello"));
   }
 
   @Test
-  public void testGetSonicFrrFilename_manyFiles() {
+  public void testGetSonicFileMap_missingFrr() {
     _thrown.expect(IllegalArgumentException.class);
-    getSonicFrrFilename(ImmutableMap.of("frr", "hello", "a", "{}", "b", "{}"));
+    getSonicFileMap(ImmutableMap.of("config_db.json", "{}"));
+  }
+
+  @Test
+  public void testGetSonicFileMap_duplicateType() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFileMap(ImmutableMap.of("config_db.json", "{}", "device_config_db.json", "{}"));
+  }
+
+  @Test
+  public void testGetSonicFileMap_unknownType() {
+    _thrown.expect(IllegalArgumentException.class);
+    // frr is not a valid tail
+    getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db,json", "{}"));
   }
 }
