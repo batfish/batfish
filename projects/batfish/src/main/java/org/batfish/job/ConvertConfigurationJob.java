@@ -709,9 +709,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       if (!verifyDependencies(c, w, i)) {
         continue;
       }
-      if (!verifyChannelGroupExists(c, w, i)) {
-        continue;
-      }
       // VI invariant: switchport is true iff SwitchportMode is not NONE.
       boolean hasSwitchportMode = i.getSwitchportMode() != SwitchportMode.NONE;
       if (hasSwitchportMode != i.getSwitchport()) {
@@ -728,6 +725,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         continue;
       }
       if (i.getActive()) {
+        if (!verifyChannelGroupExists(c, w, i)) {
+          continue;
+        }
         if (i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() == null) {
           w.redFlag(String.format("Interface %s is a VLAN interface but has no vlan set", name));
           c.getAllInterfaces().remove(name);

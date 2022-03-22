@@ -85250,7 +85250,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface Ethernet0 has an undefined channel group Port-channel1"
+              "text" : "Deactivating interface Ethernet0 that refers to undefined channel-group Port-channel1"
             }
           ]
         },
