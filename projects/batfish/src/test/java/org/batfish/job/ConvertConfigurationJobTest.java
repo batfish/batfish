@@ -433,6 +433,23 @@ public final class ConvertConfigurationJobTest {
         .setVrf(v)
         .setOwner(c)
         .build();
+    // bad
+    Interface.builder()
+        .setName("missingBindDep")
+        .setType(InterfaceType.LOGICAL)
+        .setDependencies(ImmutableSet.of(new Dependency("undefined", DependencyType.BIND)))
+        .setVrf(v)
+        .setOwner(c)
+        .build();
+    // bad
+    Interface missingAggregateDep =
+        Interface.builder()
+            .setName("missingAggregateDep")
+            .setType(InterfaceType.AGGREGATED)
+            .setDependencies(ImmutableSet.of(new Dependency("undefined", DependencyType.AGGREGATE)))
+            .setVrf(v)
+            .setOwner(c)
+            .build();
 
     Warnings w = new Warnings(false, true, false);
     finalizeConfiguration(c, w);
@@ -447,10 +464,24 @@ public final class ConvertConfigurationJobTest {
             hasText("Interface switchportAndL3 is a switchport, but it has L3 addresses"),
             hasText("Interface vlanNoVlan is a VLAN interface but has no vlan set"),
             hasText(
-                "Interface channelGroupAndL3 is a member of an aggregate or redundancy group but it"
+                "Interface channelGroupAndL3 is a member of AGGREGATED interface aggregated but it"
                     + " has L3 addresses"),
             hasText(
-                "Interface l3AndParentChannelGroup is a child of a member of an aggregate or"
-                    + " redundancy group but it has L3 addresses")));
+                "Interface l3AndParentChannelGroup is a child of a member of AGGREGATED interface"
+                    + " aggregated but it has L3 addresses"),
+            hasText(
+                "Interface missingBindDep has a bind dependency on missing interface undefined"),
+            hasText(
+                "Interface missingAggregateDep has an aggregate dependency on missing interface"
+                    + " undefined")));
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys(
+            "switchportOnModeAccess",
+            "vlanWithVlan",
+            "aggregated",
+            "channelGroup",
+            "missingAggregateDep"));
+    assertThat(missingAggregateDep.getDependencies(), empty());
   }
 }

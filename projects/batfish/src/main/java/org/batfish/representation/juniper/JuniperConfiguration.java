@@ -1931,14 +1931,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (iface.getParent().getRedundantParentInterface() != null) {
       _w.redFlag(
           String.format(
-              "Disabling illegal unit '%s' on parent that is a member of a redundant ethernet group"
-                  + " '%s'",
+              "Refusing to convert illegal unit '%s' on parent that is a member of a redundant"
+                  + " ethernet group '%s'",
               name, iface.getParent().getRedundantParentInterface()));
-      newIface.deactivate(InactiveReason.INVALID);
+      return null;
     } else if (!iface.getActive()) {
       newIface.adminDown();
-    } else if (!iface.getParent().getActive()) {
-      newIface.deactivate(InactiveReason.PARENT_DOWN);
     }
     EthernetSwitching es = iface.getEthernetSwitching();
     if (_indirectAccessPorts.containsKey(name)) {
