@@ -450,6 +450,11 @@ public class JFactory extends BDDFactory {
     }
 
     @Override
+    public void traverse(BDDTraversal traversal) {
+      bdd_traverse(traversal, _index);
+    }
+
+    @Override
     public int hashCode() {
       return _index;
     }
@@ -3600,6 +3605,28 @@ public class JFactory extends BDDFactory {
     return res;
   }
 
+  private void bdd_traverse(BDDTraversal traversal, int bdd) {
+    if (ISONE(bdd)) {
+      traversal.one();
+      return;
+    }
+    if (ISZERO(bdd)) {
+      traversal.zero();
+      return;
+    }
+
+    int var = bdd_var(bdd);
+    if (traversal.high(var)) {
+      bdd_traverse(traversal, HIGH(bdd));
+    }
+    traversal.backtrack();
+
+    if (traversal.low(var)) {
+      bdd_traverse(traversal, LOW(bdd));
+    }
+    traversal.backtrack();
+  }
+
   // Makes a node for the purposes of a satisfying assignment. The resulting node tests the given
   // variable, has the given child at the branch indicated by {@code useLow}, and has the other
   // branch false.
@@ -4647,6 +4674,10 @@ public class JFactory extends BDDFactory {
 
     @Override
     public String toString() {
+      return "";
+    }
+
+    String toString2() {
       StringBuilder sb = new StringBuilder();
       sb.append('{');
       boolean any = false;

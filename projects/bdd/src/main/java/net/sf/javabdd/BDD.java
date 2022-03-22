@@ -1641,6 +1641,8 @@ public abstract class BDD {
   @Override
   public abstract boolean equals(@Nullable Object o);
 
+  public abstract void traverse(BDDTraversal traversal);
+
   // override so implementations are forced to implement
   @Override
   public abstract int hashCode();

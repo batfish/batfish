@@ -485,6 +485,11 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
+    public void traverse(BDDTraversal traversal) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public BDDFactory getFactory() {
       return TracingFactory.this;
     }

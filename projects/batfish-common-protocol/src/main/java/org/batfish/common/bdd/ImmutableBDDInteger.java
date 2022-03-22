@@ -7,8 +7,14 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.ImmutableRangeSet;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDTraversal;
 
 public class ImmutableBDDInteger extends BDDInteger {
   private BDD _vars;
@@ -72,5 +78,90 @@ public class ImmutableBDDInteger extends BDDInteger {
       }
     }
     return value;
+  }
+
+  private static class ToRangeSet implements BDDTraversal {
+    private final int _firstVar;
+    private final int _numBits;
+    private int _currentVal;
+    private int _nextVar;
+    ImmutableRangeSet.Builder<Integer> _rangesBuilder;
+
+    private ToRangeSet(int firstVar, int numBits) {
+      _firstVar = firstVar;
+      _numBits = numBits;
+
+      _currentVal = 0;
+      _nextVar = firstVar;
+      _rangesBuilder = ImmutableRangeSet.builder();
+    }
+
+    public RangeSet<Integer> build() {
+      return _rangesBuilder.build();
+    }
+
+    private void addRange() {
+      int unconstrainedBits = _numBits - (_nextVar - _firstVar);
+      int startInclusive = _currentVal << unconstrainedBits;
+      int endExclusive = (_currentVal + 1) << unconstrainedBits;
+      _rangesBuilder.add(
+              Range.closedOpen(startInclusive, endExclusive).canonical(DiscreteDomain.integers()));
+    }
+
+    @Override
+    public void one() {
+      addRange();
+    }
+
+    @Override
+    public void zero() {}
+
+    @Override
+    public void backtrack() {
+      _currentVal >>= 1;
+      _nextVar--;
+    }
+
+    @Override
+    public boolean high(int var) {
+      if (var >= _firstVar + _numBits) {
+        addRange();
+
+        // for backtracking
+        _currentVal <<= 1;
+        _nextVar++;
+
+        return false;
+      }
+
+      checkArgument(var == _nextVar);
+      _currentVal = (_currentVal << 1) + 1;
+      _nextVar += 1;
+      return true;
+    }
+
+    @Override
+    public boolean low(int var) {
+      if (var >= _firstVar + _numBits) {
+        addRange();
+
+        // for backtracking
+        _currentVal <<= 1;
+        _nextVar++;
+
+        return false;
+      }
+
+      checkArgument(var == _nextVar);
+      _currentVal <<= 1;
+      _nextVar++;
+      return true;
+    }
+  }
+
+  RangeSet<Integer> toRangeSet(BDD bdd) {
+    ToRangeSet traversal = new ToRangeSet(_bitvec[0].level(), _bitvec.length);
+    bdd.traverse(traversal);
+    return traversal._rangesBuilder.build();
   }
 }
