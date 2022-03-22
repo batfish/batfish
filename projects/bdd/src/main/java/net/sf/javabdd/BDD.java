@@ -1459,25 +1459,6 @@ public abstract class BDD {
   public abstract BDD replaceWith(BDDPairing pair);
 
   /**
-   * Prints the set of truth assignments specified by this BDD.
-   *
-   * <p>Compare to bdd_printset.
-   */
-  public void printSet() {
-    System.out.println(toString());
-  }
-
-  /**
-   * Prints this BDD using a set notation as in printSet() but with the index of the finite domain
-   * blocks included instead of the BDD variables.
-   *
-   * <p>Compare to fdd_printset.
-   */
-  public void printSetWithDomains() {
-    System.out.println(toStringWithDomains());
-  }
-
-  /**
    * Prints this BDD in dot graph notation.
    *
    * <p>Compare to bdd_printdot.
@@ -1640,6 +1621,15 @@ public abstract class BDD {
 
   @Override
   public String toString() {
+    if (isZero()) {
+      return "ZERO";
+    } else if (isOne()) {
+      return "ONE";
+    }
+    return String.format("hash: %d topVar: %d", hashCode(), var());
+  }
+
+  public String toReprString() {
     BDDFactory f = getFactory();
     int[] set = new int[f.varNum()];
     StringBuffer sb = new StringBuffer();
