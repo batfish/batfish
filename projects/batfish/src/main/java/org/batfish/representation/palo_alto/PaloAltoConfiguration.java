@@ -20,7 +20,6 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
-import static org.batfish.representation.palo_alto.Interface.FAKE_INTERFACE_TYPES;
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
@@ -70,7 +69,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -192,9 +190,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   public static final String PANORAMA_VSYS_NAME = "panorama";
 
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
-
-  private static final Set<InterfaceType> VI_TYPES_WITHOUT_VS_PARENTS =
-      EnumSet.of(InterfaceType.TUNNEL, InterfaceType.VLAN);
 
   private Configuration _c;
 
@@ -2044,9 +2039,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         return InterfaceType.LOGICAL;
       case LOOPBACK:
         return InterfaceType.LOOPBACK;
-      case TUNNEL_UNIT:
+      case TUNNEL:
         return InterfaceType.TUNNEL;
-      case VLAN_UNIT:
+      case VLAN:
         return InterfaceType.VLAN;
       default:
         w.unimplemented("Unknown Palo Alto interface type " + panType);
@@ -2054,15 +2049,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
-  /**
-   * Convert Palo Alto specific interface into vendor independent model interface.
-   *
-   * <p>Return {@link Optional#empty()} if no VI interface should be generated.
-   */
-  private Optional<org.batfish.datamodel.Interface> toInterface(Interface iface) {
-    if (FAKE_INTERFACE_TYPES.contains(iface.getType())) {
-      return Optional.empty();
-    }
+  /** Convert Palo Alto specific interface into vendor independent model interface */
+  private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     Optional<InterfaceRuntimeData> ifaceRuntimeData =
         Optional.ofNullable(_hostname)
@@ -2147,8 +2135,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
       newIface.setSpeed(speed);
       newIface.setBandwidth(speed);
-    } else if (iface.getParent() != null
-        && !FAKE_INTERFACE_TYPES.contains(iface.getParent().getType())) {
+    } else if (iface.getParent() != null) {
       org.batfish.datamodel.Interface parentIface =
           _c.getAllInterfaces().get(iface.getParent().getName());
       assert parentIface != null; // because interfaces are processed in sorted order
@@ -2231,7 +2218,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setPacketPolicy(packetPolicyName);
     }
 
-    return Optional.of(newIface.build());
+    return newIface.build();
   }
 
   /**
@@ -3193,19 +3180,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     for (Interface i : _interfaces.values()) {
       // NB: sorted order is used here.
-      Optional<org.batfish.datamodel.Interface> maybeViParent = toInterface(i);
-      maybeViParent.ifPresent(viIface -> _c.getAllInterfaces().put(viIface.getName(), viIface));
+      org.batfish.datamodel.Interface viIface = toInterface(i);
+      _c.getAllInterfaces().put(viIface.getName(), viIface);
       if (i.getAggregateGroup() != null) {
         aggregates.put(i.getAggregateGroup(), i.getName());
       }
 
       for (Entry<String, Interface> unit : i.getUnits().entrySet()) {
-        Optional<org.batfish.datamodel.Interface> maybeViUnit = toInterface(unit.getValue());
-        assert maybeViUnit.isPresent();
-        org.batfish.datamodel.Interface viUnit = maybeViUnit.get();
-        maybeViParent.ifPresent(
-            viIface ->
-                viUnit.addDependency(new Dependency(viIface.getName(), DependencyType.BIND)));
+        org.batfish.datamodel.Interface viUnit = toInterface(unit.getValue());
+        viUnit.addDependency(new Dependency(viIface.getName(), DependencyType.BIND));
         _c.getAllInterfaces().put(viUnit.getName(), viUnit);
       }
     }
@@ -3232,14 +3215,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Batfish cannot handle interfaces without a Vrf
     // So put orphaned interfaces in a constructed Vrf and shut them down
     Vrf nullVrf = new Vrf(NULL_VRF_NAME);
-    int orphanedInterfaces = 0;
+    int oraphnedInterfaces = 0;
     for (Entry<String, org.batfish.datamodel.Interface> i : _c.getAllInterfaces().entrySet()) {
       org.batfish.datamodel.Interface iface = i.getValue();
       if (iface.getVrf() == null) {
         iface.setVrf(nullVrf);
-        orphanedInterfaces++;
-        if (VI_TYPES_WITHOUT_VS_PARENTS.contains(iface.getInterfaceType())
-            || iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
+        oraphnedInterfaces++;
+        if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
           // This is a child interface. Just shut it down.
           iface.deactivate(INCOMPLETE);
           _w.redFlag(
@@ -3282,7 +3264,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
     }
     // Don't pollute VI model will null VRF unless we have to.
-    if (orphanedInterfaces > 0) {
+    if (oraphnedInterfaces > 0) {
       _c.getVrfs().put(nullVrf.getName(), nullVrf);
     }
 

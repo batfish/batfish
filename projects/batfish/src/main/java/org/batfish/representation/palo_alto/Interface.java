@@ -2,7 +2,6 @@ package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.SortedMap;
@@ -21,12 +20,8 @@ public final class Interface implements Serializable {
     LOOPBACK,
     PHYSICAL,
     TUNNEL,
-    TUNNEL_UNIT,
     VLAN,
-    VLAN_UNIT,
   }
-
-  public static final Set<Type> FAKE_INTERFACE_TYPES = EnumSet.of(Type.TUNNEL, Type.VLAN);
 
   public static final int DEFAULT_INTERFACE_MTU = 1500;
 
