@@ -32,6 +32,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInactiveReason;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -196,6 +197,7 @@ import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IcmpType;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceType;
@@ -3624,8 +3626,8 @@ public final class F5BigipStructuredGrammarTest {
     String vlanName = "/Common/MYVLAN";
 
     assertThat(
-        c.getAllInterfaces().keySet(),
-        containsInAnyOrder(portName, trunkName, "2.0", "3.0", vlanName));
+        c.getAllInterfaces(),
+        hasKeys(portName, trunkName, "2.0", "3.0", "4.0", vlanName, "/Common/MISSINGTAG"));
 
     // port interface
     assertThat(c, hasInterface(portName, isActive()));
@@ -3648,6 +3650,7 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasInterface(vlanName, hasVlan(123)));
     assertThat(c, hasInterface(vlanName, hasAddress("10.0.0.1/24")));
     assertThat(c, hasInterface(vlanName, hasInterfaceType(InterfaceType.VLAN)));
+    assertThat(c, hasInterface("/Common/MISSINGTAG", hasInactiveReason(InactiveReason.INCOMPLETE)));
   }
 
   @Test
