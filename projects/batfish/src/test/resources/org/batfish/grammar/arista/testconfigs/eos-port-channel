@@ -18,3 +18,4 @@ interface Port-Channel1
 !
 interface Port-Channel2
 !
+interface Port-Channel3
