@@ -1707,7 +1707,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     AclLineMatchExpr appExpr =
         new OrMatchExpr(
             application.getServices().stream()
-                .map(s -> s.toMatchHeaderSpace(_w))
+                .map(s -> s.toMatchExpr(_w))
                 .collect(ImmutableList.toImmutableList()),
             traceElement);
 
