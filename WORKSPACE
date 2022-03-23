@@ -50,7 +50,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip",
-    requirements_lock = "//tools:requirements.txt",
+    requirements_lock = "//python:requirements.txt",
 )
 
 load("@pip//:requirements.bzl", "install_deps")
