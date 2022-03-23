@@ -227,8 +227,8 @@ public class ParseVendorConfigurationJobTest {
   @Test
   public void testGetSonicFileMap_unknownType() {
     _thrown.expect(IllegalArgumentException.class);
-    // frr is not a valid tail
-    getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db,json", "{}"));
+    // frr is not a valid tail, and config_db's content is not json
+    getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db,json", "not json"));
   }
 
   @Test

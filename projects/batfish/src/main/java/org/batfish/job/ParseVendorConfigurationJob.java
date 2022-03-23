@@ -928,7 +928,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
     Set<String> unknownFiles =
         Sets.difference(fileTexts.keySet(), ImmutableSet.copyOf(fileTypeMap.values()));
-    if (unknownFiles.size() > 0) {
+    if (!unknownFiles.isEmpty()) {
       throw new IllegalArgumentException(
           String.format(
               "Cannot determine the type of SONiC files: '%s'. Make sure that they have legal"
