@@ -3449,7 +3449,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // convert interfaces. Before policies because some policies depend on interfaces
     convertInterfaces();
-    convertBridgeDomains();
 
     // convert conditions to RoutingPolicy objects
     _masterLogicalSystem
@@ -3815,35 +3814,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _c;
   }
 
-  private void convertBridgeDomains() {
-    _masterLogicalSystem
-        .getDefaultRoutingInstance()
-        .getBridgeDomains()
-        .forEach(
-            (name, bd) ->
-                convertBridgeDomain(name, bd, _masterLogicalSystem.getDefaultRoutingInstance()));
-    _masterLogicalSystem
-        .getRoutingInstances()
-        .values()
+  private void applyBridgeDomainVlanIds(Map<String, Integer> irbVlanIds) {
+    Stream.concat(
+            Stream.of(_masterLogicalSystem.getDefaultRoutingInstance()),
+            _masterLogicalSystem.getRoutingInstances().values().stream())
         .forEach(
             ri ->
-                ri.getBridgeDomains().forEach((bdName, bd) -> convertBridgeDomain(bdName, bd, ri)));
+                ri.getBridgeDomains()
+                    .forEach((bdName, bd) -> applyBridgeDomainVlanId(bd, irbVlanIds)));
   }
 
-  @SuppressWarnings("unused")
-  private void convertBridgeDomain(String bdName, BridgeDomain bd, RoutingInstance ri) {
+  private void applyBridgeDomainVlanId(BridgeDomain bd, Map<String, Integer> irbVlanIds) {
     BridgeDomainVlanId vlanId = bd.getVlanId();
     if (vlanId == null) {
       return;
     }
     String routingInterfaceName = bd.getRoutingInterface();
     if (routingInterfaceName == null) {
-      return;
-    }
-    // TODO: does RI matter?
-    org.batfish.datamodel.Interface viRoutingInterface =
-        _c.getAllInterfaces().get(routingInterfaceName);
-    if (viRoutingInterface == null) {
       return;
     }
     // TODO: optimize
@@ -3872,7 +3859,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         //       Method 3:
         //       - routing-options bridge-domains <name> interface
         //       Until then, we disable autostate by modifying normal vlan range.
-        viRoutingInterface.setVlan(vlan);
+        irbVlanIds.put(routingInterfaceName, vlan);
         _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlan)));
       }
     }.visit(vlanId);
@@ -4069,51 +4056,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void convertInterfaces() {
-    // Set IRB vlan IDs by resolving l3-interface from named VLANs.
-    // If more than one named vlan refers to a given l3-interface, we just keep the first assignment
-    // and warn.
-    Map<String, Integer> irbVlanIds = new HashMap<>();
-    for (Vlan vlan : _masterLogicalSystem.getNamedVlans().values()) {
-      Integer vlanId = vlan.getVlanId();
-      String l3Interface = vlan.getL3Interface();
-      if (l3Interface == null || vlanId == null) {
-        continue;
-      }
-      if (irbVlanIds.containsKey(l3Interface)) {
-        _w.redFlag(
-            String.format(
-                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned"
-                    + " to vlan '%s'",
-                l3Interface, vlanId, irbVlanIds.get(l3Interface)));
-        continue;
-      }
-      irbVlanIds.put(l3Interface, vlanId);
-      for (String memberIfName : vlan.getInterfaces()) {
-        Optional<Interface> optionalInterface = getInterfaceOrUnitByName(memberIfName);
-        if (!optionalInterface.isPresent()) {
-          continue;
-        }
-        Interface i = optionalInterface.get();
-        EthernetSwitching es = i.getEthernetSwitching();
-        if (es != null && (es.getSwitchportMode() != null || !es.getVlanMembers().isEmpty())) {
-          _w.redFlag(
-              String.format(
-                  "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan"
-                      + " configuration under family ethernet-switching",
-                  memberIfName, vlanId));
-          continue;
-        }
-        if (_indirectAccessPorts.containsKey(memberIfName)) {
-          _w.redFlag(
-              String.format(
-                  "Cannot assign '%s' as interface of vlan '%s' since it is already interface of"
-                      + " vlan '%s'",
-                  memberIfName, vlanId, _indirectAccessPorts.get(memberIfName).getName()));
-          continue;
-        }
-        _indirectAccessPorts.put(memberIfName, new VlanReference(vlan.getName()));
-      }
-    }
+    Map<String, Integer> irbVlanIds = computeIrbVlanIds();
 
     // Get a stream of all interfaces (including Node interfaces)
     Stream.concat(
@@ -4245,6 +4188,56 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       srcTransformation);
               newUnitInterface.setOutgoingTransformation(staticTransformation);
             });
+  }
+
+  private @Nonnull Map<String, Integer> computeIrbVlanIds() {
+    // Set IRB vlan IDs by resolving l3-interface from named VLANs.
+    // If more than one named vlan refers to a given l3-interface, we just keep the first assignment
+    // and warn.
+    Map<String, Integer> irbVlanIds = new HashMap<>();
+    for (Vlan vlan : _masterLogicalSystem.getNamedVlans().values()) {
+      Integer vlanId = vlan.getVlanId();
+      String l3Interface = vlan.getL3Interface();
+      if (l3Interface == null || vlanId == null) {
+        continue;
+      }
+      if (irbVlanIds.containsKey(l3Interface)) {
+        _w.redFlag(
+            String.format(
+                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned"
+                    + " to vlan '%s'",
+                l3Interface, vlanId, irbVlanIds.get(l3Interface)));
+        continue;
+      }
+      irbVlanIds.put(l3Interface, vlanId);
+      for (String memberIfName : vlan.getInterfaces()) {
+        Optional<Interface> optionalInterface = getInterfaceOrUnitByName(memberIfName);
+        if (!optionalInterface.isPresent()) {
+          continue;
+        }
+        Interface i = optionalInterface.get();
+        EthernetSwitching es = i.getEthernetSwitching();
+        if (es != null && (es.getSwitchportMode() != null || !es.getVlanMembers().isEmpty())) {
+          _w.redFlag(
+              String.format(
+                  "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan"
+                      + " configuration under family ethernet-switching",
+                  memberIfName, vlanId));
+          continue;
+        }
+        if (_indirectAccessPorts.containsKey(memberIfName)) {
+          _w.redFlag(
+              String.format(
+                  "Cannot assign '%s' as interface of vlan '%s' since it is already interface of"
+                      + " vlan '%s'",
+                  memberIfName, vlanId, _indirectAccessPorts.get(memberIfName).getName()));
+          continue;
+        }
+        _indirectAccessPorts.put(memberIfName, new VlanReference(vlan.getName()));
+      }
+    }
+    applyBridgeDomainVlanIds(irbVlanIds);
+    return irbVlanIds;
   }
 
   /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */
