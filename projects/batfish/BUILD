@@ -18,7 +18,6 @@ java_library(
     ],
     runtime_deps = [
         "//projects/question",
-        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
