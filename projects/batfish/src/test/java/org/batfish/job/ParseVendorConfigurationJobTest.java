@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.job.ParseVendorConfigurationJob.detectFormat;
 import static org.batfish.job.ParseVendorConfigurationJob.getSonicFileMap;
+import static org.batfish.job.ParseVendorConfigurationJob.getSonicFrrFilename;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -228,5 +229,59 @@ public class ParseVendorConfigurationJobTest {
     _thrown.expect(IllegalArgumentException.class);
     // frr is not a valid tail
     getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db,json", "{}"));
+  }
+
+  @Test
+  public void testGetSonicFileMap_deprecated() {
+    // this will delegate to getSonicFrrFilename because frr filename is not legal
+    assertEquals(
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF, "frr", SonicFileType.CONFIG_DB_JSON, "config_db.json"),
+        getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db.json", "{}")));
+
+    // this will delegate to getSonicFrrFilename because config_db filename is not legal
+    assertEquals(
+        ImmutableMap.of(
+            SonicFileType.FRR_CONF, "frr.conf", SonicFileType.CONFIG_DB_JSON, "config_db"),
+        getSonicFileMap(ImmutableMap.of("frr.conf", "hello", "config_db", "{}")));
+
+    // fail -- don't delegate when there are more than 2 files
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFileMap(
+        ImmutableMap.of("frr", "hello", "config_db.json", "{}", "resolve.conf", "blah"));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename() {
+    assertEquals(
+        "frr", getSonicFrrFilename(ImmutableMap.of("frr", "hello", "configdb.json", "{}")));
+
+    // leading whitespace
+    assertEquals(
+        "frr", getSonicFrrFilename(ImmutableMap.of("frr", "hello", "configdb.json", " \n  {}")));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename_twoJsonFiles() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFrrFilename(ImmutableMap.of("f1", "{}", "f2", "{}"));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename_noJsonFiles() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFrrFilename(ImmutableMap.of("f1", "aa", "f2", "ab"));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename_oneFile() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFrrFilename(ImmutableMap.of("frr", "hello"));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename_manyFiles() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFrrFilename(ImmutableMap.of("frr", "hello", "a", "{}", "b", "{}"));
   }
 }

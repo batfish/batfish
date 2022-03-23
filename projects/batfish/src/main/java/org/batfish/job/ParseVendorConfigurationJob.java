@@ -12,11 +12,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -884,7 +886,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
     for (String filename : fileTexts.keySet()) {
       String filenameLower = filename.toLowerCase();
-      SonicFileType fileType;
+      SonicFileType fileType = null;
       if (filenameLower.endsWith("config_db.json")) {
         fileType = SonicFileType.CONFIG_DB_JSON;
       } else if (filenameLower.endsWith("frr.conf") || filenameLower.endsWith("frr.cfg")) {
@@ -893,20 +895,28 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         fileType = SonicFileType.RESOLVE_CONF;
       } else if (filenameLower.endsWith("snmp.yml")) {
         fileType = SonicFileType.SNMP_YML;
-      } else {
-        throw new IllegalArgumentException(
-            String.format(
-                "Cannot determine the type of SONiC file '%s'. Make sure that it has a legal name",
-                filename));
       }
-      // duplicate type?
-      if (fileTypeMap.containsKey(fileType)) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Found two %s SONiC files: '%s', '%s'",
-                fileType, filename, fileTypeMap.get(fileType)));
+      if (fileType != null) {
+        // duplicate type?
+        if (fileTypeMap.containsKey(fileType)) {
+          throw new IllegalArgumentException(
+              String.format(
+                  "Found two %s SONiC files: '%s', '%s'",
+                  fileType, filename, fileTypeMap.get(fileType)));
+        }
+        fileTypeMap.put(fileType, filename);
       }
-      fileTypeMap.put(fileType, filename);
+    }
+    // for the 2-file case, try the deprecated content-based method if we didn't find both files
+    if (fileTexts.size() == 2
+        && (!fileTypeMap.containsKey(SonicFileType.CONFIG_DB_JSON)
+            || !fileTypeMap.containsKey(SonicFileType.FRR_CONF))) {
+      String frrFilename = getSonicFrrFilename(fileTexts);
+      String configDbFilename =
+          Sets.difference(fileTexts.keySet(), ImmutableSet.of(frrFilename)).iterator().next();
+      fileTypeMap =
+          ImmutableMap.of(
+              SonicFileType.FRR_CONF, frrFilename, SonicFileType.CONFIG_DB_JSON, configDbFilename);
     }
     if (!fileTypeMap.containsKey(SonicFileType.CONFIG_DB_JSON)) {
       throw new IllegalArgumentException(
@@ -916,6 +926,49 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       throw new IllegalArgumentException(
           String.format("frr configuration file not found among: %s", fileTexts.keySet()));
     }
+    Set<String> unknownFiles =
+        Sets.difference(fileTexts.keySet(), ImmutableSet.copyOf(fileTypeMap.values()));
+    if (unknownFiles.size() > 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Cannot determine the type of SONiC files: '%s'. Make sure that they have legal"
+                  + " names.",
+              unknownFiles));
+    }
     return ImmutableMap.copyOf(fileTypeMap);
+  }
+
+  /**
+   * Given filename to text map for a device, return which of the two files is frr.conf.
+   *
+   * <p>This method is deprecated. Use {@link #getSonicFileMap(Map)}.
+   */
+  @VisibleForTesting
+  static String getSonicFrrFilename(Map<String, String> fileTexts) {
+    if (fileTexts.size() != 2) {
+      // Batfish pairs up files -- but we double check
+      throw new IllegalArgumentException(
+          String.format(
+              "SONiC files should come in pairs. Got %d files: %s",
+              fileTexts.size(), fileTexts.keySet()));
+    }
+    Iterator<String> fileIterator = fileTexts.keySet().iterator();
+    String filename1 = fileIterator.next();
+    String filename2 = fileIterator.next();
+    // The file starting with '{' is a cheap way to check if it is configdb.json. Valid frr.conf
+    // files cannot start with '{'.
+    boolean fileText1IsJson = LIKELY_JSON.matcher(fileTexts.get(filename1)).find();
+    boolean fileText2IsJson = LIKELY_JSON.matcher(fileTexts.get(filename2)).find();
+    if (fileText1IsJson && !fileText2IsJson) {
+      return filename2;
+    }
+    if (!fileText1IsJson && fileText2IsJson) {
+      return filename1;
+    }
+    if (fileText1IsJson) { // if this is true fileText2 must also be JSON
+      throw new IllegalArgumentException("Neither SONiC file appears to be frr configuration");
+    }
+    // both start with '{'
+    throw new IllegalArgumentException("Neither SONiC file appears to be configdb JSON file");
   }
 }
