@@ -63,10 +63,15 @@ public final class ApplicationDefinition {
       @JsonProperty(PROP_USE_APPLICATIONS) @Nullable UseApplications useApplications,
       @JsonProperty(PROP_IMPLICIT_USE_APPLICATIONS) @Nullable
           UseApplications implicitUseApplications,
-      @JsonProperty(PROP_DEFAULT) @Nullable Default default_) {
+      @JsonProperty(PROP_DEFAULT) @Nullable Default defaultVal) {
     checkArgument(name != null, "Missing %s", PROP_NAME);
     return new ApplicationDefinition(
-        name, applicationContainer, parentApp, useApplications, implicitUseApplications, default_);
+        name,
+        applicationContainer,
+        parentApp,
+        useApplications,
+        implicitUseApplications,
+        defaultVal);
   }
 
   @VisibleForTesting
