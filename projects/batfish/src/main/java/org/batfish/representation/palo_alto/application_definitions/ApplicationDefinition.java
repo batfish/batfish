@@ -76,13 +76,13 @@ public final class ApplicationDefinition {
       @Nullable String parentApp,
       @Nullable UseApplications useApplications,
       @Nullable UseApplications implicitUseApplications,
-      @Nullable Default default_) {
+      @Nullable Default defaultVal) {
     _name = name;
     _applicationContainer = applicationContainer;
     _parentApp = parentApp;
     _useApplications = useApplications;
     _implicitUseApplications = implicitUseApplications;
-    _default = default_;
+    _default = defaultVal;
   }
 
   @Nonnull private final String _name;
