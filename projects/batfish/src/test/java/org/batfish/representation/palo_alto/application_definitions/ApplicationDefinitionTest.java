@@ -109,5 +109,25 @@ public class ApplicationDefinitionTest {
       assertNotNull(appDef.getDefault());
       assertThat(appDef.getDefault().getIdentByIpProtocol(), equalTo("19"));
     }
+
+    // App definition for an icmp-type based app
+    {
+      String appDefJson =
+          "{"
+              + "  \"@name\": \"ping\","
+              + "  \"default\": {"
+              + "    \"ident-by-icmp-type\": {"
+              + "      \"@minver\": \"7.0.0\","
+              + "      \"type\": \"8\""
+              + "    }"
+              + "  }"
+              + "}";
+      ApplicationDefinition appDef =
+          BatfishObjectMapper.ignoreUnknownMapper()
+              .readValue(appDefJson, ApplicationDefinition.class);
+      assertNotNull(appDef);
+      assertNotNull(appDef.getDefault());
+      assertThat(appDef.getDefault().getIdentByIcmpType(), equalTo("8"));
+    }
   }
 }
