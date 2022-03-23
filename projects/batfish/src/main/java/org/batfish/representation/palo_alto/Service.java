@@ -27,6 +27,7 @@ public final class Service implements ServiceGroupMember {
   public static class Builder {
     private final @Nonnull String _name;
     private @Nullable String _description;
+    private @Nullable Integer _icmpType;
     private @Nullable IpProtocol _ipProtocol;
     private @Nullable IntegerSpace _ports;
     private @Nullable IntegerSpace _sourcePorts;
@@ -70,6 +71,11 @@ public final class Service implements ServiceGroupMember {
       return this;
     }
 
+    public @Nonnull Builder setIcmpType(@Nullable Integer icmpType) {
+      _icmpType = icmpType;
+      return this;
+    }
+
     public @Nonnull Builder setIpProtocol(@Nullable IpProtocol ipProtocol) {
       _ipProtocol = ipProtocol;
       return this;
@@ -85,6 +91,9 @@ public final class Service implements ServiceGroupMember {
       if (_sourcePorts != null) {
         ret._sourcePorts = _sourcePorts;
       }
+      if (_icmpType != null) {
+        ret._icmpType = _icmpType;
+      }
       return ret;
     }
   }
@@ -95,6 +104,7 @@ public final class Service implements ServiceGroupMember {
 
   private final String _name;
   @Nullable private String _description;
+  @Nullable private Integer _icmpType;
   @Nullable private IpProtocol _protocol;
   @Nonnull private IntegerSpace _sourcePorts;
   @Nonnull private IntegerSpace _ports;
@@ -110,6 +120,11 @@ public final class Service implements ServiceGroupMember {
   @Nullable
   public String getDescription() {
     return _description;
+  }
+
+  @Nullable
+  public Integer getIcmpType() {
+    return _icmpType;
   }
 
   @Override
@@ -140,6 +155,10 @@ public final class Service implements ServiceGroupMember {
 
   public void setDescription(String description) {
     _description = description;
+  }
+
+  public void setIcmpType(@Nullable Integer icmpType) {
+    _icmpType = icmpType;
   }
 
   public void setProtocol(IpProtocol protocol) {
@@ -174,6 +193,7 @@ public final class Service implements ServiceGroupMember {
         .build();
   }
 
+  // TODO test
   public @Nonnull AclLineMatchExpr toMatchHeaderSpace(@Nonnull Warnings w) {
     if (_protocol == null) {
       w.redFlag(
@@ -182,12 +202,14 @@ public final class Service implements ServiceGroupMember {
               PaloAltoStructureType.SERVICE.getDescription(), _name));
       return FalseExpr.INSTANCE;
     }
-    HeaderSpace headerSpace =
+    HeaderSpace.Builder headerSpace =
         HeaderSpace.builder()
             .setIpProtocols(ImmutableList.of(_protocol))
             .setSrcPorts(_sourcePorts.getSubRanges())
-            .setDstPorts(_ports.getSubRanges())
-            .build();
-    return new MatchHeaderSpace(headerSpace);
+            .setDstPorts(_ports.getSubRanges());
+    if (_icmpType != null) {
+      headerSpace.setIcmpTypes(_icmpType);
+    }
+    return new MatchHeaderSpace(headerSpace.build());
   }
 }

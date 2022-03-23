@@ -2,6 +2,7 @@ package org.batfish.representation.palo_alto;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -33,6 +34,11 @@ public final class Application implements Serializable {
 
     public @Nonnull Builder addService(@Nonnull Service service) {
       _services.add(service);
+      return this;
+    }
+
+    public @Nonnull Builder addServices(@Nonnull Collection<Service> services) {
+      _services.addAll(services);
       return this;
     }
   }
