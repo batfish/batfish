@@ -1,4 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_binary")
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@pip//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -39,5 +41,13 @@ java_binary(
         "//projects/allinone",
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
+)
+
+py_binary(
+    name = "generate_pan_apps",
+    srcs = ["generate_pan_apps.py"],
+    deps = [
+        requirement("xmltodict"),
     ],
 )
