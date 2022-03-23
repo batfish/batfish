@@ -9,7 +9,7 @@ import xmltodict
 
 
 def get_applications(input_dict):
-    """Convert Palo Alto query result into a list of applications."""
+    """Convert Palo Alto query result dict into a list of applications."""
     apps = (
         input_dict.get("response", {})
         .get("result", {})

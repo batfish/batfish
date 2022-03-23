@@ -2,7 +2,7 @@
 
 Palo Alto application definitions can be pulled from a firewall or Panorama device via their web APIs.
 
-To pull the definitions you'll need an API key. You can issue a GET request via something like `curl` to the keygen API providing a username and password (replace `<USERNAME>` and `<PASSWORD>` below): 
+To pull the definitions you'll need an API key. You can issue a GET request via something like `curl` to the keygen API providing a username and password (replace the IP address and `<USERNAME>` and `<PASSWORD>` below):
 ```
 curl -X GET 'https://10.0.0.1/api/?type=keygen&user=<USERNAME>&password=<PASSWORD>'
 ```
