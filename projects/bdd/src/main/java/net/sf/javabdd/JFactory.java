@@ -111,10 +111,10 @@ public class JFactory extends BDDFactory {
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
-    if(id == BDDZERO) {
+    if (id == BDDZERO) {
       return _zero;
     }
-    if(id == BDDONE){
+    if (id == BDDONE) {
       return _one;
     }
 
@@ -450,7 +450,7 @@ public class JFactory extends BDDFactory {
 
     @Override
     public void free() {
-      if(_index == BDDZERO || _index == BDDONE) {
+      if (_index == BDDZERO || _index == BDDONE) {
         // zero, one BDDs are interned.
         return;
       }
