@@ -186,15 +186,11 @@ public final class Service implements ServiceGroupMember {
     return retAcl
         .setLines(
             ImmutableList.of(
-                ExprAclLine.builder()
-                    .setAction(action)
-                    .setMatchCondition(toMatchHeaderSpace(w))
-                    .build()))
+                ExprAclLine.builder().setAction(action).setMatchCondition(toMatchExpr(w)).build()))
         .build();
   }
 
-  // TODO test
-  public @Nonnull AclLineMatchExpr toMatchHeaderSpace(@Nonnull Warnings w) {
+  public @Nonnull AclLineMatchExpr toMatchExpr(@Nonnull Warnings w) {
     if (_protocol == null) {
       w.redFlag(
           String.format(
