@@ -73005,11 +73005,11 @@
           "bridge-domain" : {
             "bd_100" : {
               "definitionLines" : "221-228,236",
-              "numReferrers" : 1
+              "numReferrers" : 3
             },
             "bd_101" : {
               "definitionLines" : "221,229-236",
-              "numReferrers" : 1
+              "numReferrers" : 3
             }
           },
           "community" : {
@@ -79409,12 +79409,16 @@
           "bridge-domain" : {
             "bd_100" : {
               "bridge-domain self reference" : [
-                81
+                81,
+                82,
+                83
               ]
             },
             "bd_101" : {
               "bridge-domain self reference" : [
-                84
+                84,
+                85,
+                86
               ]
             }
           },
