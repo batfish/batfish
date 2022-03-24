@@ -82,9 +82,15 @@ public class JFactory extends BDDFactory {
    */
   private static final boolean VERIFY_ASSERTIONS = false;
 
+  // intern the zero and one BDDImpl objects
+  private final BDDImpl _one;
+  private final BDDImpl _zero;
+
   protected JFactory() {
     supportSet = new int[0];
     bddrefstack = new IntStack();
+    _one = makeBDD(BDDONE);
+    _zero = makeBDD(BDDZERO);
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -105,6 +111,13 @@ public class JFactory extends BDDFactory {
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
+    if(id == BDDZERO) {
+      return _zero;
+    }
+    if(id == BDDONE){
+      return _one;
+    }
+
     madeBDDs++;
     BDDImpl ret = _bddReuse.poll();
     if (ret == null) {
