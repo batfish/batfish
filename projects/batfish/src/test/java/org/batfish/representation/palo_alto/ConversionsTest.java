@@ -50,7 +50,7 @@ public class ConversionsTest {
     {
       Default def = Default.create(null, "19", null);
       Application app =
-          definitionToApp(new ApplicationDefinition("name", null, null, null, null, def));
+          definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
       MatcherAssert.assertThat(service.getProtocol(), equalTo(IpProtocol.fromNumber(19)));
@@ -61,7 +61,7 @@ public class ConversionsTest {
     {
       Default def = Default.create(null, null, "8");
       Application app =
-          definitionToApp(new ApplicationDefinition("name", null, null, null, null, def));
+          definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
       MatcherAssert.assertThat(service.getProtocol(), equalTo(IpProtocol.ICMP));
@@ -73,7 +73,7 @@ public class ConversionsTest {
       Port port = Port.create(ImmutableList.of("tcp/443"));
       Default def = Default.create(port, null, null);
       Application app =
-          definitionToApp(new ApplicationDefinition("name", null, null, null, null, def));
+          definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
       MatcherAssert.assertThat(service.getProtocol(), equalTo(IpProtocol.TCP));
