@@ -1,6 +1,7 @@
 package org.batfish.common.topology.broadcast;
 
 import static com.google.common.base.Verify.verify;
+import static org.batfish.common.topology.broadcast.BroadcastL3Adjacencies.ENABLE_L2_VNIS;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -69,8 +70,13 @@ public class L3AdjacencyComputer {
     _ethernetHubs =
         computeEthernetHubs(configs, _physicalInterfaces, _layer1Topologies.getLogicalL1());
     _deviceBroadcastDomains = computeDeviceBroadcastDomains(configs, _physicalInterfaces);
-    _l2vnis = computeL2VNIs(configs, _deviceBroadcastDomains);
-    _l2vniHubs = computeL2VNIHubs(_l2vnis, vxlanTopology);
+    if (ENABLE_L2_VNIS) {
+      _l2vnis = computeL2VNIs(configs, _deviceBroadcastDomains);
+      _l2vniHubs = computeL2VNIHubs(_l2vnis, vxlanTopology);
+    } else {
+      _l2vnis = ImmutableMap.of();
+      _l2vniHubs = ImmutableMap.of();
+    }
     _layer3Interfaces =
         computeLayer3Interfaces(configs, _deviceBroadcastDomains, _physicalInterfaces);
   }

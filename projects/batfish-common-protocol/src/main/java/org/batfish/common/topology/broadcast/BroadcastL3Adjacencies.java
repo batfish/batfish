@@ -21,6 +21,9 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
  * @see L3AdjacencyComputer
  */
 public class BroadcastL3Adjacencies implements L3Adjacencies {
+
+  static final boolean ENABLE_L2_VNIS = false;
+
   public static BroadcastL3Adjacencies create(
       Layer1Topologies l1, VxlanTopology vxlan, Map<String, Configuration> configs) {
     PointToPointInterfaces p2p = PointToPointComputer.compute(l1.getLogicalL1(), configs);
