@@ -450,6 +450,10 @@ public class JFactory extends BDDFactory {
 
     @Override
     public void free() {
+      if(_index == BDDZERO || _index == BDDONE) {
+        // zero, one BDDs are interned.
+        return;
+      }
       bdd_delref(_index);
       _index = INVALID_BDD;
       ++freedBDDs;
