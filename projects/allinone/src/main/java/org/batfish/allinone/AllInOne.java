@@ -2,11 +2,6 @@ package org.batfish.allinone;
 
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import io.jaegertracing.Configuration;
-import io.jaegertracing.Configuration.ReporterConfiguration;
-import io.jaegertracing.Configuration.SamplerConfiguration;
-import io.jaegertracing.Configuration.SenderConfiguration;
-import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -76,15 +71,6 @@ public class AllInOne {
               org.batfish.client.config.Settings.ARG_SNAPSHOT_DIR, _settings.getSnapshotDir());
     }
 
-    if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
-      initTracer();
-    }
-
-    argString +=
-        String.format(
-            " -%s %s",
-            org.batfish.client.config.Settings.ARG_TRACING_ENABLE, _settings.getTracingEnable());
-
     // if we are not running the client, we were like not specified a cmdfile.
     // lets do a dummy cmdfile do client initialization does not barf
     if (!_settings.getRunClient() && _settings.getCommandFile() == null) {
@@ -144,20 +130,6 @@ public class AllInOne {
         System.err.println(stackTrace);
       }
     }
-  }
-
-  private void initTracer() {
-    Configuration config =
-        new Configuration(_settings.getServiceName())
-            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
-            .withReporter(
-                new ReporterConfiguration()
-                    .withSender(
-                        SenderConfiguration.fromEnv()
-                            .withAgentHost(_settings.getTracingAgentHost())
-                            .withAgentPort(_settings.getTracingAgentPort()))
-                    .withLogSpans(false));
-    GlobalTracer.registerIfAbsent(config.getTracer());
   }
 
   private void runBatfish(BindPortFutures bindPortFutures)

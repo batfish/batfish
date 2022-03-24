@@ -14,9 +14,6 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraphBuilder;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,120 +154,112 @@ public final class BgpTopologyUtils {
     checkArgument(
         !checkReachability || tracerouteEngine != null,
         "Cannot check reachability without a traceroute engine");
-    Span span = GlobalTracer.get().buildSpan("BgpTopologyUtils.initBgpTopology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    // TODO: handle duplicate ips on different vrfs
 
-      // TODO: handle duplicate ips on different vrfs
-
-      NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
-      /*
-       * First pass: identify all addresses "owned" by BgpNeighbors, add neighbor ids as vertices to
-       * the graph; dynamically determine local IPs as needed
-       */
-      MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
-          ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-      /*
-       * Multimap of active peers' BgpPeerConfigIds to all IPs that each peer may use as local IP
-       * when initiating a session. For a peer with an explicitly configured local IP, that IP is
-       * the only value associated with the peer in this map. Otherwise:
-       * - If FIBs are provided, the map contains all local IPs with which the peer may initiate,
-       *   as inferred by getPotentialSrcIps().
-       * - Else no IPs are associated with the peer.
-       */
-      ImmutableSetMultimap.Builder<BgpPeerConfigId, Ip> localIpsBuilder =
-          ImmutableSetMultimap.builder();
-      for (Configuration node : configurations.values()) {
-        String hostname = node.getHostname();
-        for (Vrf vrf : node.getVrfs().values()) {
-          String vrfName = vrf.getName();
-          BgpProcess proc = vrf.getBgpProcess();
-          if (proc == null) {
-            // nothing to do if no bgp process on this VRF
-            continue;
-          }
-          Fib fib = fibs.getOrDefault(hostname, ImmutableMap.of()).get(vrfName);
-
-          for (Entry<Ip, BgpActivePeerConfig> e : proc.getActiveNeighbors().entrySet()) {
-            Ip peerAddress = e.getKey();
-            BgpActivePeerConfig config = e.getValue();
-            if (!keepInvalid
-                && !bgpConfigPassesSanityChecks(config, hostname, vrfName, ipVrfOwners)) {
-              continue;
-            }
-            BgpPeerConfigId neighborId =
-                new BgpPeerConfigId(hostname, vrfName, peerAddress.toPrefix(), false);
-            graph.addNode(neighborId);
-
-            if (config.getLocalIp() != null) {
-              localIpsBuilder.put(neighborId, config.getLocalIp());
-            } else if (fib != null) {
-              // No explicitly configured local IP. Check for dynamically resolvable local IPs.
-              localIpsBuilder.putAll(neighborId, getPotentialSrcIps(peerAddress, fib, node));
-            }
-          }
-          // Dynamic peers: map of prefix to BgpPassivePeerConfig
-          proc.getPassiveNeighbors().entrySet().stream()
-              .filter(
-                  entry ->
-                      keepInvalid
-                          || bgpConfigPassesSanityChecks(
-                              entry.getValue(), hostname, vrfName, ipVrfOwners))
-              .forEach(
-                  entry ->
-                      graph.addNode(new BgpPeerConfigId(hostname, vrfName, entry.getKey(), true)));
-          // Unnumbered BGP peers: map of interface name to BgpUnnumberedPeerConfig
-          proc.getInterfaceNeighbors().entrySet().stream()
-              .filter(
-                  e ->
-                      keepInvalid
-                          || bgpConfigPassesSanityChecks(
-                              e.getValue(), hostname, vrfName, ipVrfOwners))
-              .forEach(
-                  e -> graph.addNode(new BgpPeerConfigId(hostname, vrf.getName(), e.getKey())));
-        }
-      }
-
-      // Second pass: add edges to the graph. Note, these are directed edges.
-      Map<String, Multimap<String, BgpPeerConfigId>> receivers = new HashMap<>();
-      for (BgpPeerConfigId peer : graph.nodes()) {
-        if (peer.getType() == BgpPeerConfigType.UNNUMBERED) {
-          // Unnumbered configs only form sessions with each other
+    NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
+    /*
+     * First pass: identify all addresses "owned" by BgpNeighbors, add neighbor ids as vertices to
+     * the graph; dynamically determine local IPs as needed
+     */
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    /*
+     * Multimap of active peers' BgpPeerConfigIds to all IPs that each peer may use as local IP
+     * when initiating a session. For a peer with an explicitly configured local IP, that IP is
+     * the only value associated with the peer in this map. Otherwise:
+     * - If FIBs are provided, the map contains all local IPs with which the peer may initiate,
+     *   as inferred by getPotentialSrcIps().
+     * - Else no IPs are associated with the peer.
+     */
+    ImmutableSetMultimap.Builder<BgpPeerConfigId, Ip> localIpsBuilder =
+        ImmutableSetMultimap.builder();
+    for (Configuration node : configurations.values()) {
+      String hostname = node.getHostname();
+      for (Vrf vrf : node.getVrfs().values()) {
+        String vrfName = vrf.getName();
+        BgpProcess proc = vrf.getBgpProcess();
+        if (proc == null) {
+          // nothing to do if no bgp process on this VRF
           continue;
         }
-        Multimap<String, BgpPeerConfigId> vrf =
-            receivers.computeIfAbsent(peer.getHostname(), name -> LinkedListMultimap.create());
-        vrf.put(peer.getVrfName(), peer);
-      }
-      SetMultimap<BgpPeerConfigId, Ip> localIps = localIpsBuilder.build();
-      for (BgpPeerConfigId neighborId : graph.nodes()) {
-        switch (neighborId.getType()) {
-          case DYNAMIC:
-            // Passive end of the peering cannot initiate a connection
+        Fib fib = fibs.getOrDefault(hostname, ImmutableMap.of()).get(vrfName);
+
+        for (Entry<Ip, BgpActivePeerConfig> e : proc.getActiveNeighbors().entrySet()) {
+          Ip peerAddress = e.getKey();
+          BgpActivePeerConfig config = e.getValue();
+          if (!keepInvalid
+              && !bgpConfigPassesSanityChecks(config, hostname, vrfName, ipVrfOwners)) {
             continue;
-          case ACTIVE:
-            addActivePeerEdges(
-                neighborId,
-                graph,
-                networkConfigurations,
-                ipVrfOwners,
-                receivers,
-                localIps.get(neighborId),
-                checkReachability,
-                tracerouteEngine);
-            break;
-          case UNNUMBERED:
-            addUnnumberedPeerEdges(neighborId, graph, networkConfigurations, l3Adjacencies);
-            break;
-          default:
-            throw new IllegalArgumentException(
-                String.format("Unrecognized peer type: %s", neighborId));
+          }
+          BgpPeerConfigId neighborId =
+              new BgpPeerConfigId(hostname, vrfName, peerAddress.toPrefix(), false);
+          graph.addNode(neighborId);
+
+          if (config.getLocalIp() != null) {
+            localIpsBuilder.put(neighborId, config.getLocalIp());
+          } else if (fib != null) {
+            // No explicitly configured local IP. Check for dynamically resolvable local IPs.
+            localIpsBuilder.putAll(neighborId, getPotentialSrcIps(peerAddress, fib, node));
+          }
         }
+        // Dynamic peers: map of prefix to BgpPassivePeerConfig
+        proc.getPassiveNeighbors().entrySet().stream()
+            .filter(
+                entry ->
+                    keepInvalid
+                        || bgpConfigPassesSanityChecks(
+                            entry.getValue(), hostname, vrfName, ipVrfOwners))
+            .forEach(
+                entry ->
+                    graph.addNode(new BgpPeerConfigId(hostname, vrfName, entry.getKey(), true)));
+        // Unnumbered BGP peers: map of interface name to BgpUnnumberedPeerConfig
+        proc.getInterfaceNeighbors().entrySet().stream()
+            .filter(
+                e ->
+                    keepInvalid
+                        || bgpConfigPassesSanityChecks(
+                            e.getValue(), hostname, vrfName, ipVrfOwners))
+            .forEach(e -> graph.addNode(new BgpPeerConfigId(hostname, vrf.getName(), e.getKey())));
       }
-      return new BgpTopology(graph);
-    } finally {
-      span.finish();
     }
+
+    // Second pass: add edges to the graph. Note, these are directed edges.
+    Map<String, Multimap<String, BgpPeerConfigId>> receivers = new HashMap<>();
+    for (BgpPeerConfigId peer : graph.nodes()) {
+      if (peer.getType() == BgpPeerConfigType.UNNUMBERED) {
+        // Unnumbered configs only form sessions with each other
+        continue;
+      }
+      Multimap<String, BgpPeerConfigId> vrf =
+          receivers.computeIfAbsent(peer.getHostname(), name -> LinkedListMultimap.create());
+      vrf.put(peer.getVrfName(), peer);
+    }
+    SetMultimap<BgpPeerConfigId, Ip> localIps = localIpsBuilder.build();
+    for (BgpPeerConfigId neighborId : graph.nodes()) {
+      switch (neighborId.getType()) {
+        case DYNAMIC:
+          // Passive end of the peering cannot initiate a connection
+          continue;
+        case ACTIVE:
+          addActivePeerEdges(
+              neighborId,
+              graph,
+              networkConfigurations,
+              ipVrfOwners,
+              receivers,
+              localIps.get(neighborId),
+              checkReachability,
+              tracerouteEngine);
+          break;
+        case UNNUMBERED:
+          addUnnumberedPeerEdges(neighborId, graph, networkConfigurations, l3Adjacencies);
+          break;
+        default:
+          throw new IllegalArgumentException(
+              String.format("Unrecognized peer type: %s", neighborId));
+      }
+    }
+    return new BgpTopology(graph);
   }
 
   private static void addActivePeerEdges(

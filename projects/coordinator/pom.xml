@@ -27,9 +27,6 @@
                             <configuration>
                                 <ignoredUnusedDeclaredDependencies>
                                     <ignoredUnusedDeclaredDependency>
-                                        io.jaegertracing:jaeger-thrift
-                                    </ignoredUnusedDeclaredDependency>
-                                    <ignoredUnusedDeclaredDependency>
                                         javax.activation:activation
                                     </ignoredUnusedDeclaredDependency>
                                     <ignoredUnusedDeclaredDependency>
@@ -116,26 +113,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-util</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>opentracing-jaxrs2</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
@@ -206,13 +183,6 @@
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- Runtime dependency for Jaeger -->
-        <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-thrift</artifactId>
             <scope>runtime</scope>
         </dependency>
 

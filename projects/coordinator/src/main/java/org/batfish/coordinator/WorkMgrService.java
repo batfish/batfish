@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
-import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessControlException;
@@ -1690,10 +1689,6 @@ public class WorkMgrService {
       }
       boolean result = Main.getWorkMgr().queueWork(workItem);
 
-      if (GlobalTracer.get().activeSpan() != null) {
-        GlobalTracer.get().activeSpan().setTag("work-id", workItem.getId().toString());
-      }
-
       return successResponse(new JSONObject().put("result", result));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.errorf("WMS:queueWork exception: %s\n", e.getMessage());
@@ -1816,13 +1811,6 @@ public class WorkMgrService {
       boolean autoAnalyze = false;
       if (!Strings.isNullOrEmpty(autoAnalyzeStrParam)) {
         autoAnalyze = Boolean.parseBoolean(autoAnalyzeStrParam);
-      }
-
-      if (GlobalTracer.get().activeSpan() != null) {
-        GlobalTracer.get()
-            .activeSpan()
-            .setTag("network-name", networkName)
-            .setTag("snapshot-name", snapshotName);
       }
 
       Main.getWorkMgr().uploadSnapshot(networkName, snapshotName, fileStream, autoAnalyze);

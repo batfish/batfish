@@ -38,8 +38,7 @@ public class ParseVendorConfigurationJobTest {
             ImmutableMap.of("filename", readResource(resourcePath, UTF_8)),
             new Warnings.Settings(false, false, false),
             ConfigurationFormat.HOST,
-            ImmutableMultimap.of(),
-            null)
+            ImmutableMultimap.of())
         .call();
   }
 
@@ -66,8 +65,7 @@ public class ParseVendorConfigurationJobTest {
                 ImmutableMap.of("config", "some nonempty content"),
                 new Warnings.Settings(false, false, false),
                 ConfigurationFormat.UNSUPPORTED,
-                ImmutableMultimap.of(),
-                null)
+                ImmutableMultimap.of())
             .parse();
     assertThat(result.getFormat(), equalTo(ConfigurationFormat.UNSUPPORTED));
     assertThat(result.getFailureCause(), nullValue());

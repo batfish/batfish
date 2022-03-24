@@ -3,19 +3,10 @@ package org.batfish.common;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.propagation.Format.Builtin;
-import io.opentracing.propagation.TextMapAdapter;
-import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
 public class WorkItem {
   private static final String PROP_NETWORK = "containerName";
@@ -30,7 +21,6 @@ public class WorkItem {
   private final UUID _id;
   private Map<String, String> _requestParams;
   private final String _snapshot;
-  private Map<String, String> _spanData; /* Map used by the TextMap carrier for SpanContext */
 
   public WorkItem(String containerName, String testrigName) {
     this(
@@ -50,7 +40,6 @@ public class WorkItem {
     _network = network;
     _snapshot = snapshot;
     _requestParams = firstNonNull(reqParams, new HashMap<>());
-    _spanData = new HashMap<>();
   }
 
   public void addRequestParam(String key, String value) {
@@ -70,23 +59,6 @@ public class WorkItem {
   @JsonProperty(PROP_REQUEST_PARAMS)
   public Map<String, String> getRequestParams() {
     return _requestParams;
-  }
-
-  /**
-   * Retrieves a {@link SpanContext} which was serialized earlier in the {@link WorkItem}
-   *
-   * @return {@link SpanContext} or null if no {@link SpanContext} was serialized in the {@link
-   *     WorkItem}
-   */
-  @Nullable
-  @JsonIgnore
-  public SpanContext getSourceSpan() {
-    return getSourceSpan(GlobalTracer.get());
-  }
-
-  @VisibleForTesting
-  SpanContext getSourceSpan(Tracer tracer) {
-    return tracer.extract(Builtin.TEXT_MAP, new TextMapAdapter(_spanData));
   }
 
   @JsonProperty(PROP_SNAPSHOT)
@@ -109,22 +81,6 @@ public class WorkItem {
 
   public static void setFixedUuid(UUID value) {
     FIXED_UUID = value;
-  }
-
-  /**
-   * Takes an Active {@link Span} and attaches it to the {@link WorkItem} which can be fetched later
-   * using {@link WorkItem#getSourceSpan()}
-   */
-  public void setSourceSpan(@Nullable Span activeSpan) {
-    setSourceSpan(activeSpan, GlobalTracer.get());
-  }
-
-  @VisibleForTesting
-  void setSourceSpan(@Nullable Span activeSpan, Tracer tracer) {
-    if (activeSpan == null) {
-      return;
-    }
-    tracer.inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapAdapter(_spanData));
   }
 
   @Override

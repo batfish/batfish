@@ -11,7 +11,6 @@ import static org.batfish.common.CoordConstsV2.RSC_REFERENCE_LIBRARY;
 import static org.batfish.common.CoordConstsV2.RSC_SNAPSHOTS;
 import static org.batfish.common.CoordConstsV2.RSC_WORK;
 
-import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -137,14 +136,6 @@ public class NetworkResource {
           !isNullOrEmpty(forkSnapshotBean.baseSnapshot),
           "Parameter %s is required",
           "base snapshot");
-
-      // Set the appropriate tags for the trace being captured
-      if (GlobalTracer.get().activeSpan() != null) {
-        GlobalTracer.get()
-            .activeSpan()
-            .setTag("network-name", _name)
-            .setTag("snapshot-name", forkSnapshotBean.newSnapshot);
-      }
 
       Main.getWorkMgr().forkSnapshot(_name, forkSnapshotBean);
       return Response.ok().build();

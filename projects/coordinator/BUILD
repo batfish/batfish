@@ -12,7 +12,6 @@ java_library(
     resources = glob(["src/main/resources/**"]),
     runtime_deps = [
         "//projects/question",
-        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:javax_activation_activation",
         "@maven//:javax_xml_bind_jaxb_api",
         "@maven//:org_glassfish_jersey_inject_jersey_hk2",
@@ -26,10 +25,6 @@ java_library(
         "@maven//:com_google_errorprone_error_prone_annotations",
         "@maven//:com_google_guava_guava",
         "@maven//:commons_io_commons_io",
-        "@maven//:io_jaegertracing_jaeger_core",
-        "@maven//:io_opentracing_contrib_opentracing_jaxrs2",
-        "@maven//:io_opentracing_opentracing_api",
-        "@maven//:io_opentracing_opentracing_util",
         "@maven//:javax_annotation_javax_annotation_api",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
         "@maven//:org_apache_logging_log4j_log4j_api",
