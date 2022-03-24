@@ -44,6 +44,9 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
@@ -703,6 +706,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     Set<String> inInterfaces = ImmutableSet.copyOf(c.getAllInterfaces().keySet());
     for (String name : inInterfaces) {
       Interface i = c.getAllInterfaces().get(name);
+      if (!verifyDependencies(c, w, i)) {
+        continue;
+      }
       // VI invariant: switchport is true iff SwitchportMode is not NONE.
       boolean hasSwitchportMode = i.getSwitchportMode() != SwitchportMode.NONE;
       if (hasSwitchportMode != i.getSwitchport()) {
@@ -716,8 +722,128 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       if (i.getSwitchport() && !i.getAllAddresses().isEmpty()) {
         w.redFlag(String.format("Interface %s is a switchport, but it has L3 addresses", name));
         c.getAllInterfaces().remove(name);
+        continue;
+      }
+      if (i.getActive()) {
+        if (!verifyChannelGroupExists(c, w, i)) {
+          continue;
+        }
+        if (i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() == null) {
+          w.redFlag(String.format("Interface %s is a VLAN interface but has no vlan set", name));
+          c.getAllInterfaces().remove(name);
+          continue;
+        }
+        if (i.getChannelGroup() != null) {
+          String aggregateName = i.getChannelGroup();
+          Interface aggregate = c.getAllInterfaces().get(aggregateName);
+          if (aggregate == null) {
+            w.redFlag(
+                String.format(
+                    "Interface %s is a member of undefined aggregate or or redundant interface %s",
+                    name, aggregateName));
+            c.getAllInterfaces().remove(name);
+            continue;
+          }
+          if (!i.getAllAddresses().isEmpty()) {
+            w.redFlag(
+                String.format(
+                    "Interface %s is a member of %s interface %s but it has L3 addresses",
+                    name, aggregate.getInterfaceType(), aggregateName));
+            c.getAllInterfaces().remove(name);
+            continue;
+          }
+        }
+        if (i.getInterfaceType() == InterfaceType.LOGICAL
+            && !verifyLogicalBindDependencies(c, w, i)) {
+          continue;
+        }
       }
     }
+  }
+
+  /**
+   * Removes undefined aggregate dependencies, and removes interface if it has an undefined bind
+   * dependency.
+   *
+   * <p>Return {@code true} iff interface was not removed.
+   */
+  private static boolean verifyDependencies(Configuration c, Warnings w, Interface i) {
+    String name = i.getName();
+    Set<Dependency> inDependencies = ImmutableSet.copyOf(i.getDependencies());
+    for (Dependency dependency : inDependencies) {
+      String refName = dependency.getInterfaceName();
+      if (!c.getAllInterfaces().containsKey(refName)) {
+        if (dependency.getType() == DependencyType.BIND) {
+          w.redFlag(
+              String.format(
+                  "Interface %s has a bind dependency on missing interface %s", name, refName));
+          c.getAllInterfaces().remove(name);
+          return false;
+        } else {
+          assert dependency.getType() == DependencyType.AGGREGATE;
+          w.redFlag(
+              String.format(
+                  "Interface %s has an aggregate dependency on missing interface %s",
+                  name, refName));
+          i.setDependencies(
+              i.getDependencies().stream()
+                  .filter(d -> !d.equals(dependency))
+                  .collect(ImmutableSet.toImmutableSet()));
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Removes an interface if it has an undefined channel group reference.
+   *
+   * <p>Return {@code true} unless the interface has a channel group that is undefined.
+   */
+  private static boolean verifyChannelGroupExists(Configuration c, Warnings w, Interface i) {
+    String channelGroupName = i.getChannelGroup();
+    if (channelGroupName == null || c.getAllInterfaces().containsKey(channelGroupName)) {
+      return true;
+    }
+    String name = i.getName();
+    w.redFlag(
+        String.format("Interface %s has an undefined channel group %s", name, channelGroupName));
+    c.getAllInterfaces().remove(name);
+    return false;
+  }
+
+  /**
+   * Remove a logical interface if it has L3 settings but is a child of a member of an aggregate.
+   *
+   * <p>Return {code false} iff the interface is removed.
+   */
+  private static boolean verifyLogicalBindDependencies(Configuration c, Warnings w, Interface i) {
+    for (Dependency dependency : i.getDependencies()) {
+      if (dependency.getType() != DependencyType.BIND) {
+        continue;
+      }
+      String parentName = dependency.getInterfaceName();
+      Interface parent = c.getAllInterfaces().get(parentName);
+      // verified earlier
+      assert parent != null;
+      String aggregateName = parent.getChannelGroup();
+      if (aggregateName == null) {
+        continue;
+      }
+      Interface aggregate = c.getAllInterfaces().get(aggregateName);
+      // verified earlier
+      assert aggregate != null;
+      String name = i.getName();
+      if (!i.getAllAddresses().isEmpty()) {
+        w.redFlag(
+            String.format(
+                "Interface %s is a child of a member of %s interface %s but it has L3 addresses",
+                name, aggregate.getInterfaceType(), aggregateName));
+        c.getAllInterfaces().remove(name);
+        return false;
+      }
+    }
+    return true;
   }
 
   private static void clearInvalidFilterAndWarn(
