@@ -1,7 +1,7 @@
 parser grammar FlatJuniperParser;
 
 import
-FlatJuniper_applications, FlatJuniper_class_of_service, FlatJuniper_common, FlatJuniper_fabric, FlatJuniper_firewall, FlatJuniper_forwarding_options, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security, FlatJuniper_snmp, FlatJuniper_system;
+FlatJuniper_applications, FlatJuniper_bridge_domains, FlatJuniper_class_of_service, FlatJuniper_common, FlatJuniper_fabric, FlatJuniper_firewall, FlatJuniper_forwarding_options, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security, FlatJuniper_snmp, FlatJuniper_system;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -92,6 +92,7 @@ s_common
 :
    s_applications
    | apply_groups
+   | s_bridge_domains
    | s_class_of_service
    | s_fabric
    | s_firewall
