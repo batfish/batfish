@@ -369,6 +369,8 @@ import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BridgeDomain;
+import org.batfish.representation.juniper.BridgeDomainVlanIdAll;
+import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
@@ -7152,7 +7154,35 @@ public final class FlatJuniperGrammarTest {
       assertThat(bd.getRoutingInterface(), equalTo("irb.1"));
       assertThat(bd.getVlanId(), equalTo(BridgeDomainVlanIdNumber.of(1)));
     }
-    // TODO: other bridge domain configurations, i.e. bd2-5
+    // TODO: extractions for interface, vlan-id-list, vlan-tags
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem()
+              .getRoutingInstances()
+              .get("ri1")
+              .getBridgeDomains()
+              .get("bd2");
+      assertThat(bd.getRoutingInterface(), nullValue());
+      assertThat(bd.getVlanId(), nullValue());
+    }
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains().get("bd3");
+      assertThat(bd.getRoutingInterface(), nullValue());
+      assertThat(bd.getVlanId(), nullValue());
+    }
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains().get("bd4");
+      assertThat(bd.getRoutingInterface(), nullValue());
+      assertThat(bd.getVlanId(), equalTo(BridgeDomainVlanIdNone.instance()));
+    }
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains().get("bd5");
+      assertThat(bd.getRoutingInterface(), nullValue());
+      assertThat(bd.getVlanId(), equalTo(BridgeDomainVlanIdAll.instance()));
+    }
   }
 
   @Test
@@ -7173,8 +7203,8 @@ public final class FlatJuniperGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasDefinedStructure(filename, BRIDGE_DOMAIN, "bd1"));
-    // self ref
-    assertThat(ccae, hasNumReferrers(filename, BRIDGE_DOMAIN, "bd1", 1));
+    // self refs
+    assertThat(ccae, hasNumReferrers(filename, BRIDGE_DOMAIN, "bd1", 4));
     // self plus routing-interface
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "irb.1", 2));
   }

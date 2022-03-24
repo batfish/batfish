@@ -6783,11 +6783,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     String name = maybeName.get();
-    if (!_currentRoutingInstance.getBridgeDomains().containsKey(name)) {
-      _configuration.referenceStructure(
-          BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, ctx.getStart().getLine());
-    }
     _currentBridgeDomain = _currentRoutingInstance.getOrAddBridgeDomain(name);
+    _configuration.referenceStructure(
+        BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, ctx.getStart().getLine());
     _configuration.defineFlattenedStructure(BRIDGE_DOMAIN, name, ctx, _parser);
     // until we support bridge domains generally
     todo(ctx);
