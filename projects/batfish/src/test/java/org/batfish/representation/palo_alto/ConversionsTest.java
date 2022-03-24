@@ -20,7 +20,6 @@ import org.batfish.representation.palo_alto.application_definitions.ApplicationD
 import org.batfish.representation.palo_alto.application_definitions.ApplicationDefinitions;
 import org.batfish.representation.palo_alto.application_definitions.Default;
 import org.batfish.representation.palo_alto.application_definitions.Port;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
 /** Test of {@link Conversions}. */
@@ -53,9 +52,9 @@ public class ConversionsTest {
           definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
-      MatcherAssert.assertThat(service.getProtocol(), equalTo(IpProtocol.fromNumber(19)));
+      assertThat(service.getProtocol(), equalTo(IpProtocol.fromNumber(19)));
       assertNull(service.getIcmpType());
-      MatcherAssert.assertThat(service.getPorts(), equalTo(IntegerSpace.EMPTY));
+      assertThat(service.getPorts(), equalTo(IntegerSpace.EMPTY));
     }
     // ICMP type
     {
@@ -64,9 +63,9 @@ public class ConversionsTest {
           definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
-      MatcherAssert.assertThat(service.getProtocol(), equalTo(IpProtocol.ICMP));
-      MatcherAssert.assertThat(service.getIcmpType(), equalTo(8));
-      MatcherAssert.assertThat(service.getPorts(), equalTo(IntegerSpace.EMPTY));
+      assertThat(service.getProtocol(), equalTo(IpProtocol.ICMP));
+      assertThat(service.getIcmpType(), equalTo(8));
+      assertThat(service.getPorts(), equalTo(IntegerSpace.EMPTY));
     }
     // TCP port
     {
@@ -76,10 +75,10 @@ public class ConversionsTest {
           definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
-      MatcherAssert.assertThat(service.getProtocol(), equalTo(IpProtocol.TCP));
+      assertThat(service.getProtocol(), equalTo(IpProtocol.TCP));
       assertNull(service.getIcmpType());
       assertNull(service.getIcmpType());
-      MatcherAssert.assertThat(service.getPorts(), equalTo(IntegerSpace.of(443)));
+      assertThat(service.getPorts(), equalTo(IntegerSpace.of(443)));
     }
   }
 

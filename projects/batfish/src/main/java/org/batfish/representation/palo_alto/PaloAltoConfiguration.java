@@ -286,10 +286,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Return the {@link Application}s corresponding to the provided built-in application {@code
-   * name}. There may be more than one {@link Application} for "application-containers", e.g. {@code
-   * snmp} includes {@code snmpv1}, {@code snmpv2}, ...
+   * name}. The specified {@code name} must correspond to a built-in application or container. There
+   * may be more than one {@link Application} for "application-containers", e.g. {@code snmp}
+   * includes {@code snmpv1}, {@code snmpv2}, ...
    */
   public static @Nonnull List<Application> getBuiltInApps(String name) {
+    assert isBuiltInApp(name);
     Multimap<String, String> containers =
         ApplicationDefinitions.INSTANCE.getApplicationContainers();
     if (containers.containsKey(name)) {
