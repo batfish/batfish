@@ -41619,12 +41619,16 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_100'",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_100'  <== mode:M_Name))",
+            "                (bd_vlan_id",
             "                  VLAN_ID:'vlan-id'",
-            "                  UINT8:'100')))))))",
+            "                  (vlan_number*",
+            "                    (uint16*",
+            "                      UINT8:'100')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41636,12 +41640,15 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_100'",
-            "                  UNRECOGNIZED_WORD:'routing-interface'",
-            "                  UNRECOGNIZED_WORD:'irb.100')))))))",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_100'  <== mode:M_Name))",
+            "                (bd_routing_interface",
+            "                  ROUTING_INTERFACE:'routing-interface'",
+            "                  (interface_id*",
+            "                    INTERFACE_ID:'irb.100'  <== mode:M_Interface))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41653,13 +41660,16 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_100'",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_100'  <== mode:M_Name))",
+            "                (bd_vxlan*",
             "                  VXLAN:'vxlan'",
-            "                  VNI:'vni'",
-            "                  UINT8:'100')))))))",
+            "                  (null_filler*",
+            "                    VNI:'vni'",
+            "                    UINT8:'100'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41671,12 +41681,16 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_101'",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_101'  <== mode:M_Name))",
+            "                (bd_vlan_id",
             "                  VLAN_ID:'vlan-id'",
-            "                  UINT8:'101')))))))",
+            "                  (vlan_number*",
+            "                    (uint16*",
+            "                      UINT8:'101')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41688,12 +41702,15 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_101'",
-            "                  UNRECOGNIZED_WORD:'routing-interface'",
-            "                  UNRECOGNIZED_WORD:'irb.101')))))))",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_101'  <== mode:M_Name))",
+            "                (bd_routing_interface",
+            "                  ROUTING_INTERFACE:'routing-interface'",
+            "                  (interface_id*",
+            "                    INTERFACE_ID:'irb.101'  <== mode:M_Interface))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41705,13 +41722,16 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_101'",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_101'  <== mode:M_Name))",
+            "                (bd_vxlan*",
             "                  VXLAN:'vxlan'",
-            "                  VNI:'vni'",
-            "                  UINT8:'101')))))))",
+            "                  (null_filler*",
+            "                    VNI:'vni'",
+            "                    UINT8:'101'))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -60317,7 +60337,7 @@
             "                (null_filler*",
             "                  UNRECOGNIZED_WORD:'messages'",
             "                  FIREWALL:'firewall'",
-            "                  UNRECOGNIZED_WORD:'none')))))))",
+            "                  NONE:'none')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -70187,6 +70207,42 @@
               "Line" : 112,
               "Parser_Context" : "[rof_export ro_forwarding_table s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "export lbpp"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_100 vlan-id 100"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_100 routing-interface irb.100"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_100 vxlan vni 100"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_101 vlan-id 101"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_101 routing-interface irb.101"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_101 vxlan vni 101"
             }
           ]
         },
@@ -72946,6 +73002,16 @@
               "numReferrers" : 3
             }
           },
+          "bridge-domain" : {
+            "bd_100" : {
+              "definitionLines" : "221-228,236",
+              "numReferrers" : 3
+            },
+            "bd_101" : {
+              "definitionLines" : "221,229-236",
+              "numReferrers" : 3
+            }
+          },
           "community" : {
             "fabric" : {
               "definitionLines" : "191",
@@ -72975,7 +73041,7 @@
             },
             "irb.100" : {
               "definitionLines" : "83-89",
-              "numReferrers" : 3
+              "numReferrers" : 4
             },
             "lo0" : {
               "definitionLines" : "91-102",
@@ -79340,6 +79406,22 @@
               ]
             }
           },
+          "bridge-domain" : {
+            "bd_100" : {
+              "bridge-domain self reference" : [
+                81,
+                82,
+                83
+              ]
+            },
+            "bd_101" : {
+              "bridge-domain self reference" : [
+                84,
+                85,
+                86
+              ]
+            }
+          },
           "community" : {
             "fabric" : {
               "policy-statement from community" : [
@@ -79374,8 +79456,16 @@
               ]
             },
             "irb.100" : {
+              "bridge-domains routing-interface" : [
+                82
+              ],
               "interface" : [
                 83
+              ]
+            },
+            "irb.101" : {
+              "bridge-domains routing-interface" : [
+                85
               ]
             },
             "lo0" : {
@@ -84082,7 +84172,15 @@
             }
           }
         },
-        "configs/gh-2658-juniper-vrf-import-export.cfg" : { },
+        "configs/gh-2658-juniper-vrf-import-export.cfg" : {
+          "interface" : {
+            "irb.101" : {
+              "bridge-domains routing-interface" : [
+                85
+              ]
+            }
+          }
+        },
         "configs/host2" : { },
         "configs/if_tag_is" : { },
         "configs/interface_exit" : { },

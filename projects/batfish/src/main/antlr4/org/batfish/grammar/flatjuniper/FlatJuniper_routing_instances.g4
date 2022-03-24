@@ -1,7 +1,7 @@
 parser grammar FlatJuniper_routing_instances;
 
 import
-FlatJuniper_common, FlatJuniper_forwarding_options, FlatJuniper_protocols, FlatJuniper_snmp;
+FlatJuniper_common, FlatJuniper_bridge_domains, FlatJuniper_forwarding_options, FlatJuniper_protocols, FlatJuniper_snmp;
 
 options {
    tokenVocab = FlatJuniperLexer;
@@ -39,6 +39,7 @@ ri_named_routing_instance
    name = junos_name
    (
       apply
+      | s_bridge_domains
       | s_forwarding_options
       | s_routing_options
       | ri_description
@@ -59,8 +60,7 @@ ri_named_routing_instance
 ri_null
 :
    (
-      BRIDGE_DOMAINS
-      | CHASSIS
+      CHASSIS
       | EVENT_OPTIONS
       | PROVIDER_TUNNEL
       | SERVICES

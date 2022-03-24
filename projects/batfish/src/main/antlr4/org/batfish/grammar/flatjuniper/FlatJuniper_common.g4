@@ -687,6 +687,12 @@ wildcard
   | WILDCARD_ARTIFACT
 ;
 
+vlan_number
+:
+  // 1-4094
+  uint16
+;
+
 vni_number
 :
   // 0 through 16,777,215

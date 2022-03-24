@@ -328,7 +328,7 @@ BOOTPS: 'bootps';
 
 BRIDGE: 'bridge';
 
-BRIDGE_DOMAINS: 'bridge-domains';
+BRIDGE_DOMAINS: 'bridge-domains' -> pushMode(M_Name);
 
 BROADCAST_CLIENT: 'broadcast-client';
 
@@ -553,7 +553,7 @@ DOMAIN: 'domain';
 DOMAIN_NAME: 'domain-name' -> pushMode(M_Name);
 
 DOMAIN_SEARCH: 'domain-search';
-
+DOMAIN_TYPE: 'domain-type';
 DROP_PATH_ATTRIBUTES: 'drop-path-attributes';
 
 DROP_PROFILES: 'drop-profiles' -> pushMode(M_Name);
@@ -1945,7 +1945,7 @@ NODE_DEVICE: 'node-device' -> pushMode(M_FabricDevice);
 NODE_GROUP: 'node-group' -> pushMode(M_Name);
 
 NODE_LINK_PROTECTION: 'node-link-protection';
-
+NONE: 'none';
 NONSTOP_ROUTING: 'nonstop-routing';
 
 NON_STRICT_PRIORITY_SCHEDULING: 'non-strict-priority-scheduling';
@@ -2360,7 +2360,7 @@ ROUTING_HEADER: 'routing-header';
 ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_Name);
 
 ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Name);
-
+ROUTING_INTERFACE: 'routing-interface' -> pushMode(M_Interface);
 ROUTING_OPTIONS: 'routing-options';
 
 RPC_PROGRAM_NUMBER: 'rpc-program-number';
