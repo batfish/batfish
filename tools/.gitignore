@@ -1,3 +1,5 @@
 /completion-*.tmp
 /*.deb
 /*.rpm
+/palo_alto_applications.xml
+
