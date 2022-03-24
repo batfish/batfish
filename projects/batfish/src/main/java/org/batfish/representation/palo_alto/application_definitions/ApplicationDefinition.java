@@ -75,7 +75,7 @@ public final class ApplicationDefinition {
   }
 
   @VisibleForTesting
-  ApplicationDefinition(
+  public ApplicationDefinition(
       String name,
       @Nullable String applicationContainer,
       @Nullable String parentApp,

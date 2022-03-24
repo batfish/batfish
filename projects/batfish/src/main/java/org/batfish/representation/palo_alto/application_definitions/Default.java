@@ -46,7 +46,13 @@ public final class Default {
         identByIcmpType == null || identByIcmpType instanceof NullNode
             ? null
             : icmpTypeToString(identByIcmpType);
-    return new Default(port, identByIpProtocol, type);
+    return create(port, identByIpProtocol, type);
+  }
+
+  @VisibleForTesting
+  public static @Nonnull Default create(
+      @Nullable Port port, @Nullable String identByIpProtocol, @Nullable String identByIcmpType) {
+    return new Default(port, identByIpProtocol, identByIcmpType);
   }
 
   /** Extract the type string from an ICMP type. */
@@ -58,8 +64,7 @@ public final class Default {
     return text.textValue();
   }
 
-  @VisibleForTesting
-  Default(
+  private Default(
       @Nullable Port port, @Nullable String identByIpProtocol, @Nullable String identByIcmpType) {
     _port = port;
     _identByIpProtocol = identByIpProtocol;

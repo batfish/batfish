@@ -36,11 +36,15 @@ public final class Port {
       return new Port(names.build());
     }
     // Single member
-    return new Port(ImmutableList.of(member.textValue()));
+    return create(ImmutableList.of(member.textValue()));
   }
 
   @VisibleForTesting
-  Port(@Nonnull List<String> member) {
+  public static @Nonnull Port create(@Nonnull List<String> member) {
+    return new Port(member);
+  }
+
+  private Port(@Nonnull List<String> member) {
     _member = member;
   }
 

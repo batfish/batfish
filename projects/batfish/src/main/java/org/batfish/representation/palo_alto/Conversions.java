@@ -4,7 +4,9 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Ints;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,6 +15,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -39,6 +43,9 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.palo_alto.PolicyRule.Action;
 import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
+import org.batfish.representation.palo_alto.application_definitions.ApplicationDefinition;
+import org.batfish.representation.palo_alto.application_definitions.Default;
+import org.batfish.representation.palo_alto.application_definitions.Port;
 
 /** Utility conversions functions for {@link PaloAltoConfiguration} */
 final class Conversions {
@@ -314,6 +321,150 @@ final class Conversions {
 
   static String getRoutingPolicyNameForExportPolicyRulesForPeer(String vrName, String peerName) {
     return String.format("~BGP_POLICY_RULE_EXPORT_POLICY:%s:%s~", vrName, peerName);
+  }
+
+  /** Convert an {@link ApplicationDefinition} into a datamodel {@link Application}. */
+  @VisibleForTesting
+  static @Nonnull Application definitionToApp(ApplicationDefinition appDef) {
+    String appName = appDef.getName();
+    return Application.builder(appName)
+        .setDescription(String.format("built-in application %s", appName))
+        .addServices(toServices(appDef))
+        .build();
+  }
+
+  /**
+   * Return a {@link List} of {@link Service}s corresponding to the specified {@link
+   * ApplicationDefinition}.
+   */
+  private static @Nonnull List<Service> toServices(ApplicationDefinition appDef) {
+    String appName = appDef.getName();
+    Default defaultVal = appDef.getDefault();
+    // Skip applications without any default port/protocol info - nothing to do in Batfish yet
+    if (defaultVal == null) {
+      return ImmutableList.of();
+    }
+
+    if (defaultVal.getPort() != null) {
+      return portToServices(appName, defaultVal.getPort());
+    } else if (defaultVal.getIdentByIpProtocol() != null) {
+      return protocolToServices(appName, defaultVal.getIdentByIpProtocol());
+    } else if (defaultVal.getIdentByIcmpType() != null) {
+      return ImmutableList.of(icmpTypeToService(appName, defaultVal.getIdentByIcmpType()));
+    }
+    // Just ignore ping6/icmp6 type for now
+    assert appName.equals("ping6");
+    return ImmutableList.of();
+  }
+
+  private static @Nonnull List<Service> portToServices(String appName, Port port) {
+    return port.getMember().stream()
+        .map(m -> portMemberToService(appName, m))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /** Convert a {@link Port} {@code member} string to its corresponding {@link Service}. */
+  private static Service portMemberToService(String appName, String member) {
+    Service.Builder service = Service.builder(String.format("%s (%s)", appName, member));
+    String[] parts = member.split("/", -1);
+    assert parts.length == 2;
+    String protocol = parts[0];
+    String ports = parts[1];
+
+    // Only TCP and UDP built-in applications have specific ports
+    if (protocol.equals("tcp") || protocol.equals("udp")) {
+      portsStringToIntegerSpace(ports).getSubRanges().forEach(service::addPorts);
+    } else {
+      assert ports.equals("dynamic");
+    }
+
+    switch (protocol) {
+      case "icmp":
+        return service.setIpProtocol(IpProtocol.ICMP).build();
+      case "icmp6":
+        return service.setIpProtocol(IpProtocol.IPV6_ICMP).build();
+      case "tcp":
+        return service.setIpProtocol(IpProtocol.TCP).build();
+      case "udp":
+      default:
+        assert protocol.equals("udp");
+        return service.setIpProtocol(IpProtocol.UDP).build();
+    }
+  }
+
+  /**
+   * Convert a string representing an application's ports into its {@link IntegerSpace}
+   * representation.
+   */
+  @VisibleForTesting
+  static IntegerSpace portsStringToIntegerSpace(String ports) {
+    String[] parts = ports.replace(" ", "").split(",", -1);
+
+    IntegerSpace.Builder space = IntegerSpace.builder();
+    for (String part : parts) {
+      // Keyword
+      // TODO confirm behavior of dynamic
+      if (part.equals("dynamic") || part.equals("any")) {
+        return IntegerSpace.PORTS;
+      }
+
+      // Plain number
+      if (!part.contains("-")) {
+        Integer val = Ints.tryParse(part);
+        assert val != null;
+        space.including(val);
+        continue;
+      }
+
+      // Range
+      space.including(rangeStringToSubRange(part));
+    }
+    return space.build();
+  }
+
+  /**
+   * Convert a simple range-string (e.g. "1234-1236") into a {@link SubRange}. The provided {@code
+   * range} must be a {@link String} containing a start number, hyphen, and end number.
+   */
+  private static @Nonnull SubRange rangeStringToSubRange(String range) {
+    String[] loHi = range.split("-", -1);
+    assert loHi.length == 2;
+    Integer lo = Ints.tryParse(loHi[0]);
+    Integer hi = Ints.tryParse(loHi[1]);
+    assert lo != null && hi != null;
+    assert hi >= lo;
+    return new SubRange(lo, hi);
+  }
+
+  /**
+   * Return a {@link List} of {@link Service}s representing the specified {@code protocol} (number
+   * or number range).
+   */
+  private static @Nonnull List<Service> protocolToServices(String appName, String protocol) {
+    // Range of protocol numbers
+    if (protocol.contains("-")) {
+      return rangeStringToSubRange(protocol)
+          .asStream()
+          .mapToObj(
+              i ->
+                  Service.builder(String.format("%s (IP protocol %d)", appName, i))
+                      .setIpProtocol(IpProtocol.fromNumber(i))
+                      .build())
+          .collect(ImmutableList.toImmutableList());
+    }
+
+    // Single number
+    Integer protocolNumber = Ints.tryParse(protocol);
+    assert protocolNumber != null;
+    return ImmutableList.of(
+        Service.builder(appName).setIpProtocol(IpProtocol.fromNumber(protocolNumber)).build());
+  }
+
+  /** Return a {@link Service} representing the specified {@code icmpType} (number). */
+  private static @Nonnull Service icmpTypeToService(String appName, String icmpType) {
+    Integer integer = Ints.tryParse(icmpType);
+    assert integer != null;
+    return Service.builder(appName).setIpProtocol(IpProtocol.ICMP).setIcmpType(integer).build();
   }
 
   private Conversions() {} // don't allow instantiation

@@ -1969,7 +1969,7 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.ICMP)
-            .setIcmpType(IcmpType.ECHO_REPLY)
+            .setIcmpType(IcmpType.ECHO_REQUEST)
             .setIcmpCode(0)
             .build();
     assertThat(
