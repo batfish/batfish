@@ -43,7 +43,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -191,9 +190,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void convertBondInterfaces() {
-    _bonds.forEach(
-        (name, bond) ->
-            toInterface(bond).ifPresent(newIface -> _c.getAllInterfaces().put(name, newIface)));
+    _bonds.forEach((name, bond) -> _c.getAllInterfaces().put(name, toInterface(bond)));
   }
 
   private void convertDefaultVrf() {
@@ -518,21 +515,22 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _vxlans = ImmutableMap.copyOf(vxlans);
   }
 
-  private @Nonnull Optional<org.batfish.datamodel.Interface> toInterface(Bond bond) {
+  private @Nonnull org.batfish.datamodel.Interface toInterface(Bond bond) {
     String name = bond.getName();
-    if (!verifyValidSlaves(name, bond.getSlaves())) {
-      return Optional.empty();
-    }
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
             .setType(InterfaceType.AGGREGATED)
             .build();
-    bond.getSlaves().forEach(slave -> _c.getAllInterfaces().get(slave).setChannelGroup(name));
-    newIface.setChannelGroupMembers(bond.getSlaves());
-    newIface.setDependencies(
+    Set<String> validSlaves =
         bond.getSlaves().stream()
+            .filter(slave -> isValidSlave(name, slave))
+            .collect(ImmutableSet.toImmutableSet());
+    validSlaves.forEach(slave -> _c.getAllInterfaces().get(slave).setChannelGroup(name));
+    newIface.setChannelGroupMembers(validSlaves);
+    newIface.setDependencies(
+        validSlaves.stream()
             .map(slave -> new Dependency(slave, DependencyType.AGGREGATE))
             .collect(ImmutableSet.toImmutableSet()));
 
@@ -545,28 +543,32 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     newIface.setMlagId(bond.getClagId());
 
-    return Optional.of(newIface);
+    return newIface;
   }
 
-  private boolean verifyValidSlaves(String bondName, Set<String> slaves) {
-    for (String slaveName : slaves) {
-      Interface slave = _interfaces.get(slaveName);
-      if (!slave.getIpAddresses().isEmpty()) {
+  private boolean isValidSlave(String bondName, String slaveName) {
+    Interface slave = _interfaces.get(slaveName);
+    if (!slave.getIpAddresses().isEmpty()) {
+      _w.redFlag(
+          String.format(
+              "Refusing to add slave %s to bond %s because it has an L3 address",
+              slaveName, bondName));
+      return false;
+    }
+    if (isUsedForBgpUnnumbered(slave.getName(), _bgpProcess)) {
+      _w.redFlag(
+          String.format(
+              "Refusing to add slave %s to bond %s because it is used for BGP unnumbered",
+              slaveName, bondName));
+      return false;
+    }
+    for (Interface i : _interfaces.values()) {
+      if (slaveName.equals(i.getSuperInterfaceName())) {
         _w.redFlag(
             String.format(
-                "Refusing to create bond-interface %s that refers to a slave with L3 address %s",
-                bondName, slaveName));
+                "Refusing to add slave %s to bond %s because it has a subinterface %s",
+                slaveName, bondName, i.getName()));
         return false;
-      }
-      for (Interface i : _interfaces.values()) {
-        if (slaveName.equals(i.getSuperInterfaceName())) {
-          _w.redFlag(
-              String.format(
-                  "Refusing to create bond-interface %s that refers to slave %s that has a"
-                      + " subinterface %s",
-                  bondName, slaveName, i.getName()));
-          return false;
-        }
       }
     }
     return true;
@@ -692,25 +694,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     warnDuplicateClagIds();
 
-    disableInvalidInterfaces(_c, _w);
-
     return _c;
-  }
-
-  private static void disableInvalidInterfaces(Configuration c, Warnings w) {
-    for (org.batfish.datamodel.Interface i : c.getActiveInterfaces().values()) {
-      if (!i.getAllAddresses().isEmpty()) {
-        String name = i.getName();
-        if (i.getChannelGroup() != null) {
-          w.redFlag(
-              String.format(
-                  "Disabling invalid interface '%s' because has L3 settings but is a bond slave of"
-                      + " '%s'",
-                  name, i.getChannelGroup()));
-          i.deactivate(InactiveReason.INVALID);
-        }
-      }
-    }
   }
 
   @Override

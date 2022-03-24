@@ -70885,7 +70885,7 @@
         "variables" : "PASSED",
         "variables_dos" : "PASSED",
         "vlan_access_map4" : "PASSED",
-        "vmx4" : "WARNINGS",
+        "vmx4" : "PASSED",
         "xr_dhcp" : "PASSED",
         "xr_ipsla" : "PASSED",
         "xr_multicast" : "PASSED",
@@ -85404,18 +85404,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Disabling invalid interface 'swp1' because has L3 settings but is a bond slave of 'bond1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Disabling invalid interface 'swp2' because has L3 settings but is a bond slave of 'bond1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Disabling invalid interface 'swp3' because has L3 settings but is a bond slave of 'bond1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond1'"
             },
             {
@@ -85429,6 +85417,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp1 to bond bond1 because it is used for BGP unnumbered"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp2 to bond bond1 because it is used for BGP unnumbered"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp3 to bond bond1 because it is used for BGP unnumbered"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -85814,14 +85814,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "NAT rule MISSING_TO ignored because it has no to zone configured"
-            }
-          ]
-        },
-        "vmx4" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Deactivating irb.100 because it has no assigned vlan"
             }
           ]
         }
