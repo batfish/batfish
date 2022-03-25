@@ -48,6 +48,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isLineUp;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
@@ -4469,5 +4470,14 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, SERVICE, service2Name, 1));
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_GROUP, appGroup1Name, 1));
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_GROUP, appGroup2Name, 1));
+  }
+
+  // TODO: remove fake interfaces "vlan" and "tunnel" and associated bind dependencies
+  @Test(expected = AssertionError.class)
+  public void testVlanTunnelUnits() {
+    String hostname = "paloalto_vlan_tunnel_units";
+    Configuration c = parseConfig(hostname);
+    // Do not convert parents "tunnel" and "vlan", which are not real interfaces.
+    assertThat(c.getAllInterfaces(), hasKeys("vlan.1", "tunnel.3"));
   }
 }

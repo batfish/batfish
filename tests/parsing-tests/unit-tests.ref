@@ -70576,6 +70576,16 @@
             }
           ]
         },
+        "configs/palo_alto/interfaces" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 49,
+              "Parser_Context" : "[sniv_unit sniv_units sni_vlan sn_interface s_network statement_config_devices set_line_config_devices set_line_tail set_line palo_alto_configuration]",
+              "Text" : "vlan.1"
+            }
+          ]
+        },
         "configs/palo_alto/nat" : {
           "Parse warnings" : [
             {
@@ -70673,7 +70683,7 @@
         "cisco_enable" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
-        "cisco_interface" : "PASSED",
+        "cisco_interface" : "WARNINGS",
         "cisco_ios_neighbor" : "PASSED",
         "cisco_ip" : "PASSED",
         "cisco_ip_nat" : "PASSED",
@@ -70755,7 +70765,7 @@
         "host1" : "PASSED",
         "host2" : "PASSED",
         "if_tag_is" : "PASSED",
-        "interface-reth" : "PASSED",
+        "interface-reth" : "WARNINGS",
         "interface_exit" : "PASSED",
         "interface_sdr" : "PASSED",
         "interfacemtu" : "PASSED",
@@ -85334,6 +85344,14 @@
             }
           ]
         },
+        "cisco_interface" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Deactivating interface Ethernet0 that refers to undefined channel-group Port-channel1"
+            }
+          ]
+        },
         "cisco_ip_route" : {
           "Red flags" : [
             {
@@ -85399,6 +85417,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp1 to bond bond1 because it is used for BGP unnumbered"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp2 to bond bond1 because it is used for BGP unnumbered"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp3 to bond bond1 because it is used for BGP unnumbered"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -85499,6 +85529,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '10.0.0.1'"
+            }
+          ]
+        },
+        "interface-reth" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to convert illegal unit 'ge-0/0/0.0' on parent that is a member of a redundant ethernet group 'reth0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to convert illegal unit 'ge-0/0/1.0' on parent that is a member of a redundant ethernet group 'reth0'"
             }
           ]
         },
@@ -85628,6 +85670,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Configuration will not actually commit. Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Deactivating irb.5 because it has no assigned vlan"
             }
           ]
         },

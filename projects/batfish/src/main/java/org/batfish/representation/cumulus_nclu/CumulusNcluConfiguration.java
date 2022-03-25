@@ -47,6 +47,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -522,11 +523,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setType(InterfaceType.AGGREGATED)
             .build();
-
-    bond.getSlaves().forEach(slave -> _c.getAllInterfaces().get(slave).setChannelGroup(name));
-    newIface.setChannelGroupMembers(bond.getSlaves());
-    newIface.setDependencies(
+    Set<String> validSlaves =
         bond.getSlaves().stream()
+            .filter(slave -> isValidSlave(name, slave))
+            .collect(ImmutableSet.toImmutableSet());
+    validSlaves.forEach(slave -> _c.getAllInterfaces().get(slave).setChannelGroup(name));
+    newIface.setChannelGroupMembers(validSlaves);
+    newIface.setDependencies(
+        validSlaves.stream()
             .map(slave -> new Dependency(slave, DependencyType.AGGREGATE))
             .collect(ImmutableSet.toImmutableSet()));
 
@@ -540,6 +544,34 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     newIface.setMlagId(bond.getClagId());
 
     return newIface;
+  }
+
+  private boolean isValidSlave(String bondName, String slaveName) {
+    Interface slave = _interfaces.get(slaveName);
+    if (!slave.getIpAddresses().isEmpty()) {
+      _w.redFlag(
+          String.format(
+              "Refusing to add slave %s to bond %s because it has an L3 address",
+              slaveName, bondName));
+      return false;
+    }
+    if (isUsedForBgpUnnumbered(slave.getName(), _bgpProcess)) {
+      _w.redFlag(
+          String.format(
+              "Refusing to add slave %s to bond %s because it is used for BGP unnumbered",
+              slaveName, bondName));
+      return false;
+    }
+    for (Interface i : _interfaces.values()) {
+      if (slaveName.equals(i.getSuperInterfaceName())) {
+        _w.redFlag(
+            String.format(
+                "Refusing to add slave %s to bond %s because it has a subinterface %s",
+                slaveName, bondName, i.getName()));
+        return false;
+      }
+    }
+    return true;
   }
 
   @VisibleForTesting
@@ -591,13 +623,19 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Interface toInterface(Vlan vlan) {
+    Integer vlanId = vlan.getVlanId();
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(vlan.getName())
             .setOwner(_c)
             .setType(InterfaceType.VLAN)
             .build();
-    newIface.setVlan(vlan.getVlanId());
+    newIface.setVlan(vlanId);
+    if (vlanId == null) {
+      // TODO: perhaps there should be a default based on the name?
+      _w.redFlag(String.format("Deactivating vlan %s which has no vlan-id set", vlan.getName()));
+      newIface.deactivate(InactiveReason.INCOMPLETE);
+    }
 
     // Interface addreses
     if (!vlan.getAddresses().isEmpty()) {
@@ -620,10 +658,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _c.setExportBgpFromBgpRib(true);
 
     convertPhysicalInterfaces();
-    convertBondInterfaces();
     convertSubinterfaces();
     convertVlanInterfaces();
     convertLoopback();
+    convertBondInterfaces();
     convertVrfLoopbackInterfaces();
     convertVrfs();
     convertDefaultVrf();
