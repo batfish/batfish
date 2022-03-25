@@ -19,14 +19,6 @@ public class BDDUtils {
     return factory;
   }
 
-  /**
-   * Swap the constraints on multiple {@link BDDInteger BDDIntegers} in a {@link BDD}. Usage:
-   * swap(bdd, a1, a2, b1, b2, ...). Swaps a1 and a2, b1 and b2, etc.
-   */
-  public static BDD swap(BDD bdd, BDDInteger... vars) {
-    return bdd.replace(swapPairing(vars));
-  }
-
   /** Create a {@link BDDPairing} for swapping variables. */
   public static BDDPairing swapPairing(BDDInteger... vars) {
     checkArgument(vars.length > 0, "Requires at least 2 variables");
