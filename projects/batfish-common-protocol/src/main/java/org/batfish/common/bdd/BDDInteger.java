@@ -460,6 +460,20 @@ public class BDDInteger {
     return _vars;
   }
 
+  /**
+   * Returns a {@link BDD} containing the {@code n} high-order variables of this {@link BDDInteger}.
+   */
+  public @Nonnull BDD getVars(int n) {
+    checkState(
+        _hasVariablesOnly,
+        "getVars can only be called on a BDDInteger with hasVariablesOnly() true");
+    checkState(n <= _bitvec.length);
+    if (n == _bitvec.length) {
+      return getVars();
+    }
+    return _factory.andAll(Arrays.copyOf(_bitvec, n));
+  }
+
   public BDDFactory getFactory() {
     return _factory;
   }
