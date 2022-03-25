@@ -114,33 +114,8 @@ public class BDDIntegerTest {
     // Check that each variable's bitvec is properly used with satisfying assignment.
     assertThat(x.getValuesSatisfying(x.value(3L), 100), contains(3L));
     assertThat(xPlus1.getValuesSatisfying(xPlus1.value(3L), 100), contains(3L));
-
-    // convert to a relation representation (i.e. a constraint over two integer variables)
-    BDDInteger y = BDDInteger.makeFromIndex(factory, 5, 5, false);
-    BDD[] bv1 = xPlus1.getBitvec();
-    BDD[] bv2 = y.getBitvec();
-    BDD yEqXPlus1 = factory.one();
-    for (int i = 0; i < bv2.length; i++) {
-      yEqXPlus1 = yEqXPlus1.and(bv2[i].biimp(bv1[i]));
-    }
-
-    // solve y = x+1 for different values of x
-
-    // x == 1 ==> y == 2
-    assertThat(y.getValuesSatisfying(yEqXPlus1.and(x.value(1)), 5), contains(2L));
-    // x == 10 ==> y == 11
-    assertThat(y.getValuesSatisfying(yEqXPlus1.and(x.value(10)), 5), contains(11L));
-    // x == 31 ==> y = 0
-    assertThat(y.getValuesSatisfying(yEqXPlus1.and(x.value(31)), 5), contains(0L));
-
-    // solve y = x+1 for different values of y
-
-    // y == 0 ==> x == 31
-    assertThat(x.getValuesSatisfying(yEqXPlus1.and(y.value(0)), 5), contains(31L));
-    // y == 10 ==> x == 9
-    assertThat(x.getValuesSatisfying(yEqXPlus1.and(y.value(10)), 5), contains(9L));
-    // y == 31 ==> x == 30
-    assertThat(x.getValuesSatisfying(yEqXPlus1.and(y.value(31)), 5), contains(30L));
+    assertThat(xPlus1.getValuesSatisfying(x.value(3L), 100), contains(4L));
+    assertThat(x.getValuesSatisfying(xPlus1.value(3L), 100), contains(2L));
   }
 
   @Test
