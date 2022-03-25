@@ -13,6 +13,9 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
 
 public class BDDInteger {
 
@@ -184,6 +187,61 @@ public class BDDInteger {
     bdd.setValue(value);
     bdd._hasVariablesOnly = false;
     return bdd;
+  }
+
+  /** Build a constraint that matches the set of IPs contained by the input {@link Prefix}. */
+  public BDD toBDD(Prefix prefix) {
+    return firstBitsEqual(prefix.getStartIp(), prefix.getPrefixLength());
+  }
+
+  /** Build a constraint that matches the input {@link Ip}. */
+  public BDD toBDD(Ip ip) {
+    return firstBitsEqual(ip, Prefix.MAX_PREFIX_LENGTH);
+  }
+
+  /** Build a constraint that matches the {@link Ip IPs} matched by the input {@link IpWildcard}. */
+  public BDD toBDD(IpWildcard ipWildcard) {
+    checkArgument(_bitvec.length >= Prefix.MAX_PREFIX_LENGTH);
+    long ip = ipWildcard.getIp().asLong();
+    long wildcard = ipWildcard.getWildcardMask();
+    _trues.clear();
+    _falses.clear();
+    for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
+      boolean significant = !Ip.getBitAtPosition(wildcard, i);
+      if (significant) {
+        boolean bitValue = Ip.getBitAtPosition(ip, i);
+        if (bitValue) {
+          _trues.add(_bitvec[i]);
+        } else {
+          _falses.add(_bitvec[i]);
+        }
+      }
+    }
+    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
+  }
+
+  /*
+   * Check if the first length bits match the BDDInteger
+   * representing the advertisement prefix.
+   *
+   * Note: We assume the prefix is never modified, so it will
+   * be a bitvector containing only the underlying variables:
+   * [var(0), ..., var(n)]
+   */
+  public BDD firstBitsEqual(Ip ip, int length) {
+    checkArgument(length <= _bitvec.length, "Not enough bits");
+    long b = ip.asLong();
+    _trues.clear();
+    _falses.clear();
+    for (int i = length - 1; i >= 0; i--) {
+      boolean bitValue = Ip.getBitAtPosition(b, i);
+      if (bitValue) {
+        _trues.add(_bitvec[i]);
+      } else {
+        _falses.add(_bitvec[i]);
+      }
+    }
+    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
   }
 
   /*

@@ -30,7 +30,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
-import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
@@ -370,7 +369,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   private BDD nextHopIpConstraintsToBDD(
       Optional<Prefix> optNextHopIp, BDDRoute r, boolean outputRoute) {
     if (optNextHopIp.isPresent()) {
-      BDD nextHopBDD = optNextHopIp.get().toIpSpace().accept(new IpSpaceToBDD(r.getNextHop()));
+      BDD nextHopBDD = r.getNextHop().toBDD(optNextHopIp.get());
       if (outputRoute) {
         // make sure that the next hop was not discarded by the route map
         nextHopBDD = nextHopBDD.and(r.getNextHopDiscarded().not());

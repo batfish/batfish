@@ -145,28 +145,6 @@ public class TransferBDD {
   }
 
   /*
-   * Check if the first length bits match the BDDInteger
-   * representing the advertisement prefix.
-   *
-   * Note: We assume the prefix is never modified, so it will
-   * be a bitvector containing only the underlying variables:
-   * [var(0), ..., var(n)]
-   */
-  public static BDD firstBitsEqual(BDD[] bits, Prefix p, int length, BDDFactory factory) {
-    long b = p.getStartIp().asLong();
-    BDD acc = factory.one();
-    for (int i = 0; i < length; i++) {
-      boolean res = Ip.getBitAtPosition(b, i);
-      if (res) {
-        acc = acc.and(bits[i]);
-      } else {
-        acc = acc.diff(bits[i]);
-      }
-    }
-    return acc;
-  }
-
-  /*
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
   private BDDInteger applyLongExprModification(TransferParam p, BDDInteger x, LongExpr e) {
@@ -769,25 +747,19 @@ public class TransferBDD {
   // Produce a BDD representing conditions under which the route's destination prefix is within a
   // given prefix range.
   public static BDD isRelevantForDestination(BDDRoute record, PrefixRange range) {
-    Prefix p = range.getPrefix();
-    int pLen = p.getPrefixLength();
-
     SubRange r = range.getLengthRange();
     int lower = r.getStart();
     int upper = r.getEnd();
 
-    BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, pLen, record.getFactory());
-    BDDInteger prefixLength = record.getPrefixLength();
-    BDD lenMatch = prefixLength.range(lower, upper);
+    BDD prefixMatch = record.getPrefix().toBDD(range.getPrefix());
+    BDD lenMatch = record.getPrefixLength().range(lower, upper);
     return prefixMatch.and(lenMatch);
   }
 
   // Produce a BDD representing conditions under which the route's next-hop address is within a
   // given prefix range.
   private static BDD isRelevantForNextHop(BDDRoute record, PrefixRange range) {
-    Prefix p = range.getPrefix();
-    int pLen = p.getPrefixLength();
-    return firstBitsEqual(record.getNextHop().getBitvec(), p, pLen, record.getFactory());
+    return record.getNextHop().toBDD(range.getPrefix());
   }
 
   /*

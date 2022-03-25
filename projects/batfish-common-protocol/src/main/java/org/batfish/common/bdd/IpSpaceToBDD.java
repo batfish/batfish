@@ -46,10 +46,6 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   private final Map<String, Supplier<BDD>> _namedIpSpaceBDDs;
 
-  // Temporary ArrayLists used to optimize some internal computations.
-  private final List<BDD> _trues = new ArrayList<>(Prefix.MAX_PREFIX_LENGTH);
-  private final List<BDD> _falses = new ArrayList<>(Prefix.MAX_PREFIX_LENGTH);
-
   public IpSpaceToBDD(BDDInteger var) {
     _bddInteger = var;
     _factory = var.getFactory();
@@ -72,52 +68,16 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     return _bddInteger;
   }
 
-  /*
-   * Check if the first length bits match the BDDInteger
-   * representing the advertisement prefix.
-   *
-   * Note: We assume the prefix is never modified, so it will
-   * be a bitvector containing only the underlying variables:
-   * [var(0), ..., var(n)]
-   */
-  private BDD firstBitsEqual(Ip ip, int length) {
-    long b = ip.asLong();
-    BDD[] bitBDDs = _bddInteger.getBitvec();
-    _trues.clear();
-    _falses.clear();
-    for (int i = length - 1; i >= 0; i--) {
-      boolean bitValue = Ip.getBitAtPosition(b, i);
-      if (bitValue) {
-        _trues.add(bitBDDs[i]);
-      } else {
-        _falses.add(bitBDDs[i]);
-      }
-    }
-    return _bddOps.and(_trues).diffWith(_bddOps.or(_falses));
-  }
-
   public BDD toBDD(Ip ip) {
-    return firstBitsEqual(ip, Prefix.MAX_PREFIX_LENGTH);
+    return visit(ip.toIpSpace());
   }
 
   public BDD toBDD(IpWildcard ipWildcard) {
-    long ip = ipWildcard.getIp().asLong();
-    long wildcard = ipWildcard.getWildcardMask();
-    BDD[] bitBDDs = _bddInteger.getBitvec();
-    _trues.clear();
-    _falses.clear();
-    for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
-      boolean significant = !Ip.getBitAtPosition(wildcard, i);
-      if (significant) {
-        boolean bitValue = Ip.getBitAtPosition(ip, i);
-        if (bitValue) {
-          _trues.add(bitBDDs[i]);
-        } else {
-          _falses.add(bitBDDs[i]);
-        }
-      }
-    }
-    return _bddOps.and(_trues).diffWith(_bddOps.or(_falses));
+    return visit(ipWildcard.toIpSpace());
+  }
+
+  public BDD toBDD(Prefix prefix) {
+    return visit(prefix.toIpSpace());
   }
 
   @Override
@@ -139,12 +99,12 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitIpIpSpace(IpIpSpace ipIpSpace) {
-    return toBDD(ipIpSpace.getIp());
+    return _bddInteger.toBDD(ipIpSpace.getIp());
   }
 
   @Override
   public BDD visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
-    return toBDD(ipWildcardIpSpace.getIpWildcard());
+    return _bddInteger.toBDD(ipWildcardIpSpace.getIpWildcard());
   }
 
   @Override
@@ -177,11 +137,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    return toBDD(prefixIpSpace.getPrefix());
-  }
-
-  public BDD toBDD(Prefix prefix) {
-    return firstBitsEqual(prefix.getStartIp(), prefix.getPrefixLength());
+    return _bddInteger.toBDD(prefixIpSpace.getPrefix());
   }
 
   @Override
