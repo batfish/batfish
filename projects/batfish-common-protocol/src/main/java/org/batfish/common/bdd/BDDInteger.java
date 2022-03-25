@@ -109,8 +109,7 @@ public class BDDInteger {
   }
 
   /**
-   * Returns the smallest long produced when evaluating the given assignment {@link BDD} over the
-   * representative bits in {@link #getBitvec()}.
+   * Returns the smallest long consistent with the input assignment and this {@link BDDInteger}.
    *
    * <p>When this {@link BDDInteger#hasVariablesOnly()} is {@code false}, this function will perform
    * better if the assignment {@link BDD} is smaller, i.e., is produced by {@link BDD#satOne()}
@@ -451,10 +450,6 @@ public class BDDInteger {
       var4._hasVariablesOnly = false;
       return var4;
     }
-  }
-
-  public BDD[] getBitvec() {
-    return _bitvec;
   }
 
   /** Returns a {@link BDD} containing all the variables of this {@link BDDInteger}. */
