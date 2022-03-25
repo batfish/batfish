@@ -4,9 +4,6 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_L
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
@@ -58,18 +55,14 @@ public final class BDDFlowConstraintGenerator {
   private final BDD _udpTraceroute;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
-    Span span = GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      _bddPacket = pkt;
-      _bddOps = new BDDOps(pkt.getFactory());
-      _defaultPacketLength = _bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH);
-      _udpTraceroute = computeUdpTraceroute();
-      _icmpConstraints = computeICMPConstraint();
-      _udpConstraints = computeUDPConstraints();
-      _tcpConstraints = computeTCPConstraints();
-      _ipConstraints = computeIpConstraints();
-    }
+    _bddPacket = pkt;
+    _bddOps = new BDDOps(pkt.getFactory());
+    _defaultPacketLength = _bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH);
+    _udpTraceroute = computeUdpTraceroute();
+    _icmpConstraints = computeICMPConstraint();
+    _udpConstraints = computeUDPConstraints();
+    _tcpConstraints = computeTCPConstraints();
+    _ipConstraints = computeIpConstraints();
   }
 
   private List<BDD> computeICMPConstraint() {

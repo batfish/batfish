@@ -14,9 +14,6 @@ import com.google.common.collect.Table.Cell;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -277,19 +274,13 @@ public final class VxlanTopologyUtils {
       VxlanTopology vxlanTopologyModuloReachability,
       Map<String, Configuration> configurations,
       TracerouteEngine tracerouteEngine) {
-    Span span = GlobalTracer.get().buildSpan("VxlanTopologyUtils.prunedVxlanTopology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null;
-      NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-      MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-      vxlanTopologyModuloReachability.getGraph().edges().parallelStream()
-          .filter(edge -> reachableEdge(edge, nc, tracerouteEngine))
-          .collect(ImmutableList.toImmutableList())
-          .forEach(edge -> graph.putEdge(edge.nodeU(), edge.nodeV()));
-      return new VxlanTopology(graph);
-    } finally {
-      span.finish();
-    }
+    NetworkConfigurations nc = NetworkConfigurations.of(configurations);
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    vxlanTopologyModuloReachability.getGraph().edges().parallelStream()
+        .filter(edge -> reachableEdge(edge, nc, tracerouteEngine))
+        .collect(ImmutableList.toImmutableList())
+        .forEach(edge -> graph.putEdge(edge.nodeU(), edge.nodeV()));
+    return new VxlanTopology(graph);
   }
 
   /**

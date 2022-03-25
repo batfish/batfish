@@ -12,11 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import io.opentracing.References;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.util.GlobalTracer;
 import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -167,7 +162,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   private @Nonnull final Map<String, FileResult> _fileResults;
 
   final NetworkSnapshot _snapshot;
-  @Nullable private final SpanContext _spanContext;
 
   /** Job-level (non-file-specific) warnings */
   private @Nonnull final Warnings _warnings;
@@ -178,8 +172,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       Map<String, String> fileTexts,
       Warnings.Settings logSettings,
       ConfigurationFormat expectedFormat,
-      Multimap<String, String> duplicateHostnames,
-      @Nullable SpanContext spanContext) {
+      Multimap<String, String> duplicateHostnames) {
     super(settings);
     checkArgument(!fileTexts.isEmpty(), "Set of file texts cannot be empty");
     _fileTexts = ImmutableMap.copyOf(fileTexts);
@@ -195,7 +188,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                             new Warnings(logSettings))));
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
-    _spanContext = spanContext;
     _snapshot = snapshot;
     _warnings = new Warnings(logSettings);
   }
@@ -209,28 +201,21 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   @VisibleForTesting
   static ConfigurationFormat detectFormat(
       Map<String, String> fileTexts, Settings settings, ConfigurationFormat format) {
-    Span span = GlobalTracer.get().buildSpan("Detecting file format").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    String fileText = String.join("\n", fileTexts.values());
 
-      String fileText = String.join("\n", fileTexts.values());
-
-      if (WHITESPACE_ONLY.matcher(fileText).matches()) {
-        return ConfigurationFormat.EMPTY;
-      }
-
-      if (settings.ignoreFilesWithStrings().stream().anyMatch(fileText::contains)) {
-        return ConfigurationFormat.IGNORED;
-      }
-
-      if (format == ConfigurationFormat.UNKNOWN) {
-        return VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText);
-      }
-
-      return format;
-    } finally {
-      span.finish();
+    if (WHITESPACE_ONLY.matcher(fileText).matches()) {
+      return ConfigurationFormat.EMPTY;
     }
+
+    if (settings.ignoreFilesWithStrings().stream().anyMatch(fileText::contains)) {
+      return ConfigurationFormat.IGNORED;
+    }
+
+    if (format == ConfigurationFormat.UNKNOWN) {
+      return VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText);
+    }
+
+    return format;
   }
 
   /**
@@ -246,447 +231,440 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     VendorConfiguration vc;
     FlattenerLineMap lineMap = null;
 
-    Span parseSpan = GlobalTracer.get().buildSpan("Creating parser").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(parseSpan)) {
-      assert scope != null; // avoid unused warning
+    // fileText obtained after flattening some formats, used in fallthrough cases below
+    String flattenedFileText = null;
 
-      // fileText obtained after flattening some formats, used in fallthrough cases below
-      String flattenedFileText = null;
+    switch (format) {
+      case A10_ACOS:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          A10CombinedParser a10Parser = new A10CombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new A10ControlPlaneExtractor(
+                  fileText,
+                  a10Parser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, a10Parser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
 
-      switch (format) {
-        case A10_ACOS:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            A10CombinedParser a10Parser = new A10CombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new A10ControlPlaneExtractor(
-                    fileText,
-                    a10Parser,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, a10Parser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
+      case ARISTA:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          AristaCombinedParser aristaParser = new AristaCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new AristaControlPlaneExtractor(
+                  fileText,
+                  aristaParser,
+                  format,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, aristaParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case ARUBAOS:
+      case CADANT:
+      case CISCO_IOS:
+      case FORCE10:
+      case FOUNDRY:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new CiscoControlPlaneExtractor(
+                  fileText,
+                  ciscoParser,
+                  format,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, ciscoParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+      case CISCO_ASA:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          AsaCombinedParser asaParser = new AsaCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new AsaControlPlaneExtractor(
+                  fileText,
+                  asaParser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, asaParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case CISCO_NX:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          CiscoNxosCombinedParser ciscoNxosParser =
+              new CiscoNxosCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new NxosControlPlaneExtractor(
+                  fileText,
+                  ciscoNxosParser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, ciscoNxosParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case CISCO_IOS_XR:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new CiscoXrControlPlaneExtractor(
+                  fileText,
+                  ciscoXrParser,
+                  format,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, ciscoXrParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case CHECK_POINT_GATEWAY:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          CheckPointGatewayCombinedParser checkPointParser =
+              new CheckPointGatewayCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new CheckPointGatewayControlPlaneExtractor(
+                  fileText,
+                  checkPointParser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, checkPointParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case CUMULUS_CONCATENATED:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          CumulusConcatenatedCombinedParser parser =
+              new CumulusConcatenatedCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new CumulusConcatenatedControlPlaneExtractor(
+                  fileText,
+                  _fileResults.get(filename)._warnings,
+                  filename,
+                  parser.getSettings(),
+                  _settings.getPrintParseTree()
+                      ? () -> _fileResults.get(filename)._parseTreeSentences
+                      : null,
+                  _settings.getPrintParseTreeLineNums(),
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, parser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case CUMULUS_NCLU:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          CumulusNcluCombinedParser parser = new CumulusNcluCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new CumulusNcluControlPlaneExtractor(
+                  fileText,
+                  parser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, parser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case F5_BIGIP_STRUCTURED:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          F5BigipStructuredCombinedParser parser =
+              new F5BigipStructuredCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new F5BigipStructuredControlPlaneExtractor(
+                  fileText,
+                  parser,
+                  _fileResults.get(filename)._warnings,
+                  filename,
+                  _settings.getPrintParseTree()
+                      ? () -> _fileResults.get(filename)._parseTreeSentences
+                      : null,
+                  _settings.getPrintParseTreeLineNums(),
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, parser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case FORTIOS:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          FortiosCombinedParser parser = new FortiosCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new FortiosControlPlaneExtractor(
+                  fileText,
+                  parser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, parser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case HOST:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          try {
+            return HostConfiguration.fromJson(
+                filename, fileText, _fileResults.get(filename)._warnings);
+          } catch (Exception e) {
+            throw new BatfishException(
+                String.format(
+                    "Failed to create host config from file: '%s', with error: %s",
+                    filename, e.getMessage()),
+                e);
           }
+        }
 
-        case ARISTA:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            AristaCombinedParser aristaParser = new AristaCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new AristaControlPlaneExtractor(
-                    fileText,
-                    aristaParser,
-                    format,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, aristaParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
+      case SONIC:
+        {
+          String frrFilename = getSonicFrrFilename(_fileTexts);
+          String frrText = _fileTexts.get(frrFilename);
+          String configDbFilename =
+              _fileTexts.keySet().stream()
+                  .filter(name -> !name.equals(frrFilename))
+                  .findAny()
+                  .get(); // there has to be another file
+          String configDbFileText = _fileTexts.get(configDbFilename);
+          FrrCombinedParser frrParser = new FrrCombinedParser(frrText, _settings, 1, 0);
+          SonicControlPlaneExtractor extractor =
+              new SonicControlPlaneExtractor(
+                  configDbFileText,
+                  _fileResults.get(configDbFilename)._warnings,
+                  frrText,
+                  frrParser,
+                  _fileResults.get(frrFilename)._warnings,
+                  _fileResults.get(frrFilename)._silentSyntax);
+          try {
+            extractor.processConfigDb();
+          } catch (JsonProcessingException exception) {
+            throw new BatfishException("Error deserializing " + configDbFilename, exception);
           }
+          parseFile(frrFilename, frrParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(frrFilename);
+          vc.setSecondaryFilenames(ImmutableList.of(configDbFilename));
+          break;
+        }
 
-        case ARUBAOS:
-        case CADANT:
-        case CISCO_IOS:
-        case FORCE10:
-        case FOUNDRY:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new CiscoControlPlaneExtractor(
-                    fileText,
-                    ciscoParser,
-                    format,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, ciscoParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-        case CISCO_ASA:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            AsaCombinedParser asaParser = new AsaCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new AsaControlPlaneExtractor(
-                    fileText,
-                    asaParser,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, asaParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case CISCO_NX:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            CiscoNxosCombinedParser ciscoNxosParser =
-                new CiscoNxosCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new NxosControlPlaneExtractor(
-                    fileText,
-                    ciscoNxosParser,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, ciscoNxosParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case CISCO_IOS_XR:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new CiscoXrControlPlaneExtractor(
-                    fileText,
-                    ciscoXrParser,
-                    format,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, ciscoXrParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case CHECK_POINT_GATEWAY:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            CheckPointGatewayCombinedParser checkPointParser =
-                new CheckPointGatewayCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new CheckPointGatewayControlPlaneExtractor(
-                    fileText,
-                    checkPointParser,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, checkPointParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case CUMULUS_CONCATENATED:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            CumulusConcatenatedCombinedParser parser =
-                new CumulusConcatenatedCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new CumulusConcatenatedControlPlaneExtractor(
-                    fileText,
-                    _fileResults.get(filename)._warnings,
-                    filename,
-                    parser.getSettings(),
-                    _settings.getPrintParseTree()
-                        ? () -> _fileResults.get(filename)._parseTreeSentences
-                        : null,
-                    _settings.getPrintParseTreeLineNums(),
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, parser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case CUMULUS_NCLU:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            CumulusNcluCombinedParser parser = new CumulusNcluCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new CumulusNcluControlPlaneExtractor(
-                    fileText,
-                    parser,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, parser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case F5_BIGIP_STRUCTURED:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            F5BigipStructuredCombinedParser parser =
-                new F5BigipStructuredCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new F5BigipStructuredControlPlaneExtractor(
-                    fileText,
-                    parser,
-                    _fileResults.get(filename)._warnings,
-                    filename,
-                    _settings.getPrintParseTree()
-                        ? () -> _fileResults.get(filename)._parseTreeSentences
-                        : null,
-                    _settings.getPrintParseTreeLineNums(),
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, parser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case FORTIOS:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            FortiosCombinedParser parser = new FortiosCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new FortiosControlPlaneExtractor(
-                    fileText,
-                    parser,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, parser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case HOST:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            try {
-              return HostConfiguration.fromJson(
-                  filename, fileText, _fileResults.get(filename)._warnings);
-            } catch (Exception e) {
-              throw new BatfishException(
+      case VYOS:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          _fileResults
+              .get(filename)
+              ._warnings
+              .pedantic(
                   String.format(
-                      "Failed to create host config from file: '%s', with error: %s",
-                      filename, e.getMessage()),
-                  e);
-            }
-          }
+                      "Flattening: '%s' on-the-fly; line-numbers reported for this file will be"
+                          + " spurious\n",
+                      filename));
+          flattenedFileText =
+              Batfish.flatten(
+                      fileText,
+                      _logger,
+                      _settings,
+                      _fileResults.get(filename)._warnings,
+                      ConfigurationFormat.VYOS,
+                      VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER)
+                  .getFlattenedConfigurationText();
+          // fall through
+        }
+      case FLAT_VYOS:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = firstNonNull(flattenedFileText, fileEntry.getValue());
+          FlatVyosCombinedParser flatVyosParser = new FlatVyosCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new FlatVyosControlPlaneExtractor(
+                  fileText,
+                  flatVyosParser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, flatVyosParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
 
-        case SONIC:
-          {
-            String frrFilename = getSonicFrrFilename(_fileTexts);
-            String frrText = _fileTexts.get(frrFilename);
-            String configDbFilename =
-                _fileTexts.keySet().stream()
-                    .filter(name -> !name.equals(frrFilename))
-                    .findAny()
-                    .get(); // there has to be another file
-            String configDbFileText = _fileTexts.get(configDbFilename);
-            FrrCombinedParser frrParser = new FrrCombinedParser(frrText, _settings, 1, 0);
-            SonicControlPlaneExtractor extractor =
-                new SonicControlPlaneExtractor(
-                    configDbFileText,
-                    _fileResults.get(configDbFilename)._warnings,
-                    frrText,
-                    frrParser,
-                    _fileResults.get(frrFilename)._warnings,
-                    _fileResults.get(frrFilename)._silentSyntax);
-            try {
-              extractor.processConfigDb();
-            } catch (JsonProcessingException exception) {
-              throw new BatfishException("Error deserializing " + configDbFilename, exception);
-            }
-            parseFile(frrFilename, frrParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(frrFilename);
-            vc.setSecondaryFilenames(ImmutableList.of(configDbFilename));
-            break;
-          }
-
-        case VYOS:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            _fileResults
-                .get(filename)
-                ._warnings
-                .pedantic(
-                    String.format(
-                        "Flattening: '%s' on-the-fly; line-numbers reported for this file will be"
-                            + " spurious\n",
-                        filename));
-            flattenedFileText =
+      case JUNIPER:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          try {
+            Flattener flattener =
                 Batfish.flatten(
-                        fileText,
-                        _logger,
-                        _settings,
-                        _fileResults.get(filename)._warnings,
-                        ConfigurationFormat.VYOS,
-                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER)
-                    .getFlattenedConfigurationText();
-            // fall through
-          }
-        case FLAT_VYOS:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = firstNonNull(flattenedFileText, fileEntry.getValue());
-            FlatVyosCombinedParser flatVyosParser = new FlatVyosCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new FlatVyosControlPlaneExtractor(
                     fileText,
-                    flatVyosParser,
+                    _logger,
+                    _settings,
                     _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, flatVyosParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
+                    ConfigurationFormat.JUNIPER,
+                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+            flattenedFileText = flattener.getFlattenedConfigurationText();
+            lineMap = flattener.getOriginalLineMap();
+          } catch (BatfishException e) {
+            throw new BatfishException(
+                String.format("Error flattening configuration file: '%s'", filename), e);
           }
+          // fall through
+        }
+      case FLAT_JUNIPER:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = firstNonNull(flattenedFileText, fileEntry.getValue());
+          FlatJuniperCombinedParser flatJuniperParser =
+              new FlatJuniperCombinedParser(fileText, _settings, lineMap);
+          ControlPlaneExtractor extractor =
+              new FlatJuniperControlPlaneExtractor(
+                  fileText,
+                  flatJuniperParser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, flatJuniperParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
 
-        case JUNIPER:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            try {
-              Flattener flattener =
-                  Batfish.flatten(
-                      fileText,
-                      _logger,
-                      _settings,
-                      _fileResults.get(filename)._warnings,
-                      ConfigurationFormat.JUNIPER,
-                      VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-              flattenedFileText = flattener.getFlattenedConfigurationText();
-              lineMap = flattener.getOriginalLineMap();
-            } catch (BatfishException e) {
-              throw new BatfishException(
-                  String.format("Error flattening configuration file: '%s'", filename), e);
-            }
-            // fall through
-          }
-        case FLAT_JUNIPER:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = firstNonNull(flattenedFileText, fileEntry.getValue());
-            FlatJuniperCombinedParser flatJuniperParser =
-                new FlatJuniperCombinedParser(fileText, _settings, lineMap);
-            ControlPlaneExtractor extractor =
-                new FlatJuniperControlPlaneExtractor(
+      case IPTABLES:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          IptablesCombinedParser iptablesParser = new IptablesCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new IptablesControlPlaneExtractor(
+                  fileText,
+                  iptablesParser,
+                  _fileResults.get(filename)._warnings,
+                  filename,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, iptablesParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case MRV:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          MrvCombinedParser mrvParser = new MrvCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new MrvControlPlaneExtractor(
+                  fileText,
+                  mrvParser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, mrvParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case PALO_ALTO_NESTED:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          try {
+            Flattener flattener =
+                Batfish.flatten(
                     fileText,
-                    flatJuniperParser,
+                    _logger,
+                    _settings,
                     _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, flatJuniperParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
+                    ConfigurationFormat.PALO_ALTO_NESTED,
+                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+            flattenedFileText = flattener.getFlattenedConfigurationText();
+            lineMap = flattener.getOriginalLineMap();
+          } catch (BatfishException e) {
+            throw new BatfishException(
+                String.format("Error flattening configuration file: '%s'", filename), e);
           }
+          // fall through
+        }
+      case PALO_ALTO:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = firstNonNull(flattenedFileText, fileEntry.getValue());
+          PaloAltoCombinedParser paParser =
+              new PaloAltoCombinedParser(fileText, _settings, lineMap);
+          ControlPlaneExtractor extractor =
+              new PaloAltoControlPlaneExtractor(
+                  fileText,
+                  paParser,
+                  _fileResults.get(filename)._warnings,
+                  _fileResults.get(filename)._silentSyntax);
+          parseFile(filename, paParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
 
-        case IPTABLES:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            IptablesCombinedParser iptablesParser = new IptablesCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new IptablesControlPlaneExtractor(
-                    fileText,
-                    iptablesParser,
-                    _fileResults.get(filename)._warnings,
-                    filename,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, iptablesParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case MRV:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            MrvCombinedParser mrvParser = new MrvCombinedParser(fileText, _settings);
-            ControlPlaneExtractor extractor =
-                new MrvControlPlaneExtractor(
-                    fileText,
-                    mrvParser,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, mrvParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        case PALO_ALTO_NESTED:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = fileEntry.getValue();
-            try {
-              Flattener flattener =
-                  Batfish.flatten(
-                      fileText,
-                      _logger,
-                      _settings,
-                      _fileResults.get(filename)._warnings,
-                      ConfigurationFormat.PALO_ALTO_NESTED,
-                      VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
-              flattenedFileText = flattener.getFlattenedConfigurationText();
-              lineMap = flattener.getOriginalLineMap();
-            } catch (BatfishException e) {
-              throw new BatfishException(
-                  String.format("Error flattening configuration file: '%s'", filename), e);
-            }
-            // fall through
-          }
-        case PALO_ALTO:
-          {
-            Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
-            String filename = fileEntry.getKey();
-            String fileText = firstNonNull(flattenedFileText, fileEntry.getValue());
-            PaloAltoCombinedParser paParser =
-                new PaloAltoCombinedParser(fileText, _settings, lineMap);
-            ControlPlaneExtractor extractor =
-                new PaloAltoControlPlaneExtractor(
-                    fileText,
-                    paParser,
-                    _fileResults.get(filename)._warnings,
-                    _fileResults.get(filename)._silentSyntax);
-            parseFile(filename, paParser, extractor);
-            vc = extractor.getVendorConfiguration();
-            vc.setFilename(filename);
-            break;
-          }
-
-        default:
-          throw new BatfishException(
-              String.format("File format %s is neither unsupported nor handled", format));
-      }
-    } finally {
-      parseSpan.finish();
+      default:
+        throw new BatfishException(
+            String.format("File format %s is neither unsupported nor handled", format));
     }
 
     vc.setVendor(format);
@@ -715,33 +693,25 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       BatfishCombinedParser<?, ?> combinedParser,
       ControlPlaneExtractor extractor) {
     ParserRuleContext tree;
-    Span parsingSpan = GlobalTracer.get().buildSpan("Parsing").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(parsingSpan)) {
-      assert scope != null; // avoid unused warning
-      _logger.info("\tParsing...");
-      tree = Batfish.parse(combinedParser, _logger, _settings);
+    _logger.info("\tParsing...");
+    tree = Batfish.parse(combinedParser, _logger, _settings);
 
-      if (_settings.getPrintParseTree()) {
-        _fileResults.get(filename)._parseTreeSentences =
-            ParseTreePrettyPrinter.getParseTreeSentences(
-                tree,
-                combinedParser,
-                _settings.getPrintParseTreeLineNums(),
-                extractor.implementedRuleNames());
-      }
-      if (!combinedParser.getErrors().isEmpty()) {
-        throw new BatfishException(
-            String.format(
-                "Configuration file(s): %s contains unrecognized lines:\n%s",
-                _fileTexts.keySet(), String.join("\n", combinedParser.getErrors())));
-      }
-    } finally {
-      parsingSpan.finish();
+    if (_settings.getPrintParseTree()) {
+      _fileResults.get(filename)._parseTreeSentences =
+          ParseTreePrettyPrinter.getParseTreeSentences(
+              tree,
+              combinedParser,
+              _settings.getPrintParseTreeLineNums(),
+              extractor.implementedRuleNames());
+    }
+    if (!combinedParser.getErrors().isEmpty()) {
+      throw new BatfishException(
+          String.format(
+              "Configuration file(s): %s contains unrecognized lines:\n%s",
+              _fileTexts.keySet(), String.join("\n", combinedParser.getErrors())));
     }
 
-    Span postProcessSpan = GlobalTracer.get().buildSpan("Post-processing").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(postProcessSpan)) {
-      assert scope != null; // avoid unused warning
+    try {
       _logger.info("\tPost-processing...");
 
       try {
@@ -754,7 +724,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       _logger.info("OK\n");
     } finally {
       Batfish.logWarnings(_logger, _fileResults.get(filename)._warnings);
-      postProcessSpan.finish();
     }
   }
 
@@ -864,21 +833,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
   @Override
   public ParseVendorConfigurationResult call() {
-    Span span =
-        GlobalTracer.get()
-            .buildSpan("ParseVendorConfigurationJob for " + _fileTexts.keySet())
-            .addReference(References.FOLLOWS_FROM, _spanContext)
-            .start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-
-      _logger.infof("Processing: %s\n", _fileTexts.keySet());
-      long startTime = System.currentTimeMillis();
-      ParseResult result = parse();
-      return fromResult(result, System.currentTimeMillis() - startTime);
-    } finally {
-      span.finish();
-    }
+    _logger.infof("Processing: %s\n", _fileTexts.keySet());
+    long startTime = System.currentTimeMillis();
+    ParseResult result = parse();
+    return fromResult(result, System.currentTimeMillis() - startTime);
   }
 
   /**

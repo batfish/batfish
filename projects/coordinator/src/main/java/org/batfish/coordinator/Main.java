@@ -6,12 +6,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import io.jaegertracing.Configuration;
-import io.jaegertracing.Configuration.ReporterConfiguration;
-import io.jaegertracing.Configuration.SamplerConfiguration;
-import io.jaegertracing.Configuration.SenderConfiguration;
-import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
-import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileVisitResult;
@@ -265,10 +259,6 @@ public class Main {
       int port,
       CompletableFuture<Integer> portFuture) {
     ResourceConfig rcWork = new ResourceConfig(serviceClass).register(ExceptionMapper.class);
-    if (_settings.getTracingEnable()) {
-      _logger.infof("Registering feature %s", ServerTracingDynamicFeature.class.getSimpleName());
-      rcWork.register(ServerTracingDynamicFeature.class);
-    }
     for (Class<?> feature : features) {
       _logger.infof("Registering feature %s", feature.getSimpleName());
       rcWork.register(feature);
@@ -308,20 +298,6 @@ public class Main {
     if (!portFuture.isDone()) {
       portFuture.complete(selectedListenPort);
     }
-  }
-
-  private static void initTracer() {
-    Configuration config =
-        new Configuration(_settings.getServiceName())
-            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
-            .withReporter(
-                new ReporterConfiguration()
-                    .withSender(
-                        SenderConfiguration.fromEnv()
-                            .withAgentHost(_settings.getTracingAgentHost())
-                            .withAgentPort(_settings.getTracingAgentPort()))
-                    .withLogSpans(false));
-    GlobalTracer.registerIfAbsent(config.getTracer());
   }
 
   private static void initWorkManager(BindPortFutures bindPortFutures) {
@@ -385,9 +361,6 @@ public class Main {
     try {
       initAuthorizer();
       initPoolManager(portFutures);
-      if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
-        initTracer();
-      }
       initWorkManager(portFutures);
     } catch (Exception e) {
       System.err.println(

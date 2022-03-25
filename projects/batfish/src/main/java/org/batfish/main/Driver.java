@@ -1,15 +1,6 @@
 package org.batfish.main;
 
 import com.google.common.base.Throwables;
-import io.jaegertracing.Configuration.ReporterConfiguration;
-import io.jaegertracing.Configuration.SamplerConfiguration;
-import io.jaegertracing.Configuration.SenderConfiguration;
-import io.opentracing.References;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
-import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -19,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.UriBuilder;
 import org.batfish.common.BatfishException;
@@ -85,20 +75,6 @@ public class Driver {
     return _mainLogger;
   }
 
-  private static void initTracer() {
-    io.jaegertracing.Configuration config =
-        new io.jaegertracing.Configuration(_mainSettings.getServiceName())
-            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
-            .withReporter(
-                new ReporterConfiguration()
-                    .withSender(
-                        SenderConfiguration.fromEnv()
-                            .withAgentHost(_mainSettings.getTracingAgentHost())
-                            .withAgentPort(_mainSettings.getTracingAgentPort()))
-                    .withLogSpans(false));
-    GlobalTracer.registerIfAbsent(config.getTracer());
-  }
-
   public static void main(String[] args, BatfishLogger logger) {
     mainInit(args);
     _mainLogger = logger;
@@ -145,17 +121,10 @@ public class Driver {
   }
 
   private static void mainRunWorkService() {
-    if (_mainSettings.getTracingEnable() && !GlobalTracer.isRegistered()) {
-      initTracer();
-    }
-
     String baseUrl = String.format("http://%s", _mainSettings.getServiceBindHost());
     URI baseUri = UriBuilder.fromUri(baseUrl).port(_mainSettings.getServicePort()).build();
     _mainLogger.debug(String.format("Starting server at %s\n", baseUri));
     ResourceConfig rc = new ResourceConfig(Service.class).register(new JettisonFeature());
-    if (_mainSettings.getTracingEnable()) {
-      rc.register(ServerTracingDynamicFeature.class);
-    }
     try {
       HttpServer server;
       server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
@@ -199,8 +168,7 @@ public class Driver {
     params.put(CoordConsts.SVC_KEY_ADD_WORKER, _mainSettings.getServiceHost() + ":" + listenPort);
     params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
 
-    Object response =
-        CoordinatorClient.talkToCoordinator(poolRegUrl, params, _mainSettings, _mainLogger);
+    Object response = CoordinatorClient.talkToCoordinator(poolRegUrl, params, _mainLogger);
     return response != null;
   }
 
@@ -240,91 +208,69 @@ public class Driver {
               null,
               null);
 
-      @Nullable
-      SpanContext runBatfishSpanContext =
-          GlobalTracer.get().scopeManager().activeSpan() == null
-              ? null
-              : GlobalTracer.get().scopeManager().activeSpan().context();
-
       Thread thread =
           new Thread(
               () -> {
-                Span runBatfishSpan =
-                    GlobalTracer.get()
-                        .buildSpan("Run Batfish job in a new thread and get the answer")
-                        .addReference(References.FOLLOWS_FROM, runBatfishSpanContext)
-                        .start();
-                try (Scope scope = GlobalTracer.get().scopeManager().activate(runBatfishSpan)) {
-                  assert scope != null; // avoid unused warning
-                  Answer answer = null;
-                  NetworkSnapshot snapshot =
-                      new NetworkSnapshot(settings.getContainer(), settings.getTestrig());
-                  try {
-                    answer = batfish.run(snapshot);
-                    if (answer.getStatus() == null) {
-                      answer.setStatus(AnswerStatus.SUCCESS);
-                    }
-                  } catch (CleanBatfishException e) {
-                    String msg = "FATAL ERROR: " + e.getMessage();
-                    logger.errorf(
-                        "Exception in container:%s, testrig:%s; exception:%s",
-                        snapshot.getNetwork(), snapshot.getSnapshot(), msg);
-                    batfish.setTerminatingExceptionMessage(
-                        e.getClass().getName() + ": " + e.getMessage());
-                    answer = Answer.failureAnswer(msg, null);
-                  } catch (QuestionException e) {
-                    String stackTrace = Throwables.getStackTraceAsString(e);
-                    logger.errorf(
-                        "Exception in container:%s, testrig:%s; exception:%s",
-                        snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
-                    batfish.setTerminatingExceptionMessage(
-                        e.getClass().getName() + ": " + e.getMessage());
-                    answer = e.getAnswer();
-                    answer.setStatus(AnswerStatus.FAILURE);
-                  } catch (BatfishException e) {
-                    String stackTrace = Throwables.getStackTraceAsString(e);
-                    logger.errorf(
-                        "Exception in container:%s, testrig:%s; exception:%s",
-                        snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
-                    batfish.setTerminatingExceptionMessage(
-                        e.getClass().getName() + ": " + e.getMessage());
-                    answer = new Answer();
-                    answer.setStatus(AnswerStatus.FAILURE);
-                    answer.addAnswerElement(e.getBatfishStackTrace());
-                  } catch (Throwable e) {
-                    String stackTrace = Throwables.getStackTraceAsString(e);
-                    logger.errorf(
-                        "Exception in container:%s, testrig:%s; exception:%s",
-                        snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
-                    batfish.setTerminatingExceptionMessage(
-                        e.getClass().getName() + ": " + e.getMessage());
-                    answer = new Answer();
-                    answer.setStatus(AnswerStatus.FAILURE);
-                    answer.addAnswerElement(
-                        new BatfishException("Batfish job failed", e).getBatfishStackTrace());
-                  } finally {
-                    Span outputAnswerSpan =
-                        GlobalTracer.get().buildSpan("Outputting answer").start();
-                    try (Scope answerScope =
-                        GlobalTracer.get().scopeManager().activate(outputAnswerSpan)) {
-                      assert answerScope != null; // avoid unused warning
-                      if (settings.getTaskId() != null) {
-                        batfish.outputAnswerWithLog(answer);
-                        batfish.outputAnswerMetadata(answer);
-                      }
-                    } catch (IOException e) {
-                      String stackTrace = Throwables.getStackTraceAsString(e);
-                      logger.errorf(
-                          "Exception in network:%s, snapshot:%s; exception:%s",
-                          snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
-                      batfish.setTerminatingExceptionMessage(
-                          e.getClass().getName() + ": " + e.getMessage());
-                    } finally {
-                      outputAnswerSpan.finish();
-                    }
+                Answer answer = null;
+                NetworkSnapshot snapshot =
+                    new NetworkSnapshot(settings.getContainer(), settings.getTestrig());
+                try {
+                  answer = batfish.run(snapshot);
+                  if (answer.getStatus() == null) {
+                    answer.setStatus(AnswerStatus.SUCCESS);
                   }
+                } catch (CleanBatfishException e) {
+                  String msg = "FATAL ERROR: " + e.getMessage();
+                  logger.errorf(
+                      "Exception in container:%s, testrig:%s; exception:%s",
+                      snapshot.getNetwork(), snapshot.getSnapshot(), msg);
+                  batfish.setTerminatingExceptionMessage(
+                      e.getClass().getName() + ": " + e.getMessage());
+                  answer = Answer.failureAnswer(msg, null);
+                } catch (QuestionException e) {
+                  String stackTrace = Throwables.getStackTraceAsString(e);
+                  logger.errorf(
+                      "Exception in container:%s, testrig:%s; exception:%s",
+                      snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
+                  batfish.setTerminatingExceptionMessage(
+                      e.getClass().getName() + ": " + e.getMessage());
+                  answer = e.getAnswer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                } catch (BatfishException e) {
+                  String stackTrace = Throwables.getStackTraceAsString(e);
+                  logger.errorf(
+                      "Exception in container:%s, testrig:%s; exception:%s",
+                      snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
+                  batfish.setTerminatingExceptionMessage(
+                      e.getClass().getName() + ": " + e.getMessage());
+                  answer = new Answer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                  answer.addAnswerElement(e.getBatfishStackTrace());
+                } catch (Throwable e) {
+                  String stackTrace = Throwables.getStackTraceAsString(e);
+                  logger.errorf(
+                      "Exception in container:%s, testrig:%s; exception:%s",
+                      snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
+                  batfish.setTerminatingExceptionMessage(
+                      e.getClass().getName() + ": " + e.getMessage());
+                  answer = new Answer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                  answer.addAnswerElement(
+                      new BatfishException("Batfish job failed", e).getBatfishStackTrace());
                 } finally {
-                  runBatfishSpan.finish();
+                  try {
+                    if (settings.getTaskId() != null) {
+                      batfish.outputAnswerWithLog(answer);
+                      batfish.outputAnswerMetadata(answer);
+                    }
+                  } catch (IOException e) {
+                    String stackTrace = Throwables.getStackTraceAsString(e);
+                    logger.errorf(
+                        "Exception in network:%s, snapshot:%s; exception:%s",
+                        snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
+                    batfish.setTerminatingExceptionMessage(
+                        e.getClass().getName() + ": " + e.getMessage());
+                  }
                 }
               });
 
@@ -381,37 +327,21 @@ public class Driver {
 
       BatchManager.get().logTask(taskId, task);
 
-      @Nullable
-      SpanContext runTaskSpanContext =
-          GlobalTracer.get().activeSpan() == null
-              ? null
-              : GlobalTracer.get().activeSpan().context();
-
       // run batfish on a new thread and set idle to true when done
       Thread thread =
           new Thread(
               () -> {
-                Span runBatfishSpan =
-                    GlobalTracer.get()
-                        .buildSpan("Initialize Batfish in a new thread")
-                        .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
-                        .start();
-                try (Scope scope = GlobalTracer.get().scopeManager().activate(runBatfishSpan)) {
-                  assert scope != null; // avoid unused warning
-                  task.setStatus(TaskStatus.InProgress);
-                  String errMsg = runBatfish(settings);
-                  if (errMsg == null) {
-                    task.setStatus(TaskStatus.TerminatedNormally);
-                  } else {
-                    task.setStatus(TaskStatus.TerminatedAbnormally);
-                    task.setErrMessage(errMsg);
-                  }
-                  task.setTerminated(new Date());
-                  jobLogger.close();
-                  makeIdle();
-                } finally {
-                  runBatfishSpan.finish();
+                task.setStatus(TaskStatus.InProgress);
+                String errMsg = runBatfish(settings);
+                if (errMsg == null) {
+                  task.setStatus(TaskStatus.TerminatedNormally);
+                } else {
+                  task.setStatus(TaskStatus.TerminatedAbnormally);
+                  task.setErrMessage(errMsg);
                 }
+                task.setTerminated(new Date());
+                jobLogger.close();
+                makeIdle();
               });
 
       thread.start();
