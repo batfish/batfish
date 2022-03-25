@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
@@ -29,6 +30,7 @@ public class IpSpaceToBDDTest {
 
   private BDDFactory _factory;
   private BDDOps _bddOps;
+  private BDD[] _ipAddrBitvec;
   private BDDInteger _ipAddrBdd;
   private IpSpaceToBDD _ipSpaceToBdd;
 
@@ -36,7 +38,8 @@ public class IpSpaceToBDDTest {
   public void init() {
     _factory = BDDUtils.bddFactory(32);
     _bddOps = new BDDOps(_factory);
-    _ipAddrBdd = BDDInteger.makeFromIndex(_factory, 32, 0, true);
+    _ipAddrBitvec = IntStream.range(0, 32).mapToObj(_factory::ithVar).toArray(BDD[]::new);
+    _ipAddrBdd = new BDDInteger(_ipAddrBitvec);
     _ipSpaceToBdd = new IpSpaceToBDD(_ipAddrBdd);
   }
 
@@ -48,7 +51,7 @@ public class IpSpaceToBDDTest {
         bdd,
         equalTo(
             _bddOps.and(
-                Arrays.stream(_ipAddrBdd.getBitvec())
+                Arrays.stream(_ipAddrBitvec)
                     .map(BDD::not)
                     .collect(ImmutableList.toImmutableList()))));
   }
@@ -57,14 +60,14 @@ public class IpSpaceToBDDTest {
   public void testIpIpSpace_255() {
     IpSpace ipSpace = Ip.parse("255.255.255.255").toIpSpace();
     BDD bdd = ipSpace.accept(_ipSpaceToBdd);
-    assertThat(bdd, equalTo(_bddOps.and(_ipAddrBdd.getBitvec())));
+    assertThat(bdd, equalTo(_bddOps.and(_ipAddrBitvec)));
   }
 
   @Test
   public void testPrefixIpSpace() {
     IpSpace ipSpace = Prefix.parse("255.0.0.0/8").toIpSpace();
     BDD bdd = ipSpace.accept(_ipSpaceToBdd);
-    assertThat(bdd, equalTo(_bddOps.and(Arrays.asList(_ipAddrBdd.getBitvec()).subList(0, 8))));
+    assertThat(bdd, equalTo(_bddOps.and(Arrays.asList(_ipAddrBitvec).subList(0, 8))));
   }
 
   @Test
@@ -104,7 +107,7 @@ public class IpSpaceToBDDTest {
         _bddOps.or(bdd1, bdd2),
         equalTo(
             _bddOps.and(
-                Arrays.asList(_ipAddrBdd.getBitvec()).subList(0, 7).stream()
+                Arrays.asList(_ipAddrBitvec).subList(0, 7).stream()
                     .map(BDD::not)
                     .collect(ImmutableList.toImmutableList()))));
   }
@@ -119,8 +122,8 @@ public class IpSpaceToBDDTest {
         equalTo(
             _bddOps.and(
                 Streams.concat(
-                        Arrays.asList(_ipAddrBdd.getBitvec()).subList(0, 8).stream(),
-                        Arrays.asList(_ipAddrBdd.getBitvec()).subList(16, 24).stream())
+                        Arrays.asList(_ipAddrBitvec).subList(0, 8).stream(),
+                        Arrays.asList(_ipAddrBitvec).subList(16, 24).stream())
                     .collect(ImmutableList.toImmutableList()))));
   }
 

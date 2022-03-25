@@ -45,6 +45,14 @@ public class BDDInteger {
     _falses = new ArrayList<>(length);
   }
 
+  public BDDInteger(BDD[] bitvec) {
+    this(bitvec[0].getFactory(), bitvec.length);
+    _hasVariablesOnly = true; // TODO enforce this
+    for (int i = 0; i < bitvec.length; i++) {
+      _bitvec[i] = bitvec[i];
+    }
+  }
+
   public BDDInteger(BDDInteger other) {
     this(other._factory, other._bitvec.length);
     setValue(other);
