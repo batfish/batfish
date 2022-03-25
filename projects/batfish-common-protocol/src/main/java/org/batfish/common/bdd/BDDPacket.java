@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -20,11 +19,9 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
-import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 
 /**
@@ -482,35 +479,6 @@ public class BDDPacket {
         && _dscp.equals(other._dscp)
         && _ecn.equals(other._ecn)
         && _fragmentOffset.equals(other._fragmentOffset);
-  }
-
-  public BDD restrict(BDD bdd, Prefix pfx) {
-    int len = pfx.getPrefixLength();
-    long bits = pfx.getStartIp().asLong();
-    int[] vars = new int[len];
-    BDD[] vals = new BDD[len];
-    _pairing.reset();
-    for (int i = 0; i < len; i++) {
-      int var = _dstIp.getBitvec()[i].var(); // dstIpIndex + i;
-      BDD subst = Ip.getBitAtPosition(bits, i) ? _factory.one() : _factory.zero();
-      vars[i] = var;
-      vals[i] = subst;
-    }
-    _pairing.set(vars, vals);
-    return bdd.veccompose(_pairing);
-  }
-
-  public BDD restrict(BDD bdd, List<Prefix> prefixes) {
-    if (prefixes.isEmpty()) {
-      throw new BatfishException("Empty prefix list in BDDRecord restrict");
-    }
-    BDD r = restrict(bdd, prefixes.get(0));
-    for (int i = 1; i < prefixes.size(); i++) {
-      Prefix p = prefixes.get(i);
-      BDD x = restrict(bdd, p);
-      r = r.or(x);
-    }
-    return r;
   }
 
   public BDD swapSourceAndDestinationFields(BDD bdd) {
