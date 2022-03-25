@@ -324,10 +324,10 @@ public final class BDDReachabilityAnalysisFactory {
     _nextVrfBDDs = computeNextVrfBDDs(vrfForwardingBehavior, _dstIpSpaceToBDD);
     _interfacesToVrfsMap = computeInterfacesToVrfsMap(configs);
 
-    _dstIpVars = _bddPacket.getFactory().andAll(_bddPacket.getDstIp().getBitvec());
-    _sourceIpVars = _bddPacket.getFactory().andAll(_bddPacket.getSrcIp().getBitvec());
-    _dstPortVars = _bddPacket.getFactory().andAll(_bddPacket.getDstPort().getBitvec());
-    _sourcePortVars = _bddPacket.getFactory().andAll(_bddPacket.getSrcPort().getBitvec());
+    _dstIpVars = _bddPacket.getDstIp().getVars();
+    _sourceIpVars = _bddPacket.getSrcIp().getVars();
+    _dstPortVars = _bddPacket.getDstPort().getVars();
+    _sourcePortVars = _bddPacket.getSrcPort().getVars();
 
     RangeComputer rangeComputer = computeTransformationRanges();
     _transformationPortRanges = rangeComputer.getPortRanges();

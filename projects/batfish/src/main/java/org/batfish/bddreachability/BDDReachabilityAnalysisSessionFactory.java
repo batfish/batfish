@@ -18,7 +18,6 @@ import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.activeA
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -110,17 +109,14 @@ final class BDDReachabilityAnalysisSessionFactory {
    * we need to keep to match established sessions.
    */
   private static BDD computeFiveTupleBdd(BDDPacket bddPacket) {
-    return Stream.of(
-            // reverse order to build bottom up
-            bddPacket.getIpProtocol().getBDDInteger(),
-            bddPacket.getSrcPort(),
-            bddPacket.getDstPort(),
-            bddPacket.getSrcIp(),
-            bddPacket.getDstIp())
-        // reverse to build bottom up
-        .flatMap(bddInteger -> Lists.reverse(Lists.newArrayList(bddInteger.getBitvec())).stream())
-        .reduce(BDD::and)
-        .get();
+    return bddPacket
+        .getFactory()
+        .andAll(
+            bddPacket.getDstIp().getVars(),
+            bddPacket.getSrcIp().getVars(),
+            bddPacket.getIpProtocol().getBDDInteger().getVars(),
+            bddPacket.getDstPort().getVars(),
+            bddPacket.getSrcPort().getVars());
   }
 
   /**
