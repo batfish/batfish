@@ -65,6 +65,7 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
     if (_enablePathRecording) {
       String text = node.getText();
       int line = node.getSymbol().getLine();
+      // WildcardApplicator expands wildcards introduced by apply-groups; they are always valid.
       if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD_ARTIFACT) {
         _currentPath.addWildcardNode(text, line);
       } else {

@@ -102,7 +102,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
     if (_enablePathRecording) {
       String text = node.getText();
       int line = node.getSymbol().getLine();
-      if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
+      if (false && node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
         _currentPath.addWildcardNode(text, line);
       } else {
         _currentPath.addNode(text, line);
