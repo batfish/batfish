@@ -1,7 +1,6 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
@@ -140,10 +139,14 @@ public class BDDPacket {
 
     _bitNames = new HashMap<>();
 
-    _dstIp = allocateBDDInteger("dstIp", IP_LENGTH);
-    _srcIp = allocateBDDInteger("srcIp", IP_LENGTH);
-    _dstPort = allocateBDDInteger("dstPort", PORT_LENGTH);
-    _srcPort = allocateBDDInteger("srcPort", PORT_LENGTH);
+    BDD[] dstIpBitvec = allocateBDDBits("dstIp", IP_LENGTH);
+    BDD[] srcIpBitvec = allocateBDDBits("srcIp", IP_LENGTH);
+    BDD[] dstPortBitvec = allocateBDDBits("dstPort", PORT_LENGTH);
+    BDD[] srcPortBitvec = allocateBDDBits("srcPort", PORT_LENGTH);
+    _dstIp = new BDDInteger(dstIpBitvec);
+    _srcIp = new BDDInteger(srcIpBitvec);
+    _dstPort = new BDDInteger(dstPortBitvec);
+    _srcPort = new BDDInteger(srcPortBitvec);
     _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH));
     _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH));
     _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH));
@@ -162,8 +165,8 @@ public class BDDPacket {
 
     _swapSourceAndDestinationPairing =
         swapPairing(
-            getDstIp(), getSrcIp(), //
-            getDstPort(), getSrcPort());
+            BDDUtils.concatBitvectors(dstIpBitvec, dstPortBitvec),
+            BDDUtils.concatBitvectors(srcIpBitvec, srcPortBitvec));
 
     _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_dstIp, ImmutableMap.of());
     _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_srcIp, ImmutableMap.of());
@@ -216,13 +219,27 @@ public class BDDPacket {
    * @return The new variable.
    */
   public BDDInteger allocateBDDInteger(String name, int bits) {
+    return new BDDInteger(allocateBDDBits(name, bits));
+  }
+
+  /**
+   * Allocate {@link BDD} variables.
+   *
+   * @param name Used for debugging.
+   * @param bits The number of bits to allocate.
+   * @return An array of the new {@link BDD} variables.
+   */
+  private BDD[] allocateBDDBits(String name, int bits) {
     if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
       _factory.setVarNum(_nextFreeBDDVarIdx + bits);
     }
-    BDDInteger var = makeFromIndex(_factory, bits, _nextFreeBDDVarIdx, false);
+    BDD[] bdds = new BDD[bits];
+    for (int i = 0; i < bits; i++) {
+      bdds[i] = _factory.ithVar(_nextFreeBDDVarIdx + i);
+    }
     addBitNames(name, bits, _nextFreeBDDVarIdx);
     _nextFreeBDDVarIdx += bits;
-    return var;
+    return bdds;
   }
 
   public IpSpaceToBDD getDstIpSpaceToBDD() {
