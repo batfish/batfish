@@ -92,7 +92,6 @@ public class BDDPacket {
   private final @Nonnull BDD _tcpSyn;
   private final @Nonnull BDD _tcpUrg;
 
-  private final BDDPairing _pairing;
   private final BDDPairing _swapSourceAndDestinationPairing;
   private final IpSpaceToBDD _dstIpSpaceToBDD;
   private final IpSpaceToBDD _srcIpSpaceToBDD;
@@ -141,13 +140,13 @@ public class BDDPacket {
 
     _bitNames = new HashMap<>();
 
-    _dstIp = allocateBDDInteger("dstIp", IP_LENGTH, false);
-    _srcIp = allocateBDDInteger("srcIp", IP_LENGTH, false);
-    _dstPort = allocateBDDInteger("dstPort", PORT_LENGTH, false);
-    _srcPort = allocateBDDInteger("srcPort", PORT_LENGTH, false);
-    _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH, false));
-    _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH, false));
-    _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH, false));
+    _dstIp = allocateBDDInteger("dstIp", IP_LENGTH);
+    _srcIp = allocateBDDInteger("srcIp", IP_LENGTH);
+    _dstPort = allocateBDDInteger("dstPort", PORT_LENGTH);
+    _srcPort = allocateBDDInteger("srcPort", PORT_LENGTH);
+    _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH));
+    _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH));
+    _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH));
     _tcpAck = allocateBDDBit("tcpAck");
     _tcpCwr = allocateBDDBit("tcpCwr");
     _tcpEce = allocateBDDBit("tcpEce");
@@ -156,13 +155,11 @@ public class BDDPacket {
     _tcpRst = allocateBDDBit("tcpRst");
     _tcpSyn = allocateBDDBit("tcpSyn");
     _tcpUrg = allocateBDDBit("tcpUrg");
-    _dscp = allocateBDDInteger("dscp", DSCP_LENGTH, false);
-    _ecn = allocateBDDInteger("ecn", ECN_LENGTH, false);
-    _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH, false);
-    _packetLength =
-        new BDDPacketLength(allocateBDDInteger("packetLength", PACKET_LENGTH_LENGTH, false));
+    _dscp = allocateBDDInteger("dscp", DSCP_LENGTH);
+    _ecn = allocateBDDInteger("ecn", ECN_LENGTH);
+    _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH);
+    _packetLength = new BDDPacketLength(allocateBDDInteger("packetLength", PACKET_LENGTH_LENGTH));
 
-    _pairing = _factory.makePair();
     _swapSourceAndDestinationPairing =
         swapPairing(
             getDstIp(), getSrcIp(), //
@@ -189,13 +186,9 @@ public class BDDPacket {
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
    */
-  private void addBitNames(String s, int length, int index, boolean reverse) {
+  private void addBitNames(String s, int length, int index) {
     for (int i = index; i < index + length; i++) {
-      if (reverse) {
-        _bitNames.put(i, s + (length - 1 - (i - index)));
-      } else {
-        _bitNames.put(i, s + (i - index + 1));
-      }
+      _bitNames.put(i, s + (i - index + 1));
     }
   }
 
@@ -220,15 +213,14 @@ public class BDDPacket {
    *
    * @param name Used for debugging.
    * @param bits The number of bits to allocate.
-   * @param reverse If true, reverse the BDD order of the bits.
    * @return The new variable.
    */
-  public BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
+  public BDDInteger allocateBDDInteger(String name, int bits) {
     if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
       _factory.setVarNum(_nextFreeBDDVarIdx + bits);
     }
-    BDDInteger var = makeFromIndex(_factory, bits, _nextFreeBDDVarIdx, reverse);
-    addBitNames(name, bits, _nextFreeBDDVarIdx, false);
+    BDDInteger var = makeFromIndex(_factory, bits, _nextFreeBDDVarIdx, false);
+    addBitNames(name, bits, _nextFreeBDDVarIdx);
     _nextFreeBDDVarIdx += bits;
     return var;
   }
