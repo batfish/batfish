@@ -113,7 +113,7 @@ public class PoolMgr {
     Client client = null;
     try {
       // Client client = ClientBuilder.newClient();
-      client = CommonUtil.createHttpClientBuilder(false).build();
+      client = CommonUtil.createHttpClientBuilder().build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           client.target(

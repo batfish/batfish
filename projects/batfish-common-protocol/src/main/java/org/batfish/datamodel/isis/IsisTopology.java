@@ -8,9 +8,6 @@ import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -48,30 +45,23 @@ public final class IsisTopology {
   /** Initialize the IS-IS topology as a directed graph. */
   public static @Nonnull IsisTopology initIsisTopology(
       Map<String, Configuration> configurations, Topology topology) {
-    Span span = GlobalTracer.get().buildSpan("IsisTopology.initIsisTopology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-
-      Set<IsisEdge> edges =
-          topology.getEdges().stream()
-              .map(edge -> IsisEdge.edgeIfCircuit(edge, configurations))
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .collect(ImmutableSet.toImmutableSet());
-      MutableNetwork<IsisNode, IsisEdge> graph =
-          NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
-      ImmutableSet.Builder<IsisNode> nodes = ImmutableSet.builder();
-      edges.forEach(
-          edge -> {
-            nodes.add(edge.getNode1());
-            nodes.add(edge.getNode2());
-          });
-      nodes.build().forEach(graph::addNode);
-      edges.forEach(edge -> graph.addEdge(edge.getNode1(), edge.getNode2(), edge));
-      return new IsisTopology(graph);
-    } finally {
-      span.finish();
-    }
+    Set<IsisEdge> edges =
+        topology.getEdges().stream()
+            .map(edge -> IsisEdge.edgeIfCircuit(edge, configurations))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableSet.toImmutableSet());
+    MutableNetwork<IsisNode, IsisEdge> graph =
+        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
+    ImmutableSet.Builder<IsisNode> nodes = ImmutableSet.builder();
+    edges.forEach(
+        edge -> {
+          nodes.add(edge.getNode1());
+          nodes.add(edge.getNode2());
+        });
+    nodes.build().forEach(graph::addNode);
+    edges.forEach(edge -> graph.addEdge(edge.getNode1(), edge.getNode2(), edge));
+    return new IsisTopology(graph);
   }
 
   private final @Nonnull Network<IsisNode, IsisEdge> _network;

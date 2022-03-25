@@ -2,9 +2,6 @@ package org.batfish.grammar.flatjuniper;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -60,16 +57,10 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
     // Pre-process parse tree
     PreprocessJuniperExtractor.preprocess(
         (Flat_juniper_configurationContext) tree, hierarchy, _parser, _w);
-    Span span = GlobalTracer.get().buildSpan("FlatJuniper::ConfigurationBuilder").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      // Build configuration from pre-processed parse tree
-      ConfigurationBuilder cb =
-          new ConfigurationBuilder(_parser, _text, _w, hierarchy.getTokenInputs(), _silentSyntax);
-      new BatfishParseTreeWalker(_parser).walk(cb, tree);
-      _configuration = cb.getConfiguration();
-    } finally {
-      span.finish();
-    }
+    // Build configuration from pre-processed parse tree
+    ConfigurationBuilder cb =
+        new ConfigurationBuilder(_parser, _text, _w, hierarchy.getTokenInputs(), _silentSyntax);
+    new BatfishParseTreeWalker(_parser).walk(cb, tree);
+    _configuration = cb.getConfiguration();
   }
 }

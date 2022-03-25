@@ -15,13 +15,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Closer;
-import io.jaegertracing.Configuration;
-import io.jaegertracing.Configuration.ReporterConfiguration;
-import io.jaegertracing.Configuration.SamplerConfiguration;
-import io.jaegertracing.Configuration.SenderConfiguration;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -1036,10 +1029,6 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean execute(WorkItem wItem, @Nullable FileWriter outWriter) {
     _logger.infof("work-id is %s\n", wItem.getId());
-    Span activeSpan = GlobalTracer.get().scopeManager().activeSpan();
-    if (activeSpan != null) {
-      activeSpan.setTag("work-id", wItem.getId().toString());
-    }
     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _settings.getBatfishLogLevel());
     wItem.addRequestParam(BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG, "true");
     for (String option : _additionalBatfishOptions.keySet()) {
@@ -1322,20 +1311,6 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private void initTracer() {
-    Configuration config =
-        new Configuration(_settings.getServiceName())
-            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
-            .withReporter(
-                new ReporterConfiguration()
-                    .withSender(
-                        SenderConfiguration.fromEnv()
-                            .withAgentHost(_settings.getTracingAgentHost())
-                            .withAgentPort(_settings.getTracingAgentPort()))
-                    .withLogSpans(false));
-    GlobalTracer.registerIfAbsent(config.getTracer());
-  }
-
   private boolean isSetContainer(boolean printError) {
     if (!_settings.getSanityCheck()) {
       return true;
@@ -1593,35 +1568,26 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean pollWork(UUID wItemId) {
+    // Poll the work item until it finishes or fails.
+    WorkResult response = _workHelper.getWorkStatus(wItemId);
+    if (response == null) {
+      return false;
+    }
 
-    WorkResult response;
-    Span workStatusSpan = GlobalTracer.get().buildSpan("Waiting for work status").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(workStatusSpan)) {
-      assert scope != null; // avoid unused warning
-      // Poll the work item until it finishes or fails.
+    WorkStatusCode status = response.getStatus();
+    Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
+    while (!status.isTerminated() && backoff.hasNext()) {
+
+      try {
+        Thread.sleep(backoff.nextBackoff().toMillis());
+      } catch (InterruptedException e) {
+        throw new BatfishException("Interrupted while waiting for work item to complete", e);
+      }
       response = _workHelper.getWorkStatus(wItemId);
       if (response == null) {
         return false;
       }
-
-      WorkStatusCode status = response.getStatus();
-      Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
-      while (!status.isTerminated() && backoff.hasNext()) {
-
-        try {
-          Thread.sleep(backoff.nextBackoff().toMillis());
-        } catch (InterruptedException e) {
-          throw new BatfishException("Interrupted while waiting for work item to complete", e);
-        }
-        response = _workHelper.getWorkStatus(wItemId);
-        if (response == null) {
-          return false;
-        }
-        status = response.getStatus();
-      }
-
-    } finally {
-      workStatusSpan.finish();
+      status = response.getStatus();
     }
     return true;
   }
@@ -1677,15 +1643,11 @@ public class Client extends AbstractClient implements IClient {
 
     List<String> options = getCommandOptions(words);
     List<String> parameters = getCommandParameters(words, options.size());
-    Span span = GlobalTracer.get().buildSpan(command.commandName()).start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    try {
       return processCommand(command, words, outWriter, options, parameters);
     } catch (Exception e) {
       e.printStackTrace();
       return false;
-    } finally {
-      span.finish();
     }
   }
 
@@ -1912,9 +1874,6 @@ public class Client extends AbstractClient implements IClient {
   }
 
   public void run(List<String> initialCommands) {
-    if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
-      initTracer();
-    }
     loadPlugins();
     initHelpers();
     _logger.debugf("Will use coordinator at http://%s\n", _settings.getCoordinatorHost());

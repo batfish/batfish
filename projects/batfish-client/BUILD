@@ -9,7 +9,6 @@ java_binary(
     main_class = "org.batfish.client.Main",
     runtime_deps = [
         ":client",
-        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
@@ -33,9 +32,6 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:commons_io_commons_io",
         "@maven//:io_github_java_diff_utils_java_diff_utils",
-        "@maven//:io_jaegertracing_jaeger_core",
-        "@maven//:io_opentracing_opentracing_api",
-        "@maven//:io_opentracing_opentracing_util",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_codehaus_jettison_jettison",

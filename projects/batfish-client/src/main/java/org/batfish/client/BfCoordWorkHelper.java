@@ -90,7 +90,7 @@ public class BfCoordWorkHelper {
   }
 
   private ClientBuilder getClientBuilder() {
-    return CommonUtil.createHttpClientBuilder(true).register(MultiPartFeature.class);
+    return CommonUtil.createHttpClientBuilder().register(MultiPartFeature.class);
   }
 
   /**
