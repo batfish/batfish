@@ -10,6 +10,7 @@ import com.google.common.primitives.Ints;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -360,11 +361,16 @@ final class Conversions {
   private static @Nonnull List<Service> portToServices(String appName, Port port) {
     return port.getMember().stream()
         .map(m -> portMemberToService(appName, m))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .collect(ImmutableList.toImmutableList());
   }
 
-  /** Convert a {@link Port} {@code member} string to its corresponding {@link Service}. */
-  private static Service portMemberToService(String appName, String member) {
+  /**
+   * Convert a {@link Port} {@code member} string to its corresponding {@link Service}. If there is
+   * no IPv4 service that corresponds to this member, then {@link Optional#empty()} is returned.
+   */
+  private static Optional<Service> portMemberToService(String appName, String member) {
     Service.Builder service = Service.builder(String.format("%s (%s)", appName, member));
     String[] parts = member.split("/", -1);
     assert parts.length == 2;
@@ -380,15 +386,15 @@ final class Conversions {
 
     switch (protocol) {
       case "icmp":
-        return service.setIpProtocol(IpProtocol.ICMP).build();
+        return Optional.of(service.setIpProtocol(IpProtocol.ICMP).build());
       case "icmp6":
-        return service.setIpProtocol(IpProtocol.IPV6_ICMP).build();
+        return Optional.empty();
       case "tcp":
-        return service.setIpProtocol(IpProtocol.TCP).build();
+        return Optional.of(service.setIpProtocol(IpProtocol.TCP).build());
       case "udp":
       default:
         assert protocol.equals("udp");
-        return service.setIpProtocol(IpProtocol.UDP).build();
+        return Optional.of(service.setIpProtocol(IpProtocol.UDP).build());
     }
   }
 
