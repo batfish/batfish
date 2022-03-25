@@ -148,7 +148,7 @@ public final class SessionInstrumentationTest {
 
     // Setup source managers
     {
-      BDDInteger srcVar = _pkt.allocateBDDInteger("Source", 3, false);
+      BDDInteger srcVar = _pkt.allocateBDDInteger("Source", 3);
       // Setup source tracking for firewall
       _fwSrcMgr = BDDSourceManager.forInterfaces(srcVar, ImmutableSet.of(FW_I1, FAKE_IFACE));
       _invalidSrc = _fwSrcMgr.isValidValue().not();

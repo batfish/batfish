@@ -47,7 +47,7 @@ public class BDDPacketTest {
   public void testAllocateBDDInteger() {
     BDDPacket pkt = new BDDPacket();
     int varNum = pkt.getFactory().varNum();
-    BDDInteger var = pkt.allocateBDDInteger("foo", 5, false);
+    BDDInteger var = pkt.allocateBDDInteger("foo", 5);
     assertThat(var, notNullValue());
     assertThat(pkt.getFactory().varNum(), equalTo(varNum + 5));
   }

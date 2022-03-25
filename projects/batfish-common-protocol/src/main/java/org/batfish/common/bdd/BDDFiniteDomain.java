@@ -29,7 +29,7 @@ public final class BDDFiniteDomain<V> {
 
   /** Allocate a variable sufficient for the given set of values. */
   public BDDFiniteDomain(BDDPacket pkt, String varName, Set<V> values) {
-    this(pkt.allocateBDDInteger(varName, computeBitsRequired(values.size()), false), values);
+    this(pkt.allocateBDDInteger(varName, computeBitsRequired(values.size())), values);
   }
 
   /**
@@ -86,7 +86,7 @@ public final class BDDFiniteDomain<V> {
     checkArgument(!values.isEmpty(), "empty values map");
     int maxSize = values.values().stream().mapToInt(Set::size).max().getAsInt();
     int bitsRequired = computeBitsRequired(maxSize);
-    BDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired, false);
+    BDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired);
     return toImmutableMap(
         values, Entry::getKey, entry -> new BDDFiniteDomain<>(var, entry.getValue()));
   }
