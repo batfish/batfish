@@ -459,10 +459,10 @@ public class BDDInteger {
   public @Nonnull BDD getMostSignificantVars(int n) {
     checkState(
         _hasVariablesOnly,
-        "getVars can only be called on a BDDInteger with hasVariablesOnly() true");
+        "getMostSignificantVars can only be called on a BDDInteger with hasVariablesOnly() true");
     checkArgument(
         n <= _bitvec.length,
-        "getVars(%s) called on a BDDInteger with only %s variables",
+        "getMostSignificantVars(%s) called on a BDDInteger with only %s variables",
         n,
         _bitvec.length);
     if (n == _bitvec.length) {
