@@ -3,7 +3,6 @@ package org.batfish.bddreachability.transition;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.Arrays;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
@@ -26,7 +25,7 @@ public class EraseAndSetTest {
   @Test
   public void testEraseAndSet() {
     BDD setBdd = dstIp("1.1.1.1");
-    BDD vars = Arrays.stream(_pkt.getDstIp().getBitvec()).reduce(_pkt.getFactory().one(), BDD::and);
+    BDD vars = _pkt.getDstIp().getVars();
     Transition transition = new EraseAndSet(vars, setBdd);
 
     assertThat(transition.transitForward(_one), equalTo(setBdd));
