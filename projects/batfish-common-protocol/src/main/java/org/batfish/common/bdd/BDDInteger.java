@@ -45,8 +45,8 @@ public class BDDInteger {
     _falses = new ArrayList<>(length);
   }
 
-  public BDDInteger(BDD[] bitvec) {
-    this(bitvec[0].getFactory(), bitvec.length);
+  public BDDInteger(BDDFactory factory, BDD[] bitvec) {
+    this(factory, bitvec.length);
     _hasVariablesOnly = true; // TODO enforce this
     for (int i = 0; i < bitvec.length; i++) {
       _bitvec[i] = bitvec[i];
@@ -74,10 +74,9 @@ public class BDDInteger {
     return _bitvec.length;
   }
 
-  /*
-   * Create an integer, and initialize its values as "don't care"
-   * This requires knowing the start index variables the bitvector
-   * will use.
+  /**
+   * Create an integer, and initialize its values as "don't care" This requires knowing the start
+   * index variables the bitvector will use.
    */
   public static BDDInteger makeFromIndex(
       BDDFactory factory, int length, int start, boolean reverse) {
@@ -186,9 +185,7 @@ public class BDDInteger {
     return values.build();
   }
 
-  /*
-   * Create an integer and initialize it to a concrete value
-   */
+  /** Create an integer and initialize it to a concrete value */
   public static BDDInteger makeFromValue(BDDFactory factory, int length, long value) {
     BDDInteger bdd = new BDDInteger(factory, length);
     bdd.setValue(value);
@@ -227,15 +224,8 @@ public class BDDInteger {
     return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
   }
 
-  /*
-   * Check if the first length bits match the BDDInteger
-   * representing the advertisement prefix.
-   *
-   * Note: We assume the prefix is never modified, so it will
-   * be a bitvector containing only the underlying variables:
-   * [var(0), ..., var(n)]
-   */
-  public BDD firstBitsEqual(Ip ip, int length) {
+  /** Check if the first length bits match the BDDInteger representing the advertisement prefix. */
+  private BDD firstBitsEqual(Ip ip, int length) {
     checkArgument(length <= _bitvec.length, "Not enough bits");
     long b = ip.asLong();
     _trues.clear();
@@ -466,15 +456,19 @@ public class BDDInteger {
   /**
    * Returns a {@link BDD} containing the {@code n} high-order variables of this {@link BDDInteger}.
    */
-  public @Nonnull BDD getVars(int n) {
+  public @Nonnull BDD getMostSignificantVars(int n) {
     checkState(
         _hasVariablesOnly,
         "getVars can only be called on a BDDInteger with hasVariablesOnly() true");
-    checkState(n <= _bitvec.length);
+    checkArgument(
+        n <= _bitvec.length,
+        "getVars(%s) called on a BDDInteger with only %s variables",
+        n,
+        _bitvec.length);
     if (n == _bitvec.length) {
       return getVars();
     }
-    return _factory.andAll(Arrays.copyOf(_bitvec, n));
+    return _factory.andAll(Arrays.asList(_bitvec).subList(0, n));
   }
 
   public BDDFactory getFactory() {
