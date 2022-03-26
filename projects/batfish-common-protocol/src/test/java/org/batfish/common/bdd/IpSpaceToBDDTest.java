@@ -39,7 +39,7 @@ public class IpSpaceToBDDTest {
     _factory = BDDUtils.bddFactory(32);
     _bddOps = new BDDOps(_factory);
     _ipAddrBitvec = IntStream.range(0, 32).mapToObj(_factory::ithVar).toArray(BDD[]::new);
-    _ipAddrBdd = new BDDInteger(_ipAddrBitvec);
+    _ipAddrBdd = new BDDInteger(_factory, _ipAddrBitvec);
     _ipSpaceToBdd = new IpSpaceToBDD(_ipAddrBdd);
   }
 

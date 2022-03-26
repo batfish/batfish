@@ -143,10 +143,10 @@ public class BDDPacket {
     BDD[] srcIpBitvec = allocateBDDBits("srcIp", IP_LENGTH);
     BDD[] dstPortBitvec = allocateBDDBits("dstPort", PORT_LENGTH);
     BDD[] srcPortBitvec = allocateBDDBits("srcPort", PORT_LENGTH);
-    _dstIp = new BDDInteger(dstIpBitvec);
-    _srcIp = new BDDInteger(srcIpBitvec);
-    _dstPort = new BDDInteger(dstPortBitvec);
-    _srcPort = new BDDInteger(srcPortBitvec);
+    _dstIp = new BDDInteger(_factory, dstIpBitvec);
+    _srcIp = new BDDInteger(_factory, srcIpBitvec);
+    _dstPort = new BDDInteger(_factory, dstPortBitvec);
+    _srcPort = new BDDInteger(_factory, srcPortBitvec);
     _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH));
     _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH));
     _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH));
@@ -219,7 +219,7 @@ public class BDDPacket {
    * @return The new variable.
    */
   public BDDInteger allocateBDDInteger(String name, int bits) {
-    return new BDDInteger(allocateBDDBits(name, bits));
+    return new BDDInteger(_factory, allocateBDDBits(name, bits));
   }
 
   /**
