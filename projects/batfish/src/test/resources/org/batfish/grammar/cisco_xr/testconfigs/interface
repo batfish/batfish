@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname interface
+!
+interface Bundle-Ether1
+ description Bundle-Ether1
+!
+router hsrp
+  interface Bundle-Ether1
+!
+router static
+ address-family ipv4 unicast
+  10.161.9.32/28 Bundle-Ether2 description undefined interface
+!
+
