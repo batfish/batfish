@@ -7,9 +7,9 @@ import net.sf.javabdd.BDD;
 
 /** Symbolic packet length variable represented by a 16-bit {@link BDD}. */
 public final class BDDPacketLength {
-  private final BDDInteger _var;
+  private final ImmutableBDDInteger _var;
 
-  public BDDPacketLength(BDDInteger var) {
+  public BDDPacketLength(ImmutableBDDInteger var) {
     checkArgument(var.size() == 16, "Packet length field requires 16 bits");
     _var = var;
   }

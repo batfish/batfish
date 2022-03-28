@@ -22,9 +22,9 @@ import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.bdd.BDDFiniteDomain;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.ImmutableBDDInteger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -148,7 +148,7 @@ public final class SessionInstrumentationTest {
 
     // Setup source managers
     {
-      BDDInteger srcVar = _pkt.allocateBDDInteger("Source", 3);
+      ImmutableBDDInteger srcVar = _pkt.allocateBDDInteger("Source", 3);
       // Setup source tracking for firewall
       _fwSrcMgr = BDDSourceManager.forInterfaces(srcVar, ImmutableSet.of(FW_I1, FAKE_IFACE));
       _invalidSrc = _fwSrcMgr.isValidValue().not();

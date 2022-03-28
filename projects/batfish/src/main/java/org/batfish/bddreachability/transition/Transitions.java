@@ -19,8 +19,8 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 import org.batfish.common.bdd.BDDFiniteDomain;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.ImmutableBDDInteger;
 
 /** Smart constructors of {@link Transition}. */
 public final class Transitions {
@@ -199,7 +199,7 @@ public final class Transitions {
           mgr.getFiniteDomain().getVar() == add.getSourceManager().getFiniteDomain().getVar(),
           "all source managers should have the same BDDInteger");
 
-      BDDInteger var = mgr.getFiniteDomain().getVar();
+      ImmutableBDDInteger var = mgr.getFiniteDomain().getVar();
       return eraseAndSet(var, add.getSourceBdd());
     }
     // couldn't merge
@@ -220,7 +220,7 @@ public final class Transitions {
     }
   }
 
-  public static Transition eraseAndSet(BDDInteger var, BDD value) {
+  public static Transition eraseAndSet(ImmutableBDDInteger var, BDD value) {
     if (var.size() == 0) {
       return constraint(value);
     } else {
