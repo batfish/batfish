@@ -40,7 +40,7 @@ public final class Port {
   }
 
   @VisibleForTesting
-  public static @Nonnull Port create(@Nonnull List<String> member) {
+  static @Nonnull Port create(@Nonnull List<String> member) {
     return new Port(member);
   }
 

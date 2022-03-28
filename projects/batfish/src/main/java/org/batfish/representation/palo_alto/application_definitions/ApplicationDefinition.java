@@ -57,7 +57,7 @@ public final class ApplicationDefinition {
 
   @VisibleForTesting
   @JsonCreator
-  public static @Nonnull ApplicationDefinition create(
+  static @Nonnull ApplicationDefinition create(
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_APPLICATION_CONTAINER) @Nullable String applicationContainer,
       @JsonProperty(PROP_PARENT_APP) @Nullable String parentApp,

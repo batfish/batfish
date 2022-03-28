@@ -4,6 +4,9 @@ import static com.google.common.collect.Iterators.getOnlyElement;
 import static java.util.Collections.emptySet;
 import static org.batfish.representation.palo_alto.Conversions.definitionToApp;
 import static org.batfish.representation.palo_alto.Conversions.portsStringToIntegerSpace;
+import static org.batfish.representation.palo_alto.application_definitions.Creators.createApplicationDefinition;
+import static org.batfish.representation.palo_alto.application_definitions.Creators.createDefault;
+import static org.batfish.representation.palo_alto.application_definitions.Creators.createPort;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -47,9 +50,9 @@ public class ConversionsTest {
   public void testDefinitionToApp() {
     // IP protocol
     {
-      Default def = Default.create(null, "19", null);
+      Default def = createDefault(null, "19", null);
       Application app =
-          definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
+          definitionToApp(createApplicationDefinition("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
       assertThat(service.getProtocol(), equalTo(IpProtocol.fromNumber(19)));
@@ -58,9 +61,9 @@ public class ConversionsTest {
     }
     // ICMP type
     {
-      Default def = Default.create(null, null, "8");
+      Default def = createDefault(null, null, "8");
       Application app =
-          definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
+          definitionToApp(createApplicationDefinition("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
       assertThat(service.getProtocol(), equalTo(IpProtocol.ICMP));
@@ -69,10 +72,10 @@ public class ConversionsTest {
     }
     // TCP port
     {
-      Port port = Port.create(ImmutableList.of("tcp/443"));
-      Default def = Default.create(port, null, null);
+      Port port = createPort(ImmutableList.of("tcp/443"));
+      Default def = createDefault(port, null, null);
       Application app =
-          definitionToApp(ApplicationDefinition.create("name", null, null, null, null, def));
+          definitionToApp(createApplicationDefinition("name", null, null, null, null, def));
 
       Service service = getOnlyElement(app.getServices().iterator());
       assertThat(service.getProtocol(), equalTo(IpProtocol.TCP));

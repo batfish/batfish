@@ -50,7 +50,7 @@ public final class Default {
   }
 
   @VisibleForTesting
-  public static @Nonnull Default create(
+  static @Nonnull Default create(
       @Nullable Port port, @Nullable String identByIpProtocol, @Nullable String identByIcmpType) {
     return new Default(port, identByIpProtocol, identByIcmpType);
   }
