@@ -5,6 +5,19 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+java_library(
+    name = "testlib",
+    testonly = True,
+    srcs = [
+        "TestApplicationDefinitions.java",
+    ],
+    deps = [
+        "//projects/batfish/src/main/java/org/batfish/representation/palo_alto/application_definitions",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+    ],
+)
+
 junit_tests(
     name = "tests",
     srcs = glob([
