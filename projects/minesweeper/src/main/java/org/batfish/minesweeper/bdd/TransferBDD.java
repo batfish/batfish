@@ -1124,7 +1124,7 @@ public class TransferBDD {
     for (int i = 0; i < rec.getAsPathRegexAtomicPredicates().length; i++) {
       rec.getAsPathRegexAtomicPredicates()[i] = _factory.zero();
     }
-    rec.getProtocolHistory().getVar().setValue(0);
+    rec.getProtocolHistory().getInteger().setValue(0);
     return rec;
   }
 

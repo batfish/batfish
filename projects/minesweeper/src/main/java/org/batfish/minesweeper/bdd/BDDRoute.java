@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.math.IntMath;
 import java.math.RoundingMode;
@@ -14,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
@@ -101,7 +101,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final BDDInteger _prefixLength;
 
-  private final BDDFiniteDomain<RoutingProtocol> _protocolHistory;
+  private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   private BDDInteger _tag;
 
@@ -148,8 +148,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
     int idx = 0;
     _protocolHistory =
-        new BDDFiniteDomain<>(factory, idx, ImmutableSet.copyOf(RoutingProtocol.values()));
-    int len = _protocolHistory.getVar().size();
+        new BDDDomain<>(factory, ImmutableList.copyOf(RoutingProtocol.values()), idx);
+    int len = _protocolHistory.getInteger().size();
     addBitNames("proto", len, idx, false);
     idx += len;
     // Initialize integer values
@@ -217,9 +217,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _med = new BDDInteger(other._med);
     _tag = new BDDInteger(other._tag);
     _localPref = new BDDInteger(other._localPref);
-    _protocolHistory =
-        new BDDFiniteDomain<>(
-            other._protocolHistory.getVar(), other._protocolHistory.getValueBdds().keySet());
+    _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
   }
@@ -265,9 +263,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDD anyProtocolIn(Set<RoutingProtocol> protocols) {
     return _factory.orAll(
-        protocols.stream()
-            .map(_protocolHistory::getConstraintForValue)
-            .collect(Collectors.toList()));
+        protocols.stream().map(_protocolHistory::value).collect(Collectors.toList()));
   }
 
   /**
@@ -444,7 +440,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _prefixLength;
   }
 
-  public BDDFiniteDomain<RoutingProtocol> getProtocolHistory() {
+  public BDDDomain<RoutingProtocol> getProtocolHistory() {
     return _protocolHistory;
   }
 
