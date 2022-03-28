@@ -8,12 +8,9 @@ package(
 java_library(
     name = "testlib",
     testonly = True,
-    srcs = glob(
-        [
-            "**/*.java",
-        ],
-        exclude = ["**/*Test.java"],
-    ),
+    srcs = [
+        "TestApplicationDefinitions.java",
+    ],
     deps = [
         "//projects/batfish/src/main/java/org/batfish/representation/palo_alto/application_definitions",
         "@maven//:com_google_code_findbugs_jsr305",

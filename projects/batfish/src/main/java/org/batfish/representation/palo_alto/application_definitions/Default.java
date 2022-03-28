@@ -38,7 +38,7 @@ public final class Default {
   private static final String PROP_IDENT_BY_ICMP_TYPE = "ident-by-icmp-type";
 
   @JsonCreator
-  private static @Nonnull Default create(
+  private static @Nonnull Default jsonCreator(
       @JsonProperty(PROP_PORT) @Nullable Port port,
       @JsonProperty(PROP_IDENT_BY_IP_PROTOCOL) @Nullable String identByIpProtocol,
       @JsonProperty(PROP_IDENT_BY_ICMP_TYPE) @Nullable JsonNode identByIcmpType) {
@@ -46,13 +46,7 @@ public final class Default {
         identByIcmpType == null || identByIcmpType instanceof NullNode
             ? null
             : icmpTypeToString(identByIcmpType);
-    return create(port, identByIpProtocol, type);
-  }
-
-  @VisibleForTesting
-  static @Nonnull Default create(
-      @Nullable Port port, @Nullable String identByIpProtocol, @Nullable String identByIcmpType) {
-    return new Default(port, identByIpProtocol, identByIcmpType);
+    return new Default(port, identByIpProtocol, type);
   }
 
   /** Extract the type string from an ICMP type. */
@@ -64,7 +58,8 @@ public final class Default {
     return text.textValue();
   }
 
-  private Default(
+  @VisibleForTesting
+  Default(
       @Nullable Port port, @Nullable String identByIpProtocol, @Nullable String identByIcmpType) {
     _port = port;
     _identByIpProtocol = identByIpProtocol;

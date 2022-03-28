@@ -26,7 +26,7 @@ public final class Port {
   private static final String PROP_MEMBER = "member";
 
   @JsonCreator
-  private static @Nonnull Port create(@JsonProperty(PROP_MEMBER) @Nullable JsonNode member) {
+  private static @Nonnull Port jsonCreator(@JsonProperty(PROP_MEMBER) @Nullable JsonNode member) {
     checkArgument(member != null, "Missing %s", PROP_MEMBER);
     // List of members
     if (member instanceof ArrayNode) {
@@ -36,15 +36,11 @@ public final class Port {
       return new Port(names.build());
     }
     // Single member
-    return create(ImmutableList.of(member.textValue()));
+    return new Port(ImmutableList.of(member.textValue()));
   }
 
   @VisibleForTesting
-  static @Nonnull Port create(@Nonnull List<String> member) {
-    return new Port(member);
-  }
-
-  private Port(@Nonnull List<String> member) {
+  Port(@Nonnull List<String> member) {
     _member = member;
   }
 
