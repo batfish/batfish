@@ -42,6 +42,7 @@ eos_vxif_vxlan
      | eos_vxif_vxlan_source_interface
      | eos_vxif_vxlan_udp_port
      | eos_vxif_vxlan_virtual_router
+     | eos_vxif_vxlan_vlan_vni_range
      | eos_vxif_vxlan_vlan
      | eos_vxif_vxlan_vrf
   )
@@ -72,6 +73,11 @@ eos_vxif_vxlan_virtual_router
    VIRTUAL_ROUTER
    // TODO: expand to full completions
    (ENCAPSULATION MAC_ADDRESS MLAG_SYSTEM_ID) NEWLINE
+;
+
+eos_vxif_vxlan_vlan_vni_range
+:
+   VLAN vlans = range VNI vnis = range NEWLINE
 ;
 
 eos_vxif_vxlan_vlan

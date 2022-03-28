@@ -573,6 +573,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_floodContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_multicast_groupContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_source_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_udp_portContext;
+import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlan_vni_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlan_vniContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vrfContext;
@@ -3507,6 +3508,33 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_vxif_vxlan_udp_port(Eos_vxif_vxlan_udp_portContext ctx) {
     _eosVxlan.setUdpPort(toInteger(ctx.num));
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_vlan_vni_range(Eos_vxif_vxlan_vlan_vni_rangeContext ctx) {
+      List<Integer> vnis = new ArrayList<>();
+      List<Integer> vlans = new ArrayList<>();
+
+      if (ctx.vlans != null) {
+          List<SubRange> vlanRange = toRange(ctx.vlans);
+          for (SubRange subRange : vlanRange) {
+              for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
+                  vlans.add(i);
+              }
+          }
+          if (ctx.vnis != null) {
+              List<SubRange> vniRange = toRange(ctx.vnis);
+              for (SubRange subRange : vniRange) {
+                  for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
+                      vnis.add(i);
+                  }
+              }
+              for (int i = 0; i < vnis.size(); i++){
+                  int idx = i;
+                  _eosVxlan.getVlanVnis().computeIfAbsent(vlans.get(idx), n -> vnis.get(idx));
+              }
+          }
+      }
   }
 
   @Override
