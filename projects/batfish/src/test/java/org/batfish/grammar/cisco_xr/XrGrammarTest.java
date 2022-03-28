@@ -72,6 +72,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SAMPLER_M
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_ROUTED_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FLOW_MONITOR_MAP_EXPORTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.HSRP_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_INGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_SAMPLER_EGRESS;
@@ -125,6 +126,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_P
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SG_EXPIRY_TIMER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SPT_THRESHOLD;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SSM_THRESHOLD_RANGE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_RD_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
@@ -416,6 +418,21 @@ public final class XrGrammarTest {
     Builder builder = route.toBuilder();
     assertTrue(routingPolicy.process(route, builder, Direction.IN));
     return builder.build();
+  }
+
+  /** Check reference tracking for interfaces */
+  @Test
+  public void testInterface() {
+    String hostname = "interface";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasDefinedStructure(filename, INTERFACE, "Bundle-Ether1"));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Bundle-Ether1", 2));
+    assertThat(ccae, hasReferencedStructure(filename, INTERFACE, "Bundle-Ether1", HSRP_INTERFACE));
+    assertThat(
+        ccae, hasUndefinedReference(filename, INTERFACE, "Bundle-Ether2", ROUTER_STATIC_ROUTE));
   }
 
   @Test
