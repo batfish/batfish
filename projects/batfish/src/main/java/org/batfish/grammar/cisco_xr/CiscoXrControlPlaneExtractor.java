@@ -102,6 +102,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_INGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
@@ -2592,6 +2593,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return;
     }
     addInterface(canonicalName, ctx.iname, true);
+    _configuration.defineStructure(INTERFACE, canonicalName, ctx);
+    _configuration.referenceStructure(
+        INTERFACE, canonicalName, INTERFACE_SELF_REF, ctx.getStart().getLine());
     if (ctx.L2TRANSPORT() != null) {
       _currentInterface.setL2transport(true);
     }
