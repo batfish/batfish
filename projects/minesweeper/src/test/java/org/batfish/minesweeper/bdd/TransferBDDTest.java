@@ -20,7 +20,6 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.NetworkSnapshot;
-import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
@@ -1354,12 +1353,10 @@ public class TransferBDDTest {
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
 
-    BDDFiniteDomain<RoutingProtocol> protocol = anyRoute.getProtocolHistory();
+    BDDDomain<RoutingProtocol> protocol = anyRoute.getProtocolHistory();
     assertEquals(
         acceptedAnnouncements,
-        protocol
-            .getConstraintForValue(RoutingProtocol.BGP)
-            .or(protocol.getConstraintForValue(RoutingProtocol.OSPF)));
+        protocol.value(RoutingProtocol.BGP).or(protocol.value(RoutingProtocol.OSPF)));
     assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
