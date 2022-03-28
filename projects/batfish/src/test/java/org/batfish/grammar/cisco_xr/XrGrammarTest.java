@@ -428,6 +428,7 @@ public final class XrGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasDefinedStructure(filename, INTERFACE, "Bundle-Ether1"));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Bundle-Ether1", 2));
     assertThat(ccae, hasReferencedStructure(filename, INTERFACE, "Bundle-Ether1", HSRP_INTERFACE));
     assertThat(
