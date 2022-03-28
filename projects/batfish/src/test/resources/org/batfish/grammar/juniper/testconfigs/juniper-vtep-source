@@ -1,0 +1,7 @@
+#
+set system host-name juniper-vtep-source
+#
+set interfaces lo0 unit 0 family inet address 1.1.1.1/31
+#
+set switch-options vtep-source-interface lo0.0
+#

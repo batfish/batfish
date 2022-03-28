@@ -100,6 +100,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Vlan> _namedVlans;
 
+  private final SwitchOptions _switchOptions;
+
   private final Map<String, Zone> _zones;
 
   public LogicalSystem(String name) {
@@ -141,6 +143,7 @@ public class LogicalSystem implements Serializable {
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
     _namedVlans = new TreeMap<>();
+    _switchOptions = new SwitchOptions();
     _zones = new TreeMap<>();
   }
 
@@ -366,6 +369,8 @@ public class LogicalSystem implements Serializable {
   public Map<String, Vlan> getNamedVlans() {
     return _namedVlans;
   }
+
+  public SwitchOptions getSwitchOptions() { return _switchOptions; }
 
   public Map<String, Zone> getZones() {
     return _zones;

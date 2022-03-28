@@ -480,6 +480,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rd_ip_address_colon_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rd_asn_colon_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
@@ -554,6 +556,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_switch_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
@@ -644,6 +647,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_authorizationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_client_list_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_methodContext;
@@ -875,6 +879,7 @@ import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StubSettings;
+import org.batfish.representation.juniper.SwitchOptions;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
@@ -2132,6 +2137,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private SnmpServer _currentSnmpServer;
 
+  private SwitchOptions _currentSwitchOptions;
+
   private StaticRoute _currentStaticRoute;
 
   private TacplusServer _currentTacplusServer;
@@ -2818,6 +2825,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentBgpGroup = _currentRoutingInstance.getMasterBgpGroup();
   }
 
+
+
   @Override
   public void exitPo_as_path(Po_as_pathContext ctx) {
     String name = toString(ctx.name);
@@ -3242,6 +3251,34 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentRoutingInstance.setSnmpServer(snmpServer);
     }
     _currentSnmpServer = snmpServer;
+  }
+
+  @Override
+  public void enterS_switch_options(S_switch_optionsContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSo_vtep_source_interface(So_vtep_source_interfaceContext ctx) {
+    String ifaceName = getInterfaceFullName(ctx.iface);
+    _currentLogicalSystem.getSwitchOptions().setVtepSourceInterface(ifaceName);
+  }
+
+  @Override
+  public void exitRd_asn_colon_id(Rd_asn_colon_idContext ctx) {
+    // TODO figure out whether 16-bit-number colon 16-bit-number is treated by Juniper as 32:16 or 16:32.
+    String rd = ctx.getText();
+    if (rd != null) {
+      _currentLogicalSystem.getSwitchOptions().setRouteDistinguisher(rd);
+    }
+  }
+
+  @Override
+  public void exitRd_ip_address_colon_id(Rd_ip_address_colon_idContext ctx) {
+    String rd = ctx.getText();
+    if (rd != null) {
+      _currentLogicalSystem.getSwitchOptions().setRouteDistinguisher(rd);
+    }
   }
 
   @Override

@@ -178,6 +178,7 @@ public class Interface implements Serializable {
   @Nullable private Integer _vlanId;
   private @Nonnull VlanTaggingMode _vlanTagging;
   private Integer _tcpMss;
+//  private Boolean _vtepSourceInterface;
 
   public Interface(String name) {
     _active = true;
@@ -193,6 +194,7 @@ public class Interface implements Serializable {
     _units = new TreeMap<>();
     _vlanTagging = VlanTaggingMode.NONE;
     _vrrpGroups = new TreeMap<>();
+//    _vtepSourceInterface = false;
   }
 
   public String get8023adInterface() {
@@ -345,6 +347,10 @@ public class Interface implements Serializable {
   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {
     return _vrrpGroups;
   }
+
+//  public boolean getVtepSourceInterface() {
+//    return _vtepSourceInterface;
+//  }
 
   /**
    * Returns effective ISIS settings, that is, those are directly configured for the interface or
@@ -507,6 +513,10 @@ public class Interface implements Serializable {
   public @Nullable Integer getTcpMss() {
     return _tcpMss;
   }
+
+//  public void setVtepSourceInterface(boolean VtepSourceInterface) {
+//    _vtepSourceInterface = VtepSourceInterface;
+//  }
 
   @Override
   public String toString() {
