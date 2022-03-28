@@ -38,7 +38,7 @@ public final class Default {
   private static final String PROP_IDENT_BY_ICMP_TYPE = "ident-by-icmp-type";
 
   @JsonCreator
-  private static @Nonnull Default create(
+  private static @Nonnull Default jsonCreator(
       @JsonProperty(PROP_PORT) @Nullable Port port,
       @JsonProperty(PROP_IDENT_BY_IP_PROTOCOL) @Nullable String identByIpProtocol,
       @JsonProperty(PROP_IDENT_BY_ICMP_TYPE) @Nullable JsonNode identByIcmpType) {

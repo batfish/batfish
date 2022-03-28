@@ -7,6 +7,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.isBuiltInApp;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_LIKE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_LIKE_OR_NONE;
@@ -388,7 +389,6 @@ import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AddressPrefix;
 import org.batfish.representation.palo_alto.Application;
-import org.batfish.representation.palo_alto.ApplicationBuiltIn;
 import org.batfish.representation.palo_alto.ApplicationGroup;
 import org.batfish.representation.palo_alto.ApplicationOverrideRule;
 import org.batfish.representation.palo_alto.ApplicationOverrideRule.Protocol;
@@ -2893,8 +2893,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private void referenceApplicationOrGroupLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
     PaloAltoStructureType type =
-        name.equals(CATCHALL_APPLICATION_NAME)
-                || ApplicationBuiltIn.getBuiltInApplication(name).isPresent()
+        name.equals(CATCHALL_APPLICATION_NAME) || isBuiltInApp(name)
             /*
              * Since the name matches a builtin, we'll add a reference if the user defined
              * over the builtin, but it's okay if they did not.
@@ -2908,8 +2907,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private void referenceApplicationLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
     PaloAltoStructureType type =
-        name.equals(CATCHALL_APPLICATION_NAME)
-                || ApplicationBuiltIn.getBuiltInApplication(name).isPresent()
+        name.equals(CATCHALL_APPLICATION_NAME) || isBuiltInApp(name)
             /*
              * Since the name matches a builtin, we'll add a reference if the user defined
              * over the builtin, but it's okay if they did not.
