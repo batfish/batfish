@@ -181,6 +181,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityContext;
@@ -734,6 +735,19 @@ public final class CiscoAsaGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(
         ccae, hasNumReferrers("configs/" + hostname, IPV4_ACCESS_LIST_EXTENDED, "acl_name", 1));
+  }
+
+  @Test
+  public void testAsaGh8134() throws IOException {
+    Configuration c = parseConfig("asa-gh-8134");
+    assertThat(
+        c.getDefaultVrf().getStaticRoutes(),
+        contains(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("20.0.0.0/29"))
+                .setAdmin(5)
+                .setNextHop(NextHopInterface.of("UNPROTECTED"))
+                .build()));
   }
 
   @Test

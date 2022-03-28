@@ -27,7 +27,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 @ParametersAreNonnullByDefault
 public class Warnings implements Serializable {
 
-  public static class Settings {
+  public static class Settings implements Serializable {
     private final boolean _pedanticRecord;
     private final boolean _redFlagRecord;
     private final boolean _unimplementedRecord;
@@ -57,7 +57,7 @@ public class Warnings implements Serializable {
   private static final String PROP_RED_FLAGS = "Red flags";
   private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
 
-  private final transient Settings _settings;
+  private final Settings _settings;
 
   private @Nullable ErrorDetails _errorDetails;
 
@@ -213,7 +213,9 @@ public class Warnings implements Serializable {
     _parseWarnings.add(new ParseWarning(lineNumber, trimmedLine, ruleStack, comment));
   }
 
-  /** @see #addWarning(ParserRuleContext, String, BatfishCombinedParser, String) */
+  /**
+   * @see #addWarning(ParserRuleContext, String, BatfishCombinedParser, String)
+   */
   public void todo(
       @Nonnull ParserRuleContext ctx,
       @Nonnull String line,

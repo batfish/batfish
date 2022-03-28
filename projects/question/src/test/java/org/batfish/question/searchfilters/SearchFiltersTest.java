@@ -37,6 +37,7 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -160,8 +161,8 @@ public final class SearchFiltersTest {
                 REJECT_ALL_ACL));
 
     Builder ib = nf.interfaceBuilder().setAdminUp(true).setOwner(_config);
-    ib.setName(IFACE1).build();
-    ib.setName(IFACE2).build();
+    ib.setName(IFACE1).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+    ib.setName(IFACE2).setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24")).build();
     ib.setName("inactiveIface").setAdminUp(false).build();
 
     _batfish = new MockBatfish(_config);
@@ -428,8 +429,8 @@ public final class SearchFiltersTest {
     c.getIpAccessLists().put(denyAllButIface2.getName(), denyAllButIface2);
 
     Builder ib = nf.interfaceBuilder().setAdminUp(true).setOwner(c);
-    ib.setName(IFACE1).build();
-    ib.setName(IFACE2).build();
+    ib.setName(IFACE1).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+    ib.setName(IFACE2).setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24")).build();
     ib.setName("inactiveIface").setAdminUp(false).build();
 
     IBatfish bf = new MockBatfish(c);

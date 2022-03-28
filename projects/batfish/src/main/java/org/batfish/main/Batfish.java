@@ -49,11 +49,6 @@ import com.google.common.collect.Table;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentracing.References;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.util.GlobalTracer;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -523,16 +518,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     containerName,
                     analysisName);
                 _settings.setQuestionName(questionIdOpt.get());
-                Answer currentAnswer;
-                Span span =
-                    GlobalTracer.get().buildSpan("Getting answer to analysis question").start();
-                try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-                  assert scope != null; // avoid unused warning
-                  span.setTag("analysis-name", analysisName.getId());
-                  currentAnswer = answer();
-                } finally {
-                  span.finish();
-                }
+                Answer currentAnswer = answer();
                 // Ensuring that question was parsed successfully
                 if (currentAnswer.getQuestion() != null) {
                   try {
@@ -583,45 +569,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Question question = null;
 
     // return right away if we cannot parse the question successfully
-    Span span = GlobalTracer.get().buildSpan("Parse question span").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      String rawQuestionStr;
-      try {
-        rawQuestionStr =
-            _storage.loadQuestion(
-                _settings.getContainer(), _settings.getQuestionName(), _settings.getAnalysisName());
-      } catch (Exception e) {
-        Answer answer = new Answer();
-        BatfishException exception = new BatfishException("Could not read question", e);
-        answer.setStatus(AnswerStatus.FAILURE);
-        answer.addAnswerElement(exception.getBatfishStackTrace());
-        return answer;
-      }
-      try {
-        question = Question.parseQuestion(rawQuestionStr);
-      } catch (Exception e) {
-        Answer answer = new Answer();
-        BatfishException exception = new BatfishException("Could not parse question", e);
-        answer.setStatus(AnswerStatus.FAILURE);
-        answer.addAnswerElement(exception.getBatfishStackTrace());
-        return answer;
-      }
-    } finally {
-      span.finish();
+    String rawQuestionStr;
+    try {
+      rawQuestionStr =
+          _storage.loadQuestion(
+              _settings.getContainer(), _settings.getQuestionName(), _settings.getAnalysisName());
+    } catch (Exception e) {
+      Answer answer = new Answer();
+      BatfishException exception = new BatfishException("Could not read question", e);
+      answer.setStatus(AnswerStatus.FAILURE);
+      answer.addAnswerElement(exception.getBatfishStackTrace());
+      return answer;
+    }
+    try {
+      question = Question.parseQuestion(rawQuestionStr);
+    } catch (Exception e) {
+      Answer answer = new Answer();
+      BatfishException exception = new BatfishException("Could not parse question", e);
+      answer.setStatus(AnswerStatus.FAILURE);
+      answer.addAnswerElement(exception.getBatfishStackTrace());
+      return answer;
     }
 
     LOGGER.info("Answering question {}", question.getClass().getSimpleName());
-    if (GlobalTracer.get().scopeManager().activeSpan() != null) {
-      Span activeSpan = GlobalTracer.get().scopeManager().activeSpan();
-      activeSpan
-          .setTag("container-name", getContainerName().getId())
-          .setTag("testrig_name", getSnapshot().getSnapshot().getId());
-      if (question.getInstance() != null) {
-        activeSpan.setTag("question-name", question.getInstance().getInstanceName());
-      }
-    }
-
     if (_settings.getDifferential()) {
       question.setDifferential(true);
     }
@@ -635,19 +605,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       loadConfigurations(getReferenceSnapshot());
     }
 
-    Span initQuestionSpan = GlobalTracer.get().buildSpan("Init question env").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      prepareToAnswerQuestions(diff, dp);
-    } finally {
-      initQuestionSpan.finish();
-    }
+    prepareToAnswerQuestions(diff, dp);
 
     AnswerElement answerElement = null;
     BatfishException exception = null;
-    Span getAnswerSpan = GlobalTracer.get().buildSpan("Get answer").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    try {
       if (question.getDifferential()) {
         answerElement =
             Answerer.create(question, this).answerDiff(getSnapshot(), getReferenceSnapshot());
@@ -656,8 +618,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     } catch (Exception e) {
       exception = new BatfishException("Failed to answer question", e);
-    } finally {
-      getAnswerSpan.finish();
     }
 
     Answer answer = new Answer();
@@ -853,9 +813,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
-    Span writeDataplane = GlobalTracer.get().buildSpan("Writing data plane").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(writeDataplane)) {
-      assert scope != null; // avoid unused warning
+    try {
       LOGGER.info("Storing DataPlane");
       _storage.storeDataPlane(dataplane, snapshot);
       LOGGER.info("Storing BGP Topology");
@@ -872,8 +830,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _storage.storeVxlanTopology(topologies.getVxlanTopology(), snapshot);
     } catch (IOException e) {
       throw new BatfishException("Failed to save data plane", e);
-    } finally {
-      writeDataplane.finish();
     }
     _logger.printElapsedTime();
   }
@@ -1087,8 +1043,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
     params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
-    JSONObject response =
-        (JSONObject) CoordinatorClient.talkToCoordinator(url, params, _settings, _logger);
+    JSONObject response = (JSONObject) CoordinatorClient.talkToCoordinator(url, params, _logger);
     if (response == null) {
       throw new BatfishException("Could not get question templates: Got null response");
     }
@@ -1220,39 +1175,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Optional<SortedMap<String, Configuration>> loadConfigurations(
       NetworkSnapshot snapshot, boolean parseIfNeeded) {
-    Span span = GlobalTracer.get().buildSpan("Load configurations").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      _logger.debugf("Loading configurations for %s\n", snapshot);
-      // Do we already have configurations in the cache?
-      SortedMap<String, Configuration> configurations =
-          _cachedConfigurations.getIfPresent(snapshot);
-      if (configurations != null) {
-        return Optional.of(configurations);
-      }
-      _logger.debugf("Loading configurations for %s, cache miss", snapshot);
-
-      // Next, see if we have an up-to-date configurations on disk.
-      configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
-      if (configurations == null && !parseIfNeeded) {
-        return Optional.empty();
-      }
-
-      if (configurations != null) {
-        _logger.debugf("Loaded configurations for %s off disk", snapshot);
-      } else {
-        // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
-        configurations = actuallyParseConfigurations(snapshot);
-      }
-
-      // Apply things like blacklist and aggregations before installing in the cache.
-      postProcessSnapshot(snapshot, configurations);
-      _cachedConfigurations.put(snapshot, configurations);
-
+    _logger.debugf("Loading configurations for %s\n", snapshot);
+    // Do we already have configurations in the cache?
+    SortedMap<String, Configuration> configurations = _cachedConfigurations.getIfPresent(snapshot);
+    if (configurations != null) {
       return Optional.of(configurations);
-    } finally {
-      span.finish();
     }
+    _logger.debugf("Loading configurations for %s, cache miss", snapshot);
+
+    // Next, see if we have an up-to-date configurations on disk.
+    configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
+    if (configurations == null && !parseIfNeeded) {
+      return Optional.empty();
+    }
+
+    if (configurations != null) {
+      _logger.debugf("Loaded configurations for %s off disk", snapshot);
+    } else {
+      // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
+      configurations = actuallyParseConfigurations(snapshot);
+    }
+
+    // Apply things like blacklist and aggregations before installing in the cache.
+    postProcessSnapshot(snapshot, configurations);
+    _cachedConfigurations.put(snapshot, configurations);
+
+    return Optional.of(configurations);
   }
 
   @Nonnull
@@ -1292,9 +1240,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
-    Span span = GlobalTracer.get().buildSpan("Load data plane").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    try {
       DataPlane dp = _cachedDataPlanes.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
@@ -1304,8 +1250,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return dp;
     } catch (IOException e) {
       throw new UncheckedIOException(e);
-    } finally {
-      span.finish();
     }
   }
 
@@ -1389,27 +1333,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot) {
-    Span span = GlobalTracer.get().buildSpan("Load vendor configurations").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      _logger.debugf("Loading vendor configurations for %s\n", snapshot);
-      // Do we already have configurations in the cache?
-      Map<String, VendorConfiguration> vendorConfigurations =
-          _cachedVendorConfigurations.getIfPresent(snapshot);
-      if (vendorConfigurations == null) {
-        _logger.debugf("Loading vendor configurations for %s, cache miss", snapshot);
-        loadParseVendorConfigurationAnswerElement(snapshot);
-        try {
-          vendorConfigurations = _storage.loadVendorConfigurations(snapshot);
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
-        }
-        _cachedVendorConfigurations.put(snapshot, vendorConfigurations);
+    _logger.debugf("Loading vendor configurations for %s\n", snapshot);
+    // Do we already have configurations in the cache?
+    Map<String, VendorConfiguration> vendorConfigurations =
+        _cachedVendorConfigurations.getIfPresent(snapshot);
+    if (vendorConfigurations == null) {
+      _logger.debugf("Loading vendor configurations for %s, cache miss", snapshot);
+      loadParseVendorConfigurationAnswerElement(snapshot);
+      try {
+        vendorConfigurations = _storage.loadVendorConfigurations(snapshot);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
-      return vendorConfigurations;
-    } finally {
-      span.finish();
+      _cachedVendorConfigurations.put(snapshot, vendorConfigurations);
     }
+    return vendorConfigurations;
   }
 
   private void mergeConvertAnswer(
@@ -1650,8 +1588,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         keyedFileText,
         Warnings.Settings.fromLogger(_settings.getLogger()),
         expectedFormat,
-        HashMultimap.create(),
-        GlobalTracer.get().activeSpan() == null ? null : GlobalTracer.get().activeSpan().context());
+        HashMultimap.create());
   }
 
   /**
@@ -2221,14 +2158,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getAnswer()) {
-      Span span = GlobalTracer.get().buildSpan("Getting answer to question").start();
-      try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-        assert scope != null; // avoid unused warning
-        answer.append(answer());
-        action = true;
-      } finally {
-        span.finish();
-      }
+      answer.append(answer());
+      action = true;
     }
 
     if (_settings.getAnalyze()) {
@@ -2279,9 +2210,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     AwsConfiguration awsConfiguration;
     boolean found = false;
-    Span span = GlobalTracer.get().buildSpan("Parse AWS configs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    try {
       Map<String, String> awsConfigurationData;
       // Try to parse all accounts as one vendor configuration
       try (Stream<String> keys = _storage.listInputAwsMultiAccountKeys(snapshot)) {
@@ -2297,8 +2226,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       awsConfiguration = parseAwsConfigurations(awsConfigurationData, pvcae);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
-    } finally {
-      span.finish();
     }
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
@@ -2320,9 +2247,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Serialize Checkpoint management servers if present
     LOGGER.info("\n*** READING CHECKPOINT MANAGEMENT CONFIGS ***\n");
     CheckpointManagementConfiguration cpMgmtConfig = null;
-    Span span = GlobalTracer.get().buildSpan("Parse Checkpoint management configs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    try {
       Map<String, String> cpServerData;
       // Try to parse all accounts as one vendor configuration
       try (Stream<String> keys = _storage.listInputCheckpointManagementKeys(snapshot)) {
@@ -2333,8 +2258,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
-    } finally {
-      span.finish();
     }
 
     LOGGER.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
@@ -2377,16 +2300,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // read the host files
-    SortedMap<String, VendorConfiguration> allHostConfigurations;
-    Span span = GlobalTracer.get().buildSpan("Parse host configs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      allHostConfigurations =
-          parseVendorConfigurations(
-              snapshot, keyedHostText, answerElement, ConfigurationFormat.HOST);
-    } finally {
-      span.finish();
-    }
+    SortedMap<String, VendorConfiguration> allHostConfigurations =
+        parseVendorConfigurations(snapshot, keyedHostText, answerElement, ConfigurationFormat.HOST);
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
@@ -2442,102 +2357,73 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Answer serializeIndependentConfigs(NetworkSnapshot snapshot) {
-    Span span = GlobalTracer.get().buildSpan("serializeIndependentConfigs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      Answer answer = new Answer();
-      ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      answerElement.setVersion(BatfishVersion.getVersionStatic());
-      if (_settings.getVerboseParse()) {
-        answer.addAnswerElement(answerElement);
-      }
-
-      ConversionContext conversionContext;
-      try {
-        conversionContext = _storage.loadConversionContext(snapshot);
-      } catch (FileNotFoundException e) {
-        // Not written when it is empty.
-        conversionContext = new ConversionContext();
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-      SnapshotRuntimeData runtimeData =
-          firstNonNull(
-              _storage.loadRuntimeData(snapshot.getNetwork(), snapshot.getSnapshot()),
-              EMPTY_SNAPSHOT_RUNTIME_DATA);
-      Map<String, VendorConfiguration> vendorConfigs;
-      Map<String, Configuration> configurations;
-      LOGGER.info(
-          "Converting the Vendor-Specific configurations to Vendor-Independent configurations");
-      Span convertSpan = GlobalTracer.get().buildSpan("convert VS to VI").start();
-      try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
-        assert childScope != null; // avoid unused warning
-        vendorConfigs = _storage.loadVendorConfigurations(snapshot);
-        configurations =
-            getConfigurations(vendorConfigs, conversionContext, runtimeData, answerElement);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      } finally {
-        convertSpan.finish();
-      }
-
-      Set<Layer1Edge> layer1Edges =
-          vendorConfigs.values().stream()
-              .flatMap(vc -> vc.getLayer1Edges().stream())
-              .collect(Collectors.toSet());
-
-      Warnings internetWarnings =
-          answerElement
-              .getWarnings()
-              .computeIfAbsent(INTERNET_HOST_NAME, i -> buildWarnings(_settings));
-
-      ModeledNodes modeledNodes =
-          getInternetAndIspNodes(snapshot, configurations, vendorConfigs, internetWarnings);
-
-      mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
-
-      LOGGER.info("Serializing Vendor-Independent configurations");
-      Span storeSpan = GlobalTracer.get().buildSpan("store VI configs").start();
-      try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
-        assert childScope != null; // avoid unused warning
-        try {
-          _storage.storeConfigurations(
-              configurations,
-              answerElement,
-              // we don't write anything if no Layer1 edges were produced
-              // empty topologies are currently dangerous for L1 computation
-              layer1Edges.isEmpty() ? null : new Layer1Topology(layer1Edges),
-              snapshot.getNetwork(),
-              snapshot.getSnapshot());
-        } catch (IOException e) {
-          throw new BatfishException("Could not store vendor independent configs to disk: %s", e);
-        }
-      } finally {
-        storeSpan.finish();
-      }
-
-      LOGGER.info("Post-processing the Vendor-Independent devices");
-      Span ppSpan = GlobalTracer.get().buildSpan("Post-process vendor-independent configs").start();
-      try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
-        assert childScope != null; // avoid unused warning
-        postProcessSnapshot(snapshot, configurations);
-      } finally {
-        ppSpan.finish();
-      }
-
-      LOGGER.info("Computing completion metadata");
-      Span metadataSpan =
-          GlobalTracer.get().buildSpan("Compute and store completion metadata").start();
-      try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
-        assert childScope != null; // avoid unused warning
-        computeAndStoreCompletionMetadata(snapshot, configurations);
-      } finally {
-        metadataSpan.finish();
-      }
-      return answer;
-    } finally {
-      span.finish();
+    Answer answer = new Answer();
+    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+    answerElement.setVersion(BatfishVersion.getVersionStatic());
+    if (_settings.getVerboseParse()) {
+      answer.addAnswerElement(answerElement);
     }
+
+    ConversionContext conversionContext;
+    try {
+      conversionContext = _storage.loadConversionContext(snapshot);
+    } catch (FileNotFoundException e) {
+      // Not written when it is empty.
+      conversionContext = new ConversionContext();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    SnapshotRuntimeData runtimeData =
+        firstNonNull(
+            _storage.loadRuntimeData(snapshot.getNetwork(), snapshot.getSnapshot()),
+            EMPTY_SNAPSHOT_RUNTIME_DATA);
+    Map<String, VendorConfiguration> vendorConfigs;
+    Map<String, Configuration> configurations;
+    LOGGER.info(
+        "Converting the Vendor-Specific configurations to Vendor-Independent configurations");
+    try {
+      vendorConfigs = _storage.loadVendorConfigurations(snapshot);
+      configurations =
+          getConfigurations(vendorConfigs, conversionContext, runtimeData, answerElement);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    Set<Layer1Edge> layer1Edges =
+        vendorConfigs.values().stream()
+            .flatMap(vc -> vc.getLayer1Edges().stream())
+            .collect(Collectors.toSet());
+
+    Warnings internetWarnings =
+        answerElement
+            .getWarnings()
+            .computeIfAbsent(INTERNET_HOST_NAME, i -> buildWarnings(_settings));
+
+    ModeledNodes modeledNodes =
+        getInternetAndIspNodes(snapshot, configurations, vendorConfigs, internetWarnings);
+
+    mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
+
+    LOGGER.info("Serializing Vendor-Independent configurations");
+    try {
+      _storage.storeConfigurations(
+          configurations,
+          answerElement,
+          // we don't write anything if no Layer1 edges were produced
+          // empty topologies are currently dangerous for L1 computation
+          layer1Edges.isEmpty() ? null : new Layer1Topology(layer1Edges),
+          snapshot.getNetwork(),
+          snapshot.getSnapshot());
+    } catch (IOException e) {
+      throw new BatfishException("Could not store vendor independent configs to disk: %s", e);
+    }
+
+    LOGGER.info("Post-processing the Vendor-Independent devices");
+    postProcessSnapshot(snapshot, configurations);
+
+    LOGGER.info("Computing completion metadata");
+    computeAndStoreCompletionMetadata(snapshot, configurations);
+    return answer;
   }
 
   /**
@@ -2628,74 +2514,64 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private ParseVendorConfigurationResult getOrParse(
-      ParseVendorConfigurationJob job, @Nullable SpanContext span, GrammarSettings settings) {
-    Span parseNetworkConfigsSpan =
-        GlobalTracer.get()
-            .buildSpan("Parse " + job.getFileTexts().keySet())
-            .addReference(References.FOLLOWS_FROM, span)
-            .start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
-      assert scope != null; // avoid unused warning
-
-      // Short-circuit all cache-related code.
-      if (!_settings.getParseReuse()) {
-        long startTime = System.currentTimeMillis();
-        ParseResult result = job.parse();
-        long elapsed = System.currentTimeMillis() - startTime;
-        return job.fromResult(result, elapsed);
-      }
-
-      Hasher hasher =
-          Hashing.murmur3_128()
-              .newHasher()
-              .putString("Cached Parse Result", UTF_8)
-              .putBoolean(settings.getDisableUnrecognized())
-              .putInt(settings.getMaxParserContextLines())
-              .putInt(settings.getMaxParserContextTokens())
-              .putInt(settings.getMaxParseTreePrintLength())
-              .putBoolean(settings.getPrintParseTreeLineNums())
-              .putBoolean(settings.getPrintParseTree())
-              .putBoolean(settings.getThrowOnLexerError())
-              .putBoolean(settings.getThrowOnParserError());
-      job.getFileTexts().keySet().stream()
-          .sorted()
-          .forEach(
-              filename -> {
-                hasher.putString(filename, UTF_8);
-                hasher.putString(job.getFileTexts().get(filename), UTF_8);
-              });
-      String id = hasher.hash().toString();
+      ParseVendorConfigurationJob job, GrammarSettings settings) {
+    // Short-circuit all cache-related code.
+    if (!_settings.getParseReuse()) {
       long startTime = System.currentTimeMillis();
-      boolean cached = false;
-      ParseResult result;
-      try (InputStream in = _storage.loadNetworkBlob(getContainerName(), id)) {
-        result = SerializationUtils.deserialize(in);
-        // sanity-check filenames. In the extremely unlikely event of a collision, we'll lose reuse
-        // for this input.
-        cached = result.getFileResults().keySet().equals(job.getFileTexts().keySet());
-      } catch (FileNotFoundException e) {
-        result = job.parse();
-      } catch (Exception e) {
-        _logger.warnf(
-            "Error deserializing cached parse result for %s: %s",
-            job.getFileTexts().keySet(), Throwables.getStackTraceAsString(e));
-        result = job.parse();
-      }
-      if (!cached) {
-        try {
-          byte[] serialized = SerializationUtils.serialize(result);
-          _storage.storeNetworkBlob(new ByteArrayInputStream(serialized), getContainerName(), id);
-        } catch (Exception e) {
-          _logger.warnf(
-              "Error caching parse result for %s: %s",
-              job.getFileTexts().keySet(), Throwables.getStackTraceAsString(e));
-        }
-      }
+      ParseResult result = job.parse();
       long elapsed = System.currentTimeMillis() - startTime;
       return job.fromResult(result, elapsed);
-    } finally {
-      parseNetworkConfigsSpan.finish();
     }
+
+    Hasher hasher =
+        Hashing.murmur3_128()
+            .newHasher()
+            .putString("Cached Parse Result", UTF_8)
+            .putBoolean(settings.getDisableUnrecognized())
+            .putInt(settings.getMaxParserContextLines())
+            .putInt(settings.getMaxParserContextTokens())
+            .putInt(settings.getMaxParseTreePrintLength())
+            .putBoolean(settings.getPrintParseTreeLineNums())
+            .putBoolean(settings.getPrintParseTree())
+            .putBoolean(settings.getThrowOnLexerError())
+            .putBoolean(settings.getThrowOnParserError());
+    job.getFileTexts().keySet().stream()
+        .sorted()
+        .forEach(
+            filename -> {
+              hasher.putString(filename, UTF_8);
+              hasher.putString(job.getFileTexts().get(filename), UTF_8);
+            });
+    String id = hasher.hash().toString();
+    long startTime = System.currentTimeMillis();
+    boolean cached = false;
+    ParseResult result;
+    try (InputStream in = _storage.loadNetworkBlob(getContainerName(), id)) {
+      result = SerializationUtils.deserialize(in);
+      // sanity-check filenames. In the extremely unlikely event of a collision, we'll lose reuse
+      // for this input.
+      cached = result.getFileResults().keySet().equals(job.getFileTexts().keySet());
+    } catch (FileNotFoundException e) {
+      result = job.parse();
+    } catch (Exception e) {
+      _logger.warnf(
+          "Error deserializing cached parse result for %s: %s",
+          job.getFileTexts().keySet(), Throwables.getStackTraceAsString(e));
+      result = job.parse();
+    }
+    if (!cached) {
+      try {
+        byte[] serialized = SerializationUtils.serialize(result);
+        _storage.storeNetworkBlob(new ByteArrayInputStream(serialized), getContainerName(), id);
+        result = SerializationUtils.deserialize(serialized);
+      } catch (Exception e) {
+        _logger.warnf(
+            "Error caching parse result for %s: %s",
+            job.getFileTexts().keySet(), Throwables.getStackTraceAsString(e));
+      }
+    }
+    long elapsed = System.currentTimeMillis() - startTime;
+    return job.fromResult(result, elapsed);
   }
 
   /**
@@ -2719,72 +2595,56 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
 
     List<ParseVendorConfigurationResult> parseResults;
-    Span parseNetworkConfigsSpan = GlobalTracer.get().buildSpan("Parse network configs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
-      assert scope != null; // avoid unused warning
-
-      List<ParseVendorConfigurationJob> jobs = new LinkedList<>();
-      Span makeJobsSpan = GlobalTracer.get().buildSpan("Read files and make jobs").start();
-      try (Scope makeJobsScope = GlobalTracer.get().scopeManager().activate(makeJobsSpan)) {
-        assert makeJobsScope != null; // avoid unused warning
-        // add devices in the 'configs' folder
-        try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
-          readAllInputObjects(keys, snapshot).entrySet().stream()
-              .map(
-                  entry ->
-                      makeParseVendorConfigurationJob(
-                          snapshot,
-                          ImmutableMap.of(entry.getKey(), entry.getValue()),
-                          ConfigurationFormat.UNKNOWN))
-              .forEach(jobs::add);
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
-        }
-
-        // add devices in the sonic_configs folder
-        try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
-          Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
-          makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
-              .map(
-                  files ->
-                      makeParseVendorConfigurationJob(
-                          snapshot,
-                          files.stream()
-                              .collect(
-                                  ImmutableMap.toImmutableMap(
-                                      Function.identity(), sonicObjects::get)),
-                          ConfigurationFormat.SONIC))
-              .forEach(jobs::add);
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
-        }
-
-        // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
-        Collections.shuffle(jobs);
-      } finally {
-        makeJobsSpan.finish();
-      }
-
-      AtomicInteger batch = newBatch("Parse network configs", jobs.size());
-      LOGGER.info("Parsing {} configuration files", jobs.size());
-      parseResults =
-          jobs.parallelStream()
-              .map(
-                  j -> {
-                    ParseVendorConfigurationResult result =
-                        getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
-                    int done = batch.incrementAndGet();
-                    if (done % 100 == 0) {
-                      LOGGER.info(
-                          "Successfully parsed {}/{} configuration files", done, jobs.size());
-                    }
-                    return result;
-                  })
-              .collect(ImmutableList.toImmutableList());
-      LOGGER.info("Done parsing {} configuration files", jobs.size());
-    } finally {
-      parseNetworkConfigsSpan.finish();
+    List<ParseVendorConfigurationJob> jobs = new LinkedList<>();
+    // add devices in the 'configs' folder
+    try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
+      readAllInputObjects(keys, snapshot).entrySet().stream()
+          .map(
+              entry ->
+                  makeParseVendorConfigurationJob(
+                      snapshot,
+                      ImmutableMap.of(entry.getKey(), entry.getValue()),
+                      ConfigurationFormat.UNKNOWN))
+          .forEach(jobs::add);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
+
+    // add devices in the sonic_configs folder
+    try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
+      Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
+      makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
+          .map(
+              files ->
+                  makeParseVendorConfigurationJob(
+                      snapshot,
+                      files.stream()
+                          .collect(
+                              ImmutableMap.toImmutableMap(Function.identity(), sonicObjects::get)),
+                      ConfigurationFormat.SONIC))
+          .forEach(jobs::add);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
+    Collections.shuffle(jobs);
+
+    AtomicInteger batch = newBatch("Parse network configs", jobs.size());
+    LOGGER.info("Parsing {} configuration files", jobs.size());
+    parseResults =
+        jobs.parallelStream()
+            .map(
+                j -> {
+                  ParseVendorConfigurationResult result = getOrParse(j, _settings);
+                  int done = batch.incrementAndGet();
+                  if (done % 100 == 0) {
+                    LOGGER.info("Successfully parsed {}/{} configuration files", done, jobs.size());
+                  }
+                  return result;
+                })
+            .collect(ImmutableList.toImmutableList());
+    LOGGER.info("Done parsing {} configuration files", jobs.size());
 
     if (_settings.getHaltOnParseError()
         && parseResults.stream().anyMatch(r -> r.getFailureCause() != null)) {
@@ -2804,10 +2664,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     parseResults.forEach(pvcr -> pvcr.applyTo(vendorConfigurations, _logger, answerElement));
     LOGGER.info("Serializing Vendor-Specific configurations");
-    Span serializeNetworkConfigsSpan =
-        GlobalTracer.get().buildSpan("Serialize network configs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(serializeNetworkConfigsSpan)) {
-      assert scope != null; // avoid unused warning
+    try {
       _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       _logger.resetTimer();
       Map<String, VendorConfiguration> output = new TreeMap<>();
@@ -2831,8 +2688,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _logger.printElapsedTime();
     } catch (IOException e) {
       throw new UncheckedIOException(e);
-    } finally {
-      serializeNetworkConfigsSpan.finish();
     }
     // checking vendorConfigurations is a quick, common-case check before creating streams
     return !vendorConfigurations.isEmpty() || networkConfigsExist(snapshot);
@@ -2846,53 +2701,43 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
 
     Map<String, VendorConfiguration> vendorConfigurations = new HashMap<>();
-    Span parseNetworkConfigsSpan = GlobalTracer.get().buildSpan("Parse network configs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
-      assert scope != null; // avoid unused warning
-
-      // consider what is in the configs folder
-      try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
-        vendorConfigurations.putAll(
-            parseVendorConfigurations(
-                snapshot,
-                readAllInputObjects(keys, snapshot).entrySet().stream()
-                    .map(e -> ImmutableMap.of(e.getKey(), e.getValue()))
-                    .collect(ImmutableList.toImmutableList()),
-                answerElement,
-                ConfigurationFormat.UNKNOWN));
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-      // consider what is in the sonic_configs folder
-      try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
-        Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
-        vendorConfigurations.putAll(
-            parseVendorConfigurations(
-                snapshot,
-                makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
-                    .map(
-                        files ->
-                            files.stream()
-                                .collect(
-                                    ImmutableMap.toImmutableMap(
-                                        Function.identity(), sonicObjects::get)))
-                    .collect(ImmutableList.toImmutableList()),
-                answerElement,
-                ConfigurationFormat.SONIC));
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    } finally {
-      parseNetworkConfigsSpan.finish();
+    // consider what is in the configs folder
+    try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
+      vendorConfigurations.putAll(
+          parseVendorConfigurations(
+              snapshot,
+              readAllInputObjects(keys, snapshot).entrySet().stream()
+                  .map(e -> ImmutableMap.of(e.getKey(), e.getValue()))
+                  .collect(ImmutableList.toImmutableList()),
+              answerElement,
+              ConfigurationFormat.UNKNOWN));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    // consider what is in the sonic_configs folder
+    try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
+      Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
+      vendorConfigurations.putAll(
+          parseVendorConfigurations(
+              snapshot,
+              makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
+                  .map(
+                      files ->
+                          files.stream()
+                              .collect(
+                                  ImmutableMap.toImmutableMap(
+                                      Function.identity(), sonicObjects::get)))
+                  .collect(ImmutableList.toImmutableList()),
+              answerElement,
+              ConfigurationFormat.SONIC));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
         snapshot.getSnapshot(), snapshot.getNetwork(), vendorConfigurations.size());
 
-    Span serializeNetworkConfigsSpan =
-        GlobalTracer.get().buildSpan("Serialize network configs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(serializeNetworkConfigsSpan)) {
-      assert scope != null; // avoid unused warning
+    try {
       _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       _logger.resetTimer();
       Map<String, VendorConfiguration> output = new TreeMap<>();
@@ -2928,8 +2773,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _logger.printElapsedTime();
     } catch (IOException e) {
       throw new UncheckedIOException(e);
-    } finally {
-      serializeNetworkConfigsSpan.finish();
     }
     // checking vendorConfigurations is a quick, common-case check before creating streams
     return !vendorConfigurations.isEmpty() || networkConfigsExist(snapshot);
@@ -3121,141 +2964,116 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public AnswerElement bddSingleReachability(
       NetworkSnapshot snapshot, ReachabilityParameters parameters) {
-    Span span = GlobalTracer.get().buildSpan("bddSingleReachability").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      ResolvedReachabilityParameters params;
-      try {
-        params = resolveReachabilityParameters(this, parameters, snapshot);
-      } catch (InvalidReachabilityParametersException e) {
-        return e.getInvalidParametersAnswer();
-      }
-
-      checkArgument(
-          params.getSrcNatted() == SrcNattedConstraint.UNCONSTRAINED,
-          "Requiring or forbidding Source NAT is currently unsupported");
-
-      BDDPacket pkt = new BDDPacket();
-      boolean ignoreFilters = params.getIgnoreFilters();
-      BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-          getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
-
-      Map<IngressLocation, BDD> reachableBDDs =
-          bddReachabilityAnalysisFactory.getAllBDDs(
-              params.getSourceIpAssignment(),
-              params.getHeaderSpace(),
-              params.getForbiddenTransitNodes(),
-              params.getRequiredTransitNodes(),
-              params.getFinalNodes(),
-              params.getActions());
-
-      Set<Flow> flows = constructFlows(pkt, reachableBDDs);
-
-      return new TraceWrapperAsAnswerElement(buildFlows(snapshot, flows, ignoreFilters));
-    } finally {
-      span.finish();
+    ResolvedReachabilityParameters params;
+    try {
+      params = resolveReachabilityParameters(this, parameters, snapshot);
+    } catch (InvalidReachabilityParametersException e) {
+      return e.getInvalidParametersAnswer();
     }
+
+    checkArgument(
+        params.getSrcNatted() == SrcNattedConstraint.UNCONSTRAINED,
+        "Requiring or forbidding Source NAT is currently unsupported");
+
+    BDDPacket pkt = new BDDPacket();
+    boolean ignoreFilters = params.getIgnoreFilters();
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
+
+    Map<IngressLocation, BDD> reachableBDDs =
+        bddReachabilityAnalysisFactory.getAllBDDs(
+            params.getSourceIpAssignment(),
+            params.getHeaderSpace(),
+            params.getForbiddenTransitNodes(),
+            params.getRequiredTransitNodes(),
+            params.getFinalNodes(),
+            params.getActions());
+
+    Set<Flow> flows = constructFlows(pkt, reachableBDDs);
+
+    return new TraceWrapperAsAnswerElement(buildFlows(snapshot, flows, ignoreFilters));
   }
 
   @Override
   public Set<Flow> bddLoopDetection(NetworkSnapshot snapshot) {
-    Span span = GlobalTracer.get().buildSpan("bddLoopDetection").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      BDDPacket pkt = new BDDPacket();
-      // TODO add ignoreFilters parameter
-      boolean ignoreFilters = false;
-      BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-          getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
-      BDDLoopDetectionAnalysis analysis =
-          bddReachabilityAnalysisFactory.bddLoopDetectionAnalysis(
-              getAllSourcesInferFromLocationIpSpaceAssignment(snapshot));
-      Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
+    BDDPacket pkt = new BDDPacket();
+    // TODO add ignoreFilters parameter
+    boolean ignoreFilters = false;
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
+    BDDLoopDetectionAnalysis analysis =
+        bddReachabilityAnalysisFactory.bddLoopDetectionAnalysis(
+            getAllSourcesInferFromLocationIpSpaceAssignment(snapshot));
+    Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
-      Span span1 = GlobalTracer.get().buildSpan("bddLoopDetection.computeResultFlows").start();
-      try (Scope scope1 = GlobalTracer.get().scopeManager().activate(span)) {
-        assert scope1 != null; // avoid unused warning
-        return loopBDDs.entrySet().stream()
-            .map(
-                entry ->
-                    pkt.getFlow(entry.getValue())
-                        .map(
-                            fb -> {
-                              IngressLocation loc = entry.getKey();
-                              fb.setIngressNode(loc.getNode());
-                              switch (loc.getType()) {
-                                case INTERFACE_LINK:
-                                  fb.setIngressInterface(loc.getInterface());
-                                  break;
-                                case VRF:
-                                  fb.setIngressVrf(loc.getVrf());
-                                  break;
-                                default:
-                                  throw new BatfishException(
-                                      "Unknown Location Type: " + loc.getType());
-                              }
-                              return fb.build();
-                            }))
-            .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
-            .collect(ImmutableSet.toImmutableSet());
-      } finally {
-        span1.finish();
-      }
-    } finally {
-      span.finish();
-    }
+    return loopBDDs.entrySet().stream()
+        .map(
+            entry ->
+                pkt.getFlow(entry.getValue())
+                    .map(
+                        fb -> {
+                          IngressLocation loc = entry.getKey();
+                          fb.setIngressNode(loc.getNode());
+                          switch (loc.getType()) {
+                            case INTERFACE_LINK:
+                              fb.setIngressInterface(loc.getInterface());
+                              break;
+                            case VRF:
+                              fb.setIngressVrf(loc.getVrf());
+                              break;
+                            default:
+                              throw new BatfishException("Unknown Location Type: " + loc.getType());
+                          }
+                          return fb.build();
+                        }))
+        .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
   public Set<Flow> bddMultipathConsistency(
       NetworkSnapshot snapshot, MultipathConsistencyParameters parameters) {
-    Span span = GlobalTracer.get().buildSpan("bddMultipathConsistency").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      BDDPacket pkt = new BDDPacket();
-      // TODO add ignoreFilters parameter
-      boolean ignoreFilters = false;
-      BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-          getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
-      IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
-      Set<String> finalNodes = parameters.getFinalNodes();
-      Set<FlowDisposition> failureDispositions =
-          ImmutableSet.of(
-              FlowDisposition.DENIED_IN,
-              FlowDisposition.DENIED_OUT,
-              FlowDisposition.LOOP,
-              FlowDisposition.INSUFFICIENT_INFO,
-              FlowDisposition.NEIGHBOR_UNREACHABLE,
-              FlowDisposition.NO_ROUTE,
-              FlowDisposition.NULL_ROUTED);
-      Set<FlowDisposition> successDispositions =
-          ImmutableSet.of(
-              FlowDisposition.ACCEPTED,
-              FlowDisposition.DELIVERED_TO_SUBNET,
-              FlowDisposition.EXITS_NETWORK);
-      Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
-      Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
-      Map<IngressLocation, BDD> successBdds =
-          bddReachabilityAnalysisFactory.getAllBDDs(
-              srcIpSpaceAssignment,
-              parameters.getHeaderSpace(),
-              forbiddenTransitNodes,
-              requiredTransitNodes,
-              finalNodes,
-              successDispositions);
-      Map<IngressLocation, BDD> failureBdds =
-          bddReachabilityAnalysisFactory.getAllBDDs(
-              srcIpSpaceAssignment,
-              parameters.getHeaderSpace(),
-              forbiddenTransitNodes,
-              requiredTransitNodes,
-              finalNodes,
-              failureDispositions);
+    BDDPacket pkt = new BDDPacket();
+    // TODO add ignoreFilters parameter
+    boolean ignoreFilters = false;
+    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+        getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
+    IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
+    Set<String> finalNodes = parameters.getFinalNodes();
+    Set<FlowDisposition> failureDispositions =
+        ImmutableSet.of(
+            FlowDisposition.DENIED_IN,
+            FlowDisposition.DENIED_OUT,
+            FlowDisposition.LOOP,
+            FlowDisposition.INSUFFICIENT_INFO,
+            FlowDisposition.NEIGHBOR_UNREACHABLE,
+            FlowDisposition.NO_ROUTE,
+            FlowDisposition.NULL_ROUTED);
+    Set<FlowDisposition> successDispositions =
+        ImmutableSet.of(
+            FlowDisposition.ACCEPTED,
+            FlowDisposition.DELIVERED_TO_SUBNET,
+            FlowDisposition.EXITS_NETWORK);
+    Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
+    Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
+    Map<IngressLocation, BDD> successBdds =
+        bddReachabilityAnalysisFactory.getAllBDDs(
+            srcIpSpaceAssignment,
+            parameters.getHeaderSpace(),
+            forbiddenTransitNodes,
+            requiredTransitNodes,
+            finalNodes,
+            successDispositions);
+    Map<IngressLocation, BDD> failureBdds =
+        bddReachabilityAnalysisFactory.getAllBDDs(
+            srcIpSpaceAssignment,
+            parameters.getHeaderSpace(),
+            forbiddenTransitNodes,
+            requiredTransitNodes,
+            finalNodes,
+            failureDispositions);
 
-      return ImmutableSet.copyOf(computeMultipathInconsistencies(pkt, successBdds, failureBdds));
-    } finally {
-      span.finish();
-    }
+    return ImmutableSet.copyOf(computeMultipathInconsistencies(pkt, successBdds, failureBdds));
   }
 
   @Nonnull
@@ -3274,20 +3092,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
       NetworkSnapshot snapshot, BDDPacket pkt, boolean ignoreFilters) {
-    Span span = GlobalTracer.get().buildSpan("getBddReachabilityAnalysisFactory").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      DataPlane dataPlane = loadDataPlane(snapshot);
-      return new BDDReachabilityAnalysisFactory(
-          pkt,
-          loadConfigurations(snapshot),
-          dataPlane.getForwardingAnalysis(),
-          new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
-          ignoreFilters,
-          false);
-    } finally {
-      span.finish();
-    }
+    DataPlane dataPlane = loadDataPlane(snapshot);
+    return new BDDReachabilityAnalysisFactory(
+        pkt,
+        loadConfigurations(snapshot),
+        dataPlane.getForwardingAnalysis(),
+        new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+        ignoreFilters,
+        false);
   }
 
   public BDDReachabilityAnalysis getBddReachabilityAnalysis(
@@ -3322,55 +3134,49 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NetworkSnapshot snapshot,
       NetworkSnapshot reference,
       DifferentialReachabilityParameters parameters) {
-    Span span = GlobalTracer.get().buildSpan("bddDifferentialReachability").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      checkArgument(
-          !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
-      BDDPacket pkt = new BDDPacket();
+    checkArgument(
+        !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
+    BDDPacket pkt = new BDDPacket();
 
-      AclLineMatchExpr headerSpace =
-          parameters.getInvertSearch()
-              ? not(parameters.getHeaderSpace())
-              : parameters.getHeaderSpace();
+    AclLineMatchExpr headerSpace =
+        parameters.getInvertSearch()
+            ? not(parameters.getHeaderSpace())
+            : parameters.getHeaderSpace();
 
-      /*
-       * TODO should we have separate parameters for base and delta?
-       * E.g. suppose we add a host subnet in the delta network. This would be a source of
-       * differential reachability, but we currently won't find it because it won't be in the
-       * IpSpaceAssignment.
-       */
-      Map<IngressLocation, BDD> baseAcceptBDDs =
-          getBddReachabilityAnalysisFactory(snapshot, pkt, parameters.getIgnoreFilters())
-              .getAllBDDs(
-                  parameters.getIpSpaceAssignment(),
-                  headerSpace,
-                  parameters.getForbiddenTransitNodes(),
-                  parameters.getRequiredTransitNodes(),
-                  parameters.getFinalNodes(),
-                  parameters.getFlowDispositions());
+    /*
+     * TODO should we have separate parameters for base and delta?
+     * E.g. suppose we add a host subnet in the delta network. This would be a source of
+     * differential reachability, but we currently won't find it because it won't be in the
+     * IpSpaceAssignment.
+     */
+    Map<IngressLocation, BDD> baseAcceptBDDs =
+        getBddReachabilityAnalysisFactory(snapshot, pkt, parameters.getIgnoreFilters())
+            .getAllBDDs(
+                parameters.getIpSpaceAssignment(),
+                headerSpace,
+                parameters.getForbiddenTransitNodes(),
+                parameters.getRequiredTransitNodes(),
+                parameters.getFinalNodes(),
+                parameters.getFlowDispositions());
 
-      Map<IngressLocation, BDD> deltaAcceptBDDs =
-          getBddReachabilityAnalysisFactory(reference, pkt, parameters.getIgnoreFilters())
-              .getAllBDDs(
-                  parameters.getIpSpaceAssignment(),
-                  headerSpace,
-                  parameters.getForbiddenTransitNodes(),
-                  parameters.getRequiredTransitNodes(),
-                  parameters.getFinalNodes(),
-                  parameters.getFlowDispositions());
+    Map<IngressLocation, BDD> deltaAcceptBDDs =
+        getBddReachabilityAnalysisFactory(reference, pkt, parameters.getIgnoreFilters())
+            .getAllBDDs(
+                parameters.getIpSpaceAssignment(),
+                headerSpace,
+                parameters.getForbiddenTransitNodes(),
+                parameters.getRequiredTransitNodes(),
+                parameters.getFinalNodes(),
+                parameters.getFlowDispositions());
 
-      Set<IngressLocation> commonSources =
-          Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
+    Set<IngressLocation> commonSources =
+        Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
 
-      Set<Flow> decreasedFlows =
-          getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs);
-      Set<Flow> increasedFlows =
-          getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs);
-      return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
-    } finally {
-      span.finish();
-    }
+    Set<Flow> decreasedFlows =
+        getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs);
+    Set<Flow> increasedFlows =
+        getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs);
+    return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
   }
 
   private static Set<Flow> getDifferentialFlows(

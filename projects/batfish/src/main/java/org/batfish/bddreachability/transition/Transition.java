@@ -14,4 +14,6 @@ public interface Transition {
   BDD transitForward(BDD bdd);
 
   BDD transitBackward(BDD bdd);
+
+  <T> T accept(TransitionVisitor<T> visitor);
 }

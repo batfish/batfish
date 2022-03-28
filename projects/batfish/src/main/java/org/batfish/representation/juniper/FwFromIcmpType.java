@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -11,12 +13,17 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from icmp-type */
+@ParametersAreNonnullByDefault
 public class FwFromIcmpType implements FwFrom {
 
-  private SubRange _icmpTypeRange;
+  private final @Nonnull SubRange _icmpTypeRange;
 
   public FwFromIcmpType(SubRange icmpTypeRange) {
     _icmpTypeRange = icmpTypeRange;
+  }
+
+  public @Nonnull SubRange getIcmpTypeRange() {
+    return _icmpTypeRange;
   }
 
   @Override

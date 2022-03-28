@@ -15,6 +15,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GR
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
@@ -51,6 +52,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPOR
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_FAMILY_INET_UNICAST_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAINS_ROUTING_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAIN_SELF_REF;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DSCP;
@@ -204,6 +207,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aa_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_destination_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_icmp_codeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifierContext;
@@ -234,6 +239,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_routing_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_rib_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
@@ -243,6 +250,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_no_prepend_global_as
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bridge_domain_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DecContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DescriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dh_groupContext;
@@ -263,7 +271,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_first_fragmentCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offsetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offset_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_codeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_code_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_type_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_is_fragmentContext;
@@ -297,6 +307,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_active_server_group
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offsetContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offset_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hello_authentication_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceContext;
@@ -377,6 +389,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Name_or_ipContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_codeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_pool_default_port_rangeContext;
@@ -552,6 +566,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_offContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefix_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_bridge_domainsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
@@ -675,7 +690,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8_rangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlan_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
@@ -701,6 +720,11 @@ import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.BridgeDomain;
+import org.batfish.representation.juniper.BridgeDomainVlanId;
+import org.batfish.representation.juniper.BridgeDomainVlanIdAll;
+import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
+import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.CommunityMember;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
@@ -721,7 +745,9 @@ import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
 import org.batfish.representation.juniper.FwFromDscp;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
 import org.batfish.representation.juniper.FwFromIcmpCode;
+import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
+import org.batfish.representation.juniper.FwFromIcmpTypeExcept;
 import org.batfish.representation.juniper.FwFromIpOptions;
 import org.batfish.representation.juniper.FwFromJunosApplication;
 import org.batfish.representation.juniper.FwFromJunosApplicationSet;
@@ -903,6 +929,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
 
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
+
+  private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
+
+  private static final IntegerSpace FRAGMENT_OFFSET_RANGE = IntegerSpace.of(new SubRange(0, 8191));
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
@@ -1295,6 +1325,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return JunosApplication.JUNOS_RADIUS;
     } else if (ctx.JUNOS_REALAUDIO() != null) {
       return JunosApplication.JUNOS_REALAUDIO;
+    } else if (ctx.JUNOS_RDP() != null) {
+      return JunosApplication.JUNOS_RDP;
     } else if (ctx.JUNOS_RIP() != null) {
       return JunosApplication.JUNOS_RIP;
     } else if (ctx.JUNOS_RSH() != null) {
@@ -1647,57 +1679,55 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    * unknown strings. See
    * https://www.juniper.net/documentation/en_US/junos/topics/usage-guidelines/services-configuring-application-protocol-properties.html#id-10141121
    */
-  @Nullable
-  private static Integer toIcmpCode(Icmp_codeContext ctx, Warnings w) {
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Named_icmp_codeContext ctx) {
     if (ctx.COMMUNICATION_PROHIBITED_BY_FILTERING() != null) {
-      return IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
-    } else if (ctx.dec() != null) {
-      return Integer.parseInt(ctx.dec().getText());
+      return Optional.of(IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED);
     } else if (ctx.DESTINATION_HOST_PROHIBITED() != null) {
-      return IcmpCode.DESTINATION_HOST_PROHIBITED;
+      return Optional.of(IcmpCode.DESTINATION_HOST_PROHIBITED);
     } else if (ctx.DESTINATION_HOST_UNKNOWN() != null) {
-      return IcmpCode.DESTINATION_HOST_UNKNOWN;
+      return Optional.of(IcmpCode.DESTINATION_HOST_UNKNOWN);
     } else if (ctx.FRAGMENTATION_NEEDED() != null) {
-      return IcmpCode.FRAGMENTATION_NEEDED;
+      return Optional.of(IcmpCode.FRAGMENTATION_NEEDED);
     } else if (ctx.HOST_PRECEDENCE_VIOLATION() != null) {
-      return IcmpCode.HOST_PRECEDENCE_VIOLATION;
+      return Optional.of(IcmpCode.HOST_PRECEDENCE_VIOLATION);
     } else if (ctx.HOST_UNREACHABLE() != null) {
-      return IcmpCode.HOST_UNREACHABLE;
+      return Optional.of(IcmpCode.HOST_UNREACHABLE);
     } else if (ctx.HOST_UNREACHABLE_FOR_TOS() != null) {
-      return IcmpCode.HOST_UNREACHABLE_FOR_TOS;
+      return Optional.of(IcmpCode.HOST_UNREACHABLE_FOR_TOS);
     } else if (ctx.IP_HEADER_BAD() != null) {
-      return IcmpCode.INVALID_IP_HEADER;
+      return Optional.of(IcmpCode.INVALID_IP_HEADER);
     } else if (ctx.NETWORK_UNREACHABLE() != null) {
-      return IcmpCode.NETWORK_UNREACHABLE;
+      return Optional.of(IcmpCode.NETWORK_UNREACHABLE);
     } else if (ctx.NETWORK_UNREACHABLE_FOR_TOS() != null) {
-      return IcmpCode.NETWORK_UNREACHABLE_FOR_TOS;
+      return Optional.of(IcmpCode.NETWORK_UNREACHABLE_FOR_TOS);
     } else if (ctx.PORT_UNREACHABLE() != null) {
-      return IcmpCode.PORT_UNREACHABLE;
+      return Optional.of(IcmpCode.PORT_UNREACHABLE);
     } else if (ctx.PRECEDENCE_CUTOFF_IN_EFFECT() != null) {
-      return IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT;
+      return Optional.of(IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT);
     } else if (ctx.PROTOCOL_UNREACHABLE() != null) {
-      return IcmpCode.PROTOCOL_UNREACHABLE;
+      return Optional.of(IcmpCode.PROTOCOL_UNREACHABLE);
     } else if (ctx.REDIRECT_FOR_HOST() != null) {
-      return IcmpCode.HOST_ERROR;
+      return Optional.of(IcmpCode.HOST_ERROR);
     } else if (ctx.REDIRECT_FOR_NETWORK() != null) {
-      return IcmpCode.NETWORK_ERROR;
+      return Optional.of(IcmpCode.NETWORK_ERROR);
     } else if (ctx.REDIRECT_FOR_TOS_AND_HOST() != null) {
-      return IcmpCode.TOS_AND_HOST_ERROR;
+      return Optional.of(IcmpCode.TOS_AND_HOST_ERROR);
     } else if (ctx.REDIRECT_FOR_TOS_AND_NET() != null) {
-      return IcmpCode.TOS_AND_NETWORK_ERROR;
+      return Optional.of(IcmpCode.TOS_AND_NETWORK_ERROR);
     } else if (ctx.REQUIRED_OPTION_MISSING() != null) {
-      return IcmpCode.REQUIRED_OPTION_MISSING;
+      return Optional.of(IcmpCode.REQUIRED_OPTION_MISSING);
     } else if (ctx.SOURCE_HOST_ISOLATED() != null) {
-      return IcmpCode.SOURCE_HOST_ISOLATED;
+      return Optional.of(IcmpCode.SOURCE_HOST_ISOLATED);
     } else if (ctx.SOURCE_ROUTE_FAILED() != null) {
-      return IcmpCode.SOURCE_ROUTE_FAILED;
+      return Optional.of(IcmpCode.SOURCE_ROUTE_FAILED);
     } else if (ctx.TTL_EQ_ZERO_DURING_REASSEMBLY() != null) {
-      return IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY;
+      return Optional.of(IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY);
     } else if (ctx.TTL_EQ_ZERO_DURING_TRANSIT() != null) {
-      return IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
+      return Optional.of(IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT);
     } else {
-      w.redFlag(String.format("Missing mapping for icmp-code: '%s'", ctx.getText()));
-      return null;
+      warn(messageCtx, String.format("Missing mapping for icmp-code: '%s'", ctx.getText()));
+      return Optional.empty();
     }
   }
 
@@ -1706,41 +1736,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    * unknown strings. See
    * https://www.juniper.net/documentation/en_US/junos/topics/usage-guidelines/services-configuring-application-protocol-properties.html#id-10141121
    */
-  @Nullable
-  private static Integer toIcmpType(Icmp_typeContext ctx, Warnings w) {
-    if (ctx.dec() != null) {
-      return Integer.parseInt(ctx.dec().getText());
-    } else if (ctx.DESTINATION_UNREACHABLE() != null) {
-      return IcmpType.DESTINATION_UNREACHABLE;
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Named_icmp_typeContext ctx) {
+    if (ctx.DESTINATION_UNREACHABLE() != null) {
+      return Optional.of(IcmpType.DESTINATION_UNREACHABLE);
     } else if (ctx.ECHO_REPLY() != null) {
-      return IcmpType.ECHO_REPLY;
+      return Optional.of(IcmpType.ECHO_REPLY);
     } else if (ctx.ECHO_REQUEST() != null) {
-      return IcmpType.ECHO_REQUEST;
+      return Optional.of(IcmpType.ECHO_REQUEST);
     } else if (ctx.INFO_REPLY() != null) {
-      return IcmpType.INFO_REPLY;
+      return Optional.of(IcmpType.INFO_REPLY);
     } else if (ctx.INFO_REQUEST() != null) {
-      return IcmpType.INFO_REQUEST;
+      return Optional.of(IcmpType.INFO_REQUEST);
     } else if (ctx.PARAMETER_PROBLEM() != null) {
-      return IcmpType.PARAMETER_PROBLEM;
+      return Optional.of(IcmpType.PARAMETER_PROBLEM);
     } else if (ctx.REDIRECT() != null) {
-      return IcmpType.REDIRECT_MESSAGE;
+      return Optional.of(IcmpType.REDIRECT_MESSAGE);
     } else if (ctx.ROUTER_ADVERTISEMENT() != null) {
-      return IcmpType.ROUTER_ADVERTISEMENT;
+      return Optional.of(IcmpType.ROUTER_ADVERTISEMENT);
     } else if (ctx.ROUTER_SOLICIT() != null) {
-      return IcmpType.ROUTER_SOLICITATION;
+      return Optional.of(IcmpType.ROUTER_SOLICITATION);
     } else if (ctx.SOURCE_QUENCH() != null) {
-      return IcmpType.SOURCE_QUENCH;
+      return Optional.of(IcmpType.SOURCE_QUENCH);
     } else if (ctx.TIME_EXCEEDED() != null) {
-      return IcmpType.TIME_EXCEEDED;
+      return Optional.of(IcmpType.TIME_EXCEEDED);
     } else if (ctx.TIMESTAMP() != null) {
-      return IcmpType.TIMESTAMP_REQUEST;
+      return Optional.of(IcmpType.TIMESTAMP_REQUEST);
     } else if (ctx.TIMESTAMP_REPLY() != null) {
-      return IcmpType.TIMESTAMP_REPLY;
+      return Optional.of(IcmpType.TIMESTAMP_REPLY);
     } else if (ctx.UNREACHABLE() != null) {
-      return IcmpType.DESTINATION_UNREACHABLE;
+      return Optional.of(IcmpType.DESTINATION_UNREACHABLE);
     } else {
-      w.redFlag(String.format("Missing mapping for icmp-type: '%s'", ctx.getText()));
-      return null;
+      warn(messageCtx, String.format("Missing mapping for icmp-type: '%s'", ctx.getText()));
+      return Optional.empty();
     }
   }
 
@@ -2186,6 +2214,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private Resolution _currentResolution;
 
   private ResolutionRib _currentResolutionRib;
+
+  private BridgeDomain _currentBridgeDomain;
 
   public ConfigurationBuilder(
       FlatJuniperCombinedParser parser,
@@ -3912,6 +3942,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitAat_icmp_code(Aat_icmp_codeContext ctx) {
+    Optional<Integer> maybeIcmpCode = toInteger(ctx, ctx.icmp_code());
+    if (!maybeIcmpCode.isPresent()) {
+      return;
+    }
+    HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
+    _currentApplicationTerm.setHeaderSpace(
+        oldHeaderSpace.toBuilder().setIcmpCodes(maybeIcmpCode.get()).build());
+  }
+
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Icmp_codeContext ctx) {
+    if (ctx.uint8() != null) {
+      return Optional.of(toInteger(ctx.uint8()));
+    } else {
+      assert ctx.named_icmp_code() != null;
+      return toInteger(messageCtx, ctx.named_icmp_code());
+    }
+  }
+
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Icmp_typeContext ctx) {
+    if (ctx.uint8() != null) {
+      return Optional.of(toInteger(ctx.uint8()));
+    } else {
+      assert ctx.named_icmp_type() != null;
+      return toInteger(messageCtx, ctx.named_icmp_type());
+    }
+  }
+
+  @Override
+  public void exitAat_icmp_type(Aat_icmp_typeContext ctx) {
+    Optional<Integer> maybeIcmpType = toInteger(ctx, ctx.icmp_type());
+    if (!maybeIcmpType.isPresent()) {
+      return;
+    }
+    HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
+    _currentApplicationTerm.setHeaderSpace(
+        oldHeaderSpace.toBuilder().setIcmpTypes(maybeIcmpType.get()).build());
+  }
+
+  @Override
   public void exitAat_protocol(Aat_protocolContext ctx) {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
@@ -4209,16 +4279,40 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_fragment_offset(Fftf_fragment_offsetContext ctx) {
-    SubRange subRange = toSubRange(ctx.subrange());
-    FwFrom from = new FwFromFragmentOffset(subRange, false);
+    Optional<SubRange> maybeRange = toSubRange(ctx, ctx.fragment_offset_range());
+    if (!maybeRange.isPresent()) {
+      return;
+    }
+    FwFrom from = new FwFromFragmentOffset(maybeRange.get(), false);
     _currentFwTerm.getFroms().add(from);
   }
 
   @Override
   public void exitFftf_fragment_offset_except(Fftf_fragment_offset_exceptContext ctx) {
-    SubRange subRange = toSubRange(ctx.subrange());
-    FwFrom from = new FwFromFragmentOffset(subRange, true);
+    Optional<SubRange> maybeRange = toSubRange(ctx, ctx.fragment_offset_range());
+    if (!maybeRange.isPresent()) {
+      return;
+    }
+    FwFrom from = new FwFromFragmentOffset(maybeRange.get(), true);
     _currentFwTerm.getFroms().add(from);
+  }
+
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Fragment_offset_rangeContext ctx) {
+    Optional<Integer> maybeStart = toInteger(messageCtx, ctx.start);
+    if (!maybeStart.isPresent()) {
+      return Optional.empty();
+    }
+    int start = maybeStart.get();
+    if (ctx.end == null) {
+      return Optional.of(SubRange.singleton(start));
+    }
+    return toInteger(messageCtx, ctx.end).map(end -> new SubRange(start, end));
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Fragment_offsetContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, FRAGMENT_OFFSET_RANGE, "fragment offset");
   }
 
   @Override
@@ -4227,21 +4321,49 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // TODO: support icmpv6
       return;
     }
-    SubRange icmpCodeRange = null;
-    if (ctx.subrange() != null) {
-      icmpCodeRange = toSubRange(ctx.subrange());
-    } else if (ctx.icmp_code() != null) {
-      Integer icmpCode = toIcmpCode(ctx.icmp_code(), _w);
-      if (icmpCode != null) {
-        icmpCodeRange = SubRange.singleton(icmpCode);
-      }
+    SubRange icmpCodeRange;
+    if (ctx.uint8_range() != null) {
+      icmpCodeRange = toSubRange(ctx.uint8_range());
     } else {
-      _w.redFlag(String.format("Invalid icmp-code: '%s'", ctx.getText()));
+      assert ctx.icmp_code() != null;
+      Optional<Integer> maybeIcmpCode = toInteger(ctx, ctx.icmp_code());
+      if (!maybeIcmpCode.isPresent()) {
+        return;
+      }
+      icmpCodeRange = SubRange.singleton(maybeIcmpCode.get());
     }
-    if (icmpCodeRange != null) {
-      FwFrom from = new FwFromIcmpCode(icmpCodeRange);
-      _currentFwTerm.getFroms().add(from);
+    FwFrom from = new FwFromIcmpCode(icmpCodeRange);
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  private static @Nonnull SubRange toSubRange(Uint8_rangeContext ctx) {
+    int start = toInteger(ctx.start);
+    return ctx.end != null ? new SubRange(start, toInteger(ctx.end)) : SubRange.singleton(start);
+  }
+
+  private static int toInteger(Uint8Context ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  @Override
+  public void exitFftf_icmp_code_except(Fftf_icmp_code_exceptContext ctx) {
+    if (_currentFirewallFamily == Family.INET6) {
+      // TODO: support icmpv6
+      return;
     }
+    SubRange icmpCodeRange;
+    if (ctx.uint8_range() != null) {
+      icmpCodeRange = toSubRange(ctx.uint8_range());
+    } else {
+      assert ctx.icmp_code() != null;
+      Optional<Integer> maybeIcmpCode = toInteger(ctx, ctx.icmp_code());
+      if (!maybeIcmpCode.isPresent()) {
+        return;
+      }
+      icmpCodeRange = SubRange.singleton(maybeIcmpCode.get());
+    }
+    FwFrom from = new FwFromIcmpCodeExcept(icmpCodeRange);
+    _currentFwTerm.getFroms().add(from);
   }
 
   @Override
@@ -4250,18 +4372,44 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       // TODO: support icmpv6
       return;
     }
-    if (ctx.subrange() != null) {
-      SubRange icmpTypeRange = toSubRange(ctx.subrange());
-      _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
+    SubRange icmpTypeRange;
+    if (ctx.uint8_range() != null) {
+      icmpTypeRange = toSubRange(ctx.uint8_range());
     } else if (ctx.icmp_type() != null) {
-      Integer icmpType = toIcmpType(ctx.icmp_type(), _w);
-      if (icmpType != null) {
-        SubRange icmpTypeRange = SubRange.singleton(icmpType);
-        _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
+      Optional<Integer> maybeIcmpType = toInteger(ctx, ctx.icmp_type());
+      if (!maybeIcmpType.isPresent()) {
+        return;
       }
+      icmpTypeRange = SubRange.singleton(maybeIcmpType.get());
     } else {
+      assert ctx.icmp6_only_type() != null;
       todo(ctx);
+      return;
     }
+    _currentFwTerm.getFroms().add(new FwFromIcmpType(icmpTypeRange));
+  }
+
+  @Override
+  public void exitFftf_icmp_type_except(Fftf_icmp_type_exceptContext ctx) {
+    if (_currentFirewallFamily == Family.INET6) {
+      // TODO: support icmpv6
+      return;
+    }
+    SubRange icmpTypeRange;
+    if (ctx.uint8_range() != null) {
+      icmpTypeRange = toSubRange(ctx.uint8_range());
+    } else if (ctx.icmp_type() != null) {
+      Optional<Integer> maybeIcmpType = toInteger(ctx, ctx.icmp_type());
+      if (!maybeIcmpType.isPresent()) {
+        return;
+      }
+      icmpTypeRange = SubRange.singleton(maybeIcmpType.get());
+    } else {
+      assert ctx.icmp6_only_type() != null;
+      todo(ctx);
+      return;
+    }
+    _currentFwTerm.getFroms().add(new FwFromIcmpTypeExcept(icmpTypeRange));
   }
 
   @Override
@@ -4291,16 +4439,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_packet_length(Fftf_packet_lengthContext ctx) {
-    List<SubRange> range = toRange(ctx.range());
+    SubRange range = toSubRange(ctx.uint16_range());
     FwFrom from = new FwFromPacketLength(range, false);
     _currentFwTerm.getFroms().add(from);
   }
 
   @Override
   public void exitFftf_packet_length_except(Fftf_packet_length_exceptContext ctx) {
-    List<SubRange> range = toRange(ctx.range());
+    SubRange range = toSubRange(ctx.uint16_range());
     FwFrom from = new FwFromPacketLength(range, true);
     _currentFwTerm.getFroms().add(from);
+  }
+
+  private static @Nonnull SubRange toSubRange(Uint16_rangeContext ctx) {
+    int start = toInteger(ctx.start);
+    return ctx.end != null ? new SubRange(start, toInteger(ctx.end)) : SubRange.singleton(start);
+  }
+
+  private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   @Override
@@ -6651,6 +6808,72 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.referenceStructure(
         CONDITION, name, POLICY_STATEMENT_FROM_CONDITION, getLine(ctx.getStart()));
     _currentPsTerm.getFroms().addFromCondition(new PsFromCondition(name));
+  }
+
+  @Override
+  public void enterS_bridge_domains(S_bridge_domainsContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.name);
+    if (!maybeName.isPresent()) {
+      _currentBridgeDomain = new BridgeDomain();
+      return;
+    }
+    String name = maybeName.get();
+    _currentBridgeDomain = _currentRoutingInstance.getOrAddBridgeDomain(name);
+    _configuration.referenceStructure(
+        BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, ctx.getStart().getLine());
+    _configuration.defineFlattenedStructure(BRIDGE_DOMAIN, name, ctx, _parser);
+    // until we support bridge domains generally
+    todo(ctx);
+  }
+
+  @Override
+  public void exitS_bridge_domains(S_bridge_domainsContext ctx) {
+    _currentBridgeDomain = null;
+  }
+
+  @Override
+  public void exitBd_routing_interface(Bd_routing_interfaceContext ctx) {
+    String iface = new InterfaceId(ctx.interface_id()).getFullName();
+    if (!iface.startsWith("irb")) {
+      warn(ctx, "Only IRB interfaces are supported for routing-interface");
+      return;
+    }
+    _configuration.referenceStructure(
+        INTERFACE, iface, BRIDGE_DOMAINS_ROUTING_INTERFACE, ctx.getStart().getLine());
+    _currentBridgeDomain.setRoutingInterface(iface);
+  }
+
+  @Override
+  public void exitBd_vlan_id(Bd_vlan_idContext ctx) {
+    BridgeDomainVlanId vlanId;
+    if (ctx.ALL() != null) {
+      vlanId = BridgeDomainVlanIdAll.instance();
+    } else if (ctx.NONE() != null) {
+      vlanId = BridgeDomainVlanIdNone.instance();
+    } else {
+      assert ctx.vlan_number() != null;
+      Optional<Integer> maybeNum = toInteger(ctx, ctx.vlan_number());
+      if (!maybeNum.isPresent()) {
+        return;
+      }
+      vlanId = BridgeDomainVlanIdNumber.of(maybeNum.get());
+    }
+    _currentBridgeDomain.setVlanId(vlanId);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vlan_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "vlan number");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Bridge_domain_nameContext ctx) {
+    String name = toString(ctx.junos_name());
+    if (name.contains("/")) {
+      warn(messageCtx, "bridge-domain name cannot contain '/'");
+      return Optional.empty();
+    }
+    return Optional.of(name);
   }
 
   @Nullable

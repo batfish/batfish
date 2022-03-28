@@ -5,8 +5,6 @@ import static org.batfish.common.util.Resources.readResource;
 
 import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
-import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
-import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -94,21 +92,10 @@ public class CommonUtil {
   /**
    * Returns a {@link ClientBuilder} with supplied settings
    *
-   * @param registerTracing Whether to register JAX-RS tracing on the {@link ClientBuilder}
    * @return {@link ClientBuilder} with the supplied settings
    */
-  public static ClientBuilder createHttpClientBuilder(boolean registerTracing) {
-    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-    try {
-      /* register tracing feature if a tracer was initialized and caller wants client to
-      send tracing information */
-      if (GlobalTracer.isRegistered() && registerTracing) {
-        clientBuilder.register(ClientTracingFeature.class);
-      }
-    } catch (Exception e) {
-      throw new BatfishException("Error creating HTTP client builder", e);
-    }
-    return clientBuilder;
+  public static ClientBuilder createHttpClientBuilder() {
+    return ClientBuilder.newBuilder();
   }
 
   public static Path createTempDirectory(String prefix, FileAttribute<?>... attrs) {

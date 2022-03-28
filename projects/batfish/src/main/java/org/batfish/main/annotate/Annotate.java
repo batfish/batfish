@@ -108,8 +108,7 @@ public final class Annotate {
                 ImmutableMap.of(inputFile.toString(), preprocessedText),
                 new Warnings.Settings(true, true, true),
                 ConfigurationFormat.UNKNOWN,
-                ImmutableMultimap.of(),
-                null)
+                ImmutableMultimap.of())
             .call();
     if (parseResult.getFileResults().values().stream()
         .anyMatch(result -> result.getParseStatus() == FAILED)) {

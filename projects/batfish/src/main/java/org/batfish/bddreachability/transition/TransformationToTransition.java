@@ -10,7 +10,6 @@ import static org.batfish.datamodel.transformation.ReturnFlowTransformation.retu
 
 import com.google.common.collect.BoundType;
 import com.google.common.collect.RangeSet;
-import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -123,7 +122,7 @@ public class TransformationToTransition {
       BDDInteger var = ipField(step.getIpField());
       IpSpaceToBDD varToBdd = ipFieldToBDD(step.getIpField());
       int len = prefix.getPrefixLength();
-      BDD erase = _bddPacket.getFactory().andAll(Arrays.asList(var.getBitvec()).subList(0, len));
+      BDD erase = var.getMostSignificantVars(len);
       BDD setValue = varToBdd.toBDD(prefix);
       return new EraseAndSet(erase, setValue);
     }

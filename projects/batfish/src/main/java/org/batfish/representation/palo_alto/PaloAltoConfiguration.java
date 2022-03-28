@@ -1707,7 +1707,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     AclLineMatchExpr appExpr =
         new OrMatchExpr(
             application.getServices().stream()
-                .map(s -> s.toMatchHeaderSpace(_w))
+                .map(s -> s.toMatchExpr(_w))
                 .collect(ImmutableList.toImmutableList()),
             traceElement);
 
@@ -2040,8 +2040,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       case LOOPBACK:
         return InterfaceType.LOOPBACK;
       case TUNNEL:
+        // TODO: temporary hack until bind dependencies are removed
+        return InterfaceType.LOOPBACK;
+      case TUNNEL_UNIT:
         return InterfaceType.TUNNEL;
       case VLAN:
+        // TODO: temporary hack until bind dependencies are removed
+        return InterfaceType.LOOPBACK;
+      case VLAN_UNIT:
         return InterfaceType.VLAN;
       default:
         w.unimplemented("Unknown Palo Alto interface type " + panType);
@@ -2844,7 +2850,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Copy object configuration from specified source vsys to specified target vsys. Any previously
    * made changes will be overwritten in this process.
    */
-  private void applyVsysObjects(@Nullable Vsys source, Vsys target) {
+  @VisibleForTesting
+  static void applyVsysObjects(@Nullable Vsys source, Vsys target) {
     if (source == null) {
       return;
     }
@@ -2853,6 +2860,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getApplicationGroups().putAll(source.getApplicationGroups());
     target.getAddressObjects().putAll(source.getAddressObjects());
     target.getAddressGroups().putAll(source.getAddressGroups());
+    target.getCustomUrlCategories().putAll(source.getCustomUrlCategories());
     target.getServices().putAll(source.getServices());
     target.getServiceGroups().putAll(source.getServiceGroups());
     target.getTags().putAll(source.getTags());
@@ -3213,12 +3221,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Batfish cannot handle interfaces without a Vrf
     // So put orphaned interfaces in a constructed Vrf and shut them down
     Vrf nullVrf = new Vrf(NULL_VRF_NAME);
-    int oraphnedInterfaces = 0;
+    int orphanedInterfaces = 0;
     for (Entry<String, org.batfish.datamodel.Interface> i : _c.getAllInterfaces().entrySet()) {
       org.batfish.datamodel.Interface iface = i.getValue();
       if (iface.getVrf() == null) {
         iface.setVrf(nullVrf);
-        oraphnedInterfaces++;
+        orphanedInterfaces++;
         if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
           // This is a child interface. Just shut it down.
           iface.deactivate(INCOMPLETE);
@@ -3262,7 +3270,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
     }
     // Don't pollute VI model will null VRF unless we have to.
-    if (oraphnedInterfaces > 0) {
+    if (orphanedInterfaces > 0) {
       _c.getVrfs().put(nullVrf.getName(), nullVrf);
     }
 

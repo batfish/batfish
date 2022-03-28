@@ -69,7 +69,9 @@ public final class LocationCompletionMetadata implements Serializable {
     return Objects.hash(_location, _isSourceWithIps, _isTracerouteSource);
   }
 
-  /** @return The location for which this completion data is about. */
+  /**
+   * @return The location for which this completion data is about.
+   */
   @JsonProperty(PROP_LOCATION)
   public Location getLocation() {
     return _location;
@@ -84,7 +86,9 @@ public final class LocationCompletionMetadata implements Serializable {
     return _isSourceWithIps;
   }
 
-  /** @return Whether this location is a valid traceroute source. */
+  /**
+   * @return Whether this location is a valid traceroute source.
+   */
   @JsonProperty(PROP_TRACEROUTE_SOURCE)
   public boolean isTracerouteSource() {
     return _isTracerouteSource;

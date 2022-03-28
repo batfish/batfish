@@ -6,7 +6,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 
 /** A {@link Transition} that removes a last-hop constraint. */
-final class RemoveLastHopConstraint implements Transition {
+public final class RemoveLastHopConstraint implements Transition {
   private final LastHopOutgoingInterfaceManager _mgr;
 
   RemoveLastHopConstraint(LastHopOutgoingInterfaceManager mgr, String node) {
@@ -26,5 +26,10 @@ final class RemoveLastHopConstraint implements Transition {
   public BDD transitBackward(BDD bdd) {
     assert !_mgr.hasLastHopConstraint(bdd);
     return bdd.id();
+  }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitRemoveLastHopConstraint(this);
   }
 }

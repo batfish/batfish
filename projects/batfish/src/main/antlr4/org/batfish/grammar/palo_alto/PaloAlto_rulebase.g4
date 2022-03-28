@@ -50,6 +50,7 @@ srs_definition
         | srs_category
         | srs_description
         | srs_destination
+        | srs_destination_hip
         | srs_disabled
         | srs_from
         | srs_hip_profiles
@@ -61,6 +62,7 @@ srs_definition
         | srs_rule_type
         | srs_service
         | srs_source
+        | srs_source_hip
         | srs_source_user
         | srs_target
         | srs_to
@@ -99,6 +101,11 @@ srs_description
 srs_destination
 :
     DESTINATION src_or_dst_list
+;
+
+srs_destination_hip
+:
+    DESTINATION_HIP ANY // only support any
 ;
 
 srs_disabled
@@ -160,6 +167,11 @@ srs_service
 srs_source
 :
     SOURCE src_or_dst_list
+;
+
+srs_source_hip
+:
+    SOURCE_HIP ANY // only support any
 ;
 
 srs_source_user

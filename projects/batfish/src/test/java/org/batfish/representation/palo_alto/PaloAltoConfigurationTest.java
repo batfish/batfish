@@ -12,6 +12,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejectsByDefault;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.REFERENCE_IN_VSYS;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.applyVsysObjects;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.checkIntrazoneValidityAndWarn;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.deviceBindingAndIdCompatible;
@@ -786,5 +787,30 @@ public final class PaloAltoConfigurationTest {
     assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.com?"));
     assertFalse(unexpectedUnboundedCustomUrlWildcard("www.*.github.com/"));
     assertFalse(unexpectedUnboundedCustomUrlWildcard("*.github.com/foobar.something"));
+  }
+
+  @Test
+  public void testApplyVsysObjects() {
+    Vsys source = new Vsys("source");
+    source.getApplications().put("app", Application.builder("app").build());
+    source.getApplicationGroups().put("appGroup", new ApplicationGroup("appGroup"));
+    source.getAddressObjects().put("addr", new AddressObject("addr"));
+    source.getAddressGroups().put("addrGroup", new AddressGroup("addrGroup"));
+    source.getCustomUrlCategories().put("category", new CustomUrlCategory("category"));
+    source.getServices().put("service", new Service("service"));
+    source.getServiceGroups().put("serviceGroup", new ServiceGroup("serviceGroup"));
+    source.getTags().put("tag", new Tag("tag"));
+
+    Vsys dest = new Vsys("dest");
+    applyVsysObjects(source, dest);
+
+    assertTrue(dest.getApplications().containsKey("app"));
+    assertTrue(dest.getApplicationGroups().containsKey("appGroup"));
+    assertTrue(dest.getAddressObjects().containsKey("addr"));
+    assertTrue(dest.getAddressGroups().containsKey("addrGroup"));
+    assertTrue(dest.getCustomUrlCategories().containsKey("category"));
+    assertTrue(dest.getServices().containsKey("service"));
+    assertTrue(dest.getServiceGroups().containsKey("serviceGroup"));
+    assertTrue(dest.getTags().containsKey("tag"));
   }
 }

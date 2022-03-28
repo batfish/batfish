@@ -224,6 +224,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     TableAnswerElement baseTableAnswerElement = new TableAnswerElement(baseTableMetadata);
     baseTableAnswerElement.addRow(Row.of("colName", "value1"));
     baseTableAnswerElement.addRow(Row.of("colName", "value2"));
+    baseTableAnswerElement.addWarning("some warning");
     Answer baseAnswer = new Answer();
     baseAnswer.addAnswerElement(baseTableAnswerElement);
     // Setup infrastructure + answer
@@ -234,7 +235,11 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     // expectedAnswer is same as baseAnswer but only contains the first row
     TableViewRow expectedRow = new TableViewRow(0, Row.of("colName", "value1"));
     TableView expectedTableView =
-        new TableView(filterOptions, ImmutableList.of(expectedRow), baseTableMetadata);
+        new TableView(
+            filterOptions,
+            ImmutableList.of(expectedRow),
+            baseTableMetadata,
+            ImmutableList.of("some warning"));
     // Original answer had two results, so the view needs to have two results
     expectedTableView.setSummary(new AnswerSummary("", 0, 0, 2));
     String expectedTableViewString = BatfishObjectMapper.writeString(expectedTableView);
@@ -282,7 +287,8 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
         new TableView(
             filterOptions,
             ImmutableList.of(new TableViewRow(0, row1), new TableViewRow(1, row2)),
-            baseTableMetadata);
+            baseTableMetadata,
+            ImmutableList.of());
     // Original answer had two results, so the view needs to have two results
     expectedTableView.setSummary(new AnswerSummary("", 0, 0, 2));
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedTableView);

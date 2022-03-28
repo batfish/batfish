@@ -23,11 +23,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentracing.References;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.util.GlobalTracer;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -174,14 +169,6 @@ public class WorkMgr extends AbstractCoordinator {
                                       step -> step.getDetail().toString())
                                   .thenComparing(Step::getAction)))));
 
-  private static Path getCanonicalPath(Path path) {
-    try {
-      return Paths.get(path.toFile().getCanonicalPath());
-    } catch (IOException e) {
-      throw new BatfishException("Could not get canonical path from: '" + path + "'", e);
-    }
-  }
-
   private static SortedSet<Path> getEntries(Path directory) {
     SortedSet<Path> entries = new TreeSet<>();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
@@ -274,21 +261,14 @@ public class WorkMgr extends AbstractCoordinator {
     boolean assigned = false;
 
     Client client = null;
-    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
-    Span span =
-        GlobalTracer.get()
-            .buildSpan("Assign work")
-            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
-            .start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    try {
       // get the task and add other standard stuff
       JSONObject task = new JSONObject(work.resolveRequestParams());
       task.put(
           BfConsts.ARG_STORAGE_BASE,
           Main.getSettings().getContainersLocation().toAbsolutePath().toString());
 
-      client = CommonUtil.createHttpClientBuilder(true).build();
+      client = CommonUtil.createHttpClientBuilder().build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -327,15 +307,6 @@ public class WorkMgr extends AbstractCoordinator {
         assignmentError = true;
       } else {
         assigned = true;
-        Span postAssignmentSpan =
-            GlobalTracer.get().buildSpan("Post-assignment task operations").start();
-        try (Scope postAssignmentScope =
-            GlobalTracer.get().scopeManager().activate(postAssignmentSpan)) {
-          assert postAssignmentScope != null;
-          work.setPostAssignmentContext(postAssignmentSpan.context());
-        } finally {
-          postAssignmentSpan.finish();
-        }
       }
     } catch (ProcessingException e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
@@ -344,7 +315,6 @@ public class WorkMgr extends AbstractCoordinator {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
     } finally {
-      span.finish();
       if (client != null) {
         client.close();
       }
@@ -439,14 +409,8 @@ public class WorkMgr extends AbstractCoordinator {
     Task task = new Task(TaskStatus.UnreachableOrBadResponse);
 
     Client client = null;
-    Span span =
-        GlobalTracer.get()
-            .buildSpan("Checking Task Status")
-            .addReference(References.FOLLOWS_FROM, work.getPostAssignmentContext())
-            .start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      client = CommonUtil.createHttpClientBuilder(true).build();
+    try {
+      client = CommonUtil.createHttpClientBuilder().build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -489,7 +453,6 @@ public class WorkMgr extends AbstractCoordinator {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
     } finally {
-      span.finish();
       if (client != null) {
         client.close();
       }
@@ -1483,9 +1446,10 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public void forkSnapshot(String networkName, ForkSnapshotBean forkSnapshotBean)
       throws IllegalArgumentException, IOException {
-
     String baseSnapshotName = forkSnapshotBean.baseSnapshot;
     String snapshotName = forkSnapshotBean.newSnapshot;
+    LOGGER.info(
+        "Beginning fork snapshot from {}/{} to {}", networkName, baseSnapshotName, snapshotName);
 
     // Fail early if the new snapshot already exists or the base snapshot does not
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(networkName);
@@ -1517,16 +1481,19 @@ public class WorkMgr extends AbstractCoordinator {
 
     try (Stream<String> baseInputObjectKeys =
         _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, baseSnapshotId))) {
-      baseInputObjectKeys.forEach(
-          key -> {
-            try (InputStream baseObjectStream =
-                _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
-              writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
-            } catch (IOException e) {
-              throw new UncheckedIOException(
-                  String.format("Unable to copy base snapshot input object with key: %s", key), e);
-            }
-          });
+      List<String> allKeys = baseInputObjectKeys.collect(Collectors.toList());
+      allKeys.parallelStream()
+          .forEach(
+              key -> {
+                try (InputStream baseObjectStream =
+                    _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
+                  writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
+                } catch (IOException e) {
+                  throw new UncheckedIOException(
+                      String.format("Unable to copy base snapshot input object with key: %s", key),
+                      e);
+                }
+              });
     }
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
     if (forkSnapshotBean.zipFile != null) {
@@ -1909,7 +1876,6 @@ public class WorkMgr extends AbstractCoordinator {
     NetworkId networkId = networkIdOpt.get();
     boolean success;
     try {
-      workItem.setSourceSpan(GlobalTracer.get().scopeManager().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
       _snapshotMetadataManager.getInitializationMetadata(networkId, workDetails.getSnapshotId());
       if (workDetails.isDifferential()) {
@@ -2238,7 +2204,8 @@ public class WorkMgr extends AbstractCoordinator {
                 .limit(options.getMaxRows())
                 .map(row -> new TableViewRow(rowIds.get(row), row))
                 .collect(ImmutableList.toImmutableList()),
-            tableMetadata);
+            tableMetadata,
+            rawTable.getWarnings());
     tableView.setSummary(
         rawTable.getSummary() != null ? rawTable.getSummary() : new AnswerSummary());
     tableView.getSummary().setNumResults(filteredRows.size());

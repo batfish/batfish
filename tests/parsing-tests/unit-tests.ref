@@ -10527,7 +10527,7 @@
             "        (ci2_keyring*",
             "          KEYRING:'keyring'",
             "          name = (variable*",
-            "            VARIABLE:'VPN_KEY')",
+            "            VARIABLE:'VPN_KEY'  <== mode:M_Name)",
             "          NEWLINE:'\\n'",
             "          (ci2k_peer*",
             "            PEER:'peer'",
@@ -10610,7 +10610,7 @@
             "          (ci2prf_null*",
             "            KEYRING:'keyring'",
             "            (null_rest_of_line*",
-            "              LOCAL:'local'",
+            "              VARIABLE:'local'  <== mode:M_Name",
             "              VARIABLE:'somekey'",
             "              NEWLINE:'\\n'))",
             "          (ci2prf_null*",
@@ -10998,15 +10998,7 @@
             "          (cisprf_keyring",
             "            KEYRING:'keyring'",
             "            name = (variable_permissive*",
-            "              VARIABLE:'VRF'",
-            "              COLON:':'",
-            "              VARIABLE:'MMS'",
-            "              COLON:':'",
-            "              VARIABLE:'RMT'",
-            "              COLON:':'",
-            "              VARIABLE:'UPM'",
-            "              COLON:':'",
-            "              UINT16:'1143')",
+            "              VARIABLE:'VRF:MMS:RMT:UPM:1143'  <== mode:M_Name)",
             "            NEWLINE:'\\n')",
             "          (cisprf_match",
             "            MATCH:'match'",
@@ -11029,11 +11021,11 @@
             "            SELF_IDENTITY:'self-identity'",
             "            IP_ADDRESS:'2.3.4.6'",
             "            NEWLINE:'\\n')",
-            "          (cisprf_null*",
+            "          (cisprf_vrf",
             "            VRF:'vrf'",
-            "            (null_rest_of_line*",
-            "              VARIABLE:'VRF:MMS:RMT:UPM:1143'",
-            "              NEWLINE:'\\n'))",
+            "            name = (variable*",
+            "              VARIABLE:'VRF:MMS:RMT:UPM:1143')",
+            "            NEWLINE:'\\n')",
             "          (cisprf_null*",
             "            KEEPALIVE:'keepalive'",
             "            (null_rest_of_line*",
@@ -11182,16 +11174,8 @@
             "      CRYPTO:'crypto'",
             "      (crypto_keyring",
             "        KEYRING:'keyring'",
-            "        name = (variable_permissive*",
-            "          VARIABLE:'VRF'",
-            "          COLON:':'",
-            "          VARIABLE:'ABC'",
-            "          COLON:':'",
-            "          VARIABLE:'DEF'",
-            "          COLON:':'",
-            "          VARIABLE:'GHI'",
-            "          COLON:':'",
-            "          UINT16:'1234')",
+            "        name = (variable*",
+            "          VARIABLE:'VRF:ABC:DEF:GHI:1234'  <== mode:M_Name)",
             "        NEWLINE:'\\n'",
             "        (ckr_psk",
             "          PRE_SHARED_KEY:'pre-shared-key'",
@@ -41635,12 +41619,16 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_100'",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_100'  <== mode:M_Name))",
+            "                (bd_vlan_id",
             "                  VLAN_ID:'vlan-id'",
-            "                  UINT8:'100')))))))",
+            "                  (vlan_number*",
+            "                    (uint16*",
+            "                      UINT8:'100')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41652,12 +41640,15 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_100'",
-            "                  UNRECOGNIZED_WORD:'routing-interface'",
-            "                  UNRECOGNIZED_WORD:'irb.100')))))))",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_100'  <== mode:M_Name))",
+            "                (bd_routing_interface",
+            "                  ROUTING_INTERFACE:'routing-interface'",
+            "                  (interface_id*",
+            "                    INTERFACE_ID:'irb.100'  <== mode:M_Interface))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41669,13 +41660,16 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_100'",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_100'  <== mode:M_Name))",
+            "                (bd_vxlan*",
             "                  VXLAN:'vxlan'",
-            "                  VNI:'vni'",
-            "                  UINT8:'100')))))))",
+            "                  (null_filler*",
+            "                    VNI:'vni'",
+            "                    UINT8:'100'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41687,12 +41681,16 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_101'",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_101'  <== mode:M_Name))",
+            "                (bd_vlan_id",
             "                  VLAN_ID:'vlan-id'",
-            "                  UINT8:'101')))))))",
+            "                  (vlan_number*",
+            "                    (uint16*",
+            "                      UINT8:'101')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41704,12 +41702,15 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_101'",
-            "                  UNRECOGNIZED_WORD:'routing-interface'",
-            "                  UNRECOGNIZED_WORD:'irb.101')))))))",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_101'  <== mode:M_Name))",
+            "                (bd_routing_interface",
+            "                  ROUTING_INTERFACE:'routing-interface'",
+            "                  (interface_id*",
+            "                    INTERFACE_ID:'irb.101'  <== mode:M_Interface))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -41721,13 +41722,16 @@
             "            (ri_named_routing_instance",
             "              name = (junos_name*",
             "                NAME:'fabric'  <== mode:M_Name)",
-            "              (ri_null*",
+            "              (s_bridge_domains",
             "                BRIDGE_DOMAINS:'bridge-domains'",
-            "                (null_filler*",
-            "                  UNRECOGNIZED_WORD:'bd_101'",
+            "                name = (bridge_domain_name*",
+            "                  (junos_name*",
+            "                    NAME:'bd_101'  <== mode:M_Name))",
+            "                (bd_vxlan*",
             "                  VXLAN:'vxlan'",
-            "                  VNI:'vni'",
-            "                  UINT8:'101')))))))",
+            "                  (null_filler*",
+            "                    VNI:'vni'",
+            "                    UINT8:'101'))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -51504,7 +51508,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          DESTINATION_UNREACHABLE:'destination-unreachable')))))))))))",
+            "                          (named_icmp_type*",
+            "                            DESTINATION_UNREACHABLE:'destination-unreachable'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51531,7 +51536,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          ECHO_REPLY:'echo-reply')))))))))))",
+            "                          (named_icmp_type*",
+            "                            ECHO_REPLY:'echo-reply'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51558,7 +51564,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          ECHO_REQUEST:'echo-request')))))))))))",
+            "                          (named_icmp_type*",
+            "                            ECHO_REQUEST:'echo-request'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51585,7 +51592,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          INFO_REPLY:'info-reply')))))))))))",
+            "                          (named_icmp_type*",
+            "                            INFO_REPLY:'info-reply'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51612,7 +51620,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          INFO_REQUEST:'info-request')))))))))))",
+            "                          (named_icmp_type*",
+            "                            INFO_REQUEST:'info-request'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51639,7 +51648,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          MASK_REPLY:'mask-reply')))))))))))",
+            "                          (named_icmp_type*",
+            "                            MASK_REPLY:'mask-reply'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51666,7 +51676,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          MASK_REQUEST:'mask-request')))))))))))",
+            "                          (named_icmp_type*",
+            "                            MASK_REQUEST:'mask-request'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51693,7 +51704,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          PARAMETER_PROBLEM:'parameter-problem')))))))))))",
+            "                          (named_icmp_type*",
+            "                            PARAMETER_PROBLEM:'parameter-problem'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51720,7 +51732,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          REDIRECT:'redirect')))))))))))",
+            "                          (named_icmp_type*",
+            "                            REDIRECT:'redirect'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51747,7 +51760,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          ROUTER_ADVERTISEMENT:'router-advertisement')))))))))))",
+            "                          (named_icmp_type*",
+            "                            ROUTER_ADVERTISEMENT:'router-advertisement'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51774,7 +51788,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          ROUTER_SOLICIT:'router-solicit')))))))))))",
+            "                          (named_icmp_type*",
+            "                            ROUTER_SOLICIT:'router-solicit'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51801,7 +51816,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          SOURCE_QUENCH:'source-quench')))))))))))",
+            "                          (named_icmp_type*",
+            "                            SOURCE_QUENCH:'source-quench'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51828,7 +51844,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          TIME_EXCEEDED:'time-exceeded')))))))))))",
+            "                          (named_icmp_type*",
+            "                            TIME_EXCEEDED:'time-exceeded'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51855,7 +51872,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          TIMESTAMP:'timestamp')))))))))))",
+            "                          (named_icmp_type*",
+            "                            TIMESTAMP:'timestamp'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51882,7 +51900,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          TIMESTAMP_REPLY:'timestamp-reply')))))))))))",
+            "                          (named_icmp_type*",
+            "                            TIMESTAMP_REPLY:'timestamp-reply'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51909,7 +51928,8 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          UNREACHABLE:'unreachable')))))))))))",
+            "                          (named_icmp_type*",
+            "                            UNREACHABLE:'unreachable'  <== mode:M_IcmpCodeOrType))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -51935,14 +51955,13 @@
             "                      FROM:'from'",
             "                      (fftf_packet_length",
             "                        PACKET_LENGTH:'packet-length'",
-            "                        (range*",
-            "                          (subrange*",
-            "                            low = (dec*",
-            "                              DEC:'70'  <== mode:M_SubRange)",
-            "                            DASH:'-'  <== mode:M_SubRange2",
-            "                            high = (dec*",
-            "                              DEC:'12000'  <== mode:M_SubRange2)))))))))))))",
-            "    NEWLINE:'\\n'  <== mode:M_SubRange2)",
+            "                        (uint16_range*",
+            "                          start = (uint16*",
+            "                            UINT8:'70'  <== mode:M_SubRange)",
+            "                          DASH:'-'  <== mode:M_SubRange",
+            "                          end = (uint16*",
+            "                            UINT16:'12000'  <== mode:M_SubRangeDash))))))))))))",
+            "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
             "    (set_line_tail*",
@@ -52136,9 +52155,9 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type*",
-            "                          (dec*",
-            "                            UINT8:'1'))))))))))))",
-            "    NEWLINE:'\\n')",
+            "                          (uint8*",
+            "                            UINT8:'1'  <== mode:M_IcmpCodeOrType))))))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_SubRange)",
             "  (set_line*",
             "    SET:'set'",
             "    (set_line_tail*",
@@ -52164,9 +52183,9 @@
             "                      (fftf_icmp_code",
             "                        ICMP_CODE:'icmp-code'",
             "                        (icmp_code*",
-            "                          (dec*",
-            "                            UINT8:'2'))))))))))))",
-            "    NEWLINE:'\\n')",
+            "                          (uint8*",
+            "                            UINT8:'2'  <== mode:M_IcmpCodeOrType))))))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_SubRange)",
             "  (set_line*",
             "    SET:'set'",
             "    (set_line_tail*",
@@ -52246,7 +52265,7 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp6_only_type*",
-            "                          PACKET_TOO_BIG:'packet-too-big')))))))))))",
+            "                          PACKET_TOO_BIG:'packet-too-big'  <== mode:M_IcmpCodeOrType)))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -52273,7 +52292,7 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp6_only_type*",
-            "                          NEIGHBOR_ADVERTISEMENT:'neighbor-advertisement')))))))))))",
+            "                          NEIGHBOR_ADVERTISEMENT:'neighbor-advertisement'  <== mode:M_IcmpCodeOrType)))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -52300,7 +52319,7 @@
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp6_only_type*",
-            "                          NEIGHBOR_SOLICIT:'neighbor-solicit')))))))))))",
+            "                          NEIGHBOR_SOLICIT:'neighbor-solicit'  <== mode:M_IcmpCodeOrType)))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -60318,7 +60337,7 @@
             "                (null_filler*",
             "                  UNRECOGNIZED_WORD:'messages'",
             "                  FIREWALL:'firewall'",
-            "                  UNRECOGNIZED_WORD:'none')))))))",
+            "                  NONE:'none')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -69154,6 +69173,18 @@
         "configs/cisco_crypto" : {
           "Parse warnings" : [
             {
+              "Comment" : "Batfish currently only supports a single match identity statement. Keeping the last only.",
+              "Line" : 194,
+              "Parser_Context" : "[cisprf_match cis_profile crypto_isakmp s_crypto stanza cisco_configuration]",
+              "Text" : "match identity address 1.2.3.4"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 197,
+              "Parser_Context" : "[cisprf_vrf cis_profile crypto_isakmp s_crypto stanza cisco_configuration]",
+              "Text" : "vrf VRF:MMS:RMT:UPM:1143"
+            },
+            {
               "Comment" : "This feature is not currently supported",
               "Line" : 232,
               "Parser_Context" : "[crypto_map_t_match_address crypto_map_t_match crypto_map_tail crypto_map s_crypto stanza cisco_configuration]",
@@ -70176,6 +70207,42 @@
               "Line" : 112,
               "Parser_Context" : "[rof_export ro_forwarding_table s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "export lbpp"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_100 vlan-id 100"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_100 routing-interface irb.100"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_100 vxlan vni 100"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_101 vlan-id 101"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_101 routing-interface irb.101"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 221,
+              "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "bridge-domains bd_101 vxlan vni 101"
             }
           ]
         },
@@ -70282,6 +70349,18 @@
         "configs/juniper_firewall" : {
           "Parse warnings" : [
             {
+              "Comment" : "Missing mapping for icmp-type: 'mask-reply'",
+              "Line" : 13,
+              "Parser_Context" : "[fftf_icmp_type fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "icmp-type mask-reply"
+            },
+            {
+              "Comment" : "Missing mapping for icmp-type: 'mask-request'",
+              "Line" : 14,
+              "Parser_Context" : "[fftf_icmp_type fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "icmp-type mask-request"
+            },
+            {
               "Comment" : "Filter-based forwarding with next-hop-ip is not currently supported",
               "Line" : 40,
               "Parser_Context" : "[fftt_next_ip fft_then ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
@@ -70334,16 +70413,6 @@
               "Line" : 55,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options timestamp"
-            }
-          ],
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing mapping for icmp-type: 'mask-reply'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing mapping for icmp-type: 'mask-request'"
             }
           ]
         },
@@ -70507,6 +70576,16 @@
             }
           ]
         },
+        "configs/palo_alto/interfaces" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 49,
+              "Parser_Context" : "[sniv_unit sniv_units sni_vlan sn_interface s_network statement_config_devices set_line_config_devices set_line_tail set_line palo_alto_configuration]",
+              "Text" : "vlan.1"
+            }
+          ]
+        },
         "configs/palo_alto/nat" : {
           "Parse warnings" : [
             {
@@ -70604,7 +70683,7 @@
         "cisco_enable" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
-        "cisco_interface" : "PASSED",
+        "cisco_interface" : "WARNINGS",
         "cisco_ios_neighbor" : "PASSED",
         "cisco_ip" : "PASSED",
         "cisco_ip_nat" : "PASSED",
@@ -70686,7 +70765,7 @@
         "host1" : "PASSED",
         "host2" : "PASSED",
         "if_tag_is" : "PASSED",
-        "interface-reth" : "PASSED",
+        "interface-reth" : "WARNINGS",
         "interface_exit" : "PASSED",
         "interface_sdr" : "PASSED",
         "interfacemtu" : "PASSED",
@@ -72933,6 +73012,16 @@
               "numReferrers" : 3
             }
           },
+          "bridge-domain" : {
+            "bd_100" : {
+              "definitionLines" : "221-228,236",
+              "numReferrers" : 3
+            },
+            "bd_101" : {
+              "definitionLines" : "221,229-236",
+              "numReferrers" : 3
+            }
+          },
           "community" : {
             "fabric" : {
               "definitionLines" : "191",
@@ -72962,7 +73051,7 @@
             },
             "irb.100" : {
               "definitionLines" : "83-89",
-              "numReferrers" : 3
+              "numReferrers" : 4
             },
             "lo0" : {
               "definitionLines" : "91-102",
@@ -79327,6 +79416,22 @@
               ]
             }
           },
+          "bridge-domain" : {
+            "bd_100" : {
+              "bridge-domain self reference" : [
+                81,
+                82,
+                83
+              ]
+            },
+            "bd_101" : {
+              "bridge-domain self reference" : [
+                84,
+                85,
+                86
+              ]
+            }
+          },
           "community" : {
             "fabric" : {
               "policy-statement from community" : [
@@ -79361,8 +79466,16 @@
               ]
             },
             "irb.100" : {
+              "bridge-domains routing-interface" : [
+                82
+              ],
               "interface" : [
                 83
+              ]
+            },
+            "irb.101" : {
+              "bridge-domains routing-interface" : [
+                85
               ]
             },
             "lo0" : {
@@ -84069,7 +84182,15 @@
             }
           }
         },
-        "configs/gh-2658-juniper-vrf-import-export.cfg" : { },
+        "configs/gh-2658-juniper-vrf-import-export.cfg" : {
+          "interface" : {
+            "irb.101" : {
+              "bridge-domains routing-interface" : [
+                85
+              ]
+            }
+          }
+        },
         "configs/host2" : { },
         "configs/if_tag_is" : { },
         "configs/interface_exit" : { },
@@ -85223,6 +85344,14 @@
             }
           ]
         },
+        "cisco_interface" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Deactivating interface Ethernet0 that refers to undefined channel-group Port-channel1"
+            }
+          ]
+        },
         "cisco_ip_route" : {
           "Red flags" : [
             {
@@ -85288,6 +85417,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp1 to bond bond1 because it is used for BGP unnumbered"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp2 to bond bond1 because it is used for BGP unnumbered"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to add slave swp3 to bond bond1 because it is used for BGP unnumbered"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -85388,6 +85529,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '10.0.0.1'"
+            }
+          ]
+        },
+        "interface-reth" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to convert illegal unit 'ge-0/0/0.0' on parent that is a member of a redundant ethernet group 'reth0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Refusing to convert illegal unit 'ge-0/0/1.0' on parent that is a member of a redundant ethernet group 'reth0'"
             }
           ]
         },
@@ -85517,6 +85670,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Configuration will not actually commit. Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Deactivating irb.5 because it has no assigned vlan"
             }
           ]
         },

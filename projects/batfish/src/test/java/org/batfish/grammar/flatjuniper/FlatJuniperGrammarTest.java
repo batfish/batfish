@@ -14,6 +14,7 @@ import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
+import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
@@ -21,6 +22,9 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpCode;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpType;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
@@ -57,6 +61,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
@@ -86,7 +91,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfEnabled;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
@@ -157,6 +164,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
@@ -237,6 +245,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -358,12 +367,23 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
+import org.batfish.representation.juniper.BaseApplication;
+import org.batfish.representation.juniper.BridgeDomain;
+import org.batfish.representation.juniper.BridgeDomainVlanIdAll;
+import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
+import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationPort;
+import org.batfish.representation.juniper.FwFromFragmentOffset;
+import org.batfish.representation.juniper.FwFromIcmpCode;
+import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
+import org.batfish.representation.juniper.FwFromIcmpType;
+import org.batfish.representation.juniper.FwFromIcmpTypeExcept;
+import org.batfish.representation.juniper.FwFromPacketLength;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromSourcePort;
 import org.batfish.representation.juniper.FwTerm;
@@ -504,7 +524,28 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplications() throws IOException {
+  public void testApplicationsExtraction() {
+    String hostname = "applications";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    assertThat(
+        vc.getMasterLogicalSystem().getApplications(), hasKeys("a1", "a2", "a3", "a4", "a5"));
+    // TODO: a1-a3
+    {
+      BaseApplication application = vc.getMasterLogicalSystem().getApplications().get("a4");
+      assertThat(
+          _b.toBDD(application.getMainTerm().getHeaderSpace()),
+          equalTo(_b.toBDD(and(matchIpProtocol(ICMP), matchIcmpType(5)))));
+    }
+    {
+      BaseApplication application = vc.getMasterLogicalSystem().getApplications().get("a5");
+      assertThat(
+          _b.toBDD(application.getMainTerm().getHeaderSpace()),
+          equalTo(_b.toBDD(and(matchIpProtocol(ICMP), matchIcmpCode(6)))));
+    }
+  }
+
+  @Test
+  public void testApplicationsReferences() throws IOException {
     String hostname = "applications";
     String filename = "configs/" + hostname;
 
@@ -1630,6 +1671,112 @@ public final class FlatJuniperGrammarTest {
       assertThat(iface.getIncomingFilterList(), contains("FILTER1", "FILTER2"));
       assertThat(iface.getOutgoingFilter(), nullValue());
       assertThat(iface.getOutgoingFilterList(), contains("FILTER2", "FILTER1"));
+    }
+
+    // filter definitions
+    assertThat(c.getMasterLogicalSystem().getFirewallFilters(), hasKey("PARSING"));
+    FirewallFilter f = c.getMasterLogicalSystem().getFirewallFilters().get("PARSING");
+    assertThat(f, instanceOf(ConcreteFirewallFilter.class));
+    ConcreteFirewallFilter cf = (ConcreteFirewallFilter) f;
+    assertThat(
+        cf.getTerms(), hasKeys("FRAGMENT_OFFSET", "ICMP_TYPE", "ICMP_CODE", "PACKET_LENGTH"));
+    {
+      FwTerm term = cf.getTerms().get("FRAGMENT_OFFSET");
+      assertThat(term.getFroms(), hasSize(4));
+      term.getFroms().forEach(from -> assertThat(from, instanceOf(FwFromFragmentOffset.class)));
+      {
+        FwFromFragmentOffset from = (FwFromFragmentOffset) term.getFroms().get(0);
+        assertFalse(from.getExcept());
+        assertThat(from.getOffsetRange(), equalTo(SubRange.singleton(1)));
+      }
+      {
+        FwFromFragmentOffset from = (FwFromFragmentOffset) term.getFroms().get(1);
+        assertFalse(from.getExcept());
+        assertThat(from.getOffsetRange(), equalTo(new SubRange(3, 12)));
+      }
+      {
+        FwFromFragmentOffset from = (FwFromFragmentOffset) term.getFroms().get(2);
+        assertTrue(from.getExcept());
+        assertThat(from.getOffsetRange(), equalTo(SubRange.singleton(5)));
+      }
+      {
+        FwFromFragmentOffset from = (FwFromFragmentOffset) term.getFroms().get(3);
+        assertTrue(from.getExcept());
+        assertThat(from.getOffsetRange(), equalTo(new SubRange(10, 11)));
+      }
+    }
+    {
+      FwTerm term = cf.getTerms().get("ICMP_TYPE");
+      assertThat(term.getFroms(), hasSize(4));
+      assertThat(term.getFroms().get(0), instanceOf(FwFromIcmpType.class));
+      assertThat(term.getFroms().get(1), instanceOf(FwFromIcmpType.class));
+      assertThat(term.getFroms().get(2), instanceOf(FwFromIcmpTypeExcept.class));
+      assertThat(term.getFroms().get(3), instanceOf(FwFromIcmpTypeExcept.class));
+      {
+        FwFromIcmpType from = (FwFromIcmpType) term.getFroms().get(0);
+        assertThat(from.getIcmpTypeRange(), equalTo(SubRange.singleton(0)));
+      }
+      {
+        FwFromIcmpType from = (FwFromIcmpType) term.getFroms().get(1);
+        assertThat(from.getIcmpTypeRange(), equalTo(new SubRange(10, 20)));
+      }
+      {
+        FwFromIcmpTypeExcept from = (FwFromIcmpTypeExcept) term.getFroms().get(2);
+        assertThat(from.getIcmpTypeRange(), equalTo(SubRange.singleton(11)));
+      }
+      {
+        FwFromIcmpTypeExcept from = (FwFromIcmpTypeExcept) term.getFroms().get(3);
+        assertThat(from.getIcmpTypeRange(), equalTo(new SubRange(13, 14)));
+      }
+    }
+    {
+      FwTerm term = cf.getTerms().get("ICMP_CODE");
+      assertThat(term.getFroms(), hasSize(4));
+      assertThat(term.getFroms().get(0), instanceOf(FwFromIcmpCode.class));
+      assertThat(term.getFroms().get(1), instanceOf(FwFromIcmpCode.class));
+      assertThat(term.getFroms().get(2), instanceOf(FwFromIcmpCodeExcept.class));
+      assertThat(term.getFroms().get(3), instanceOf(FwFromIcmpCodeExcept.class));
+      {
+        FwFromIcmpCode from = (FwFromIcmpCode) term.getFroms().get(0);
+        assertThat(from.getIcmpCodeRange(), equalTo(SubRange.singleton(0)));
+      }
+      {
+        FwFromIcmpCode from = (FwFromIcmpCode) term.getFroms().get(1);
+        assertThat(from.getIcmpCodeRange(), equalTo(new SubRange(30, 40)));
+      }
+      {
+        FwFromIcmpCodeExcept from = (FwFromIcmpCodeExcept) term.getFroms().get(2);
+        assertThat(from.getIcmpCodeRange(), equalTo(SubRange.singleton(31)));
+      }
+      {
+        FwFromIcmpCodeExcept from = (FwFromIcmpCodeExcept) term.getFroms().get(3);
+        assertThat(from.getIcmpCodeRange(), equalTo(new SubRange(33, 34)));
+      }
+    }
+    {
+      FwTerm term = cf.getTerms().get("PACKET_LENGTH");
+      assertThat(term.getFroms(), hasSize(4));
+      term.getFroms().forEach(from -> assertThat(from, instanceOf(FwFromPacketLength.class)));
+      {
+        FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(0);
+        assertFalse(from.getExcept());
+        assertThat(from.getRange(), equalTo(SubRange.singleton(50)));
+      }
+      {
+        FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(1);
+        assertFalse(from.getExcept());
+        assertThat(from.getRange(), equalTo(new SubRange(100, 200)));
+      }
+      {
+        FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(2);
+        assertTrue(from.getExcept());
+        assertThat(from.getRange(), equalTo(SubRange.singleton(70)));
+      }
+      {
+        FwFromPacketLength from = (FwFromPacketLength) term.getFroms().get(3);
+        assertTrue(from.getExcept());
+        assertThat(from.getRange(), equalTo(new SubRange(80, 90)));
+      }
     }
   }
 
@@ -2993,9 +3140,7 @@ public final class FlatJuniperGrammarTest {
 
     // all interfaces should show up; no need to test their specific settings here
     Configuration c = parseConfig("interface-range");
-    assertThat(
-        c.getAllInterfaces().keySet(),
-        equalTo(ImmutableSet.of("xe-0/0/0", "xe-0/0/1", "xe-8/1/2")));
+    assertThat(c.getAllInterfaces(), hasKeys("xe-0/0/0", "xe-0/0/1", "xe-8/1/2", "reth0"));
   }
 
   @Test
@@ -7018,4 +7163,77 @@ public final class FlatJuniperGrammarTest {
     // don't crash
     parseConfig("interface-media-types");
   }
+
+  @Test
+  public void testBridgeDomainsExtraction() {
+    String hostname = "bridge-domains";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    assertThat(
+        vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains(),
+        hasKeys("bd1", "bd3", "bd4", "bd5"));
+    assertThat(
+        vc.getMasterLogicalSystem().getRoutingInstances().get("ri1").getBridgeDomains(),
+        hasKeys("bd2"));
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains().get("bd1");
+      assertThat(bd.getRoutingInterface(), equalTo("irb.1"));
+      assertThat(bd.getVlanId(), equalTo(BridgeDomainVlanIdNumber.of(1)));
+    }
+    // TODO: extractions for interface, vlan-id-list, vlan-tags
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem()
+              .getRoutingInstances()
+              .get("ri1")
+              .getBridgeDomains()
+              .get("bd2");
+      assertThat(bd.getRoutingInterface(), nullValue());
+      assertThat(bd.getVlanId(), nullValue());
+    }
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains().get("bd3");
+      assertThat(bd.getRoutingInterface(), nullValue());
+      assertThat(bd.getVlanId(), nullValue());
+    }
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains().get("bd4");
+      assertThat(bd.getRoutingInterface(), nullValue());
+      assertThat(bd.getVlanId(), equalTo(BridgeDomainVlanIdNone.instance()));
+    }
+    {
+      BridgeDomain bd =
+          vc.getMasterLogicalSystem().getDefaultRoutingInstance().getBridgeDomains().get("bd5");
+      assertThat(bd.getRoutingInterface(), nullValue());
+      assertThat(bd.getVlanId(), equalTo(BridgeDomainVlanIdAll.instance()));
+    }
+  }
+
+  @Test
+  public void testBridgeDomainsConversion() {
+    String hostname = "bridge-domains";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("irb.1", allOf(hasVlan(1), isActive())));
+    // TODO: Update assertions if we should instead require an active physical/l2 interface in the
+    //       bridge domain. See JuniperConfiguration.convertBridgeDomain.
+    assertFalse(c.getNormalVlanRange().contains(1));
+  }
+
+  @Test
+  public void testBridgeDomainsReferences() throws IOException {
+    String hostname = "bridge-domains";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasDefinedStructure(filename, BRIDGE_DOMAIN, "bd1"));
+    // self refs
+    assertThat(ccae, hasNumReferrers(filename, BRIDGE_DOMAIN, "bd1", 4));
+    // self plus routing-interface
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "irb.1", 2));
+  }
+
+  private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

@@ -3,7 +3,6 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -19,34 +18,16 @@ public class BDDUtils {
     return factory;
   }
 
-  /**
-   * Swap the constraints on multiple {@link BDDInteger BDDIntegers} in a {@link BDD}. Usage:
-   * swap(bdd, a1, a2, b1, b2, ...). Swaps a1 and a2, b1 and b2, etc.
-   */
-  public static BDD swap(BDD bdd, BDDInteger... vars) {
-    return bdd.replace(swapPairing(vars));
+  public static BDD[] concatBitvectors(BDD[]... arrays) {
+    return Arrays.stream(arrays).flatMap(Arrays::stream).toArray(BDD[]::new);
   }
 
   /** Create a {@link BDDPairing} for swapping variables. */
-  public static BDDPairing swapPairing(BDDInteger... vars) {
-    checkArgument(vars.length > 0, "Requires at least 2 variables");
-    checkArgument(vars.length % 2 == 0, "Requires an even number of variables");
-    BDDFactory factory = vars[0].getFactory();
+  public static BDDPairing swapPairing(BDD[] bv1, BDD[] bv2) {
+    checkArgument(bv1.length > 0, "Cannot build swapPairing for empty bitvectors");
+    checkArgument(bv1.length == bv2.length, "Bitvector lengths must be equal");
 
-    Stream.Builder<BDDInteger> left = Stream.builder();
-    Stream.Builder<BDDInteger> right = Stream.builder();
-
-    for (int i = 0; i < vars.length; i += 2) {
-      checkArgument(
-          vars[i].size() == vars[i + 1].size(),
-          "Cannot swap variables with unequal number of bits");
-      left.add(vars[i]);
-      right.add(vars[i + 1]);
-    }
-
-    BDD[] bv1 = left.build().flatMap(var -> Arrays.stream(var.getBitvec())).toArray(BDD[]::new);
-    BDD[] bv2 = right.build().flatMap(var -> Arrays.stream(var.getBitvec())).toArray(BDD[]::new);
-
+    BDDFactory factory = bv1[0].getFactory();
     BDDPairing pairing = factory.makePair();
 
     for (int i = 0; i < bv1.length; i++) {

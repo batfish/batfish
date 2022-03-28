@@ -5,9 +5,6 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.ImmutableSet;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
@@ -195,15 +192,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   private @Nonnull IpOwners computeInitialIpOwners(NetworkSnapshot snapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialIpOwners").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return new PreDataPlaneIpOwners(
-          getConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
-    } finally {
-      span.finish();
-    }
+    return new PreDataPlaneIpOwners(getConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
   }
 
   private Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot networkSnapshot) {
@@ -215,136 +204,64 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   private @Nonnull Layer1Topologies createLayer1Topologies(NetworkSnapshot networkSnapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::createLayer1Topologies").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return Layer1TopologiesFactory.create(
-          getRawLayer1PhysicalTopology(networkSnapshot).orElse(Layer1Topology.EMPTY),
-          loadSynthesizedLayer1Topology(networkSnapshot).orElse(Layer1Topology.EMPTY),
-          getConfigurations(networkSnapshot));
-    } finally {
-      span.finish();
-    }
+    return Layer1TopologiesFactory.create(
+        getRawLayer1PhysicalTopology(networkSnapshot).orElse(Layer1Topology.EMPTY),
+        loadSynthesizedLayer1Topology(networkSnapshot).orElse(Layer1Topology.EMPTY),
+        getConfigurations(networkSnapshot));
   }
 
   /** Computes {@link IpsecTopology} with edges that have compatible IPsec settings */
   private IpsecTopology computeInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialIpsecTopology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return TopologyUtil.computeIpsecTopology(getConfigurations(networkSnapshot));
-    } finally {
-      span.finish();
-    }
+    return TopologyUtil.computeIpsecTopology(getConfigurations(networkSnapshot));
   }
 
   private Topology computeInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialLayer3Topology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return TopologyUtil.computeLayer3Topology(
-          getRawLayer3Topology(networkSnapshot), ImmutableSet.of());
-    } finally {
-      span.finish();
-    }
+    return TopologyUtil.computeLayer3Topology(
+        getRawLayer3Topology(networkSnapshot), ImmutableSet.of());
   }
 
   private @Nonnull L3Adjacencies computeInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialL3Adjacencies").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      Layer1Topologies l1 = getLayer1Topologies(networkSnapshot);
-      if (L3Adjacencies.USE_NEW_METHOD) {
-        return BroadcastL3Adjacencies.create(
-            l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot));
-      }
-      if (l1.getCombinedL1().isEmpty()) {
-        return GlobalBroadcastNoPointToPoint.instance();
-      }
-
-      Map<String, Configuration> configs = getConfigurations(networkSnapshot);
-      return HybridL3Adjacencies.create(
-          l1,
-          computeLayer2Topology(l1.getActiveLogicalL1(), VxlanTopology.EMPTY, configs),
-          configs);
-    } finally {
-      span.finish();
+    Layer1Topologies l1 = getLayer1Topologies(networkSnapshot);
+    if (L3Adjacencies.USE_NEW_METHOD) {
+      return BroadcastL3Adjacencies.create(
+          l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot));
     }
+    if (l1.getCombinedL1().isEmpty()) {
+      return GlobalBroadcastNoPointToPoint.instance();
+    }
+
+    Map<String, Configuration> configs = getConfigurations(networkSnapshot);
+    return HybridL3Adjacencies.create(
+        l1, computeLayer2Topology(l1.getActiveLogicalL1(), VxlanTopology.EMPTY, configs), configs);
   }
 
   private @Nonnull Optional<Layer1Topology> computeRawLayer1PhysicalTopology(
       NetworkSnapshot networkSnapshot) {
-    Span span =
-        GlobalTracer.get()
-            .buildSpan("TopologyProviderImpl::computeRawLayer1PhysicalTopology")
-            .start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return Optional.ofNullable(
-          _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()));
-    } finally {
-      span.finish();
-    }
+    return Optional.ofNullable(
+        _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()));
   }
 
   private @Nonnull Topology computeRawLayer3Topology(NetworkSnapshot networkSnapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeRawLayer3Topology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      Map<String, Configuration> configurations = getConfigurations(networkSnapshot);
-      L3Adjacencies adjacencies = getInitialL3Adjacencies(networkSnapshot);
-      return TopologyUtil.computeRawLayer3Topology(adjacencies, configurations);
-    } finally {
-      span.finish();
-    }
+    Map<String, Configuration> configurations = getConfigurations(networkSnapshot);
+    L3Adjacencies adjacencies = getInitialL3Adjacencies(networkSnapshot);
+    return TopologyUtil.computeRawLayer3Topology(adjacencies, configurations);
   }
 
   private @Nonnull OspfTopology computeInitialOspfTopology(NetworkSnapshot snapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialOspfTopology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return OspfTopologyUtils.computeOspfTopology(
-          NetworkConfigurations.of(getConfigurations(snapshot)),
-          getInitialLayer3Topology(snapshot));
-    } finally {
-      span.finish();
-    }
+    return OspfTopologyUtils.computeOspfTopology(
+        NetworkConfigurations.of(getConfigurations(snapshot)), getInitialLayer3Topology(snapshot));
   }
 
   private @Nonnull OspfTopology computeOspfTopology(NetworkSnapshot snapshot) {
-    Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeOspfTopology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return OspfTopologyUtils.computeOspfTopology(
-          NetworkConfigurations.of(getConfigurations(snapshot)), getLayer3Topology(snapshot));
-    }
+    return OspfTopologyUtils.computeOspfTopology(
+        NetworkConfigurations.of(getConfigurations(snapshot)), getLayer3Topology(snapshot));
   }
 
   private @Nonnull TunnelTopology computeInitialTunnelTopology(NetworkSnapshot snapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialTunnelTopology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return TopologyUtil.computeInitialTunnelTopology(getConfigurations(snapshot));
-    } finally {
-      span.finish();
-    }
+    return TopologyUtil.computeInitialTunnelTopology(getConfigurations(snapshot));
   }
 
   private @Nonnull VxlanTopology computeInitialVxlanTopology(NetworkSnapshot snapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialVxlanTopology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return VxlanTopologyUtils.computeInitialVxlanTopology(getConfigurations(snapshot));
-    } finally {
-      span.finish();
-    }
+    return VxlanTopologyUtils.computeInitialVxlanTopology(getConfigurations(snapshot));
   }
 }

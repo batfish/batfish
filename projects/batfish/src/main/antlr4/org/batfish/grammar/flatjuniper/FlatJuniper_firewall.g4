@@ -75,7 +75,9 @@ fft_from
       | fftf_fragment_offset
       | fftf_fragment_offset_except
       | fftf_icmp_code
+      | fftf_icmp_code_except
       | fftf_icmp_type
+      | fftf_icmp_type_except
       | fftf_ip_options
       | fftf_ip_protocol
       | fftf_is_fragment
@@ -83,6 +85,7 @@ fft_from
       | fftf_next_header
       | fftf_null
       | fftf_packet_length
+      | fftf_packet_length_except
       | fftf_port
       | fftf_port_except
       | fftf_precedence
@@ -179,12 +182,20 @@ fftf_forwarding_class
 
 fftf_fragment_offset
 :
-   FRAGMENT_OFFSET subrange
+   FRAGMENT_OFFSET fragment_offset_range
 ;
 
 fftf_fragment_offset_except
 :
-   FRAGMENT_OFFSET_EXCEPT subrange
+   FRAGMENT_OFFSET_EXCEPT fragment_offset_range
+;
+
+fragment_offset_range: start = fragment_offset (DASH end = fragment_offset)?;
+
+fragment_offset
+:
+  // 0-8191
+  uint16
 ;
 
 fftf_icmp_code
@@ -192,7 +203,16 @@ fftf_icmp_code
    ICMP_CODE
    (
       icmp_code
-      | subrange
+      | uint8_range
+   )
+;
+
+fftf_icmp_code_except
+:
+   ICMP_CODE_EXCEPT
+   (
+      icmp_code
+      | uint8_range
    )
 ;
 
@@ -202,7 +222,17 @@ fftf_icmp_type
    (
       icmp_type
       | icmp6_only_type
-      | subrange
+      | uint8_range
+   )
+;
+
+fftf_icmp_type_except
+:
+   ICMP_TYPE_EXCEPT
+   (
+      icmp_type
+      | icmp6_only_type
+      | uint8_range
    )
 ;
 
@@ -241,12 +271,12 @@ fftf_null
 
 fftf_packet_length
 :
-   PACKET_LENGTH range
+   PACKET_LENGTH uint16_range
 ;
 
 fftf_packet_length_except
 :
-   PACKET_LENGTH_EXCEPT range
+   PACKET_LENGTH_EXCEPT uint16_range
 ;
 
 fftf_port: PORT port_range;

@@ -315,6 +315,7 @@ public enum NamedPort {
   SIP_5061(5061),
   /** Simple Mail Transfer Protocol. */
   SMTP(25),
+  SMTPS(465),
   /** SNMP Unix Multiplexer. */
   SMUX(199),
   /** SNA Gateway Access Server. */

@@ -16,7 +16,9 @@ public final class BDDIpProtocol {
     _var = var;
   }
 
-  /** @return a constraint that the IpProtocol have the specified value. */
+  /**
+   * @return a constraint that the IpProtocol have the specified value.
+   */
   public BDD value(@Nullable IpProtocol v) {
     // null means any protocol
     return v == null ? _var.getFactory().one() : _var.value(v.number());
@@ -40,7 +42,9 @@ public final class BDDIpProtocol {
     return IpProtocol.fromNumber(_var.satAssignmentToLong(satAssignment).intValue());
   }
 
-  /** @return the {@link BDDInteger} backing this. */
+  /**
+   * @return the {@link BDDInteger} backing this.
+   */
   public BDDInteger getBDDInteger() {
     return _var;
   }

@@ -62,12 +62,16 @@ public class Address extends AddrgrpMember implements Serializable {
       return _ip2;
     }
 
-    /** @see #getIp1 */
+    /**
+     * @see #getIp1
+     */
     public @Nonnull Ip getIp1Effective() {
       return firstNonNull(_ip1, DEFAULT_IP);
     }
 
-    /** @see #getIp2 */
+    /**
+     * @see #getIp2
+     */
     public @Nonnull Ip getIp2Effective() {
       return firstNonNull(_ip2, DEFAULT_IP);
     }

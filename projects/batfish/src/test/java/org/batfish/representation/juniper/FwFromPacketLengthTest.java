@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
@@ -15,25 +14,25 @@ public class FwFromPacketLengthTest {
 
   @Test
   public void testToAclLineMatchExpr() {
-    List<SubRange> ranges = ImmutableList.of(SubRange.singleton(1), new SubRange(2, 3));
-    FwFromPacketLength from = new FwFromPacketLength(ranges, false);
+    SubRange range = new SubRange(2, 3);
+    FwFromPacketLength from = new FwFromPacketLength(range, false);
 
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
-            HeaderSpace.builder().setPacketLengths(ranges).build(),
-            TraceElement.of("Matched packet-length 1 2-3")));
+            HeaderSpace.builder().setPacketLengths(ImmutableList.of(range)).build(),
+            TraceElement.of("Matched packet-length 2-3")));
   }
 
   @Test
   public void testToAclLineMatchExpr_except() {
-    List<SubRange> ranges = ImmutableList.of(SubRange.singleton(1), new SubRange(2, 3));
-    FwFromPacketLength from = new FwFromPacketLength(ranges, true);
+    SubRange range = SubRange.singleton(1);
+    FwFromPacketLength from = new FwFromPacketLength(range, true);
 
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
-            HeaderSpace.builder().setNotPacketLengths(ranges).build(),
-            TraceElement.of("Matched packet-length 1 2-3 except")));
+            HeaderSpace.builder().setNotPacketLengths(ImmutableList.of(range)).build(),
+            TraceElement.of("Matched packet-length 1 except")));
   }
 }

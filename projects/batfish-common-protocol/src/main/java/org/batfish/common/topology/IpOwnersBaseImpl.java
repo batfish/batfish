@@ -10,9 +10,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -252,30 +249,23 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
   @VisibleForTesting
   static @Nonnull Map<String, Map<String, IpSpace>> computeInterfaceHostSubnetIps(
       Map<String, Configuration> configs, boolean excludeInactive) {
-    Span span =
-        GlobalTracer.get().buildSpan("IpOwnersBaseImpl.computeInterfaceHostSubnetIps").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          configs,
-          Entry::getKey, /* hostname */
-          nodeEntry ->
-              toImmutableMap(
-                  excludeInactive
-                      ? nodeEntry.getValue().getActiveInterfaces()
-                      : nodeEntry.getValue().getAllInterfaces(),
-                  Entry::getKey, /* interface */
-                  ifaceEntry ->
-                      firstNonNull(
-                          AclIpSpace.union(
-                              ifaceEntry.getValue().getAllConcreteAddresses().stream()
-                                  .map(ConcreteInterfaceAddress::getPrefix)
-                                  .map(Prefix::toHostIpSpace)
-                                  .collect(ImmutableList.toImmutableList())),
-                          EmptyIpSpace.INSTANCE)));
-    } finally {
-      span.finish();
-    }
+    return toImmutableMap(
+        configs,
+        Entry::getKey, /* hostname */
+        nodeEntry ->
+            toImmutableMap(
+                excludeInactive
+                    ? nodeEntry.getValue().getActiveInterfaces()
+                    : nodeEntry.getValue().getAllInterfaces(),
+                Entry::getKey, /* interface */
+                ifaceEntry ->
+                    firstNonNull(
+                        AclIpSpace.union(
+                            ifaceEntry.getValue().getAllConcreteAddresses().stream()
+                                .map(ConcreteInterfaceAddress::getPrefix)
+                                .map(Prefix::toHostIpSpace)
+                                .collect(ImmutableList.toImmutableList())),
+                        EmptyIpSpace.INSTANCE)));
   }
 
   @VisibleForTesting
@@ -308,19 +298,12 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
   @VisibleForTesting
   static @Nonnull Map<Ip, Set<String>> computeNodeOwners(
       Map<Ip, Map<String, Set<String>>> deviceOwnedIps) {
-    Span span = GlobalTracer.get().buildSpan("TopologyUtil.computeNodeOwners").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-
-      return toImmutableMap(
-          deviceOwnedIps,
-          Entry::getKey, /* Ip */
-          ipInterfaceOwnersEntry ->
-              /* project away interfaces */
-              ipInterfaceOwnersEntry.getValue().keySet());
-    } finally {
-      span.finish();
-    }
+    return toImmutableMap(
+        deviceOwnedIps,
+        Entry::getKey, /* Ip */
+        ipInterfaceOwnersEntry ->
+            /* project away interfaces */
+            ipInterfaceOwnersEntry.getValue().keySet());
   }
 
   /**

@@ -22,4 +22,9 @@ public final class Identity implements Transition {
   public BDD transitBackward(BDD bdd) {
     return bdd.id();
   }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitIdentity(this);
+  }
 }

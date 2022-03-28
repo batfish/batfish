@@ -1,5 +1,6 @@
 package org.batfish.common;
 
+import com.google.errorprone.annotations.FormatMethod;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -223,6 +224,7 @@ public final class BatfishLogger {
     write(LEVEL_DEBUG, msg);
   }
 
+  @FormatMethod
   public void debugf(String format, Object... args) {
     if (LOGGER.isDebugEnabled()) {
       String message = String.format(format, args);
@@ -237,6 +239,7 @@ public final class BatfishLogger {
     write(LEVEL_ERROR, msg);
   }
 
+  @FormatMethod
   public void errorf(String format, Object... args) {
     if (LOGGER.isErrorEnabled()) {
       String message = String.format(format, args);
@@ -278,6 +281,7 @@ public final class BatfishLogger {
     write(LEVEL_INFO, msg);
   }
 
+  @FormatMethod
   public void infof(String format, Object... args) {
     if (LOGGER.isInfoEnabled()) {
       String message = String.format(format, args);
@@ -296,6 +300,7 @@ public final class BatfishLogger {
     write(LEVEL_OUTPUT, msg);
   }
 
+  @FormatMethod
   public void outputf(String format, Object... args) {
     output(String.format(format, args));
   }
@@ -333,6 +338,7 @@ public final class BatfishLogger {
     write(LEVEL_WARN, msg);
   }
 
+  @FormatMethod
   public void warnf(String format, Object... args) {
     if (LOGGER.isWarnEnabled()) {
       String message = String.format(format, args);

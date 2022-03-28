@@ -13,9 +13,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -64,90 +61,83 @@ public final class BDDReachabilityUtils {
       Map<StateExpr, BDD> reachableSets,
       Table<StateExpr, StateExpr, Transition> edges,
       BiFunction<Transition, BDD, BDD> traverse) {
-    Span span = GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.fixpoint").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
+    if (reachableSets.isEmpty()) {
+      // No work to do.
+      return;
+    }
+    // Get a BDDFactory for zero and orAll.
+    BDDFactory factory = reachableSets.entrySet().iterator().next().getValue().getFactory();
 
-      if (reachableSets.isEmpty()) {
-        // No work to do.
-        return;
+    // For each state to process in the next round, all the incoming BDDs.
+    ListMultimap<StateExpr, BDD> dirtyInputs = LinkedListMultimap.create();
+
+    // To (try to) minimize how many times we're transiting the same edges, dirtyStates will be
+    // removed in order of increasing visitCounts.
+    // invariants:
+    // 1. the queue never contains duplicate elements.
+    // 2. visitCounts are never incremented while the state is in the queue.
+    HashMap<StateExpr, Integer> visitCounts = new HashMap<>();
+    PriorityQueue<StateExpr> dirtyStates =
+        new PriorityQueue<>(Comparator.comparingInt(st -> visitCounts.getOrDefault(st, 0)));
+
+    // Seed the dirty inputs with the initial reachable sets, then clear the reachable sets.
+    reachableSets.forEach(
+        (key, value) -> {
+          dirtyInputs.put(key, value.id());
+          dirtyStates.add(key);
+        });
+    reachableSets.clear();
+
+    while (!dirtyStates.isEmpty()) {
+      StateExpr dirtyState = dirtyStates.remove();
+      visitCounts.compute(dirtyState, (unused, oldCount) -> oldCount == null ? 1 : oldCount + 1);
+      List<BDD> inputs = dirtyInputs.removeAll(dirtyState);
+      assert !inputs.isEmpty();
+      BDD prior = reachableSets.get(dirtyState);
+      BDD newValue =
+          prior == null
+              ? factory.orAll(inputs)
+              : factory.orAll(Iterables.concat(inputs, Collections.singleton(prior)));
+      if (newValue.equals(prior)) {
+        // No change, so no need to update neighbors.
+        newValue.free();
+        inputs.forEach(BDD::free);
+        continue;
       }
-      // Get a BDDFactory for zero and orAll.
-      BDDFactory factory = reachableSets.entrySet().iterator().next().getValue().getFactory();
 
-      // For each state to process in the next round, all the incoming BDDs.
-      ListMultimap<StateExpr, BDD> dirtyInputs = LinkedListMultimap.create();
+      // Update the value and free the old one.
+      reachableSets.put(dirtyState, newValue);
+      if (prior != null) {
+        prior.free();
+      }
 
-      // To (try to) minimize how many times we're transiting the same edges, dirtyStates will be
-      // removed in order of increasing visitCounts.
-      // invariants:
-      // 1. the queue never contains duplicate elements.
-      // 2. visitCounts are never incremented while the state is in the queue.
-      HashMap<StateExpr, Integer> visitCounts = new HashMap<>();
-      PriorityQueue<StateExpr> dirtyStates =
-          new PriorityQueue<>(Comparator.comparingInt(st -> visitCounts.getOrDefault(st, 0)));
+      Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
+      if (dirtyStateEdges.isEmpty()) {
+        inputs.forEach(BDD::free);
+        continue;
+      }
 
-      // Seed the dirty inputs with the initial reachable sets, then clear the reachable sets.
-      reachableSets.forEach(
-          (key, value) -> {
-            dirtyInputs.put(key, value.id());
-            dirtyStates.add(key);
-          });
-      reachableSets.clear();
+      // Compute the newly learned BDDs (union of inputs) and then free them.
+      BDD learned = prior == null ? newValue.id() : factory.orAllAndFree(inputs);
 
-      while (!dirtyStates.isEmpty()) {
-        StateExpr dirtyState = dirtyStates.remove();
-        visitCounts.compute(dirtyState, (unused, oldCount) -> oldCount == null ? 1 : oldCount + 1);
-        List<BDD> inputs = dirtyInputs.removeAll(dirtyState);
-        assert !inputs.isEmpty();
-        BDD prior = reachableSets.get(dirtyState);
-        BDD newValue =
-            prior == null
-                ? factory.orAll(inputs)
-                : factory.orAll(Iterables.concat(inputs, Collections.singleton(prior)));
-        if (newValue.equals(prior)) {
-          // No change, so no need to update neighbors.
-          newValue.free();
-          inputs.forEach(BDD::free);
-          continue;
-        }
-
-        // Update the value and free the old one.
-        reachableSets.put(dirtyState, newValue);
-        if (prior != null) {
-          prior.free();
-        }
-
-        Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
-        if (dirtyStateEdges.isEmpty()) {
-          inputs.forEach(BDD::free);
-          continue;
-        }
-
-        // Compute the newly learned BDDs (union of inputs) and then free them.
-        BDD learned = prior == null ? newValue.id() : factory.orAllAndFree(inputs);
-
-        // Forward the learned BDDs along each outgoing edge.
-        dirtyStateEdges.forEach(
-            (neighbor, edge) -> {
-              long priorBDDs = factory.numOutstandingBDDs();
-              BDD result = traverse.apply(edge, learned);
-              long newBDDs = factory.numOutstandingBDDs();
-              assert newBDDs - priorBDDs == 1
-                  : "Leak of size " + (newBDDs - priorBDDs - 1) + ": " + edge;
-              if (!result.isZero()) {
-                // this is a new result. add it to neighbor's inputs. if neighbor isn't already in
-                // the dirtyStates queue, add it.
-                if (!dirtyInputs.containsKey(neighbor)) {
-                  dirtyStates.add(neighbor);
-                }
-                dirtyInputs.put(neighbor, result);
+      // Forward the learned BDDs along each outgoing edge.
+      dirtyStateEdges.forEach(
+          (neighbor, edge) -> {
+            long priorBDDs = factory.numOutstandingBDDs();
+            BDD result = traverse.apply(edge, learned);
+            long newBDDs = factory.numOutstandingBDDs();
+            assert newBDDs - priorBDDs == 1
+                : "Leak of size " + (newBDDs - priorBDDs - 1) + ": " + edge;
+            if (!result.isZero()) {
+              // this is a new result. add it to neighbor's inputs. if neighbor isn't already in
+              // the dirtyStates queue, add it.
+              if (!dirtyInputs.containsKey(neighbor)) {
+                dirtyStates.add(neighbor);
               }
-            });
-        learned.free();
-      }
-    } finally {
-      span.finish();
+              dirtyInputs.put(neighbor, result);
+            }
+          });
+      learned.free();
     }
   }
 

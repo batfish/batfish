@@ -86,6 +86,8 @@ set mgt-config users admin public-key c3NoLX...
 set rulebase security rules RULE1 target negate no
 set rulebase security rules RULE1 category streaming
 set rulebase security rules RULE1 hip-profiles any
+set rulebase security rules RULE1 source-hip any
+set rulebase security rules RULE1 destination-hip any
 set rulebase security rules RULE1 source-user any
 set rulebase security rules RULE1 log-end no
 set rulebase security rules RULE1 log-start yes

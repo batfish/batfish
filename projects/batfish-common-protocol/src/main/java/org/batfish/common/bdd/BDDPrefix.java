@@ -10,7 +10,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -67,25 +66,8 @@ public final class BDDPrefix {
   }
 
   /**
-   * Check if the first {@code length} bits of {@code _ip} match the BDDInteger representing {@code
-   * ip}.
+   * @return The {@link BDDFactory} used by this {@link BDDPrefix}.
    */
-  private @Nonnull BDD firstBitsEqual(Ip ip, int length) {
-    BDD[] bits = _ip.getBitvec();
-    long address = ip.asLong();
-    BDD result = _factory.one();
-    for (int i = 0; i < length; i++) {
-      boolean res = Ip.getBitAtPosition(address, i);
-      if (res) {
-        result = result.and(bits[i]);
-      } else {
-        result = result.diff(bits[i]);
-      }
-    }
-    return result;
-  }
-
-  /** @return The {@link BDDFactory} used by this {@link BDDPrefix}. */
   public @Nonnull BDDFactory getFactory() {
     return _ip.getFactory();
   }
@@ -100,8 +82,7 @@ public final class BDDPrefix {
 
   /** Returns a {@link BDD} reprepsenting a {@link Prefix} in the provided {@code prefixRange}. */
   public @Nonnull BDD inPrefixRange(PrefixRange prefixRange) {
-    Prefix p = prefixRange.getPrefix();
-    BDD prefixMatch = firstBitsEqual(p.getStartIp(), p.getPrefixLength());
+    BDD prefixMatch = _ip.toBDD(prefixRange.getPrefix());
 
     SubRange r = prefixRange.getLengthRange();
     int lower = r.getStart();
@@ -113,8 +94,7 @@ public final class BDDPrefix {
 
   /** Returns a {@link BDD} reprepsenting a {@link Prefix} equal to the provided {@code prefix}. */
   public @Nonnull BDD isPrefix(Prefix prefix) {
-    return firstBitsEqual(prefix.getStartIp(), prefix.getPrefixLength())
-        .and(_prefixLength.value(prefix.getPrefixLength()));
+    return _ip.toBDD(prefix).and(_prefixLength.value(prefix.getPrefixLength()));
   }
 
   /**

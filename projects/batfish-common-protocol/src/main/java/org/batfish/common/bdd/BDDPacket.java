@@ -1,7 +1,6 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
@@ -9,7 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -20,11 +18,9 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
-import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 
 /**
@@ -95,7 +91,6 @@ public class BDDPacket {
   private final @Nonnull BDD _tcpSyn;
   private final @Nonnull BDD _tcpUrg;
 
-  private final BDDPairing _pairing;
   private final BDDPairing _swapSourceAndDestinationPairing;
   private final IpSpaceToBDD _dstIpSpaceToBDD;
   private final IpSpaceToBDD _srcIpSpaceToBDD;
@@ -144,13 +139,17 @@ public class BDDPacket {
 
     _bitNames = new HashMap<>();
 
-    _dstIp = allocateBDDInteger("dstIp", IP_LENGTH, false);
-    _srcIp = allocateBDDInteger("srcIp", IP_LENGTH, false);
-    _dstPort = allocateBDDInteger("dstPort", PORT_LENGTH, false);
-    _srcPort = allocateBDDInteger("srcPort", PORT_LENGTH, false);
-    _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH, false));
-    _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH, false));
-    _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH, false));
+    BDD[] dstIpBitvec = allocateBDDBits("dstIp", IP_LENGTH);
+    BDD[] srcIpBitvec = allocateBDDBits("srcIp", IP_LENGTH);
+    BDD[] dstPortBitvec = allocateBDDBits("dstPort", PORT_LENGTH);
+    BDD[] srcPortBitvec = allocateBDDBits("srcPort", PORT_LENGTH);
+    _dstIp = new BDDInteger(_factory, dstIpBitvec);
+    _srcIp = new BDDInteger(_factory, srcIpBitvec);
+    _dstPort = new BDDInteger(_factory, dstPortBitvec);
+    _srcPort = new BDDInteger(_factory, srcPortBitvec);
+    _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH));
+    _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH));
+    _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH));
     _tcpAck = allocateBDDBit("tcpAck");
     _tcpCwr = allocateBDDBit("tcpCwr");
     _tcpEce = allocateBDDBit("tcpEce");
@@ -159,17 +158,15 @@ public class BDDPacket {
     _tcpRst = allocateBDDBit("tcpRst");
     _tcpSyn = allocateBDDBit("tcpSyn");
     _tcpUrg = allocateBDDBit("tcpUrg");
-    _dscp = allocateBDDInteger("dscp", DSCP_LENGTH, false);
-    _ecn = allocateBDDInteger("ecn", ECN_LENGTH, false);
-    _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH, false);
-    _packetLength =
-        new BDDPacketLength(allocateBDDInteger("packetLength", PACKET_LENGTH_LENGTH, false));
+    _dscp = allocateBDDInteger("dscp", DSCP_LENGTH);
+    _ecn = allocateBDDInteger("ecn", ECN_LENGTH);
+    _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH);
+    _packetLength = new BDDPacketLength(allocateBDDInteger("packetLength", PACKET_LENGTH_LENGTH));
 
-    _pairing = _factory.makePair();
     _swapSourceAndDestinationPairing =
         swapPairing(
-            getDstIp(), getSrcIp(), //
-            getDstPort(), getSrcPort());
+            BDDUtils.concatBitvectors(dstIpBitvec, dstPortBitvec),
+            BDDUtils.concatBitvectors(srcIpBitvec, srcPortBitvec));
 
     _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_dstIp, ImmutableMap.of());
     _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_srcIp, ImmutableMap.of());
@@ -192,13 +189,9 @@ public class BDDPacket {
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
    */
-  private void addBitNames(String s, int length, int index, boolean reverse) {
+  private void addBitNames(String s, int length, int index) {
     for (int i = index; i < index + length; i++) {
-      if (reverse) {
-        _bitNames.put(i, s + (length - 1 - (i - index)));
-      } else {
-        _bitNames.put(i, s + (i - index + 1));
-      }
+      _bitNames.put(i, s + (i - index + 1));
     }
   }
 
@@ -223,17 +216,30 @@ public class BDDPacket {
    *
    * @param name Used for debugging.
    * @param bits The number of bits to allocate.
-   * @param reverse If true, reverse the BDD order of the bits.
    * @return The new variable.
    */
-  public BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
+  public BDDInteger allocateBDDInteger(String name, int bits) {
+    return new BDDInteger(_factory, allocateBDDBits(name, bits));
+  }
+
+  /**
+   * Allocate {@link BDD} variables.
+   *
+   * @param name Used for debugging.
+   * @param bits The number of bits to allocate.
+   * @return An array of the new {@link BDD} variables.
+   */
+  private BDD[] allocateBDDBits(String name, int bits) {
     if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
       _factory.setVarNum(_nextFreeBDDVarIdx + bits);
     }
-    BDDInteger var = makeFromIndex(_factory, bits, _nextFreeBDDVarIdx, reverse);
-    addBitNames(name, bits, _nextFreeBDDVarIdx, false);
+    BDD[] bdds = new BDD[bits];
+    for (int i = 0; i < bits; i++) {
+      bdds[i] = _factory.ithVar(_nextFreeBDDVarIdx + i);
+    }
+    addBitNames(name, bits, _nextFreeBDDVarIdx);
     _nextFreeBDDVarIdx += bits;
-    return var;
+    return bdds;
   }
 
   public IpSpaceToBDD getDstIpSpaceToBDD() {
@@ -244,7 +250,9 @@ public class BDDPacket {
     return _srcIpSpaceToBDD;
   }
 
-  /** @return The {@link BDDFactory} used by this packet. */
+  /**
+   * @return The {@link BDDFactory} used by this packet.
+   */
   public BDDFactory getFactory() {
     return _factory;
   }
@@ -480,35 +488,6 @@ public class BDDPacket {
         && _dscp.equals(other._dscp)
         && _ecn.equals(other._ecn)
         && _fragmentOffset.equals(other._fragmentOffset);
-  }
-
-  public BDD restrict(BDD bdd, Prefix pfx) {
-    int len = pfx.getPrefixLength();
-    long bits = pfx.getStartIp().asLong();
-    int[] vars = new int[len];
-    BDD[] vals = new BDD[len];
-    _pairing.reset();
-    for (int i = 0; i < len; i++) {
-      int var = _dstIp.getBitvec()[i].var(); // dstIpIndex + i;
-      BDD subst = Ip.getBitAtPosition(bits, i) ? _factory.one() : _factory.zero();
-      vars[i] = var;
-      vals[i] = subst;
-    }
-    _pairing.set(vars, vals);
-    return bdd.veccompose(_pairing);
-  }
-
-  public BDD restrict(BDD bdd, List<Prefix> prefixes) {
-    if (prefixes.isEmpty()) {
-      throw new BatfishException("Empty prefix list in BDDRecord restrict");
-    }
-    BDD r = restrict(bdd, prefixes.get(0));
-    for (int i = 1; i < prefixes.size(); i++) {
-      Prefix p = prefixes.get(i);
-      BDD x = restrict(bdd, p);
-      r = r.or(x);
-    }
-    return r;
   }
 
   public BDD swapSourceAndDestinationFields(BDD bdd) {

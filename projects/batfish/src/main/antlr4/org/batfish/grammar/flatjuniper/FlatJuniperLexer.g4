@@ -328,7 +328,7 @@ BOOTPS: 'bootps';
 
 BRIDGE: 'bridge';
 
-BRIDGE_DOMAINS: 'bridge-domains';
+BRIDGE_DOMAINS: 'bridge-domains' -> pushMode(M_Name);
 
 BROADCAST_CLIENT: 'broadcast-client';
 
@@ -553,7 +553,7 @@ DOMAIN: 'domain';
 DOMAIN_NAME: 'domain-name' -> pushMode(M_Name);
 
 DOMAIN_SEARCH: 'domain-search';
-
+DOMAIN_TYPE: 'domain-type';
 DROP_PATH_ATTRIBUTES: 'drop-path-attributes';
 
 DROP_PROFILES: 'drop-profiles' -> pushMode(M_Name);
@@ -866,9 +866,11 @@ ICCP: 'iccp';
 
 ICMP: 'icmp';
 
-ICMP_CODE: 'icmp-code';
+ICMP_CODE: 'icmp-code' -> pushMode(M_IcmpCodeOrType);
+ICMP_CODE_EXCEPT: 'icmp-code-except' -> pushMode(M_IcmpCodeOrType);
 
-ICMP_TYPE: 'icmp-type';
+ICMP_TYPE: 'icmp-type' -> pushMode(M_IcmpCodeOrType);
+ICMP_TYPE_EXCEPT: 'icmp-type-except' -> pushMode(M_IcmpCodeOrType);
 
 ICMP6: 'icmp6';
 
@@ -1328,6 +1330,8 @@ JUNOS_R2CP: 'junos-r2cp';
 JUNOS_RADACCT: 'junos-radacct';
 
 JUNOS_RADIUS: 'junos-radius';
+
+JUNOS_RDP: 'junos-rdp';
 
 JUNOS_REALAUDIO: 'junos-realaudio';
 
@@ -1941,7 +1945,7 @@ NODE_DEVICE: 'node-device' -> pushMode(M_FabricDevice);
 NODE_GROUP: 'node-group' -> pushMode(M_Name);
 
 NODE_LINK_PROTECTION: 'node-link-protection';
-
+NONE: 'none';
 NONSTOP_ROUTING: 'nonstop-routing';
 
 NON_STRICT_PRIORITY_SCHEDULING: 'non-strict-priority-scheduling';
@@ -1996,7 +2000,7 @@ P2P: 'p2p';
 
 PACKET_LENGTH: 'packet-length' -> pushMode(M_SubRange);
 
-PACKET_LENGTH_EXCEPT: 'packet-length-except';
+PACKET_LENGTH_EXCEPT: 'packet-length-except' -> pushMode(M_SubRange);
 
 PACKET_TOO_BIG: 'packet-too-big';
 
@@ -2356,7 +2360,7 @@ ROUTING_HEADER: 'routing-header';
 ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_Name);
 
 ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Name);
-
+ROUTING_INTERFACE: 'routing-interface' -> pushMode(M_Interface);
 ROUTING_OPTIONS: 'routing-options';
 
 RPC_PROGRAM_NUMBER: 'rpc-program-number';
@@ -3430,6 +3434,12 @@ fragment
 F_NameQuoted
 :
   '"' (F_NameChar | ' ')* '"'
+;
+
+fragment
+F_Alpha
+:
+  [A-Za-z]
 ;
 
 fragment
@@ -4649,16 +4659,17 @@ M_QueueNumber2_WS: F_WhitespaceChar+ -> skip;
 M_QueueNumber2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_SubRange;
-M_SubRange_WS: F_WhitespaceChar+ -> skip, mode(M_SubRange2);
+M_SubRange_WS: F_WhitespaceChar+ -> skip;
 M_SubRange_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_SubRange_UINT8: F_Uint8 -> type(UINT8);
+M_SubRange_UINT16: F_Uint16 -> type(UINT16);
+M_SubRange_DASH: '-' -> type(DASH), mode(M_SubRangeDash);
+M_SubRange_OTHER: F_Alpha F_NonWhitespaceChar* { less(); } -> popMode;
 
-mode M_SubRange2;
-M_SubRange2_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
-M_SubRange2_DEC: F_Digit+ -> type(DEC);
-M_SubRange2_DASH: '-' -> type(DASH);
-M_SubRange2_WS: F_WhitespaceChar+ -> skip, popMode;
-M_SubRange2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-
+mode M_SubRangeDash;
+M_SubRangeDash_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_SubRangeDash_UINT8: F_Uint8 -> type(UINT8), popMode;
+M_SubRangeDash_UINT16: F_Uint16 -> type(UINT16), popMode;
 
 mode M_Range;
 M_Range_WS: F_WhitespaceChar+ -> mode(M_Range2);
@@ -4758,3 +4769,9 @@ M_ExtendedVniListNumber_DASH: '-' -> type(DASH), mode(M_ExtendedVniListDash);
 mode M_ExtendedVniListDash;
 M_ExtendedVniListDash_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_ExtendedVniListDash_UINT32: F_Uint32 -> type(UINT32), mode(M_ExtendedVniList);
+
+mode M_IcmpCodeOrType;
+M_IcmpCodeOrType_WS: F_WhitespaceChar+ -> skip;
+M_IcmpCodeOrType_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_IcmpCodeOrType_RANGE: F_Digit+ ('-' F_Digit+)? { less(); } -> mode(M_SubRange);
+M_IcmpCodeOrType_NAMED: F_NonWhitespaceChar+ { less(); } -> popMode;

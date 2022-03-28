@@ -12,17 +12,16 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.config.Settings;
 import org.codehaus.jettison.json.JSONArray;
 
 /** Helper class that implements (some) communication between Batfish worker and coordinator */
 public final class CoordinatorClient {
 
   public static Object talkToCoordinator(
-      String url, Map<String, String> params, Settings settings, BatfishLogger logger) {
+      String url, Map<String, String> params, BatfishLogger logger) {
     Client client = null;
     try {
-      client = CommonUtil.createHttpClientBuilder(true).build();
+      client = CommonUtil.createHttpClientBuilder().build();
       WebTarget webTarget = client.target(url);
       for (Map.Entry<String, String> entry : params.entrySet()) {
         webTarget = webTarget.queryParam(entry.getKey(), entry.getValue());
@@ -56,10 +55,10 @@ public final class CoordinatorClient {
         throw new BatfishException("Unrecoverable connection error", e);
       }
       logger.errorf("BF: unable to connect to coordinator pool mgr at %s\n", url);
-      logger.debug(Throwables.getStackTraceAsString(e) + "\n");
+      logger.debugf("%s%n", Throwables.getStackTraceAsString(e));
       return null;
     } catch (Exception e) {
-      logger.errorf("exception: " + Throwables.getStackTraceAsString(e));
+      logger.errorf("exception: %s", Throwables.getStackTraceAsString(e));
       return null;
     } finally {
       if (client != null) {

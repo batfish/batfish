@@ -31,9 +31,11 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Key;
 import org.batfish.bddreachability.transition.Transition;
+import org.batfish.bddreachability.transition.TransitionVisitor;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -184,9 +186,10 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
       Vrf vrf = nf.vrfBuilder().setName(FW_VRF).setOwner(fw).build();
       vrf.setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(true));
       ib.setOwner(fw).setVrf(vrf);
-      fwi1 = ib.setName(FWI1).build();
-      fwi2 = ib.setName(FWI2).build();
-      Interface fwi3 = ib.setName(FWI3).build();
+      fwi1 = ib.setName(FWI1).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+      fwi2 = ib.setName(FWI2).setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24")).build();
+      Interface fwi3 =
+          ib.setName(FWI3).setAddress(ConcreteInterfaceAddress.parse("3.3.3.3/24")).build();
 
       // Create sessions for flows exiting FW:I3
       fwi3.setFirewallSessionInterfaceInfo(
@@ -260,12 +263,17 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     @Override
     public BDD transitForward(BDD bdd) {
-      throw new IllegalStateException("Should never be called");
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public BDD transitBackward(BDD bdd) {
-      throw new IllegalStateException("Should never be called");
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T accept(TransitionVisitor<T> visitor) {
+      throw new UnsupportedOperationException();
     }
 
     @Override

@@ -1,0 +1,32 @@
+#
+set system host-name bridge-domains
+#
+
+# associated with bd1
+set interfaces xe-0/0/1 unit 0 family bridge interface-mode trunk
+set interfaces xe-0/0/1 unit 0 family bridge vlan-id-list 1
+set interfaces irb unit 1 family inet address 10.0.0.1/24
+
+# associated with bd3
+set interfaces xe-0/0/3 vlan-tagging
+set interfaces xe-0/0/3 encapsulation extended-vlan-bridge
+set interfaces xe-0/0/3 unit 0 vlan-id 20
+
+set bridge-domains bd1 domain-type bridge
+set bridge-domains bd1 routing-interface irb.1
+set bridge-domains bd1 vlan-id 1
+set bridge-domains bd1 vxlan vni 10000
+
+set routing-instances ri1 bridge-domains bd2 domain-type bridge
+set routing-instances ri1 bridge-domains bd2 vlan-id-list 2
+set routing-instances ri1 bridge-domains bd2 vlan-id-list 3
+set routing-instances ri1 bridge-domains bd2 vlan-tags outer 10 inner 11
+
+set bridge-domains bd3 domain-type bridge
+set bridge-domains bd3 interface xe-0/0/3.0
+
+set bridge-domains bd4 domain-type bridge
+set bridge-domains bd4 vlan-id none
+
+set bridge-domains bd5 domain-type bridge
+set bridge-domains bd5 vlan-id all

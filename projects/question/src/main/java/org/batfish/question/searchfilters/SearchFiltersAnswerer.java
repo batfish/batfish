@@ -1,5 +1,6 @@
 package org.batfish.question.searchfilters;
 
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.activeAclSources;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.question.FilterQuestionUtils.differentialBDDSourceManager;
 import static org.batfish.question.FilterQuestionUtils.resolveSources;
@@ -263,11 +264,10 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   private static Set<String> getActiveSources(
       Configuration c, SpecifierContext specifierContext, SearchFiltersParameters parameters) {
-    Set<String> inactiveIfaces =
-        Sets.difference(c.getAllInterfaces().keySet(), c.activeInterfaceNames());
-    return Sets.difference(
+    Set<String> activeSources = activeAclSources(c);
+    return Sets.intersection(
         resolveSources(specifierContext, parameters.getStartLocationSpecifier(), c.getHostname()),
-        inactiveIfaces);
+        activeSources);
   }
 
   /** Performs a difference reachFilters analysis (both increased and decreased reachability). */

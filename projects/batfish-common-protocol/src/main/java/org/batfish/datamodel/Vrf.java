@@ -204,7 +204,9 @@ public class Vrf extends ComparableStructure<String> {
     return _generatedRoutes;
   }
 
-  /** @return EIGRP routing processes for this VRF. This map cannot be modified. */
+  /**
+   * @return EIGRP routing processes for this VRF. This map cannot be modified.
+   */
   @JsonProperty(PROP_EIGRP_PROCESSES)
   public Map<Long, EigrpProcess> getEigrpProcesses() {
     return _eigrpProcesses;

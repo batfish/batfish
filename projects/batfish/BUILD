@@ -18,7 +18,6 @@ java_library(
     ],
     runtime_deps = [
         "//projects/question",
-        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
@@ -64,10 +63,6 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:com_ibm_icu_icu4j",
         "@maven//:commons_io_commons_io",
-        "@maven//:io_jaegertracing_jaeger_core",
-        "@maven//:io_opentracing_contrib_opentracing_jaxrs2",
-        "@maven//:io_opentracing_opentracing_api",
-        "@maven//:io_opentracing_opentracing_util",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_collections4",

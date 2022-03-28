@@ -27,12 +27,14 @@ public final class TableViewTest {
         new TableView(
             OPTIONS,
             ImmutableList.of(new TableViewRow(0, row1), new TableViewRow(1, row2)),
-            METADATA);
+            METADATA,
+            ImmutableList.of("a warning"));
 
     TableView cycledTableView = BatfishObjectMapper.clone(tableView, TableView.class);
 
     assertThat(tableView.getOptions(), equalTo(cycledTableView.getOptions()));
     assertThat(tableView.getRows(), equalTo(cycledTableView.getRows()));
     assertThat(tableView.getTableMetadata(), equalTo(cycledTableView.getTableMetadata()));
+    assertThat(tableView.getWarnings(), equalTo(cycledTableView.getWarnings()));
   }
 }

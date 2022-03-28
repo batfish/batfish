@@ -35,4 +35,9 @@ public final class AddLastHopConstraint implements Transition {
   public BDD transitBackward(BDD bdd) {
     return _mgr.existsLastHop(bdd);
   }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitAddLastHopConstraint(this);
+  }
 }

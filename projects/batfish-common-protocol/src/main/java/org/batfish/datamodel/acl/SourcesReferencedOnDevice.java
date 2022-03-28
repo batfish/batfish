@@ -1,6 +1,6 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.activeAclSources;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -43,9 +43,7 @@ public final class SourcesReferencedOnDevice {
    * interfaces.
    */
   public static Set<String> activeReferencedSources(Configuration c) {
-    return Sets.intersection(
-        allReferencedSources(c),
-        Sets.union(ImmutableSet.of(SOURCE_ORIGINATING_FROM_DEVICE), c.activeInterfaceNames()));
+    return Sets.intersection(allReferencedSources(c), activeAclSources(c));
   }
 
   /**
@@ -177,6 +175,10 @@ public final class SourcesReferencedOnDevice {
   private static void collectAllTransformationReferences(
       Configuration c, Set<Object> visited, Set<String> referenced) {
     for (Interface i : c.getActiveInterfaces().values()) {
+      if (!i.canSendIpTraffic() && !i.canReceiveIpTraffic()) {
+        // Transformations can only be reached for sent/received traffic.
+        continue;
+      }
       if (i.getIncomingTransformation() != null) {
         collectTransformationReferences(
             i.getIncomingTransformation(), c.getIpAccessLists(), visited, referenced);

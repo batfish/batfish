@@ -21,5 +21,23 @@ set interfaces xe-0/0/3 unit 0 family inet filter input-list FILTER2
 set interfaces xe-0/0/3 unit 0 family inet filter output-list FILTER2
 set interfaces xe-0/0/3 unit 0 family inet filter output-list FILTER1
 #
-set firewall filter PARSING term PARSING from fragment-offset 1-10
-set firewall filter PARSING term PARSING from fragment-offset-except 11
+set firewall filter PARSING term FRAGMENT_OFFSET from fragment-offset 1
+set firewall filter PARSING term FRAGMENT_OFFSET from fragment-offset 3-12
+set firewall filter PARSING term FRAGMENT_OFFSET from fragment-offset-except 5
+set firewall filter PARSING term FRAGMENT_OFFSET from fragment-offset-except 10-11
+#
+set firewall filter PARSING term ICMP_TYPE from icmp-type 0
+set firewall filter PARSING term ICMP_TYPE from icmp-type 10-20
+set firewall filter PARSING term ICMP_TYPE from icmp-type-except 11
+set firewall filter PARSING term ICMP_TYPE from icmp-type-except 13-14
+#
+set firewall filter PARSING term ICMP_CODE from icmp-code 0
+set firewall filter PARSING term ICMP_CODE from icmp-code 30-40
+set firewall filter PARSING term ICMP_CODE from icmp-code-except 31
+set firewall filter PARSING term ICMP_CODE from icmp-code-except 33-34
+#
+set firewall filter PARSING term PACKET_LENGTH from packet-length 50
+set firewall filter PARSING term PACKET_LENGTH from packet-length 100-200
+set firewall filter PARSING term PACKET_LENGTH from packet-length-except 70
+set firewall filter PARSING term PACKET_LENGTH from packet-length-except 80-90
+#

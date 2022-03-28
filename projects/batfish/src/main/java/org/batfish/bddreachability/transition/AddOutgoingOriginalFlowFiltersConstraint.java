@@ -50,4 +50,9 @@ public final class AddOutgoingOriginalFlowFiltersConstraint implements Transitio
     onlyWithConstraint.free();
     return ret;
   }
+
+  @Override
+  public <T> T accept(TransitionVisitor<T> visitor) {
+    return visitor.visitAddOutgoingOriginalFlowFiltersConstraint(this);
+  }
 }

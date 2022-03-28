@@ -425,12 +425,17 @@ public final class Configuration implements Serializable {
     return _authenticationKeyChains;
   }
 
+  @Deprecated
   public Set<String> activeInterfaceNames() {
     return activeInterfaces().map(Interface::getName).collect(ImmutableSet.toImmutableSet());
   }
 
   public @Nonnull Stream<Interface> activeInterfaces() {
     return _interfaces.values().stream().filter(Interface::getActive);
+  }
+
+  public @Nonnull Stream<Interface> activeL3Interfaces() {
+    return _interfaces.values().stream().filter(Interface::isActiveL3);
   }
 
   @JsonIgnore
@@ -643,16 +648,14 @@ public final class Configuration implements Serializable {
    */
   @JsonIgnore
   public Map<String, Interface> getActiveInterfaces(@Nonnull String vrf) {
-    return _interfaces.entrySet().stream()
-        .filter(e -> e.getValue().getVrfName().equals(vrf) && e.getValue().getActive())
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    return activeInterfaces()
+        .filter(i -> i.getVrfName().equals(vrf))
+        .collect(ImmutableMap.toImmutableMap(Interface::getName, i -> i));
   }
 
   @JsonIgnore
   public Map<String, Interface> getActiveInterfaces() {
-    return _interfaces.entrySet().stream()
-        .filter(e -> e.getValue().getActive())
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    return activeInterfaces().collect(ImmutableMap.toImmutableMap(Interface::getName, i -> i));
   }
 
   /** Whether administratively disconnected interfaces are always automatically line down. */

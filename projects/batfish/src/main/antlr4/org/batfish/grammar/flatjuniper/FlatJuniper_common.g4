@@ -114,8 +114,13 @@ extended_community
 
 icmp_code
 :
-  dec
-  | COMMUNICATION_PROHIBITED_BY_FILTERING
+  uint8
+  | named_icmp_code
+;
+
+named_icmp_code
+:
+  COMMUNICATION_PROHIBITED_BY_FILTERING
   | DESTINATION_HOST_PROHIBITED
   | DESTINATION_HOST_UNKNOWN
   | DESTINATION_NETWORK_PROHIBITED
@@ -143,8 +148,13 @@ icmp_code
 
 icmp_type
 :
-  dec
-  | DESTINATION_UNREACHABLE
+  uint8
+  | named_icmp_type
+;
+
+named_icmp_type
+:
+  DESTINATION_UNREACHABLE
   | ECHO_REPLY
   | ECHO_REQUEST
   | INFO_REPLY
@@ -333,6 +343,7 @@ junos_application
   | JUNOS_RADACCT
   | JUNOS_RADIUS
   | JUNOS_REALAUDIO
+  | JUNOS_RDP
   | JUNOS_RIP
   | JUNOS_RSH
   | JUNOS_RTSP
@@ -675,11 +686,15 @@ uint8
   UINT8
 ;
 
+uint8_range: start = uint8 (DASH end = uint8)?;
+
 uint16
 :
   UINT8
   | UINT16
 ;
+
+uint16_range: start = uint16 (DASH end = uint16)?;
 
 uint32
 :
@@ -692,6 +707,12 @@ wildcard
 :
   WILDCARD
   | WILDCARD_ARTIFACT
+;
+
+vlan_number
+:
+  // 1-4094
+  uint16
 ;
 
 vni_number

@@ -9,13 +9,14 @@ java_binary(
     main_class = "org.batfish.allinone.Main",
     runtime_deps = [
         ":allinone",
+        "//projects/minesweeper",
         "//projects/question",
-        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
 )
 
+# Deprecated
 java_binary(
     name = "allinone_with_minesweeper_main",
     main_class = "org.batfish.allinone.Main",
@@ -41,8 +42,6 @@ java_library(
         "//projects/coordinator",
         "@maven//:com_google_guava_guava",
         "@maven//:commons_cli_commons_cli",
-        "@maven//:io_jaegertracing_jaeger_core",
-        "@maven//:io_opentracing_opentracing_util",
     ],
 )
 

@@ -134,6 +134,7 @@ public enum JunosApplication implements Application {
   JUNOS_RADACCT,
   JUNOS_RADIUS,
   JUNOS_REALAUDIO,
+  JUNOS_RDP,
   JUNOS_RIP,
   JUNOS_RSH,
   JUNOS_RTSP,
@@ -540,6 +541,20 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_IMAP:
+        {
+          portRangeStart = NamedPort.IMAP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_IMAPS:
+        {
+          portRangeStart = NamedPort.IMAPS.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_LDAP:
         {
           portRangeStart = NamedPort.LDAP.number();
@@ -751,6 +766,13 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_POP3:
+        {
+          portRangeStart = NamedPort.POP3.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_PPTP:
         {
           portRangeStart = NamedPort.PPTP.number();
@@ -770,6 +792,13 @@ public enum JunosApplication implements Application {
         {
           portRangeStart = NamedPort.RADIUS_2_AUTH.number();
           ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_RDP:
+        {
+          portRangeStart = NamedPort.RDP.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
@@ -811,6 +840,22 @@ public enum JunosApplication implements Application {
         {
           portRangeStart = NamedPort.SMTP.number();
           ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_SMTPS:
+        {
+          // this junos application uses both 587 and 465
+          portRangeStart = NamedPort.SUBMISSION.number();
+          ipProtocol = IpProtocol.TCP;
+
+          String t2Name = "t2";
+          Term t2 = new Term();
+          HeaderSpace.Builder l2 = t2.getHeaderSpace().toBuilder();
+          setHeaderSpaceInfo(l2, IpProtocol.TCP, NamedPort.SMTPS.number(), null);
+          t2.setHeaderSpace(l2.build());
+
+          terms.put(t2Name, t2);
           break;
         }
 
