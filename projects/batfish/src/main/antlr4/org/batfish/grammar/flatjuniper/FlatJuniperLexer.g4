@@ -2326,7 +2326,7 @@ ROUTE: 'route';
 
 ROUTE_DISTINGUISHER
 :
-    'route-distinguisher' -> pushMode ( M_RouteDistinguisher )
+   'route-distinguisher' -> pushMode ( M_RouteDistinguisher )
 ;
 
 ROUTE_DISTINGUISHER_ID: 'route-distinguisher-id';

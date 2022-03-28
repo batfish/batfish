@@ -184,9 +184,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
 import org.batfish.representation.juniper.Interface.InterfaceType;
@@ -3893,45 +3890,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       IpAccessList acl = securityPolicyToIpAccessList(filter);
       _c.getIpAccessLists().put(acl.getName(), acl);
-    }
-  }
-
-  private void VxlanConversion() {
-    // check for vrf
-    // check for switch options for source-interface
-    // better understand logicalsystem and if something else might need to be added to?
-
-    for (Vlan vni : _masterLogicalSystem.getNamedVlans().values()) {
-      Integer vlan = vni.getVlanId();
-      if (vlan == null) {
-        // JUNOS requires all VNIs be associated with a VLAN
-        return;
-      }
-      Integer vniId = vni.getVniId();
-      String l3Interface = vni.getL3Interface();
-      if (l3Interface == null || vniId == null) {
-        continue;
-      }
-      if (l3Interface == null) {
-        // Should be a l2vni
-        Layer2Vni vniSettings =
-            Layer2Vni.builder().setVni(vniId).setUdpPort(Vni.DEFAULT_UDP_PORT).build();
-      } else {
-        Layer3Vni vniSettings =
-            Layer3Vni.builder().setVni(vniId).setUdpPort(Vni.DEFAULT_UDP_PORT).build();
-        // _c.getVrfs().get(routingInstanceLocation().getName()).addLayer3Vni(vniSettings);
-        //      Layer3Vni vniSettings =
-        //          Layer3Vni.builder()
-        //              .setSourceAddress(
-        //                  nve.getSourceInterface() != null
-        //                      ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
-        //                      : null)
-        //              .setUdpPort(Vni.DEFAULT_UDP_PORT)
-        //              .setVni(nveVni.getVni())
-        //              .setSrcVrf(DEFAULT_VRF_NAME)
-        //              .build();
-        //      _c.getVrfs().get(vsTenantVrfForL3Vni.getName()).addLayer3Vni(vniSettings);
-      }
     }
   }
 

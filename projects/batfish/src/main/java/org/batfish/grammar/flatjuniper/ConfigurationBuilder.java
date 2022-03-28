@@ -2825,8 +2825,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentBgpGroup = _currentRoutingInstance.getMasterBgpGroup();
   }
 
-
-
   @Override
   public void exitPo_as_path(Po_as_pathContext ctx) {
     String name = toString(ctx.name);
