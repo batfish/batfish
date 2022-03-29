@@ -95,7 +95,7 @@ public final class BDDSourceManager {
    * Create a {@link BDDSourceManager} that tracks the specified interfaces as sources, plus the
    * device itself.
    */
-  public static BDDSourceManager forInterfaces(BDDInteger var, Set<String> interfaces) {
+  public static BDDSourceManager forInterfaces(ImmutableBDDInteger var, Set<String> interfaces) {
     Set<String> sources =
         ImmutableSet.<String>builder()
             .addAll(interfaces)

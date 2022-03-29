@@ -9,9 +9,9 @@ import org.batfish.datamodel.IpProtocol;
 
 /** Symbolic IpProtocol variable represented by an 8-bit BDD. */
 public final class BDDIpProtocol {
-  private final BDDInteger _var;
+  private final ImmutableBDDInteger _var;
 
-  public BDDIpProtocol(BDDInteger var) {
+  public BDDIpProtocol(ImmutableBDDInteger var) {
     checkArgument(var.size() == 8, "IpProtocol field requires 8 bits");
     _var = var;
   }
@@ -43,9 +43,9 @@ public final class BDDIpProtocol {
   }
 
   /**
-   * @return the {@link BDDInteger} backing this.
+   * @return the {@link ImmutableBDDInteger} backing this.
    */
-  public BDDInteger getBDDInteger() {
+  public ImmutableBDDInteger getBDDInteger() {
     return _var;
   }
 }

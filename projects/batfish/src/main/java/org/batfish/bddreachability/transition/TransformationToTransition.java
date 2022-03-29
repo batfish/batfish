@@ -16,8 +16,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.ImmutableBDDInteger;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
@@ -52,7 +52,7 @@ public class TransformationToTransition {
     _stepToTransition = new TransformationStepToTransition();
   }
 
-  private static Transition assignIpFromPool(BDDInteger var, RangeSet<Ip> ranges) {
+  private static Transition assignIpFromPool(ImmutableBDDInteger var, RangeSet<Ip> ranges) {
     BDD setValue =
         ranges.asRanges().stream()
             .map(
@@ -65,7 +65,7 @@ public class TransformationToTransition {
     return eraseAndSet(var, setValue);
   }
 
-  private Transition assignPortFromPool(BDDInteger var, int poolStart, int poolEnd) {
+  private Transition assignPortFromPool(ImmutableBDDInteger var, int poolStart, int poolEnd) {
     BDD setValue = var.range(poolStart, poolEnd);
     Transition eraseAndSet = eraseAndSet(var, setValue);
     // AssignPortFromPool is a noop on protocols that don't have ports
@@ -73,7 +73,7 @@ public class TransformationToTransition {
   }
 
   private class TransformationStepToTransition implements TransformationStepVisitor<Transition> {
-    private BDDInteger ipField(IpField ipField) {
+    private ImmutableBDDInteger ipField(IpField ipField) {
       switch (ipField) {
         case DESTINATION:
           return _bddPacket.getDstIp();
@@ -95,7 +95,7 @@ public class TransformationToTransition {
       }
     }
 
-    private BDDInteger portField(PortField portField) {
+    private ImmutableBDDInteger portField(PortField portField) {
       switch (portField) {
         case DESTINATION:
           return _bddPacket.getDstPort();
@@ -119,7 +119,7 @@ public class TransformationToTransition {
     @Override
     public Transition visitShiftIpAddressIntoSubnet(ShiftIpAddressIntoSubnet step) {
       Prefix prefix = step.getSubnet();
-      BDDInteger var = ipField(step.getIpField());
+      ImmutableBDDInteger var = ipField(step.getIpField());
       IpSpaceToBDD varToBdd = ipFieldToBDD(step.getIpField());
       int len = prefix.getPrefixLength();
       BDD erase = var.getMostSignificantVars(len);

@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
@@ -57,7 +57,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final BDDFactory _factory;
 
-  private BDDInteger _adminDist;
+  private MutableBDDInteger _adminDist;
 
   private Map<Integer, String> _bitNames;
 
@@ -83,11 +83,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   private BDD[] _asPathRegexAtomicPredicates;
 
-  private BDDInteger _localPref;
+  private MutableBDDInteger _localPref;
 
-  private BDDInteger _med;
+  private MutableBDDInteger _med;
 
-  private BDDInteger _nextHop;
+  private MutableBDDInteger _nextHop;
 
   // to properly determine the next-hop IP that results from each path through a given route-map we
   // need to track a few more pieces of information:  whether the next-hop is explicitly discarded
@@ -97,13 +97,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private BDDDomain<OspfType> _ospfMetric;
 
-  private final BDDInteger _prefix;
+  private final MutableBDDInteger _prefix;
 
-  private final BDDInteger _prefixLength;
+  private final MutableBDDInteger _prefixLength;
 
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
-  private BDDInteger _tag;
+  private MutableBDDInteger _tag;
 
   /**
    * The routing protocols allowed in a BGP route announcement (see {@link
@@ -153,28 +153,28 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     addBitNames("proto", len, idx, false);
     idx += len;
     // Initialize integer values
-    _med = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    _med = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("med", 32, idx, false);
     idx += 32;
-    _nextHop = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    _nextHop = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("nextHop", 32, idx, false);
     idx += 32;
     _nextHopSet = factory.zero();
     _nextHopDiscarded = factory.zero();
-    _tag = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    _tag = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("tag", 32, idx, false);
     idx += 32;
-    _adminDist = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    _adminDist = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("ad", 32, idx, false);
     idx += 32;
-    _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    _localPref = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("lp", 32, idx, false);
     idx += 32;
     // need 6 bits for prefix length because there are 33 possible values, 0 - 32
-    _prefixLength = BDDInteger.makeFromIndex(factory, 6, idx, true);
+    _prefixLength = MutableBDDInteger.makeFromIndex(factory, 6, idx, true);
     addBitNames("pfxLen", 5, idx, true);
     idx += 6;
-    _prefix = BDDInteger.makeFromIndex(factory, 32, idx, true);
+    _prefix = MutableBDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
     idx += 32;
     // Initialize one BDD per community atomic predicate, each of which has a corresponding
@@ -208,15 +208,15 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
     _asPathRegexAtomicPredicates = other._asPathRegexAtomicPredicates.clone();
     _communityAtomicPredicates = other._communityAtomicPredicates.clone();
-    _prefixLength = new BDDInteger(other._prefixLength);
-    _prefix = new BDDInteger(other._prefix);
-    _nextHop = new BDDInteger(other._nextHop);
+    _prefixLength = new MutableBDDInteger(other._prefixLength);
+    _prefix = new MutableBDDInteger(other._prefix);
+    _nextHop = new MutableBDDInteger(other._nextHop);
     _nextHopSet = other._nextHopSet.id();
     _nextHopDiscarded = other._nextHopDiscarded.id();
-    _adminDist = new BDDInteger(other._adminDist);
-    _med = new BDDInteger(other._med);
-    _tag = new BDDInteger(other._tag);
-    _localPref = new BDDInteger(other._localPref);
+    _adminDist = new MutableBDDInteger(other._adminDist);
+    _med = new MutableBDDInteger(other._med);
+    _tag = new MutableBDDInteger(other._tag);
+    _localPref = new MutableBDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
@@ -356,11 +356,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     dotRec(sb, bdd.high(), visited);
   }
 
-  public BDDInteger getAdminDist() {
+  public MutableBDDInteger getAdminDist() {
     return _adminDist;
   }
 
-  public void setAdminDist(BDDInteger adminDist) {
+  public void setAdminDist(MutableBDDInteger adminDist) {
     _adminDist = adminDist;
   }
 
@@ -384,27 +384,27 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _factory;
   }
 
-  public BDDInteger getLocalPref() {
+  public MutableBDDInteger getLocalPref() {
     return _localPref;
   }
 
-  public void setLocalPref(BDDInteger localPref) {
+  public void setLocalPref(MutableBDDInteger localPref) {
     _localPref = localPref;
   }
 
-  public BDDInteger getMed() {
+  public MutableBDDInteger getMed() {
     return _med;
   }
 
-  public void setMed(BDDInteger med) {
+  public void setMed(MutableBDDInteger med) {
     _med = med;
   }
 
-  public BDDInteger getNextHop() {
+  public MutableBDDInteger getNextHop() {
     return _nextHop;
   }
 
-  public void setNextHop(BDDInteger nextHop) {
+  public void setNextHop(MutableBDDInteger nextHop) {
     _nextHop = nextHop;
   }
 
@@ -432,11 +432,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = ospfMetric;
   }
 
-  public BDDInteger getPrefix() {
+  public MutableBDDInteger getPrefix() {
     return _prefix;
   }
 
-  public BDDInteger getPrefixLength() {
+  public MutableBDDInteger getPrefixLength() {
     return _prefixLength;
   }
 
@@ -444,11 +444,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _protocolHistory;
   }
 
-  public BDDInteger getTag() {
+  public MutableBDDInteger getTag() {
     return _tag;
   }
 
-  public void setTag(BDDInteger tag) {
+  public void setTag(MutableBDDInteger tag) {
     _tag = tag;
   }
 

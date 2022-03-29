@@ -8,9 +8,9 @@ import org.batfish.datamodel.IcmpType;
 
 /** Symbolic IcmpType variable represented by an 8-bit BDD. */
 public final class BDDIcmpType {
-  private final BDDInteger _var;
+  private final ImmutableBDDInteger _var;
 
-  public BDDIcmpType(BDDInteger var) {
+  public BDDIcmpType(ImmutableBDDInteger var) {
     checkArgument(var.size() == 8, "IcmpType field requires 8 bits");
     _var = var;
   }
@@ -20,15 +20,6 @@ public final class BDDIcmpType {
    */
   public BDD value(int icmpType) {
     return icmpType == IcmpType.UNSET ? _var.getFactory().one() : _var.value(icmpType);
-  }
-
-  /**
-   * Extract the value from a satisfying assignment.
-   *
-   * @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc)
-   */
-  public int satAssignmentToValue(BDD satAssignment) {
-    return _var.satAssignmentToLong(satAssignment).intValue();
   }
 
   /**
@@ -54,8 +45,8 @@ public final class BDDIcmpType {
     return end == IcmpType.UNSET ? _var.getFactory().one() : _var.leq(end);
   }
 
-  /** Returns the {@link BDDInteger} backing this. */
-  public BDDInteger getBDDInteger() {
+  /** Returns the {@link ImmutableBDDInteger} backing this. */
+  public ImmutableBDDInteger getBDDInteger() {
     return _var;
   }
 }

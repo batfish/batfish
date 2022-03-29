@@ -25,7 +25,7 @@ public final class BDDFiniteDomain<V> {
   private @Nonnull final BiMap<BDD, V> _bddToValue;
   private @Nonnull final BDD _isValidValue;
   private @Nullable final BDD _varBits;
-  private @Nonnull final BDDInteger _var;
+  private @Nonnull final ImmutableBDDInteger _var;
 
   /** Allocate a variable sufficient for the given set of values. */
   public BDDFiniteDomain(BDDPacket pkt, String varName, Set<V> values) {
@@ -38,12 +38,13 @@ public final class BDDFiniteDomain<V> {
    */
   public BDDFiniteDomain(BDDFactory factory, int index, Set<V> values) {
     this(
-        BDDInteger.makeFromIndex(factory, computeBitsRequired(values.size()), index, false),
+        ImmutableBDDInteger.makeFromIndex(
+            factory, computeBitsRequired(values.size()), index, false),
         values);
   }
 
   /** Use the given variable to represent the given set of values. */
-  public BDDFiniteDomain(BDDInteger var, Set<V> values) {
+  public BDDFiniteDomain(ImmutableBDDInteger var, Set<V> values) {
     int size = values.size();
     BDD one = var.getFactory().one();
     _var = var;
@@ -86,7 +87,7 @@ public final class BDDFiniteDomain<V> {
     checkArgument(!values.isEmpty(), "empty values map");
     int maxSize = values.values().stream().mapToInt(Set::size).max().getAsInt();
     int bitsRequired = computeBitsRequired(maxSize);
-    BDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired);
+    ImmutableBDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired);
     return toImmutableMap(
         values, Entry::getKey, entry -> new BDDFiniteDomain<>(var, entry.getValue()));
   }
@@ -114,7 +115,7 @@ public final class BDDFiniteDomain<V> {
     checkArgument(bdd.isAssignment());
 
     // Exist turns the assignment into just the finite domain.
-    V ret = _bddToValue.get(bdd.project(_var.getVars()));
+    V ret = _bddToValue.get(bdd.project(_varBits));
     checkArgument(ret != null, "No value for valid assignment");
     return ret;
   }
@@ -128,7 +129,7 @@ public final class BDDFiniteDomain<V> {
   }
 
   @Nonnull
-  public BDDInteger getVar() {
+  public ImmutableBDDInteger getVar() {
     return _var;
   }
 }
