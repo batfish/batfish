@@ -905,7 +905,6 @@ import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StubSettings;
-import org.batfish.representation.juniper.SwitchOptions;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
@@ -2164,8 +2163,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private SnmpCommunity _currentSnmpCommunity;
 
   private SnmpServer _currentSnmpServer;
-
-  private SwitchOptions _currentSwitchOptions;
 
   private StaticRoute _currentStaticRoute;
 
