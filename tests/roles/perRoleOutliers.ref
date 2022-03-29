@@ -23,7 +23,6 @@
           "allPrefixes" : [
             "2.23.11.2/24"
           ],
-          "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E9,
           "blacklisted" : false,
@@ -81,7 +80,6 @@
           "allPrefixes" : [
             "2.23.12.2/24"
           ],
-          "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E9,
           "blacklisted" : false,
