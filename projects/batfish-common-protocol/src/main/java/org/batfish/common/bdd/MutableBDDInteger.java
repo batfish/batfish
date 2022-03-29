@@ -22,28 +22,24 @@ public final class MutableBDDInteger extends BDDInteger {
     this(other._factory, other._bitvec.length);
     setValue(other);
   }
-  /*
-   * Create an integer, and initialize its values as "don't care"
-   * This requires knowing the start index variables the bitvector
-   * will use.
+
+  /**
+   * Create an integer, and initialize its values as "don't care" This requires knowing the start
+   * index variables the bitvector will use.
    */
   public static MutableBDDInteger makeFromIndex(
       BDDFactory factory, int length, int start, boolean reverse) {
     return new MutableBDDInteger(factory, bitvector(factory, length, start, reverse));
   }
 
-  /*
-   * Create an integer and initialize it to a concrete value
-   */
+  /** Create an integer and initialize it to a concrete value */
   public static MutableBDDInteger makeFromValue(BDDFactory factory, int length, long value) {
     MutableBDDInteger bdd = new MutableBDDInteger(factory, length);
     bdd.setValue(value);
     return bdd;
   }
 
-  /*
-   * Set this BDD to have an exact value
-   */
+  /** Set this BDD to have an exact value */
   public void setValue(long val) {
     checkArgument(val >= 0, "Cannot set a negative value");
     checkArgument(val <= _maxVal, "value %s is out of range [0, %s]", val, _maxVal);
