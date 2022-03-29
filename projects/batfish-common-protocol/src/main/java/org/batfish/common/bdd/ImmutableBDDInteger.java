@@ -1,7 +1,6 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
 import java.util.Arrays;
@@ -47,7 +46,7 @@ public class ImmutableBDDInteger extends BDDInteger {
    * Returns a {@link BDD} containing the {@code n} high-order variables of this {@link BDDInteger}.
    */
   public @Nonnull BDD getMostSignificantVars(int n) {
-    checkState(n <= _bitvec.length);
+    checkArgument(n <= _bitvec.length, "Cannot get more vars than exist");
     if (n == _bitvec.length) {
       return getVars();
     }
@@ -61,11 +60,6 @@ public class ImmutableBDDInteger extends BDDInteger {
   }
 
   public Long satAssignmentToLong(BitSet bits) {
-    if (_bitvec.length > Long.SIZE) {
-      throw new IllegalArgumentException(
-          "Can't get a representative of a BDDInteger with more than Long.SIZE bits");
-    }
-
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];

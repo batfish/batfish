@@ -6,7 +6,6 @@ import static org.batfish.common.bdd.BDDUtils.bitvector;
 import java.util.Arrays;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 
 public final class MutableBDDInteger extends BDDInteger {
@@ -123,25 +122,23 @@ public final class MutableBDDInteger extends BDDInteger {
    * Subtract one BDD from another bitwise to create a new BDD
    */
   public MutableBDDInteger sub(MutableBDDInteger var1) {
-    if (_bitvec.length != var1._bitvec.length) {
-      throw new BDDException();
-    } else {
-      BDD var3 = _factory.zero();
-      MutableBDDInteger var4 = new MutableBDDInteger(_factory, _bitvec.length);
-      for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
-        var4._bitvec[var5] = _bitvec[var5].xor(var1._bitvec[var5]);
-        var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
-        BDD var6 = var1._bitvec[var5].or(var3);
-        BDD var7 = _bitvec[var5].less(var6);
-        var6.free();
-        var6 = _bitvec[var5].and(var1._bitvec[var5]);
-        var6 = var6.and(var3);
-        var6 = var6.or(var7);
-        var3 = var6;
-      }
-      var3.free();
-      return var4;
+    checkArgument(
+        _bitvec.length == var1._bitvec.length, "Input variable must have equal bitvector length");
+    BDD var3 = _factory.zero();
+    MutableBDDInteger var4 = new MutableBDDInteger(_factory, _bitvec.length);
+    for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
+      var4._bitvec[var5] = _bitvec[var5].xor(var1._bitvec[var5]);
+      var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
+      BDD var6 = var1._bitvec[var5].or(var3);
+      BDD var7 = _bitvec[var5].less(var6);
+      var6.free();
+      var6 = _bitvec[var5].and(var1._bitvec[var5]);
+      var6 = var6.and(var3);
+      var6 = var6.or(var7);
+      var3 = var6;
     }
+    var3.free();
+    return var4;
   }
 
   @Override
