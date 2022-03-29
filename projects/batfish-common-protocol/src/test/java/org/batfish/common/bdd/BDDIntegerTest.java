@@ -57,7 +57,7 @@ public class BDDIntegerTest {
   @Test
   public void testGeqOutOfRange() {
     BDDFactory factory = BDDUtils.bddFactory(5);
-    ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
     _exception.expect(IllegalArgumentException.class);
     _exception.expectMessage("value 32 is out of range [0, 31]");
     var.geq(32);
@@ -66,7 +66,7 @@ public class BDDIntegerTest {
   @Test
   public void testLeqOutOfRange() {
     BDDFactory factory = BDDUtils.bddFactory(5);
-    ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
     _exception.expect(IllegalArgumentException.class);
     _exception.expectMessage("value 32 is out of range [0, 31]");
     var.leq(32);
@@ -75,7 +75,7 @@ public class BDDIntegerTest {
   @Test
   public void testValueOutOfRange() {
     BDDFactory factory = BDDUtils.bddFactory(5);
-    ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
     _exception.expect(IllegalArgumentException.class);
     _exception.expectMessage("value 32 is out of range [0, 31]");
     var.value(32);
@@ -84,7 +84,7 @@ public class BDDIntegerTest {
   @Test
   public void testBoundary() {
     BDDFactory factory = BDDUtils.bddFactory(63);
-    ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 63, 0, false);
+    ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 63, 0);
     assertThat(
         var.getValueSatisfying(var.value(Long.MAX_VALUE)), equalTo(Optional.of(Long.MAX_VALUE)));
     assertThat(
@@ -95,7 +95,7 @@ public class BDDIntegerTest {
   @Test
   public void testRange() {
     BDDFactory factory = BDDUtils.bddFactory(10);
-    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
     for (int a = 0; a < 32; ++a) {
       for (int b = a; b < 32; ++b) {
         BDD range = x.range(a, b);
@@ -109,14 +109,14 @@ public class BDDIntegerTest {
   public void testRangeBounds() {
     {
       BDDFactory factory = BDDUtils.bddFactory(32);
-      ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 32, 0, false);
+      ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 32, 0);
       assertThat(
           x.range(Prefix.ZERO.getStartIp().asLong(), Prefix.ZERO.getEndIp().asLong()), isOne());
     }
 
     {
       BDDFactory factory = BDDUtils.bddFactory(63);
-      ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 63, 0, false);
+      ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 63, 0);
       assertThat(x.range(0L, 0x7FFF_FFFF_FFFF_FFFFL), isOne());
     }
   }

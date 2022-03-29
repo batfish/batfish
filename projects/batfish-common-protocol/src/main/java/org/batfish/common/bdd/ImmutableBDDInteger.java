@@ -17,14 +17,12 @@ public class ImmutableBDDInteger extends BDDInteger {
     super(factory, bitvec);
   }
 
-  /*
-   * Create an integer, and initialize its values as "don't care"
-   * This requires knowing the start index variables the bitvector
-   * will use.
+  /**
+   * Create an integer, and initialize its values as "don't care" This requires knowing the start
+   * index variables the bitvector will use.
    */
-  public static ImmutableBDDInteger makeFromIndex(
-      BDDFactory factory, int length, int start, boolean reverse) {
-    return new ImmutableBDDInteger(factory, bitvector(factory, length, start, reverse));
+  public static ImmutableBDDInteger makeFromIndex(BDDFactory factory, int length, int start) {
+    return new ImmutableBDDInteger(factory, bitvector(factory, length, start, false));
   }
 
   @Override

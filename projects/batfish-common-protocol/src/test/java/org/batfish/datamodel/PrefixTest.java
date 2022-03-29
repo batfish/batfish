@@ -99,7 +99,7 @@ public class PrefixTest {
   @Test
   public void testToHostIpSpace() {
     ImmutableBDDInteger ipAddrBdd =
-        ImmutableBDDInteger.makeFromIndex(BDDUtils.bddFactory(32), 32, 0, false);
+        ImmutableBDDInteger.makeFromIndex(BDDUtils.bddFactory(32), 32, 0);
     IpSpaceToBDD toBDD = new IpSpaceToBDD(ipAddrBdd);
     assertThat(
         "/32 host space is preserved",
