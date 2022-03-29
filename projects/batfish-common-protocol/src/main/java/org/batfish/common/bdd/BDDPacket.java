@@ -325,8 +325,8 @@ public class BDDPacket {
     Flow.Builder fb = Flow.builder();
     fb.setDstIp(Ip.create(_dstIp.satAssignmentToLong(bits)));
     fb.setSrcIp(Ip.create(_srcIp.satAssignmentToLong(bits)));
-    fb.setDstPort(_dstPort.satAssignmentToLong(bits).intValue());
-    fb.setSrcPort(_srcPort.satAssignmentToLong(bits).intValue());
+    fb.setDstPort(_dstPort.satAssignmentToInt(bits));
+    fb.setSrcPort(_srcPort.satAssignmentToInt(bits));
     fb.setIpProtocol(_ipProtocol.satAssignmentToValue(bits));
     fb.setIcmpCode(_icmpCode.satAssignmentToValue(bits));
     fb.setIcmpType(_icmpType.satAssignmentToValue(bits));
@@ -338,9 +338,9 @@ public class BDDPacket {
     fb.setTcpFlagsRst(bits.get(_tcpRst.level()));
     fb.setTcpFlagsSyn(bits.get(_tcpSyn.level()));
     fb.setTcpFlagsUrg(bits.get(_tcpUrg.level()));
-    fb.setDscp(_dscp.satAssignmentToLong(bits).intValue());
-    fb.setEcn(_ecn.satAssignmentToLong(bits).intValue());
-    fb.setFragmentOffset(_fragmentOffset.satAssignmentToLong(bits).intValue());
+    fb.setDscp(_dscp.satAssignmentToInt(bits));
+    fb.setEcn(_ecn.satAssignmentToInt(bits));
+    fb.setFragmentOffset(_fragmentOffset.satAssignmentToInt(bits));
     fb.setPacketLength(_packetLength.satAssignmentToValue(bits));
     return fb;
   }

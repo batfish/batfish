@@ -28,7 +28,7 @@ public final class BDDIcmpType {
    * @param satAssignment see {@link BDD#minAssignmentBits()}.
    */
   public int satAssignmentToValue(BitSet satAssignment) {
-    return _var.satAssignmentToLong(satAssignment).intValue();
+    return _var.satAssignmentToInt(satAssignment);
   }
 
   /**
