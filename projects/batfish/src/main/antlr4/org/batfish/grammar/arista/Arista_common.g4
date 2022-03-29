@@ -60,3 +60,53 @@ word
 :
   WORD
 ;
+
+vni_number
+:
+// 0-16777214
+  uint32
+;
+
+vlan_id
+:
+// 1-4094
+  uint16
+;
+
+
+vlan_range
+:
+   (
+      vlan_range_list += vlan_subrange
+      (
+         COMMA vlan_range_list += vlan_subrange
+      )*
+   )
+   | NONE
+;
+
+vlan_subrange
+:
+   low = vlan_id
+   (
+      DASH high = vlan_id
+   )?
+;
+
+vni_range
+:
+   (
+      vni_range_list += vni_subrange
+      (
+         COMMA vni_range_list += vni_subrange
+      )*
+   )
+;
+
+vni_subrange
+:
+   low = vni_number
+   (
+      DASH high = vni_number
+   )?
+;
