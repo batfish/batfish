@@ -10,7 +10,7 @@ public class ImmutableBDDIntegerTest {
   @Test
   public void testGetVars_emptyVar() {
     BDDFactory factory = BDDUtils.bddFactory(10);
-    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 0, 0, false);
+    ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 0, 0);
     assertEquals(factory.one(), x.getVars());
   }
 }

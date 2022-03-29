@@ -38,8 +38,7 @@ public final class BDDFiniteDomain<V> {
    */
   public BDDFiniteDomain(BDDFactory factory, int index, Set<V> values) {
     this(
-        ImmutableBDDInteger.makeFromIndex(
-            factory, computeBitsRequired(values.size()), index, false),
+        ImmutableBDDInteger.makeFromIndex(factory, computeBitsRequired(values.size()), index),
         values);
   }
 

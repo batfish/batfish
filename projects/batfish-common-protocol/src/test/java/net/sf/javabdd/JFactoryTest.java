@@ -14,7 +14,7 @@ public class JFactoryTest {
     JFactory factory = (JFactory) JFactory.init(100000, 10000);
     factory.setVarNum(8);
 
-    BDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 8, 0, false);
+    BDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 8, 0);
     BDD bdd1 = var.leq(8);
     BDD bdd2 = var.geq(128);
     BDD bdd3 = var.value(64);
@@ -30,7 +30,7 @@ public class JFactoryTest {
 
     JFactory factory = (JFactory) JFactory.init(100000, 10000);
     factory.setVarNum(bits);
-    BDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, bits, 0, false);
+    BDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, bits, 0);
 
     BDD[] bdds = new BDD[1 << bits];
     for (int i = 0; i < bdds.length; i++) {
@@ -45,7 +45,7 @@ public class JFactoryTest {
 
     factory = (JFactory) JFactory.init(100000, 10000);
     factory.setVarNum(bits);
-    var = ImmutableBDDInteger.makeFromIndex(factory, bits, 0, false);
+    var = ImmutableBDDInteger.makeFromIndex(factory, bits, 0);
 
     for (int i = 0; i < bdds.length; i++) {
       bdds[i] = var.value(i);
