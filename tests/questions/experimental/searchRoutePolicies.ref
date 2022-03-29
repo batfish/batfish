@@ -3,27 +3,17 @@
   "action" : "PERMIT",
   "direction" : "IN",
   "inputConstraints" : {
-    "asPath" : [ ],
-    "communities" : [ ],
     "complementPrefix" : false,
-    "localPreference" : "",
-    "med" : "",
     "prefix" : [
       "1.1.1.0/24"
-    ],
-    "tag" : ""
+    ]
   },
   "nodes" : "nodes",
   "outputConstraints" : {
-    "asPath" : [ ],
-    "communities" : [ ],
     "complementPrefix" : false,
-    "localPreference" : "",
-    "med" : "",
     "prefix" : [
       "2.2.2.0/24"
-    ],
-    "tag" : ""
+    ]
   },
   "policies" : "policies",
   "differential" : false,

@@ -926,7 +926,7 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _active;
   private @Nonnull IpSpace _additionalArpIps;
   private boolean _adminUp;
-  private IntegerSpace _allowedVlans;
+  private @Nonnull IntegerSpace _allowedVlans;
   @Nonnull private SortedSet<InterfaceAddress> _allAddresses;
   @Nonnull private SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
   /** Cache of all concrete addresses */
@@ -1184,7 +1184,7 @@ public final class Interface extends ComparableStructure<String> {
 
   /** Ranges of allowed VLANs when switchport mode is TRUNK. */
   @JsonProperty(PROP_ALLOWED_VLANS)
-  public IntegerSpace getAllowedVlans() {
+  public @Nonnull IntegerSpace getAllowedVlans() {
     return _allowedVlans;
   }
 
@@ -1687,8 +1687,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ALLOWED_VLANS)
-  public void setAllowedVlans(IntegerSpace allowedVlans) {
-    _allowedVlans = allowedVlans;
+  public void setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
+    _allowedVlans = firstNonNull(allowedVlans, IntegerSpace.EMPTY);
   }
 
   @JsonProperty(PROP_ALL_PREFIXES)

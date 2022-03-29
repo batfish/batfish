@@ -3,7 +3,6 @@
   "direction" : "IN",
   "inputRoutes" : [
     {
-      "asPath" : [ ],
       "localPreference" : 0,
       "metric" : 0,
       "network" : "0.0.0.0/0",
