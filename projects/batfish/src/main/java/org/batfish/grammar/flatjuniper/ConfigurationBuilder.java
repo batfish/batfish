@@ -494,8 +494,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rd_ip_address_colon_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rd_asn_colon_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rd_ip_address_colon_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
@@ -3294,7 +3294,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRd_asn_colon_id(Rd_asn_colon_idContext ctx) {
-    // TODO figure out whether 16-bit-number colon 16-bit-number is treated by Juniper as 32:16 or 16:32.
+    // TODO figure out whether 16-bit-number colon 16-bit-number is treated by Juniper as 32:16 or
+    // 16:32.
     String rd = ctx.getText();
     if (rd != null) {
       _currentLogicalSystem.getSwitchOptions().setRouteDistinguisher(rd);

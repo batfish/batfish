@@ -370,7 +370,9 @@ public class LogicalSystem implements Serializable {
     return _namedVlans;
   }
 
-  public SwitchOptions getSwitchOptions() { return _switchOptions; }
+  public SwitchOptions getSwitchOptions() {
+    return _switchOptions;
+  }
 
   public Map<String, Zone> getZones() {
     return _zones;

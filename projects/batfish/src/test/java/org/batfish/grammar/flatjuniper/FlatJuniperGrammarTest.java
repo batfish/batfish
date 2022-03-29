@@ -6273,28 +6273,32 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testSwitchOptionsVtepSourceInterfaceExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-vtep-source");
-    String vtep = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getVtepSourceInterface();
+    String vtep =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getVtepSourceInterface();
     assertEquals("lo0.0", vtep);
   }
 
   @Test
   public void testSwitchOptionsRouteDistinguisherIpExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-ip");
-    String rd = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
+    String rd =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
     assertEquals("14.14.14.14:7999", rd);
   }
 
   @Test
   public void testSwitchOptionsRouteDistinguisherCommOneExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-comm1");
-    String rd = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
+    String rd =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
     assertEquals("555:0", rd);
   }
 
   @Test
   public void testSwitchOptionsRouteDistinguisherCommTwoExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-comm2");
-    String rd = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
+    String rd =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
     assertEquals("65510:15", rd);
   }
 

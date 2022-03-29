@@ -7,9 +7,13 @@ public class SwitchOptions implements Serializable {
   private String _vtepSourceInterface;
   private String _routeDistinguisher;
 
-  public String getVtepSourceInterface() { return _vtepSourceInterface; }
+  public String getVtepSourceInterface() {
+    return _vtepSourceInterface;
+  }
 
-  public String getRouteDistinguisher() { return _routeDistinguisher; }
+  public String getRouteDistinguisher() {
+    return _routeDistinguisher;
+  }
 
   public void setVtepSourceInterface(String vtepSourceInterface) {
     _vtepSourceInterface = vtepSourceInterface;
