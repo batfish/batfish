@@ -22,6 +22,7 @@ import net.sf.javabdd.JFactory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.topology.TopologyProvider;
@@ -454,9 +455,10 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
     BDDRoute expected = tbdd.iteZero(expectedBDD, anyRoute);
-    BDDInteger localPref = expected.getLocalPref();
+    MutableBDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(
-        BDDInteger.makeFromValue(localPref.getFactory(), 32, 3).ite(reachesSecondIf, localPref));
+        MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 3)
+            .ite(reachesSecondIf, localPref));
 
     assertEquals(expectedBDD, acceptedAnnouncements);
 
@@ -548,8 +550,8 @@ public class TransferBDDTest {
             anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
     BDDRoute expectedOut = new BDDRoute(anyRoute);
-    BDDInteger localPref2 = BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 2);
-    BDDInteger localPref3 = BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 3);
+    MutableBDDInteger localPref2 = MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 2);
+    MutableBDDInteger localPref3 = MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 3);
     expectedOut.setLocalPref(
         localPref2.ite(exitAssigned, localPref3.ite(returnAssigned, expectedOut.getLocalPref())));
 
@@ -719,7 +721,7 @@ public class TransferBDDTest {
     BDDRoute outAnnouncements = result.getFirst();
 
     BDDRoute expectedOut = anyRoute(tbdd.getFactory());
-    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+    expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -808,9 +810,10 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
     BDDRoute expected = new BDDRoute(anyRoute);
-    BDDInteger localPref = expected.getLocalPref();
+    MutableBDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(
-        BDDInteger.makeFromValue(localPref.getFactory(), 32, 300).ite(firstConjunctBDD, localPref));
+        MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 300)
+            .ite(firstConjunctBDD, localPref));
 
     // the updates in the second conjunct should not occur unless the first conjunct is true
     assertEquals(outAnnouncements, expected);
@@ -914,9 +917,9 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
     BDDRoute expected = new BDDRoute(anyRoute);
-    BDDInteger localPref = expected.getLocalPref();
+    MutableBDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(
-        BDDInteger.makeFromValue(localPref.getFactory(), 32, 300)
+        MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 300)
             .ite(firstDisjunctBDD.not(), localPref));
 
     // the updates in the second disjunct should not occur unless the first disjunct is false
@@ -1104,7 +1107,7 @@ public class TransferBDDTest {
     // the local preference is now 42
     BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger localPref = expected.getLocalPref();
-    expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
+    expected.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
     assertEquals(expected, outAnnouncements);
   }
 
@@ -1126,7 +1129,7 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     // the metric is now 50
-    BDDInteger expectedMed = BDDInteger.makeFromValue(tbdd.getFactory(), 32, 50);
+    BDDInteger expectedMed = MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 50);
     assertEquals(expectedMed, outAnnouncements.getMed());
   }
 
@@ -1150,7 +1153,7 @@ public class TransferBDDTest {
     // the tag is now 42
     BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger tag = expected.getTag();
-    expected.setTag(BDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
     assertEquals(expected, outAnnouncements);
   }
 
@@ -1210,7 +1213,7 @@ public class TransferBDDTest {
     // the tag is now 42
     BDDRoute expected = new BDDRoute(anyRoute);
     BDDInteger tag = expected.getTag();
-    expected.setTag(BDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
     assertEquals(expected, outAnnouncements);
   }
 
@@ -1320,7 +1323,7 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopSet(expected.getFactory().one());
     expected.setNextHop(
-        BDDInteger.makeFromValue(expected.getFactory(), 32, Ip.parse("1.1.1.1").asLong()));
+        MutableBDDInteger.makeFromValue(expected.getFactory(), 32, Ip.parse("1.1.1.1").asLong()));
     assertEquals(expected, outAnnouncements);
   }
 
@@ -1479,7 +1482,7 @@ public class TransferBDDTest {
     // the local preference is now 42
     BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger localPref = expected.getLocalPref();
-    expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
+    expected.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
     assertEquals(expected, outAnnouncements);
   }
 
@@ -1934,7 +1937,7 @@ public class TransferBDDTest {
     BDDRoute outAnnouncements = result.getFirst();
 
     BDDRoute expectedOut = anyRoute(tbdd.getFactory());
-    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+    expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -1975,7 +1978,7 @@ public class TransferBDDTest {
     BDDRoute outAnnouncements = result.getFirst();
 
     BDDRoute expectedOut = anyRoute(tbdd.getFactory());
-    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+    expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -2028,7 +2031,7 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
     BDDRoute expectedOut = new BDDRoute(anyRoute);
-    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+    expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
     expectedOut = tbdd.ite(expected, expectedOut, tbdd.zeroedRecord());
 
     // the policy is applicable to all announcements
@@ -2094,9 +2097,9 @@ public class TransferBDDTest {
     // the tag is now 42 and local pref is 44
     BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger tag = expected.getTag();
-    expected.setTag(BDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
     BDDInteger localPref = expected.getLocalPref();
-    expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 44));
+    expected.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 44));
 
     assertEquals(expected, outAnnouncements);
   }

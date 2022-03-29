@@ -8,9 +8,9 @@ import org.batfish.datamodel.IcmpCode;
 
 /** Symbolic {@link IcmpCode} variable represented by an 8-bit BDD. */
 public final class BDDIcmpCode {
-  private final BDDInteger _var;
+  private final ImmutableBDDInteger _var;
 
-  public BDDIcmpCode(BDDInteger var) {
+  public BDDIcmpCode(ImmutableBDDInteger var) {
     checkArgument(var.size() == 8, "IcmpCode field requires 8 bits");
     _var = var;
   }
@@ -54,8 +54,8 @@ public final class BDDIcmpCode {
     return end == IcmpCode.UNSET ? _var.getFactory().one() : _var.leq(end);
   }
 
-  /** Returns the {@link BDDInteger} backing this. */
-  public BDDInteger getBDDInteger() {
+  /** Returns the {@link ImmutableBDDInteger} backing this. */
+  public ImmutableBDDInteger getBDDInteger() {
     return _var;
   }
 }

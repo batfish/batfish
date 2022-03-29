@@ -71,17 +71,17 @@ public class BDDPacket {
   private int _nextFreeBDDVarIdx = FIRST_PACKET_VAR;
 
   // Packet bits
-  private final @Nonnull BDDInteger _dscp;
-  private final @Nonnull BDDInteger _dstIp;
-  private final @Nonnull BDDInteger _dstPort;
-  private final @Nonnull BDDInteger _ecn;
-  private final @Nonnull BDDInteger _fragmentOffset;
+  private final @Nonnull ImmutableBDDInteger _dscp;
+  private final @Nonnull ImmutableBDDInteger _dstIp;
+  private final @Nonnull ImmutableBDDInteger _dstPort;
+  private final @Nonnull ImmutableBDDInteger _ecn;
+  private final @Nonnull ImmutableBDDInteger _fragmentOffset;
   private final @Nonnull BDDIcmpCode _icmpCode;
   private final @Nonnull BDDIcmpType _icmpType;
   private final @Nonnull BDDIpProtocol _ipProtocol;
   private final @Nonnull BDDPacketLength _packetLength;
-  private final @Nonnull BDDInteger _srcIp;
-  private final @Nonnull BDDInteger _srcPort;
+  private final @Nonnull ImmutableBDDInteger _srcIp;
+  private final @Nonnull ImmutableBDDInteger _srcPort;
   private final @Nonnull BDD _tcpAck;
   private final @Nonnull BDD _tcpCwr;
   private final @Nonnull BDD _tcpEce;
@@ -143,10 +143,10 @@ public class BDDPacket {
     BDD[] srcIpBitvec = allocateBDDBits("srcIp", IP_LENGTH);
     BDD[] dstPortBitvec = allocateBDDBits("dstPort", PORT_LENGTH);
     BDD[] srcPortBitvec = allocateBDDBits("srcPort", PORT_LENGTH);
-    _dstIp = new BDDInteger(_factory, dstIpBitvec);
-    _srcIp = new BDDInteger(_factory, srcIpBitvec);
-    _dstPort = new BDDInteger(_factory, dstPortBitvec);
-    _srcPort = new BDDInteger(_factory, srcPortBitvec);
+    _dstIp = new ImmutableBDDInteger(_factory, dstIpBitvec);
+    _srcIp = new ImmutableBDDInteger(_factory, srcIpBitvec);
+    _dstPort = new ImmutableBDDInteger(_factory, dstPortBitvec);
+    _srcPort = new ImmutableBDDInteger(_factory, srcPortBitvec);
     _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH));
     _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH));
     _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH));
@@ -212,14 +212,14 @@ public class BDDPacket {
   }
 
   /**
-   * Allocate a new {@link BDDInteger} variable.
+   * Allocate a new {@link ImmutableBDDInteger} variable.
    *
    * @param name Used for debugging.
    * @param bits The number of bits to allocate.
    * @return The new variable.
    */
-  public BDDInteger allocateBDDInteger(String name, int bits) {
-    return new BDDInteger(_factory, allocateBDDBits(name, bits));
+  public ImmutableBDDInteger allocateBDDInteger(String name, int bits) {
+    return new ImmutableBDDInteger(_factory, allocateBDDBits(name, bits));
   }
 
   /**
@@ -346,27 +346,27 @@ public class BDDPacket {
   }
 
   @Nonnull
-  public BDDInteger getDscp() {
+  public ImmutableBDDInteger getDscp() {
     return _dscp;
   }
 
   @Nonnull
-  public BDDInteger getDstIp() {
+  public ImmutableBDDInteger getDstIp() {
     return _dstIp;
   }
 
   @Nonnull
-  public BDDInteger getDstPort() {
+  public ImmutableBDDInteger getDstPort() {
     return _dstPort;
   }
 
   @Nonnull
-  public BDDInteger getEcn() {
+  public ImmutableBDDInteger getEcn() {
     return _ecn;
   }
 
   @Nonnull
-  public BDDInteger getFragmentOffset() {
+  public ImmutableBDDInteger getFragmentOffset() {
     return _fragmentOffset;
   }
 
@@ -391,12 +391,12 @@ public class BDDPacket {
   }
 
   @Nonnull
-  public BDDInteger getSrcIp() {
+  public ImmutableBDDInteger getSrcIp() {
     return _srcIp;
   }
 
   @Nonnull
-  public BDDInteger getSrcPort() {
+  public ImmutableBDDInteger getSrcPort() {
     return _srcPort;
   }
 

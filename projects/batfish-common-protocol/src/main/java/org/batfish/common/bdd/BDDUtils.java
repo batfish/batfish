@@ -18,6 +18,21 @@ public class BDDUtils {
     return factory;
   }
 
+  public static BDD[] bitvector(BDDFactory factory, int length, int start, boolean reverse) {
+    checkArgument(factory.varNum() >= start + length, "Not enough variables to create bitvector");
+    BDD[] bitvec = new BDD[length];
+    for (int i = 0; i < length; i++) {
+      int idx;
+      if (reverse) {
+        idx = start + length - i - 1;
+      } else {
+        idx = start + i;
+      }
+      bitvec[i] = factory.ithVar(idx);
+    }
+    return bitvec;
+  }
+
   public static BDD[] concatBitvectors(BDD[]... arrays) {
     return Arrays.stream(arrays).flatMap(Arrays::stream).toArray(BDD[]::new);
   }

@@ -31,7 +31,7 @@ public final class BDDFiniteDomainTest {
 
   @Test
   public void testTooLarge() {
-    BDDInteger var = _pkt.allocateBDDInteger("", 1);
+    ImmutableBDDInteger var = _pkt.allocateBDDInteger("", 1);
     _exception.expect(IllegalArgumentException.class);
     new BDDFiniteDomain<>(var, ImmutableSet.of(1, 2, 3));
   }
@@ -39,7 +39,7 @@ public final class BDDFiniteDomainTest {
   @Test
   public void testIsValidConstraint() {
     // 1 bit variable
-    BDDInteger var = _pkt.allocateBDDInteger("", 1);
+    ImmutableBDDInteger var = _pkt.allocateBDDInteger("", 1);
 
     // 1 value
     assertThat(
