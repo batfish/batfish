@@ -34,7 +34,7 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
     _ipSpace = ipSpace;
     BDDFactory factory = BDDUtils.bddFactory(Prefix.MAX_PREFIX_LENGTH);
     ImmutableBDDInteger integer =
-        ImmutableBDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, true);
+        ImmutableBDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, false);
     _ipSpaceToBdd = new IpSpaceToBDD(integer);
     _ipSpaceBdd = _ipSpaceToBdd.visit(ipSpace);
   }
