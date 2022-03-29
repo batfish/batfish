@@ -1,5 +1,8 @@
 package org.batfish.representation.palo_alto;
 
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.getBuiltInApps;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.isBuiltInApp;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -38,8 +41,8 @@ public final class ApplicationGroup implements Serializable {
             applicationGroups
                 .get(member)
                 .getDescendantObjects(applications, applicationGroups, alreadyTraversedGroups));
-      } else if (ApplicationBuiltIn.getBuiltInApplication(member).isPresent()) {
-        descendantObjects.add(ApplicationBuiltIn.getBuiltInApplication(member).get());
+      } else if (isBuiltInApp(member)) {
+        descendantObjects.addAll(getBuiltInApps(member));
       }
     }
     return descendantObjects;

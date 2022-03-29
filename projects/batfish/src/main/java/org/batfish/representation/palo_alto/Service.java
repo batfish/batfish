@@ -166,6 +166,11 @@ public final class Service implements ServiceGroupMember {
   }
 
   @Nonnull
+  public IntegerSpace getPorts() {
+    return _ports;
+  }
+
+  @Nonnull
   public Set<String> getTags() {
     return _tags;
   }

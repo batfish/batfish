@@ -169,10 +169,16 @@ import org.batfish.representation.palo_alto.OspfInterface.LinkType;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
 import org.batfish.representation.palo_alto.Zone.Type;
+import org.batfish.representation.palo_alto.application_definitions.ApplicationDefinitions;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public class PaloAltoConfiguration extends VendorConfiguration {
+
+  private static final Map<String, Application> BUILT_IN_APPLICATIONS =
+      ApplicationDefinitions.INSTANCE.getApplications().values().stream()
+          .map(Conversions::definitionToApp)
+          .collect(ImmutableMap.toImmutableMap(Application::getName, a -> a));
 
   /** This is the name of an application that matches all traffic */
   public static final String CATCHALL_APPLICATION_NAME = "any";
@@ -267,6 +273,33 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _templateStacks = new HashMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
+  }
+
+  /**
+   * Return a {@code boolean} indicating if the provided {@code name} corresponds to a built-in
+   * application.
+   */
+  public static boolean isBuiltInApp(String name) {
+    return ApplicationDefinitions.INSTANCE.getApplicationContainers().containsKey(name)
+        || ApplicationDefinitions.INSTANCE.getApplications().containsKey(name);
+  }
+
+  /**
+   * Return the {@link Application}s corresponding to the provided built-in application {@code
+   * name}. The specified {@code name} must correspond to a built-in application or container. There
+   * may be more than one {@link Application} for "application-containers", e.g. {@code snmp}
+   * includes {@code snmpv1}, {@code snmpv2}, ...
+   */
+  public static @Nonnull List<Application> getBuiltInApps(String name) {
+    assert isBuiltInApp(name);
+    Multimap<String, String> containers =
+        ApplicationDefinitions.INSTANCE.getApplicationContainers();
+    if (containers.containsKey(name)) {
+      return containers.get(name).stream()
+          .map(BUILT_IN_APPLICATIONS::get)
+          .collect(ImmutableList.toImmutableList());
+    }
+    return ImmutableList.of(BUILT_IN_APPLICATIONS.get(name));
   }
 
   /** Add mapping from specified device id to specified hostname. */
@@ -1621,10 +1654,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Create an {@link Optional} {@link AclLineMatchExpr} for the specified application/group name.
-   * If no corresponding application/group is found, then {@link Optional#empty()} is returned.
+   * Create a {@link List} of {@link AclLineMatchExpr} for the specified application/group name. If
+   * no corresponding application/group is found, then an empty list is returned.
    */
-  private Optional<AclLineMatchExpr> aclLineMatchExprForApplicationOrGroup(
+  private List<AclLineMatchExpr> aclLineMatchExprForApplicationOrGroup(
       ApplicationOrApplicationGroupReference reference,
       SecurityRule rule,
       Vsys vsys,
@@ -1634,7 +1667,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Assume all traffic matches some application under the "any" definition
     if (name.equals(CATCHALL_APPLICATION_NAME)) {
-      return Optional.of(new TrueExpr(matchApplicationAnyTraceElement()));
+      return ImmutableList.of(new TrueExpr(matchApplicationAnyTraceElement()));
     }
 
     Optional<Vsys> maybeContainingVsys = getVsysForReference(reference, vsys);
@@ -1643,7 +1676,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       String vsysName = containingVsys.getName();
       ApplicationGroup group = containingVsys.getApplicationGroups().get(name);
       if (group != null) {
-        return Optional.of(
+        return ImmutableList.of(
             new OrMatchExpr(
                 group
                     .getDescendantObjects(
@@ -1661,7 +1694,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Application a = containingVsys.getApplications().get(name);
       // If the reference is contained by a vsys, should match an application or group above
       assert a != null;
-      return Optional.of(
+      return ImmutableList.of(
           aclLineMatchExprForApplication(
               a,
               appOverrideAclsMap,
@@ -1669,21 +1702,23 @@ public class PaloAltoConfiguration extends VendorConfiguration {
               applicationDefaultService));
     }
 
-    Optional<Application> builtIn = ApplicationBuiltIn.getBuiltInApplication(name);
-    if (builtIn.isPresent()) {
-      return Optional.of(
-          aclLineMatchExprForApplication(
-              builtIn.get(),
-              appOverrideAclsMap,
-              matchBuiltInApplicationTraceElement(name),
-              applicationDefaultService));
+    if (isBuiltInApp(name)) {
+      return getBuiltInApps(name).stream()
+          .map(
+              app ->
+                  aclLineMatchExprForApplication(
+                      app,
+                      appOverrideAclsMap,
+                      matchBuiltInApplicationTraceElement(name),
+                      applicationDefaultService))
+          .collect(ImmutableList.toImmutableList());
     }
     // Did not find in the right hierarchy, so stop and warn.
     _w.redFlag(
         String.format(
             "Unable to identify application %s in vsys %s rule %s",
             name, vsys.getName(), rule.getName()));
-    return Optional.empty();
+    return ImmutableList.of();
   }
 
   /** Create an {@link AclLineMatchExpr} matching any services in the specified application. */
@@ -1729,12 +1764,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Map<String, AclLineMatchExpr> appOverrideAcls,
       boolean applicationDefaultService) {
     return rule.getApplications().stream()
-        .map(
+        .flatMap(
             a ->
                 aclLineMatchExprForApplicationOrGroup(
-                    a, rule, vsys, appOverrideAcls, applicationDefaultService))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+                    a, rule, vsys, appOverrideAcls, applicationDefaultService)
+                    .stream())
         .collect(ImmutableList.toImmutableList());
   }
 

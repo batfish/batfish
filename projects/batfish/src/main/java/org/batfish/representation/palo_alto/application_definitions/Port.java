@@ -26,7 +26,7 @@ public final class Port {
   private static final String PROP_MEMBER = "member";
 
   @JsonCreator
-  private static @Nonnull Port create(@JsonProperty(PROP_MEMBER) @Nullable JsonNode member) {
+  private static @Nonnull Port jsonCreator(@JsonProperty(PROP_MEMBER) @Nullable JsonNode member) {
     checkArgument(member != null, "Missing %s", PROP_MEMBER);
     // List of members
     if (member instanceof ArrayNode) {
