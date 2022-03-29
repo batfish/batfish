@@ -2613,7 +2613,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // add devices in the sonic_configs folder
     try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
       Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
-      makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
+      makeSonicFileGroups(sonicObjects.keySet(), answerElement).stream()
           .map(
               files ->
                   makeParseVendorConfigurationJob(
@@ -2720,7 +2720,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       vendorConfigurations.putAll(
           parseVendorConfigurations(
               snapshot,
-              makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
+              makeSonicFileGroups(sonicObjects.keySet(), answerElement).stream()
                   .map(
                       files ->
                           files.stream()
@@ -2733,6 +2733,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
         snapshot.getSnapshot(), snapshot.getNetwork(), vendorConfigurations.size());
@@ -2798,15 +2799,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Given a set of sonic object keys, return a collection of key pairs that occur in the same
-   * folder, representing (presumably) the frr.conf and configdb.json files.
+   * Given a set of sonic object keys, return a collection of sets that occur in the same folder.
+   *
+   * <p>Set elements are file names, and the cardinality of each set must be at least 2 because
+   * frr.conf and configdb.json files are mandatory.
    */
   @VisibleForTesting
-  static Collection<Set<String>> makeSonicFilePairs(
+  static Collection<Set<String>> makeSonicFileGroups(
       Set<String> sonicKeys, ParseVendorConfigurationAnswerElement pvcae) {
     ImmutableMultimap.Builder<String, String> dirToFilesB = ImmutableMultimap.builder();
 
-    // Expected packaging: sonic_configs -> dir1 -> (dir2 ->)* {file1, file2}
+    // Expected packaging: sonic_configs -> dir1 -> (dir2 ->)* {file1, file2, ..}
 
     for (String filename : sonicKeys) {
       // Using Path as a convenient way to interpret hierarchical keys for now (as for AWS)
@@ -2825,7 +2828,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       dirToFilesB.put(dir, filename);
     }
     ImmutableMultimap<String, String> dirToFiles = dirToFilesB.build();
-    List<Set<String>> validFilePairs = new LinkedList<>();
+    List<Set<String>> validFileGroups = new LinkedList<>();
     for (String dir : dirToFiles.keySet()) {
       Collection<String> files = dirToFiles.get(dir);
       if (files.size() == 1) {
@@ -2833,29 +2836,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
         pvcae.addRedFlagWarning(
             filename,
             new Warning(
-                "Unexpected packaging: File appears by itself; SONiC files must have their"
-                    + " counterpart in the same directory.",
+                "Unexpected packaging: There must be at least two files in each SONiC device"
+                    + " folder.",
                 "sonic"));
         pvcae.getParseStatus().put(filename, ParseStatus.UNEXPECTED_PACKAGING);
         continue;
       }
-      if (files.size() > 2) {
-        for (String filename : files) {
-          pvcae.addRedFlagWarning(
-              filename,
-              new Warning(
-                  String.format(
-                      "Unexpected packaging: File appears in a directory with %d other files; SONiC"
-                          + " files must have only their counterpart in the same directory.",
-                      files.size() - 1),
-                  "sonic"));
-          pvcae.getParseStatus().put(filename, ParseStatus.UNEXPECTED_PACKAGING);
-        }
-        continue;
-      }
-      validFilePairs.add(ImmutableSet.copyOf(files));
+      validFileGroups.add(ImmutableSet.copyOf(files));
     }
-    return validFilePairs;
+    return validFileGroups;
   }
 
   /**
