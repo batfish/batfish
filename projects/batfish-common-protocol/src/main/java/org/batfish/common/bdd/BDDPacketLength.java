@@ -65,7 +65,7 @@ public final class BDDPacketLength {
     // value of 20. Rather than maintaining this minimum in every BDD (expensive), we do it here.
     // Note that we can get weird behavior is clients constrain the underlying BDDs bits directly
     // (i.e. without going through this class).
-    return Integer.max(_var.satAssignmentToLong(satAssignment).intValue(), 20);
+    return Integer.max(_var.satAssignmentToInt(satAssignment), 20);
   }
 
   /**
