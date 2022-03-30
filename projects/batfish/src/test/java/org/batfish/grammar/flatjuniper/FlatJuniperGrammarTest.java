@@ -3741,6 +3741,15 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperApplyGroupsChain() {
+    Configuration c = parseConfig("apply-groups-chain");
+    assertThat(
+        c,
+        hasInterface(
+            "em0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/31")))));
+  }
+
+  @Test
   public void testJuniperApplyGroupsNode() throws IOException {
     String filename = "juniper-apply-groups-node";
 
