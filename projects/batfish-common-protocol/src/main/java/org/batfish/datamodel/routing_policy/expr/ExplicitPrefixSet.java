@@ -1,7 +1,10 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -10,10 +13,13 @@ import org.batfish.datamodel.visitors.PrefixSpaceExprVisitor;
 public class ExplicitPrefixSet extends PrefixSetExpr implements PrefixSpaceExpr {
   private static final String PROP_PREFIX_SPACE = "prefixSpace";
 
-  private PrefixSpace _prefixSpace;
+  private final PrefixSpace _prefixSpace;
 
   @JsonCreator
-  private ExplicitPrefixSet() {}
+  private static ExplicitPrefixSet jsonCreator(
+      @Nullable @JsonProperty(PROP_PREFIX_SPACE) PrefixSpace prefixSpace) {
+    return new ExplicitPrefixSet(firstNonNull(prefixSpace, new PrefixSpace()));
+  }
 
   public ExplicitPrefixSet(PrefixSpace prefixSpace) {
     _prefixSpace = prefixSpace;
@@ -63,10 +69,5 @@ public class ExplicitPrefixSet extends PrefixSetExpr implements PrefixSpaceExpr 
   public boolean matches(Prefix prefix, Environment environment) {
     boolean value = _prefixSpace.containsPrefix(prefix);
     return value;
-  }
-
-  @JsonProperty(PROP_PREFIX_SPACE)
-  public void setPrefixSpace(PrefixSpace prefixSpace) {
-    _prefixSpace = prefixSpace;
   }
 }
