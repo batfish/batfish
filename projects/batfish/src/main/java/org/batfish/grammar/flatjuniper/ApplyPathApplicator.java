@@ -68,7 +68,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
     if (newLines != null) {
       _newConfigurationLines.addAll(insertionIndex + 1, newLines);
     }
-    //    _newConfigurationLines.remove(insertionIndex);
+    // TODO: removing this removes definition lines. _newConfigurationLines.remove(insertionIndex);
   }
 
   @Override

@@ -38,7 +38,7 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    *   <li>Pruning 'groups' lines; and 'apply-groups' and 'apply-groups-except' lines
    *   <li>Pruning wildcard lines
    *   <li>Generating lines corresponding to 'apply-path' lines
-   *   <li>Pruning 'apply-path' lines
+   *   <li>TODO: Pruning 'apply-path' lines
    * </ol>
    *
    * @param tree The flat-Juniper parse tree to be pre-processed in-place.
@@ -91,6 +91,7 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
 
     ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy, w);
     walker.walk(ap, tree);
+    // TODO: pruning apply-path lines removes definition lines
   }
 
   private final FlatJuniperCombinedParser _parser;
