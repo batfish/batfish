@@ -25,7 +25,6 @@
             "allPrefixes" : [
               "192.168.1.2/24"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -263,7 +262,6 @@
             "allPrefixes" : [
               "192.168.2.2/28"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -516,7 +514,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -548,7 +545,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -26618,7 +26614,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -26644,7 +26639,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -26709,8 +26703,7 @@
                         "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                       },
                       "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet"
                       }
                     }
                   ]
@@ -26814,7 +26807,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -26840,7 +26832,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -26905,8 +26896,7 @@
                         "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                       },
                       "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet"
                       }
                     }
                   ]
@@ -27009,7 +26999,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -27035,7 +27024,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -27100,8 +27088,7 @@
                         "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                       },
                       "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet"
                       }
                     }
                   ]
@@ -27201,7 +27188,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
@@ -27228,7 +27214,6 @@
             "allPrefixes" : [
               "240.254.254.1/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
@@ -27396,7 +27381,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
@@ -27422,7 +27406,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
@@ -27446,7 +27429,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
@@ -27470,7 +27452,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
@@ -27494,7 +27475,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
@@ -27518,7 +27498,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "blacklisted" : false,
             "hmm" : false,
@@ -60573,7 +60552,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : false,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60605,7 +60583,6 @@
             "allPrefixes" : [
               "10.10.10.38/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60649,7 +60626,6 @@
             "allPrefixes" : [
               "10.10.10.46/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60690,7 +60666,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60721,7 +60696,6 @@
             "allPrefixes" : [
               "10.10.30.1/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60753,7 +60727,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : false,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60782,7 +60755,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : false,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60811,7 +60783,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : false,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60840,7 +60811,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : false,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
             "blacklisted" : false,
@@ -60872,7 +60842,6 @@
             "allPrefixes" : [
               "192.168.60.37/24"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "blacklisted" : false,
@@ -60904,7 +60873,6 @@
             "allPrefixes" : [
               "172.16.1.2/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "blacklisted" : false,
@@ -60937,7 +60905,6 @@
             "allPrefixes" : [
               "10.10.255.8/32"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
             "blacklisted" : false,
@@ -60979,7 +60946,6 @@
             "allPrefixes" : [
               "169.254.15.194/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 100000.0,
             "blacklisted" : false,
@@ -61010,7 +60976,6 @@
             "allPrefixes" : [
               "169.254.13.238/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 100000.0,
             "blacklisted" : false,
@@ -62164,8 +62129,6 @@
                     {
                       "class" : "org.batfish.datamodel.GeneratedRoute",
                       "administrativeCost" : 32767,
-                      "asPath" : [ ],
-                      "communities" : [ ],
                       "discard" : false,
                       "localPreference" : 100,
                       "metric" : 0,
@@ -62211,8 +62174,6 @@
                     {
                       "class" : "org.batfish.datamodel.GeneratedRoute",
                       "administrativeCost" : 32767,
-                      "asPath" : [ ],
-                      "communities" : [ ],
                       "discard" : false,
                       "localPreference" : 100,
                       "metric" : 0,
@@ -62307,7 +62268,6 @@
             "allPrefixes" : [
               "192.168.2.17/28"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62333,7 +62293,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62361,7 +62320,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62532,7 +62490,6 @@
             "allPrefixes" : [
               "192.168.1.1/24"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62558,7 +62515,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62586,7 +62542,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62756,7 +62711,6 @@
             "allPrefixes" : [
               "172.31.0.1/20"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62782,7 +62736,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62810,7 +62763,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -62993,7 +62945,6 @@
             "allPrefixes" : [
               "192.168.2.33/28"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63019,7 +62970,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63047,7 +62997,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63218,7 +63167,6 @@
             "allPrefixes" : [
               "10.0.0.1/24"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63244,7 +63192,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63272,7 +63219,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63443,7 +63389,6 @@
             "allPrefixes" : [
               "192.168.2.1/28"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63469,7 +63414,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63497,7 +63441,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63668,7 +63611,6 @@
             "allPrefixes" : [
               "10.0.1.1/24"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63694,7 +63636,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63722,7 +63663,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63892,7 +63832,6 @@
             "allPrefixes" : [
               "172.31.32.1/20"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63918,7 +63857,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -63946,7 +63884,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -64128,7 +64065,6 @@
             "allPrefixes" : [
               "172.31.16.1/20"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -64154,7 +64090,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -64182,7 +64117,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -64365,7 +64299,6 @@
             "allPrefixes" : [
               "192.168.2.49/28"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -64391,7 +64324,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -64419,7 +64351,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -64589,7 +64520,6 @@
             "allPrefixes" : [
               "192.168.1.3/24"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65188,7 +65118,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65217,7 +65146,6 @@
             "allPrefixes" : [
               "52.27.166.152/32"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65246,7 +65174,6 @@
             "allPrefixes" : [
               "52.39.121.126/32"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65272,7 +65199,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65298,7 +65224,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65327,7 +65252,6 @@
             "allPrefixes" : [
               "169.254.15.193/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65356,7 +65280,6 @@
             "allPrefixes" : [
               "169.254.13.237/30"
             ],
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65681,7 +65604,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65768,7 +65690,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65794,7 +65715,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65820,7 +65740,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65846,7 +65765,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65872,7 +65790,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -65995,7 +65912,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66021,7 +65937,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66047,7 +65962,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66073,7 +65987,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66099,7 +66012,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66125,7 +66037,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66151,7 +66062,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66177,7 +66087,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66203,7 +66112,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66229,7 +66137,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66255,7 +66162,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66431,7 +66337,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66457,7 +66362,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66483,7 +66387,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66509,7 +66412,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66535,7 +66437,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66561,7 +66462,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
@@ -66587,7 +66487,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "adminUp" : true,
-            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "blacklisted" : false,
