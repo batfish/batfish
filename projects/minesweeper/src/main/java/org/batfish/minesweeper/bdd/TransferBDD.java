@@ -1062,8 +1062,7 @@ public class TransferBDD {
   }
 
   // If the analysis encounters a routing policy feature that is not currently supported, we mark
-  // this in the output
-  // BDDRoute and treat the enclosing statement as a no-op.
+  // this in the output BDDRoute and treat the enclosing statement as a no-op.
   private void unsupported(TransferBDDState state) {
     TransferParam curP = state.getTransferParam();
     TransferResult result = state.getTransferResult();

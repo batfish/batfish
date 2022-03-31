@@ -105,7 +105,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private BDDInteger _tag;
 
-  // set to true if the analysis encounters an unsupported route-policy statement/expression
+  // the conditions under which the analysis encounters an unsupported route-policy
+  // statement/expression
   private BDD _unsupported;
 
   /**

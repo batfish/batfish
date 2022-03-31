@@ -521,8 +521,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     Optional<Row> optRow = constraintsToResult(intersection, policy, configAPs);
     if (!optRow.isPresent() && !outputRoute.getUnsupported().isZero()) {
       // we got no result but encountered some unsupported features, so warn the user that this may
-      // be a
-      // false negative
+      // be a false negative
       _policiesWithUnsupportedFeatures.add(
           "policy " + policy.getName() + " in node " + policy.getOwner().getHostname());
     }
