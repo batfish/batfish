@@ -21,6 +21,7 @@ import org.batfish.grammar.frr.FrrCombinedParser;
 import org.batfish.grammar.frr.FrrConfigurationBuilder;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.sonic.representation.ConfigDb;
+import org.batfish.vendor.sonic.representation.ResolveConf;
 import org.batfish.vendor.sonic.representation.SonicConfiguration;
 
 public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
@@ -68,7 +69,14 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
     _configuration.setConfigDb(configDb);
     configDb.getHostname().ifPresent(_configuration::setHostname);
 
-    // TODO: snmp.yml and resolve.conf
+    String resolveConfFilename = _fileTypes.get(SonicFileType.RESOLVE_CONF);
+    if (resolveConfFilename != null) {
+      ResolveConf resolveConf =
+          ResolveConf.deserialize(
+              _fileTexts.get(resolveConfFilename),
+              _fileResults.get(configDbFilename).getWarnings());
+      _configuration.setResolveConf(resolveConf);
+    }
   }
 
   /** This method is called for FRR parsing, after configDb processing */

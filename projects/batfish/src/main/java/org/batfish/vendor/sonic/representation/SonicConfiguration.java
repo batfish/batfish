@@ -12,6 +12,7 @@ import static org.batfish.vendor.sonic.representation.SonicStructureUsage.fromFr
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.frr.FrrConfiguration;
@@ -43,7 +45,11 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   @VisibleForTesting public static final String DEFAULT_MGMT_VRF_NAME = "vrf_global";
 
   private @Nullable String _hostname;
-  private ConfigDb _configDb; // set via the extractor
+
+  // these are set by the extractor
+  private ConfigDb _configDb;
+  private @Nullable ResolveConf _resolveConf;
+
   private @Nonnull final FrrConfiguration _frr;
 
   public SonicConfiguration() {
@@ -104,6 +110,13 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     c.setLoggingServers(_configDb.getSyslogServers());
     c.setTacacsServers(_configDb.getTacplusServers());
     c.setTacacsSourceInterface(_configDb.getTacplusSourceInterface().orElse(null));
+
+    if (_resolveConf != null) {
+      c.setDnsServers(
+          _resolveConf.getNameservers().stream()
+              .map(Ip::toString)
+              .collect(ImmutableSet.toImmutableSet()));
+    }
 
     convertFrr(c, this);
 
@@ -235,4 +248,13 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   @Override
   public void setVendor(ConfigurationFormat format) {}
+
+  @Nullable
+  public ResolveConf getResolveConf() {
+    return _resolveConf;
+  }
+
+  public void setResolveConf(@Nullable ResolveConf resolveConf) {
+    _resolveConf = resolveConf;
+  }
 }
