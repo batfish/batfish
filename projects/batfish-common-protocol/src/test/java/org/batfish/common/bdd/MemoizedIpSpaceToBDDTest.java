@@ -2,6 +2,8 @@ package org.batfish.common.bdd;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -32,20 +34,33 @@ public class MemoizedIpSpaceToBDDTest {
 
   @Test
   public void testVisit() {
-    assertThat(_toBdd.getMemoizedBdd(IP1_IP_SPACE), equalTo(Optional.empty()));
+    assertThat(
+        "no entry", _toBdd.getMemoizedBddForTesting(IP1_IP_SPACE), equalTo(Optional.empty()));
     BDD bdd = _toBdd.visit(IP1_IP_SPACE);
-    assertThat(_toBdd.getMemoizedBdd(IP1_IP_SPACE), equalTo(Optional.of(bdd)));
+    Optional<BDD> memoized = _toBdd.getMemoizedBddForTesting(IP1_IP_SPACE);
+    assertThat("entry is present", memoized, equalTo(Optional.of(bdd)));
+    assertThat("entry is different than result", memoized.get(), not(sameInstance(bdd)));
+
+    BDD bdd2 = _toBdd.visit(IP1_IP_SPACE);
+    assertThat("visit twice", bdd2, equalTo(bdd));
+    assertThat("visit different instance", bdd2, not(sameInstance(bdd)));
+    Optional<BDD> memoized2 = _toBdd.getMemoizedBddForTesting(IP1_IP_SPACE);
+    assertThat("visit twice same memoized instance", memoized2.get(), sameInstance(memoized.get()));
   }
 
   @Test
   public void testRecursion() {
-    assertThat(_toBdd.getMemoizedBdd(IP1_IP_SPACE), equalTo(Optional.empty()));
-    assertThat(_toBdd.getMemoizedBdd(IP2_IP_SPACE), equalTo(Optional.empty()));
-    assertThat(_toBdd.getMemoizedBdd(ACL_IP_SPACE), equalTo(Optional.empty()));
+    assertThat(_toBdd.getMemoizedBddForTesting(IP1_IP_SPACE), equalTo(Optional.empty()));
+    assertThat(_toBdd.getMemoizedBddForTesting(IP2_IP_SPACE), equalTo(Optional.empty()));
+    assertThat(_toBdd.getMemoizedBddForTesting(ACL_IP_SPACE), equalTo(Optional.empty()));
     BDD bdd = _toBdd.visit(ACL_IP_SPACE);
-    assertTrue("IP1_IP_SPACE should be memoized", _toBdd.getMemoizedBdd(IP1_IP_SPACE).isPresent());
-    assertTrue("IP2_IP_SPACE should be memoized", _toBdd.getMemoizedBdd(IP2_IP_SPACE).isPresent());
-    assertThat(_toBdd.getMemoizedBdd(ACL_IP_SPACE), equalTo(Optional.of(bdd)));
+    assertTrue(
+        "IP1_IP_SPACE should be memoized",
+        _toBdd.getMemoizedBddForTesting(IP1_IP_SPACE).isPresent());
+    assertTrue(
+        "IP2_IP_SPACE should be memoized",
+        _toBdd.getMemoizedBddForTesting(IP2_IP_SPACE).isPresent());
+    assertThat(_toBdd.getMemoizedBddForTesting(ACL_IP_SPACE), equalTo(Optional.of(bdd)));
   }
 
   /**

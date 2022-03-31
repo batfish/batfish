@@ -35,6 +35,9 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 /**
  * Visitor that converts an {@link IpSpace} to a {@link BDD}. Its constructor takes a {@link
  * BDDInteger} that should will be constrained to be in the space.
+ *
+ * <p>For all implementations, it must be the case that all returned {@link BDD} objects are owned
+ * by the caller and may be freed.
  */
 public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
@@ -112,7 +115,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     String name = ipSpaceReference.getName();
     checkArgument(_namedIpSpaceBDDs.containsKey(name), "Undefined IpSpace reference: %s", name);
     try {
-      return _namedIpSpaceBDDs.get(name).get();
+      return _namedIpSpaceBDDs.get(name).get().id();
     } catch (NonRecursiveSupplierException e) {
       throw new BatfishException("Circular IpSpaceReference: " + name);
     }
