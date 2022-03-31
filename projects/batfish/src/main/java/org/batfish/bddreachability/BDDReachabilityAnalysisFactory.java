@@ -1708,12 +1708,11 @@ public final class BDDReachabilityAnalysisFactory {
       boolean useInterfaceRoots) {
     LocationVisitor<Optional<StateExpr>> locationToStateExpr =
         new LocationToOriginationStateExpr(_configs, useInterfaceRoots);
-    IpSpaceToBDD srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
 
     // convert Locations to StateExprs, and merge srcIp constraints
     Map<StateExpr, BDD> rootConstraints = new HashMap<>();
     for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
-      BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
+      BDD srcIpSpaceBDD = _srcIpSpaceToBDD.visit(entry.getIpSpace());
       entry.getLocations().stream()
           .map(locationToStateExpr::visit)
           .filter(Optional::isPresent)
