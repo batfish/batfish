@@ -13,7 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
-import org.batfish.job.ParseVendorConfigurationJob.FileResult;
+import org.batfish.grammar.FileParseResult;
 import org.batfish.vendor.VendorConfiguration;
 
 /** An intermediate class that holds a cacheable result of parsing input configuration files. */
@@ -22,14 +22,14 @@ public class ParseResult implements Serializable {
 
   @Nullable private final VendorConfiguration _config;
   @Nullable private final Throwable _failureCause;
-  @Nonnull private final Map<String, FileResult> _fileResults;
+  @Nonnull private final Map<String, FileParseResult> _fileResults;
   @Nonnull private final ConfigurationFormat _format;
   @Nonnull private final Warnings _warnings;
 
   public ParseResult(
       @Nullable VendorConfiguration config,
       @Nullable Throwable failureCause,
-      Map<String, FileResult> fileResults,
+      Map<String, FileParseResult> fileResults,
       ConfigurationFormat format,
       Warnings warnings) {
     checkArgument(
@@ -58,7 +58,7 @@ public class ParseResult implements Serializable {
    */
   // TODO: Make package private after downstreams are ported off
   @Nonnull
-  public Map<String, FileResult> getFileResults() {
+  public Map<String, FileParseResult> getFileResults() {
     return _fileResults;
   }
 
@@ -81,12 +81,12 @@ public class ParseResult implements Serializable {
    * warnings can be accessed via {@link #getWarnings()}
    */
   public @Nonnull Optional<Warnings> getWarnings(String filename) {
-    return Optional.ofNullable(_fileResults.get(filename)).map(FileResult::getWarnings);
+    return Optional.ofNullable(_fileResults.get(filename)).map(FileParseResult::getWarnings);
   }
 
   /** Get ParseStatus for the specified file, or an empty optional if the file is not found. */
   public @Nonnull Optional<ParseStatus> getParseStatus(String filename) {
-    return Optional.ofNullable(_fileResults.get(filename)).map(FileResult::getParseStatus);
+    return Optional.ofNullable(_fileResults.get(filename)).map(FileParseResult::getParseStatus);
   }
 
   /** Get names of all constituent files. */

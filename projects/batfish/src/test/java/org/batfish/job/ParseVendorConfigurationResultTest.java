@@ -17,9 +17,9 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.grammar.FileParseResult;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection.SilentSyntaxElem;
-import org.batfish.job.ParseVendorConfigurationJob.FileResult;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class ParseVendorConfigurationResultTest {
             new BatfishLoggerHistory(),
             ImmutableMap.of(
                 filename,
-                new FileResult(parseTree, silentSyntax, fileWarnings)
+                new FileParseResult(parseTree, silentSyntax, fileWarnings)
                     .setParseStatus(ParseStatus.PARTIALLY_UNRECOGNIZED)),
             ConfigurationFormat.CISCO_IOS,
             config,
@@ -103,10 +103,10 @@ public class ParseVendorConfigurationResultTest {
             new BatfishLoggerHistory(),
             ImmutableMap.of(
                 filenames.get(0),
-                new FileResult(parseTrees.get(0), silentSyntaxes.get(0), fileWarnings.get(0))
+                new FileParseResult(parseTrees.get(0), silentSyntaxes.get(0), fileWarnings.get(0))
                     .setParseStatus(ParseStatus.PARTIALLY_UNRECOGNIZED),
                 filenames.get(1),
-                new FileResult(parseTrees.get(1), silentSyntaxes.get(1), fileWarnings.get(1))
+                new FileParseResult(parseTrees.get(1), silentSyntaxes.get(1), fileWarnings.get(1))
                     .setParseStatus(ParseStatus.PASSED)),
             ConfigurationFormat.CISCO_IOS,
             config,
