@@ -459,7 +459,7 @@ public final class BDDReachabilityAnalysisFactory {
             toImmutableMap(
                 nodeEntry.getValue(),
                 Entry::getKey, // vrf
-                vrfEntry -> ipSpaceGetter.apply(vrfEntry.getValue()).accept(toBDD)));
+                vrfEntry -> toBDD.visit(ipSpaceGetter.apply(vrfEntry.getValue()))));
   }
 
   IpSpaceToBDD getIpSpaceToBDD() {
@@ -489,7 +489,7 @@ public final class BDDReachabilityAnalysisFactory {
                     toImmutableMap(
                         vrfEntry.getValue().getArpTrueEdge(),
                         Entry::getKey,
-                        edgeEntry -> edgeEntry.getValue().accept(ipSpaceToBDD))));
+                        edgeEntry -> ipSpaceToBDD.visit(edgeEntry.getValue()))));
   }
 
   private static Map<String, Map<String, Map<String, BDD>>> computeIfaceForwardingBehaviorBDDs(
@@ -508,9 +508,8 @@ public final class BDDReachabilityAnalysisFactory {
                         vrfEntry.getValue().getInterfaceForwardingBehavior(),
                         Entry::getKey,
                         ifaceEntry ->
-                            dispositionIpSpaceGetter
-                                .apply(ifaceEntry.getValue())
-                                .accept(ipSpaceToBDD))));
+                            ipSpaceToBDD.visit(
+                                dispositionIpSpaceGetter.apply(ifaceEntry.getValue())))));
   }
 
   private Stream<Edge> generateRootEdges(Map<StateExpr, BDD> rootBdds) {
@@ -1708,12 +1707,11 @@ public final class BDDReachabilityAnalysisFactory {
       boolean useInterfaceRoots) {
     LocationVisitor<Optional<StateExpr>> locationToStateExpr =
         new LocationToOriginationStateExpr(_configs, useInterfaceRoots);
-    IpSpaceToBDD srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
 
     // convert Locations to StateExprs, and merge srcIp constraints
     Map<StateExpr, BDD> rootConstraints = new HashMap<>();
     for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
-      BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
+      BDD srcIpSpaceBDD = _srcIpSpaceToBDD.visit(entry.getIpSpace());
       entry.getLocations().stream()
           .map(locationToStateExpr::visit)
           .filter(Optional::isPresent)
@@ -1767,7 +1765,7 @@ public final class BDDReachabilityAnalysisFactory {
                         nextVrfIpsByVrfEntry.getValue().getNextVrfIps() /* nextVrfIpsByNextVrf */,
                         Entry::getKey,
                         nextVrfIpsByNextVrfEntry ->
-                            nextVrfIpsByNextVrfEntry.getValue().accept(ipSpaceToBDD))));
+                            ipSpaceToBDD.visit(nextVrfIpsByNextVrfEntry.getValue()))));
   }
 
   /**
