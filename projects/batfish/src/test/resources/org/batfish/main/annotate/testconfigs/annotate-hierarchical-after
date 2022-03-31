@@ -1,7 +1,8 @@
 ####BATFISH PRE-PROCESSED JUNIPER CONFIG####
 set system host-name a.example.com
-# UNRECOGNIZED SYNTAX: set interface xe-0/0/0 unit 0 unrecognized syntax
-set interface xe-0/0/0 unit 0 unrecognized syntax
+# UNRECOGNIZED SYNTAX: set interfaces xe-0/0/0 unit 0 unrecognized syntax
+set interfaces xe-0/0/0 unit 0 unrecognized syntax
+set interfaces xe-0/0/0 unit 0 description "this description has quotes"
 # SILENTLY IGNORED: traceoptions file update
 set protocols bgp traceoptions file update
 # PARTIALLY UNSUPPORTED: priority 65
