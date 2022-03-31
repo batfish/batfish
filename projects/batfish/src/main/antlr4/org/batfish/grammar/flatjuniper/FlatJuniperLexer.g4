@@ -4,6 +4,8 @@ options {
    superClass = 'org.batfish.grammar.flatjuniper.parsing.FlatJuniperBaseLexer';
 }
 
+// Wildcard is from the first pass lexing. Aka, it appears in the configs.
+// Wildcard artifact is generated when we generate text and run a parser on it (say, apply-path strings).
 @members {
   private void setWildcard() {
     setType(_markWildcards ? WILDCARD_ARTIFACT : WILDCARD);

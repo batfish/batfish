@@ -68,6 +68,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
     if (newLines != null) {
       _newConfigurationLines.addAll(insertionIndex + 1, newLines);
     }
+    // TODO: removing this removes definition lines. _newConfigurationLines.remove(insertionIndex);
   }
 
   @Override
@@ -102,11 +103,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
     if (_enablePathRecording) {
       String text = node.getText();
       int line = node.getSymbol().getLine();
-      if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
-        _currentPath.addWildcardNode(text, line);
-      } else {
-        _currentPath.addNode(text, line);
-      }
+      _currentPath.addNode(text, line);
     }
   }
 }
