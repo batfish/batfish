@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -81,6 +82,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Set<String> _communityRegexes;
   @Nonnull private final Set<String> _asPathRegexes;
 
+  // keep track of policies where we encountered unsupported features so we can warn the user
+  @Nonnull private final Set<String> _policiesWithUnsupportedFeatures;
+
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
     _direction = question.getDirection();
@@ -108,6 +112,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .addAll(_inputConstraints.getAsPath().getAllRegexes())
             .addAll(_outputConstraints.getAsPath().getAllRegexes())
             .build();
+
+    _policiesWithUnsupportedFeatures = new HashSet<>();
   }
 
   private static Optional<Community> stringToCommunity(String str) {
@@ -489,7 +495,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(
-          "Unsupported features in route policy "
+          "Unexpected error analyzing policy "
               + policy.getName()
               + " in node "
               + policy.getOwner().getHostname(),
@@ -509,7 +515,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       intersection = acceptedAnnouncements.not().and(inConstraints);
     }
 
-    return constraintsToResult(intersection, policy, configAPs);
+    // only search for models on paths where no unsupported route-policy feature was encountered
+    intersection = intersection.andWith(outputRoute.getUnsupported().not());
+
+    Optional<Row> optRow = constraintsToResult(intersection, policy, configAPs);
+    if (!optRow.isPresent() && !outputRoute.getUnsupported().isZero()) {
+      // we got no result but encountered some unsupported features, so warn the user that this may
+      // be a
+      // false negative
+      _policiesWithUnsupportedFeatures.add(
+          "policy " + policy.getName() + " in node " + policy.getOwner().getHostname());
+    }
+    return optRow;
   }
 
   /**
@@ -549,6 +566,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     TableAnswerElement answerElement = new TableAnswerElement(TestRoutePoliciesAnswerer.metadata());
     answerElement.postProcessAnswer(_question, rows);
+    if (!_policiesWithUnsupportedFeatures.isEmpty()) {
+      answerElement.addWarning(
+          "Results for the following policies may be incomplete due to the presence of "
+              + "unsupported routing policy features: "
+              + _policiesWithUnsupportedFeatures);
+    }
     return answerElement;
   }
 

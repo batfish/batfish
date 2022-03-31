@@ -105,6 +105,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private BDDInteger _tag;
 
+  // set to true if the analysis encounters an unsupported route-policy statement/expression
+  private BDD _unsupported;
+
   /**
    * The routing protocols allowed in a BGP route announcement (see {@link
    * org.batfish.datamodel.BgpRoute}).
@@ -197,6 +200,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
+    // Initially there are no unsupported statements encountered
+    _unsupported = factory.zero();
   }
 
   /*
@@ -222,6 +227,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             other._protocolHistory.getVar(), other._protocolHistory.getValueBdds().keySet());
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
+    _unsupported = other._unsupported.id();
   }
 
   /*
@@ -456,6 +462,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
+  public BDD getUnsupported() {
+    return _unsupported;
+  }
+
+  public void setUnsupported(BDD unsupported) {
+    _unsupported = unsupported;
+  }
+
   @Override
   public int hashCode() {
     if (_hcode == 0) {
@@ -477,6 +491,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
               + (_asPathRegexAtomicPredicates != null
                   ? Arrays.hashCode(_asPathRegexAtomicPredicates)
                   : 0);
+      result = 31 * result + (_unsupported != null ? _unsupported.hashCode() : 0);
       _hcode = result;
     }
     return _hcode;
@@ -498,6 +513,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
         && Objects.equals(_nextHopSet, other._nextHopSet)
         && Objects.equals(_tag, other._tag)
-        && Objects.equals(_adminDist, other._adminDist);
+        && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_unsupported, other._unsupported);
   }
 }

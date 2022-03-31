@@ -1,7 +1,5 @@
 package org.batfish.minesweeper.bdd;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -147,8 +145,11 @@ public class TransferBDD {
   /*
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
-  private BDDInteger applyLongExprModification(TransferParam p, BDDInteger x, LongExpr e) {
-    checkArgument(e instanceof LiteralLong, "Unsupported integer update: " + e);
+  private BDDInteger applyLongExprModification(TransferParam p, BDDInteger x, LongExpr e)
+      throws UnsupportedFeatureException {
+    if (!(e instanceof LiteralLong)) {
+      throw new UnsupportedFeatureException(e.toString());
+    }
     LiteralLong z = (LiteralLong) e;
     p.debug("LiteralLong: %s", z.getValue());
     return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
@@ -202,7 +203,8 @@ public class TransferBDD {
    * Convert a Batfish AST boolean expression to a BDD.
    * TODO: Any updates to the TransferParam in expr are lost currently
    */
-  private TransferResult compute(BooleanExpr expr, TransferBDDState state) {
+  private TransferResult compute(BooleanExpr expr, TransferBDDState state)
+      throws UnsupportedFeatureException {
 
     TransferParam p = state.getTransferParam();
     TransferResult result = state.getTransferResult();
@@ -361,8 +363,7 @@ public class TransferBDD {
       MatchCommunities mc = (MatchCommunities) expr;
       // we only handle the case where the expression being matched is just the input communities
       if (!mc.getCommunitySetExpr().equals(InputCommunities.instance())) {
-        throw new BatfishException(
-            "Matching for communities other than the input communities is not supported: " + mc);
+        throw new UnsupportedFeatureException(mc.toString());
       }
       BDD mcPredicate =
           mc.getCommunitySetMatchExpr()
@@ -394,8 +395,7 @@ public class TransferBDD {
           p.debug("False");
           return result.setReturnValueBDD(_factory.zero());
         default:
-          throw new BatfishException(
-              "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
+          throw new UnsupportedFeatureException(b.getType().toString());
       }
 
     } else if (expr instanceof LegacyMatchAsPath) {
@@ -406,11 +406,9 @@ public class TransferBDD {
               p.indent(), _conf, legacyMatchAsPathNode.getExpr(), routeForMatching(p.getData()));
       return result.setReturnValueBDD(asPathPredicate);
 
-    } else if (expr instanceof MatchAsPath) {
+    } else if (expr instanceof MatchAsPath
+        && ((MatchAsPath) expr).getAsPathExpr().equals(InputAsPath.instance())) {
       MatchAsPath matchAsPath = (MatchAsPath) expr;
-      checkArgument(
-          matchAsPath.getAsPathExpr().equals(InputAsPath.instance()),
-          "Currently only supporting matching on the original AS path");
       BDD asPathPredicate =
           matchAsPath
               .getAsPathMatchExpr()
@@ -418,14 +416,15 @@ public class TransferBDD {
       return result.setReturnValueBDD(asPathPredicate);
 
     } else {
-      throw new BatfishException("TODO: compute expr transfer function: " + expr);
+      throw new UnsupportedFeatureException(expr.toString());
     }
   }
 
   /*
    * Symbolic analysis of a single route-policy statement.
    */
-  private TransferBDDState compute(Statement stmt, TransferBDDState state) {
+  private TransferBDDState compute(Statement stmt, TransferBDDState state)
+      throws UnsupportedFeatureException {
     TransferParam curP = state.getTransferParam();
     TransferResult result = state.getTransferResult();
 
@@ -506,8 +505,7 @@ public class TransferBDD {
           break;
 
         default:
-          throw new BatfishException(
-              "Unhandled statement in route policy analysis: " + ss.getType());
+          throw new UnsupportedFeatureException(ss.getType().toString());
       }
 
     } else if (stmt instanceof If) {
@@ -691,7 +689,7 @@ public class TransferBDD {
     } else if (stmt instanceof TraceableStatement) {
       return compute(((TraceableStatement) stmt).getInnerStatements(), state);
     } else {
-      throw new BatfishException("TODO: statement transfer function: " + stmt);
+      throw new UnsupportedFeatureException(stmt.toString());
     }
     return toTransferBDDState(curP, result);
   }
@@ -699,7 +697,11 @@ public class TransferBDD {
   private TransferBDDState compute(List<Statement> statements, TransferBDDState state) {
     TransferBDDState currState = state;
     for (Statement stmt : statements) {
-      currState = compute(stmt, currState);
+      try {
+        currState = compute(stmt, currState);
+      } catch (UnsupportedFeatureException e) {
+        unsupported(currState);
+      }
     }
     return currState;
   }
@@ -724,9 +726,7 @@ public class TransferBDD {
       TransferReturn ret = result.getReturnValue();
       // Only accept routes that are not suppressed
       BDD finalAccepts = ret.getSecond().diff(result.getSuppressedValue());
-      // Set all the values to 0 if the route is not accepted;
-      BDDRoute retVal = iteZero(finalAccepts, ret.getFirst());
-      result = result.setReturnValue(new TransferReturn(retVal, finalAccepts));
+      result = result.setReturnValue(new TransferReturn(ret.getFirst(), finalAccepts));
     }
     return result;
   }
@@ -784,11 +784,6 @@ public class TransferBDD {
     BDDInteger i = ite(b, x.getInteger(), y.getInteger());
     result.setInteger(i);
     return result;
-  }
-
-  @VisibleForTesting
-  BDDRoute iteZero(BDD guard, BDDRoute r) {
-    return ite(guard, r, zeroedRecord());
   }
 
   @VisibleForTesting
@@ -851,6 +846,8 @@ public class TransferBDD {
       retAsPathRegexAPs[i] = ite(guard, r1AsPathRegexAPs[i], r2AsPathRegexAPs[i]);
     }
 
+    ret.setUnsupported(ite(guard, r1.getUnsupported(), r2.getUnsupported()));
+
     // BDDInteger i =
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
     // ret.getProtocolHistory().setInteger(i);
@@ -878,7 +875,8 @@ public class TransferBDD {
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
   private BDD matchAsPathSetExpr(
-      TransferParam p, Configuration conf, AsPathSetExpr e, BDDRoute other) {
+      TransferParam p, Configuration conf, AsPathSetExpr e, BDDRoute other)
+      throws UnsupportedFeatureException {
     if (e instanceof NamedAsPathSet) {
       NamedAsPathSet namedAsPathSet = (NamedAsPathSet) e;
       AsPathAccessList accessList = conf.getAsPathAccessLists().get(namedAsPathSet.getName());
@@ -886,7 +884,7 @@ public class TransferBDD {
       return matchAsPathAccessList(accessList, other);
     }
     // TODO: handle other kinds of AsPathSetExprs
-    throw new BatfishException("Unhandled match as-path expression " + e);
+    throw new UnsupportedFeatureException(e.toString());
   }
 
   /* Convert an AS-path access list to a boolean formula represented as a BDD. */
@@ -912,13 +910,14 @@ public class TransferBDD {
       TransferParam p,
       RouteFilterList x,
       BDDRoute other,
-      BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher) {
+      BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher)
+      throws UnsupportedFeatureException {
     BDD acc = _factory.zero();
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
     Collections.reverse(lines);
     for (RouteFilterLine line : lines) {
       if (!line.getIpWildcard().isPrefix()) {
-        throw new BatfishException("non-prefix IpWildcards are unsupported");
+        throw new UnsupportedFeatureException(line.getIpWildcard().toString());
       }
       Prefix pfx = line.getIpWildcard().toPrefix();
       if (!PrefixUtils.isContainedBy(pfx, _ignoredNetworks)) {
@@ -937,7 +936,8 @@ public class TransferBDD {
   // Returns a function that can convert a prefix range into a BDD that constrains the appropriate
   // part of a route (destination prefix or next-hop IP), depending on the given prefix
   // expression.
-  private BiFunction<BDDRoute, PrefixRange, BDD> prefixExprToSymbolicMatcher(PrefixExpr pe) {
+  private BiFunction<BDDRoute, PrefixRange, BDD> prefixExprToSymbolicMatcher(PrefixExpr pe)
+      throws UnsupportedFeatureException {
     if (pe.equals(DestinationNetwork.instance())) {
       return TransferBDD::isRelevantForDestination;
     } else if (pe instanceof IpPrefix) {
@@ -947,14 +947,14 @@ public class TransferBDD {
         return TransferBDD::isRelevantForNextHop;
       }
     }
-    throw new UnsupportedOperationException("Unsupported prefix expression: " + pe);
+    throw new UnsupportedFeatureException(pe.toString());
   }
 
   /*
    * Converts a prefix set to a boolean expression.
    */
-  private BDD matchPrefixSet(
-      TransferParam p, Configuration conf, MatchPrefixSet m, BDDRoute other) {
+  private BDD matchPrefixSet(TransferParam p, Configuration conf, MatchPrefixSet m, BDDRoute other)
+      throws UnsupportedFeatureException {
     BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher =
         prefixExprToSymbolicMatcher(m.getPrefix());
     PrefixSetExpr e = m.getPrefixSet();
@@ -979,16 +979,17 @@ public class TransferBDD {
       return matchFilterList(p, fl, other, symbolicMatcher);
 
     } else {
-      throw new BatfishException("TODO: match prefix set: " + e);
+      throw new UnsupportedFeatureException(e.toString());
     }
   }
 
   // Produce a BDD representing a constraint on the given BDDInteger that enforces the
   // integer (in)equality constraint represented by the given IntComparator and LongExpr
-  private BDD matchIntComparison(IntComparator comp, LongExpr expr, BDDInteger bddInt) {
-    checkArgument(
-        expr instanceof LiteralLong,
-        "Currently only supporting matching against integer literals: " + expr);
+  private BDD matchIntComparison(IntComparator comp, LongExpr expr, BDDInteger bddInt)
+      throws UnsupportedFeatureException {
+    if (!(expr instanceof LiteralLong)) {
+      throw new UnsupportedFeatureException(expr.toString());
+    }
     long val = ((LiteralLong) expr).getValue();
     switch (comp) {
       case EQ:
@@ -1002,8 +1003,7 @@ public class TransferBDD {
       case LT:
         return bddInt.leq(val).and(bddInt.value(val).not());
       default:
-        throw new UnsupportedOperationException(
-            "Unknown integer comparator: " + comp.getClass().getSimpleName());
+        throw new UnsupportedFeatureException(comp.getClass().getSimpleName());
     }
   }
 
@@ -1014,19 +1014,18 @@ public class TransferBDD {
     return b ? _factory.one() : _factory.zero();
   }
 
-  private void setNextHop(NextHopExpr expr, BDDRoute route) {
-    // record the fact that the next-hop has been explicitly set by the route-map
-    route.setNextHopSet(_factory.one());
+  private void setNextHop(NextHopExpr expr, BDDRoute route) throws UnsupportedFeatureException {
     if (expr instanceof DiscardNextHop) {
       route.setNextHopDiscarded(_factory.one());
-    } else if (expr instanceof IpNextHop) {
+    } else if (expr instanceof IpNextHop && ((IpNextHop) expr).getIps().size() == 1) {
       List<Ip> ips = ((IpNextHop) expr).getIps();
-      checkArgument(ips.size() == 1, "Currently not allowing multiple next-hop IPs to be set");
       Ip ip = ips.get(0);
       route.setNextHop(BDDInteger.makeFromValue(_factory, 32, ip.asLong()));
     } else {
-      throw new UnsupportedOperationException("Unsupported next-hop expression: " + expr);
+      throw new UnsupportedFeatureException(expr.toString());
     }
+    // record the fact that the next-hop has been explicitly set by the route-map
+    route.setNextHopSet(_factory.one());
   }
 
   // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
@@ -1060,6 +1059,17 @@ public class TransferBDD {
    */
   private static BDD unreachable(TransferResult currState) {
     return currState.getReturnAssignedValue().or(currState.getExitAssignedValue());
+  }
+
+  // If the analysis encounters a routing policy feature that is not currently supported, we mark
+  // this in the output
+  // BDDRoute and treat the enclosing statement as a no-op.
+  private void unsupported(TransferBDDState state) {
+    TransferParam curP = state.getTransferParam();
+    TransferResult result = state.getTransferResult();
+    BDD currUnsupported = curP.getData().getUnsupported();
+    BDD newValue = ite(unreachable(result), currUnsupported, _factory.one());
+    curP.getData().setUnsupported(newValue);
   }
 
   /*
@@ -1096,36 +1106,6 @@ public class TransferBDD {
   // Returns the appropriate route to use for matching on attributes.
   private BDDRoute routeForMatching(BDDRoute current) {
     return _useOutputAttributes ? current : _originalRoute;
-  }
-
-  /*
-   * A record of default values that represent the value of the
-   * outputs if the route is filtered / dropped in the policy
-   */
-  @VisibleForTesting
-  BDDRoute zeroedRecord() {
-    BDDRoute rec =
-        new BDDRoute(
-            _factory,
-            _configAtomicPredicates.getCommunityAtomicPredicates().getNumAtomicPredicates(),
-            _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
-    rec.getLocalPref().setValue(0);
-    rec.getAdminDist().setValue(0);
-    rec.getPrefixLength().setValue(0);
-    rec.getMed().setValue(0);
-    rec.getNextHop().setValue(0);
-    rec.setNextHopDiscarded(_factory.zero());
-    rec.setNextHopSet(_factory.zero());
-    rec.getTag().setValue(0);
-    rec.getPrefix().setValue(0);
-    for (int i = 0; i < rec.getCommunityAtomicPredicates().length; i++) {
-      rec.getCommunityAtomicPredicates()[i] = _factory.zero();
-    }
-    for (int i = 0; i < rec.getAsPathRegexAtomicPredicates().length; i++) {
-      rec.getAsPathRegexAtomicPredicates()[i] = _factory.zero();
-    }
-    rec.getProtocolHistory().getVar().setValue(0);
-    return rec;
   }
 
   /*
