@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import java.util.Collection;
@@ -232,7 +231,6 @@ public final class FrrConversions {
     convertIpPrefixLists(c, frrConfiguration.getIpPrefixLists(), vc.getFilename());
     convertBgpCommunityLists(c, frrConfiguration.getBgpCommunityLists());
     convertRouteMaps(c, frrConfiguration, vc.getFilename(), vc.getWarnings());
-    convertDnsServers(c, frrConfiguration.getIpv4Nameservers());
 
     convertOspfProcess(c, vc, frrConfiguration, vc.getWarnings());
     addOspfUnnumberedLLAs(c);
@@ -1765,13 +1763,6 @@ public final class FrrConversions {
     vc.getRouteMaps()
         .forEach(
             (name, routeMap) -> new RouteMapConvertor(c, vc, routeMap, filename, w).toRouteMap());
-  }
-
-  private static void convertDnsServers(Configuration c, List<Ip> ipv4Nameservers) {
-    c.setDnsServers(
-        ipv4Nameservers.stream()
-            .map(Object::toString)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
   public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
