@@ -154,11 +154,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
     if (_enablePathRecording) {
       String text = node.getText();
       int line = node.getSymbol().getLine();
-      if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
-        _currentPath.addWildcardNode(text, line);
-      } else {
-        _currentPath.addNode(text, line);
-      }
+      _currentPath.addNode(text, line);
     }
   }
 }

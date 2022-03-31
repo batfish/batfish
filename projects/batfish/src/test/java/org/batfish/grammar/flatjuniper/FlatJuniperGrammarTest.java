@@ -3741,6 +3741,15 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperApplyGroupsChain() {
+    Configuration c = parseConfig("apply-groups-chain");
+    assertThat(
+        c,
+        hasInterface(
+            "em0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/31")))));
+  }
+
+  @Test
   public void testJuniperApplyGroupsNode() throws IOException {
     String filename = "juniper-apply-groups-node";
 
@@ -4406,6 +4415,16 @@ public final class FlatJuniperGrammarTest {
         c, hasRouteFilterList(prefixList3, RouteFilterListMatchers.rejects(Prefix.parse(prefix1))));
     assertThat(
         c, hasRouteFilterList(prefixList3, RouteFilterListMatchers.rejects(Prefix.parse(prefix2))));
+
+    /* prefix-list p4 should get all addresses from both communities */
+    assertThat(
+        c,
+        hasRouteFilterList(
+            "p4",
+            allOf(
+                permits(Prefix.parse("4.4.4.4/32")),
+                permits(Prefix.parse("5.5.5.5/32")),
+                RouteFilterListMatchers.rejects(Prefix.parse("1.1.1.1/32")))));
 
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborIp)))));
