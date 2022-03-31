@@ -9,14 +9,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -31,8 +28,6 @@ public class FrrConfiguration implements Serializable {
   private @Nullable OspfProcess _ospfProcess;
   private @Nonnull Map<String, FrrInterface> _interfaces;
   private List<String> _interfaceInitOrder;
-  private final @Nonnull List<Ip> _ipv4Nameservers;
-  private final @Nonnull List<Ip6> _ipv6Nameservers;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Set<StaticRoute> _staticRoutes;
   private @Nonnull Map<String, Vrf> _vrfs;
@@ -47,8 +42,6 @@ public class FrrConfiguration implements Serializable {
     _ipPrefixLists = new HashMap<>();
     _ipv6PrefixLists = new HashMap<>();
     _bgpCommunityLists = new HashMap<>();
-    _ipv4Nameservers = new LinkedList<>();
-    _ipv6Nameservers = new LinkedList<>();
     _routeMaps = new HashMap<>();
     _staticRoutes = new HashSet<>();
     _vrfs = new HashMap<>();
@@ -122,16 +115,6 @@ public class FrrConfiguration implements Serializable {
   @Nonnull
   public Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
-  }
-
-  @Nonnull
-  public List<Ip> getIpv4Nameservers() {
-    return _ipv4Nameservers;
-  }
-
-  @Nonnull
-  public List<Ip6> getIpv6Nameservers() {
-    return _ipv6Nameservers;
   }
 
   @Nonnull
