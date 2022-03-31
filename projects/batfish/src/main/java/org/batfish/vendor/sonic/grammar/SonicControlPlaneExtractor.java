@@ -95,7 +95,7 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
    * <p>Throws {@link IllegalArgumentException} if these expectations are violated or if the type of
    * a file cannot be determined.
    */
-  public static Map<SonicFileType, String> getSonicFileMap(Map<String, String> fileTexts) {
+  public @Nonnull static Map<SonicFileType, String> getSonicFileMap(Map<String, String> fileTexts) {
     Map<SonicFileType, String> fileTypeMap = new HashMap<>();
 
     // Filetype detection is based on the tail of the filename
@@ -160,6 +160,7 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
    * <p>This method is deprecated. Use {@link #getSonicFileMap(Map)}.
    */
   @VisibleForTesting
+  @Nonnull
   static String getSonicFrrFilename(Map<String, String> fileTexts) {
     if (fileTexts.size() != 2) {
       // Batfish pairs up files -- but we double check
