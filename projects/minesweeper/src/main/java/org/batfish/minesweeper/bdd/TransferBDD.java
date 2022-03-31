@@ -14,7 +14,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.Configuration;
@@ -145,38 +145,38 @@ public class TransferBDD {
   /*
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
-  private BDDInteger applyLongExprModification(TransferParam p, BDDInteger x, LongExpr e)
-      throws UnsupportedFeatureException {
+  private MutableBDDInteger applyLongExprModification(
+      TransferParam p, MutableBDDInteger x, LongExpr e) throws UnsupportedFeatureException {
     if (!(e instanceof LiteralLong)) {
       throw new UnsupportedFeatureException(e.toString());
     }
     LiteralLong z = (LiteralLong) e;
     p.debug("LiteralLong: %s", z.getValue());
-    return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
+    return MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
 
     /* TODO: These old cases are not correct; removing for now since they are not currently used.
-    First, they should dec/inc the corresponding field of the route, not whatever BDDInteger x
+    First, they should dec/inc the corresponding field of the route, not whatever MutableBDDInteger x
     is passed in.  Second, they need to prevent overflow.  See LongExpr::evaluate for details.
 
     if (e instanceof DecrementMetric) {
       DecrementMetric z = (DecrementMetric) e;
       p.debug("Decrement: %s", z.getSubtrahend());
-      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
+      return x.sub(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
     if (e instanceof IncrementMetric) {
       IncrementMetric z = (IncrementMetric) e;
       p.debug("Increment: %s", z.getAddend());
-      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+      return x.add(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
     if (e instanceof IncrementLocalPreference) {
       IncrementLocalPreference z = (IncrementLocalPreference) e;
       p.debug("IncrementLocalPreference: %s", z.getAddend());
-      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+      return x.add(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
     if (e instanceof DecrementLocalPreference) {
       DecrementLocalPreference z = (DecrementLocalPreference) e;
       p.debug("DecrementLocalPreference: %s", z.getSubtrahend());
-      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
+      return x.sub(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
      */
   }
@@ -589,8 +589,8 @@ public class TransferBDD {
       curP.debug("SetMetric");
       SetMetric sm = (SetMetric) stmt;
       LongExpr ie = sm.getMetric();
-      BDDInteger curMed = curP.getData().getMed();
-      BDDInteger med =
+      MutableBDDInteger curMed = curP.getData().getMed();
+      MutableBDDInteger med =
           ite(unreachable(result), curMed, applyLongExprModification(curP.indent(), curMed, ie));
       curP.getData().setMed(med);
 
@@ -614,7 +614,7 @@ public class TransferBDD {
       curP.debug("SetLocalPreference");
       SetLocalPreference slp = (SetLocalPreference) stmt;
       LongExpr ie = slp.getLocalPreference();
-      BDDInteger newValue =
+      MutableBDDInteger newValue =
           applyLongExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
       newValue = ite(unreachable(result), curP.getData().getLocalPref(), newValue);
       curP.getData().setLocalPref(newValue);
@@ -623,8 +623,8 @@ public class TransferBDD {
       curP.debug("SetTag");
       SetTag st = (SetTag) stmt;
       LongExpr ie = st.getTag();
-      BDDInteger currTag = curP.getData().getTag();
-      BDDInteger newValue = applyLongExprModification(curP.indent(), currTag, ie);
+      MutableBDDInteger currTag = curP.getData().getTag();
+      MutableBDDInteger newValue = applyLongExprModification(curP.indent(), currTag, ie);
       newValue = ite(unreachable(result), currTag, newValue);
       curP.getData().setTag(newValue);
 
@@ -770,9 +770,9 @@ public class TransferBDD {
   }
 
   /*
-   * Map ite over BDDInteger type
+   * Map ite over MutableBDDInteger type
    */
-  private BDDInteger ite(BDD b, BDDInteger x, BDDInteger y) {
+  private MutableBDDInteger ite(BDD b, MutableBDDInteger x, MutableBDDInteger y) {
     return x.ite(b, y);
   }
 
@@ -781,7 +781,7 @@ public class TransferBDD {
    */
   private <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
     BDDDomain<T> result = new BDDDomain<>(x);
-    BDDInteger i = ite(b, x.getInteger(), y.getInteger());
+    MutableBDDInteger i = ite(b, x.getInteger(), y.getInteger());
     result.setInteger(i);
     return result;
   }
@@ -794,8 +794,8 @@ public class TransferBDD {
             _configAtomicPredicates.getCommunityAtomicPredicates().getNumAtomicPredicates(),
             _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
-    BDDInteger x;
-    BDDInteger y;
+    MutableBDDInteger x;
+    MutableBDDInteger y;
 
     // update integer values based on condition
     // x = r1.getPrefixLength();
@@ -848,7 +848,7 @@ public class TransferBDD {
 
     ret.setUnsupported(ite(guard, r1.getUnsupported(), r2.getUnsupported()));
 
-    // BDDInteger i =
+    // MutableBDDInteger i =
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
     // ret.getProtocolHistory().setInteger(i);
 
@@ -983,9 +983,9 @@ public class TransferBDD {
     }
   }
 
-  // Produce a BDD representing a constraint on the given BDDInteger that enforces the
+  // Produce a BDD representing a constraint on the given MutableBDDInteger that enforces the
   // integer (in)equality constraint represented by the given IntComparator and LongExpr
-  private BDD matchIntComparison(IntComparator comp, LongExpr expr, BDDInteger bddInt)
+  private BDD matchIntComparison(IntComparator comp, LongExpr expr, MutableBDDInteger bddInt)
       throws UnsupportedFeatureException {
     if (!(expr instanceof LiteralLong)) {
       throw new UnsupportedFeatureException(expr.toString());
@@ -1020,7 +1020,7 @@ public class TransferBDD {
     } else if (expr instanceof IpNextHop && ((IpNextHop) expr).getIps().size() == 1) {
       List<Ip> ips = ((IpNextHop) expr).getIps();
       Ip ip = ips.get(0);
-      route.setNextHop(BDDInteger.makeFromValue(_factory, 32, ip.asLong()));
+      route.setNextHop(MutableBDDInteger.makeFromValue(_factory, 32, ip.asLong()));
     } else {
       throw new UnsupportedFeatureException(expr.toString());
     }

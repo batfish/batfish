@@ -1,5 +1,7 @@
 package org.batfish.representation.palo_alto;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.getBuiltInApps;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -28,11 +30,12 @@ public class ApplicationGroupTest {
   @Test
   public void testGetDescendantObjectsBuiltIn() {
     ApplicationGroup ag = new ApplicationGroup("group");
-    ag.getMembers().add(ApplicationBuiltIn.FTP.getName());
+    // Built-in application
+    ag.getMembers().add("ftp");
 
     assertThat(
         ag.getDescendantObjects(ImmutableMap.of(), ImmutableMap.of(), new HashSet<>()),
-        equalTo(ImmutableSet.of(ApplicationBuiltIn.FTP)));
+        equalTo(ImmutableSet.of(getOnlyElement(getBuiltInApps("ftp")))));
   }
 
   @Test

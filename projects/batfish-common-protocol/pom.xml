@@ -38,7 +38,7 @@
                                     </ignoredUnusedDeclaredDependency>
                                     <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils
                                     </ignoredUnusedDeclaredDependency>
-                                    <ignoredUnusedDeclaredDependency>javax.activation:activation
+                                    <ignoredUnusedDeclaredDependency>jakarta.activation:jakarta.activation-api
                                     </ignoredUnusedDeclaredDependency>
                                     <ignoredUnusedDeclaredDependency>javax.xml.bind:jaxb-api
                                     </ignoredUnusedDeclaredDependency>
@@ -265,8 +265,8 @@
 
         <!-- Runtime dependencies for Jersey. -->
         <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
             <scope>runtime</scope>
         </dependency>
 

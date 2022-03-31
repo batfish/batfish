@@ -9,8 +9,8 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDUtils;
+import org.batfish.common.bdd.ImmutableBDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.junit.Rule;
 import org.junit.Test;
@@ -98,7 +98,8 @@ public class PrefixTest {
 
   @Test
   public void testToHostIpSpace() {
-    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(BDDUtils.bddFactory(32), 32, 0, true);
+    ImmutableBDDInteger ipAddrBdd =
+        ImmutableBDDInteger.makeFromIndex(BDDUtils.bddFactory(32), 32, 0);
     IpSpaceToBDD toBDD = new IpSpaceToBDD(ipAddrBdd);
     assertThat(
         "/32 host space is preserved",

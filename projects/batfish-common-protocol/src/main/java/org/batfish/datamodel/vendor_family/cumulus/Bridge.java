@@ -63,9 +63,10 @@ public final class Bridge implements Serializable {
       @JsonProperty(PROP_PVID) @Nullable Integer pvid,
       @JsonProperty(PROP_VIDS) @Nullable IntegerSpace vids) {
     checkArgument(pvid != null, "Missing %s", PROP_PVID);
-    checkArgument(vids != null, "Missing %s", PROP_VIDS);
     return new Bridge(
-        ImmutableSortedSet.copyOf(firstNonNull(ports, ImmutableSortedSet.of())), pvid, vids);
+        ImmutableSortedSet.copyOf(firstNonNull(ports, ImmutableSortedSet.of())),
+        pvid,
+        firstNonNull(vids, IntegerSpace.EMPTY));
   }
 
   private final @Nonnull SortedSet<String> _ports;

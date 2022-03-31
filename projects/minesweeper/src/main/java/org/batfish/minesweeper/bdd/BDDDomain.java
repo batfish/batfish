@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.MutableBDDInteger;
 
 /*
  * Class that wraps a BDDInteger around a finite collection of values
@@ -16,19 +16,19 @@ public class BDDDomain<T> {
 
   private List<T> _values;
 
-  private BDDInteger _integer;
+  private MutableBDDInteger _integer;
 
   public BDDDomain(BDDFactory factory, List<T> values, int index) {
     int bits = numBits(values);
     _factory = factory;
     _values = values;
-    _integer = BDDInteger.makeFromIndex(_factory, bits, index, false);
+    _integer = MutableBDDInteger.makeFromIndex(_factory, bits, index, false);
   }
 
   public BDDDomain(BDDDomain<T> other) {
     _factory = other._factory;
     _values = other._values;
-    _integer = new BDDInteger(other._integer);
+    _integer = new MutableBDDInteger(other._integer);
   }
 
   private int numBits(List<T> values) {
@@ -47,16 +47,21 @@ public class BDDDomain<T> {
     return _integer.value(idx);
   }
 
+  public T satAssignmentToValue(BDD satAssignment) {
+    Long idx = _integer.satAssignmentToLong(satAssignment);
+    return _values.get(idx.intValue());
+  }
+
   public void setValue(T value) {
     int idx = _values.indexOf(value);
     _integer.setValue(idx);
   }
 
-  public BDDInteger getInteger() {
+  public MutableBDDInteger getInteger() {
     return _integer;
   }
 
-  public void setInteger(BDDInteger i) {
+  public void setInteger(MutableBDDInteger i) {
     _integer = i;
   }
 

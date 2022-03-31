@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -261,8 +260,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
-
-    builder.setProtocol(r.getProtocolHistory().getValueFromAssignment(fullModel));
+    builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
     builder.setCommunities(communities);
@@ -286,7 +284,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   private BDD constraintsToModel(BDD constraints, ConfigAtomicPredicates configAPs) {
     BDDRoute route = new BDDRoute(constraints.getFactory(), configAPs);
     // set the protocol field to BGP if it is consistent with the constraints
-    BDD isBGP = route.getProtocolHistory().getConstraintForValue(RoutingProtocol.BGP);
+    BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
     BDD augmentedConstraints = constraints.and(isBGP);
     if (!augmentedConstraints.isZero()) {
       return augmentedConstraints.fullSatOne();
@@ -572,28 +570,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
               + _policiesWithUnsupportedFeatures);
     }
     return answerElement;
-  }
-
-  @Nullable
-  private static org.batfish.datamodel.questions.BgpRoute toQuestionsBgpRoute(
-      @Nullable Bgpv4Route dataplaneBgpRoute) {
-    if (dataplaneBgpRoute == null) {
-      return null;
-    }
-    return org.batfish.datamodel.questions.BgpRoute.builder()
-        .setNextHopIp(dataplaneBgpRoute.getNextHopIp())
-        .setProtocol(dataplaneBgpRoute.getProtocol())
-        .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
-        .setOriginType(dataplaneBgpRoute.getOriginType())
-        .setOriginatorIp(dataplaneBgpRoute.getOriginatorIp())
-        .setMetric(dataplaneBgpRoute.getMetric())
-        .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
-        .setTag(dataplaneBgpRoute.getTag())
-        .setWeight(dataplaneBgpRoute.getWeight())
-        .setNetwork(dataplaneBgpRoute.getNetwork())
-        .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
-        .setAsPath(dataplaneBgpRoute.getAsPath())
-        .build();
   }
 
   @Nonnull

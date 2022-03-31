@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -19,23 +20,23 @@ import java.io.IOException;
 import org.batfish.common.util.serialization.BatfishThirdPartySerializationModule;
 
 public final class BatfishObjectMapper {
-  private static final ObjectMapper MAPPER = baseMapper();
+  private static final JsonMapper MAPPER = baseMapper().build();
 
-  private static final ObjectMapper IGNORE_UNKNOWN_MAPPER =
-      baseMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  private static final JsonMapper IGNORE_UNKNOWN_MAPPER =
+      baseMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build();
 
   private static final ObjectWriter ALWAYS_WRITER =
-      baseMapper().setSerializationInclusion(Include.ALWAYS).writer();
+      baseMapper().serializationInclusion(Include.ALWAYS).build().writer();
 
   private static final ObjectWriter WRITER = MAPPER.writer();
 
   private static final PrettyPrinter PRETTY_PRINTER = new PrettyPrinter();
 
   private static final ObjectWriter PRETTY_WRITER =
-      baseMapper().enable(SerializationFeature.INDENT_OUTPUT).writer(PRETTY_PRINTER);
+      baseMapper().enable(SerializationFeature.INDENT_OUTPUT).build().writer(PRETTY_PRINTER);
 
   private static final ObjectMapper VERBOSE_MAPPER =
-      baseMapper().setSerializationInclusion(Include.ALWAYS);
+      baseMapper().serializationInclusion(Include.ALWAYS).build();
 
   private static final ObjectWriter VERBOSE_WRITER = VERBOSE_MAPPER.writer(PRETTY_PRINTER);
 
@@ -163,28 +164,23 @@ public final class BatfishObjectMapper {
   }
 
   /** Configures all the default options for a Batfish {@link ObjectMapper}. */
-  private static ObjectMapper baseMapper() {
-    ObjectMapper mapper = new ObjectMapper();
-
-    mapper.disable(MapperFeature.AUTO_DETECT_CREATORS);
-    mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-    mapper.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-    // Next two lines make Instant class serialize as an RFC-3339 timestamp
-    mapper.registerModule(new JavaTimeModule());
-    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    // This line makes Java 8's Optional type serialize
-    mapper.registerModule(new Jdk8Module());
-    // See https://groups.google.com/forum/#!topic/jackson-user/WfZzlt5C2Ww
-    //  This fixes issues in which non-empty maps with keys with empty values would get omitted
-    //  entirely. See also https://github.com/batfish/batfish/issues/256
-    mapper.setDefaultPropertyInclusion(
-        JsonInclude.Value.construct(Include.NON_EMPTY, Include.ALWAYS));
-    // This line makes Guava collections work with jackson
-    mapper.registerModule(new GuavaModule());
-
-    // Custom (de)serialization for 3rd-party classes
-    mapper.registerModule(new BatfishThirdPartySerializationModule());
-
-    return mapper;
+  private static JsonMapper.Builder baseMapper() {
+    return JsonMapper.builder()
+        .disable(MapperFeature.AUTO_DETECT_CREATORS)
+        .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+        .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+        // Next two lines make Instant class serialize as an RFC-3339 timestamp
+        .addModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        // This line makes Java 8's Optional type serialize
+        .addModule(new Jdk8Module())
+        // See https://groups.google.com/forum/#!topic/jackson-user/WfZzlt5C2Ww
+        // This fixes issues in which non-empty maps with keys with empty values would get
+        // omitted entirely. See also https://github.com/batfish/batfish/issues/256
+        .defaultPropertyInclusion(JsonInclude.Value.construct(Include.NON_EMPTY, Include.ALWAYS))
+        // This line makes Guava collections work with Jackson
+        .addModule(new GuavaModule())
+        // Custom (de)serialization for 3rd-party classes
+        .addModule(new BatfishThirdPartySerializationModule());
   }
 }

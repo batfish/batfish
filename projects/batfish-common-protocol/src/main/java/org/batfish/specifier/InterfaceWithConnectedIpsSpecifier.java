@@ -9,8 +9,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDUtils;
+import org.batfish.common.bdd.ImmutableBDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Interface;
@@ -33,7 +33,8 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
   public InterfaceWithConnectedIpsSpecifier(@Nonnull IpSpace ipSpace) {
     _ipSpace = ipSpace;
     BDDFactory factory = BDDUtils.bddFactory(Prefix.MAX_PREFIX_LENGTH);
-    BDDInteger integer = BDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, true);
+    ImmutableBDDInteger integer =
+        ImmutableBDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0);
     _ipSpaceToBdd = new IpSpaceToBDD(integer);
     _ipSpaceBdd = _ipSpaceToBdd.visit(ipSpace);
   }
