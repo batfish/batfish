@@ -1474,7 +1474,6 @@ public class SearchRoutePoliciesAnswererTest {
 
     // there are no answers because all paths go through an unsupported statement (PrependAsPath)
     assertEquals(answer.getRows().size(), 0);
-    assertEquals(answer.getWarnings().size(), 1);
   }
 
   @Test
@@ -1528,8 +1527,6 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
-
-    assertEquals(answer.getWarnings().size(), 0);
   }
 
   @Test
@@ -1578,7 +1575,5 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, nullValue(), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, nullValue(), Schema.BGP_ROUTE_DIFFS))));
-
-    assertEquals(answer.getWarnings().size(), 0);
   }
 }
