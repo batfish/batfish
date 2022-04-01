@@ -325,4 +325,22 @@ public class SonicGrammarTest {
 
     assertTrue(ccae.getUndefinedReferences().get("sonic_configs/device/frr.conf").isEmpty());
   }
+
+  /** Test that resolve.conf files are parsed and its contents are converted. */
+  @Test
+  public void testResolveConf() throws IOException {
+    String snapshotName = "resolve_conf";
+    Batfish batfish =
+        getBatfish(snapshotName, "device/frr.conf", "device/config_db.json", "device/resolve.conf");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("resolve_conf");
+    vc.setWarnings(new Warnings());
+
+    assertEquals(ImmutableList.of(Ip.parse("1.1.1.1")), vc.getResolveConf().getNameservers());
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertEquals("resolve_conf", c.getHostname());
+    assertEquals(ImmutableSet.of("1.1.1.1"), c.getDnsServers());
+  }
 }
