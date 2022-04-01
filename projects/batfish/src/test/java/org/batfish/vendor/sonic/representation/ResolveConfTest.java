@@ -65,4 +65,15 @@ public class ResolveConfTest {
         ImmutableSortedSet.of(new Warning("No nameserver found", TAG_RED_FLAG)),
         warnings.getRedFlagWarnings());
   }
+
+  @Test
+  public void testDeserialize_extraWhitespace() {
+    // leading space; tabs; training space
+    List<String> lines = ImmutableList.of(" nameserver      1.1.1.1  ");
+
+    Warnings warnings = new Warnings(true, true, true);
+    ResolveConf resolveConf = ResolveConf.deserialize(String.join("\n", lines), warnings);
+
+    assertEquals(ImmutableList.of(Ip.parse("1.1.1.1")), resolveConf.getNameservers());
+  }
 }

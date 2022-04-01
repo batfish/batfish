@@ -74,7 +74,7 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
       ResolveConf resolveConf =
           ResolveConf.deserialize(
               _fileTexts.get(resolveConfFilename),
-              _fileResults.get(configDbFilename).getWarnings());
+              _fileResults.get(resolveConfFilename).getWarnings());
       _configuration.setResolveConf(resolveConf);
     }
   }

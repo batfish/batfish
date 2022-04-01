@@ -2,7 +2,6 @@ package org.batfish.vendor.sonic.representation;
 
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -18,18 +17,18 @@ public class ResolveConf implements Serializable {
   private @Nonnull final List<Ip> _nameservers;
   private @Nonnull final List<Ip6> _nameservers6;
 
-  public ResolveConf(List<Ip> nameservers, List<Ip6> nameservers6) {
-    _nameservers = ImmutableList.copyOf(nameservers);
-    _nameservers6 = ImmutableList.copyOf(nameservers6);
+  private ResolveConf(List<Ip> nameservers, List<Ip6> nameservers6) {
+    _nameservers = nameservers;
+    _nameservers6 = nameservers6;
   }
 
-  public static ResolveConf deserialize(String resolveConfText, Warnings warnings) {
-    List<Ip> nameservers = new LinkedList<>();
-    List<Ip6> nameservers6 = new LinkedList<>();
+  public @Nonnull static ResolveConf deserialize(String resolveConfText, Warnings warnings) {
+    ImmutableList.Builder<Ip> nameservers = ImmutableList.builder();
+    ImmutableList.Builder<Ip6> nameservers6 = ImmutableList.builder();
     boolean foundNameserverLine = false;
     String[] lines = resolveConfText.split("\n");
     for (String line : lines) {
-      String[] parts = line.split("\\s");
+      String[] parts = line.trim().split("\\s+");
       if (parts.length == 2 && parts[0].equals(PROP_NAMESERVER)) {
         foundNameserverLine = true;
         String address = parts[1];
@@ -49,7 +48,7 @@ public class ResolveConf implements Serializable {
     if (!foundNameserverLine) {
       warnings.redFlag("No nameserver found");
     }
-    return new ResolveConf(nameservers, nameservers6);
+    return new ResolveConf(nameservers.build(), nameservers6.build());
   }
 
   @Nonnull
