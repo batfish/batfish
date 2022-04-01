@@ -67,9 +67,9 @@ public class ResolveConfTest {
   }
 
   @Test
-  public void testDeserialize_extraWhitespace() {
+  public void testDeserialize_extraWhitespaceAndComments() {
     // leading space; tabs; training space
-    List<String> lines = ImmutableList.of(" nameserver      1.1.1.1  ");
+    List<String> lines = ImmutableList.of(" nameserver      1.1.1.1   # comment");
 
     Warnings warnings = new Warnings(true, true, true);
     ResolveConf resolveConf = ResolveConf.deserialize(String.join("\n", lines), warnings);

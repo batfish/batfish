@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
@@ -11,8 +13,6 @@ import org.batfish.datamodel.Ip6;
 
 /** Represents information in resolve.conf file that is provided as part of the SONiC file bundle */
 public class ResolveConf implements Serializable {
-
-  private static final String PROP_NAMESERVER = "nameserver";
 
   private @Nonnull final List<Ip> _nameservers;
   private @Nonnull final List<Ip6> _nameservers6;
@@ -28,10 +28,10 @@ public class ResolveConf implements Serializable {
     boolean foundNameserverLine = false;
     String[] lines = resolveConfText.split("\n");
     for (String line : lines) {
-      String[] parts = line.trim().split("\\s+");
-      if (parts.length == 2 && parts[0].equals(PROP_NAMESERVER)) {
+      Matcher matcher = NAMESERVER_LINE.matcher(line);
+      if (matcher.matches()) {
         foundNameserverLine = true;
-        String address = parts[1];
+        String address = matcher.group(1);
         Optional<Ip> ip = Ip.tryParse(address);
         if (ip.isPresent()) {
           nameservers.add(ip.get());
@@ -60,4 +60,7 @@ public class ResolveConf implements Serializable {
   public List<Ip6> getNameservers6() {
     return _nameservers6;
   }
+
+  private static final Pattern NAMESERVER_LINE =
+      Pattern.compile("^\\s*nameserver\\s+([^#\\s]+)\\s*(#.*)?$");
 }
