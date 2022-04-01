@@ -12,6 +12,7 @@ import net.sf.javabdd.BDDPairing;
 public final class BDDPairingFactory {
   private final BDD[] _domain;
   private final BDD[] _codomain;
+  private final BDD _domainVars;
 
   public BDDPairingFactory(BDD[] domain, BDD[] codomain) {
     checkArgument(domain.length == codomain.length, "domain and codomain must have equal size");
@@ -23,6 +24,7 @@ public final class BDDPairingFactory {
         "domain and codomain must be disjoint");
     _domain = domain;
     _codomain = codomain;
+    _domainVars = domain[0].getFactory().andAll(domain);
   }
 
   private static boolean hasDistinctElements(BDD[] vars) {
@@ -37,5 +39,9 @@ public final class BDDPairingFactory {
   public BDDPairingFactory composeWith(BDDPairingFactory other) {
     return new BDDPairingFactory(
         concatBitvectors(_domain, other._domain), concatBitvectors(_codomain, other._codomain));
+  }
+
+  public BDD getDomainVarsBdd() {
+    return _domainVars.id(); // defensive copy
   }
 }
