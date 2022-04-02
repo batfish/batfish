@@ -343,4 +343,25 @@ public class SonicGrammarTest {
     assertEquals("resolv_conf", c.getHostname());
     assertEquals(ImmutableSet.of("1.1.1.1"), c.getDnsServers());
   }
+
+  /** Test that resolve.conf files are parsed and its contents are converted. */
+  @Test
+  public void testSnmpYml() throws IOException {
+    String snapshotName = "snmp_yml";
+    Batfish batfish =
+        getBatfish(snapshotName, "device/frr.conf", "device/config_db.json", "device/snmp.yml");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("snmp_yml");
+    vc.setWarnings(new Warnings());
+
+    assertEquals("public", vc.getSnmpYml().getRoCommunity());
+    assertEquals("public6", vc.getSnmpYml().getRoCommunity6());
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertEquals("snmp_yml", c.getHostname());
+
+    // TODO: check conversion
+  }
 }

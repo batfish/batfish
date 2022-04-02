@@ -49,6 +49,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   // these are set by the extractor
   private ConfigDb _configDb;
   private @Nullable ResolvConf _resolvConf;
+  private @Nullable SnmpYml _snmpYml;
 
   private @Nonnull final FrrConfiguration _frr;
 
@@ -256,5 +257,13 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   public void setResolveConf(@Nullable ResolvConf resolveConf) {
     _resolvConf = resolveConf;
+  }
+
+  public @Nullable SnmpYml getSnmpYml() {
+    return _snmpYml;
+  }
+
+  public void setSnmpYml(@Nullable SnmpYml snmpYml) {
+    _snmpYml = snmpYml;
   }
 }
