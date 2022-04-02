@@ -48,7 +48,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   // these are set by the extractor
   private ConfigDb _configDb;
-  private @Nullable ResolveConf _resolveConf;
+  private @Nullable ResolvConf _resolvConf;
 
   private @Nonnull final FrrConfiguration _frr;
 
@@ -111,9 +111,9 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     c.setTacacsServers(_configDb.getTacplusServers());
     c.setTacacsSourceInterface(_configDb.getTacplusSourceInterface().orElse(null));
 
-    if (_resolveConf != null) {
+    if (_resolvConf != null) {
       c.setDnsServers(
-          _resolveConf.getNameservers().stream()
+          _resolvConf.getNameservers().stream()
               .map(Ip::toString)
               .collect(ImmutableSet.toImmutableSet()));
     }
@@ -250,11 +250,11 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   public void setVendor(ConfigurationFormat format) {}
 
   @Nullable
-  public ResolveConf getResolveConf() {
-    return _resolveConf;
+  public ResolvConf getResolvConf() {
+    return _resolvConf;
   }
 
-  public void setResolveConf(@Nullable ResolveConf resolveConf) {
-    _resolveConf = resolveConf;
+  public void setResolveConf(@Nullable ResolvConf resolveConf) {
+    _resolvConf = resolveConf;
   }
 }
