@@ -1,0 +1,3 @@
+snmp_rocommunity: public
+snmp_rocommunity6: public6
+snmp_location: dc
