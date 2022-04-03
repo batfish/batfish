@@ -3,6 +3,10 @@ package org.batfish.representation.cisco;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoStructureUsage implements StructureUsage {
+  AAA_ACCOUNTING_CONNECTION_DEFAULT("aaa accounting connection default"),
+  AAA_ACCOUNTING_GROUP("aaa accounting group"),
+  AAA_AUTHENTICATION_GROUP("aaa authentication group"),
+  AAA_AUTHORIZATION_GROUP("aaa authorization group"),
   ACCESS_GROUP_GLOBAL_FILTER("access-group global filter"),
   BGP_ADVERTISE_MAP_EXIST_MAP("bgp neighbor advertise-map exist-map"),
   BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),

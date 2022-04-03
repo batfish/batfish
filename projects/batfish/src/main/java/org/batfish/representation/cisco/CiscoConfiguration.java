@@ -391,6 +391,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return clausePolicyName;
   }
 
+  private final Map<String, AaaServerGroup> _aaaServerGroups;
+
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
   private final CiscoFamily _cf;
@@ -544,6 +546,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _standardAccessLists = new TreeMap<>();
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
+    _aaaServerGroups = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _tracks = new TreeMap<>();
     _vrfs = new TreeMap<>();
@@ -798,6 +801,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
     return _standardIpv6AccessLists;
+  }
+
+  public @Nonnull Map<String, AaaServerGroup> getAaaServerGroups() {
+    return _aaaServerGroups;
   }
 
   public NavigableSet<String> getTacacsServers() {
@@ -2387,6 +2394,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
+  @VisibleForTesting
+  static Set<String> toTacacsServers(
+      NavigableSet<String> tacacsServers, Map<String, AaaServerGroup> tacacsPlusGroups) {
+    /* The VI model of TACACS servers is not rich enough to express the nuances of global vs. group-level servers and of private servers. We combine them all in the VI set. */
+    return ImmutableSet.<String>builder()
+        .addAll(tacacsServers)
+        .addAll(
+            tacacsPlusGroups.values().stream()
+                .filter(group -> group instanceof TacacsPlusServerGroup)
+                .flatMap(
+                    group ->
+                        Streams.concat(
+                            group.getServers().stream(), group.getPrivateServers().stream()))
+                .collect(ImmutableSet.toImmutableSet()))
+        .build();
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
@@ -2404,7 +2428,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.setExportBgpFromBgpRib(true);
     c.setNormalVlanRange(
         IntegerSpace.of(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO)));
-    c.setTacacsServers(_tacacsServers);
+    c.setTacacsServers(toTacacsServers(_tacacsServers, _aaaServerGroups));
     c.setTacacsSourceInterface(_tacacsSourceInterface);
     c.setNtpSourceInterface(_ntpSourceInterface);
     if (_cf.getNtp() != null) {
@@ -2969,6 +2993,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());
     }
+
+    markAbstractStructureAllUsages(
+        CiscoStructureType.AAA_SERVER_GROUP,
+        ImmutableList.of(
+            CiscoStructureType.AAA_SERVER_GROUP_LDAP,
+            CiscoStructureType.AAA_SERVER_GROUP_RADIUS,
+            CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS));
 
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);

@@ -186,6 +186,9 @@ import static org.batfish.representation.cisco.CiscoConversions.BGP_VRF_LEAK_IGP
 import static org.batfish.representation.cisco.CiscoConversions.aclLineStructureName;
 import static org.batfish.representation.cisco.CiscoConversions.computeVrfExportImportPolicyName;
 import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_LDAP;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_RADIUS;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
@@ -425,16 +428,19 @@ import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.IcmpEchoSla;
 import org.batfish.representation.cisco.IpSla;
+import org.batfish.representation.cisco.LdapServerGroup;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.PortObjectGroup;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
+import org.batfish.representation.cisco.RadiusServerGroup;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtAdditiveLine;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtLine;
 import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StandardCommunityListLine;
+import org.batfish.representation.cisco.TacacsPlusServerGroup;
 import org.batfish.representation.cisco.TrackIpSla;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
@@ -570,6 +576,42 @@ public final class CiscoGrammarTest {
         assertThat(line, requiresAuthentication());
       }
     }
+  }
+
+  @Test
+  public void testAaaGroupServer() throws IOException {
+    String hostname = "ios-aaa-group-server";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    CiscoConfiguration vc =
+        (CiscoConfiguration) batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertTrue(vc.getAaaServerGroups().get("ldap_group") instanceof LdapServerGroup);
+    assertTrue(vc.getAaaServerGroups().get("radius_group") instanceof RadiusServerGroup);
+    assertTrue(vc.getAaaServerGroups().get("tacacs_group") instanceof TacacsPlusServerGroup);
+
+    assertEquals(
+        ImmutableList.of("192.168.2.1", "192.168.2.2"),
+        vc.getAaaServerGroups().get("ldap_group").getServers());
+    assertEquals(
+        ImmutableList.of("192.168.3.1"), vc.getAaaServerGroups().get("radius_group").getServers());
+    assertEquals(
+        ImmutableList.of("10.1.1.1"), vc.getAaaServerGroups().get("tacacs_group").getServers());
+    assertEquals(
+        ImmutableList.of("10.2.2.2"),
+        vc.getAaaServerGroups().get("tacacs_group").getPrivateServers());
+
+    assertThat(ccae, hasDefinedStructure(filename, AAA_SERVER_GROUP_LDAP, "ldap_group"));
+    assertThat(ccae, hasDefinedStructure(filename, AAA_SERVER_GROUP_RADIUS, "radius_group"));
+    assertThat(ccae, hasDefinedStructure(filename, AAA_SERVER_GROUP_TACACS_PLUS, "tacacs_group"));
+    assertThat(ccae, hasNumReferrers(filename, AAA_SERVER_GROUP_TACACS_PLUS, "tacacs_group", 9));
+
+    // global and group-level tacacs servers must be included; radius and ldap servers shouldn't be
+    assertThat(
+        c.getTacacsServers(), equalTo(ImmutableSet.of("192.168.1.1", "10.1.1.1", "10.2.2.2")));
   }
 
   @Test

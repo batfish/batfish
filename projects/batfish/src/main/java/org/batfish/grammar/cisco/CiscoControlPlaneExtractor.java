@@ -11,6 +11,10 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeRouteMapClauseName;
 import static org.batfish.representation.cisco.CiscoConversions.aclLineStructureName;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_LDAP;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_RADIUS;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
@@ -76,6 +80,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_ACCOUNTING_CONNECTION_DEFAULT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_AUTHENTICATION_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_AUTHORIZATION_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -431,11 +438,18 @@ import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_commands_lineContext
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_localContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_method_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_methodContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_group_iosContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_privilege_modeContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authorization_methodContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_group_serverContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_group_server_privateContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_new_modelContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_actionContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_ip6_rangeContext;
@@ -1035,6 +1049,7 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfd_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.representation.cisco.AaaServerGroup;
 import org.batfish.representation.cisco.AccessListAddressSpecifier;
 import org.batfish.representation.cisco.AccessListServiceSpecifier;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
@@ -1100,6 +1115,7 @@ import org.batfish.representation.cisco.IsakmpProfile;
 import org.batfish.representation.cisco.IsisProcess;
 import org.batfish.representation.cisco.IsisRedistributionPolicy;
 import org.batfish.representation.cisco.Keyring;
+import org.batfish.representation.cisco.LdapServerGroup;
 import org.batfish.representation.cisco.LiteralPortSpec;
 import org.batfish.representation.cisco.MacAccessList;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
@@ -1129,6 +1145,7 @@ import org.batfish.representation.cisco.ProtocolObjectGroup;
 import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
 import org.batfish.representation.cisco.ProtocolObjectGroupReferenceLine;
 import org.batfish.representation.cisco.ProtocolOrServiceObjectGroupServiceSpecifier;
+import org.batfish.representation.cisco.RadiusServerGroup;
 import org.batfish.representation.cisco.RangeNetworkObject;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
@@ -1182,6 +1199,7 @@ import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.representation.cisco.StubSettings;
 import org.batfish.representation.cisco.SubnetNetworkObject;
+import org.batfish.representation.cisco.TacacsPlusServerGroup;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Track;
@@ -1380,6 +1398,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private CiscoConfiguration _configuration;
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
+
+  private AaaServerGroup _currentAaaGroup;
 
   private IpAsPathAccessList _currentAsPathAcl;
 
@@ -1686,6 +1706,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
       }
     }
+  }
+
+  @Override
+  public void enterAaa_group(Aaa_groupContext ctx) {
+    String name = ctx.name.getText();
+
+    if (ctx.LDAP() != null) {
+      _currentAaaGroup = new LdapServerGroup(name);
+      _configuration.defineStructure(AAA_SERVER_GROUP_LDAP, name, ctx);
+    } else if (ctx.RADIUS() != null) {
+      _currentAaaGroup = new RadiusServerGroup(name);
+      _configuration.defineStructure(AAA_SERVER_GROUP_RADIUS, name, ctx);
+    } else if (ctx.TACACS_PLUS() != null) {
+      _currentAaaGroup = new TacacsPlusServerGroup(name);
+      _configuration.defineStructure(AAA_SERVER_GROUP_TACACS_PLUS, name, ctx);
+    } else {
+      _w.addWarning(ctx, ctx.getText(), _parser, "Unhandled AAA group type");
+      return;
+    }
+    _configuration.getAaaServerGroups().put(name, _currentAaaGroup);
   }
 
   @Override
@@ -3790,11 +3830,54 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     List<String> groups =
         ctx.groups.stream().map(RuleContext::getText).collect(Collectors.toList());
     _configuration.getCf().getAaa().getAccounting().getDefault().setGroups(groups);
+    for (String group : groups) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP, group, AAA_ACCOUNTING_CONNECTION_DEFAULT, ctx.getStart().getLine());
+    }
   }
 
   @Override
   public void exitAaa_accounting_default_local(Aaa_accounting_default_localContext ctx) {
     _configuration.getCf().getAaa().getAccounting().getDefault().setLocal(true);
+  }
+
+  @Override
+  public void exitAaa_accounting_method_target(Aaa_accounting_method_targetContext ctx) {
+    if (ctx.groups == null) {
+      return;
+    }
+    List<String> groups =
+        ctx.groups.stream().map(RuleContext::getText).collect(Collectors.toList());
+    for (String group : groups) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP, group, AAA_ACCOUNTING_CONNECTION_DEFAULT, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitAaa_authentication_list_method_group(
+      Aaa_authentication_list_method_groupContext ctx) {
+    if (ctx.groups == null) {
+      return;
+    }
+    List<String> groups =
+        ctx.groups.stream().map(RuleContext::getText).collect(Collectors.toList());
+    for (String group : groups) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP, group, AAA_AUTHENTICATION_GROUP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitAaa_authentication_list_method_group_ios(
+      Aaa_authentication_list_method_group_iosContext ctx) {
+    if (ctx.groupName != null) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP,
+          ctx.groupName.getText(),
+          AAA_AUTHENTICATION_GROUP,
+          ctx.getStart().getLine());
+    }
   }
 
   @Override
@@ -3809,8 +3892,63 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitAaa_authorization_method(Aaa_authorization_methodContext ctx) {
+    if (ctx.groups == null) {
+      return;
+    }
+    List<String> groups = ctx.groups.stream().map(Token::getText).collect(Collectors.toList());
+    for (String group : groups) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP, group, AAA_AUTHORIZATION_GROUP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
   public void exitAaa_new_model(Aaa_new_modelContext ctx) {
     _configuration.getCf().getAaa().setNewModel(!_no);
+  }
+
+  @Override
+  public void exitAaa_group(Aaa_groupContext ctx) {
+    _currentAaaGroup = null;
+  }
+
+  @Override
+  public void exitAaa_group_server(Aaa_group_serverContext ctx) {
+    if (_currentAaaGroup == null) {
+      return;
+    }
+    String server;
+    if (ctx.IP_ADDRESS() != null) {
+      server = ctx.IP_ADDRESS().getText();
+    } else if (ctx.IPV6_ADDRESS() != null) {
+      server = ctx.IPV6_ADDRESS().getText();
+    } else if (ctx.name != null) {
+      server = ctx.name.getText();
+    } else {
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Unhandled AAA group server");
+      return;
+    }
+    _currentAaaGroup.addServer(server);
+  }
+
+  @Override
+  public void exitAaa_group_server_private(Aaa_group_server_privateContext ctx) {
+    if (_currentAaaGroup == null) {
+      return;
+    }
+    String server;
+    if (ctx.IP_ADDRESS() != null) {
+      server = ctx.IP_ADDRESS().getText();
+    } else if (ctx.IPV6_ADDRESS() != null) {
+      server = ctx.IPV6_ADDRESS().getText();
+    } else if (ctx.name != null) {
+      server = ctx.name.getText();
+    } else {
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Unhandled AAA group server");
+      return;
+    }
+    _currentAaaGroup.addPrivateServer(server);
   }
 
   @Override
