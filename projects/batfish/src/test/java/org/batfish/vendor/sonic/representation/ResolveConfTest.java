@@ -26,7 +26,7 @@ public class ResolveConfTest {
             "nameserver 2001::100:a00:20ff:de8a:643a");
 
     Warnings warnings = new Warnings(true, true, true);
-    ResolveConf resolveConf = ResolveConf.deserialize(String.join("\n", lines), warnings);
+    ResolvConf resolveConf = ResolvConf.deserialize(String.join("\n", lines), warnings);
 
     assertEquals(
         ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")), resolveConf.getNameservers());
@@ -42,7 +42,7 @@ public class ResolveConfTest {
     List<String> lines = ImmutableList.of("nameserver garbage");
 
     Warnings warnings = new Warnings(true, true, true);
-    ResolveConf resolveConf = ResolveConf.deserialize(String.join("\n", lines), warnings);
+    ResolvConf resolveConf = ResolvConf.deserialize(String.join("\n", lines), warnings);
 
     assertEquals(ImmutableList.of(), resolveConf.getNameservers());
     assertEquals(ImmutableList.of(), resolveConf.getNameservers6());
@@ -57,7 +57,7 @@ public class ResolveConfTest {
     List<String> lines = ImmutableList.of("garbage garbage");
 
     Warnings warnings = new Warnings(true, true, true);
-    ResolveConf resolveConf = ResolveConf.deserialize(String.join("\n", lines), warnings);
+    ResolvConf resolveConf = ResolvConf.deserialize(String.join("\n", lines), warnings);
 
     assertEquals(ImmutableList.of(), resolveConf.getNameservers());
     assertEquals(ImmutableList.of(), resolveConf.getNameservers6());
@@ -72,7 +72,7 @@ public class ResolveConfTest {
     List<String> lines = ImmutableList.of(" nameserver      1.1.1.1   # comment");
 
     Warnings warnings = new Warnings(true, true, true);
-    ResolveConf resolveConf = ResolveConf.deserialize(String.join("\n", lines), warnings);
+    ResolvConf resolveConf = ResolvConf.deserialize(String.join("\n", lines), warnings);
 
     assertEquals(ImmutableList.of(Ip.parse("1.1.1.1")), resolveConf.getNameservers());
   }

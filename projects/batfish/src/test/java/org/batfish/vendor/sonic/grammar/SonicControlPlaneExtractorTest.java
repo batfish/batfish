@@ -65,17 +65,17 @@ public class SonicControlPlaneExtractorTest {
   }
 
   @Test
-  public void testGetSonicFileMap_Resolve() {
+  public void testGetSonicFileMap_Resolv() {
     assertEquals(
         ImmutableMap.of(
             SonicFileType.FRR_CONF,
             "frr.conf",
             SonicFileType.CONFIG_DB_JSON,
             "config_db.json",
-            SonicFileType.RESOLVE_CONF,
-            "resolve.conf"),
+            SonicFileType.RESOLV_CONF,
+            "resolv.conf"),
         getSonicFileMap(
-            ImmutableMap.of("frr.conf", "hello", "config_db.json", "{}", "resolve.conf", "blah")));
+            ImmutableMap.of("frr.conf", "hello", "config_db.json", "{}", "resolv.conf", "blah")));
 
     // non-empty prefix
     assertEquals(
@@ -84,11 +84,11 @@ public class SonicControlPlaneExtractorTest {
             "frr.conf",
             SonicFileType.CONFIG_DB_JSON,
             "config_db.json",
-            SonicFileType.RESOLVE_CONF,
-            "device_resolve.conf"),
+            SonicFileType.RESOLV_CONF,
+            "device_resolv.conf"),
         getSonicFileMap(
             ImmutableMap.of(
-                "frr.conf", "hello", "config_db.json", "{}", "device_resolve.conf", "blah")));
+                "frr.conf", "hello", "config_db.json", "{}", "device_resolv.conf", "blah")));
   }
 
   @Test
@@ -132,8 +132,7 @@ public class SonicControlPlaneExtractorTest {
 
     // fail -- don't delegate when there are more than 2 files
     _thrown.expect(IllegalArgumentException.class);
-    getSonicFileMap(
-        ImmutableMap.of("frr", "hello", "config_db.json", "{}", "resolve.conf", "blah"));
+    getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db.json", "{}", "resolv.conf", "blah"));
   }
 
   @Test
