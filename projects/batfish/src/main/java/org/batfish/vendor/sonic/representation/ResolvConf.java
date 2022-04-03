@@ -11,18 +11,18 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 
-/** Represents information in resolve.conf file that is provided as part of the SONiC file bundle */
-public class ResolveConf implements Serializable {
+/** Represents information in resolv.conf file that is provided as part of the SONiC file bundle */
+public class ResolvConf implements Serializable {
 
   private @Nonnull final List<Ip> _nameservers;
   private @Nonnull final List<Ip6> _nameservers6;
 
-  private ResolveConf(List<Ip> nameservers, List<Ip6> nameservers6) {
+  private ResolvConf(List<Ip> nameservers, List<Ip6> nameservers6) {
     _nameservers = nameservers;
     _nameservers6 = nameservers6;
   }
 
-  public @Nonnull static ResolveConf deserialize(String resolveConfText, Warnings warnings) {
+  public @Nonnull static ResolvConf deserialize(String resolveConfText, Warnings warnings) {
     ImmutableList.Builder<Ip> nameservers = ImmutableList.builder();
     ImmutableList.Builder<Ip6> nameservers6 = ImmutableList.builder();
     boolean foundNameserverLine = false;
@@ -48,7 +48,7 @@ public class ResolveConf implements Serializable {
     if (!foundNameserverLine) {
       warnings.redFlag("No nameserver found");
     }
-    return new ResolveConf(nameservers.build(), nameservers6.build());
+    return new ResolvConf(nameservers.build(), nameservers6.build());
   }
 
   @Nonnull
