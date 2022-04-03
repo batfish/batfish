@@ -24,16 +24,22 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
+import static org.batfish.vendor.sonic.representation.SonicConversions.allowsSnmp;
 import static org.batfish.vendor.sonic.representation.SonicConversions.attachAcl;
 import static org.batfish.vendor.sonic.representation.SonicConversions.checkVlanId;
+import static org.batfish.vendor.sonic.representation.SonicConversions.computeSnmpClientSpace;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertAcls;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertDhcpServers;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertLoopbacks;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertSnmpServer;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
+import static org.batfish.vendor.sonic.representation.SonicConversions.getAclRulesByTableName;
+import static org.batfish.vendor.sonic.representation.SonicConversions.isSnmpTable;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
@@ -45,12 +51,15 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.util.Map;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -62,7 +71,10 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
@@ -334,7 +346,8 @@ public class SonicConversionsTest {
                 .setSrcIp(srcPrefix)
                 .build());
 
-    convertAcls(c, aclTables, aclRules, new Warnings());
+    convertAcls(
+        c, aclTables, getAclRulesByTableName(aclTables, aclRules, new Warnings()), new Warnings());
 
     // ACL exists in the VI model and is attached properly
     IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
@@ -365,21 +378,18 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testConvertAcls_badRules() {
-    String ifaceName = "Ethernet0";
-    Configuration c =
-        Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
-    Interface.builder().setOwner(c).setName(ifaceName).setType(InterfaceType.PHYSICAL).build();
-
+  public void testGetAclRulesByTableName() {
     String aclName = "testAcl";
     Map<String, AclTable> aclTables =
         ImmutableMap.of(
             aclName,
             AclTable.builder()
-                .setPorts(ImmutableList.of(ifaceName))
+                .setPorts(ImmutableList.of("Ethernet0"))
                 .setStage(Stage.INGRESS)
                 .setType(Type.L3)
                 .build());
+    AclRule goodRule =
+        AclRule.builder().setPriority(100).setPacketAction(PacketAction.DROP).build();
     Map<String, AclRule> aclRules =
         ImmutableMap.of(
             "badkey",
@@ -391,10 +401,12 @@ public class SonicConversionsTest {
             ruleKey("other", "NoAcl"),
             AclRule.builder().setPriority(100).setPacketAction(PacketAction.DROP).build(),
             ruleKey(aclName, "GoodRule"),
-            AclRule.builder().setPriority(100).setPacketAction(PacketAction.DROP).build());
+            goodRule);
 
     Warnings warnings = new Warnings(true, true, true);
-    convertAcls(c, aclTables, aclRules, warnings);
+
+    Map<String, SortedSet<AclRuleWithName>> aclRulesByName =
+        getAclRulesByTableName(aclTables, aclRules, warnings);
 
     assertThat(
         warnings.getRedFlagWarnings(),
@@ -404,15 +416,10 @@ public class SonicConversionsTest {
             hasText("Ignored ACL_RULE testAcl|NoPacketAction: Missing PACKET_ACTION"),
             hasText("Ignored ACL_RULE other|NoAcl: Missing ACL_TABLE 'other'")));
 
-    // ACLs are still converted with whatever is left
-    IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
-    assertNotNull(ipAccessList);
-    assertEquals(aclName, c.getAllInterfaces().get(ifaceName).getIncomingFilter().getName());
-    assertEquals(
-        ImmutableList.of("GoodRule"),
-        ipAccessList.getLines().stream()
-            .map(AclLine::getName)
-            .collect(ImmutableList.toImmutableList()));
+    // good rule is left
+    assertThat(
+        aclRulesByName.get(aclName),
+        equalTo(ImmutableSortedSet.of(new AclRuleWithName("GoodRule", goodRule))));
   }
 
   @Test
@@ -540,5 +547,153 @@ public class SonicConversionsTest {
               hasInterfaceType(InterfaceType.LOOPBACK),
               hasAddress("1.1.1.1/24")));
     }
+  }
+
+  @Test
+  public void testSnmpServer() {
+    Configuration c =
+        Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+    Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+
+    AclTable.Builder aclTable =
+        AclTable.builder()
+            .setStage(Stage.INGRESS)
+            .setType(Type.CTRLPLANE)
+            .setServices(ImmutableList.of("SNMP"));
+    Prefix clientPrefix = Prefix.parse("1.1.1.0/24");
+    AclRule aclRule =
+        AclRule.builder()
+            .setSrcIp(clientPrefix)
+            .setPriority(10)
+            .setPacketAction(PacketAction.ACCEPT)
+            .build();
+
+    Map<String, AclTable> aclTables = ImmutableMap.of("table", aclTable.build());
+    Map<String, SortedSet<AclRuleWithName>> aclRules =
+        ImmutableMap.of("table", ImmutableSortedSet.of(new AclRuleWithName("rule1", aclRule)));
+
+    convertSnmpServer(c, "community", aclTables, aclRules, new Warnings());
+
+    SnmpCommunity snmpCommunity =
+        Iterables.getOnlyElement(c.getDefaultVrf().getSnmpServer().getCommunities().values());
+    assertThat(snmpCommunity.getAccessList(), equalTo("table"));
+    assertThat(
+        snmpCommunity.getClientIps(),
+        equalTo(
+            AclIpSpace.builder().thenAction(LineAction.PERMIT, clientPrefix.toIpSpace()).build()));
+  }
+
+  @Test
+  public void testConvertSnmpServer_multipleSnmpTables() {
+    Configuration c =
+        Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+    Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+
+    Warnings w = new Warnings(true, true, true);
+
+    AclTable.Builder aclTable =
+        AclTable.builder()
+            .setStage(Stage.INGRESS)
+            .setType(Type.CTRLPLANE)
+            .setServices(ImmutableList.of("SNMP"));
+    Map<String, AclTable> aclTables =
+        ImmutableMap.of("table1", aclTable.build(), "table2", aclTable.build());
+
+    convertSnmpServer(c, "community", aclTables, ImmutableMap.of(), w);
+
+    SnmpCommunity snmpCommunity =
+        Iterables.getOnlyElement(c.getDefaultVrf().getSnmpServer().getCommunities().values());
+    assertThat(snmpCommunity.getAccessList(), nullValue());
+    assertThat(
+        w.getRedFlagWarnings(),
+        contains(hasText("Found multiple SNMP ACL tables: [table1, table2]. Ignored all.")));
+  }
+
+  @Test
+  public void testConvertSnmpServer_noSnmpTable() {
+    Configuration c =
+        Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+    Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+
+    Warnings w = new Warnings(true, true, true);
+
+    AclTable.Builder aclTable =
+        AclTable.builder()
+            .setStage(Stage.EGRESS) // will not be SNMP
+            .setType(Type.CTRLPLANE)
+            .setServices(ImmutableList.of("SNMP"));
+    Map<String, AclTable> aclTables =
+        ImmutableMap.of("table1", aclTable.build(), "table2", aclTable.build());
+
+    convertSnmpServer(c, "community", aclTables, ImmutableMap.of(), w);
+
+    SnmpCommunity snmpCommunity =
+        Iterables.getOnlyElement(c.getDefaultVrf().getSnmpServer().getCommunities().values());
+    assertThat(snmpCommunity.getAccessList(), nullValue());
+  }
+
+  @Test
+  public void testComputeClientIpSpace() {
+    Prefix clientPrefix = Prefix.parse("1.1.1.0/24");
+    AclRule allowsSnmp =
+        AclRule.builder()
+            .setSrcIp(clientPrefix)
+            .setPriority(10)
+            .setPacketAction(PacketAction.ACCEPT)
+            .build();
+    AclRule notSnmp =
+        AclRule.builder()
+            .setSrcIp(Prefix.parse("2.2.2.0/24"))
+            .setIpProtocol(6) // not UDP
+            .setPriority(10)
+            .setPacketAction(PacketAction.ACCEPT)
+            .build();
+    AclRule deniesClient =
+        AclRule.builder()
+            .setSrcIp(Prefix.parse("3.3.3.0/24"))
+            .setPriority(10)
+            .setPacketAction(PacketAction.DROP)
+            .build();
+
+    IpSpace clientSpace =
+        computeSnmpClientSpace(
+            ImmutableSortedSet.of(
+                new AclRuleWithName("r1", allowsSnmp),
+                new AclRuleWithName("r2", notSnmp),
+                new AclRuleWithName("r3", deniesClient)));
+
+    assertThat(
+        clientSpace,
+        equalTo(
+            AclIpSpace.builder().thenAction(LineAction.PERMIT, clientPrefix.toIpSpace()).build()));
+  }
+
+  @Test
+  public void testIsSnmpTable() {
+    assertFalse(isSnmpTable(AclTable.builder().build()));
+    assertFalse(isSnmpTable(AclTable.builder().setStage(Stage.EGRESS).build()));
+    assertFalse(isSnmpTable(AclTable.builder().setType(Type.L3).build()));
+    assertFalse(isSnmpTable(AclTable.builder().setServices(ImmutableList.of("SSH")).build()));
+
+    AclTable.Builder aclTable =
+        AclTable.builder()
+            .setStage(Stage.INGRESS)
+            .setType(Type.CTRLPLANE)
+            .setServices(ImmutableList.of("SNMP"));
+
+    assertTrue(isSnmpTable(aclTable.build()));
+    assertTrue(isSnmpTable(aclTable.setServices(ImmutableList.of("snmp")).build()));
+    assertTrue(isSnmpTable(aclTable.setServices(ImmutableList.of("SNMP", "SSH")).build()));
+  }
+
+  @Test
+  public void testAllowsSnmp() {
+    assertTrue(allowsSnmp(AclRule.builder().build()));
+    assertTrue(allowsSnmp(AclRule.builder().setL4DstPort(161).build()));
+    assertTrue(allowsSnmp(AclRule.builder().setIpProtocol(17).build()));
+    assertTrue(allowsSnmp(AclRule.builder().setIpProtocol(17).setL4DstPort(161).build()));
+
+    assertFalse(allowsSnmp(AclRule.builder().setIpProtocol(6).setL4DstPort(161).build()));
+    assertFalse(allowsSnmp(AclRule.builder().setIpProtocol(17).setL4DstPort(61).build()));
   }
 }

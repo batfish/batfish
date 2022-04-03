@@ -11,6 +11,7 @@ import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FAC
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Comparator;
@@ -27,6 +28,7 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
@@ -35,7 +37,15 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SnmpCommunity;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
@@ -267,7 +277,6 @@ public class SonicConversions {
   }
 
   /** An intermediate class to order ACL rules and simplify processing code. */
-  @VisibleForTesting
   static class AclRuleWithName implements Comparable<AclRuleWithName> {
     private final String _name;
     private final AclRule _rule;
@@ -305,19 +314,14 @@ public class SonicConversions {
   }
 
   /**
-   * Converts the ACL information under ACL_TABLE and ACL_RULE tables into IpAccessLists and
-   * attached them to the appropriate interfaces.
+   * Returns the set of configured AclRules as a map from AclTable name to the rules for that table.
+   * The rules for a table are sorted based on priority (descending), and ties are broken based on
+   * rule name.
    *
-   * <p>All VI interfaces must have been created prior to calling this method.
+   * <p>The method filters out bad rules and add warnings for them.
    */
-  static void convertAcls(
-      Configuration c, Map<String, AclTable> aclTables, Map<String, AclRule> aclRules, Warnings w) {
-    /*
-     Walk the AclRule entries, to filter out bad rules and organize the rest by the ACL of which they are a part.
-     This organization  puts the rules of an ACL in a SortedSet that is ordered from high to low PRIORITY.
-     If two rules have  the same PRIORITY, ties are broken by rule name.
-    */
-
+  static Map<String, SortedSet<AclRuleWithName>> getAclRulesByTableName(
+      Map<String, AclTable> aclTables, Map<String, AclRule> aclRules, Warnings w) {
     Set<String> rulesWithoutPriority = new HashSet<>();
     Set<String> rulesWithoutPacketAction = new HashSet<>();
     Set<String> rulesWithBadKeys = new HashSet<>();
@@ -350,17 +354,7 @@ public class SonicConversions {
         aclTables.keySet(),
         w);
 
-    for (String aclName : aclTables.keySet()) {
-      IpAccessList ipAccessList =
-          convertAcl(
-              c,
-              aclName,
-              // if an Acl is in ACL_TABLE but not in ACL_RULE, we create an empty Acl
-              Optional.ofNullable(aclNameToRules.get(aclName)).orElse(ImmutableSortedSet.of()),
-              w);
-      AclTable aclTable = aclTables.get(aclName);
-      attachAcl(c, aclName, ipAccessList, aclTable, w);
-    }
+    return aclNameToRules;
   }
 
   private static void warnBadRules(
@@ -387,6 +381,30 @@ public class SonicConversions {
                                 String.format(
                                     "Ignored ACL_RULE %s|%s: Missing ACL_TABLE '%s'",
                                     aclName, aclRuleWithName._name, aclName))));
+  }
+
+  /**
+   * Converts the ACL information under ACL_TABLE and ACL_RULE tables into IpAccessLists and
+   * attached them to the appropriate interfaces.
+   *
+   * <p>All VI interfaces must have been created prior to calling this method.
+   */
+  static void convertAcls(
+      Configuration c,
+      Map<String, AclTable> aclTables,
+      Map<String, SortedSet<AclRuleWithName>> aclNameToRules,
+      Warnings w) {
+    for (String aclName : aclTables.keySet()) {
+      IpAccessList ipAccessList =
+          convertAcl(
+              c,
+              aclName,
+              // if an Acl is in ACL_TABLE but not in ACL_RULE, we create an empty Acl
+              Optional.ofNullable(aclNameToRules.get(aclName)).orElse(ImmutableSortedSet.of()),
+              w);
+      AclTable aclTable = aclTables.get(aclName);
+      attachAcl(c, aclName, ipAccessList, aclTable, w);
+    }
   }
 
   /**
@@ -475,5 +493,73 @@ public class SonicConversions {
                 aclName, aclRuleWithName._name, aclRuleWithName.getPacketAction()));
         return Optional.empty();
     }
+  }
+
+  /**
+   * Generates an {@link SnmpServer} by joining community information in SnmpYml file with ACL
+   * information in config DB.
+   *
+   * <p>Inserts the generated server in the default VRF of {@code c}.
+   */
+  static void convertSnmpServer(
+      Configuration c,
+      String communityName,
+      Map<String, AclTable> aclTables,
+      Map<String, SortedSet<AclRuleWithName>> aclNameToRules,
+      Warnings w) {
+    SnmpServer snmpServer = new SnmpServer();
+    SnmpCommunity snmpCommunity = new SnmpCommunity(communityName);
+    snmpServer.setCommunities(ImmutableSortedMap.of(communityName, snmpCommunity));
+    c.getDefaultVrf().setSnmpServer(snmpServer);
+
+    List<String> snmpTableNames =
+        aclTables.keySet().stream()
+            .filter(name -> isSnmpTable(aclTables.get(name)))
+            .collect(ImmutableList.toImmutableList());
+    if (snmpTableNames.size() > 1) {
+      // don't know what to do when we find multiple tables; warn and ignore all
+      w.redFlag(String.format("Found multiple SNMP ACL tables: %s. Ignored all.", snmpTableNames));
+      return;
+    }
+    if (snmpTableNames.isEmpty()) { // no table found
+      return;
+    }
+    String snmpTableName = snmpTableNames.get(0);
+    snmpCommunity.setAccessList(snmpTableName);
+    snmpCommunity.setClientIps(computeSnmpClientSpace(aclNameToRules.get(snmpTableName)));
+  }
+
+  /** Computes the client IpSpace that is permitted by the ACL rules */
+  @VisibleForTesting
+  static IpSpace computeSnmpClientSpace(SortedSet<AclRuleWithName> aclRuleWithNames) {
+    AclIpSpace.Builder space = AclIpSpace.builder();
+    for (AclRuleWithName ruleWithName : aclRuleWithNames) {
+      AclRule rule = ruleWithName._rule;
+      if (!allowsSnmp(rule)) {
+        continue;
+      }
+      LineAction action =
+          ruleWithName.getPacketAction() == PacketAction.ACCEPT
+              ? LineAction.PERMIT
+              : LineAction.DENY;
+      space.thenAction(
+          action, rule.getSrcIp().map(Prefix::toIpSpace).orElse(UniverseIpSpace.INSTANCE));
+    }
+    return space.build();
+  }
+
+  /** Criteria for an ACL Table to be judged as the one to use for SNMP */
+  @VisibleForTesting
+  static boolean isSnmpTable(AclTable aclTable) {
+    return aclTable.getStage().map(stage -> stage == Stage.INGRESS).orElse(false)
+        && aclTable.getType().map(type -> type == Type.CTRLPLANE).orElse(false)
+        && aclTable.getServices().stream().anyMatch(s -> s.equalsIgnoreCase("SNMP"));
+  }
+
+  /** Does the AclRule allow SNMP traffic? */
+  @VisibleForTesting
+  static boolean allowsSnmp(AclRule rule) {
+    return rule.getIpProtocol().map(protocol -> protocol == IpProtocol.UDP.number()).orElse(true)
+        && rule.getL4DstPort().map(port -> port == NamedPort.SNMP.number()).orElse(true);
   }
 }
