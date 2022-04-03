@@ -746,7 +746,8 @@ aaa_authorization_method
       (
          GROUP?
          (
-            groups += ~( NEWLINE | LOCAL | NONE )
+           TACACS_PLUS
+           | groups += ~( NEWLINE | LOCAL | NONE )
          )+
       )
       | LOCAL
