@@ -41,6 +41,10 @@ public final class BDDPairingFactory {
         concatBitvectors(_domain, other._domain), concatBitvectors(_codomain, other._codomain));
   }
 
+  /**
+   * Return a {@link BDD} of the variables in the pairing's domain, suitable for use with {@link
+   * BDD#exist(BDD)}. The caller owns the {@link BDD} and must free it.
+   */
   public BDD getDomainVarsBdd() {
     return _domainVars.id(); // defensive copy
   }
