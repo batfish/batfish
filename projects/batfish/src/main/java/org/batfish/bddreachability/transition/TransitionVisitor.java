@@ -34,5 +34,7 @@ public interface TransitionVisitor<T> {
 
   T visitReverse(Reverse reverse);
 
+  T visitTransform(Transform transform);
+
   T visitZero(Zero zero);
 }
