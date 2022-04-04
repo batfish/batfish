@@ -8,6 +8,7 @@ import org.batfish.datamodel.IcmpCode;
 
 /** Symbolic {@link IcmpCode} variable represented by an 8-bit BDD. */
 public final class BDDIcmpCode {
+  public static final int UNSET = 0xff;
   private final ImmutableBDDInteger _var;
 
   public BDDIcmpCode(ImmutableBDDInteger var) {
@@ -19,7 +20,7 @@ public final class BDDIcmpCode {
    * @return a constraint that the IcmpType have the specified value.
    */
   public BDD value(int icmpCode) {
-    return icmpCode == IcmpCode.UNSET ? _var.getFactory().one() : _var.value(icmpCode);
+    return icmpCode == UNSET ? _var.getFactory().one() : _var.value(icmpCode);
   }
 
   /**
@@ -44,14 +45,14 @@ public final class BDDIcmpCode {
    * @return a constraint that the IcmpCode be greater than or equal to the specified value.
    */
   public BDD geq(int start) {
-    return start == IcmpCode.UNSET ? _var.getFactory().one() : _var.geq(start);
+    return start == UNSET ? _var.getFactory().one() : _var.geq(start);
   }
 
   /**
    * @return a constraint that the IcmpCode be less than or equal to the specified value.
    */
   public BDD leq(int end) {
-    return end == IcmpCode.UNSET ? _var.getFactory().one() : _var.leq(end);
+    return end == UNSET ? _var.getFactory().one() : _var.leq(end);
   }
 
   /** Returns the {@link ImmutableBDDInteger} backing this. */

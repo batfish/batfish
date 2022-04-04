@@ -1929,7 +1929,7 @@ public class A10GrammarTest {
     Flow pingToVipFlow =
         matchingVsFlow.toBuilder()
             .setIpProtocol(IpProtocol.ICMP)
-            .setIcmpCode(IcmpCode.NETWORK_UNREACHABLE)
+            .setIcmpCode(IcmpCode.NETWORK_UNREACHABLE.getCode())
             .setIcmpType(IcmpType.ECHO_REQUEST)
             .build();
     Flow nonPingToVipFlow = matchingVsFlow.toBuilder().setIpProtocol(IpProtocol.UDP).build();

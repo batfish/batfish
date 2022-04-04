@@ -3489,72 +3489,49 @@ public final class CiscoNxosGrammarTest {
           contains(
               toIcmpIfBDD(matchIcmpType(0)),
               toIcmpIfBDD(matchIcmp(1, 2)),
-              toIcmpIfBDD(
-                  matchIcmp(
-                      IcmpType.DESTINATION_UNREACHABLE,
-                      IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED)),
               toIcmpIfBDD(matchIcmpType(IcmpType.ALTERNATE_ADDRESS)),
               toIcmpIfBDD(matchIcmpType(IcmpType.CONVERSION_ERROR)),
-              toIcmpIfBDD(
-                  matchIcmp(
-                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_PROHIBITED)),
-              toIcmpIfBDD(
-                  matchIcmp(
-                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_PROHIBITED)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.DESTINATION_HOST_PROHIBITED)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.DESTINATION_NETWORK_PROHIBITED)),
               toIcmpIfBDD(matchIcmpType(IcmpType.ECHO_REQUEST)),
               toIcmpIfBDD(matchIcmpType(IcmpType.ECHO_REPLY)),
               toIcmpIfBDD(matchIcmpType(IcmpType.PARAMETER_PROBLEM)),
-              toIcmpIfBDD(
-                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_HOST_ISOLATED)),
-              toIcmpIfBDD(
-                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_PRECEDENCE_VIOLATION)),
-              toIcmpIfBDD(matchIcmp(IcmpType.REDIRECT_MESSAGE, IcmpCode.HOST_ERROR)),
-              toIcmpIfBDD(matchIcmp(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_HOST_ERROR)),
-              toIcmpIfBDD(
-                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE_FOR_TOS)),
-              toIcmpIfBDD(
-                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_UNKNOWN)),
-              toIcmpIfBDD(matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.SOURCE_HOST_ISOLATED)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.HOST_PRECEDENCE_VIOLATION)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.HOST_ERROR)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.TOS_AND_HOST_ERROR)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.HOST_UNREACHABLE_FOR_TOS)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.DESTINATION_HOST_UNKNOWN)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.HOST_UNREACHABLE)),
               toIcmpIfBDD(matchIcmpType(IcmpType.INFO_REPLY)),
               toIcmpIfBDD(matchIcmpType(IcmpType.INFO_REQUEST)),
               toIcmpIfBDD(matchIcmpType(IcmpType.MASK_REPLY)),
               toIcmpIfBDD(matchIcmpType(IcmpType.MASK_REQUEST)),
               toIcmpIfBDD(matchIcmpType(IcmpType.MOBILE_REDIRECT)),
-              toIcmpIfBDD(matchIcmp(IcmpType.REDIRECT_MESSAGE, IcmpCode.NETWORK_ERROR)),
-              toIcmpIfBDD(matchIcmp(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_NETWORK_ERROR)),
-              toIcmpIfBDD(
-                  matchIcmp(
-                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE_FOR_TOS)),
-              toIcmpIfBDD(
-                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE)),
-              toIcmpIfBDD(
-                  matchIcmp(
-                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_UNKNOWN)),
-              toIcmpIfBDD(matchIcmp(IcmpType.PARAMETER_PROBLEM, IcmpCode.BAD_LENGTH)),
-              toIcmpIfBDD(matchIcmp(IcmpType.PARAMETER_PROBLEM, IcmpCode.REQUIRED_OPTION_MISSING)),
-              toIcmpIfBDD(
-                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.FRAGMENTATION_NEEDED)),
-              toIcmpIfBDD(matchIcmp(IcmpType.PARAMETER_PROBLEM, IcmpCode.INVALID_IP_HEADER)),
-              toIcmpIfBDD(matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PORT_UNREACHABLE)),
-              toIcmpIfBDD(
-                  matchIcmp(
-                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT)),
-              toIcmpIfBDD(
-                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PROTOCOL_UNREACHABLE)),
-              toIcmpIfBDD(
-                  matchIcmp(
-                      IcmpType.TIME_EXCEEDED, IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.NETWORK_ERROR)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.TOS_AND_NETWORK_ERROR)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.NETWORK_UNREACHABLE_FOR_TOS)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.NETWORK_UNREACHABLE)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.DESTINATION_NETWORK_UNKNOWN)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.BAD_LENGTH)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.REQUIRED_OPTION_MISSING)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.FRAGMENTATION_NEEDED)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.INVALID_IP_HEADER)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.PORT_UNREACHABLE)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.PROTOCOL_UNREACHABLE)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY)),
               toIcmpIfBDD(matchIcmpType(IcmpType.REDIRECT_MESSAGE)),
               toIcmpIfBDD(matchIcmpType(IcmpType.ROUTER_ADVERTISEMENT)),
               toIcmpIfBDD(matchIcmpType(IcmpType.ROUTER_SOLICITATION)),
               toIcmpIfBDD(matchIcmpType(IcmpType.SOURCE_QUENCH)),
-              toIcmpIfBDD(
-                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_ROUTE_FAILED)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.SOURCE_ROUTE_FAILED)),
               toIcmpIfBDD(matchIcmpType(IcmpType.TIME_EXCEEDED)),
               toIcmpIfBDD(matchIcmpType(IcmpType.TIMESTAMP_REPLY)),
               toIcmpIfBDD(matchIcmpType(IcmpType.TIMESTAMP_REQUEST)),
               toIcmpIfBDD(matchIcmpType(IcmpType.TRACEROUTE)),
-              toIcmpIfBDD(matchIcmp(IcmpType.TIME_EXCEEDED, IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT)),
+              toIcmpIfBDD(matchIcmp(IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT)),
               toIcmpIfBDD(matchIcmpType(IcmpType.DESTINATION_UNREACHABLE))));
     }
     // TODO: support IGMP option matching
