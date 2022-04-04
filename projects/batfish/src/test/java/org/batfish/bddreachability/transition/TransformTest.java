@@ -16,6 +16,7 @@ public class TransformTest {
   private PrimedBDDInteger _xPrimedInt;
   private PrimedBDDInteger _yPrimedInt;
   private BDDInteger _x;
+  private BDDInteger _y;
 
   private BDD _zero;
   private BDD _one;
@@ -47,7 +48,7 @@ public class TransformTest {
     _x = _xPrimedInt.getVar();
     BDDInteger xPrime = _xPrimedInt.getPrimeVar();
 
-    BDDInteger y = _yPrimedInt.getVar();
+    _y = _yPrimedInt.getVar();
     BDDInteger yPrime = _yPrimedInt.getPrimeVar();
 
     _x0 = _x.value(0);
@@ -60,8 +61,8 @@ public class TransformTest {
     _transformX0 = new Transform(_x0.and(xPrime1.or(xPrime2)), _xPrimedInt.getPairingFactory());
     _transformX1 = new Transform(_x1.and(xPrime0), _xPrimedInt.getPairingFactory());
 
-    _y2 = y.value(2);
-    _y3 = y.value(3);
+    _y2 = _y.value(2);
+    _y3 = _y.value(3);
     _yPrime3 = yPrime.value(3);
 
     _transformY = new Transform(_y2.and(_yPrime3), _yPrimedInt.getPairingFactory());
@@ -149,6 +150,19 @@ public class TransformTest {
     assertEquals(
         _transformX0.transitBackward(_transformY.transitBackward(_one)),
         composite.transitBackward(_one));
+
+    // test all pairs of single x,y values
+    for (int xVal = 0; xVal < 4; xVal++) {
+      for (int yVal = 0; yVal < 4; yVal++) {
+        BDD bdd = _x.value(xVal).and(_y.value(yVal));
+        assertEquals(
+            _transformY.transitForward(_transformX0.transitForward(bdd)),
+            composite.transitForward(bdd));
+        assertEquals(
+            _transformX0.transitBackward(_transformY.transitBackward(bdd)),
+            composite.transitBackward(bdd));
+      }
+    }
   }
 
   /**
