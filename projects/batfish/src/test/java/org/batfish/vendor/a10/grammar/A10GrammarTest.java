@@ -117,7 +117,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IcmpCode;
-import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -1929,8 +1928,8 @@ public class A10GrammarTest {
     Flow pingToVipFlow =
         matchingVsFlow.toBuilder()
             .setIpProtocol(IpProtocol.ICMP)
-            .setIcmpCode(IcmpCode.NETWORK_UNREACHABLE.getCode())
-            .setIcmpType(IcmpType.ECHO_REQUEST)
+            .setIcmpCode(IcmpCode.ECHO_REQUEST.getCode())
+            .setIcmpType(IcmpCode.ECHO_REQUEST.getType())
             .build();
     Flow nonPingToVipFlow = matchingVsFlow.toBuilder().setIpProtocol(IpProtocol.UDP).build();
     Flow matchingDisabledVsFlow =

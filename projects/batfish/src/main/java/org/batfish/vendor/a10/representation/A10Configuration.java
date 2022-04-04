@@ -888,7 +888,7 @@ public final class A10Configuration extends VendorConfiguration {
               AclIpSpace.union(
                   vips.stream().map(Ip::toIpSpace).collect(ImmutableSet.toImmutableSet())));
       AclLineMatchExpr ping =
-          and(matchIpProtocol(IpProtocol.ICMP), matchIcmp(IcmpCode.NETWORK_UNREACHABLE));
+          and(matchIpProtocol(IpProtocol.ICMP), matchIcmp(IcmpCode.ECHO_REQUEST));
       statements.add(
           new If(
               new PacketMatchExpr(and(matchesVip, not(ping))),

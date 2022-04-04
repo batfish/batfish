@@ -3992,55 +3992,66 @@ public final class CiscoNxosGrammarTest {
               immutableEntry(1, 2),
               immutableEntry(
                   IcmpType.DESTINATION_UNREACHABLE,
-                  IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED),
+                  IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getCode()),
               immutableEntry(IcmpType.ALTERNATE_ADDRESS, null),
               immutableEntry(IcmpType.CONVERSION_ERROR, null),
               immutableEntry(
-                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_PROHIBITED),
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_PROHIBITED.getCode()),
               immutableEntry(
-                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_PROHIBITED),
+                  IcmpType.DESTINATION_UNREACHABLE,
+                  IcmpCode.DESTINATION_NETWORK_PROHIBITED.getCode()),
               immutableEntry(IcmpType.ECHO_REQUEST, null),
               immutableEntry(IcmpType.ECHO_REPLY, null),
               immutableEntry(IcmpType.PARAMETER_PROBLEM, null),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_HOST_ISOLATED),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_PRECEDENCE_VIOLATION),
-              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.HOST_ERROR),
-              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_HOST_ERROR),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE_FOR_TOS),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_UNKNOWN),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_HOST_ISOLATED.getCode()),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_PRECEDENCE_VIOLATION.getCode()),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.HOST_ERROR.getCode()),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_HOST_ERROR.getCode()),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE_FOR_TOS.getCode()),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_UNKNOWN.getCode()),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE.getCode()),
               immutableEntry(IcmpType.INFO_REPLY, null),
               immutableEntry(IcmpType.INFO_REQUEST, null),
               immutableEntry(IcmpType.MASK_REPLY, null),
               immutableEntry(IcmpType.MASK_REQUEST, null),
               immutableEntry(IcmpType.MOBILE_REDIRECT, null),
-              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.NETWORK_ERROR),
-              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_NETWORK_ERROR),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.NETWORK_ERROR.getCode()),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_NETWORK_ERROR.getCode()),
               immutableEntry(
-                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE_FOR_TOS),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE),
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE_FOR_TOS.getCode()),
               immutableEntry(
-                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_UNKNOWN),
-              immutableEntry(IcmpType.PARAMETER_PROBLEM, IcmpCode.BAD_LENGTH),
-              immutableEntry(IcmpType.PARAMETER_PROBLEM, IcmpCode.REQUIRED_OPTION_MISSING),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.FRAGMENTATION_NEEDED),
-              immutableEntry(IcmpType.PARAMETER_PROBLEM, IcmpCode.INVALID_IP_HEADER),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PORT_UNREACHABLE),
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE.getCode()),
               immutableEntry(
-                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PROTOCOL_UNREACHABLE),
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_UNKNOWN.getCode()),
+              immutableEntry(IcmpType.PARAMETER_PROBLEM, IcmpCode.BAD_LENGTH.getCode()),
               immutableEntry(
-                  IcmpType.TIME_EXCEEDED, IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY),
+                  IcmpType.PARAMETER_PROBLEM, IcmpCode.REQUIRED_OPTION_MISSING.getCode()),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.FRAGMENTATION_NEEDED.getCode()),
+              immutableEntry(IcmpType.PARAMETER_PROBLEM, IcmpCode.INVALID_IP_HEADER.getCode()),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PORT_UNREACHABLE.getCode()),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT.getCode()),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PROTOCOL_UNREACHABLE.getCode()),
+              immutableEntry(
+                  IcmpType.TIME_EXCEEDED,
+                  IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY.getCode()),
               immutableEntry(IcmpType.REDIRECT_MESSAGE, null),
               immutableEntry(IcmpType.ROUTER_ADVERTISEMENT, null),
               immutableEntry(IcmpType.ROUTER_SOLICITATION, null),
               immutableEntry(IcmpType.SOURCE_QUENCH, null),
-              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_ROUTE_FAILED),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_ROUTE_FAILED.getCode()),
               immutableEntry(IcmpType.TIME_EXCEEDED, null),
               immutableEntry(IcmpType.TIMESTAMP_REPLY, null),
               immutableEntry(IcmpType.TIMESTAMP_REQUEST, null),
               immutableEntry(IcmpType.TRACEROUTE, null),
-              immutableEntry(IcmpType.TIME_EXCEEDED, IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT),
+              immutableEntry(IcmpType.TIME_EXCEEDED, IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT.getCode()),
               immutableEntry(IcmpType.DESTINATION_UNREACHABLE, null)));
     }
     // TODO: extract and test IGMP types (and codes?) once name->value mappings are known
