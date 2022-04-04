@@ -184,6 +184,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
@@ -494,8 +495,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rd_asn_colon_idContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rd_ip_address_colon_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
@@ -553,6 +552,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_packet_locationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_addressContext;
@@ -1973,6 +1973,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return range;
   }
 
+  private static RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
+    if (ctx.rd_ip_address_colon_id() != null) {
+      return RouteDistinguisher.parse(ctx.rd_ip_address_colon_id().getText());
+    } else if (ctx.rd_asn_colon_id() != null) {
+      return RouteDistinguisher.parse(ctx.rd_asn_colon_id().getText());
+    } else {
+      throw new BatfishException("invalid route-distinguisher: " + ctx.getText());
+    }
+  }
+
   private static SubRange toSubRange(SubrangeContext ctx) {
     int low = toInt(ctx.low);
     int high = (ctx.high != null) ? toInt(ctx.high) : low;
@@ -3284,27 +3294,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void enterRoute_distinguisher(Route_distinguisherContext ctx) {
+    RouteDistinguisher rd = toRouteDistinguisher(ctx);
+    _currentLogicalSystem.getSwitchOptions().setRouteDistinguisher(rd);
+  }
+
+  @Override
   public void exitSo_vtep_source_interface(So_vtep_source_interfaceContext ctx) {
     String ifaceName = getInterfaceFullName(ctx.iface);
     _currentLogicalSystem.getSwitchOptions().setVtepSourceInterface(ifaceName);
-  }
-
-  @Override
-  public void exitRd_asn_colon_id(Rd_asn_colon_idContext ctx) {
-    // TODO figure out whether 16-bit-number colon 16-bit-number is treated by Juniper as 32:16 or
-    // 16:32.
-    String rd = ctx.getText();
-    if (rd != null) {
-      _currentLogicalSystem.getSwitchOptions().setRouteDistinguisher(rd);
-    }
-  }
-
-  @Override
-  public void exitRd_ip_address_colon_id(Rd_ip_address_colon_idContext ctx) {
-    String rd = ctx.getText();
-    if (rd != null) {
-      _currentLogicalSystem.getSwitchOptions().setRouteDistinguisher(rd);
-    }
   }
 
   @Override

@@ -318,6 +318,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
@@ -6281,25 +6282,25 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testSwitchOptionsRouteDistinguisherIpExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-ip");
-    String rd =
+    RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
-    assertEquals("14.14.14.14:7999", rd);
+    assertEquals("14.14.14.14:7999", rd.toString());
   }
 
   @Test
   public void testSwitchOptionsRouteDistinguisherCommOneExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-comm1");
-    String rd =
+    RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
-    assertEquals("555:0", rd);
+    assertEquals("555:0", rd.toString());
   }
 
   @Test
   public void testSwitchOptionsRouteDistinguisherCommTwoExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-comm2");
-    String rd =
+    RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
-    assertEquals("65510:15", rd);
+    assertEquals("12365510:15", rd.toString());
   }
 
   @Test

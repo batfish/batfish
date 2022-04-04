@@ -485,7 +485,7 @@ route_distinguisher
 rd_asn_colon_id
 :
     // number:id — (16-bit number:32-bit identifier) or (32-bit number:16-bit identifier).
-
+    // TODO: Figure out which alternative takes priority when both high and low can be represented with 16 bits, e.g. 123:456.
   high16 = uint16 COLON low32 = uint32
   | high32 = uint32 COLON low16 = uint16
 ;
@@ -493,7 +493,7 @@ rd_asn_colon_id
 rd_ip_address_colon_id
 :
     // ip-address:id — ip-address is a 4-byte value and id is a 2-byte value.
-    IP_ADDRESS COLON UINT16
+    IP_ADDRESS COLON uint16
 ;
 
 secret_string

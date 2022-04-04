@@ -5,13 +5,13 @@ import java.io.Serializable;
 public class SwitchOptions implements Serializable {
 
   private String _vtepSourceInterface;
-  private String _routeDistinguisher;
+  private org.batfish.datamodel.bgp.RouteDistinguisher _routeDistinguisher;
 
   public String getVtepSourceInterface() {
     return _vtepSourceInterface;
   }
 
-  public String getRouteDistinguisher() {
+  public org.batfish.datamodel.bgp.RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
   }
 
@@ -19,7 +19,8 @@ public class SwitchOptions implements Serializable {
     _vtepSourceInterface = vtepSourceInterface;
   }
 
-  public void setRouteDistinguisher(String routeDistinguisher) {
+  public void setRouteDistinguisher(
+      org.batfish.datamodel.bgp.RouteDistinguisher routeDistinguisher) {
     _routeDistinguisher = routeDistinguisher;
   }
 }

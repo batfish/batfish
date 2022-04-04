@@ -1,5 +1,5 @@
 #
 set system host-name switch-options-rd-comm2
 #
-set switch-options route-distinguisher 65510:15
+set switch-options route-distinguisher 12365510:15
 #
