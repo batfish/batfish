@@ -132,6 +132,23 @@ public class TransformTest {
     Transform composite = _transformX0.tryCompose(_transformY).get();
     assertEquals(x12.and(_y3), composite.transitForward(_x0.and(_y2)));
     assertEquals(x12.and(_y3), composite.transitForward(_one));
+    assertEquals(_x0.and(_y2), composite.transitBackward(x12.and(_y3)));
+
+    // Transiting the composite edge is equivalent to transiting both edges
+    assertEquals(
+        _transformY.transitForward(_transformX0.transitForward(_x0.and(_y2))),
+        composite.transitForward(_x0.and(_y2)));
+    assertEquals(
+        _transformY.transitForward(_transformX0.transitForward(_one)),
+        composite.transitForward(_one));
+
+    // Transiting backward is equivalent to transiting the edges backward in reverse order
+    assertEquals(
+        _transformX0.transitBackward(_transformY.transitBackward(_x0.and(_y2))),
+        composite.transitBackward(_x0.and(_y2)));
+    assertEquals(
+        _transformX0.transitBackward(_transformY.transitBackward(_one)),
+        composite.transitBackward(_one));
   }
 
   /**
