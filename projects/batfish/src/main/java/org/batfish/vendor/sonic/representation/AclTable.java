@@ -35,6 +35,10 @@ public class AclTable implements Serializable {
     return _ports;
   }
 
+  public @Nonnull List<String> getServices() {
+    return _services;
+  }
+
   public @Nonnull Optional<Stage> getStage() {
     return Optional.ofNullable(_stage);
   }
@@ -55,6 +59,7 @@ public class AclTable implements Serializable {
   private static final String PROP_TYPE = "type";
 
   private @Nonnull final List<String> _ports;
+  private @Nonnull final List<String> _services;
   private @Nullable final Stage _stage;
   private @Nullable final Type _type;
 
@@ -63,14 +68,21 @@ public class AclTable implements Serializable {
   private @Nonnull static AclTable create(
       @Nullable @JsonProperty(PROP_POLICY_DESC) String policyDesc, // ignore
       @Nullable @JsonProperty(PROP_PORTS) List<String> ports,
-      @Nullable @JsonProperty(PROP_SERVICES) List<String> services, // TODO: Do something with this
+      @Nullable @JsonProperty(PROP_SERVICES) List<String> services,
       @Nullable @JsonProperty(PROP_STAGE) Stage stage,
       @Nullable @JsonProperty(PROP_TYPE) Type type) {
-    return AclTable.builder().setPorts(ports).setStage(stage).setType(type).build();
+    return AclTable.builder()
+        .setPorts(ports)
+        .setServices(services)
+        .setStage(stage)
+        .setType(type)
+        .build();
   }
 
-  private AclTable(List<String> ports, @Nullable Stage stage, @Nullable Type type) {
+  private AclTable(
+      List<String> ports, List<String> services, @Nullable Stage stage, @Nullable Type type) {
     _ports = ports;
+    _services = services;
     _stage = stage;
     _type = type;
   }
@@ -85,6 +97,7 @@ public class AclTable implements Serializable {
     }
     AclTable that = (AclTable) o;
     return _ports.equals(that._ports)
+        && _services.equals(that._services)
         && Objects.equals(_stage, that._stage)
         && Objects.equals(_type, that._type);
   }
@@ -92,7 +105,10 @@ public class AclTable implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _ports, _stage == null ? null : _stage.ordinal(), _type == null ? null : _type.ordinal());
+        _ports,
+        _services,
+        _stage == null ? null : _stage.ordinal(),
+        _type == null ? null : _type.ordinal());
   }
 
   @Override
@@ -100,6 +116,7 @@ public class AclTable implements Serializable {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
         .add("ports", _ports)
+        .add("services", _services)
         .add("stage", _stage)
         .add("type", _type)
         .toString();
@@ -111,11 +128,17 @@ public class AclTable implements Serializable {
 
   public static final class Builder {
     private List<String> _ports;
+    private List<String> _services;
     private Stage _stage;
     private Type _type;
 
     public @Nonnull Builder setPorts(@Nullable List<String> ports) {
       this._ports = ports;
+      return this;
+    }
+
+    public @Nonnull Builder setServices(@Nullable List<String> services) {
+      this._services = services;
       return this;
     }
 
@@ -130,7 +153,11 @@ public class AclTable implements Serializable {
     }
 
     public @Nonnull AclTable build() {
-      return new AclTable(firstNonNull(_ports, ImmutableList.of()), _stage, _type);
+      return new AclTable(
+          firstNonNull(_ports, ImmutableList.of()),
+          firstNonNull(_services, ImmutableList.of()),
+          _stage,
+          _type);
     }
   }
 }

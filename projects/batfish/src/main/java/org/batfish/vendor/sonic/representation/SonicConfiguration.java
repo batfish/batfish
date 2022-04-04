@@ -6,7 +6,9 @@ import static org.batfish.representation.frr.FrrConversions.convertFrr;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertAcls;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertLoopbacks;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertSnmpServer;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
+import static org.batfish.vendor.sonic.representation.SonicConversions.getAclRulesByTableName;
 import static org.batfish.vendor.sonic.representation.SonicStructureType.fromFrrStructureType;
 import static org.batfish.vendor.sonic.representation.SonicStructureUsage.fromFrrStructureUsage;
 
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -33,6 +36,7 @@ import org.batfish.representation.frr.FrrStructureType;
 import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.Vxlan;
+import org.batfish.vendor.sonic.representation.SonicConversions.AclRuleWithName;
 
 /**
  * Represents configuration of a SONiC device, containing information in both its configdb.json and
@@ -49,6 +53,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   // these are set by the extractor
   private ConfigDb _configDb;
   private @Nullable ResolvConf _resolvConf;
+  private @Nullable SnmpYml _snmpYml;
 
   private @Nonnull final FrrConfiguration _frr;
 
@@ -104,7 +109,9 @@ public class SonicConfiguration extends FrrVendorConfiguration {
         c.getDefaultVrf(),
         _w);
 
-    convertAcls(c, _configDb.getAclTables(), _configDb.getAclRules(), _w);
+    Map<String, SortedSet<AclRuleWithName>> aclNameToRules =
+        getAclRulesByTableName(_configDb.getAclTables(), _configDb.getAclRules(), _w);
+    convertAcls(c, _configDb.getAclTables(), aclNameToRules, _w);
 
     c.setNtpServers(_configDb.getNtpServers());
     c.setLoggingServers(_configDb.getSyslogServers());
@@ -116,6 +123,10 @@ public class SonicConfiguration extends FrrVendorConfiguration {
           _resolvConf.getNameservers().stream()
               .map(Ip::toString)
               .collect(ImmutableSet.toImmutableSet()));
+    }
+
+    if (_snmpYml != null && _snmpYml.getRoCommunity() != null) {
+      convertSnmpServer(c, _snmpYml.getRoCommunity(), _configDb.getAclTables(), aclNameToRules, _w);
     }
 
     convertFrr(c, this);
@@ -256,5 +267,13 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   public void setResolveConf(@Nullable ResolvConf resolveConf) {
     _resolvConf = resolveConf;
+  }
+
+  public @Nullable SnmpYml getSnmpYml() {
+    return _snmpYml;
+  }
+
+  public void setSnmpYml(@Nullable SnmpYml snmpYml) {
+    _snmpYml = snmpYml;
   }
 }

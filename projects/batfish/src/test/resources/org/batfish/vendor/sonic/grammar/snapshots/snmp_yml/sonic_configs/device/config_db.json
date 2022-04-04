@@ -1,0 +1,26 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "snmp_yml"
+    }
+  },
+  "ACL_RULE": {
+    "CTRL_PLANE_SNMP_ACL|RULE_10": {
+      "SRC_IP": "10.1.4.0/22",
+      "IP_PROTOCOL": "17",
+      "PACKET_ACTION": "ACCEPT",
+      "PRIORITY": "10000",
+      "L4_DST_PORT": "161"
+    }
+  },
+  "ACL_TABLE": {
+    "CTRL_PLANE_SNMP_ACL": {
+      "stage": "INGRESS",
+      "type": "CTRLPLANE",
+      "services": [
+        "SNMP"
+      ],
+      "policy_desc": "SNMP_ACL"
+    }
+  }
+}
