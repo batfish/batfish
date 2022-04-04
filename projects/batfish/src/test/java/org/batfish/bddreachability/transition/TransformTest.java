@@ -94,7 +94,7 @@ public class TransformTest {
     assertEquals(_x0, _transformX1.transitForward(x01));
 
     // merging unions outputs
-    Transform merged = _transformX0.or(_transformX1).get();
+    Transform merged = _transformX0.tryOr(_transformX1).get();
     assertEquals(x12, merged.transitForward(_x0));
     assertEquals(_x0, merged.transitForward(_x1));
     assertEquals(x012, merged.transitForward(x01));
@@ -129,7 +129,7 @@ public class TransformTest {
     assertEquals(_y2, _transformY.transitBackward(_y3));
     assertEquals(_y2, _transformY.transitBackward(_one));
 
-    Transform composite = _transformX0.compose(_transformY).get();
+    Transform composite = _transformX0.tryCompose(_transformY).get();
     assertEquals(x12.and(_y3), composite.transitForward(_x0.and(_y2)));
     assertEquals(x12.and(_y3), composite.transitForward(_one));
   }
@@ -161,7 +161,7 @@ public class TransformTest {
     assertEquals(_y2, _transformY.transitBackward(_one));
 
     // x=2 is not in the codomain of the composite transform
-    Transform composite = _transformX0.compose(transformY).get();
+    Transform composite = _transformX0.tryCompose(transformY).get();
     assertEquals(x1y3, composite.transitForward(x0y2));
     assertEquals(x0y2, composite.transitBackward(x1y3));
 

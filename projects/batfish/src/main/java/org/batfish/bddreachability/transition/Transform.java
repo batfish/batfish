@@ -52,7 +52,7 @@ public class Transform implements Transition {
    * Compose this {@link Transform} with another, if possible. The semantics is that they are
    * applied in series -- first this, then other.
    */
-  public Optional<Transform> compose(Transform other) {
+  public Optional<Transform> tryCompose(Transform other) {
     BDD vars = _pairingFactory.getDomainVarsBdd();
     BDD otherVars = other._pairingFactory.getDomainVarsBdd();
     if (!vars.diffSat(otherVars)) {
@@ -76,7 +76,7 @@ public class Transform implements Transition {
    * transforms, the effect of merging is to non-deterministically choose between them. Requires the
    * two transforms to have equal domains.
    */
-  public Optional<Transform> or(Transform other) {
+  public Optional<Transform> tryOr(Transform other) {
     BDD vars = _pairingFactory.getDomainVarsBdd();
     BDD otherVars = other._pairingFactory.getDomainVarsBdd();
     if (!vars.equals(otherVars)) {
