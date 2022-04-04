@@ -30,6 +30,7 @@ public class AclTableTest {
     assertEquals(
         AclTable.builder()
             .setPorts(ImmutableList.of("Ethernet0"))
+            .setServices(ImmutableList.of("SSH"))
             .setStage(Stage.INGRESS)
             .setType(Type.CTRLPLANE)
             .build(),
@@ -55,6 +56,7 @@ public class AclTableTest {
         .addEqualityGroup(
             builder.build(), builder.build(), builder.setPorts(ImmutableList.of()).build())
         .addEqualityGroup(builder.setPorts(ImmutableList.of("a")).build())
+        .addEqualityGroup(builder.setServices(ImmutableList.of("SNMP")).build())
         .addEqualityGroup(builder.setStage(Stage.INGRESS).build())
         .addEqualityGroup(builder.setType(Type.L3).build())
         .testEquals();

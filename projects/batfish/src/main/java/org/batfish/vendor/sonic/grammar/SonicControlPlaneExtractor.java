@@ -1,6 +1,8 @@
 package org.batfish.vendor.sonic.grammar;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -12,6 +14,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.ErrorDetails;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -22,6 +25,7 @@ import org.batfish.grammar.frr.FrrConfigurationBuilder;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.sonic.representation.ConfigDb;
 import org.batfish.vendor.sonic.representation.ResolvConf;
+import org.batfish.vendor.sonic.representation.SnmpYml;
 import org.batfish.vendor.sonic.representation.SonicConfiguration;
 
 public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
@@ -76,6 +80,21 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
               _fileTexts.get(resolveConfFilename),
               _fileResults.get(resolveConfFilename).getWarnings());
       _configuration.setResolveConf(resolveConf);
+    }
+
+    String snmpYmlFilename = _fileTypes.get(SonicFileType.SNMP_YML);
+    if (snmpYmlFilename != null) {
+      ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+      try {
+        SnmpYml snmpYml = mapper.readValue(_fileTexts.get(snmpYmlFilename), SnmpYml.class);
+        _configuration.setSnmpYml(snmpYml);
+      } catch (JsonProcessingException exception) {
+        ErrorDetails errorDetails =
+            new ErrorDetails(
+                String.format(
+                    "Error deserializing %s: %s", snmpYmlFilename, exception.getMessage()));
+        _fileResults.get(snmpYmlFilename).getWarnings().setErrorDetails(errorDetails);
+      }
     }
   }
 

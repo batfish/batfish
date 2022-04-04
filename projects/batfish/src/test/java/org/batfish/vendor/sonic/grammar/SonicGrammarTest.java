@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -44,6 +45,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
@@ -338,9 +340,36 @@ public class SonicGrammarTest {
         (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("resolv_conf");
     vc.setWarnings(new Warnings());
 
+    assertNotNull(vc.getResolvConf());
     assertEquals(ImmutableList.of(Ip.parse("1.1.1.1")), vc.getResolvConf().getNameservers());
     Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
     assertEquals("resolv_conf", c.getHostname());
     assertEquals(ImmutableSet.of("1.1.1.1"), c.getDnsServers());
+  }
+
+  /** Test that resolve.conf files are parsed and its contents are converted. */
+  @Test
+  public void testSnmpYml() throws IOException {
+    String snapshotName = "snmp_yml";
+    Batfish batfish =
+        getBatfish(snapshotName, "device/frr.conf", "device/config_db.json", "device/snmp.yml");
+
+    Warnings warnings = new Warnings(true, true, true);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("snmp_yml");
+    vc.setWarnings(warnings);
+
+    assertNotNull(vc.getSnmpYml());
+    assertEquals("public", vc.getSnmpYml().getRoCommunity());
+    assertEquals("public6", vc.getSnmpYml().getRoCommunity6());
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertEquals("snmp_yml", c.getHostname());
+
+    SnmpCommunity snmpCommunity =
+        Iterables.getOnlyElement(c.getDefaultVrf().getSnmpServer().getCommunities().values());
+    assertThat(snmpCommunity.getAccessList(), equalTo("CTRL_PLANE_SNMP_ACL"));
+    assertThat(snmpCommunity.getClientIps(), equalTo(Prefix.parse("10.1.4.0/22").toIpSpace()));
   }
 }
