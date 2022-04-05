@@ -81,6 +81,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLA
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_ACCOUNTING_CONNECTION_DEFAULT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_ACCOUNTING_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_AUTHENTICATION_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_AUTHORIZATION_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
@@ -446,9 +447,10 @@ import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_grou
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_privilege_modeContext;
-import org.batfish.grammar.cisco.CiscoParser.Aaa_authorization_methodContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authorization_method_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_group_serverContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_group_server_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_group_server_privateContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_new_modelContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_actionContext;
@@ -1710,7 +1712,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterAaa_group(Aaa_groupContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
 
     if (ctx.LDAP() != null) {
       _currentAaaGroup = new LdapServerGroup(name);
@@ -3619,8 +3621,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     ((HasWritableVrf) _currentSla).setVrf(toString(ctx.name));
   }
 
+  private static @Nonnull String toString(RuleContext ctx) {
+    return ctx.getText();
+  }
+
   private static @Nonnull String toString(VariableContext ctx) {
     return ctx.getText();
+  }
+
+  private static @Nonnull String toString(Aaa_group_server_memberContext ctx) {
+    if (ctx.IP_ADDRESS() != null || ctx.IPV6_ADDRESS() != null) {
+      return ctx.getText();
+    }
+    assert ctx.variable() != null;
+    return toString(ctx.variable());
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
@@ -3828,7 +3842,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAaa_accounting_default_group(Aaa_accounting_default_groupContext ctx) {
     List<String> groups =
-        ctx.groups.stream().map(RuleContext::getText).collect(Collectors.toList());
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
     _configuration.getCf().getAaa().getAccounting().getDefault().setGroups(groups);
     for (String group : groups) {
       _configuration.referenceStructure(
@@ -3847,10 +3861,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     List<String> groups =
-        ctx.groups.stream().map(RuleContext::getText).collect(Collectors.toList());
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
     for (String group : groups) {
       _configuration.referenceStructure(
-          AAA_SERVER_GROUP, group, AAA_ACCOUNTING_CONNECTION_DEFAULT, ctx.getStart().getLine());
+          AAA_SERVER_GROUP, group, AAA_ACCOUNTING_GROUP, ctx.getStart().getLine());
     }
   }
 
@@ -3861,7 +3875,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     List<String> groups =
-        ctx.groups.stream().map(RuleContext::getText).collect(Collectors.toList());
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
     for (String group : groups) {
       _configuration.referenceStructure(
           AAA_SERVER_GROUP, group, AAA_AUTHENTICATION_GROUP, ctx.getStart().getLine());
@@ -3892,11 +3906,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitAaa_authorization_method(Aaa_authorization_methodContext ctx) {
+  public void exitAaa_authorization_method_group(Aaa_authorization_method_groupContext ctx) {
     if (ctx.groups == null) {
       return;
     }
-    List<String> groups = ctx.groups.stream().map(Token::getText).collect(Collectors.toList());
+    List<String> groups =
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
     for (String group : groups) {
       _configuration.referenceStructure(
           AAA_SERVER_GROUP, group, AAA_AUTHORIZATION_GROUP, ctx.getStart().getLine());
@@ -3918,18 +3933,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentAaaGroup == null) {
       return;
     }
-    String server;
-    if (ctx.IP_ADDRESS() != null) {
-      server = ctx.IP_ADDRESS().getText();
-    } else if (ctx.IPV6_ADDRESS() != null) {
-      server = ctx.IPV6_ADDRESS().getText();
-    } else if (ctx.name != null) {
-      server = ctx.name.getText();
-    } else {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "Unhandled AAA group server");
-      return;
-    }
-    _currentAaaGroup.addServer(server);
+    _currentAaaGroup.addServer(toString(ctx.aaa_group_server_member()));
   }
 
   @Override
@@ -3937,18 +3941,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentAaaGroup == null) {
       return;
     }
-    String server;
-    if (ctx.IP_ADDRESS() != null) {
-      server = ctx.IP_ADDRESS().getText();
-    } else if (ctx.IPV6_ADDRESS() != null) {
-      server = ctx.IPV6_ADDRESS().getText();
-    } else if (ctx.name != null) {
-      server = ctx.name.getText();
-    } else {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "Unhandled AAA group server");
-      return;
-    }
-    _currentAaaGroup.addPrivateServer(server);
+    _currentAaaGroup.addPrivateServer(toString(ctx.aaa_group_server_member()));
   }
 
   @Override

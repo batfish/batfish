@@ -21,11 +21,19 @@ public abstract class AaaServerGroup implements Serializable {
   }
 
   public void addServer(String server) {
-    _servers = ImmutableList.<String>builder().addAll(_servers).add(server).build();
+    _servers =
+        ImmutableList.<String>builderWithExpectedSize(_servers.size() + 1)
+            .addAll(_servers)
+            .add(server)
+            .build();
   }
 
   public void addPrivateServer(String server) {
-    _privateServers = ImmutableList.<String>builder().addAll(_privateServers).add(server).build();
+    _privateServers =
+        ImmutableList.<String>builderWithExpectedSize(_privateServers.size() + 1)
+            .addAll(_privateServers)
+            .add(server)
+            .build();
   }
 
   @Nonnull

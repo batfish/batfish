@@ -2396,7 +2396,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   static Set<String> toTacacsServers(
-      NavigableSet<String> tacacsServers, Map<String, AaaServerGroup> tacacsPlusGroups) {
+      Set<String> tacacsServers, Map<String, AaaServerGroup> tacacsPlusGroups) {
     /* The VI model of TACACS servers is not rich enough to express the nuances of global vs. group-level servers and of private servers. We combine them all in the VI set. */
     return ImmutableSet.<String>builder()
         .addAll(tacacsServers)

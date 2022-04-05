@@ -485,7 +485,7 @@
         "File_Name" : "configs/cisco_aaa",
         "Struct_Type" : "aaa server group",
         "Ref_Name" : "MEE",
-        "Context" : "aaa accounting connection default",
+        "Context" : "aaa accounting group",
         "Lines" : {
           "filename" : "configs/cisco_aaa",
           "lines" : [
