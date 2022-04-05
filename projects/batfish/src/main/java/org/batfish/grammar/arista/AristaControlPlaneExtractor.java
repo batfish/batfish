@@ -575,6 +575,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_source_interfaceCo
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_udp_portContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlan_vniContext;
+import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlan_vni_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vrfContext;
 import org.batfish.grammar.arista.AristaParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.arista.AristaParser.Extended_access_list_tailContext;
@@ -847,12 +848,16 @@ import org.batfish.grammar.arista.AristaParser.Variable_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_stateContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_trunkContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_idContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_stateContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_trunkContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_stateContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_subrangeContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_trunkContext;
+import org.batfish.grammar.arista.AristaParser.Vni_numberContext;
+import org.batfish.grammar.arista.AristaParser.Vni_subrangeContext;
 import org.batfish.grammar.arista.AristaParser.Vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
@@ -1032,6 +1037,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return Integer.parseInt(t.getText());
   }
 
+  private static int toInteger(Vlan_idContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static int toInteger(Vni_numberContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
   private static String toInterfaceName(Interface_nameContext ctx) {
     StringBuilder name =
         new StringBuilder(
@@ -1117,6 +1130,28 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private static SubRange toSubRange(SubrangeContext ctx) {
+    int low = toInteger(ctx.low);
+    if (ctx.DASH() != null) {
+      int high = toInteger(ctx.high);
+      return new SubRange(low, high);
+    } else {
+      return SubRange.singleton(low);
+    }
+  }
+
+  private static SubRange toSubRange(Vlan_subrangeContext ctx) {
+    // TODO: validate values
+    int low = toInteger(ctx.low);
+    if (ctx.DASH() != null) {
+      int high = toInteger(ctx.high);
+      return new SubRange(low, high);
+    } else {
+      return SubRange.singleton(low);
+    }
+  }
+
+  private static SubRange toSubRange(Vni_subrangeContext ctx) {
+    // TODO: validate values
     int low = toInteger(ctx.low);
     if (ctx.DASH() != null) {
       int high = toInteger(ctx.high);
@@ -3507,6 +3542,42 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_vxif_vxlan_udp_port(Eos_vxif_vxlan_udp_portContext ctx) {
     _eosVxlan.setUdpPort(toInteger(ctx.num));
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_vlan_vni_range(Eos_vxif_vxlan_vlan_vni_rangeContext ctx) {
+    List<Integer> vnis = new ArrayList<>();
+    List<Integer> vlans = new ArrayList<>();
+
+    List<SubRange> vlanRange =
+        ctx.vlans.vlan_range_list.stream()
+            .map(AristaControlPlaneExtractor::toSubRange)
+            .collect(Collectors.toList());
+
+    for (SubRange subRange : vlanRange) {
+      for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
+        vlans.add(i);
+      }
+    }
+    List<SubRange> vniRange =
+        ctx.vnis.vni_range_list.stream()
+            .map(AristaControlPlaneExtractor::toSubRange)
+            .collect(Collectors.toList());
+
+    for (SubRange subRange : vniRange) {
+      for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
+        vnis.add(i);
+      }
+    }
+
+    if (vlans.size() != vnis.size()) {
+      warn(ctx, "Need to have 1:1 mapping of vlan to vni");
+      return;
+    }
+
+    for (int i = 0; i < vnis.size(); i++) {
+      _eosVxlan.getVlanVnis().put(vlans.get(i), vnis.get(i));
+    }
   }
 
   @Override
