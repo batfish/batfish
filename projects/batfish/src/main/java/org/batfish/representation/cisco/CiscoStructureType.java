@@ -3,6 +3,10 @@ package org.batfish.representation.cisco;
 import org.batfish.vendor.StructureType;
 
 public enum CiscoStructureType implements StructureType {
+  AAA_SERVER_GROUP("aaa server group"),
+  AAA_SERVER_GROUP_LDAP("aaa server group ldap"),
+  AAA_SERVER_GROUP_RADIUS("aaa server group radius"),
+  AAA_SERVER_GROUP_TACACS_PLUS("aaa server group tacacs+"),
   ACCESS_LIST("acl"),
   AS_PATH_ACCESS_LIST("as-path access-list"),
   BFD_TEMPLATE("bfd-template"),
@@ -66,6 +70,7 @@ public enum CiscoStructureType implements StructureType {
   SERVICE_OBJECT("object service"),
   SERVICE_OBJECT_GROUP("object-group service"),
   SERVICE_TEMPLATE("service-template"),
+  TACACS_SERVER("tacacs server"),
   TRACK("track"),
   TRAFFIC_ZONE("zone");
 
