@@ -742,23 +742,41 @@ aaa_authorization_include
 
 aaa_authorization_method
 :
- aaa_authorization_method_group?
- null_rest_of_line
+ // at least one of group or group_additional should be present
+ (
+   (
+     aaa_authorization_method_group
+     aaa_authorization_method_group_additional*
+    )
+    |
+    (
+      aaa_authorization_method_group?
+      aaa_authorization_method_group_additional+
+    )
+ )
+ NEWLINE
 ;
 
 aaa_authorization_method_group
 :
- GROUP
+ GROUP?
  (
    RADIUS
    | TACACS_PLUS
    | groups += aaa_authorization_method_group_name
- )+
+ )
 ;
 
 aaa_authorization_method_group_name
 :
   ~( NEWLINE | IF_AUTHENTICATED | LOCAL | NONE )
+;
+
+aaa_authorization_method_group_additional
+:
+  IF_AUTHENTICATED
+  | LOCAL
+  | NONE
 ;
 
 aaa_authorization_network

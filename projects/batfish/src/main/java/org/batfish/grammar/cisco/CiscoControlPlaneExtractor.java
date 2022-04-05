@@ -78,12 +78,14 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.TACACS_SERVER;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_ACCOUNTING_CONNECTION_DEFAULT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_ACCOUNTING_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_AUTHENTICATION_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_AUTHORIZATION_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_GROUP_SERVER_TACACS_SERVER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -443,11 +445,13 @@ import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_method_targetContext
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_methodContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_group_additionalContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_group_iosContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_privilege_modeContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authorization_method_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authorization_method_group_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_group_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_group_server_memberContext;
@@ -3621,10 +3625,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     ((HasWritableVrf) _currentSla).setVrf(toString(ctx.name));
   }
 
-  private static @Nonnull String toString(RuleContext ctx) {
-    return ctx.getText();
-  }
-
   private static @Nonnull String toString(VariableContext ctx) {
     return ctx.getText();
   }
@@ -3836,6 +3836,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String hostname = ctx.hostname.getText();
     if (!_no) {
       _configuration.getTacacsServers().add(hostname);
+      _configuration.defineStructure(TACACS_SERVER, hostname, ctx);
     }
   }
 
@@ -3866,6 +3867,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           AAA_SERVER_GROUP, group, AAA_ACCOUNTING_GROUP, ctx.getStart().getLine());
     }
+  }
+
+  private static String toString(Aaa_authentication_list_method_group_additionalContext ctx) {
+    return ctx.getText();
   }
 
   @Override
@@ -3905,6 +3910,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.getCf().getAaa().getAuthentication().getLogin().setPrivilegeMode(true);
   }
 
+  private static String toString(Aaa_authorization_method_group_nameContext ctx) {
+    return ctx.getText();
+  }
+
   @Override
   public void exitAaa_authorization_method_group(Aaa_authorization_method_groupContext ctx) {
     if (ctx.groups == null) {
@@ -3933,7 +3942,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentAaaGroup == null) {
       return;
     }
-    _currentAaaGroup.addServer(toString(ctx.aaa_group_server_member()));
+    String server = toString(ctx.aaa_group_server_member());
+    _currentAaaGroup.addServer(server);
+    if (_currentAaaGroup instanceof TacacsPlusServerGroup) {
+      // only tacacs+ servers are being logged and tracked at the moment
+      _configuration.referenceStructure(
+          TACACS_SERVER, server, AAA_GROUP_SERVER_TACACS_SERVER, ctx.getStart().getLine());
+    }
   }
 
   @Override
@@ -9415,6 +9430,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitT_server(T_serverContext ctx) {
     String hostname = ctx.hostname.getText();
     _configuration.getTacacsServers().add(hostname);
+    _configuration.defineStructure(TACACS_SERVER, hostname, ctx);
   }
 
   @Override

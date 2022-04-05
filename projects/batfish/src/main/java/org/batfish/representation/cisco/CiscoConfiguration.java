@@ -3001,6 +3001,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             CiscoStructureType.AAA_SERVER_GROUP_RADIUS,
             CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS));
 
+    markConcreteStructure(CiscoStructureType.TACACS_SERVER);
+
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
 

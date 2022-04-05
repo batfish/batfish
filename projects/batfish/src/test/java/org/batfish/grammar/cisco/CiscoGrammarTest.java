@@ -220,6 +220,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP_CLAUSE;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.TACACS_SERVER;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -599,15 +600,20 @@ public final class CiscoGrammarTest {
     assertEquals(
         ImmutableList.of("192.168.3.1"), vc.getAaaServerGroups().get("radius_group").getServers());
     assertEquals(
-        ImmutableList.of("10.1.1.1"), vc.getAaaServerGroups().get("tacacs_group").getServers());
+        ImmutableList.of("10.1.1.1", "192.168.1.1"),
+        vc.getAaaServerGroups().get("tacacs_group").getServers());
     assertEquals(
         ImmutableList.of("10.2.2.2"),
         vc.getAaaServerGroups().get("tacacs_group").getPrivateServers());
 
+    assertThat(ccae, hasDefinedStructure(filename, TACACS_SERVER, "192.168.1.1"));
     assertThat(ccae, hasDefinedStructure(filename, AAA_SERVER_GROUP_LDAP, "ldap_group"));
     assertThat(ccae, hasDefinedStructure(filename, AAA_SERVER_GROUP_RADIUS, "radius_group"));
     assertThat(ccae, hasDefinedStructure(filename, AAA_SERVER_GROUP_TACACS_PLUS, "tacacs_group"));
     assertThat(ccae, hasNumReferrers(filename, AAA_SERVER_GROUP_TACACS_PLUS, "tacacs_group", 9));
+
+    assertThat(ccae, hasUndefinedReference(filename, TACACS_SERVER, "10.1.1.1"));
+    assertThat(ccae, hasNumReferrers(filename, TACACS_SERVER, "192.168.1.1", 1));
 
     // global and group-level tacacs servers must be included; radius and ldap servers shouldn't be
     assertThat(

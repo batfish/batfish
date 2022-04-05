@@ -233,10 +233,10 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_aaa",
           "lines" : [
-            80,
-            81,
             82,
-            83
+            83,
+            84,
+            85
           ]
         }
       },
@@ -246,14 +246,14 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_aaa",
           "lines" : [
-            85,
-            86,
             87,
             88,
             89,
             90,
             91,
-            92
+            92,
+            93,
+            94
           ]
         }
       },
@@ -3113,6 +3113,16 @@
         }
       },
       {
+        "Structure_Type" : "tacacs server",
+        "Structure_Name" : "1.2.3.4",
+        "Source_Lines" : {
+          "filename" : "configs/mos_misc",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
         "Structure_Type" : "route-map",
         "Structure_Name" : "foo",
         "Source_Lines" : {
@@ -3772,10 +3782,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 247 results",
+      "notes" : "Found 248 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 247
+      "numResults" : 248
     }
   }
 ]

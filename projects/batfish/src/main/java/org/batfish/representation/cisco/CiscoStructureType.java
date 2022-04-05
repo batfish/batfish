@@ -70,6 +70,7 @@ public enum CiscoStructureType implements StructureType {
   SERVICE_OBJECT("object service"),
   SERVICE_OBJECT_GROUP("object-group service"),
   SERVICE_TEMPLATE("service-template"),
+  TACACS_SERVER("tacacs server"),
   TRACK("track"),
   TRAFFIC_ZONE("zone");
 
