@@ -285,6 +285,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV4_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.STATIC_ROUTE_TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SERVER_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_IP_SLA;
@@ -3837,6 +3838,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!_no) {
       _configuration.getTacacsServers().add(hostname);
       _configuration.defineStructure(TACACS_SERVER, hostname, ctx);
+      _configuration.referenceStructure(
+          TACACS_SERVER, hostname, TACACS_SERVER_SELF_REF, ctx.getStart().getLine());
     }
   }
 
@@ -3916,15 +3919,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAaa_authorization_method_group(Aaa_authorization_method_groupContext ctx) {
-    if (ctx.groups == null) {
+    if (ctx.group == null) {
       return;
     }
-    List<String> groups =
-        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
-    for (String group : groups) {
-      _configuration.referenceStructure(
-          AAA_SERVER_GROUP, group, AAA_AUTHORIZATION_GROUP, ctx.getStart().getLine());
-    }
+    String groupName = toString(ctx.group);
+    _configuration.referenceStructure(
+        AAA_SERVER_GROUP, groupName, AAA_AUTHORIZATION_GROUP, ctx.getStart().getLine());
   }
 
   @Override
@@ -9431,6 +9431,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String hostname = ctx.hostname.getText();
     _configuration.getTacacsServers().add(hostname);
     _configuration.defineStructure(TACACS_SERVER, hostname, ctx);
+    _configuration.referenceStructure(
+        TACACS_SERVER, hostname, TACACS_SERVER_SELF_REF, ctx.getStart().getLine());
   }
 
   @Override

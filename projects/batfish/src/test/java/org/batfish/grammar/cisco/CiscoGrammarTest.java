@@ -613,11 +613,19 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, AAA_SERVER_GROUP_TACACS_PLUS, "tacacs_group", 9));
 
     assertThat(ccae, hasUndefinedReference(filename, TACACS_SERVER, "10.1.1.1"));
-    assertThat(ccae, hasNumReferrers(filename, TACACS_SERVER, "192.168.1.1", 1));
+    assertThat(ccae, hasNumReferrers(filename, TACACS_SERVER, "192.168.1.1", 2));
 
     // global and group-level tacacs servers must be included; radius and ldap servers shouldn't be
     assertThat(
         c.getTacacsServers(), equalTo(ImmutableSet.of("192.168.1.1", "10.1.1.1", "10.2.2.2")));
+  }
+
+  @Test
+  public void testAaa() throws IOException {
+    String hostname = "cisco_aaa";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
   }
 
   @Test

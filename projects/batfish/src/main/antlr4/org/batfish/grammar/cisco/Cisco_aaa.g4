@@ -745,14 +745,13 @@ aaa_authorization_method
  // at least one of group or group_additional should be present
  (
    (
-     aaa_authorization_method_group
+     aaa_authorization_method_group+
      aaa_authorization_method_group_additional*
-    )
-    |
-    (
-      aaa_authorization_method_group?
-      aaa_authorization_method_group_additional+
-    )
+   )
+   |
+   (
+     aaa_authorization_method_group_additional+
+   )
  )
  NEWLINE
 ;
@@ -763,7 +762,7 @@ aaa_authorization_method_group
  (
    RADIUS
    | TACACS_PLUS
-   | groups += aaa_authorization_method_group_name
+   | group = aaa_authorization_method_group_name
  )
 ;
 
