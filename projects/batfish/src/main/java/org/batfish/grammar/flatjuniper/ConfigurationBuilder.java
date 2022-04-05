@@ -662,6 +662,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_authorizationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_client_list_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
@@ -1975,11 +1976,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
     if (ctx.rd_ip_address_colon_id() != null) {
-      return RouteDistinguisher.parse(ctx.rd_ip_address_colon_id().getText());
-    } else if (ctx.rd_asn_colon_id() != null) {
-      return RouteDistinguisher.parse(ctx.rd_asn_colon_id().getText());
-    } else {
-      throw new BatfishException("invalid route-distinguisher: " + ctx.getText());
+      String[] rd_ip = ctx.rd_ip_address_colon_id().getText().split(":");
+      return RouteDistinguisher.from(Ip.parse(rd_ip[0]), Integer.parseInt(rd_ip[1]));
+    } else assert ctx.rd_asn_colon_id() != null;
+    {
+      return RouteDistinguisher.from(
+          toLong(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
     }
   }
 
@@ -3294,15 +3296,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void enterRoute_distinguisher(Route_distinguisherContext ctx) {
-    RouteDistinguisher rd = toRouteDistinguisher(ctx);
-    _currentLogicalSystem.getSwitchOptions().setRouteDistinguisher(rd);
+  public void exitSo_route_distinguisher(So_route_distinguisherContext ctx) {
+    RouteDistinguisher rd = toRouteDistinguisher(ctx.route_distinguisher());
+    _currentLogicalSystem.getOrInitSwitchOptions().setRouteDistinguisher(rd);
   }
 
   @Override
   public void exitSo_vtep_source_interface(So_vtep_source_interfaceContext ctx) {
     String ifaceName = getInterfaceFullName(ctx.iface);
-    _currentLogicalSystem.getSwitchOptions().setVtepSourceInterface(ifaceName);
+    _currentLogicalSystem.getOrInitSwitchOptions().setVtepSourceInterface(ifaceName);
   }
 
   @Override

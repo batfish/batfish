@@ -100,7 +100,7 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Vlan> _namedVlans;
 
-  private final SwitchOptions _switchOptions;
+  @Nullable private SwitchOptions _switchOptions;
 
   private final Map<String, Zone> _zones;
 
@@ -284,6 +284,13 @@ public class LogicalSystem implements Serializable {
 
   public @Nonnull String getName() {
     return _name;
+  }
+
+  public SwitchOptions getOrInitSwitchOptions() {
+    if (_switchOptions == null) {
+      _switchOptions = new SwitchOptions();
+    }
+    return _switchOptions;
   }
 
   public Nat getNatDestination() {

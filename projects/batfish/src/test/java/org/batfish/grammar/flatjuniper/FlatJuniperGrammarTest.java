@@ -6284,7 +6284,9 @@ public final class FlatJuniperGrammarTest {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-ip");
     RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
-    assertEquals("14.14.14.14:7999", rd.toString());
+    Ip ip = Ip.parse("14.14.14.14");
+    Integer asn1 = 7999;
+    assertEquals(RouteDistinguisher.from(ip, asn1), rd);
   }
 
   @Test
@@ -6292,15 +6294,9 @@ public final class FlatJuniperGrammarTest {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-comm1");
     RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
-    assertEquals("555:0", rd.toString());
-  }
-
-  @Test
-  public void testSwitchOptionsRouteDistinguisherCommTwoExtraction() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-comm2");
-    RouteDistinguisher rd =
-        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
-    assertEquals("12365510:15", rd.toString());
+    Integer asn1 = 555;
+    long asn2 = 0;
+    assertEquals(RouteDistinguisher.from(asn1, asn2), rd);
   }
 
   @Test

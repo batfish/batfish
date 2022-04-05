@@ -1,17 +1,18 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 
 public class SwitchOptions implements Serializable {
 
   private String _vtepSourceInterface;
-  private org.batfish.datamodel.bgp.RouteDistinguisher _routeDistinguisher;
+  private RouteDistinguisher _routeDistinguisher;
 
   public String getVtepSourceInterface() {
     return _vtepSourceInterface;
   }
 
-  public org.batfish.datamodel.bgp.RouteDistinguisher getRouteDistinguisher() {
+  public RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
   }
 
@@ -19,8 +20,7 @@ public class SwitchOptions implements Serializable {
     _vtepSourceInterface = vtepSourceInterface;
   }
 
-  public void setRouteDistinguisher(
-      org.batfish.datamodel.bgp.RouteDistinguisher routeDistinguisher) {
+  public void setRouteDistinguisher(RouteDistinguisher routeDistinguisher) {
     _routeDistinguisher = routeDistinguisher;
   }
 }
