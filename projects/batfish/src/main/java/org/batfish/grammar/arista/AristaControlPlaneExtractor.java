@@ -986,6 +986,8 @@ import org.batfish.vendor.VendorConfiguration;
 public class AristaControlPlaneExtractor extends AristaParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
+  private static final IntegerSpace VNI_RANGE = IntegerSpace.of(Range.closed(1, 16777215));
 
   @Override
   public String getInputText() {
@@ -1037,12 +1039,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return Integer.parseInt(t.getText());
   }
 
-  private static int toInteger(Vlan_idContext ctx) {
-    return Integer.parseInt(ctx.getText());
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Vlan_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "VLAN number");
   }
 
-  private static int toInteger(Vni_numberContext ctx) {
-    return Integer.parseInt(ctx.getText());
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vni_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VNI_RANGE, "VNI number");
   }
 
   private static String toInterfaceName(Interface_nameContext ctx) {
@@ -1139,26 +1142,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private static SubRange toSubRange(Vlan_subrangeContext ctx) {
-    // TODO: validate values
-    int low = toInteger(ctx.low);
-    if (ctx.DASH() != null) {
-      int high = toInteger(ctx.high);
-      return new SubRange(low, high);
-    } else {
-      return SubRange.singleton(low);
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Vlan_subrangeContext ctx) {
+    Optional<Integer> maybeLow = toInteger(messageCtx, ctx.low);
+    if (ctx.high == null) {
+      return maybeLow.map(SubRange::singleton);
     }
+    return toInteger(messageCtx, ctx.high).map(high -> new SubRange(maybeLow.get(), high));
   }
 
-  private static SubRange toSubRange(Vni_subrangeContext ctx) {
-    // TODO: validate values
-    int low = toInteger(ctx.low);
-    if (ctx.DASH() != null) {
-      int high = toInteger(ctx.high);
-      return new SubRange(low, high);
-    } else {
-      return SubRange.singleton(low);
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Vni_subrangeContext ctx) {
+    Optional<Integer> maybeLow = toInteger(messageCtx, ctx.low);
+    if (ctx.high == null) {
+      return maybeLow.map(SubRange::singleton);
     }
+    return toInteger(messageCtx, ctx.high).map(high -> new SubRange(maybeLow.get(), high));
   }
 
   private static String unquote(String text) {
@@ -3546,29 +3545,27 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterEos_vxif_vxlan_vlan_vni_range(Eos_vxif_vxlan_vlan_vni_rangeContext ctx) {
-    List<Integer> vnis = new ArrayList<>();
-    List<Integer> vlans = new ArrayList<>();
-
-    List<SubRange> vlanRange =
-        ctx.vlans.vlan_range_list.stream()
-            .map(AristaControlPlaneExtractor::toSubRange)
-            .collect(Collectors.toList());
-
-    for (SubRange subRange : vlanRange) {
-      for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
-        vlans.add(i);
+    ImmutableList.Builder<Integer> vlansBuilder = ImmutableList.builder();
+    for (Vlan_subrangeContext rangeCtx : ctx.vlans.vlan_range_list) {
+      Optional<SubRange> maybeRange = toSubRange(ctx, rangeCtx);
+      if (!maybeRange.isPresent()) {
+        // already warned
+        return;
       }
+      maybeRange.get().asStream().forEach(vlansBuilder::add);
     }
-    List<SubRange> vniRange =
-        ctx.vnis.vni_range_list.stream()
-            .map(AristaControlPlaneExtractor::toSubRange)
-            .collect(Collectors.toList());
+    List<Integer> vlans = vlansBuilder.build();
 
-    for (SubRange subRange : vniRange) {
-      for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
-        vnis.add(i);
+    ImmutableList.Builder<Integer> vnisBuilder = ImmutableList.builder();
+    for (Vni_subrangeContext rangeCtx : ctx.vnis.vni_range_list) {
+      Optional<SubRange> maybeRange = toSubRange(ctx, rangeCtx);
+      if (!maybeRange.isPresent()) {
+        // already warned
+        return;
       }
+      maybeRange.get().asStream().forEach(vnisBuilder::add);
     }
+    List<Integer> vnis = vnisBuilder.build();
 
     if (vlans.size() != vnis.size()) {
       warn(ctx, "Need to have 1:1 mapping of vlan to vni");
