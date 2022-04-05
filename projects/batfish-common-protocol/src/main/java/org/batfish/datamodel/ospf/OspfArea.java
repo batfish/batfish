@@ -210,6 +210,19 @@ public class OspfArea implements Serializable {
   @Nonnull private final SortedMap<Prefix, OspfAreaSummary> _summaries;
   @Nullable private final String _summaryFilter;
 
+  public @Nonnull Builder toBuilder() {
+    return builder()
+        .setNumber(_areaNumber)
+        .setInjectDefaultRoute(_injectDefaultRoute)
+        .setInterfaces(_interfaces)
+        .setMetricOfDefaultRoute(_metricOfDefaultRoute)
+        .setNssa(_nssa)
+        .setStub(_stub)
+        .setStubType(_stubType)
+        .setSummaries(_summaries)
+        .setSummaryFilter(_summaryFilter);
+  }
+
   public OspfArea(
       long areaNumber,
       boolean injectDefaultRoute,
