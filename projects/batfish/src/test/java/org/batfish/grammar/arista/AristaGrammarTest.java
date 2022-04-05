@@ -93,6 +93,7 @@ import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -113,6 +114,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
@@ -369,6 +371,56 @@ public class AristaGrammarTest {
         containsInAnyOrder(
             new OspfNetwork(Prefix.strict("10.0.0.0/8"), 0L),
             new OspfNetwork(Prefix.strict("10.0.1.1/32"), 90L)));
+  }
+
+  @Test
+  public void testVxlanVniNewSyntax() {
+    {
+      AristaConfiguration config = parseVendorConfig("arista_vxlan_new_syntax_1_to_1");
+      assertThat(
+          config.getEosVxlan().getVlanVnis(),
+          equalTo(
+              ImmutableMap.of(
+                  1, 1,
+                  2, 2)));
+    }
+    {
+      AristaConfiguration config = parseVendorConfig("arista_vxlan_new_syntax_matching_ranges");
+      assertThat(
+          config.getEosVxlan().getVlanVnis(),
+          equalTo(
+              ImmutableMap.of(
+                  3, 3,
+                  4, 4,
+                  5, 5)));
+    }
+    {
+      AristaConfiguration config = parseVendorConfig("arista_vxlan_new_syntax_range_on_left");
+      assertThat(
+          config.getEosVxlan().getVlanVnis(),
+          equalTo(
+              ImmutableMap.of(
+                  9, 11,
+                  10, 10,
+                  11, 9)));
+    }
+    {
+      AristaConfiguration config = parseVendorConfig("arista_vxlan_new_syntax_range_on_right");
+      assertThat(
+          config.getEosVxlan().getVlanVnis(),
+          equalTo(
+              ImmutableMap.of(
+                  8, 6,
+                  7, 7,
+                  6, 8)));
+    }
+    {
+      AristaConfiguration config = parseVendorConfig("arista_vxlan_new_syntax_invalid");
+      assertThat(
+          config.getWarnings().getParseWarnings(),
+          contains(hasComment("Need to have 1:1 mapping of vlan to vni")));
+      assertThat(config.getEosVxlan().getVlanVnis(), anEmptyMap());
+    }
   }
 
   @Test
