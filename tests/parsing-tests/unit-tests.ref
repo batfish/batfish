@@ -5065,7 +5065,7 @@
             "          (aaa_authorization_method*",
             "            (aaa_authorization_method_group",
             "              GROUP:'group'",
-            "              (aaa_authorization_method_group_name*",
+            "              group = (aaa_authorization_method_group_name*",
             "                VARIABLE:'MEE'))",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
@@ -74480,7 +74480,7 @@
           "tacacs server" : {
             "1.2.3.4" : {
               "definitionLines" : "10",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -81480,6 +81480,15 @@
             "ap1" : {
               "interface" : [
                 4
+              ]
+            }
+          }
+        },
+        "configs/mos_misc" : {
+          "tacacs server" : {
+            "1.2.3.4" : {
+              "tacacs-server" : [
+                10
               ]
             }
           }
