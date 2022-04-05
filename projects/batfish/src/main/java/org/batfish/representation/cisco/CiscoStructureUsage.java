@@ -3,6 +3,11 @@ package org.batfish.representation.cisco;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoStructureUsage implements StructureUsage {
+  AAA_ACCOUNTING_CONNECTION_DEFAULT("aaa accounting connection default"),
+  AAA_ACCOUNTING_GROUP("aaa accounting group"),
+  AAA_AUTHENTICATION_GROUP("aaa authentication group"),
+  AAA_AUTHORIZATION_GROUP("aaa authorization group"),
+  AAA_GROUP_SERVER_TACACS_SERVER("aaa group server tacacs+ server"),
   ACCESS_GROUP_GLOBAL_FILTER("access-group global filter"),
   BGP_ADVERTISE_MAP_EXIST_MAP("bgp neighbor advertise-map exist-map"),
   BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),
@@ -222,6 +227,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   SSH_IPV4_ACL("ssh ipv4 access-list"),
   SSH_IPV6_ACL("ssh ipv6 access-list"),
   STATIC_ROUTE_TRACK("ip route track"),
+  TACACS_SERVER_SELF_REF("tacacs-server"),
   TACACS_SOURCE_INTERFACE("tacacs source-interface"),
   TRACK_INTERFACE("track interface"),
   TRACK_IP_SLA("track ip sla"),

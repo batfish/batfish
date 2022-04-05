@@ -2606,6 +2606,8 @@ IETF_FORMAT: 'ietf-format';
 
 IF: 'if';
 
+IF_AUTHENTICATED: 'if-authenticated';
+
 IFACL: 'ifacl';
 
 IFDESCR: 'ifdescr';

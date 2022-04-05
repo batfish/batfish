@@ -742,16 +742,40 @@ aaa_authorization_include
 
 aaa_authorization_method
 :
+ // at least one of group or group_additional should be present
+ (
    (
-      (
-         GROUP?
-         (
-            groups += ~( NEWLINE | LOCAL | NONE )
-         )+
-      )
-      | LOCAL
-      | NONE
-   )* NEWLINE
+     aaa_authorization_method_group+
+     aaa_authorization_method_group_additional*
+   )
+   |
+   (
+     aaa_authorization_method_group_additional+
+   )
+ )
+ NEWLINE
+;
+
+aaa_authorization_method_group
+:
+ GROUP?
+ (
+   RADIUS
+   | TACACS_PLUS
+   | group = aaa_authorization_method_group_name
+ )
+;
+
+aaa_authorization_method_group_name
+:
+  ~( NEWLINE | IF_AUTHENTICATED | LOCAL | NONE )
+;
+
+aaa_authorization_method_group_additional
+:
+  IF_AUTHENTICATED
+  | LOCAL
+  | NONE
 ;
 
 aaa_authorization_network
@@ -851,12 +875,7 @@ aaa_group_no_source_interface
 
 aaa_group_server
 :
-   SERVER
-   (
-      IP_ADDRESS
-      | IPV6_ADDRESS
-      | NAME? name = variable
-   )
+   SERVER aaa_group_server_member
    (
       (
          ACCT_PORT acct_port = dec
@@ -872,14 +891,16 @@ aaa_group_server
    )* NEWLINE
 ;
 
+aaa_group_server_member
+:
+  IP_ADDRESS
+  | IPV6_ADDRESS
+  | NAME? variable
+;
+
 aaa_group_server_private
 :
-   SERVER_PRIVATE
-   (
-      IP_ADDRESS
-      | IPV6_ADDRESS
-      | name = variable
-   )
+   SERVER_PRIVATE aaa_group_server_member
    (
       (
          ACCT_PORT acct_port = dec

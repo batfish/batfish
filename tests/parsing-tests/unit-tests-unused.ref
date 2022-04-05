@@ -29,6 +29,17 @@
     },
     "rows" : [
       {
+        "Structure_Type" : "aaa server group tacacs+",
+        "Structure_Name" : "tacacs",
+        "Source_Lines" : {
+          "filename" : "configs/aaa_group_server_source_interface",
+          "lines" : [
+            4,
+            5
+          ]
+        }
+      },
+      {
         "Structure_Type" : "extended ipv4 access-list",
         "Structure_Name" : "abcd",
         "Source_Lines" : {
@@ -213,6 +224,36 @@
             15,
             16,
             17
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "aaa server group radius",
+        "Structure_Name" : "fguiwrego",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_aaa",
+          "lines" : [
+            82,
+            83,
+            84,
+            85
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "aaa server group tacacs+",
+        "Structure_Name" : "authservers",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_aaa",
+          "lines" : [
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94
           ]
         }
       },
@@ -3731,10 +3772,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 244 results",
+      "notes" : "Found 247 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 244
+      "numResults" : 247
     }
   }
 ]
