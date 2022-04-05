@@ -93,6 +93,7 @@ import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -418,6 +419,7 @@ public class AristaGrammarTest {
       assertThat(
           config.getWarnings().getParseWarnings(),
           contains(hasComment("Need to have 1:1 mapping of vlan to vni")));
+      assertThat(config.getEosVxlan().getVlanVnis(), anEmptyMap());
     }
   }
 
