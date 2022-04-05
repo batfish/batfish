@@ -1145,19 +1145,29 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private @Nonnull Optional<SubRange> toSubRange(
       ParserRuleContext messageCtx, Vlan_subrangeContext ctx) {
     Optional<Integer> maybeLow = toInteger(messageCtx, ctx.low);
-    if (ctx.high == null) {
-      return maybeLow.map(SubRange::singleton);
+    if (!maybeLow.isPresent()) {
+      // already warned
+      return Optional.empty();
     }
-    return toInteger(messageCtx, ctx.high).map(high -> new SubRange(maybeLow.get(), high));
+    int low = maybeLow.get();
+    if (ctx.high == null) {
+      return Optional.of(SubRange.singleton(low));
+    }
+    return toInteger(messageCtx, ctx.high).map(high -> new SubRange(low, high));
   }
 
   private @Nonnull Optional<SubRange> toSubRange(
       ParserRuleContext messageCtx, Vni_subrangeContext ctx) {
     Optional<Integer> maybeLow = toInteger(messageCtx, ctx.low);
-    if (ctx.high == null) {
-      return maybeLow.map(SubRange::singleton);
+    if (!maybeLow.isPresent()) {
+      // already warned
+      return Optional.empty();
     }
-    return toInteger(messageCtx, ctx.high).map(high -> new SubRange(maybeLow.get(), high));
+    int low = maybeLow.get();
+    if (ctx.high == null) {
+      return Optional.of(SubRange.singleton(low));
+    }
+    return toInteger(messageCtx, ctx.high).map(high -> new SubRange(low, high));
   }
 
   private static String unquote(String text) {
