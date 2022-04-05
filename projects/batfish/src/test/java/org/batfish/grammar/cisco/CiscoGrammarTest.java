@@ -621,14 +621,6 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAaa() throws IOException {
-    String hostname = "cisco_aaa";
-    String filename = "configs/" + hostname;
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-  }
-
-  @Test
   public void testAGAclReferrers() throws IOException {
     String filename = "configs/iosAccessGroupAcl";
     String testrigName = "access-group-acl";
