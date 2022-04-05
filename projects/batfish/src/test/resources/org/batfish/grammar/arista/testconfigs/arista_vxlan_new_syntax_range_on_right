@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: arista
+!
+! boot system flash:/eos-4.24.2fx-evpn.swi
+hostname arista_vxlan_new_syntax
+!
+interface Vxlan1
+   vxlan udp-port 4789
+! New Syntax
+! range on right
+   vxlan vlan 8,7,6 vni 6-8
+!
+no ip routing

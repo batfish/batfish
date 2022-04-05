@@ -1140,6 +1140,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private static SubRange toSubRange(Vlan_subrangeContext ctx) {
+    // TODO: validate values
     int low = toInteger(ctx.low);
     if (ctx.DASH() != null) {
       int high = toInteger(ctx.high);
@@ -1150,6 +1151,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private static SubRange toSubRange(Vni_subrangeContext ctx) {
+    // TODO: validate values
     int low = toInteger(ctx.low);
     if (ctx.DASH() != null) {
       int high = toInteger(ctx.high);
@@ -3569,13 +3571,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
 
     if (vlans.size() != vnis.size()) {
-      warn(ctx, "Need to have 1:1 mapping of vlan to vnis");
+      warn(ctx, "Need to have 1:1 mapping of vlan to vni");
       return;
     }
 
     for (int i = 0; i < vnis.size(); i++) {
-      int idx = i;
-      _eosVxlan.getVlanVnis().computeIfAbsent(vlans.get(idx), n -> vnis.get(idx));
+      _eosVxlan.getVlanVnis().put(vlans.get(i), vnis.get(i));
     }
   }
 
