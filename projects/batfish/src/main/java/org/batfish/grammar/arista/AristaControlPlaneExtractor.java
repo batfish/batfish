@@ -853,12 +853,10 @@ import org.batfish.grammar.arista.AristaParser.Vlan_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_stateContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_trunkContext;
-import org.batfish.grammar.arista.AristaParser.Vlan_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_stateContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_subrangeContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_trunkContext;
 import org.batfish.grammar.arista.AristaParser.Vni_numberContext;
-import org.batfish.grammar.arista.AristaParser.Vni_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Vni_subrangeContext;
 import org.batfish.grammar.arista.AristaParser.Vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
@@ -1091,22 +1089,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Nonnull
   private static IntegerSpace toIntegerSpace(Eos_vlan_idContext ctx) {
     return ctx.vlan_ids.stream()
-        .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
-        .reduce(IntegerSpace::union)
-        .get();
-  }
-
-  @Nonnull
-  private static IntegerSpace toIntegerSpace(Vlan_rangeContext ctx) {
-    return ctx.vlan_range_list.stream()
-        .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
-        .reduce(IntegerSpace::union)
-        .get();
-  }
-
-  @Nonnull
-  private static IntegerSpace toIntegerSpace(Vni_rangeContext ctx) {
-    return ctx.vni_range_list.stream()
         .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
         .reduce(IntegerSpace::union)
         .get();
@@ -3565,25 +3547,35 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     List<Integer> vnis = new ArrayList<>();
     List<Integer> vlans = new ArrayList<>();
 
-    if (ctx.vlans != null) {
-      IntegerSpace vlanRange = toIntegerSpace(ctx.vlans);
-      for (SubRange subRange : vlanRange.getSubRanges()) {
-        for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
-          vlans.add(i);
-        }
+    List<SubRange> vlanRange =
+        ctx.vlans.vlan_range_list.stream()
+            .map(AristaControlPlaneExtractor::toSubRange)
+            .collect(Collectors.toList());
+
+    for (SubRange subRange : vlanRange) {
+      for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
+        vlans.add(i);
       }
-      if (ctx.vnis != null) {
-        IntegerSpace vniRange = toIntegerSpace(ctx.vnis);
-        for (SubRange subRange : vniRange.getSubRanges()) {
-          for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
-            vnis.add(i);
-          }
-        }
-        for (int i = 0; i < vnis.size(); i++) {
-          int idx = i;
-          _eosVxlan.getVlanVnis().computeIfAbsent(vlans.get(idx), n -> vnis.get(idx));
-        }
+    }
+    List<SubRange> vniRange =
+        ctx.vnis.vni_range_list.stream()
+            .map(AristaControlPlaneExtractor::toSubRange)
+            .collect(Collectors.toList());
+
+    for (SubRange subRange : vniRange) {
+      for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
+        vnis.add(i);
       }
+    }
+
+    if (vlans.size() != vnis.size()) {
+      warn(ctx, "Need to have 1:1 mapping of vlan to vnis");
+      return;
+    }
+
+    for (int i = 0; i < vnis.size(); i++) {
+      int idx = i;
+      _eosVxlan.getVlanVnis().computeIfAbsent(vlans.get(idx), n -> vnis.get(idx));
     }
   }
 

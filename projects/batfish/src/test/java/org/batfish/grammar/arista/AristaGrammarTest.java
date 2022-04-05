@@ -374,9 +374,12 @@ public class AristaGrammarTest {
   @Test
   public void testVxlanVniNewSyntax() {
     AristaConfiguration config = parseVendorConfig("arista_vxlan_new_syntax");
-    assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(1, 111));
+    assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(1, 222));
+    assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(2, 111));
+    assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(3, 2));
     assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(6, 556));
     assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(10, 560));
+    assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(15, 15));
   }
 
   @Test
