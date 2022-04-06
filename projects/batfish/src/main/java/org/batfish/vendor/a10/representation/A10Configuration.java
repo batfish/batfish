@@ -72,7 +72,6 @@ import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.IcmpCode;
-import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -889,9 +888,7 @@ public final class A10Configuration extends VendorConfiguration {
               AclIpSpace.union(
                   vips.stream().map(Ip::toIpSpace).collect(ImmutableSet.toImmutableSet())));
       AclLineMatchExpr ping =
-          and(
-              matchIpProtocol(IpProtocol.ICMP),
-              matchIcmp(IcmpType.ECHO_REQUEST, IcmpCode.NETWORK_UNREACHABLE));
+          and(matchIpProtocol(IpProtocol.ICMP), matchIcmp(IcmpCode.ECHO_REQUEST));
       statements.add(
           new If(
               new PacketMatchExpr(and(matchesVip, not(ping))),

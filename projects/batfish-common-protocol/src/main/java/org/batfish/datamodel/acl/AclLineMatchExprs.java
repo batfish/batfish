@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -232,6 +233,10 @@ public final class AclLineMatchExprs {
 
   public static @Nonnull AclLineMatchExpr matchIcmp(int icmpType, int icmpCode) {
     return and(matchIcmpType(icmpType), matchIcmpCode(icmpCode));
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIcmp(IcmpCode code) {
+    return and(matchIcmpType(code.getType()), matchIcmpCode(code.getCode()));
   }
 
   public static @Nonnull AclLineMatchExpr matchIcmpCode(int icmpCode) {
