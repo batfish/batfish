@@ -48,8 +48,8 @@ public class BDDDomain<T> {
   }
 
   public T satAssignmentToValue(BDD satAssignment) {
-    Long idx = _integer.satAssignmentToLong(satAssignment);
-    return _values.get(idx.intValue());
+    int idx = _integer.satAssignmentToInt(satAssignment);
+    return _values.get(idx);
   }
 
   public void setValue(T value) {
