@@ -1,10 +1,13 @@
 #
 set system host-name juniper-isis-passive
 #
+set interfaces ge-1/2/0 vlan-tagging
 set interfaces ge-1/2/0 unit 0 family inet address 10.0.0.1/30
 set interfaces ge-1/2/0 unit 0 family iso
+set interfaces ge-1/2/0 unit 0 vlan-id 1000
 set interfaces ge-1/2/0 unit 1 family inet address 10.0.0.10/30
 set interfaces ge-1/2/0 unit 1 family iso
+set interfaces ge-1/2/0 unit 1 vlan-id 1001
 #
 set interfaces lo0 unit 0 family inet address 192.168.0.1/32
 set interfaces lo0 unit 0 family iso address 49.0002.1921.6800.0001.00

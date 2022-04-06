@@ -1,0 +1,27 @@
+!
+hostname ios-aaa-group-server
+!
+tacacs-server host 192.168.1.1 key MySecretKey1
+!
+aaa group server ldap ldap_group
+ server 192.168.2.1
+ server 192.168.2.2
+!
+aaa group server radius radius_group
+ server 192.168.3.1
+!
+aaa group server tacacs+ tacacs_group
+ server 10.1.1.1
+ server 192.168.1.1
+ server-private 10.2.2.2 key 7 095A482635365C062E3B5D780D150E276C264B040E352F754D4B4071
+!
+aaa authentication login default group tacacs_group local-case
+aaa authentication enable default group tacacs_group
+aaa authorization exec default group tacacs_group if-authenticated
+aaa authorization commands 0 default group tacacs_group
+aaa accounting exec default stop-only group tacacs_group
+aaa accounting commands 15 default stop-only group tacacs_group
+aaa accounting network default stop-only group tacacs_group
+aaa accounting connection default stop-only group tacacs_group
+aaa accounting system default start-stop group tacacs_group
+!

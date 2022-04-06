@@ -81,6 +81,8 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
@@ -438,6 +440,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
+    verifyOspfAreas(c, w);
     verifyVrrpGroups(c, w);
     removeInvalidStaticRoutes(c, w);
     removeUndefinedTrackReferences(c, w);
@@ -484,6 +487,43 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
     removeInvalidAcls(c, w);
+  }
+
+  private static void verifyOspfAreas(Configuration c, Warnings w) {
+    for (Vrf v : c.getVrfs().values()) {
+      for (OspfProcess proc : v.getOspfProcesses().values()) {
+        for (OspfArea area : ImmutableList.copyOf(proc.getAreas().values())) {
+          List<String> undefinedInterfaces =
+              area.getInterfaces().stream()
+                  .filter(name -> !c.getAllInterfaces().containsKey(name))
+                  .collect(ImmutableList.toImmutableList());
+          if (!undefinedInterfaces.isEmpty()) {
+            w.redFlag(
+                String.format(
+                    "Removing undefined interfaces %s from OSPF process %s area %s on node %s vrf"
+                        + " %s",
+                    undefinedInterfaces,
+                    proc.getProcessId(),
+                    area.getAreaNumber(),
+                    c.getHostname(),
+                    v.getName()));
+            OspfArea newArea =
+                area.toBuilder()
+                    .setInterfaces(
+                        area.getInterfaces().stream()
+                            .filter(name -> c.getAllInterfaces().containsKey(name))
+                            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())))
+                    .build();
+            ImmutableMap.Builder<Long, OspfArea> areasBuilder = ImmutableMap.builder();
+            proc.getAreas().values().stream()
+                .filter(a -> a.getAreaNumber() != newArea.getAreaNumber())
+                .forEach(a -> areasBuilder.put(a.getAreaNumber(), a));
+            areasBuilder.put(newArea.getAreaNumber(), newArea);
+            proc.setAreas(areasBuilder.build());
+          }
+        }
+      }
+    }
   }
 
   /** Remove and warn on undefined track references. */

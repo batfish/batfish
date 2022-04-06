@@ -1,0 +1,37 @@
+!RANCID-CONTENT-TYPE: arista
+!
+! boot system flash:/eos-4.24.2fx-evpn.swi
+hostname arista_vxlan_new_syntax
+!
+interface Vxlan1
+   vxlan udp-port 4789
+  ! New Syntax
+  ! invalid size not equal (test absence of key `12`)
+   vxlan vlan 12 vni 13,14
+
+  ! invalid: vlan out of range
+  vxlan vlan 0 vni 1
+
+  ! invalid: low vlan out of range
+  vxlan vlan 0-1 vni 1-2
+
+  ! invalid: high vlan out of range
+  vxlan vlan 4094-4095 vni 1-2
+
+  ! invalid: reversed vlan range
+  vxlan vlan 2-1 vni 1-2
+
+  ! invalid: vni out of range
+  vxlan vlan 1 vni 0
+
+  ! invalid: low vni out of range
+  vxlan vlan 1-2 vni 0-1
+
+  ! invalid: high vni out of range
+  vxlan vlan 1-2 vni 16777215-16777216
+
+  ! invalid: reversed vni range
+  vxlan vlan 1-2 vni 2-1
+
+!
+no ip routing

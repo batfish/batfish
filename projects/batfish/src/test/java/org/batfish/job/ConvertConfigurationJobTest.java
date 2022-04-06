@@ -47,6 +47,8 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.hsrp.HsrpGroup;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -163,7 +165,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testFInalizeConfigurationVerifyVrrpGroups() {
+  public void testFinalizeConfigurationVerifyVrrpGroups() {
     {
       // Test that undefined interface is removed from VrrpGroup, and warning is added.
       Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
@@ -483,5 +485,44 @@ public final class ConvertConfigurationJobTest {
             "channelGroup",
             "missingAggregateDep"));
     assertThat(missingAggregateDep.getDependencies(), empty());
+  }
+
+  @Test
+  public void testVerifyOspfAreas() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setName("v").setOwner(c).build();
+    OspfArea area =
+        OspfArea.builder()
+            .setInterfaces(ImmutableList.of("undefined", "defined"))
+            .setNumber(1L)
+            .build();
+    OspfProcess proc =
+        OspfProcess.builder()
+            .setAreas(ImmutableMap.of(area.getAreaNumber(), area))
+            .setProcessId("p")
+            .setReferenceBandwidth(1E9D)
+            .setRouterId(Ip.ZERO)
+            .build();
+    v.setOspfProcesses(ImmutableSortedMap.of(proc.getProcessId(), proc));
+    Interface.builder().setName("defined").setOwner(c).setVrf(v).build();
+
+    Warnings w = new Warnings(false, true, false);
+    finalizeConfiguration(c, w);
+
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText(
+                "Removing undefined interfaces [undefined] from OSPF process p area 1 on node c vrf"
+                    + " v")));
+    assertThat(
+        proc.getAreas().get(area.getAreaNumber()).getInterfaces(),
+        equalTo(ImmutableSet.of("defined")));
   }
 }

@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static org.batfish.representation.cisco.CiscoConfiguration.getRouteMapClausePolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.makeClauseTraceable;
+import static org.batfish.representation.cisco.CiscoConfiguration.toTacacsServers;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -10,7 +11,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.util.TreeSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
@@ -79,5 +83,30 @@ public class CiscoConfigurationTest {
 
     assertThat(
         ifStatement.getFalseStatements(), contains(not(instanceOf(TraceableStatement.class))));
+  }
+
+  @Test
+  public void testToTacacsServers() {
+    LdapServerGroup ldapServerGroup = new LdapServerGroup("ldap");
+    ldapServerGroup.addServer("2.2.2.2");
+
+    RadiusServerGroup radiusServerGroup = new RadiusServerGroup("radius");
+    radiusServerGroup.addServer("3.3.3.3");
+
+    TacacsPlusServerGroup tacacsPlusServerGroup = new TacacsPlusServerGroup("tacacs");
+    tacacsPlusServerGroup.addServer("4.4.4.4");
+    tacacsPlusServerGroup.addPrivateServer("5.5.5.5");
+
+    assertThat(
+        toTacacsServers(
+            new TreeSet<>(ImmutableSet.of("1.1.1.1")),
+            ImmutableMap.of(
+                ldapServerGroup.getName(),
+                ldapServerGroup,
+                radiusServerGroup.getName(),
+                radiusServerGroup,
+                tacacsPlusServerGroup.getName(),
+                tacacsPlusServerGroup)),
+        equalTo(ImmutableSet.of("1.1.1.1", "4.4.4.4", "5.5.5.5")));
   }
 }
