@@ -418,10 +418,22 @@ public class AristaGrammarTest {
       AristaConfiguration config = parseVendorConfig("arista_vxlan_new_syntax_invalid");
       assertThat(
           config.getWarnings().getParseWarnings(),
-          contains(hasComment("Need to have 1:1 mapping of vlan to vni")));
+          containsInAnyOrder(
+              hasComment("Need to have 1:1 mapping of vlan to vni"),
+              hasComment("Expected VLAN number in range 1-4094, but got '0'"),
+              hasComment("Expected VLAN number in range 1-4094, but got '0'"),
+              hasComment("Expected VLAN number in range 1-4094, but got '4095'"),
+              hasComment("Invalid VLAN range with high VLAN < low VLAN: 2-1"),
+              hasComment("Expected VNI number in range 1-16777215, but got '0'"),
+              hasComment("Expected VNI number in range 1-16777215, but got '0'"),
+              hasComment("Expected VNI number in range 1-16777215, but got '16777216'"),
+              hasComment("Invalid VNI range with high VNI < low VNI: 2-1")));
       assertThat(config.getEosVxlan().getVlanVnis(), anEmptyMap());
     }
   }
+
+  @Test
+  public void testVxlanVniNewSyntaxInvalid() {}
 
   @Test
   public void testOspfNetworkConversion() {

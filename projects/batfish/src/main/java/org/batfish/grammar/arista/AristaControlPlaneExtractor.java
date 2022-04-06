@@ -1153,7 +1153,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.high == null) {
       return Optional.of(SubRange.singleton(low));
     }
-    return toInteger(messageCtx, ctx.high).map(high -> new SubRange(low, high));
+    Optional<Integer> maybeHigh = toInteger(messageCtx, ctx.high);
+    if (!maybeHigh.isPresent()) {
+      // already warned
+      return Optional.empty();
+    }
+    int high = maybeHigh.get();
+    if (low > high) {
+      warn(
+          messageCtx,
+          String.format("Invalid VLAN range with high VLAN < low VLAN: %s", getFullText(ctx)));
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(low, high));
   }
 
   private @Nonnull Optional<SubRange> toSubRange(
@@ -1167,7 +1179,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.high == null) {
       return Optional.of(SubRange.singleton(low));
     }
-    return toInteger(messageCtx, ctx.high).map(high -> new SubRange(low, high));
+    Optional<Integer> maybeHigh = toInteger(messageCtx, ctx.high);
+    if (!maybeHigh.isPresent()) {
+      // already warned
+      return Optional.empty();
+    }
+    int high = maybeHigh.get();
+    if (low > high) {
+      warn(
+          messageCtx,
+          String.format("Invalid VNI range with high VNI < low VNI: %s", getFullText(ctx)));
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(low, high));
   }
 
   private static String unquote(String text) {
