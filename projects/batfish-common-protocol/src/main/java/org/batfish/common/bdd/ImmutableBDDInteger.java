@@ -52,7 +52,7 @@ public class ImmutableBDDInteger extends BDDInteger {
   }
 
   @Override
-  public Long satAssignmentToLong(BDD satAssignment) {
+  public long satAssignmentToLong(BDD satAssignment) {
     checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
     return satAssignmentToLong(satAssignment.minAssignmentBits());
   }
