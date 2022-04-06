@@ -57,6 +57,12 @@ public class ImmutableBDDInteger extends BDDInteger {
     return satAssignmentToLong(satAssignment.minAssignmentBits());
   }
 
+  public int satAssignmentToInt(BitSet bits) {
+    checkArgument(
+        _bitvec.length <= 31, "Only BDDInteger of 31 or fewer bits can be converted to int");
+    return satAssignmentToLong(bits).intValue();
+  }
+
   public Long satAssignmentToLong(BitSet bits) {
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {

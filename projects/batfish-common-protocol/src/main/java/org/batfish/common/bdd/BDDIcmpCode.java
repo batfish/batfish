@@ -28,7 +28,7 @@ public final class BDDIcmpCode {
    * @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc)
    */
   public int satAssignmentToValue(BDD satAssignment) {
-    return _var.satAssignmentToLong(satAssignment).intValue();
+    return _var.satAssignmentToInt(satAssignment);
   }
 
   /**
@@ -37,7 +37,7 @@ public final class BDDIcmpCode {
    * @param satAssignment see {@link BDD#minAssignmentBits()}.
    */
   public int satAssignmentToValue(BitSet satAssignment) {
-    return _var.satAssignmentToLong(satAssignment).intValue();
+    return _var.satAssignmentToInt(satAssignment);
   }
 
   /**
