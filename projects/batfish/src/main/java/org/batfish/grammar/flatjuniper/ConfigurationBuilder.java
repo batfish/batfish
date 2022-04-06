@@ -1978,7 +1978,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.rd_ip_address_colon_id() != null) {
       String[] rd_ip = ctx.rd_ip_address_colon_id().getText().split(":");
       return RouteDistinguisher.from(Ip.parse(rd_ip[0]), Integer.parseInt(rd_ip[1]));
-    } else assert ctx.rd_asn_colon_id() != null;
+    } else {
+        assert ctx.rd_asn_colon_id() != null;
+    }
     {
       return RouteDistinguisher.from(
           toLong(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
