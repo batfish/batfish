@@ -1674,7 +1674,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    * unknown strings. See
    * https://www.juniper.net/documentation/en_US/junos/topics/usage-guidelines/services-configuring-application-protocol-properties.html#id-10141121
    */
-  private @Nonnull Optional<Integer> toInteger(
+  private @Nonnull Optional<IcmpCode> toIcmpCode(
       ParserRuleContext messageCtx, Named_icmp_codeContext ctx) {
     if (ctx.COMMUNICATION_PROHIBITED_BY_FILTERING() != null) {
       return Optional.of(IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED);
@@ -3922,7 +3922,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return Optional.of(toInteger(ctx.uint8()));
     } else {
       assert ctx.named_icmp_code() != null;
-      return toInteger(messageCtx, ctx.named_icmp_code());
+      // NB: JunOS requires users to set both code AND type separately, so this does not affect
+      // type.
+      return toIcmpCode(messageCtx, ctx.named_icmp_code()).map(IcmpCode::getCode);
     }
   }
 
