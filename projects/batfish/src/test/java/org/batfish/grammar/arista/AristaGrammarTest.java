@@ -433,9 +433,6 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVxlanVniNewSyntaxInvalid() {}
-
-  @Test
   public void testOspfNetworkConversion() {
     String hostname = "arista_ospf_network";
     Configuration c = parseConfig(hostname);
