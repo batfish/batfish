@@ -1,10 +1,15 @@
 #
 set system host-name ospfInterfaceAreaAssignment
 #
+set interfaces xe-0/0/0 vlan-tagging
 set interfaces xe-0/0/0 unit 0 family inet address 1.0.0.1/24
+set interfaces xe-0/0/0 unit 0 vlan-id 1000
 set interfaces xe-0/0/0 unit 1 family inet address 1.0.0.1/24
+set interfaces xe-0/0/0 unit 1 vlan-id 1001
 set interfaces xe-0/0/0 unit 2
+set interfaces xe-0/0/0 unit 2 vlan-id 1002
 set interfaces xe-0/0/0 unit 3
+set interfaces xe-0/0/0 unit 3 vlan-id 1003
 #
 set protocols ospf area 0.0.0.0 interface xe-0/0/0.0
 #
