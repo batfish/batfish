@@ -8,12 +8,17 @@ set firewall filter FILTER2 term TERM from source-address 1.2.3.6
 set firewall filter FILTER2 term TERM from source-address 1.2.3.5
 set firewall filter FILTER2 term TERM then accept
 #
+set interfaces ge-0/0/0 vlan-tagging
 set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24
 set interfaces ge-0/0/0 unit 0 family inet filter input FILTER1
 set interfaces ge-0/0/0 unit 0 family inet filter output FILTER2
+set interfaces ge-0/0/0 unit 0 vlan-id 1000
 set interfaces ge-0/0/0 unit 1 family inet address 1.0.1.1/24
+set interfaces ge-0/0/0 unit 1 vlan-id 1001
 set interfaces ge-0/0/0 unit 2 family inet address 1.0.2.1/24
+set interfaces ge-0/0/0 unit 2 vlan-id 1002
 set interfaces ge-0/0/0 unit 3 family inet address 1.0.3.1/24
+set interfaces ge-0/0/0 unit 3 vlan-id 1003
 #
 set security zones security-zone ZONE1 interfaces ge-0/0/0.0
 set security zones security-zone ZONE1 interfaces ge-0/0/0.1

@@ -151,11 +151,11 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id*",
-            "                INTERFACE_ID:'fe-0/0/0'  <== mode:M_Interface)",
+            "                INTERFACE_ID:'fe-0/0/1'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = (dec*",
-            "                  UINT8:'1')",
+            "                  UINT8:'0')",
             "                (i_common*",
             "                  (i_family*",
             "                    FAMILY:'family'",
@@ -1126,7 +1126,7 @@
             "              ROUTER_ID:'router-id'",
             "              id = (ip_address*",
             "                IP_ADDRESS:'1.1.1.1'))))))",
-            "    NEWLINE:'\\n')",
+            "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -1202,11 +1202,11 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id*",
-            "                INTERFACE_ID:'fe-0/0/0'  <== mode:M_Interface)",
+            "                INTERFACE_ID:'fe-0/0/1'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = (dec*",
-            "                  UINT8:'1')",
+            "                  UINT8:'0')",
             "                (i_common*",
             "                  (i_family*",
             "                    FAMILY:'family'",
@@ -1226,11 +1226,11 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id*",
-            "                INTERFACE_ID:'fe-0/0/0'  <== mode:M_Interface)",
+            "                INTERFACE_ID:'fe-0/0/2'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = (dec*",
-            "                  UINT8:'2')",
+            "                  UINT8:'0')",
             "                (i_common*",
             "                  (i_family*",
             "                    FAMILY:'family'",
@@ -2405,7 +2405,7 @@
             "              ROUTER_ID:'router-id'",
             "              id = (ip_address*",
             "                IP_ADDRESS:'1.2.2.2'))))))",
-            "    NEWLINE:'\\n')",
+            "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -11285,14 +11285,18 @@
           },
           "interface" : {
             "fe-0/0/0" : {
-              "definitionLines" : "4-5",
-              "numReferrers" : 2
+              "definitionLines" : "4",
+              "numReferrers" : 1
             },
             "fe-0/0/0.0" : {
               "definitionLines" : "4",
               "numReferrers" : 2
             },
-            "fe-0/0/0.1" : {
+            "fe-0/0/1" : {
+              "definitionLines" : "5",
+              "numReferrers" : 1
+            },
+            "fe-0/0/1.0" : {
               "definitionLines" : "5",
               "numReferrers" : 1
             },
@@ -11399,18 +11403,26 @@
           },
           "interface" : {
             "fe-0/0/0" : {
-              "definitionLines" : "4-6",
-              "numReferrers" : 3
+              "definitionLines" : "4",
+              "numReferrers" : 1
             },
             "fe-0/0/0.0" : {
               "definitionLines" : "4",
               "numReferrers" : 2
             },
-            "fe-0/0/0.1" : {
+            "fe-0/0/1" : {
               "definitionLines" : "5",
               "numReferrers" : 1
             },
-            "fe-0/0/0.2" : {
+            "fe-0/0/1.0" : {
+              "definitionLines" : "5",
+              "numReferrers" : 1
+            },
+            "fe-0/0/2" : {
+              "definitionLines" : "6",
+              "numReferrers" : 1
+            },
+            "fe-0/0/2.0" : {
               "definitionLines" : "6",
               "numReferrers" : 1
             },
@@ -12587,8 +12599,7 @@
           "interface" : {
             "fe-0/0/0" : {
               "interface" : [
-                4,
-                5
+                4
               ]
             },
             "fe-0/0/0.0" : {
@@ -12599,7 +12610,12 @@
                 7
               ]
             },
-            "fe-0/0/0.1" : {
+            "fe-0/0/1" : {
+              "interface" : [
+                5
+              ]
+            },
+            "fe-0/0/1.0" : {
               "interface" : [
                 5
               ]
@@ -12749,9 +12765,7 @@
           "interface" : {
             "fe-0/0/0" : {
               "interface" : [
-                4,
-                5,
-                6
+                4
               ]
             },
             "fe-0/0/0.0" : {
@@ -12762,12 +12776,22 @@
                 8
               ]
             },
-            "fe-0/0/0.1" : {
+            "fe-0/0/1" : {
               "interface" : [
                 5
               ]
             },
-            "fe-0/0/0.2" : {
+            "fe-0/0/1.0" : {
+              "interface" : [
+                5
+              ]
+            },
+            "fe-0/0/2" : {
+              "interface" : [
+                6
+              ]
+            },
+            "fe-0/0/2.0" : {
               "interface" : [
                 6
               ]
