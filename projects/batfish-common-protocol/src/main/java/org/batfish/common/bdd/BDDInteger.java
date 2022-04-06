@@ -40,6 +40,12 @@ public abstract class BDDInteger {
 
   public abstract Long satAssignmentToLong(BDD satAssignment);
 
+  public int satAssignmentToInt(BDD bdd) {
+    checkArgument(
+        _bitvec.length <= 31, "Only BDDInteger of 31 or fewer bits can be converted to int");
+    return satAssignmentToLong(bdd).intValue();
+  }
+
   /**
    * Return a list of values satisfying the input {@link BDD}, up to some maximum number.
    *

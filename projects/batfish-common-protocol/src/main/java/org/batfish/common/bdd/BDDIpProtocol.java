@@ -30,7 +30,7 @@ public final class BDDIpProtocol {
    * @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc)
    */
   public IpProtocol satAssignmentToValue(BDD satAssignment) {
-    return IpProtocol.fromNumber(_var.satAssignmentToLong(satAssignment).intValue());
+    return IpProtocol.fromNumber(_var.satAssignmentToInt(satAssignment));
   }
 
   /**
@@ -39,7 +39,7 @@ public final class BDDIpProtocol {
    * @param satAssignment Produced by {@link BDD#minAssignmentBits()}.
    */
   public IpProtocol satAssignmentToValue(BitSet satAssignment) {
-    return IpProtocol.fromNumber(_var.satAssignmentToLong(satAssignment).intValue());
+    return IpProtocol.fromNumber(_var.satAssignmentToInt(satAssignment));
   }
 
   /**
