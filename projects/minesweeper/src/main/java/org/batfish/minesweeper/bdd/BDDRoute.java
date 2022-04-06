@@ -164,9 +164,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("tag", 32, idx, false);
     idx += 32;
-    _adminDist = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
-    addBitNames("ad", 32, idx, false);
-    idx += 32;
+    _adminDist = MutableBDDInteger.makeFromIndex(factory, 8, idx, false);
+    addBitNames("ad", 8, idx, false);
+    idx += 8;
     _localPref = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("lp", 32, idx, false);
     idx += 32;
