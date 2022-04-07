@@ -1,0 +1,10 @@
+#RANCID-CONTENT-TYPE: juniper
+#
+set system host-name asn-leading-zeros
+#
+# All numbers below are treated as decimal. Leading zeros should be ignored.
+set routing-instances ri1 protocols bgp group g1 neighbor 192.0.2.1 peer-as 1.2
+set routing-instances ri1 protocols bgp group g1 neighbor 192.0.2.2 peer-as 000003.4
+set routing-instances ri1 protocols bgp group g1 neighbor 192.0.2.3 peer-as 5.000006
+set routing-instances ri1 protocols bgp group g1 neighbor 192.0.2.4 peer-as 000007.000008
+set routing-instances ri1 protocols bgp group g1 neighbor 192.0.2.5 peer-as 004000000000
