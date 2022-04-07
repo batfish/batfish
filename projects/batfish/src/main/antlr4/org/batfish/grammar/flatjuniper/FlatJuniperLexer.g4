@@ -282,7 +282,7 @@ AUTO_NEGOTIATION: 'auto-negotiation';
 
 AUTO_SNAPSHOT: 'auto-snapshot';
 
-AUTONOMOUS_SYSTEM: 'autonomous-system';
+AUTONOMOUS_SYSTEM: 'autonomous-system' -> pushMode(M_BgpAsn);
 
 AUXILIARY: 'auxiliary';
 
@@ -1620,7 +1620,7 @@ LOCAL
 
 LOCAL_ADDRESS: 'local-address';
 
-LOCAL_AS: 'local-as';
+LOCAL_AS: 'local-as' -> pushMode(M_BgpAsn);
 
 LOCAL_IDENTITY: 'local-identity';
 
@@ -2022,7 +2022,7 @@ PAYLOAD_PROTOCOL: 'payload-protocol';
 
 PEER_ADDRESS: 'peer-address';
 
-PEER_AS: 'peer-as';
+PEER_AS: 'peer-as' -> pushMode(M_BgpAsn);
 
 PEER_UNIT: 'peer-unit';
 
@@ -4795,3 +4795,17 @@ M_IcmpCodeOrType_WS: F_WhitespaceChar+ -> skip;
 M_IcmpCodeOrType_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_IcmpCodeOrType_RANGE: F_Digit+ ('-' F_Digit+)? { less(); } -> mode(M_SubRange);
 M_IcmpCodeOrType_NAMED: F_NonWhitespaceChar+ { less(); } -> popMode;
+
+mode M_BgpAsn;
+M_BgpAsn_WS: F_WhitespaceChar+ -> skip;
+M_BgpAsn_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_BgpAsn_ASN: F_Digit+ ('.' F_Digit+)? { less(); } -> mode(M_BgpAsn2);
+M_BgpAsn_OTHER: F_NonWhitespaceChar+ { less(); } -> popMode;
+
+mode M_BgpAsn2;
+M_BgpAsn2_WS: F_WhitespaceChar+ -> skip, popMode;
+M_BgpAsn2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_BgpAsn2_UINT8: F_Uint8 -> type(UINT8);
+M_BgpAsn2_UINT16: F_Uint16 -> type(UINT16);
+M_BgpAsn2_UINT32: F_Uint32 -> type(UINT32);
+M_BgpAsn2_PERIOD: '.' -> type(PERIOD);
