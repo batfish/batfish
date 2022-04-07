@@ -633,6 +633,30 @@ public class SonicConversionsTest {
   }
 
   @Test
+  public void testConvertSnmpServer_noAclRules() {
+    Configuration c =
+        Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+    Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+
+    Warnings w = new Warnings(true, true, true);
+
+    AclTable.Builder aclTable =
+        AclTable.builder()
+            .setStage(Stage.INGRESS)
+            .setType(Type.CTRLPLANE)
+            .setServices(ImmutableList.of("SNMP"));
+    Map<String, AclTable> aclTables = ImmutableMap.of("table", aclTable.build());
+
+    convertSnmpServer(c, "community", aclTables, ImmutableMap.of(), w);
+
+    SnmpCommunity snmpCommunity =
+        Iterables.getOnlyElement(c.getDefaultVrf().getSnmpServer().getCommunities().values());
+    assertThat(snmpCommunity.getAccessList(), nullValue());
+    assertThat(
+        w.getRedFlagWarnings(), contains(hasText("ACL rules not found for SNMP table 'table'.")));
+  }
+
+  @Test
   public void testComputeClientIpSpace() {
     Prefix clientPrefix = Prefix.parse("1.1.1.0/24");
     AclRule allowsSnmp =
