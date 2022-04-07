@@ -56,6 +56,7 @@ public class AclRule implements Serializable {
   private static final String PROP_L4_SRC_PORT = "L4_SRC_PORT";
   private static final String PROP_PACKET_ACTION = "PACKET_ACTION";
   private static final String PROP_PRIORITY = "PRIORITY";
+  private static final String PROP_ETHER_TYPE = "ETHER_TYPE";
 
   private @Nullable final Integer _ipProtocol;
   private @Nullable final Prefix _dstIp;
@@ -73,7 +74,8 @@ public class AclRule implements Serializable {
       @Nullable @JsonProperty(PROP_L4_DST_PORT) Integer l4DstPort,
       @Nullable @JsonProperty(PROP_L4_SRC_PORT) Integer l4SrcPort,
       @Nullable @JsonProperty(PROP_PRIORITY) Integer priority,
-      @Nullable @JsonProperty(PROP_PACKET_ACTION) PacketAction packetAction) {
+      @Nullable @JsonProperty(PROP_PACKET_ACTION) PacketAction packetAction,
+      @Nullable @JsonProperty(PROP_ETHER_TYPE) String etherType /* ignored */) {
     return AclRule.builder()
         .setIpProtocol(ipProtocol)
         .setDstIp(dstIp)
