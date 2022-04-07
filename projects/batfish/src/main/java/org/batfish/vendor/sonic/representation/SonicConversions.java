@@ -525,8 +525,14 @@ public class SonicConversions {
       return;
     }
     String snmpTableName = snmpTableNames.get(0);
+    SortedSet<AclRuleWithName> aclRules = aclNameToRules.get(snmpTableName);
+    if (aclRules == null) {
+      w.redFlag(String.format("ACL rules not found for SNMP table '%s'.", snmpTableName));
+      return;
+    }
+
     snmpCommunity.setAccessList(snmpTableName);
-    snmpCommunity.setClientIps(computeSnmpClientSpace(aclNameToRules.get(snmpTableName)));
+    snmpCommunity.setClientIps(computeSnmpClientSpace(aclRules));
   }
 
   /** Computes the client IpSpace that is permitted by the ACL rules */
