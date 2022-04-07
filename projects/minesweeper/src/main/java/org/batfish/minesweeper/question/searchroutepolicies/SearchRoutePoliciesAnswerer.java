@@ -483,7 +483,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   private Optional<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     TransferReturn result;
     try {
-      TransferBDD tbdd = new TransferBDD(configAPs, policy.getOwner(), policy.getStatements());
+      TransferBDD tbdd = new TransferBDD(configAPs, policy);
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(

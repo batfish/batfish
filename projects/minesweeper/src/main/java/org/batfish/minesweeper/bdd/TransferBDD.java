@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.AsPathAccessList;
@@ -86,12 +88,15 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
+import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
 /**
  * @author Ryan Beckett
  */
 public class TransferBDD {
+
+  private static final Logger LOGGER = LogManager.getLogger(SearchRoutePoliciesQuestion.class);
 
   /**
    * We track community and AS-path regexes by computing a set of atomic predicates for them. See
@@ -105,6 +110,8 @@ public class TransferBDD {
 
   private final Configuration _conf;
 
+  private final RoutingPolicy _policy;
+
   private final ConfigAtomicPredicates _configAtomicPredicates;
 
   private Set<Prefix> _ignoredNetworks;
@@ -117,19 +124,12 @@ public class TransferBDD {
 
   private final BDDFactory _factory;
 
-  public TransferBDD(ConfigAtomicPredicates aps, Configuration conf, List<Statement> statements) {
-    this(aps, conf, statements, Environment.useOutputAttributesFor(conf));
-  }
-
-  @VisibleForTesting
-  TransferBDD(
-      ConfigAtomicPredicates aps,
-      Configuration conf,
-      List<Statement> statements,
-      boolean useOutputAttributes) {
+  public TransferBDD(ConfigAtomicPredicates aps, RoutingPolicy policy) {
     _configAtomicPredicates = aps;
-    _conf = conf;
-    _statements = statements;
+    _policy = policy;
+    _conf = policy.getOwner();
+    _statements = policy.getStatements();
+    _useOutputAttributes = Environment.useOutputAttributesFor(_conf);
 
     _factory = JFactory.init(100000, 10000);
     _factory.setCacheRatio(64);
@@ -139,7 +139,6 @@ public class TransferBDD {
         _configAtomicPredicates.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     _asPathRegexAtomicPredicates =
         _configAtomicPredicates.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
-    _useOutputAttributes = useOutputAttributes;
   }
 
   /*
@@ -700,7 +699,7 @@ public class TransferBDD {
       try {
         currState = compute(stmt, currState);
       } catch (UnsupportedFeatureException e) {
-        unsupported(currState);
+        unsupported(stmt, currState);
       }
     }
     return currState;
@@ -1061,9 +1060,17 @@ public class TransferBDD {
     return currState.getReturnAssignedValue().or(currState.getExitAssignedValue());
   }
 
-  // If the analysis encounters a routing policy feature that is not currently supported, we mark
-  // this in the output BDDRoute and treat the enclosing statement as a no-op.
-  private void unsupported(TransferBDDState state) {
+  // If the analysis encounters a routing policy feature that is not currently supported, we log
+  // a warning, mark the output BDDRoute as having reached an unsupported statement, and treat the
+  // enclosing statement as a no-op.
+  private void unsupported(Statement stmt, TransferBDDState state) {
+    LOGGER.warn(
+        "Unsupported statement in routing policy "
+            + _policy.getName()
+            + " of node "
+            + _conf.getHostname()
+            + ": "
+            + stmt);
     TransferParam curP = state.getTransferParam();
     TransferResult result = state.getTransferResult();
     BDD currUnsupported = curP.getData().getUnsupported();
