@@ -393,6 +393,7 @@ import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
+import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.Nat;
@@ -5127,6 +5128,18 @@ public final class FlatJuniperGrammarTest {
         rule2.getMatches(),
         equalTo(ImmutableList.of(new NatRuleMatchDstAddr(Prefix.parse("2.2.2.2/24")))));
     assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL1")));
+  }
+
+  @Test
+  public void testAsnLeadingZerosExtraction() {
+    JuniperConfiguration vc = parseJuniperConfig("asn-leading-zeros");
+    Map<Prefix, IpBgpGroup> peers =
+        vc.getMasterLogicalSystem().getRoutingInstances().get("ri1").getIpBgpGroups();
+    assertThat(peers.get(Prefix.strict("192.0.2.1/32")).getPeerAs(), equalTo((1L << 16) + 2));
+    assertThat(peers.get(Prefix.strict("192.0.2.2/32")).getPeerAs(), equalTo((3L << 16) + 4));
+    assertThat(peers.get(Prefix.strict("192.0.2.3/32")).getPeerAs(), equalTo((5L << 16) + 6));
+    assertThat(peers.get(Prefix.strict("192.0.2.4/32")).getPeerAs(), equalTo((7L << 16) + 8));
+    assertThat(peers.get(Prefix.strict("192.0.2.5/32")).getPeerAs(), equalTo((4000000000L)));
   }
 
   @Test
