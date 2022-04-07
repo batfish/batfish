@@ -1,0 +1,9 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name apply-path-mixed-ip-and-not-ip-or-prefix
+#
+set groups g1 services service-set <*> tcp-mss 1398
+set groups g1 services service-set <*> ipsec-vpn-options local-gateway 192.0.2.1
+set groups g1 services service-set <*> ipsec-vpn-options local-gateway routing-instance ri1
+set services apply-groups g1
+set policy-options prefix-list pl1 apply-path "services service-set <*> ipsec-vpn-options local-gateway <*>"
+#
