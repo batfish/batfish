@@ -876,32 +876,10 @@ public final class Hierarchy {
   }
 
   private static boolean isIpOrIp6(String text) {
-    try {
-      Ip.parse(text);
-      return true;
-    } catch (IllegalArgumentException e) {
-      try {
-        Ip6.parse(text);
-        return true;
-      } catch (BatfishException e1) {
-        // TODO: should throw IllegalArgumentException instead.
-        return false;
-      }
-    }
+    return Ip.tryParse(text).isPresent() || Ip6.tryParse(text).isPresent();
   }
 
   private static boolean isPrefixOrPrefix6(String text) {
-    try {
-      Prefix.parse(text);
-      return true;
-    } catch (IllegalArgumentException e) {
-      try {
-        Prefix6.parse(text);
-        return true;
-      } catch (BatfishException e1) {
-        // TODO: should throw IllegalArgumentException instead.
-        return false;
-      }
-    }
+    return Prefix.tryParse(text).isPresent() || Prefix6.tryParse(text).isPresent();
   }
 }
