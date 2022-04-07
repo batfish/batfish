@@ -1,0 +1,9 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name apply-path-no-match
+#
+set policy-options prefix-list pl1 apply-path "services service-set <*> ipsec-vpn-options local-gateway <*>"
+
+
+set services service-set <*> ipsec-vpn-options local-gateway routing-instance ri1
+
+#
