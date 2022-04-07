@@ -1061,8 +1061,7 @@ public class TransferBDD {
   }
 
   // If the analysis encounters a routing policy feature that is not currently supported, we log
-  // a warning, mark the output BDDRoute as having reached an unsupported statement, and treat the
-  // enclosing statement as a no-op.
+  // a warning and mark the output BDDRoute as having reached an unsupported statement.
   private void unsupported(Statement stmt, TransferBDDState state) {
     LOGGER.warn(
         "Unsupported statement in routing policy "
