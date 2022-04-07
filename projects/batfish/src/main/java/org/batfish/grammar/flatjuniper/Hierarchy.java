@@ -23,6 +23,8 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -700,7 +702,7 @@ public final class Hierarchy {
         String concreteText = candidateNode._text;
         int candidateLineNumber = candidateNode._lineNumber;
         String finalPrefixStr;
-        if (!concreteText.contains("/")) {
+        if (isIpOrIp6(concreteText)) {
           // not a prefix, so need to append slash and prefix-length
           finalPrefixStr =
               String.format(
@@ -709,8 +711,10 @@ public final class Hierarchy {
                   concreteText.contains(":")
                       ? Prefix6.MAX_PREFIX_LENGTH
                       : Prefix.MAX_PREFIX_LENGTH);
-        } else {
+        } else if (isPrefixOrPrefix6(concreteText)) {
           finalPrefixStr = concreteText;
+        } else {
+          continue;
         }
         basePath.addNode(finalPrefixStr, candidateLineNumber);
         Set_lineContext setLine =
@@ -869,5 +873,13 @@ public final class Hierarchy {
    */
   public @Nonnull String toSetLines(@Nonnull String header) {
     return _masterTree.toSetLines(header);
+  }
+
+  private static boolean isIpOrIp6(String text) {
+    return Ip.tryParse(text).isPresent() || Ip6.tryParse(text).isPresent();
+  }
+
+  private static boolean isPrefixOrPrefix6(String text) {
+    return Prefix.tryParse(text).isPresent() || Prefix6.tryParse(text).isPresent();
   }
 }

@@ -7239,5 +7239,39 @@ public final class FlatJuniperGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "irb.1", 2));
   }
 
+  private static final List<String> APPLY_PATH_NO_MATCH_CONFIGS =
+      ImmutableList.of(
+          "apply-path-no-match",
+          "apply-path-no-match-not-ip-or-prefix",
+          "apply-path-from-apply-groups-no-match");
+
+  @Test
+  public void testApplyPathNoMatchExtraction() {
+    for (String hostname : APPLY_PATH_NO_MATCH_CONFIGS) {
+      JuniperConfiguration vc = parseJuniperConfig(hostname);
+      assertThat(vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getPrefixes(), empty());
+      assertFalse(vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getHasIpv6());
+    }
+  }
+
+  @Test
+  public void testApplyPathNoMatchConversion() {
+    for (String hostname : APPLY_PATH_NO_MATCH_CONFIGS) {
+      Configuration c = parseConfig(hostname);
+      // TODO: determine whether this should be empty or permit all
+      assertThat(c.getRouteFilterLists().get("pl1").getLines(), empty());
+    }
+  }
+
+  @Test
+  public void testApplyPathMixedIpAndNotIpOrPrefixExtraction() {
+    String hostname = "apply-path-mixed-ip-and-not-ip-or-prefix";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    assertThat(
+        vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getPrefixes(),
+        contains(Prefix.strict("192.0.2.1/32")));
+    assertFalse(vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getHasIpv6());
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
