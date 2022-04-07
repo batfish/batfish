@@ -14,6 +14,8 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/grammar/frr",
         "//projects/batfish/src/main/java/org/batfish/vendor/sonic/representation",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_yaml",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",

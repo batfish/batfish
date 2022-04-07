@@ -59,11 +59,10 @@ public final class MutableBDDInteger extends BDDInteger {
   }
 
   @Override
-  public Long satAssignmentToLong(BDD satAssignment) {
+  public long satAssignmentToLong(BDD satAssignment) {
     checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
     checkArgument(
-        _bitvec.length <= Long.SIZE,
-        "Can't get a representative of a BDDInteger with more than Long.SIZE bits");
+        _bitvec.length <= 63, "Only BDDInteger of 63 or fewer bits can be converted to long");
 
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {

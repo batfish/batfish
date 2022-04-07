@@ -11,6 +11,10 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeRouteMapClauseName;
 import static org.batfish.representation.cisco.CiscoConversions.aclLineStructureName;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_LDAP;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_RADIUS;
+import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
@@ -74,8 +78,14 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.TACACS_SERVER;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_ACCOUNTING_CONNECTION_DEFAULT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_ACCOUNTING_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_AUTHENTICATION_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_AUTHORIZATION_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.AAA_GROUP_SERVER_TACACS_SERVER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
@@ -275,6 +285,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV4_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.STATIC_ROUTE_TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SERVER_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_IP_SLA;
@@ -431,11 +442,21 @@ import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_commands_lineContext
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_localContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_method_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_methodContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_group_additionalContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_method_group_iosContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_privilege_modeContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authorization_method_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authorization_method_group_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_group_serverContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_group_server_memberContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_group_server_privateContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_new_modelContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_actionContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_ip6_rangeContext;
@@ -1035,6 +1056,7 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfd_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.representation.cisco.AaaServerGroup;
 import org.batfish.representation.cisco.AccessListAddressSpecifier;
 import org.batfish.representation.cisco.AccessListServiceSpecifier;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
@@ -1100,6 +1122,7 @@ import org.batfish.representation.cisco.IsakmpProfile;
 import org.batfish.representation.cisco.IsisProcess;
 import org.batfish.representation.cisco.IsisRedistributionPolicy;
 import org.batfish.representation.cisco.Keyring;
+import org.batfish.representation.cisco.LdapServerGroup;
 import org.batfish.representation.cisco.LiteralPortSpec;
 import org.batfish.representation.cisco.MacAccessList;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
@@ -1129,6 +1152,7 @@ import org.batfish.representation.cisco.ProtocolObjectGroup;
 import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
 import org.batfish.representation.cisco.ProtocolObjectGroupReferenceLine;
 import org.batfish.representation.cisco.ProtocolOrServiceObjectGroupServiceSpecifier;
+import org.batfish.representation.cisco.RadiusServerGroup;
 import org.batfish.representation.cisco.RangeNetworkObject;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
@@ -1182,6 +1206,7 @@ import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.representation.cisco.StubSettings;
 import org.batfish.representation.cisco.SubnetNetworkObject;
+import org.batfish.representation.cisco.TacacsPlusServerGroup;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Track;
@@ -1380,6 +1405,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private CiscoConfiguration _configuration;
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
+
+  private AaaServerGroup _currentAaaGroup;
 
   private IpAsPathAccessList _currentAsPathAcl;
 
@@ -1686,6 +1713,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
       }
     }
+  }
+
+  @Override
+  public void enterAaa_group(Aaa_groupContext ctx) {
+    String name = toString(ctx.name);
+
+    if (ctx.LDAP() != null) {
+      _currentAaaGroup = new LdapServerGroup(name);
+      _configuration.defineStructure(AAA_SERVER_GROUP_LDAP, name, ctx);
+    } else if (ctx.RADIUS() != null) {
+      _currentAaaGroup = new RadiusServerGroup(name);
+      _configuration.defineStructure(AAA_SERVER_GROUP_RADIUS, name, ctx);
+    } else if (ctx.TACACS_PLUS() != null) {
+      _currentAaaGroup = new TacacsPlusServerGroup(name);
+      _configuration.defineStructure(AAA_SERVER_GROUP_TACACS_PLUS, name, ctx);
+    } else {
+      _w.addWarning(ctx, ctx.getText(), _parser, "Unhandled AAA group type");
+      return;
+    }
+    _configuration.getAaaServerGroups().put(name, _currentAaaGroup);
   }
 
   @Override
@@ -3583,6 +3630,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return ctx.getText();
   }
 
+  private static @Nonnull String toString(Aaa_group_server_memberContext ctx) {
+    if (ctx.IP_ADDRESS() != null || ctx.IPV6_ADDRESS() != null) {
+      return ctx.getText();
+    }
+    assert ctx.variable() != null;
+    return toString(ctx.variable());
+  }
+
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
   }
@@ -3782,19 +3837,69 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String hostname = ctx.hostname.getText();
     if (!_no) {
       _configuration.getTacacsServers().add(hostname);
+      _configuration.defineStructure(TACACS_SERVER, hostname, ctx);
+      _configuration.referenceStructure(
+          TACACS_SERVER, hostname, TACACS_SERVER_SELF_REF, ctx.getStart().getLine());
     }
   }
 
   @Override
   public void exitAaa_accounting_default_group(Aaa_accounting_default_groupContext ctx) {
     List<String> groups =
-        ctx.groups.stream().map(RuleContext::getText).collect(Collectors.toList());
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
     _configuration.getCf().getAaa().getAccounting().getDefault().setGroups(groups);
+    for (String group : groups) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP, group, AAA_ACCOUNTING_CONNECTION_DEFAULT, ctx.getStart().getLine());
+    }
   }
 
   @Override
   public void exitAaa_accounting_default_local(Aaa_accounting_default_localContext ctx) {
     _configuration.getCf().getAaa().getAccounting().getDefault().setLocal(true);
+  }
+
+  @Override
+  public void exitAaa_accounting_method_target(Aaa_accounting_method_targetContext ctx) {
+    if (ctx.groups == null) {
+      return;
+    }
+    List<String> groups =
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
+    for (String group : groups) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP, group, AAA_ACCOUNTING_GROUP, ctx.getStart().getLine());
+    }
+  }
+
+  private static String toString(Aaa_authentication_list_method_group_additionalContext ctx) {
+    return ctx.getText();
+  }
+
+  @Override
+  public void exitAaa_authentication_list_method_group(
+      Aaa_authentication_list_method_groupContext ctx) {
+    if (ctx.groups == null) {
+      return;
+    }
+    List<String> groups =
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
+    for (String group : groups) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP, group, AAA_AUTHENTICATION_GROUP, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitAaa_authentication_list_method_group_ios(
+      Aaa_authentication_list_method_group_iosContext ctx) {
+    if (ctx.groupName != null) {
+      _configuration.referenceStructure(
+          AAA_SERVER_GROUP,
+          ctx.groupName.getText(),
+          AAA_AUTHENTICATION_GROUP,
+          ctx.getStart().getLine());
+    }
   }
 
   @Override
@@ -3808,9 +3913,50 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.getCf().getAaa().getAuthentication().getLogin().setPrivilegeMode(true);
   }
 
+  private static String toString(Aaa_authorization_method_group_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  @Override
+  public void exitAaa_authorization_method_group(Aaa_authorization_method_groupContext ctx) {
+    if (ctx.group == null) {
+      return;
+    }
+    String groupName = toString(ctx.group);
+    _configuration.referenceStructure(
+        AAA_SERVER_GROUP, groupName, AAA_AUTHORIZATION_GROUP, ctx.getStart().getLine());
+  }
+
   @Override
   public void exitAaa_new_model(Aaa_new_modelContext ctx) {
     _configuration.getCf().getAaa().setNewModel(!_no);
+  }
+
+  @Override
+  public void exitAaa_group(Aaa_groupContext ctx) {
+    _currentAaaGroup = null;
+  }
+
+  @Override
+  public void exitAaa_group_server(Aaa_group_serverContext ctx) {
+    if (_currentAaaGroup == null) {
+      return;
+    }
+    String server = toString(ctx.aaa_group_server_member());
+    _currentAaaGroup.addServer(server);
+    if (_currentAaaGroup instanceof TacacsPlusServerGroup) {
+      // only tacacs+ servers are being logged and tracked at the moment
+      _configuration.referenceStructure(
+          TACACS_SERVER, server, AAA_GROUP_SERVER_TACACS_SERVER, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitAaa_group_server_private(Aaa_group_server_privateContext ctx) {
+    if (_currentAaaGroup == null) {
+      return;
+    }
+    _currentAaaGroup.addPrivateServer(toString(ctx.aaa_group_server_member()));
   }
 
   @Override
@@ -4645,8 +4791,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setUseAck(true)
                   .build());
         } else if (feature.ADMINISTRATIVELY_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
+          icmpType = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getType();
+          icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getCode();
         } else if (feature.ALTERNATE_ADDRESS() != null) {
           icmpType = IcmpType.ALTERNATE_ADDRESS;
         } else if (feature.CWR() != null) {
@@ -4656,11 +4802,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setUseCwr(true)
                   .build());
         } else if (feature.DOD_HOST_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_HOST_PROHIBITED;
+          icmpType = IcmpCode.DESTINATION_HOST_PROHIBITED.getType();
+          icmpCode = IcmpCode.DESTINATION_HOST_PROHIBITED.getCode();
         } else if (feature.DOD_NET_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_NETWORK_PROHIBITED;
+          icmpType = IcmpCode.DESTINATION_NETWORK_PROHIBITED.getType();
+          icmpCode = IcmpCode.DESTINATION_NETWORK_PROHIBITED.getCode();
         } else if (feature.DSCP() != null) {
           int dscpType = toDscpType(feature.dscp_type());
           dscps.add(dscpType);
@@ -4696,29 +4842,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   .setUseFin(true)
                   .build());
         } else if (feature.GENERAL_PARAMETER_PROBLEM() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.INVALID_IP_HEADER;
+          icmpType = IcmpCode.INVALID_IP_HEADER.getType();
+          icmpCode = IcmpCode.INVALID_IP_HEADER.getCode();
         } else if (feature.HOST_ISOLATED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.SOURCE_HOST_ISOLATED;
+          icmpType = IcmpCode.SOURCE_HOST_ISOLATED.getType();
+          icmpCode = IcmpCode.SOURCE_HOST_ISOLATED.getCode();
         } else if (feature.HOST_PRECEDENCE_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_PRECEDENCE_VIOLATION;
+          icmpType = IcmpCode.HOST_PRECEDENCE_VIOLATION.getType();
+          icmpCode = IcmpCode.HOST_PRECEDENCE_VIOLATION.getCode();
         } else if (feature.HOST_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.HOST_ERROR;
+          icmpType = IcmpCode.HOST_ERROR.getType();
+          icmpCode = IcmpCode.HOST_ERROR.getCode();
         } else if (feature.HOST_TOS_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.TOS_AND_HOST_ERROR;
+          icmpType = IcmpCode.TOS_AND_HOST_ERROR.getType();
+          icmpCode = IcmpCode.TOS_AND_HOST_ERROR.getCode();
         } else if (feature.HOST_TOS_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_UNREACHABLE_FOR_TOS;
+          icmpType = IcmpCode.HOST_UNREACHABLE_FOR_TOS.getType();
+          icmpCode = IcmpCode.HOST_UNREACHABLE_FOR_TOS.getCode();
         } else if (feature.HOST_UNKNOWN() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+          icmpType = IcmpCode.DESTINATION_HOST_UNKNOWN.getType();
+          icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN.getCode();
         } else if (feature.HOST_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_UNREACHABLE;
+          icmpType = IcmpCode.HOST_UNREACHABLE.getType();
+          icmpCode = IcmpCode.HOST_UNREACHABLE.getCode();
         } else if (feature.INFORMATION_REPLY() != null) {
           icmpType = IcmpType.INFO_REPLY;
         } else if (feature.INFORMATION_REQUEST() != null) {
@@ -4732,34 +4878,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         } else if (feature.MOBILE_HOST_REDIRECT() != null) {
           icmpType = IcmpType.MOBILE_REDIRECT;
         } else if (feature.NET_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.NETWORK_ERROR;
+          icmpType = IcmpCode.NETWORK_ERROR.getType();
+          icmpCode = IcmpCode.NETWORK_ERROR.getCode();
         } else if (feature.NET_TOS_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.TOS_AND_NETWORK_ERROR;
+          icmpType = IcmpCode.TOS_AND_NETWORK_ERROR.getType();
+          icmpCode = IcmpCode.TOS_AND_NETWORK_ERROR.getCode();
         } else if (feature.NET_TOS_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS;
+          icmpType = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS.getType();
+          icmpCode = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS.getCode();
         } else if (feature.NET_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.NETWORK_UNREACHABLE;
+          icmpType = IcmpCode.NETWORK_UNREACHABLE.getType();
+          icmpCode = IcmpCode.NETWORK_UNREACHABLE.getCode();
         } else if (feature.NETWORK_UNKNOWN() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+          icmpType = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getType();
+          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getCode();
         } else if (feature.NO_ROOM_FOR_OPTION() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.BAD_LENGTH;
+          icmpType = IcmpCode.BAD_LENGTH.getType();
+          icmpCode = IcmpCode.BAD_LENGTH.getCode();
         } else if (feature.OPTION_MISSING() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.REQUIRED_OPTION_MISSING;
+          icmpType = IcmpCode.REQUIRED_OPTION_MISSING.getType();
+          icmpCode = IcmpCode.REQUIRED_OPTION_MISSING.getCode();
         } else if (feature.PACKET_TOO_BIG() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.FRAGMENTATION_NEEDED;
+          icmpType = IcmpCode.FRAGMENTATION_NEEDED.getType();
+          icmpCode = IcmpCode.FRAGMENTATION_NEEDED.getCode();
         } else if (feature.PARAMETER_PROBLEM() != null) {
           icmpType = IcmpType.PARAMETER_PROBLEM;
         } else if (feature.PORT_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.PORT_UNREACHABLE;
+          icmpType = IcmpCode.PORT_UNREACHABLE.getType();
+          icmpCode = IcmpCode.PORT_UNREACHABLE.getCode();
         } else if (feature.PSH() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -4781,8 +4927,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         } else if (feature.SOURCE_QUENCH() != null) {
           icmpType = IcmpType.SOURCE_QUENCH;
         } else if (feature.SOURCE_ROUTE_FAILED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.SOURCE_ROUTE_FAILED;
+          icmpType = IcmpCode.SOURCE_ROUTE_FAILED.getType();
+          icmpCode = IcmpCode.SOURCE_ROUTE_FAILED.getCode();
         } else if (feature.SYN() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -4798,8 +4944,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
         } else if (feature.TTL_EXCEEDED() != null) {
-          icmpType = IcmpType.TIME_EXCEEDED;
-          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
+          icmpType = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT.getType();
+          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT.getCode();
         } else if (feature.UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
         } else if (feature.URG() != null) {
@@ -4942,11 +5088,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setUseEce(true)
                 .build());
       } else if (feature.ECHO_REPLY() != null) {
-        icmpType = IcmpType.ECHO_REPLY;
-        icmpCode = 0; /* Forced to 0 by RFC-792. */
+        icmpType = IcmpCode.ECHO_REPLY.getType();
+        icmpCode = IcmpCode.ECHO_REPLY.getCode();
       } else if (feature.ECHO() != null) {
-        icmpType = IcmpType.ECHO_REQUEST;
-        icmpCode = 0; /* Forced to 0 by RFC-792. */
+        icmpType = IcmpCode.ECHO_REQUEST.getType();
+        icmpCode = IcmpCode.ECHO_REQUEST.getCode();
       } else if (feature.ECN() != null) {
         int ecn = toInteger(feature.ecn);
         ecns.add(ecn);
@@ -4969,24 +5115,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setUseFin(true)
                 .build());
       } else if (feature.HOST_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+        icmpType = IcmpCode.DESTINATION_HOST_UNKNOWN.getType();
+        icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN.getCode();
       } else if (feature.HOST_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.HOST_UNREACHABLE;
+        icmpType = IcmpCode.HOST_UNREACHABLE.getType();
+        icmpCode = IcmpCode.HOST_UNREACHABLE.getCode();
       } else if (feature.LOG() != null) {
         // Do nothing.
       } else if (feature.NETWORK_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+        icmpType = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getType();
+        icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getCode();
       } else if (feature.NET_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.NETWORK_UNREACHABLE;
+        icmpType = IcmpCode.NETWORK_UNREACHABLE.getType();
+        icmpCode = IcmpCode.NETWORK_UNREACHABLE.getCode();
       } else if (feature.PARAMETER_PROBLEM() != null) {
         icmpType = IcmpType.PARAMETER_PROBLEM;
       } else if (feature.PORT_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.PORT_UNREACHABLE;
+        icmpType = IcmpCode.PORT_UNREACHABLE.getType();
+        icmpCode = IcmpCode.PORT_UNREACHABLE.getCode();
       } else if (feature.PSH() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
@@ -5002,8 +5148,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setUseRst(true)
                 .build());
       } else if (feature.SOURCE_QUENCH() != null) {
-        icmpType = IcmpType.SOURCE_QUENCH;
-        icmpCode = 0; /* Forced to 0 by RFC 792. */
+        icmpType = IcmpCode.SOURCE_QUENCH.getType();
+        icmpCode = IcmpCode.SOURCE_QUENCH.getCode();
       } else if (feature.SYN() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
@@ -9284,6 +9430,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitT_server(T_serverContext ctx) {
     String hostname = ctx.hostname.getText();
     _configuration.getTacacsServers().add(hostname);
+    _configuration.defineStructure(TACACS_SERVER, hostname, ctx);
+    _configuration.referenceStructure(
+        TACACS_SERVER, hostname, TACACS_SERVER_SELF_REF, ctx.getStart().getLine());
   }
 
   @Override

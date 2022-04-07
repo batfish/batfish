@@ -3565,8 +3565,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           icmpType = Icmp6Type.DESTINATION_UNREACHABLE;
           icmpCode = Icmp6Code.ADDRESS_UNREACHABLE;
         } else if (feature.ADMINISTRATIVELY_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
+          icmpType = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getType();
+          icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getCode();
         } else if (feature.ALTERNATE_ADDRESS() != null) {
           icmpType = IcmpType.ALTERNATE_ADDRESS;
         } else if (feature.CAPTURE() != null) {
@@ -3574,11 +3574,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         } else if (feature.CONVERSION_ERROR() != null) {
           icmpType = IcmpType.CONVERSION_ERROR;
         } else if (feature.DOD_HOST_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_HOST_PROHIBITED;
+          icmpType = IcmpCode.DESTINATION_HOST_PROHIBITED.getType();
+          icmpCode = IcmpCode.DESTINATION_HOST_PROHIBITED.getCode();
         } else if (feature.DOD_NET_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_NETWORK_PROHIBITED;
+          icmpType = IcmpCode.DESTINATION_NETWORK_PROHIBITED.getType();
+          icmpCode = IcmpCode.DESTINATION_NETWORK_PROHIBITED.getCode();
         } else if (feature.DSCP() != null) {
           toDscpType(ctx, feature.dscp_type()).ifPresent(dscps::add);
         } else if (feature.ECHO() != null) {
@@ -3606,29 +3606,29 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         } else if (feature.FRAGMENTS() != null) {
           fragments = true;
         } else if (feature.GENERAL_PARAMETER_PROBLEM() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.INVALID_IP_HEADER;
+          icmpType = IcmpCode.INVALID_IP_HEADER.getType();
+          icmpCode = IcmpCode.INVALID_IP_HEADER.getCode();
         } else if (feature.HOST_ISOLATED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.SOURCE_HOST_ISOLATED;
+          icmpType = IcmpCode.SOURCE_HOST_ISOLATED.getType();
+          icmpCode = IcmpCode.SOURCE_HOST_ISOLATED.getCode();
         } else if (feature.HOST_PRECEDENCE_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_PRECEDENCE_VIOLATION;
+          icmpType = IcmpCode.HOST_PRECEDENCE_VIOLATION.getType();
+          icmpCode = IcmpCode.HOST_PRECEDENCE_VIOLATION.getCode();
         } else if (feature.HOST_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.HOST_ERROR;
+          icmpType = IcmpCode.HOST_ERROR.getType();
+          icmpCode = IcmpCode.HOST_ERROR.getCode();
         } else if (feature.HOST_TOS_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.TOS_AND_HOST_ERROR;
+          icmpType = IcmpCode.TOS_AND_HOST_ERROR.getType();
+          icmpCode = IcmpCode.TOS_AND_HOST_ERROR.getCode();
         } else if (feature.HOST_TOS_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_UNREACHABLE_FOR_TOS;
+          icmpType = IcmpCode.HOST_UNREACHABLE_FOR_TOS.getType();
+          icmpCode = IcmpCode.HOST_UNREACHABLE_FOR_TOS.getCode();
         } else if (feature.HOST_UNKNOWN() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+          icmpType = IcmpCode.DESTINATION_HOST_UNKNOWN.getType();
+          icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN.getCode();
         } else if (feature.HOST_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_UNREACHABLE;
+          icmpType = IcmpCode.HOST_UNREACHABLE.getType();
+          icmpCode = IcmpCode.HOST_UNREACHABLE.getCode();
         } else if (feature.ICMP_OFF() != null) {
           // This means "do not send ICMP replies when denying because of this line".
           // Do nothing.
@@ -3650,40 +3650,40 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         } else if (feature.MOBILE_REDIRECT() != null) {
           icmpType = IcmpType.MOBILE_REDIRECT;
         } else if (feature.NET_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.NETWORK_ERROR;
+          icmpType = IcmpCode.NETWORK_ERROR.getType();
+          icmpCode = IcmpCode.NETWORK_ERROR.getCode();
         } else if (feature.NET_TOS_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.TOS_AND_NETWORK_ERROR;
+          icmpType = IcmpCode.TOS_AND_NETWORK_ERROR.getType();
+          icmpCode = IcmpCode.TOS_AND_NETWORK_ERROR.getCode();
         } else if (feature.NET_TOS_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS;
+          icmpType = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS.getType();
+          icmpCode = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS.getCode();
         } else if (feature.NET_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.NETWORK_UNREACHABLE;
+          icmpType = IcmpCode.NETWORK_UNREACHABLE.getType();
+          icmpCode = IcmpCode.NETWORK_UNREACHABLE.getCode();
         } else if (feature.NETWORK_UNKNOWN() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+          icmpType = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getType();
+          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getCode();
         } else if (feature.NO_ROOM_FOR_OPTION() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.BAD_LENGTH;
+          icmpType = IcmpCode.BAD_LENGTH.getType();
+          icmpCode = IcmpCode.BAD_LENGTH.getCode();
         } else if (feature.OPTION_MISSING() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.REQUIRED_OPTION_MISSING;
+          icmpType = IcmpCode.REQUIRED_OPTION_MISSING.getType();
+          icmpCode = IcmpCode.REQUIRED_OPTION_MISSING.getCode();
         } else if (feature.PACKET_TOO_BIG() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.FRAGMENTATION_NEEDED;
+          icmpType = IcmpCode.FRAGMENTATION_NEEDED.getType();
+          icmpCode = IcmpCode.FRAGMENTATION_NEEDED.getCode();
         } else if (feature.PARAMETER_PROBLEM() != null) {
           icmpType = IcmpType.PARAMETER_PROBLEM;
         } else if (feature.PORT_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.PORT_UNREACHABLE;
+          icmpType = IcmpCode.PORT_UNREACHABLE.getType();
+          icmpCode = IcmpCode.PORT_UNREACHABLE.getCode();
         } else if (feature.PRECEDENCE_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT;
+          icmpType = IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT.getType();
+          icmpCode = IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT.getCode();
         } else if (feature.PROTOCOL_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.PROTOCOL_UNREACHABLE;
+          icmpType = IcmpCode.PROTOCOL_UNREACHABLE.getType();
+          icmpCode = IcmpCode.PROTOCOL_UNREACHABLE.getCode();
         } else if (feature.PSH() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -3691,8 +3691,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                   .setUsePsh(true)
                   .build());
         } else if (feature.REASSEMBLY_TIMEOUT() != null) {
-          icmpType = IcmpType.TIME_EXCEEDED;
-          icmpCode = IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY;
+          icmpType = IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY.getType();
+          icmpCode = IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY.getCode();
         } else if (feature.REDIRECT() != null) {
           icmpType = IcmpType.REDIRECT_MESSAGE;
         } else if (feature.ROUTER_ADVERTISEMENT() != null) {
@@ -3708,8 +3708,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         } else if (feature.SOURCE_QUENCH() != null) {
           icmpType = IcmpType.SOURCE_QUENCH;
         } else if (feature.SOURCE_ROUTE_FAILED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.SOURCE_ROUTE_FAILED;
+          icmpType = IcmpCode.SOURCE_ROUTE_FAILED.getType();
+          icmpCode = IcmpCode.SOURCE_ROUTE_FAILED.getCode();
         } else if (feature.SYN() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -3725,8 +3725,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
         } else if (feature.TTL_EXCEEDED() != null) {
-          icmpType = IcmpType.TIME_EXCEEDED;
-          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
+          icmpType = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT.getType();
+          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT.getCode();
         } else if (feature.UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
         } else if (feature.icmp_message_type != null) {
@@ -3810,11 +3810,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       } else if (feature.DSCP() != null) {
         toDscpType(ctx, feature.dscp_type()).ifPresent(dscps::add);
       } else if (feature.ECHO_REPLY() != null) {
-        icmpType = IcmpType.ECHO_REPLY;
-        icmpCode = 0; /* Forced to 0 by RFC-792. */
+        icmpType = IcmpCode.ECHO_REPLY.getType();
+        icmpCode = IcmpCode.ECHO_REPLY.getCode();
       } else if (feature.ECHO() != null) {
-        icmpType = IcmpType.ECHO_REQUEST;
-        icmpCode = 0; /* Forced to 0 by RFC-792. */
+        icmpType = IcmpCode.ECHO_REQUEST.getType();
+        icmpCode = IcmpCode.ECHO_REQUEST.getCode();
       } else if (feature.ESTABLISHED() != null) {
         // must contain ACK or RST
         tcpFlags.add(
@@ -3834,24 +3834,24 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                 .setUseFin(true)
                 .build());
       } else if (feature.HOST_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+        icmpType = IcmpCode.DESTINATION_HOST_UNKNOWN.getType();
+        icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN.getCode();
       } else if (feature.HOST_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.HOST_UNREACHABLE;
+        icmpType = IcmpCode.HOST_UNREACHABLE.getType();
+        icmpCode = IcmpCode.HOST_UNREACHABLE.getCode();
       } else if (feature.LOG() != null) {
         // Do nothing.
       } else if (feature.NETWORK_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+        icmpType = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getType();
+        icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getCode();
       } else if (feature.NET_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.NETWORK_UNREACHABLE;
+        icmpType = IcmpCode.NETWORK_UNREACHABLE.getType();
+        icmpCode = IcmpCode.NETWORK_UNREACHABLE.getCode();
       } else if (feature.PARAMETER_PROBLEM() != null) {
         icmpType = IcmpType.PARAMETER_PROBLEM;
       } else if (feature.PORT_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.PORT_UNREACHABLE;
+        icmpType = IcmpCode.PORT_UNREACHABLE.getType();
+        icmpCode = IcmpCode.PORT_UNREACHABLE.getCode();
       } else if (feature.PSH() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
@@ -3867,8 +3867,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                 .setUseRst(true)
                 .build());
       } else if (feature.SOURCE_QUENCH() != null) {
-        icmpType = IcmpType.SOURCE_QUENCH;
-        icmpCode = 0; /* Forced to 0 by RFC 792. */
+        icmpType = IcmpCode.SOURCE_QUENCH.getType();
+        icmpCode = IcmpCode.SOURCE_QUENCH.getCode();
       } else if (feature.SYN() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()

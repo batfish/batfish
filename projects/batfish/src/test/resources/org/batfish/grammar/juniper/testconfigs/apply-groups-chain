@@ -1,0 +1,6 @@
+set system host-name apply-groups-chain
+set groups G1 apply-groups G2
+set groups G2 interfaces <*> unit 0 apply-groups G3
+set groups G3 interfaces <*> unit <*> family inet address 1.1.1.1/31
+set interfaces em0 description "for test"
+set apply-groups G1

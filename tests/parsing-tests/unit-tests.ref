@@ -1379,7 +1379,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TAC_PLUS:'tac_plus'",
             "                NONE:'none')))",
@@ -1396,7 +1396,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TAC_PLUS:'tac_plus'",
             "                NONE:'none')))",
@@ -1466,7 +1466,7 @@
             "  (stanza*",
             "    (s_aaa",
             "      AAA:'aaa'",
-            "      (aaa_group*",
+            "      (aaa_group",
             "        GROUP:'group'",
             "        SERVER:'server'",
             "        TACACS_PLUS:'tacacs+'",
@@ -4459,7 +4459,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
@@ -4478,7 +4478,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
@@ -4497,7 +4497,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
@@ -4523,7 +4523,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_stop_only*",
             "              STOP_ONLY:'stop-only'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
@@ -4539,7 +4539,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_stop_only*",
             "              STOP_ONLY:'stop-only'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
@@ -4575,7 +4575,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_wait_start*",
             "              WAIT_START:'wait-start'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                RADIUS:'radius')))",
             "          NEWLINE:'\\n'))))",
@@ -4616,7 +4616,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
@@ -4631,7 +4631,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                RADIUS:'radius')))",
             "          NEWLINE:'\\n'))))",
             "  (stanza*",
@@ -4645,7 +4645,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_wait_start*",
             "              WAIT_START:'wait-start'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                RADIUS:'radius')))",
             "          NEWLINE:'\\n'))))",
@@ -4677,7 +4677,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                (variable*",
             "                  VARIABLE:'MEE'))))",
@@ -4701,7 +4701,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
@@ -4745,7 +4745,7 @@
             "          (aaa_accounting_method*",
             "            (aaa_accounting_method_start_stop*",
             "              START_STOP:'start-stop'",
-            "              (aaa_accounting_method_target*",
+            "              (aaa_accounting_method_target",
             "                GROUP:'group'",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
@@ -4842,9 +4842,9 @@
             "          DOT1X:'dot1x'  <== mode:M_Authentication",
             "          DEFAULT:'default'",
             "          (aaa_authentication_list_method*",
-            "            (aaa_authentication_list_method_group*",
+            "            (aaa_authentication_list_method_group",
             "              GROUP:'group'",
-            "              (aaa_authentication_list_method_group_ios*",
+            "              (aaa_authentication_list_method_group_ios",
             "                RADIUS:'radius')))",
             "          NEWLINE:'\\n'))))",
             "  (stanza*",
@@ -4897,9 +4897,9 @@
             "            name = (variable*",
             "              VARIABLE:'blah')",
             "            (aaa_authentication_list_method*",
-            "              (aaa_authentication_list_method_group*",
+            "              (aaa_authentication_list_method_group",
             "                GROUP:'group'",
-            "                (aaa_authentication_list_method_group_ios*",
+            "                (aaa_authentication_list_method_group_ios",
             "                  TACACS_PLUS:'tacacs+')))",
             "            (aaa_authentication_list_method*",
             "              (aaa_authentication_list_method_ios*",
@@ -4944,9 +4944,9 @@
             "          (aaa_authentication_login_list",
             "            DEFAULT:'default'",
             "            (aaa_authentication_list_method*",
-            "              (aaa_authentication_list_method_group*",
+            "              (aaa_authentication_list_method_group",
             "                GROUP:'group'",
-            "                (aaa_authentication_list_method_group_ios*",
+            "                (aaa_authentication_list_method_group_ios",
             "                  TACACS_PLUS:'tacacs+')))",
             "            (aaa_authentication_list_method*",
             "              (aaa_authentication_list_method_ios*",
@@ -5015,9 +5015,9 @@
             "          PPP:'ppp'  <== mode:M_Authentication",
             "          DEFAULT:'default'",
             "          (aaa_authentication_list_method*",
-            "            (aaa_authentication_list_method_group*",
+            "            (aaa_authentication_list_method_group",
             "              GROUP:'group'",
-            "              (aaa_authentication_list_method_group_ios*",
+            "              (aaa_authentication_list_method_group_ios",
             "                RADIUS:'radius')))",
             "          NEWLINE:'\\n'))))",
             "  (stanza*",
@@ -5033,14 +5033,14 @@
             "            (aaa_authentication_list_method_if_needed*",
             "              IF_NEEDED:'if-needed'))",
             "          (aaa_authentication_list_method*",
-            "            (aaa_authentication_list_method_group*",
+            "            (aaa_authentication_list_method_group",
             "              GROUP:'group'",
-            "              (aaa_authentication_list_method_group_ios*",
+            "              (aaa_authentication_list_method_group_ios",
             "                RADIUS:'radius')))",
             "          (aaa_authentication_list_method*",
-            "            (aaa_authentication_list_method_group*",
+            "            (aaa_authentication_list_method_group",
             "              GROUP:'group'",
-            "              (aaa_authentication_list_method_group_ios*",
+            "              (aaa_authentication_list_method_group_ios",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
             "  (stanza*",
@@ -5063,8 +5063,10 @@
             "          AUTH_PROXY:'auth-proxy'",
             "          DEFAULT:'default'",
             "          (aaa_authorization_method*",
-            "            GROUP:'group'",
-            "            VARIABLE:'MEE'",
+            "            (aaa_authorization_method_group",
+            "              GROUP:'group'",
+            "              group = (aaa_authorization_method_group_name*",
+            "                VARIABLE:'MEE'))",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5077,10 +5079,13 @@
             "            UINT8:'0')",
             "          DEFAULT:'default'",
             "          (aaa_authorization_method*",
-            "            GROUP:'group'",
-            "            TACACS_PLUS:'tacacs+'",
-            "            LOCAL:'local'",
-            "            NONE:'none'",
+            "            (aaa_authorization_method_group",
+            "              GROUP:'group'",
+            "              TACACS_PLUS:'tacacs+')",
+            "            (aaa_authorization_method_group_additional*",
+            "              LOCAL:'local')",
+            "            (aaa_authorization_method_group_additional*",
+            "              NONE:'none')",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5093,10 +5098,13 @@
             "            UINT8:'1')",
             "          DEFAULT:'default'",
             "          (aaa_authorization_method*",
-            "            GROUP:'group'",
-            "            TACACS_PLUS:'tacacs+'",
-            "            LOCAL:'local'",
-            "            NONE:'none'",
+            "            (aaa_authorization_method_group",
+            "              GROUP:'group'",
+            "              TACACS_PLUS:'tacacs+')",
+            "            (aaa_authorization_method_group_additional*",
+            "              LOCAL:'local')",
+            "            (aaa_authorization_method_group_additional*",
+            "              NONE:'none')",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5109,10 +5117,13 @@
             "            UINT8:'15')",
             "          DEFAULT:'default'",
             "          (aaa_authorization_method*",
-            "            GROUP:'group'",
-            "            TACACS_PLUS:'tacacs+'",
-            "            LOCAL:'local'",
-            "            NONE:'none'",
+            "            (aaa_authorization_method_group",
+            "              GROUP:'group'",
+            "              TACACS_PLUS:'tacacs+')",
+            "            (aaa_authorization_method_group_additional*",
+            "              LOCAL:'local')",
+            "            (aaa_authorization_method_group_additional*",
+            "              NONE:'none')",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5139,10 +5150,13 @@
             "          EXEC:'exec'",
             "          DEFAULT:'default'",
             "          (aaa_authorization_method*",
-            "            GROUP:'group'",
-            "            TACACS_PLUS:'tacacs+'",
-            "            LOCAL:'local'",
-            "            NONE:'none'",
+            "            (aaa_authorization_method_group",
+            "              GROUP:'group'",
+            "              TACACS_PLUS:'tacacs+')",
+            "            (aaa_authorization_method_group_additional*",
+            "              LOCAL:'local')",
+            "            (aaa_authorization_method_group_additional*",
+            "              NONE:'none')",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5153,8 +5167,10 @@
             "          EXEC:'exec'",
             "          DEFAULT:'default'",
             "          (aaa_authorization_method*",
-            "            TACACS_PLUS:'tacacs+'",
-            "            NONE:'none'",
+            "            (aaa_authorization_method_group",
+            "              TACACS_PLUS:'tacacs+')",
+            "            (aaa_authorization_method_group_additional*",
+            "              NONE:'none')",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5166,7 +5182,8 @@
             "          list = (variable*",
             "            VARIABLE:'ffffff')",
             "          (aaa_authorization_method*",
-            "            NONE:'none'",
+            "            (aaa_authorization_method_group_additional*",
+            "              NONE:'none')",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5195,8 +5212,9 @@
             "          NETWORK:'network'",
             "          DEFAULT:'default'",
             "          (aaa_authorization_method*",
-            "            GROUP:'group'",
-            "            TACACS_PLUS:'tacacs+'",
+            "            (aaa_authorization_method_group",
+            "              GROUP:'group'",
+            "              TACACS_PLUS:'tacacs+')",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5207,7 +5225,8 @@
             "          REVERSE_ACCESS:'reverse-access'",
             "          DEFAULT:'default'",
             "          (aaa_authorization_method*",
-            "            NONE:'none'",
+            "            (aaa_authorization_method_group_additional*",
+            "              NONE:'none')",
             "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_aaa",
@@ -5256,16 +5275,17 @@
             "  (stanza*",
             "    (s_aaa",
             "      AAA:'aaa'",
-            "      (aaa_group*",
+            "      (aaa_group",
             "        GROUP:'group'",
             "        SERVER:'server'",
             "        RADIUS:'radius'",
             "        name = (variable*",
             "          VARIABLE:'fguiwrego')",
             "        NEWLINE:'\\n'",
-            "        (aaa_group_server*",
+            "        (aaa_group_server",
             "          SERVER:'server'",
-            "          IP_ADDRESS:'1.2.3.4'",
+            "          (aaa_group_server_member*",
+            "            IP_ADDRESS:'1.2.3.4')",
             "          AUTH_PORT:'auth-port'",
             "          auth_port = (dec*",
             "            UINT16:'1812')",
@@ -5273,11 +5293,12 @@
             "          acct_port = (dec*",
             "            UINT16:'1813')",
             "          NEWLINE:'\\n')",
-            "        (aaa_group_server*",
+            "        (aaa_group_server",
             "          SERVER:'server'",
-            "          NAME:'name'",
-            "          name = (variable*",
-            "            VARIABLE:'somename'  <== mode:M_Name)",
+            "          (aaa_group_server_member*",
+            "            NAME:'name'",
+            "            (variable*",
+            "              VARIABLE:'somename'  <== mode:M_Name))",
             "          NEWLINE:'\\n')",
             "        (aaa_group_no_source_interface*",
             "          NO:'no'",
@@ -5286,7 +5307,7 @@
             "  (stanza*",
             "    (s_aaa",
             "      AAA:'aaa'",
-            "      (aaa_group*",
+            "      (aaa_group",
             "        GROUP:'group'",
             "        SERVER:'server'",
             "        TACACS_PLUS:'tacacs+'",
@@ -5311,23 +5332,26 @@
             "          name = (variable*",
             "            VARIABLE:'Management')",
             "          NEWLINE:'\\n')",
-            "        (aaa_group_server_private*",
+            "        (aaa_group_server_private",
             "          SERVER_PRIVATE:'server-private'",
-            "          IP_ADDRESS:'1.2.3.4'",
+            "          (aaa_group_server_member*",
+            "            IP_ADDRESS:'1.2.3.4')",
             "          PORT:'port'",
             "          prt = (dec*",
             "            UINT8:'49')",
             "          NEWLINE:'\\n')",
-            "        (aaa_group_server_private*",
+            "        (aaa_group_server_private",
             "          SERVER_PRIVATE:'server-private'",
-            "          IP_ADDRESS:'2.3.4.5'",
+            "          (aaa_group_server_member*",
+            "            IP_ADDRESS:'2.3.4.5')",
             "          PORT:'port'",
             "          prt = (dec*",
             "            UINT8:'49')",
             "          NEWLINE:'\\n')",
-            "        (aaa_group_server_private*",
+            "        (aaa_group_server_private",
             "          SERVER_PRIVATE:'server-private'",
-            "          IP_ADDRESS:'1.2.3.4'",
+            "          (aaa_group_server_member*",
+            "            IP_ADDRESS:'1.2.3.4')",
             "          AUTH_PORT:'auth-port'",
             "          auth_port = (dec*",
             "            UINT16:'1812')",
@@ -70895,7 +70919,14 @@
         "aws_configs" : { },
         "configs/aaa_accounting" : { },
         "configs/aaa_authentication_login_default_tacacs_local" : { },
-        "configs/aaa_group_server_source_interface" : { },
+        "configs/aaa_group_server_source_interface" : {
+          "aaa server group tacacs+" : {
+            "tacacs" : {
+              "definitionLines" : "4-5",
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/access_list" : { },
         "configs/address_family" : { },
         "configs/arista-event-handler" : { },
@@ -71174,7 +71205,20 @@
         },
         "configs/bgp_nsr" : { },
         "configs/bgp_route_policy" : { },
-        "configs/cisco_aaa" : { },
+        "configs/cisco_aaa" : {
+          "aaa server group radius" : {
+            "fguiwrego" : {
+              "definitionLines" : "82-85",
+              "numReferrers" : 0
+            }
+          },
+          "aaa server group tacacs+" : {
+            "authservers" : {
+              "definitionLines" : "87-94",
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/cisco_acl" : {
           "extended ipv4 access-list" : {
             "BLAH-BLAH" : {
@@ -74432,7 +74476,14 @@
             }
           }
         },
-        "configs/mos_misc" : { },
+        "configs/mos_misc" : {
+          "tacacs server" : {
+            "1.2.3.4" : {
+              "definitionLines" : "10",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/msdp_originator_id" : { },
         "configs/named_and_numbered_lists" : {
           "route-map" : {
@@ -76638,6 +76689,18 @@
             "static-to-bgp" : {
               "bgp redistribute static route-policy" : [
                 16
+              ]
+            }
+          }
+        },
+        "configs/cisco_aaa" : {
+          "aaa server group" : {
+            "MEE" : {
+              "aaa accounting group" : [
+                26
+              ],
+              "aaa authorization group" : [
+                63
               ]
             }
           }
@@ -81421,6 +81484,15 @@
             }
           }
         },
+        "configs/mos_misc" : {
+          "tacacs server" : {
+            "1.2.3.4" : {
+              "tacacs-server" : [
+                10
+              ]
+            }
+          }
+        },
         "configs/named_and_numbered_lists" : {
           "ipv4 acl" : {
             "1" : {
@@ -83031,7 +83103,18 @@
             }
           }
         },
-        "configs/cisco_aaa" : { },
+        "configs/cisco_aaa" : {
+          "aaa server group" : {
+            "MEE" : {
+              "aaa accounting group" : [
+                26
+              ],
+              "aaa authorization group" : [
+                63
+              ]
+            }
+          }
+        },
         "configs/cisco_acl" : { },
         "configs/cisco_additional_paths" : {
           "undeclared bgp peer" : {

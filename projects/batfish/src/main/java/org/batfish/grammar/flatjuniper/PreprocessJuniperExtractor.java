@@ -30,7 +30,7 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    * <p>Pre-processing consists of:
    *
    * <ol>
-   *   <li>Applying insertions (moves) and deleteions
+   *   <li>Applying insertions (moves) and deletions
    *   <li>Pruning lines deactivated by 'deactivate' lines
    *   <li>Pruning 'deactivate' lines
    *   <li>Generating lines corresponding to 'apply-groups' lines, while respecting
@@ -38,7 +38,7 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    *   <li>Pruning 'groups' lines; and 'apply-groups' and 'apply-groups-except' lines
    *   <li>Pruning wildcard lines
    *   <li>Generating lines corresponding to 'apply-path' lines
-   *   <li>Pruning 'apply-path' lines
+   *   <li>TODO: Pruning 'apply-path' lines
    * </ol>
    *
    * @param tree The flat-Juniper parse tree to be pre-processed in-place.
@@ -53,31 +53,45 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
       FlatJuniperCombinedParser parser,
       Warnings w) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
+
+    // Implements insert and delete respecting order of configuration lines.
+    // Properly handles set and deactivate lines.
     InsertDeleteApplicator d = new InsertDeleteApplicator(parser, w);
     walker.walk(d, tree);
+
+    // Delete all deactivated lines:
+    // 1. Mark parts of the hierarchy as deleted
     DeactivateTreeBuilder dtb = new DeactivateTreeBuilder(hierarchy);
     walker.walk(dtb, tree);
+    // 2. Remove 'deactivate <tree>' lines
     DeactivateLinePruner dp = new DeactivateLinePruner();
     walker.walk(dp, tree);
+    // 3. Remove 'set' lines that are deactivated
     DeactivatedLinePruner dlp = new DeactivatedLinePruner(hierarchy);
     walker.walk(dlp, tree);
+
     InitialTreeBuilder tb = new InitialTreeBuilder(hierarchy);
     walker.walk(tb, tree);
     GroupTreeBuilder gb = new GroupTreeBuilder(hierarchy);
     walker.walk(gb, tree);
+
     ApplyGroupsApplicator hb;
     do {
+      // Run until convergence: [set groups A apply-groups B] is valid
       hb = new ApplyGroupsApplicator(hierarchy, w);
       walker.walk(hb, tree);
     } while (hb.getChanged());
     GroupPruner.prune(tree);
+
     WildcardApplicator wa = new WildcardApplicator(hierarchy);
     walker.walk(wa, tree);
     WildcardPruner wp = new WildcardPruner();
     walker.walk(wp, tree);
     walker.walk(dlp, tree);
+
     ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy, w);
     walker.walk(ap, tree);
+    // TODO: pruning apply-path lines removes definition lines
   }
 
   private final FlatJuniperCombinedParser _parser;

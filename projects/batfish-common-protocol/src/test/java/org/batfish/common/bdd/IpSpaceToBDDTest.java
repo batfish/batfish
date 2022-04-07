@@ -1,6 +1,11 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -14,12 +19,14 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,9 +51,25 @@ public class IpSpaceToBDDTest {
   }
 
   @Test
+  public void testEmptyIpSpace() {
+    BDD bdd = _ipSpaceToBdd.visit(EmptyIpSpace.INSTANCE);
+    assertThat(bdd, isZero());
+    BDD bdd2 = _ipSpaceToBdd.visit(EmptyIpSpace.INSTANCE);
+    assertThat(bdd2, allOf(equalTo(bdd), not(sameInstance(bdd))));
+  }
+
+  @Test
+  public void testUniverseIpSpace() {
+    BDD bdd = _ipSpaceToBdd.visit(UniverseIpSpace.INSTANCE);
+    assertThat(bdd, isOne());
+    BDD bdd2 = _ipSpaceToBdd.visit(UniverseIpSpace.INSTANCE);
+    assertThat(bdd2, allOf(equalTo(bdd), not(sameInstance(bdd))));
+  }
+
+  @Test
   public void testIpIpSpace_0() {
     IpSpace ipSpace = Ip.parse("0.0.0.0").toIpSpace();
-    BDD bdd = ipSpace.accept(_ipSpaceToBdd);
+    BDD bdd = _ipSpaceToBdd.visit(ipSpace);
     assertThat(
         bdd,
         equalTo(
@@ -59,23 +82,27 @@ public class IpSpaceToBDDTest {
   @Test
   public void testIpIpSpace_255() {
     IpSpace ipSpace = Ip.parse("255.255.255.255").toIpSpace();
-    BDD bdd = ipSpace.accept(_ipSpaceToBdd);
+    BDD bdd = _ipSpaceToBdd.visit(ipSpace);
     assertThat(bdd, equalTo(_bddOps.and(_ipAddrBitvec)));
+    BDD bdd2 = _ipSpaceToBdd.visit(ipSpace);
+    assertThat(bdd2, allOf(equalTo(bdd), not(sameInstance(bdd))));
   }
 
   @Test
   public void testPrefixIpSpace() {
     IpSpace ipSpace = Prefix.parse("255.0.0.0/8").toIpSpace();
-    BDD bdd = ipSpace.accept(_ipSpaceToBdd);
+    BDD bdd = _ipSpaceToBdd.visit(ipSpace);
     assertThat(bdd, equalTo(_bddOps.and(Arrays.asList(_ipAddrBitvec).subList(0, 8))));
+    BDD bdd2 = _ipSpaceToBdd.visit(ipSpace);
+    assertThat(bdd2, allOf(equalTo(bdd), not(sameInstance(bdd))));
   }
 
   @Test
   public void testPrefixIpSpace_andMoreSpecific() {
     IpSpace ipSpace1 = Prefix.parse("255.0.0.0/8").toIpSpace();
     IpSpace ipSpace2 = Prefix.parse("255.255.0.0/16").toIpSpace();
-    BDD bdd1 = ipSpace1.accept(_ipSpaceToBdd);
-    BDD bdd2 = ipSpace2.accept(_ipSpaceToBdd);
+    BDD bdd1 = _ipSpaceToBdd.visit(ipSpace1);
+    BDD bdd2 = _ipSpaceToBdd.visit(ipSpace2);
     assertThat(_bddOps.and(bdd1, bdd2), equalTo(bdd2));
   }
 
@@ -83,8 +110,8 @@ public class IpSpaceToBDDTest {
   public void testPrefixIpSpace_andNonOverlapping() {
     IpSpace ipSpace1 = Prefix.parse("0.0.0.0/8").toIpSpace();
     IpSpace ipSpace2 = Prefix.parse("1.0.0.0/8").toIpSpace();
-    BDD bdd1 = ipSpace1.accept(_ipSpaceToBdd);
-    BDD bdd2 = ipSpace2.accept(_ipSpaceToBdd);
+    BDD bdd1 = _ipSpaceToBdd.visit(ipSpace1);
+    BDD bdd2 = _ipSpaceToBdd.visit(ipSpace2);
     assertThat(_bddOps.and(bdd1, bdd2), equalTo(_factory.zero()));
   }
 
@@ -92,8 +119,8 @@ public class IpSpaceToBDDTest {
   public void testPrefixIpSpace_orMoreSpecific() {
     IpSpace ipSpace1 = Prefix.parse("255.0.0.0/8").toIpSpace();
     IpSpace ipSpace2 = Prefix.parse("255.255.0.0/16").toIpSpace();
-    BDD bdd1 = ipSpace1.accept(_ipSpaceToBdd);
-    BDD bdd2 = ipSpace2.accept(_ipSpaceToBdd);
+    BDD bdd1 = _ipSpaceToBdd.visit(ipSpace1);
+    BDD bdd2 = _ipSpaceToBdd.visit(ipSpace2);
     assertThat(_bddOps.or(bdd1, bdd2), equalTo(bdd1));
   }
 
@@ -101,8 +128,8 @@ public class IpSpaceToBDDTest {
   public void testPrefixIpSpace_orNonOverlapping() {
     IpSpace ipSpace1 = Prefix.parse("0.0.0.0/8").toIpSpace();
     IpSpace ipSpace2 = Prefix.parse("1.0.0.0/8").toIpSpace();
-    BDD bdd1 = ipSpace1.accept(_ipSpaceToBdd);
-    BDD bdd2 = ipSpace2.accept(_ipSpaceToBdd);
+    BDD bdd1 = _ipSpaceToBdd.visit(ipSpace1);
+    BDD bdd2 = _ipSpaceToBdd.visit(ipSpace2);
     assertThat(
         _bddOps.or(bdd1, bdd2),
         equalTo(
@@ -116,7 +143,7 @@ public class IpSpaceToBDDTest {
   public void testIpWildcard() {
     IpSpace ipSpace =
         IpWildcard.ipWithWildcardMask(Ip.parse("255.0.255.0"), Ip.parse("0.255.0.255")).toIpSpace();
-    BDD bdd = ipSpace.accept(_ipSpaceToBdd);
+    BDD bdd = _ipSpaceToBdd.visit(ipSpace);
     assertThat(
         bdd,
         equalTo(
@@ -125,6 +152,8 @@ public class IpSpaceToBDDTest {
                         Arrays.asList(_ipAddrBitvec).subList(0, 8).stream(),
                         Arrays.asList(_ipAddrBitvec).subList(16, 24).stream())
                     .collect(ImmutableList.toImmutableList()))));
+    BDD bdd2 = _ipSpaceToBdd.visit(ipSpace);
+    assertThat(bdd2, allOf(equalTo(bdd), not(sameInstance(bdd))));
   }
 
   @Test
@@ -132,8 +161,8 @@ public class IpSpaceToBDDTest {
     IpSpace ipWildcardIpSpace =
         IpWildcard.ipWithWildcardMask(Ip.parse("123.0.0.0"), Ip.parse("0.255.255.255")).toIpSpace();
     IpSpace prefixIpSpace = Prefix.parse("123.0.0.0/8").toIpSpace();
-    BDD bdd1 = ipWildcardIpSpace.accept(_ipSpaceToBdd);
-    BDD bdd2 = prefixIpSpace.accept(_ipSpaceToBdd);
+    BDD bdd1 = _ipSpaceToBdd.visit(ipWildcardIpSpace);
+    BDD bdd2 = _ipSpaceToBdd.visit(prefixIpSpace);
     assertThat(bdd1, equalTo(bdd2));
   }
 
@@ -143,9 +172,11 @@ public class IpSpaceToBDDTest {
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of("foo", ip.toIpSpace());
     IpSpace reference = new IpSpaceReference("foo");
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_ipAddrBdd, namedIpSpaces);
-    BDD ipBDD = ip.toIpSpace().accept(ipSpaceToBDD);
-    BDD referenceBDD = reference.accept(ipSpaceToBDD);
+    BDD ipBDD = ipSpaceToBDD.visit(ip.toIpSpace());
+    BDD referenceBDD = ipSpaceToBDD.visit(reference);
     assertThat(referenceBDD, equalTo(ipBDD));
+    BDD bdd2 = ipSpaceToBDD.visit(reference);
+    assertThat(bdd2, allOf(equalTo(referenceBDD), not(sameInstance(referenceBDD))));
   }
 
   @Test
@@ -153,7 +184,7 @@ public class IpSpaceToBDDTest {
     IpSpace reference = new IpSpaceReference("foo");
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined IpSpace reference: foo");
-    reference.accept(_ipSpaceToBdd);
+    _ipSpaceToBdd.visit(reference);
   }
 
   @Test
@@ -164,7 +195,7 @@ public class IpSpaceToBDDTest {
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_ipAddrBdd, namedIpSpaces);
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular IpSpaceReference: foo");
-    foo.accept(ipSpaceToBDD);
+    ipSpaceToBDD.visit(foo);
   }
 
   @Test
@@ -192,6 +223,9 @@ public class IpSpaceToBDDTest {
 
     BDD aclBdd = _ipSpaceToBdd.visit(aclIpSpace);
     assertEquals(expected, aclBdd);
+
+    BDD aclBdd2 = _ipSpaceToBdd.visit(aclIpSpace);
+    assertThat(aclBdd2, allOf(equalTo(aclBdd), not(sameInstance(aclBdd))));
   }
 
   @Test
@@ -232,5 +266,7 @@ public class IpSpaceToBDDTest {
             .diff(exclude4Bdd);
     BDD actual = _ipSpaceToBdd.visit(ipSpace);
     assertEquals(expected, actual);
+    BDD actual2 = _ipSpaceToBdd.visit(ipSpace);
+    assertThat(actual2, allOf(equalTo(actual), not(sameInstance(actual))));
   }
 }

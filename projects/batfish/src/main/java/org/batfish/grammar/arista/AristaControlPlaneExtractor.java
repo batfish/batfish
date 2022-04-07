@@ -575,6 +575,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_source_interfaceCo
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_udp_portContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlan_vniContext;
+import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlan_vni_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vrfContext;
 import org.batfish.grammar.arista.AristaParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.arista.AristaParser.Extended_access_list_tailContext;
@@ -847,12 +848,16 @@ import org.batfish.grammar.arista.AristaParser.Variable_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_stateContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_d_trunkContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_idContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_stateContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_no_trunkContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_stateContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_subrangeContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_trunkContext;
+import org.batfish.grammar.arista.AristaParser.Vni_numberContext;
+import org.batfish.grammar.arista.AristaParser.Vni_subrangeContext;
 import org.batfish.grammar.arista.AristaParser.Vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
@@ -981,6 +986,8 @@ import org.batfish.vendor.VendorConfiguration;
 public class AristaControlPlaneExtractor extends AristaParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
+  private static final IntegerSpace VNI_RANGE = IntegerSpace.of(Range.closed(1, 16777215));
 
   @Override
   public String getInputText() {
@@ -1030,6 +1037,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
+  }
+
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Vlan_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "VLAN number");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vni_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VNI_RANGE, "VNI number");
   }
 
   private static String toInterfaceName(Interface_nameContext ctx) {
@@ -1124,6 +1140,58 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       return SubRange.singleton(low);
     }
+  }
+
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Vlan_subrangeContext ctx) {
+    Optional<Integer> maybeLow = toInteger(messageCtx, ctx.low);
+    if (!maybeLow.isPresent()) {
+      // already warned
+      return Optional.empty();
+    }
+    int low = maybeLow.get();
+    if (ctx.high == null) {
+      return Optional.of(SubRange.singleton(low));
+    }
+    Optional<Integer> maybeHigh = toInteger(messageCtx, ctx.high);
+    if (!maybeHigh.isPresent()) {
+      // already warned
+      return Optional.empty();
+    }
+    int high = maybeHigh.get();
+    if (low > high) {
+      warn(
+          messageCtx,
+          String.format("Invalid VLAN range with high VLAN < low VLAN: %s", getFullText(ctx)));
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(low, high));
+  }
+
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Vni_subrangeContext ctx) {
+    Optional<Integer> maybeLow = toInteger(messageCtx, ctx.low);
+    if (!maybeLow.isPresent()) {
+      // already warned
+      return Optional.empty();
+    }
+    int low = maybeLow.get();
+    if (ctx.high == null) {
+      return Optional.of(SubRange.singleton(low));
+    }
+    Optional<Integer> maybeHigh = toInteger(messageCtx, ctx.high);
+    if (!maybeHigh.isPresent()) {
+      // already warned
+      return Optional.empty();
+    }
+    int high = maybeHigh.get();
+    if (low > high) {
+      warn(
+          messageCtx,
+          String.format("Invalid VNI range with high VNI < low VNI: %s", getFullText(ctx)));
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(low, high));
   }
 
   private static String unquote(String text) {
@@ -3510,6 +3578,40 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void enterEos_vxif_vxlan_vlan_vni_range(Eos_vxif_vxlan_vlan_vni_rangeContext ctx) {
+    ImmutableList.Builder<Integer> vlansBuilder = ImmutableList.builder();
+    for (Vlan_subrangeContext rangeCtx : ctx.vlans.vlan_range_list) {
+      Optional<SubRange> maybeRange = toSubRange(ctx, rangeCtx);
+      if (!maybeRange.isPresent()) {
+        // already warned
+        return;
+      }
+      maybeRange.get().asStream().forEach(vlansBuilder::add);
+    }
+    List<Integer> vlans = vlansBuilder.build();
+
+    ImmutableList.Builder<Integer> vnisBuilder = ImmutableList.builder();
+    for (Vni_subrangeContext rangeCtx : ctx.vnis.vni_range_list) {
+      Optional<SubRange> maybeRange = toSubRange(ctx, rangeCtx);
+      if (!maybeRange.isPresent()) {
+        // already warned
+        return;
+      }
+      maybeRange.get().asStream().forEach(vnisBuilder::add);
+    }
+    List<Integer> vnis = vnisBuilder.build();
+
+    if (vlans.size() != vnis.size()) {
+      warn(ctx, "Need to have 1:1 mapping of vlan to vni");
+      return;
+    }
+
+    for (int i = 0; i < vnis.size(); i++) {
+      _eosVxlan.getVlanVnis().put(vlans.get(i), vnis.get(i));
+    }
+  }
+
+  @Override
   public void enterEos_vxif_vxlan_vlan(Eos_vxif_vxlan_vlanContext ctx) {
     _currentVxlanVlanNum = toInteger(ctx.num);
   }
@@ -4473,8 +4575,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                   .setUseAck(true)
                   .build());
         } else if (feature.ADMINISTRATIVELY_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
+          icmpType = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getType();
+          icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getCode();
         } else if (feature.ALTERNATE_ADDRESS() != null) {
           icmpType = IcmpType.ALTERNATE_ADDRESS;
         } else if (feature.CWR() != null) {
@@ -4484,11 +4586,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                   .setUseCwr(true)
                   .build());
         } else if (feature.DOD_HOST_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_HOST_PROHIBITED;
+          icmpType = IcmpCode.DESTINATION_HOST_PROHIBITED.getType();
+          icmpCode = IcmpCode.DESTINATION_HOST_PROHIBITED.getCode();
         } else if (feature.DOD_NET_PROHIBITED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_NETWORK_PROHIBITED;
+          icmpType = IcmpCode.DESTINATION_NETWORK_PROHIBITED.getType();
+          icmpCode = IcmpCode.DESTINATION_NETWORK_PROHIBITED.getCode();
         } else if (feature.DSCP() != null) {
           int dscpType = toDscpType(feature.dscp_type());
           dscps.add(dscpType);
@@ -4524,29 +4626,29 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                   .setUseFin(true)
                   .build());
         } else if (feature.GENERAL_PARAMETER_PROBLEM() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.INVALID_IP_HEADER;
+          icmpType = IcmpCode.INVALID_IP_HEADER.getType();
+          icmpCode = IcmpCode.INVALID_IP_HEADER.getCode();
         } else if (feature.HOST_ISOLATED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.SOURCE_HOST_ISOLATED;
+          icmpType = IcmpCode.SOURCE_HOST_ISOLATED.getType();
+          icmpCode = IcmpCode.SOURCE_HOST_ISOLATED.getCode();
         } else if (feature.HOST_PRECEDENCE_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_PRECEDENCE_VIOLATION;
+          icmpType = IcmpCode.HOST_PRECEDENCE_VIOLATION.getType();
+          icmpCode = IcmpCode.HOST_PRECEDENCE_VIOLATION.getCode();
         } else if (feature.HOST_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.HOST_ERROR;
+          icmpType = IcmpCode.HOST_ERROR.getType();
+          icmpCode = IcmpCode.HOST_ERROR.getCode();
         } else if (feature.HOST_TOS_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.TOS_AND_HOST_ERROR;
+          icmpType = IcmpCode.TOS_AND_HOST_ERROR.getType();
+          icmpCode = IcmpCode.TOS_AND_HOST_ERROR.getCode();
         } else if (feature.HOST_TOS_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_UNREACHABLE_FOR_TOS;
+          icmpType = IcmpCode.HOST_UNREACHABLE_FOR_TOS.getType();
+          icmpCode = IcmpCode.HOST_UNREACHABLE_FOR_TOS.getCode();
         } else if (feature.HOST_UNKNOWN() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+          icmpType = IcmpCode.DESTINATION_HOST_UNKNOWN.getType();
+          icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN.getCode();
         } else if (feature.HOST_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.HOST_UNREACHABLE;
+          icmpType = IcmpCode.HOST_UNREACHABLE.getType();
+          icmpCode = IcmpCode.HOST_UNREACHABLE.getCode();
         } else if (feature.INFORMATION_REPLY() != null) {
           icmpType = IcmpType.INFO_REPLY;
         } else if (feature.INFORMATION_REQUEST() != null) {
@@ -4560,34 +4662,34 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         } else if (feature.MOBILE_HOST_REDIRECT() != null) {
           icmpType = IcmpType.MOBILE_REDIRECT;
         } else if (feature.NET_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.NETWORK_ERROR;
+          icmpType = IcmpCode.NETWORK_ERROR.getType();
+          icmpCode = IcmpCode.NETWORK_ERROR.getCode();
         } else if (feature.NET_TOS_REDIRECT() != null) {
-          icmpType = IcmpType.REDIRECT_MESSAGE;
-          icmpCode = IcmpCode.TOS_AND_NETWORK_ERROR;
+          icmpType = IcmpCode.TOS_AND_NETWORK_ERROR.getType();
+          icmpCode = IcmpCode.TOS_AND_NETWORK_ERROR.getCode();
         } else if (feature.NET_TOS_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS;
+          icmpType = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS.getType();
+          icmpCode = IcmpCode.NETWORK_UNREACHABLE_FOR_TOS.getCode();
         } else if (feature.NET_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.NETWORK_UNREACHABLE;
+          icmpType = IcmpCode.NETWORK_UNREACHABLE.getType();
+          icmpCode = IcmpCode.NETWORK_UNREACHABLE.getCode();
         } else if (feature.NETWORK_UNKNOWN() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+          icmpType = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getType();
+          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getCode();
         } else if (feature.NO_ROOM_FOR_OPTION() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.BAD_LENGTH;
+          icmpType = IcmpCode.BAD_LENGTH.getType();
+          icmpCode = IcmpCode.BAD_LENGTH.getCode();
         } else if (feature.OPTION_MISSING() != null) {
-          icmpType = IcmpType.PARAMETER_PROBLEM;
-          icmpCode = IcmpCode.REQUIRED_OPTION_MISSING;
+          icmpType = IcmpCode.REQUIRED_OPTION_MISSING.getType();
+          icmpCode = IcmpCode.REQUIRED_OPTION_MISSING.getCode();
         } else if (feature.PACKET_TOO_BIG() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.FRAGMENTATION_NEEDED;
+          icmpType = IcmpCode.FRAGMENTATION_NEEDED.getType();
+          icmpCode = IcmpCode.FRAGMENTATION_NEEDED.getCode();
         } else if (feature.PARAMETER_PROBLEM() != null) {
           icmpType = IcmpType.PARAMETER_PROBLEM;
         } else if (feature.PORT_UNREACHABLE() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.PORT_UNREACHABLE;
+          icmpType = IcmpCode.PORT_UNREACHABLE.getType();
+          icmpCode = IcmpCode.PORT_UNREACHABLE.getCode();
         } else if (feature.PSH() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -4609,8 +4711,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         } else if (feature.SOURCE_QUENCH() != null) {
           icmpType = IcmpType.SOURCE_QUENCH;
         } else if (feature.SOURCE_ROUTE_FAILED() != null) {
-          icmpType = IcmpType.DESTINATION_UNREACHABLE;
-          icmpCode = IcmpCode.SOURCE_ROUTE_FAILED;
+          icmpType = IcmpCode.SOURCE_ROUTE_FAILED.getType();
+          icmpCode = IcmpCode.SOURCE_ROUTE_FAILED.getCode();
         } else if (feature.SYN() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -4626,8 +4728,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
         } else if (feature.TTL_EXCEEDED() != null) {
-          icmpType = IcmpType.TIME_EXCEEDED;
-          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
+          icmpType = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT.getType();
+          icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT.getCode();
         } else if (feature.UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
         } else if (feature.URG() != null) {
@@ -4719,11 +4821,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                 .setUseEce(true)
                 .build());
       } else if (feature.ECHO_REPLY() != null) {
-        icmpType = IcmpType.ECHO_REPLY;
-        icmpCode = 0; /* Forced to 0 by RFC-792. */
+        icmpType = IcmpCode.ECHO_REPLY.getType();
+        icmpCode = IcmpCode.ECHO_REPLY.getCode();
       } else if (feature.ECHO() != null) {
-        icmpType = IcmpType.ECHO_REQUEST;
-        icmpCode = 0; /* Forced to 0 by RFC-792. */
+        icmpType = IcmpCode.ECHO_REQUEST.getType();
+        icmpCode = IcmpCode.ECHO_REQUEST.getCode();
       } else if (feature.ECN() != null) {
         int ecn = toInteger(feature.ecn);
         ecns.add(ecn);
@@ -4746,24 +4848,24 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                 .setUseFin(true)
                 .build());
       } else if (feature.HOST_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+        icmpType = IcmpCode.DESTINATION_HOST_UNKNOWN.getType();
+        icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN.getCode();
       } else if (feature.HOST_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.HOST_UNREACHABLE;
+        icmpType = IcmpCode.HOST_UNREACHABLE.getType();
+        icmpCode = IcmpCode.HOST_UNREACHABLE.getCode();
       } else if (feature.LOG() != null) {
         // Do nothing.
       } else if (feature.NETWORK_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+        icmpType = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getType();
+        icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN.getCode();
       } else if (feature.NET_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.NETWORK_UNREACHABLE;
+        icmpType = IcmpCode.NETWORK_UNREACHABLE.getType();
+        icmpCode = IcmpCode.NETWORK_UNREACHABLE.getCode();
       } else if (feature.PARAMETER_PROBLEM() != null) {
         icmpType = IcmpType.PARAMETER_PROBLEM;
       } else if (feature.PORT_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.PORT_UNREACHABLE;
+        icmpType = IcmpCode.PORT_UNREACHABLE.getType();
+        icmpCode = IcmpCode.PORT_UNREACHABLE.getCode();
       } else if (feature.PSH() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
@@ -4779,8 +4881,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                 .setUseRst(true)
                 .build());
       } else if (feature.SOURCE_QUENCH() != null) {
-        icmpType = IcmpType.SOURCE_QUENCH;
-        icmpCode = 0; /* Forced to 0 by RFC 792. */
+        icmpType = IcmpCode.SOURCE_QUENCH.getType();
+        icmpCode = IcmpCode.SOURCE_QUENCH.getCode();
       } else if (feature.SYN() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()

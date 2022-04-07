@@ -18,7 +18,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.job.ParseVendorConfigurationJob.FileResult;
+import org.batfish.grammar.FileParseResult;
 import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationResult
@@ -28,7 +28,7 @@ public class ParseVendorConfigurationResult
   /** Information about duplicate hostnames is collected here */
   private Multimap<String, String> _duplicateHostnames;
 
-  private final Map<String, FileResult> _fileResults;
+  private final Map<String, FileParseResult> _fileResults;
 
   private final @Nonnull ConfigurationFormat _format;
 
@@ -40,7 +40,7 @@ public class ParseVendorConfigurationResult
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      @Nonnull Map<String, FileResult> fileResults,
+      @Nonnull Map<String, FileParseResult> fileResults,
       @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings,
       @Nonnull Throwable failureCause) {
@@ -53,7 +53,7 @@ public class ParseVendorConfigurationResult
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      @Nonnull Map<String, FileResult> fileResults,
+      @Nonnull Map<String, FileParseResult> fileResults,
       @Nonnull ConfigurationFormat format,
       VendorConfiguration vc,
       @Nonnull Warnings warnings,
@@ -69,7 +69,7 @@ public class ParseVendorConfigurationResult
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      @Nonnull Map<String, FileResult> fileResults,
+      @Nonnull Map<String, FileParseResult> fileResults,
       @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings) {
     super(elapsedTime, history);
@@ -172,9 +172,9 @@ public class ParseVendorConfigurationResult
 
   /**
    * Returns the parsing results for individual files in the {@link ParseVendorConfigurationJob}, as
-   * a map from the filename to {@link FileResult}.
+   * a map from the filename to {@link FileParseResult}.
    */
-  public Map<String, FileResult> getFileResults() {
+  public Map<String, FileParseResult> getFileResults() {
     return _fileResults;
   }
 

@@ -2,9 +2,10 @@
 system {
   host-name a.example.com;
 }
-interface xe-0/0/0 {
+interfaces xe-0/0/0 {
   unit 0 {
     unrecognized syntax;
+    description "this description has quotes";
   }
 }
 protocols {

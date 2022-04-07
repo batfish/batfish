@@ -163,11 +163,11 @@ public final class Hierarchy {
           output.append(prefix).append("\n");
           _errorNodes.forEach(errorNode -> output.append(errorNode.getText().trim()).append("\n"));
         }
-        _children.forEach(
-            (childText, child) -> {
-              // append set lines for every path from child to leaf
-              child.appendSetLines(String.format("%s %s", prefix, childText), output);
-            });
+        // append set lines for every path from child to leaf
+        for (HierarchyChildNode child : _children.values()) {
+          // NB: do not use _children.keys() / child._unquotedText in order to preserve quotes
+          child.appendSetLines(String.format("%s %s", prefix, child._text), output);
+        }
       }
 
       public HierarchyNode() {

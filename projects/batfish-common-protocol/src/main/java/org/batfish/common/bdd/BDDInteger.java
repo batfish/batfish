@@ -38,7 +38,13 @@ public abstract class BDDInteger {
   /** Find a representative value of the represented integer that satisfies a given constraint. */
   public abstract Optional<Long> getValueSatisfying(BDD bdd);
 
-  public abstract Long satAssignmentToLong(BDD satAssignment);
+  public abstract long satAssignmentToLong(BDD satAssignment);
+
+  public int satAssignmentToInt(BDD bdd) {
+    checkArgument(
+        _bitvec.length <= 31, "Only BDDInteger of 31 or fewer bits can be converted to int");
+    return (int) satAssignmentToLong(bdd);
+  }
 
   /**
    * Return a list of values satisfying the input {@link BDD}, up to some maximum number.

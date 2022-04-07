@@ -35,11 +35,13 @@ public final class MemoizedIpSpaceToBDD extends IpSpaceToBDD {
 
   @Override
   public BDD visit(IpSpace ipSpace) {
-    return _cache.getUnchecked(ipSpace);
+    // Make a copy so that the caller owns it.
+    return _cache.getUnchecked(ipSpace).id();
   }
 
+  /** Test method only, does not transfer ownership of returned BDD. */
   @VisibleForTesting
-  Optional<BDD> getMemoizedBdd(IpSpace ipSpace) {
+  Optional<BDD> getMemoizedBddForTesting(IpSpace ipSpace) {
     return Optional.ofNullable(_cache.getIfPresent(ipSpace));
   }
 }

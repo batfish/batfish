@@ -251,7 +251,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     builder.setNetwork(Prefix.create(ip, (int) len));
 
     builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
-    builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
+    builder.setAdmin(r.getAdminDist().satAssignmentToInt(fullModel));
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
     builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
