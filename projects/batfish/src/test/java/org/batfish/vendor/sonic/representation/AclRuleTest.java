@@ -21,7 +21,11 @@ public class AclRuleTest {
             + "      \"PRIORITY\": \"1\"\n"
             + "    }";
     assertEquals(
-        AclRule.builder().setPacketAction(PacketAction.DROP).setPriority(1).build(),
+        AclRule.builder()
+            .setPacketAction(PacketAction.DROP)
+            .setPriority(1)
+            .setEtherType(2048)
+            .build(),
         BatfishObjectMapper.mapper().readValue(input, AclRule.class));
   }
 
@@ -44,6 +48,7 @@ public class AclRuleTest {
         .addEqualityGroup(builder.setL4SrcPort(17).build())
         .addEqualityGroup(builder.setPriority(17).build())
         .addEqualityGroup(builder.setPacketAction(PacketAction.ACCEPT).build())
+        .addEqualityGroup(builder.setEtherType(2048))
         .testEquals();
   }
 }
