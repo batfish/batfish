@@ -183,6 +183,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** This is the name of an application that matches all traffic */
   public static final String CATCHALL_APPLICATION_NAME = "any";
 
+  /** This is the name of a custom URL category that matches all traffic */
+  public static final String CATCHALL_CATEGORY_NAME = "any";
+
   /** This is the name of an endpoint that matches all traffic */
   public static final String CATCHALL_ENDPOINT_NAME = "any";
 

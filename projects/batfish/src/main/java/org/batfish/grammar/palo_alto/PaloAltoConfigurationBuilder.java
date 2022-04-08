@@ -2,6 +2,7 @@ package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_APPLICATION_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_CATEGORY_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_ZONE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
@@ -2849,10 +2850,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String name = getText(var);
       _currentSecurityRule.addCategory(name);
-      // Use constructed object name so same-named refs across vsys are unique
-      String uniqueName = computeObjectName(_currentVsys, name);
-      referenceStructure(
-          CUSTOM_URL_CATEGORY, uniqueName, SECURITY_RULE_CATEGORY, getLine(var.start));
+      if (!name.equals(CATCHALL_CATEGORY_NAME)) {
+        // Use constructed object name so same-named refs across vsys are unique
+        String uniqueName = computeObjectName(_currentVsys, name);
+        referenceStructure(
+            CUSTOM_URL_CATEGORY, uniqueName, SECURITY_RULE_CATEGORY, getLine(var.start));
+      }
     }
   }
 
