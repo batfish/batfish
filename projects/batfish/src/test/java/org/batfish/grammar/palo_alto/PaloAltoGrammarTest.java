@@ -2842,6 +2842,10 @@ public final class PaloAltoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, CUSTOM_URL_CATEGORY, "CAT_UNDEFINED", SECURITY_RULE_CATEGORY));
+    // No (undefined) reference for the keyword `any` category
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(filename, CUSTOM_URL_CATEGORY, "any", SECURITY_RULE_CATEGORY)));
   }
 
   @Test
