@@ -325,7 +325,7 @@ public class SonicConversions {
     Set<String> rulesWithoutPriority = new HashSet<>();
     Set<String> rulesWithoutPacketAction = new HashSet<>();
     Set<String> rulesWithBadKeys = new HashSet<>();
-    Set<String> rulesWithNonIpEtherType = new HashSet<>();
+    Set<String> rulesWithNonIpv4EtherType = new HashSet<>();
     Map<String, SortedSet<AclRuleWithName>> aclNameToRules = new HashMap<>();
     aclRules.forEach(
         (key, value) -> {
@@ -343,8 +343,8 @@ public class SonicConversions {
             return;
           }
           Integer etherType = value.getEtherType();
-          if (etherType != null && etherType != 0x800 && etherType != 0x86DD) {
-            rulesWithNonIpEtherType.add(key);
+          if (etherType != null && etherType != 0x800) {
+            rulesWithNonIpv4EtherType.add(key);
             return;
           }
           aclNameToRules
@@ -356,7 +356,7 @@ public class SonicConversions {
         rulesWithBadKeys,
         rulesWithoutPriority,
         rulesWithoutPacketAction,
-        rulesWithNonIpEtherType,
+        rulesWithNonIpv4EtherType,
         aclNameToRules,
         aclTables.keySet(),
         w);
@@ -379,7 +379,7 @@ public class SonicConversions {
     rulesWithoutPacketAction.forEach(
         key -> w.redFlag(String.format("Ignored ACL_RULE %s: Missing PACKET_ACTION", key)));
     rulesWithNonIpEtherType.forEach(
-        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Non-IP ETHER_TYPE", key)));
+        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Non-IPv4 ETHER_TYPE", key)));
     Sets.difference(aclNameToRules.keySet(), aclTableNames) // missing acl tables
         .forEach(
             aclName ->

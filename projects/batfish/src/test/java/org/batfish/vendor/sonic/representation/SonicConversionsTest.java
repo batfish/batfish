@@ -420,7 +420,7 @@ public class SonicConversionsTest {
             hasText("Ignored ACL_RULE badkey: Badly formatted name"),
             hasText("Ignored ACL_RULE testAcl|NoPriority: Missing PRIORITY"),
             hasText("Ignored ACL_RULE testAcl|NoPacketAction: Missing PACKET_ACTION"),
-            hasText("Ignored ACL_RULE testAcl|NonIpEtherType: Non-IP ETHER_TYPE"),
+            hasText("Ignored ACL_RULE testAcl|NonIpEtherType: Non-IPv4 ETHER_TYPE"),
             hasText("Ignored ACL_RULE other|NoAcl: Missing ACL_TABLE 'other'")));
 
     // good rule is left
