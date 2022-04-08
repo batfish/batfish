@@ -8,6 +8,6 @@ set rulebase security rules RULE1 to any
 set rulebase security rules RULE1 source any
 set rulebase security rules RULE1 destination any
 set rulebase security rules RULE1 service any
-set rulebase security rules RULE1 category [ CAT1 CAT_UNDEFINED ]
+set rulebase security rules RULE1 category [ CAT1 CAT_UNDEFINED any ]
 set rulebase security rules RULE1 application any
 set rulebase security rules RULE1 action deny
