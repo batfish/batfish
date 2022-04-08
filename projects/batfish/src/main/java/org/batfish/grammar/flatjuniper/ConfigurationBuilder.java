@@ -693,6 +693,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32lContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlan_numberContext;
@@ -1888,6 +1889,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return Long.parseLong(ctx.getText());
   }
 
+  private static long toLong(Uint32lContext ctx) {
+    return Long.parseLong(ctx.getText().replace("L", ""));
+  }
+
   private static long toLong(Uint16Context ctx) {
     return Long.parseLong(ctx.getText());
   }
@@ -1979,9 +1984,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       String[] rd_ip = ctx.rd_ip_address_colon_id().getText().split(":");
       return RouteDistinguisher.from(Ip.parse(rd_ip[0]), Integer.parseInt(rd_ip[1]));
     } else {
-        assert ctx.rd_asn_colon_id() != null;
-    }
-    {
+      assert ctx.rd_asn_colon_id() != null;
+      if (ctx.rd_asn_colon_id().high32 != null) {
+        // If "L" appended to the number it's a 4byte ASN.
+        return RouteDistinguisher.from(
+            toLong(ctx.rd_asn_colon_id().high32),
+            Integer.parseInt(ctx.rd_asn_colon_id().low16.getText()));
+      }
       return RouteDistinguisher.from(
           toLong(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
     }

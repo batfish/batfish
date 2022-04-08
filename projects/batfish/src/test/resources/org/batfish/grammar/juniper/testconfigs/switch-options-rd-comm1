@@ -1,5 +1,0 @@
-#
-set system host-name switch-options-rd-comm1
-#
-set switch-options route-distinguisher 555:0
-#

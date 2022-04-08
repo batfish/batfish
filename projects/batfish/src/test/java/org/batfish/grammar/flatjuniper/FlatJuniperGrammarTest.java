@@ -6290,12 +6290,22 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSwitchOptionsRouteDistinguisherCommOneExtraction() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-comm1");
+  public void testSwitchOptionsRouteDistinguisherTwoByteAsnExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-asn2");
     RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
     Integer asn1 = 555;
-    long asn2 = 0;
+    long asn2 = 1651000;
+    assertEquals(RouteDistinguisher.from(asn1, asn2), rd);
+  }
+
+  @Test
+  public void testSwitchOptionsRouteDistinguisherFourByteAsnExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-asn4");
+    RouteDistinguisher rd =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
+    long asn1 = 77765000;
+    Integer asn2 = 1000;
     assertEquals(RouteDistinguisher.from(asn1, asn2), rd);
   }
 

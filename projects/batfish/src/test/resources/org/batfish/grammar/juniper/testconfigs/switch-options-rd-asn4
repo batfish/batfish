@@ -1,0 +1,5 @@
+#
+set system host-name switch-options-rd-asn4
+#
+set switch-options route-distinguisher 77765000L:1000
+#

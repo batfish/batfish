@@ -32,7 +32,8 @@ tokens {
    SUB_RANGE,
    SYN,
    VERSION_STRING,
-   WILDCARD_ARTIFACT
+   WILDCARD_ARTIFACT,
+   UINT32L
 }
 
 // Juniper Keywords
@@ -4167,6 +4168,7 @@ M_RouteDistinguisher_COLON: ':' -> type(COLON);
 M_RouteDistinguisher_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
 M_RouteDistinguisher_UINT16: F_Uint16 -> type(UINT16);
 M_RouteDistinguisher_UINT32: F_Uint32 -> type(UINT32);
+M_RouteDistinguisher_UINT32L: F_Uint32 'L' -> type(UINT32L);
 M_RouteDistinguisher_NEWLINE :F_Newline -> type(NEWLINE), popMode;
 M_RouteDistinguisher_WS: F_WhitespaceChar+ -> channel(HIDDEN);
 

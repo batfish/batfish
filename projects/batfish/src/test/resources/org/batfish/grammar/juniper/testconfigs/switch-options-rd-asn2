@@ -1,0 +1,5 @@
+#
+set system host-name switch-options-rd-asn2
+#
+set switch-options route-distinguisher 555:1651000
+#

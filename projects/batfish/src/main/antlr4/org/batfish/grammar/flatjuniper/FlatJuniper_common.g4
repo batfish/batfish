@@ -484,15 +484,18 @@ route_distinguisher
 
 rd_asn_colon_id
 :
-  // number:id — (16-bit number:32-bit identifier) or (32-bit number:16-bit identifier).
-  // TODO: Figure out which alternative takes priority when both high and low can be represented with 16 bits, e.g. 123:456.
+  // Type-0 (Administrator subfield: 2 bytes):(Assigned Number subfield: 4 bytes)
+  // Type-2 (Administrator subfield: 4 bytes):(Assigned Number subfield: 2 bytes)
+  // Junos docs: An RD that includes a 4-byte AS number, append the letter “L” to the end of the AS number.
+
   high16 = uint16 COLON low32 = uint32
-  | high32 = uint32 COLON low16 = uint16
+  | high32 = uint32l COLON low16 = uint16
 ;
 
 rd_ip_address_colon_id
 :
   // ip-address:id — ip-address is a 4-byte value and id is a 2-byte value.
+  // Type-1
   IP_ADDRESS COLON uint16
 ;
 
@@ -701,6 +704,11 @@ uint32
   UINT8
   | UINT16
   | UINT32
+;
+
+uint32l
+:
+  UINT32L
 ;
 
 wildcard
