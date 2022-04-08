@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix;
 
 /**
- * Represents the settings of a ACL_RULE:
+ * Represents the settings of an ACL_RULE:
  * https://github.com/Azure/SONiC/wiki/Configuration#acl-and-mirroring
  */
 public class AclRule implements Serializable {
@@ -49,6 +49,10 @@ public class AclRule implements Serializable {
     return Optional.ofNullable(_packetAction);
   }
 
+  public @Nullable Integer getEtherType() {
+    return _etherType;
+  }
+
   private static final String PROP_IP_PROTOCOL = "IP_PROTOCOL";
   private static final String PROP_DST_IP = "DST_IP";
   private static final String PROP_SRC_IP = "SRC_IP";
@@ -56,6 +60,7 @@ public class AclRule implements Serializable {
   private static final String PROP_L4_SRC_PORT = "L4_SRC_PORT";
   private static final String PROP_PACKET_ACTION = "PACKET_ACTION";
   private static final String PROP_PRIORITY = "PRIORITY";
+  private static final String PROP_ETHER_TYPE = "ETHER_TYPE";
 
   private @Nullable final Integer _ipProtocol;
   private @Nullable final Prefix _dstIp;
@@ -65,6 +70,8 @@ public class AclRule implements Serializable {
   private @Nullable final Integer _priority;
   private @Nullable final PacketAction _packetAction;
 
+  private @Nullable final Integer _etherType;
+
   @JsonCreator
   private @Nonnull static AclRule create(
       @Nullable @JsonProperty(PROP_IP_PROTOCOL) Integer ipProtocol,
@@ -73,7 +80,8 @@ public class AclRule implements Serializable {
       @Nullable @JsonProperty(PROP_L4_DST_PORT) Integer l4DstPort,
       @Nullable @JsonProperty(PROP_L4_SRC_PORT) Integer l4SrcPort,
       @Nullable @JsonProperty(PROP_PRIORITY) Integer priority,
-      @Nullable @JsonProperty(PROP_PACKET_ACTION) PacketAction packetAction) {
+      @Nullable @JsonProperty(PROP_PACKET_ACTION) PacketAction packetAction,
+      @Nullable @JsonProperty(PROP_ETHER_TYPE) Integer etherType) {
     return AclRule.builder()
         .setIpProtocol(ipProtocol)
         .setDstIp(dstIp)
@@ -82,6 +90,7 @@ public class AclRule implements Serializable {
         .setL4SrcPort(l4SrcPort)
         .setPriority(priority)
         .setPacketAction(packetAction)
+        .setEtherType(etherType)
         .build();
   }
 
@@ -92,7 +101,8 @@ public class AclRule implements Serializable {
       @Nullable Integer l4DstPort,
       @Nullable Integer l4SrcPort,
       @Nullable Integer priority,
-      @Nullable PacketAction packetAction) {
+      @Nullable PacketAction packetAction,
+      @Nullable Integer etherType) {
     _ipProtocol = ipProtocol;
     _dstIp = dstIp;
     _srcIp = srcIp;
@@ -100,6 +110,7 @@ public class AclRule implements Serializable {
     _l4SrcPort = l4SrcPort;
     _priority = priority;
     _packetAction = packetAction;
+    _etherType = etherType;
   }
 
   @Override
@@ -117,7 +128,8 @@ public class AclRule implements Serializable {
         && Objects.equals(_l4DstPort, aclRule._l4DstPort)
         && Objects.equals(_l4SrcPort, aclRule._l4SrcPort)
         && Objects.equals(_priority, aclRule._priority)
-        && _packetAction == aclRule._packetAction;
+        && _packetAction == aclRule._packetAction
+        && Objects.equals(_etherType, aclRule._etherType);
   }
 
   @Override
@@ -129,7 +141,8 @@ public class AclRule implements Serializable {
         _l4DstPort,
         _l4SrcPort,
         _priority,
-        _packetAction == null ? null : _packetAction.ordinal());
+        _packetAction == null ? null : _packetAction.ordinal(),
+        _etherType);
   }
 
   public @Nonnull static Builder builder() {
@@ -144,6 +157,7 @@ public class AclRule implements Serializable {
     private Integer _l4SrcPort;
     private Integer _priority;
     private PacketAction _packetAction;
+    private Integer _etherType;
 
     public @Nonnull Builder setIpProtocol(@Nullable Integer ipProtocol) {
       this._ipProtocol = ipProtocol;
@@ -180,9 +194,21 @@ public class AclRule implements Serializable {
       return this;
     }
 
+    public @Nonnull Builder setEtherType(@Nullable Integer etherType) {
+      this._etherType = etherType;
+      return this;
+    }
+
     public @Nonnull AclRule build() {
       return new AclRule(
-          _ipProtocol, _dstIp, _srcIp, _l4DstPort, _l4SrcPort, _priority, _packetAction);
+          _ipProtocol,
+          _dstIp,
+          _srcIp,
+          _l4DstPort,
+          _l4SrcPort,
+          _priority,
+          _packetAction,
+          _etherType);
     }
   }
 }

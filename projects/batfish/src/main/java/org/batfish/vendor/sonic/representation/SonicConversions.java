@@ -318,13 +318,14 @@ public class SonicConversions {
    * The rules for a table are sorted based on priority (descending), and ties are broken based on
    * rule name.
    *
-   * <p>The method filters out bad rules and add warnings for them.
+   * <p>The method filters out bad rules and non-IP rules, and it adds warnings for them.
    */
   static Map<String, SortedSet<AclRuleWithName>> getAclRulesByTableName(
       Map<String, AclTable> aclTables, Map<String, AclRule> aclRules, Warnings w) {
     Set<String> rulesWithoutPriority = new HashSet<>();
     Set<String> rulesWithoutPacketAction = new HashSet<>();
     Set<String> rulesWithBadKeys = new HashSet<>();
+    Set<String> rulesWithNonIpv4EtherType = new HashSet<>();
     Map<String, SortedSet<AclRuleWithName>> aclNameToRules = new HashMap<>();
     aclRules.forEach(
         (key, value) -> {
@@ -341,6 +342,11 @@ public class SonicConversions {
             rulesWithoutPacketAction.add(key);
             return;
           }
+          Integer etherType = value.getEtherType();
+          if (etherType != null && etherType != 0x800) {
+            rulesWithNonIpv4EtherType.add(key);
+            return;
+          }
           aclNameToRules
               .computeIfAbsent(ruleKeyParts[0], aclName -> new TreeSet<>())
               .add(new AclRuleWithName(ruleKeyParts[1], value));
@@ -350,6 +356,7 @@ public class SonicConversions {
         rulesWithBadKeys,
         rulesWithoutPriority,
         rulesWithoutPacketAction,
+        rulesWithNonIpv4EtherType,
         aclNameToRules,
         aclTables.keySet(),
         w);
@@ -361,6 +368,7 @@ public class SonicConversions {
       Set<String> rulesWithBadKeys,
       Set<String> rulesWithoutPriority,
       Set<String> rulesWithoutPacketAction,
+      Set<String> rulesWithNonIpEtherType,
       Map<String, SortedSet<AclRuleWithName>> aclNameToRules,
       Set<String> aclTableNames,
       Warnings w) {
@@ -370,6 +378,8 @@ public class SonicConversions {
         key -> w.redFlag(String.format("Ignored ACL_RULE %s: Missing PRIORITY", key)));
     rulesWithoutPacketAction.forEach(
         key -> w.redFlag(String.format("Ignored ACL_RULE %s: Missing PACKET_ACTION", key)));
+    rulesWithNonIpEtherType.forEach(
+        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Non-IPv4 ETHER_TYPE", key)));
     Sets.difference(aclNameToRules.keySet(), aclTableNames) // missing acl tables
         .forEach(
             aclName ->
@@ -462,6 +472,7 @@ public class SonicConversions {
   private static Optional<AclLine> convertAclRule(
       String aclName, AclRuleWithName aclRuleWithName, Warnings w) {
     AclRule aclRule = aclRuleWithName._rule;
+
     List<AclLineMatchExpr> conjuncts = new LinkedList<>();
     if (aclRule.getIpProtocol().isPresent()) {
       conjuncts.add(matchIpProtocol(aclRule.getIpProtocol().get()));
