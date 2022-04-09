@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.MutableBDDInteger;
@@ -107,7 +108,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   // the conditions under which the analysis encounters an unsupported route-policy
   // statement/expression
-  private BDD _unsupported;
+  @Nonnull private BDD _unsupported;
 
   /**
    * The routing protocols allowed in a BGP route announcement (see {@link
@@ -463,7 +464,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _unsupported;
   }
 
-  public void setUnsupported(BDD unsupported) {
+  public void setUnsupported(@Nonnull BDD unsupported) {
     _unsupported = unsupported;
   }
 
@@ -488,7 +489,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
               + (_asPathRegexAtomicPredicates != null
                   ? Arrays.hashCode(_asPathRegexAtomicPredicates)
                   : 0);
-      result = 31 * result + (_unsupported != null ? _unsupported.hashCode() : 0);
+      result = 31 * result + _unsupported.hashCode();
       _hcode = result;
     }
     return _hcode;

@@ -1267,14 +1267,16 @@ public class TransferBDDTest {
 
   @Test
   public void testUnsupportedMatchNextHop() {
-    _policyBuilder.addStatement(
-        new If(
-            new MatchPrefixSet(
-                new IpPrefix(NextHopIp.instance(), new LiteralInt(8)),
-                new ExplicitPrefixSet(
-                    new PrefixSpace(
-                        ImmutableList.of(PrefixRange.fromPrefix(Prefix.parse("1.0.0.0/8")))))),
-            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    _policyBuilder
+        .addStatement(
+            new If(
+                new MatchPrefixSet(
+                    new IpPrefix(NextHopIp.instance(), new LiteralInt(8)),
+                    new ExplicitPrefixSet(
+                        new PrefixSpace(
+                            ImmutableList.of(PrefixRange.fromPrefix(Prefix.parse("1.0.0.0/8")))))),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
@@ -1285,7 +1287,7 @@ public class TransferBDDTest {
 
     BDDRoute outRoute = anyRoute(tbdd.getFactory());
     outRoute.setUnsupported(tbdd.getFactory().one());
-    assertEquals(acceptedAnnouncements, tbdd.getFactory().zero());
+    assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
     assertEquals(outAnnouncements, outRoute);
   }
 
@@ -2175,6 +2177,37 @@ public class TransferBDDTest {
 
     BDDRoute outRoute = anyRoute(tbdd.getFactory());
     outRoute.setUnsupported(tbdd.getFactory().one());
+    assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
+    assertEquals(outAnnouncements, outRoute);
+  }
+
+  @Test
+  public void testPartialUnsupportedStatement() {
+    _policyBuilder
+        .addStatement(
+            new If(
+                matchPrefixSet(
+                    ImmutableList.of(
+                        new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                // the SelfNextHop construct is not supported
+                ImmutableList.of(
+                    new SetNextHop(SelfNextHop.getInstance()),
+                    new StaticStatement(Statements.ExitAccept))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute outRoute = anyRoute(tbdd.getFactory());
+    // the condition under which the if guard is satisfied
+    BDD entersIf =
+        isRelevantForDestination(
+            outRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    outRoute.setUnsupported(entersIf);
     assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
     assertEquals(outAnnouncements, outRoute);
   }

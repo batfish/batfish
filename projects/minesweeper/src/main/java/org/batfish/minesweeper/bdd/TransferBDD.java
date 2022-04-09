@@ -1072,8 +1072,12 @@ public class TransferBDD {
             + stmt);
     TransferParam curP = state.getTransferParam();
     TransferResult result = state.getTransferResult();
-    BDD currUnsupported = curP.getData().getUnsupported();
-    BDD newValue = ite(unreachable(result), currUnsupported, _factory.one());
+    BDD alreadyUnsupported = curP.getData().getUnsupported();
+    // the conditions under which the current statement is reachable
+    BDD reachUnsupportedStatement = unreachable(result).not();
+    // we've reached an unsupported statement if either we previously reached one or
+    // the current statement is reachable
+    BDD newValue = alreadyUnsupported.or(reachUnsupportedStatement);
     curP.getData().setUnsupported(newValue);
   }
 
