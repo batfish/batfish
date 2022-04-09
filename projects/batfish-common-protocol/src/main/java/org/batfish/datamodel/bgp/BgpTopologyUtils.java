@@ -523,11 +523,11 @@ public final class BgpTopologyUtils {
   }
 
   /**
-   * Returns the potential source IPs of a packet with the given {@code dstIp} originating on the
-   * given {@link Configuration} in a VRF with the given {@link Fib}. Concretely, finds LPM routes
-   * for {@code dstIp} and returns the IPs of those routes' forwarding interfaces.
+   * Returns the names of source interface(s) of a packet with the given {@code dstIp} originating
+   * on the given {@link Configuration} in a VRF with the given {@link Fib}. Concretely, finds LPM
+   * routes for {@code dstIp} and returns those routes' forwarding interfaces.
    */
-  public static Set<Ip> getPotentialSrcIps(Ip dstIp, Fib fib, Configuration c) {
+  public static Set<Interface> getSrcInterfaces(Ip dstIp, Fib fib, Configuration c) {
     return fib.get(dstIp).stream()
         .map(FibEntry::getAction)
         // Find forwarding interface for this FIB entry, if any
@@ -555,6 +555,16 @@ public final class BgpTopologyUtils {
         .filter(Objects::nonNull)
         .map(forwardingIfaceName -> c.getActiveInterfaces().get(forwardingIfaceName))
         .filter(Objects::nonNull)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /**
+   * Returns the potential source IPs of a packet with the given {@code dstIp} originating on the
+   * given {@link Configuration} in a VRF with the given {@link Fib}. Concretely, finds LPM routes
+   * for {@code dstIp} and returns the IPs of those routes' forwarding interfaces.
+   */
+  public static Set<Ip> getPotentialSrcIps(Ip dstIp, Fib fib, Configuration c) {
+    return getSrcInterfaces(dstIp, fib, c).stream()
         .map(Interface::getConcreteAddress)
         .filter(Objects::nonNull)
         .map(ConcreteInterfaceAddress::getIp)
