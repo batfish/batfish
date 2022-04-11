@@ -31,9 +31,9 @@ tokens {
    RST,
    SUB_RANGE,
    SYN,
+   UINT32L,
    VERSION_STRING,
-   WILDCARD_ARTIFACT,
-   UINT32L
+   WILDCARD_ARTIFACT
 }
 
 // Juniper Keywords

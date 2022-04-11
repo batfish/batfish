@@ -1890,7 +1890,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   private static long toLong(Uint32lContext ctx) {
-    return Long.parseLong(ctx.getText().replace("L", ""));
+    return Long.parseLong(ctx.getText().substring(0, ctx.getText().length() - 1));
   }
 
   private static long toLong(Uint16Context ctx) {
@@ -1986,13 +1986,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       assert ctx.rd_asn_colon_id() != null;
       if (ctx.rd_asn_colon_id().high32 != null) {
-        // If "L" appended to the number it's a 4byte ASN.
+        // If "L" appended to the number it's a 4-byte ASN.
         return RouteDistinguisher.from(
-            toLong(ctx.rd_asn_colon_id().high32),
-            Integer.parseInt(ctx.rd_asn_colon_id().low16.getText()));
+            toLong(ctx.rd_asn_colon_id().high32), toInteger(ctx.rd_asn_colon_id().low16));
       }
       return RouteDistinguisher.from(
-          toLong(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
+          toInteger(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
     }
   }
 
