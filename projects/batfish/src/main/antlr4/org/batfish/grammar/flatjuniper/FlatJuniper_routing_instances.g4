@@ -74,11 +74,7 @@ ri_protocols
 
 ri_route_distinguisher
 :
-   ROUTE_DISTINGUISHER
-   (
-      dec
-      | IP_ADDRESS
-   ) COLON dec
+   ROUTE_DISTINGUISHER route_distinguisher
 ;
 
 ri_snmp

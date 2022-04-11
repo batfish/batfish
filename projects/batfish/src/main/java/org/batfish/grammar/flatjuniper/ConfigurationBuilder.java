@@ -184,6 +184,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
@@ -551,6 +552,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_packet_locationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_addressContext;
@@ -569,6 +571,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_switch_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
@@ -659,6 +662,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_authorizationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_client_list_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_route_distinguisherContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_methodContext;
@@ -688,6 +693,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint16_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32lContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlan_numberContext;
@@ -1883,6 +1889,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return Long.parseLong(ctx.getText());
   }
 
+  private static long toLong(Uint32lContext ctx) {
+    return Long.parseLong(ctx.getText().substring(0, ctx.getText().length() - 1));
+  }
+
   private static long toLong(Uint16Context ctx) {
     return Long.parseLong(ctx.getText());
   }
@@ -1967,6 +1977,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       range.add(sr);
     }
     return range;
+  }
+
+  private static RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
+    if (ctx.rd_ip_address_colon_id() != null) {
+      String[] rd_ip = ctx.rd_ip_address_colon_id().getText().split(":");
+      return RouteDistinguisher.from(Ip.parse(rd_ip[0]), Integer.parseInt(rd_ip[1]));
+    } else {
+      assert ctx.rd_asn_colon_id() != null;
+      if (ctx.rd_asn_colon_id().high32 != null) {
+        // If "L" appended to the number it's a 4-byte ASN.
+        return RouteDistinguisher.from(
+            toLong(ctx.rd_asn_colon_id().high32), toInteger(ctx.rd_asn_colon_id().low16));
+      }
+      return RouteDistinguisher.from(
+          toInteger(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
+    }
   }
 
   private static SubRange toSubRange(SubrangeContext ctx) {
@@ -3272,6 +3298,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentRoutingInstance.setSnmpServer(snmpServer);
     }
     _currentSnmpServer = snmpServer;
+  }
+
+  @Override
+  public void enterS_switch_options(S_switch_optionsContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSo_route_distinguisher(So_route_distinguisherContext ctx) {
+    RouteDistinguisher rd = toRouteDistinguisher(ctx.route_distinguisher());
+    _currentLogicalSystem.getOrInitSwitchOptions().setRouteDistinguisher(rd);
+  }
+
+  @Override
+  public void exitSo_vtep_source_interface(So_vtep_source_interfaceContext ctx) {
+    // TODO: add reference
+    String ifaceName = getInterfaceFullName(ctx.iface);
+    _currentLogicalSystem.getOrInitSwitchOptions().setVtepSourceInterface(ifaceName);
   }
 
   @Override
