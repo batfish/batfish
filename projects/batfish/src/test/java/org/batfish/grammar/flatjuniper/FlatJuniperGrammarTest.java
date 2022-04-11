@@ -318,6 +318,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
@@ -6300,6 +6301,44 @@ public final class FlatJuniperGrammarTest {
     NatPool pool1 = sourceNat.getPools().get("POOL1");
     assertThat(pool0.getOwner(), equalTo("R1"));
     assertNull(pool1.getOwner());
+  }
+
+  @Test
+  public void testSwitchOptionsVtepSourceInterfaceExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-vtep-source");
+    String vtep =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getVtepSourceInterface();
+    assertEquals("lo0.0", vtep);
+  }
+
+  @Test
+  public void testSwitchOptionsRouteDistinguisherIpExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-ip");
+    RouteDistinguisher rd =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
+    Ip ip = Ip.parse("14.14.14.14");
+    Integer asn1 = 7999;
+    assertEquals(RouteDistinguisher.from(ip, asn1), rd);
+  }
+
+  @Test
+  public void testSwitchOptionsRouteDistinguisherTwoByteAsnExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-asn2");
+    RouteDistinguisher rd =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
+    Integer asn1 = 555;
+    long asn2 = 1651000;
+    assertEquals(RouteDistinguisher.from(asn1, asn2), rd);
+  }
+
+  @Test
+  public void testSwitchOptionsRouteDistinguisherFourByteAsnExtraction() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-asn4");
+    RouteDistinguisher rd =
+        juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
+    long asn1 = 77765000;
+    Integer asn2 = 1000;
+    assertEquals(RouteDistinguisher.from(asn1, asn2), rd);
   }
 
   @Test
