@@ -2644,10 +2644,11 @@ public class JFactory extends BDDFactory {
 
   private boolean testsVars_rec(int r) {
     BddCacheDataI entry;
-    boolean res = false;
 
     if (r < 2 || LEVEL(r) > quantlast) {
       return false;
+    } else if (INVARSET(LEVEL(r))) {
+      return true;
     }
 
     int hash = QUANTHASH(r);
@@ -2662,9 +2663,7 @@ public class JFactory extends BDDFactory {
       cachestats.opMiss++;
     }
 
-    if (INVARSET(LEVEL(r)) || testsVars_rec(LOW(r)) || testsVars_rec(HIGH(r))) {
-      res = true;
-    }
+    boolean res = testsVars_rec(LOW(r)) || testsVars_rec(HIGH(r));
 
     if (CACHESTATS && entry.a != -1) {
       cachestats.opOverwrite++;
