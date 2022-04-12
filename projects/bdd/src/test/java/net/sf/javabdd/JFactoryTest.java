@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -491,6 +492,41 @@ public class JFactoryTest {
     assertEquals(JFactory.dedupSorted(a3), a3);
     int[] a4 = {1};
     assertEquals(JFactory.dedupSorted(a4), a4);
+  }
+
+  @Test
+  public void testTestsVars() {
+    _factory.setVarNum(10);
+    BDD var0 = _factory.ithVar(0);
+    BDD var1 = _factory.ithVar(1);
+    BDD var2 = _factory.ithVar(2);
+    BDD zero = _factory.zero();
+    BDD one = _factory.one();
+
+    // testsVars should be false if either BDD or constraint is zero or one
+    assertFalse(zero.testsVars(zero));
+    assertFalse(zero.testsVars(one));
+    assertFalse(one.testsVars(zero));
+    assertFalse(one.testsVars(one));
+    assertFalse(var0.testsVars(zero));
+    assertFalse(var0.testsVars(one));
+    assertFalse(zero.testsVars(var0));
+    assertFalse(one.testsVars(var0));
+
+    assertTrue(var0.testsVars(var0));
+
+    BDD vars1And2 = var1.and(var2);
+    assertFalse(var0.testsVars(vars1And2));
+    assertTrue(var1.testsVars(vars1And2));
+    assertTrue(var2.testsVars(vars1And2));
+    assertFalse(vars1And2.testsVars(var0));
+    assertTrue(vars1And2.testsVars(var1));
+    assertTrue(vars1And2.testsVars(var2));
+
+    BDD vars1Xor2 = var1.xor(var2);
+    assertFalse(vars1Xor2.testsVars(var0));
+    assertTrue(vars1Xor2.testsVars(var1));
+    assertTrue(vars1Xor2.testsVars(var2));
   }
 
   @Test
