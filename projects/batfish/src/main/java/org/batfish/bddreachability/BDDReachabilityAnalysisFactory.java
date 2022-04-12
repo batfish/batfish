@@ -1452,18 +1452,17 @@ public final class BDDReachabilityAnalysisFactory {
   public BDD computeFinalHeaderSpaceBdd(BDD initialHeaderSpaceBdd) {
     BDD finalHeaderSpace = initialHeaderSpaceBdd;
 
-    BDD noDstIp = finalHeaderSpace.exist(_dstIpVars);
-    if (!noDstIp.equals(finalHeaderSpace)) {
+    if (finalHeaderSpace.testsVars(_dstIpVars)) {
       // there's a constraint on dst Ip, so include nat pool Ips
       BDD dstTransformationRange = _transformationIpRanges.get(IpField.DESTINATION);
       if (dstTransformationRange != null) {
         // dst IP is either the initial one, or one of that NAT pool IPs.
+        BDD noDstIp = finalHeaderSpace.exist(_dstIpVars);
         finalHeaderSpace = finalHeaderSpace.or(noDstIp.and(dstTransformationRange));
       }
     }
 
-    BDD noSrcIp = finalHeaderSpace.exist(_sourceIpVars);
-    if (!noSrcIp.equals(finalHeaderSpace)) {
+    if (finalHeaderSpace.testsVars(_sourceIpVars)) {
       // there's a constraint on source Ip, so include nat pool Ips
       BDD srcNatPoolIps = _transformationIpRanges.getOrDefault(IpField.SOURCE, _zero);
       if (!srcNatPoolIps.isZero()) {
@@ -1472,22 +1471,23 @@ public final class BDDReachabilityAnalysisFactory {
          * existentially quantify away the constraint. There's a performance trade-off: tighter
          * constraints prune more paths, but are more expensive to operate on.
          */
+        BDD noSrcIp = finalHeaderSpace.exist(_sourceIpVars);
         finalHeaderSpace = finalHeaderSpace.or(noSrcIp.and(srcNatPoolIps));
       }
     }
 
-    BDD noDstPort = finalHeaderSpace.exist(_dstPortVars);
-    if (!noDstPort.equals(finalHeaderSpace)) {
+    if (finalHeaderSpace.testsVars(_dstPortVars)) {
       BDD dstTransformationRange = _transformationPortRanges.get(PortField.DESTINATION);
       if (dstTransformationRange != null) {
+        BDD noDstPort = finalHeaderSpace.exist(_dstPortVars);
         finalHeaderSpace = finalHeaderSpace.or(noDstPort.and(dstTransformationRange));
       }
     }
 
-    BDD noSrcPort = finalHeaderSpace.exist(_sourcePortVars);
-    if (!noSrcPort.equals(finalHeaderSpace)) {
+    if (finalHeaderSpace.testsVars(_sourcePortVars)) {
       BDD srcNatPool = _transformationPortRanges.getOrDefault(PortField.SOURCE, _zero);
       if (!srcNatPool.isZero()) {
+        BDD noSrcPort = finalHeaderSpace.exist(_sourcePortVars);
         finalHeaderSpace = finalHeaderSpace.or(noSrcPort.and(srcNatPool));
       }
     }

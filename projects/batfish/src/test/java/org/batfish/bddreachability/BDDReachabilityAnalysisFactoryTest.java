@@ -455,10 +455,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
                           + "requiredTransitNode must set the requiredTransitNodes bit",
                       edge.traverseForward(validSrc).andSat(notTransited));
                   BDD backwardOne = edge.traverseBackward(peerValidSrc);
-                  assertTrue(
+                  assertFalse(
                       "Backward Edge from PreOutEdgePostNat to PreInInterface for a "
                           + " requiredTransitNode must not constrain the bit after exit",
-                      backwardOne.exist(requiredTransitNodesBDD).equals(backwardOne));
+                      backwardOne.testsVars(requiredTransitNodesBDD));
                 } else {
                   assertFalse(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
