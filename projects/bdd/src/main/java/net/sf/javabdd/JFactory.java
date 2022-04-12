@@ -233,6 +233,13 @@ public class JFactory extends BDDFactory {
     }
 
     @Override
+    public boolean testsVars(BDD var) {
+      int x = _index;
+      int y = ((BDDImpl) var)._index;
+      return bdd_testsVars(x, y);
+    }
+
+    @Override
     public BDD project(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
@@ -2635,6 +2642,40 @@ public class JFactory extends BDDFactory {
     return res;
   }
 
+  private boolean testsVars_rec(int r) {
+    BddCacheDataI entry;
+
+    if (r < 2 || LEVEL(r) > quantlast) {
+      return false;
+    } else if (INVARSET(LEVEL(r))) {
+      return true;
+    }
+
+    int hash = QUANTHASH(r);
+    entry = BddCache_lookupI(quantcache, hash);
+    if (entry.a == r && entry.c == quantid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.res == BDDONE;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    boolean res = testsVars_rec(LOW(r)) || testsVars_rec(HIGH(r));
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = r;
+    entry.c = quantid;
+    entry.res = res ? BDDONE : BDDZERO;
+    entry.hash = hash;
+
+    return res;
+  }
+
   private int project_rec(int r) {
     BddCacheDataI entry;
     int res;
@@ -2925,6 +2966,26 @@ public class JFactory extends BDDFactory {
     checkresize();
 
     return res;
+  }
+
+  private boolean bdd_testsVars(int r, int var) {
+    CHECK(r);
+    CHECK(var);
+
+    if (var < 2) {
+      // bdd.exist(var) is equal to bdd if var is zero or one
+      return false;
+    }
+    if (varset2vartable(var) < 0) {
+      return false; // error converting var to vartable
+    }
+
+    if (quantcache == null) {
+      quantcache = BddCacheI_init(cachesize);
+    }
+    quantid = (var << 3) | CACHEID_TESTS_CONSTRAINT; /* FIXME: range */
+
+    return testsVars_rec(r);
   }
 
   private int bdd_project(int r, int var) {
@@ -4050,6 +4111,7 @@ public class JFactory extends BDDFactory {
   private static final int CACHEID_APPAL = 0x4;
   private static final int CACHEID_APPUN = 0x5;
   private static final int CACHEID_PROJECT = 0x6;
+  private static final int CACHEID_TESTS_CONSTRAINT = 0x7;
 
   /* Number of boolean operators */
   static final int OPERATOR_NUM = 11;
