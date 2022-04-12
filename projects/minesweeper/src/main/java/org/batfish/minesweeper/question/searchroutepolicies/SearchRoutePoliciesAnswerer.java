@@ -483,11 +483,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   private Optional<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     TransferReturn result;
     try {
-      TransferBDD tbdd = new TransferBDD(configAPs, policy.getOwner(), policy.getStatements());
+      TransferBDD tbdd = new TransferBDD(configAPs, policy);
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(
-          "Unsupported features in route policy "
+          "Unexpected error analyzing policy "
               + policy.getName()
               + " in node "
               + policy.getOwner().getHostname(),
@@ -506,6 +506,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     } else {
       intersection = acceptedAnnouncements.not().and(inConstraints);
     }
+
+    // only search for models on paths where no unsupported route-policy feature was encountered
+    intersection = intersection.andWith(outputRoute.getUnsupported().not());
 
     return constraintsToResult(intersection, policy, configAPs);
   }

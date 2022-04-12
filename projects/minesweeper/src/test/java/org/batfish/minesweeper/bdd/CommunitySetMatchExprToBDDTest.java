@@ -35,6 +35,7 @@ import org.junit.Test;
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD} */
 public class CommunitySetMatchExprToBDDTest {
   private static final String HOSTNAME = "hostname";
+  private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
   private Configuration _baseConfig;
   private ConfigAtomicPredicates _configAPs;
@@ -64,7 +65,10 @@ public class CommunitySetMatchExprToBDDTest {
                 CommunityVar.from(StandardCommunity.parse("20:30")),
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
-    TransferBDD transferBDD = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
+    TransferBDD transferBDD =
+        new TransferBDD(
+            _configAPs,
+            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 

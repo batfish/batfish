@@ -25,6 +25,7 @@ import org.junit.Test;
 /** Tests for {@link org.batfish.minesweeper.bdd.AsPathMatchExprToBDD}. */
 public class AsPathMatchExprToBDDTest {
   private static final String HOSTNAME = "hostname";
+  private static final String POLICY_NAME = "policy";
   private Configuration _baseConfig;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private AsPathMatchExprToBDD _matchExprToBDD;
@@ -50,7 +51,10 @@ public class AsPathMatchExprToBDDTest {
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             batfish, batfish.getSnapshot(), HOSTNAME, null, ImmutableSet.of(ASPATH1, ASPATH2));
-    TransferBDD transferBDD = new TransferBDD(configAPs, _baseConfig, ImmutableList.of());
+    TransferBDD transferBDD =
+        new TransferBDD(
+            configAPs,
+            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
     _matchExprToBDD = new AsPathMatchExprToBDD();

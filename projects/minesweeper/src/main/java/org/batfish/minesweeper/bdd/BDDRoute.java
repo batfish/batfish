@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.MutableBDDInteger;
@@ -104,6 +105,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   private MutableBDDInteger _tag;
+
+  // the conditions under which the analysis encounters an unsupported route-policy
+  // statement/expression
+  @Nonnull private BDD _unsupported;
 
   /**
    * The routing protocols allowed in a BGP route announcement (see {@link
@@ -197,6 +202,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
+    // Initially there are no unsupported statements encountered
+    _unsupported = factory.zero();
   }
 
   /*
@@ -220,6 +227,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
+    _unsupported = other._unsupported.id();
   }
 
   /*
@@ -452,6 +460,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
+  public BDD getUnsupported() {
+    return _unsupported;
+  }
+
+  public void setUnsupported(@Nonnull BDD unsupported) {
+    _unsupported = unsupported;
+  }
+
   @Override
   public int hashCode() {
     if (_hcode == 0) {
@@ -473,6 +489,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
               + (_asPathRegexAtomicPredicates != null
                   ? Arrays.hashCode(_asPathRegexAtomicPredicates)
                   : 0);
+      result = 31 * result + _unsupported.hashCode();
       _hcode = result;
     }
     return _hcode;
@@ -494,6 +511,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
         && Objects.equals(_nextHopSet, other._nextHopSet)
         && Objects.equals(_tag, other._tag)
-        && Objects.equals(_adminDist, other._adminDist);
+        && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_unsupported, other._unsupported);
   }
 }
