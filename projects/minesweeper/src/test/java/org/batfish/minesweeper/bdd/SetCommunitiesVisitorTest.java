@@ -2,7 +2,6 @@ package org.batfish.minesweeper.bdd;
 
 import static org.junit.Assert.assertEquals;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -33,6 +32,7 @@ import org.junit.Test;
 /** Tests for {@link SetCommunitiesVisitor}. */
 public class SetCommunitiesVisitorTest {
   private static final String HOSTNAME = "hostname";
+  private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
   private Configuration _baseConfig;
   private ConfigAtomicPredicates _configAPs;
@@ -61,7 +61,10 @@ public class SetCommunitiesVisitorTest {
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
 
-    TransferBDD transferBDD = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
+    TransferBDD transferBDD =
+        new TransferBDD(
+            _configAPs,
+            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 

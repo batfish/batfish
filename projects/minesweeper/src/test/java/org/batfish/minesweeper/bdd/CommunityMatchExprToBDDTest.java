@@ -52,6 +52,7 @@ import org.junit.rules.ExpectedException;
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunityMatchExprToBDD}. */
 public class CommunityMatchExprToBDDTest {
   private static final String HOSTNAME = "hostname";
+  private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
   private Configuration _baseConfig;
   private ConfigAtomicPredicates _configAPs;
@@ -90,7 +91,10 @@ public class CommunityMatchExprToBDDTest {
                 CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)),
                 CommunityVar.from(LargeCommunity.of(20, 20, 20))),
             null);
-    TransferBDD transferBDD = new TransferBDD(_configAPs, _baseConfig, ImmutableList.of());
+    TransferBDD transferBDD =
+        new TransferBDD(
+            _configAPs,
+            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
