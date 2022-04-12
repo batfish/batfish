@@ -145,7 +145,7 @@ public final class Transitions {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
       EraseAndSet eas = (EraseAndSet) t2;
       BDD eraseVars = eas.getEraseVars();
-      if (constraintBdd.exist(eraseVars).equals(constraintBdd)) {
+      if (!constraintBdd.testsVars(eraseVars)) {
         // constraint doesn't refer to eraseVars
         return eraseAndSet(eraseVars, constraintBdd.and(eas.getSetValue()));
       }
@@ -175,7 +175,7 @@ public final class Transitions {
       BDD val2 = eas2.getSetValue();
       if (vars1.equals(vars2)) {
         return eas2;
-      } else if (vars1.exist(vars2).equals(vars1)) {
+      } else if (!vars1.testsVars(vars2)) {
         return eraseAndSet(vars1.and(vars2), val1.and(val2));
       } else {
         // variables sets are different but overlap. probably would only happen as a result of

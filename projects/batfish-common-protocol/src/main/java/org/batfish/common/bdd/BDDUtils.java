@@ -58,11 +58,9 @@ public class BDDUtils {
    * disjoint. Frees both arguments.
    */
   public static boolean checkVariablesDisjointAndFree(BDD vars1, BDD vars2) {
-    BDD vars1Erased = vars1.exist(vars2);
-    boolean disjoint = vars1Erased.equals(vars1);
+    boolean disjoint = !vars1.testsVars(vars2);
     vars1.free();
     vars2.free();
-    vars1Erased.free();
     return disjoint;
   }
 }
