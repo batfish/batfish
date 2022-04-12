@@ -2656,7 +2656,7 @@ public class JFactory extends BDDFactory {
       if (CACHESTATS) {
         cachestats.opHit++;
       }
-      return entry.res == 1;
+      return entry.res == BDDONE;
     }
     if (CACHESTATS) {
       cachestats.opMiss++;
@@ -2671,7 +2671,7 @@ public class JFactory extends BDDFactory {
     }
     entry.a = r;
     entry.c = quantid;
-    entry.res = res ? 1 : 0;
+    entry.res = res ? BDDONE : BDDZERO;
     entry.hash = hash;
 
     return res;
