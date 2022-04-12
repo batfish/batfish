@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.datamodel.FlowToBDD.flowHeadersToBdd;
-import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import net.sf.javabdd.BDD;
@@ -37,20 +37,18 @@ public class FlowToBDDTest {
     assertThat(headerBdd.imp(_packet.getFragmentOffset().value(4)), isOne());
     assertThat(headerBdd.imp(_packet.getPacketLength().value(71)), isOne());
     // Protocol-specific values are not constrained.
-    assertThat(headerBdd.exist(_packet.getSrcPort().getVars()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getDstPort().getVars()), equalTo(headerBdd));
-    assertThat(
-        headerBdd.exist(_packet.getIcmpCode().getBDDInteger().getVars()), equalTo(headerBdd));
-    assertThat(
-        headerBdd.exist(_packet.getIcmpType().getBDDInteger().getVars()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpAck()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpCwr()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpEce()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpFin()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpPsh()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpRst()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpSyn()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpUrg()), equalTo(headerBdd));
+    assertFalse(headerBdd.testsVars(_packet.getSrcPort().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getDstPort().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getIcmpCode().getBDDInteger().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getIcmpType().getBDDInteger().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpAck()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpCwr()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpEce()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpFin()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpPsh()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpRst()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpSyn()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpUrg()));
   }
 
   /** Test that ICMP packets are converted correctly. */
@@ -63,16 +61,16 @@ public class FlowToBDDTest {
     assertThat(headerBdd.imp(_packet.getIcmpCode().value(5)), isOne());
     assertThat(headerBdd.imp(_packet.getIcmpType().value(7)), isOne());
     // TCP/UDP fields are not constrained
-    assertThat(headerBdd.exist(_packet.getSrcPort().getVars()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getDstPort().getVars()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpAck()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpCwr()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpEce()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpFin()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpPsh()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpRst()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpSyn()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpUrg()), equalTo(headerBdd));
+    assertFalse(headerBdd.testsVars(_packet.getSrcPort().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getDstPort().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpAck()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpCwr()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpEce()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpFin()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpPsh()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpRst()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpSyn()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpUrg()));
   }
 
   @Test
@@ -97,10 +95,8 @@ public class FlowToBDDTest {
     assertThat(headerBdd.imp(_packet.getTcpSyn()), isOne());
     assertThat(headerBdd.imp(_packet.getTcpUrg().not()), isOne());
     // ICMP code and type are not constrained
-    assertThat(
-        headerBdd.exist(_packet.getIcmpCode().getBDDInteger().getVars()), equalTo(headerBdd));
-    assertThat(
-        headerBdd.exist(_packet.getIcmpType().getBDDInteger().getVars()), equalTo(headerBdd));
+    assertFalse(headerBdd.testsVars(_packet.getIcmpCode().getBDDInteger().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getIcmpType().getBDDInteger().getVars()));
   }
 
   @Test
@@ -112,17 +108,15 @@ public class FlowToBDDTest {
     assertThat(headerBdd.imp(_packet.getSrcPort().value(22)), isOne());
     assertThat(headerBdd.imp(_packet.getDstPort().value(55)), isOne());
     // ICMP code and type, TCP flags are not constrained
-    assertThat(
-        headerBdd.exist(_packet.getIcmpCode().getBDDInteger().getVars()), equalTo(headerBdd));
-    assertThat(
-        headerBdd.exist(_packet.getIcmpType().getBDDInteger().getVars()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpAck()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpCwr()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpEce()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpFin()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpPsh()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpRst()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpSyn()), equalTo(headerBdd));
-    assertThat(headerBdd.exist(_packet.getTcpUrg()), equalTo(headerBdd));
+    assertFalse(headerBdd.testsVars(_packet.getIcmpCode().getBDDInteger().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getIcmpType().getBDDInteger().getVars()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpAck()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpCwr()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpEce()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpFin()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpPsh()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpRst()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpSyn()));
+    assertFalse(headerBdd.testsVars(_packet.getTcpUrg()));
   }
 }
