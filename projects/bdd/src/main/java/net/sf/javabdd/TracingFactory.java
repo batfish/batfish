@@ -175,6 +175,8 @@ public final class TracingFactory extends JFactory {
     SET_VAR_NUM,
     /** {@link BDD#support()}. */
     SUPPORT,
+    /** {@link BDD#testsVars(BDD)}. */
+    TESTS_VARS,
     /** {@link BDDFactory#zero}. */
     ZERO,
   }
@@ -441,6 +443,11 @@ public final class TracingFactory extends JFactory {
           assert operation._resultSeq != null;
           recordSequence(operation._resultSeq, replayBdd(operation._argSeqs[0]).support());
           break;
+        case TESTS_VARS:
+          assert operation._resultSeq == null;
+          assert operation._intArg == null;
+          replayBdd(operation._argSeqs[0]).testsVars(replayBdd(operation._argSeqs[1]));
+          break;
         case ZERO:
           assert operation._resultSeq != null;
           recordSequence(operation._resultSeq, _factory.zero());
@@ -562,6 +569,13 @@ public final class TracingFactory extends JFactory {
           makeNew ? Operation.EXIST : Operation.EXIST_EQ,
           _bdd,
           tracedVar._bdd);
+    }
+
+    @Override
+    public boolean testsVars(BDD var) {
+      TracedBDDImpl tracedVar = (TracedBDDImpl) var;
+      traceNoResult(Operation.TESTS_VARS, _bdd, tracedVar._bdd);
+      return _bdd.testsVars(tracedVar._bdd);
     }
 
     @Override

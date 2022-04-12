@@ -596,6 +596,14 @@ public abstract class BDD {
   abstract BDD exist(BDD var, boolean makeNew);
 
   /**
+   * Return true if this BDD tests any of the variables set in the given {@code var} BDD. Equivalent
+   * to {@code !this.exist(var).equals(this)}, but doesn't create BDDs.
+   *
+   * @param var BDD specifying the variables to test
+   */
+  public abstract boolean testsVars(BDD var);
+
+  /**
    * Project this BDD onto the variables in the set. i.e. existentially quantify all other
    * variables.
    *
