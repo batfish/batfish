@@ -1477,6 +1477,37 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
+  public void testUnsupportedIfStatement() {
+    _policyBuilder
+        .addStatement(
+            new If(
+                new MatchCommunities(
+                    // currently we only support matching on InputCommunities
+                    new LiteralCommunitySet(CommunitySet.empty()),
+                    new HasCommunity(
+                        org.batfish.datamodel.routing_policy.communities.AllStandardCommunities
+                            .instance())),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            Action.PERMIT);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    // there are no answers because all paths go through the unsupported If guard
+    assertEquals(answer.getRows().size(), 0);
+  }
+
+  @Test
   public void testUnsupportedStatementAvoid() {
     _policyBuilder
         .addStatement(
