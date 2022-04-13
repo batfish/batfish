@@ -52,15 +52,4 @@ public class BDDUtils {
 
     return pairing;
   }
-
-  /**
-   * Tests if two variable-set {@link BDD BDDs} (i.e. conjunctions of some number of variables) are
-   * disjoint. Frees both arguments.
-   */
-  public static boolean checkVariablesDisjointAndFree(BDD vars1, BDD vars2) {
-    boolean disjoint = !vars1.testsVars(vars2);
-    vars1.free();
-    vars2.free();
-    return disjoint;
-  }
 }

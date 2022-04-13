@@ -1,7 +1,5 @@
 package org.batfish.bddreachability.transition;
 
-import static org.batfish.common.bdd.BDDUtils.checkVariablesDisjointAndFree;
-
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -55,10 +53,7 @@ public class Transform implements Transition {
    * applied in series -- first this, then other.
    */
   public Optional<Transform> tryCompose(Transform other) {
-    boolean disjoint =
-        checkVariablesDisjointAndFree(
-            _pairingFactory.getDomainVarsBdd(), other._pairingFactory.getDomainVarsBdd());
-    if (!disjoint) {
+    if (_vars.testsVars(other._vars)) {
       // vars are not disjoint so we can't compose
       return Optional.empty();
     }
@@ -80,9 +75,7 @@ public class Transform implements Transition {
    * two transforms to have equal domains.
    */
   public Optional<Transform> tryOr(Transform other) {
-    BDD vars = _pairingFactory.getDomainVarsBdd();
-    BDD otherVars = other._pairingFactory.getDomainVarsBdd();
-    if (!vars.equals(otherVars)) {
+    if (!_vars.equals(other._vars)) {
       return Optional.empty();
     }
     return Optional.of(new Transform(_forwardRelation.or(other._forwardRelation), _pairingFactory));
