@@ -322,11 +322,6 @@ final class AristaConversions {
     if (updateSourceInterface != null) {
       Interface iface = vrfInterfaces.get(updateSourceInterface);
       if (iface == null) {
-        warnings.redFlag(
-            String.format(
-                "BGP neighbor %s in vrf %s: configured update-source %s does not exist or "
-                    + "is not associated with this vrf",
-                dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface));
         return null;
       }
       ConcreteInterfaceAddress address = iface.getConcreteAddress();
