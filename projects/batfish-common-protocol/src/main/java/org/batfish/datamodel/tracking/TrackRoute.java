@@ -1,6 +1,7 @@
 package org.batfish.datamodel.tracking;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -86,6 +87,15 @@ public final class TrackRoute implements TrackMethod {
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     return new TrackRoute(
         prefix, ImmutableSet.copyOf(firstNonNull(protocols, ImmutableSet.of())), vrf);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this)
+        .add(PROP_PREFIX, _prefix)
+        .add(PROP_PROTOCOLS, _protocols)
+        .add(PROP_VRF, _vrf)
+        .toString();
   }
 
   private static final String PROP_PREFIX = "prefix";
