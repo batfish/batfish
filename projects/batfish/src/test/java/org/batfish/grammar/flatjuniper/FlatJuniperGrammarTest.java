@@ -376,6 +376,7 @@ import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DscpUtil;
+import org.batfish.representation.juniper.EthernetSwitching;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationPort;
@@ -7310,6 +7311,38 @@ public final class FlatJuniperGrammarTest {
         vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getPrefixes(),
         contains(Prefix.strict("192.0.2.1/32")));
     assertFalse(vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getHasIpv6());
+  }
+
+  @Test
+  public void testEthernetSwitchingVlanIdListExtraction() {
+    String hostname = "ethernet_switching_vlan_id_list";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    EthernetSwitching es =
+        vc.getMasterLogicalSystem()
+            .getInterfaces()
+            .get("xe-0/0/0")
+            .getUnits()
+            .get("xe-0/0/0.0")
+            .getEthernetSwitching();
+    assertNotNull(es);
+    assertThat(es.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+    assertThat(
+        es.getVlanMembers(), contains(instanceOf(VlanRange.class), instanceOf(VlanRange.class)));
+    assertThat(((VlanRange) es.getVlanMembers().get(0)).getRange(), equalTo(IntegerSpace.of(1)));
+    assertThat(((VlanRange) es.getVlanMembers().get(1)).getRange(), equalTo(IntegerSpace.of(2)));
+  }
+
+  @Test
+  public void testEthernetSwitchingVlanIdListConversion() {
+    String hostname = "ethernet_switching_vlan_id_list";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c,
+        hasInterface(
+            "xe-0/0/0.0",
+            allOf(
+                hasAllowedVlans(IntegerSpace.of(Range.closed(1, 2))),
+                hasSwitchPortMode(SwitchportMode.TRUNK))));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

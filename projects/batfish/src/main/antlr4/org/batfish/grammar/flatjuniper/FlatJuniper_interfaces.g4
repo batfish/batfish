@@ -292,6 +292,7 @@ if_ethernet_switching
       | ife_native_vlan_id
       | ife_port_mode
       | ife_vlan
+      | ife_vlan_id_list
    )
 ;
 
@@ -398,6 +399,8 @@ ife_vlan
       | name = junos_name
    )
 ;
+
+ife_vlan_id_list: VLAN_ID_LIST num = vlan_number;
 
 ifi_address
 :

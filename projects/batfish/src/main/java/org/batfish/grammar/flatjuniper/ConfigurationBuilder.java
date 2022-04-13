@@ -331,6 +331,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_interface_modeConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlan_id_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_tcp_mssContext;
@@ -4778,6 +4779,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitIfe_vlan_id_list(Ife_vlan_id_listContext ctx) {
+    if (!_currentInterfaceOrRange.getName().endsWith(".0")) {
+      warn(ctx, "Vlan-id-list can only be configured on unit 0");
+      return;
+    }
+    Optional<Integer> maybeVlan = toInteger(ctx, ctx.num);
+    if (!maybeVlan.isPresent()) {
+      // already warned
+      return;
+    }
+    _currentInterfaceOrRange
+        .getEthernetSwitching()
+        .getVlanMembers()
+        .add(new VlanRange(IntegerSpace.of(maybeVlan.get())));
   }
 
   @Override

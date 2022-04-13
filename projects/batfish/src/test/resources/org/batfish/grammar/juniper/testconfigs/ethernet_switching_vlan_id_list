@@ -1,0 +1,10 @@
+#RANCID-CONTENT-TYPE: juniper
+
+set system host-name ethernet_switching_vlan_id_list
+
+set interfaces xe-0/0/0 unit 0 family ethernet-switching interface-mode trunk
+set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan-id-list 1
+set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan-id-list 2
+
+# invalid
+set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan-id-list 0
