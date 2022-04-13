@@ -452,18 +452,24 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                 /*
                  * Compare priorities first, then highest interface IP, then hostname, then interface name.
                  */
+                Map<NodeInterfacePair, Integer> priorities =
+                    partitionInterfaces.stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                NodeInterfacePair::of,
+                                i ->
+                                    computeHsrpPriority(
+                                        i,
+                                        i.getHsrpGroups().get(groupNum),
+                                        groupNum,
+                                        provider,
+                                        electionDetails)));
                 NodeInterfacePair hsrpMaster =
                     NodeInterfacePair.of(
                         Collections.max(
                             partitionInterfaces,
                             Comparator.comparingInt(
-                                    (Interface o) ->
-                                        computeHsrpPriority(
-                                            o,
-                                            o.getHsrpGroups().get(groupNum),
-                                            groupNum,
-                                            provider,
-                                            electionDetails))
+                                    (Interface o) -> priorities.get(NodeInterfacePair.of(o)))
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
                 if (electionDetails != null) {
@@ -594,18 +600,24 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                 /*
                  * Compare priorities first, then highest interface IP, then hostname, then interface name.
                  */
+                Map<NodeInterfacePair, Integer> priorities =
+                    partitionInterfaces.stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                NodeInterfacePair::of,
+                                i ->
+                                    computeVrrpPriority(
+                                        i,
+                                        i.getVrrpGroups().get(vrid),
+                                        vrid,
+                                        provider,
+                                        electionDetails)));
                 NodeInterfacePair vrrpMaster =
                     NodeInterfacePair.of(
                         Collections.max(
                             partitionInterfaces,
                             Comparator.comparingInt(
-                                    (Interface o) ->
-                                        computeVrrpPriority(
-                                            o,
-                                            o.getVrrpGroups().get(vrid),
-                                            vrid,
-                                            provider,
-                                            electionDetails))
+                                    (Interface o) -> priorities.get(NodeInterfacePair.of(o)))
                                 .thenComparing(o -> o.getConcreteAddress().getIp())
                                 .thenComparing(o -> NodeInterfacePair.of(o))));
                 if (electionDetails != null) {
