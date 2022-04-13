@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.Comparator;
@@ -452,6 +453,13 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                 /*
                  * Compare priorities first, then highest interface IP, then hostname, then interface name.
                  */
+                if (partitionInterfaces.size() == 1 && electionDetails != null) {
+                  // record priority in case max is trivial
+                  Interface i = Iterables.getOnlyElement(partitionInterfaces);
+                  assert i != null;
+                  computeHsrpPriority(
+                      i, i.getHsrpGroups().get(groupNum), groupNum, provider, electionDetails);
+                }
                 NodeInterfacePair hsrpMaster =
                     NodeInterfacePair.of(
                         Collections.max(
@@ -594,6 +602,13 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
                 /*
                  * Compare priorities first, then highest interface IP, then hostname, then interface name.
                  */
+                if (partitionInterfaces.size() == 1 && electionDetails != null) {
+                  // record priority in case max is trivial
+                  Interface i = Iterables.getOnlyElement(partitionInterfaces);
+                  assert i != null;
+                  computeVrrpPriority(
+                      i, i.getVrrpGroups().get(vrid), vrid, provider, electionDetails);
+                }
                 NodeInterfacePair vrrpMaster =
                     NodeInterfacePair.of(
                         Collections.max(

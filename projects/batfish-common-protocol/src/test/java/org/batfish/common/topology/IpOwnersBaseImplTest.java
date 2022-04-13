@@ -991,4 +991,61 @@ public class IpOwnersBaseImplTest {
                   ImmutableMap.of(2, ImmutableMap.of()))));
     }
   }
+
+  @Test
+  public void testRecordElectionPrioritiesSingleCandidate() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    c.setTrackingGroups(
+        ImmutableMap.of(
+            "true", alwaysTrue(),
+            "false", alwaysFalse()));
+    Vrf v = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    Interface i1 = Interface.builder().setName("i1").setOwner(c).setVrf(v).build();
+    i1.setHsrpGroups(
+        ImmutableMap.of(
+            1,
+            HsrpGroup.builder()
+                .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("10.0.0.1"), 24))
+                .setTrackActions(ImmutableSortedMap.of("true", new DecrementPriority(10)))
+                .setVirtualAddresses(ImmutableSet.of(Ip.parse("10.0.1.1")))
+                .setPriority(100)
+                .build()));
+    i1.setVrrpGroups(
+        ImmutableSortedMap.of(
+            2,
+            VrrpGroup.builder()
+                .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("10.0.0.1"), 24))
+                .setTrackActions(ImmutableSortedMap.of("true", new DecrementPriority(20)))
+                .addVirtualAddress("i1", Ip.parse("10.0.2.1"))
+                .setPriority(100)
+                .build()));
+    IpOwners ipOwners = new TestIpOwnersRecordElections(ImmutableMap.of(c.getHostname(), c));
+    NodeInterfacePair ni1 = NodeInterfacePair.of(i1);
+    {
+      ElectionDetails details = ipOwners.getHsrpElectionDetails();
+      assertNotNull(details);
+      assertThat(
+          details.getActualPriorities(), equalTo(ImmutableMap.of(ni1, ImmutableMap.of(1, 90))));
+      assertThat(
+          details.getWinnerByCandidate(), equalTo(ImmutableMap.of(ni1, ImmutableMap.of(1, ni1))));
+      assertThat(
+          details.getCandidatesByCandidate(),
+          equalTo(ImmutableMap.of(ni1, ImmutableMap.of(1, ImmutableSet.of(ni1)))));
+    }
+    {
+      ElectionDetails details = ipOwners.getVrrpElectionDetails();
+      assertNotNull(details);
+      assertThat(
+          details.getActualPriorities(), equalTo(ImmutableMap.of(ni1, ImmutableMap.of(2, 80))));
+      assertThat(
+          details.getWinnerByCandidate(), equalTo(ImmutableMap.of(ni1, ImmutableMap.of(2, ni1))));
+      assertThat(
+          details.getCandidatesByCandidate(),
+          equalTo(ImmutableMap.of(ni1, ImmutableMap.of(2, ImmutableSet.of(ni1)))));
+    }
+  }
 }
