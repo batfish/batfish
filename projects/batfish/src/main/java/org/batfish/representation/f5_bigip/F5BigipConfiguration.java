@@ -935,8 +935,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
         }
       }
     }
-
-    _w.redFlag("Could not determine update source for BGP neighbor: '" + neighbor.getName() + "'");
     return null;
   }
 
