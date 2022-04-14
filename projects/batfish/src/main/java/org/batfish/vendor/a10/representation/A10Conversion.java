@@ -827,7 +827,6 @@ public class A10Conversion {
     if (firstMatchingInterfaceAddress.isPresent()) {
       return firstMatchingInterfaceAddress.get();
     }
-    warnings.redFlag(String.format("BGP neighbor %s: could not determine update source", remoteIp));
     return null;
   }
 
