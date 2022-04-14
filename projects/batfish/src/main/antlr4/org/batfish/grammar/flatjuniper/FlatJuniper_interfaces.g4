@@ -256,7 +256,7 @@ i_vlan_id
 
 i_vlan_id_list
 :
-   VLAN_ID_LIST subrange
+   VLAN_ID_LIST vlan_range
 ;
 
 i_vlan_tagging
@@ -358,7 +358,7 @@ ifbr_interface_mode
 
 ifbr_vlan_id_list
 :
-   VLAN_ID_LIST dec
+   VLAN_ID_LIST vlan_range
 ;
 
 ife_filter

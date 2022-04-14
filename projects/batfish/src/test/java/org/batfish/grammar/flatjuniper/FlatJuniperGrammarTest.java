@@ -3184,6 +3184,23 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/7/0.1", hasSwitchPortMode(SwitchportMode.NONE)));
     assertThat(c, hasInterface("ge-0/7/0.1", hasAllowedVlans(IntegerSpace.EMPTY)));
     assertThat(c, hasInterface("ge-0/7/0.1", hasAccessVlan(nullValue())));
+
+    // Expecting an Interface in ACCESS mode with VLAN 200
+    assertThat(c, hasInterface("ge-0/8/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("ge-0/8/0.0", hasAccessVlan(200)));
+
+    // Expecting an Interface in TRUNK mode with allowed VLANs 200, 300-400, and 500
+    assertThat(c, hasInterface("ge-0/9/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(
+        c,
+        hasInterface(
+            "ge-0/9/0.0",
+            hasAllowedVlans(
+                IntegerSpace.builder()
+                    .including(200)
+                    .including(new SubRange("300-400"))
+                    .including(500)
+                    .build())));
   }
 
   @Test
@@ -3206,7 +3223,12 @@ public final class FlatJuniperGrammarTest {
         ccae.getDefinedStructures()
             .get(filename)
             .getOrDefault(VLAN.getDescription(), Collections.emptySortedMap()),
-        allOf(hasKey("VLAN_TEST"), hasKey("VLAN_TEST_UNUSED")));
+        hasKeys(
+            "VLAN_ID_TEST",
+            "VLAN_ID_LIST_TEST_SINGLETON",
+            "VLAN_ID_LIST_TEST_RANGE",
+            "VLAN_WITH_INTERFACES",
+            "VLAN_TEST_UNUSED"));
   }
 
   @Test

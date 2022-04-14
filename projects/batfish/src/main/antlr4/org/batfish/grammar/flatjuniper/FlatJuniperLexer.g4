@@ -2831,7 +2831,7 @@ VLANS: 'vlans' -> pushMode(M_Name);
 
 VLAN_ID: 'vlan-id';
 
-VLAN_ID_LIST: 'vlan-id-list';
+VLAN_ID_LIST: 'vlan-id-list' -> pushMode(M_VlanIdList);
 
 VLAN_TAGS: 'vlan-tags';
 
@@ -4755,6 +4755,12 @@ M_Port_DASH: '-' -> type(DASH);
 
 // Not a range. We can continue in default mode since words need not be broken up.
 M_Port_NON_RANGE: [A-Za-z]+ {less();} -> popMode;
+
+mode M_VlanIdList;
+M_VlanIdList_WS: F_WhitespaceChar+ -> skip;
+M_VlanIdList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_VlanIdList_UINT16: F_Uint16 -> type(UINT16);
+M_VlanIdList_DASH: '-' -> type(DASH);
 
 mode M_ExtendedVniList;
 M_ExtendedVniList_WS: F_WhitespaceChar+ -> skip;
