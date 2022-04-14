@@ -8,6 +8,7 @@ import static org.batfish.datamodel.InactiveReason.BLACKLISTED;
 import static org.batfish.datamodel.InactiveReason.FORCED_LINE_DOWN;
 import static org.batfish.datamodel.InactiveReason.NODE_DOWN;
 import static org.batfish.datamodel.InactiveReason.PHYSICAL_NEIGHBOR_DOWN;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.computeLegacyInterfaceTopology;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -41,6 +42,7 @@ import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.topology.InterfaceTopology;
 import org.batfish.datamodel.transformation.Transformation;
 
 public final class Interface extends ComparableStructure<String> {
@@ -90,6 +92,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Boolean _switchport;
     private @Nullable SwitchportMode _switchportMode;
     private @Nonnull IpSpace _additionalArpIps;
+    private @Nullable InterfaceTopology _topology;
     @Nullable private TunnelConfiguration _tunnelConfig;
     private InterfaceType _type;
     private @Nullable Integer _vlan;
@@ -188,6 +191,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setZoneName(_zoneName);
 
       iface.setOspfSettings(_ospfSettings);
+      iface.setTopology(_topology);
       processStatus(iface);
       return iface;
     }
@@ -479,6 +483,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setSpeed(@Nullable Double speed) {
       _speed = speed;
+      return this;
+    }
+
+    public @Nonnull Builder setTopology(@Nullable InterfaceTopology topology) {
+      _topology = topology;
       return this;
     }
 
@@ -992,6 +1001,7 @@ public final class Interface extends ComparableStructure<String> {
   private SortedMap<Integer, VrrpGroup> _vrrpGroups;
   private String _zoneName;
   private String _hsrpVersion;
+  private @Nullable InterfaceTopology _topology;
 
   @JsonCreator
   private Interface(@Nullable @JsonProperty(PROP_NAME) String name) {
@@ -1991,6 +2001,32 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ZONE)
   public void setZoneName(String zoneName) {
     _zoneName = zoneName;
+  }
+
+  public @Nullable InterfaceTopology getTopology() {
+    return _topology;
+  }
+
+  /**
+   * Gets interface topology if set, or returns a legacy topology based on switchport, etc.
+   * settings.
+   *
+   * <p>The interface topology should be initialized during conversion. So if this is called
+   * outside, the assumption is that it is being done during an older test that only populates
+   * legacy fields. In that case, an up-to-date legacy interface topology is computed and returned
+   * on the fly.
+   */
+  @JsonIgnore
+  public @Nonnull InterfaceTopology getOrLegacyTopology() {
+    if (_topology == null) {
+      return computeLegacyInterfaceTopology(this);
+    }
+    return _topology;
+  }
+
+  @JsonIgnore
+  public void setTopology(@Nullable InterfaceTopology topology) {
+    _topology = topology;
   }
 
   public void addVrrpGroup(Integer num, @Nonnull VrrpGroup group) {

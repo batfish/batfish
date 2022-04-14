@@ -16,6 +16,7 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFER
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.arista.AristaConversions.getSourceInterfaceIp;
 import static org.batfish.representation.arista.AristaConversions.toBgpAggregate;
 import static org.batfish.representation.arista.AristaConversions.toCommunityMatchExpr;
@@ -2720,6 +2721,9 @@ public final class AristaConfiguration extends VendorConfiguration {
     markConcreteStructure(AristaStructureType.AS_PATH_ACCESS_LIST);
 
     markConcreteStructure(AristaStructureType.BGP_PEER_GROUP);
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(c);
 
     return ImmutableList.of(c);
   }

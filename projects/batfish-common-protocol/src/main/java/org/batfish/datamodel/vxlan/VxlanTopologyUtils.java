@@ -2,6 +2,7 @@ package org.batfish.datamodel.vxlan;
 
 import static org.batfish.datamodel.InterfaceType.TUNNEL;
 import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
+import static org.batfish.datamodel.topology.InterfaceTopology.l13NoEncapsulation;
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_3;
 
@@ -376,6 +377,7 @@ public final class VxlanTopologyUtils {
                   return;
                 }
                 // TODO: support sessions
+                String name = generatedTenantVniInterfaceName(vni);
                 Interface.builder()
                     .setName(generatedTenantVniInterfaceName(vni))
                     .setOwner(c)
@@ -385,6 +387,7 @@ public final class VxlanTopologyUtils {
                     .setProxyArp(false)
                     .setType(TUNNEL)
                     .setSwitchportMode(SwitchportMode.NONE)
+                    .setTopology(l13NoEncapsulation(name))
                     .build();
               });
     }

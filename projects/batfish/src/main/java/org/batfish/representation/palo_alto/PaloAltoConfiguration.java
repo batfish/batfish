@@ -17,6 +17,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
@@ -3176,14 +3177,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
-    ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
+    ImmutableList.Builder<Configuration> outputConfigurationsBuilder = ImmutableList.builder();
     // Build primary config
     Configuration primaryConfig = toVendorIndependentConfiguration();
-    outputConfigurations.add(primaryConfig);
+    outputConfigurationsBuilder.add(primaryConfig);
 
     List<PaloAltoConfiguration> managedConfigurations = getManagedConfigurations();
     // Once managed devices are built, convert them too
-    outputConfigurations.addAll(
+    outputConfigurationsBuilder.addAll(
         managedConfigurations.stream()
             .map(PaloAltoConfiguration::toVendorIndependentConfiguration)
             .collect(ImmutableList.toImmutableList()));
@@ -3191,7 +3192,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (!managedConfigurations.isEmpty()) {
       primaryConfig.setDeviceModel(DeviceModel.PALO_ALTO_PANORAMA);
     }
-    return outputConfigurations.build();
+    List<Configuration> outputConfigurations = outputConfigurationsBuilder.build();
+
+    for (Configuration c : outputConfigurations) {
+      // TODO: instead, populate directly in conversion
+      legacyPopulateInterfaceTopologies(c);
+    }
+
+    return outputConfigurations;
   }
 
   private Configuration toVendorIndependentConfiguration() throws VendorConversionException {

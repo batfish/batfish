@@ -9,9 +9,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,17 +23,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.bridge_domain.TagCollector;
+import org.batfish.common.topology.bridge_domain.edge.Edge;
+import org.batfish.common.topology.bridge_domain.edge.L1ToL3;
 import org.batfish.common.util.InterfaceNameComparator;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclAclLine;
@@ -92,6 +99,14 @@ import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier;
+import org.batfish.datamodel.topology.InterfaceTopology;
+import org.batfish.datamodel.topology.Layer2Settings;
+import org.batfish.datamodel.topology.Layer3NonBridgedSettings;
+import org.batfish.datamodel.topology.Layer3NonVlanAwareBridgeSettings;
+import org.batfish.datamodel.topology.Layer3Settings;
+import org.batfish.datamodel.topology.Layer3SettingsVisitor;
+import org.batfish.datamodel.topology.Layer3TunnelSettings;
+import org.batfish.datamodel.topology.Layer3VlanAwareBridgeSettings;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
@@ -526,6 +541,83 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
   }
 
+  private static boolean verifyInterfaceTopologyReferences(
+      @Nonnull Interface i, @Nonnull Warnings w) {
+    InterfaceTopology t = i.getTopology();
+    if (t == null) {
+      w.redFlag(
+          String.format(
+              "Topology for interface '%s' not populated during conversion",
+              NodeInterfacePair.of(i)));
+      return false;
+    }
+    if (!t.getLayer2Settings()
+        .map(l2 -> verifyInterfaceTopologyReferencesLayer2Settings(i, l2, w))
+        .orElse(true)) {
+      return false;
+    }
+    if (!t.getLayer3Settings()
+        .map(l3 -> verifyInterfaceTopologyReferencesLayer3Settings(i, l3, w))
+        .orElse(true)) {
+      return false;
+    }
+    return true;
+  }
+
+  private static boolean verifyInterfaceTopologyReferencesLayer2Settings(
+      @Nonnull Interface i, @Nonnull Layer2Settings l2, @Nonnull Warnings w) {
+    String hostname = i.getOwner().getHostname();
+    String l1InterfaceName = l2.getL1Interface();
+    Interface l1Interface = i.getOwner().getAllInterfaces().get(l1InterfaceName);
+    if (l1Interface == null) {
+      w.redFlag(
+          String.format(
+              "L1 interface '%s' of L2 interface '%s' does not exist",
+              NodeInterfacePair.of(hostname, l1InterfaceName), NodeInterfacePair.of(i)));
+      return false;
+    }
+    return true;
+  }
+
+  private static boolean verifyInterfaceTopologyReferencesLayer3Settings(
+      @Nonnull Interface i, @Nonnull Layer3Settings l3, @Nonnull Warnings w) {
+    // using Interface arg to avoid creating a third visitor
+    return new Layer3SettingsVisitor<Boolean>() {
+      @Override
+      public Boolean visitLayer3NonVlanAwareBridgeSettings(
+          @Nonnull Layer3NonVlanAwareBridgeSettings layer3NonVlanAwareBridgeSettings) {
+        return true;
+      }
+
+      @Override
+      public Boolean visitLayer3NonBridgedSettings(
+          @Nonnull Layer3NonBridgedSettings layer3NonBridgedSettings) {
+        String hostname = i.getOwner().getHostname();
+        String l1InterfaceName = layer3NonBridgedSettings.getL1Interface();
+        Interface l1Interface = i.getOwner().getAllInterfaces().get(l1InterfaceName);
+        if (l1Interface == null) {
+          w.redFlag(
+              String.format(
+                  "L1 interface '%s' of L3 interface '%s' does not exist",
+                  NodeInterfacePair.of(hostname, l1InterfaceName), NodeInterfacePair.of(i)));
+          return false;
+        }
+        return true;
+      }
+
+      @Override
+      public Boolean visitLayer3TunnelSettings(@Nonnull Layer3TunnelSettings layer3TunnelSettings) {
+        return true;
+      }
+
+      @Override
+      public Boolean visitLayer3VlanAwareBridgeSettings(
+          @Nonnull Layer3VlanAwareBridgeSettings layer3VlanAwareBridgeSettings) {
+        return true;
+      }
+    }.visit(l3);
+  }
+
   /** Remove and warn on undefined track references. */
   private static void removeUndefinedTrackReferences(Configuration c, Warnings w) {
     removeUndefinedVrrpTrackReferences(c, w);
@@ -797,8 +889,144 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             && !verifyLogicalBindDependencies(c, w, i)) {
           continue;
         }
+        if (!verifyInterfaceTopologyReferences(i, w)) {
+          c.getAllInterfaces().remove(name);
+          continue;
+        }
       }
     }
+    SetMultimap<String, String> l2ByL1 = computeL2ByL1(c);
+    SetMultimap<String, String> l3ByL1 = computeL3ByL1(c);
+    Set<String> l1InterfaceNames =
+        ImmutableSet.<String>builder().addAll(l2ByL1.keySet()).addAll(l3ByL1.keySet()).build();
+    for (String name : l1InterfaceNames) {
+      Set<String> l2s = l2ByL1.get(name);
+      Set<String> l3s = l3ByL1.get(name);
+      Interface i = c.getAllInterfaces().get(name);
+      if (!verifyL1ToL2AndL1ToL3Edges(i, l2ByL1, l3ByL1, w)) {
+        c.getAllInterfaces().remove(name);
+        l2s.forEach(c.getAllInterfaces()::remove);
+        l3s.forEach(c.getAllInterfaces()::remove);
+      }
+    }
+  }
+
+  private static boolean verifyL1ToL2AndL1ToL3Edges(
+      Interface i,
+      SetMultimap<String, String> l2ByL1,
+      SetMultimap<String, String> l3ByL1,
+      Warnings w) {
+    Configuration c = i.getOwner();
+    String name = i.getName();
+    Stream<Edge> l2ToL1 =
+        l2ByL1.get(name).stream()
+            .map(c.getAllInterfaces()::get)
+            .map(Interface::getTopology)
+            .map(InterfaceTopology::getLayer2Settings)
+            .map(Optional::get)
+            .map(Layer2Settings::getFromL1);
+    Stream<Edge> l3ToL1 =
+        l3ByL1.get(name).stream()
+            .map(c.getAllInterfaces()::get)
+            .map(Interface::getTopology)
+            .map(InterfaceTopology::getLayer3Settings)
+            .map(Optional::get)
+            .map(L3_TO_L1_EDGE_EXTRACTOR::visit);
+    List<Edge> edges = Stream.concat(l2ToL1, l3ToL1).collect(ImmutableList.toImmutableList());
+    if (tagsOverlap(edges)) {
+      w.redFlag(
+          String.format(
+              "L1 Interface %s has overlapping tags on edges to L2 and L3 interfaces",
+              i.getName()));
+      return false;
+    }
+    return true;
+  }
+
+  private static boolean tagsOverlap(List<Edge> edges) {
+    TagCollector collector = new TagCollector();
+    for (Edge edge : edges) {
+      if (collector.resultsInOverlap(edge)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static final Layer3SettingsVisitor<L1ToL3> L3_TO_L1_EDGE_EXTRACTOR =
+      new Layer3SettingsVisitor<L1ToL3>() {
+        @Override
+        public L1ToL3 visitLayer3NonVlanAwareBridgeSettings(
+            @Nonnull Layer3NonVlanAwareBridgeSettings layer3NonVlanAwareBridgeSettings) {
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public L1ToL3 visitLayer3NonBridgedSettings(
+            @Nonnull Layer3NonBridgedSettings layer3NonBridgedSettings) {
+          return layer3NonBridgedSettings.getFromL1();
+        }
+
+        @Override
+        public L1ToL3 visitLayer3TunnelSettings(
+            @Nonnull Layer3TunnelSettings layer3TunnelSettings) {
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public L1ToL3 visitLayer3VlanAwareBridgeSettings(
+            @Nonnull Layer3VlanAwareBridgeSettings layer3VlanAwareBridgeSettings) {
+          throw new UnsupportedOperationException();
+        }
+      };
+
+  private static @Nonnull SetMultimap<String, String> computeL2ByL1(Configuration c) {
+    ImmutableSetMultimap.Builder<String, String> builder = ImmutableSetMultimap.builder();
+    for (Interface i : c.getActiveInterfaces().values()) {
+      InterfaceTopology t = i.getTopology();
+      assert t != null;
+      t.getLayer2Settings().ifPresent(l2 -> builder.put(l2.getL1Interface(), i.getName()));
+    }
+    return builder.build();
+  }
+
+  private static @Nonnull SetMultimap<String, String> computeL3ByL1(Configuration c) {
+    ImmutableSetMultimap.Builder<String, String> builder = ImmutableSetMultimap.builder();
+    for (Interface i : c.getActiveInterfaces().values()) {
+      InterfaceTopology t = i.getTopology();
+      assert t != null;
+      t.getLayer3Settings()
+          .ifPresent(
+              l3 ->
+                  new Layer3SettingsVisitor<Void>() {
+                    @Override
+                    public Void visitLayer3NonVlanAwareBridgeSettings(
+                        @Nonnull
+                            Layer3NonVlanAwareBridgeSettings layer3NonVlanAwareBridgeSettings) {
+                      return null;
+                    }
+
+                    @Override
+                    public Void visitLayer3NonBridgedSettings(
+                        @Nonnull Layer3NonBridgedSettings layer3NonBridgedSettings) {
+                      builder.put(layer3NonBridgedSettings.getL1Interface(), i.getName());
+                      return null;
+                    }
+
+                    @Override
+                    public Void visitLayer3TunnelSettings(
+                        @Nonnull Layer3TunnelSettings layer3TunnelSettings) {
+                      return null;
+                    }
+
+                    @Override
+                    public Void visitLayer3VlanAwareBridgeSettings(
+                        @Nonnull Layer3VlanAwareBridgeSettings layer3VlanAwareBridgeSettings) {
+                      return null;
+                    }
+                  }.visit(l3));
+    }
+    return builder.build();
   }
 
   /**

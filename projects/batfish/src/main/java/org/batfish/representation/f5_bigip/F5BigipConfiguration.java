@@ -8,6 +8,7 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFER
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1953,6 +1954,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _routes.values().forEach(this::warnIfInvalidRoute);
 
     markStructures();
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(_c);
 
     return _c;
   }

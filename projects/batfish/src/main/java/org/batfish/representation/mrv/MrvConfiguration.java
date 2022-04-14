@@ -1,6 +1,7 @@
 package org.batfish.representation.mrv;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -43,6 +44,10 @@ public class MrvConfiguration extends VendorConfiguration {
     _c = new Configuration(_hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(_c);
+
     return ImmutableList.of(_c);
   }
 }

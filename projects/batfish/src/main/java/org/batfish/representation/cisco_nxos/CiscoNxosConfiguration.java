@@ -21,6 +21,7 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
@@ -3973,6 +3974,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     makeLeakConfigs();
 
     markStructures();
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(_c);
     return _c;
   }
 

@@ -2,12 +2,14 @@ package org.batfish.datamodel.vxlan;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.common.topology.bridge_domain.node.VlanAwareBridgeDomain.DEFAULT_VLAN_AWARE_BRIDGE_DOMAIN_NAME;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,6 +28,8 @@ public final class Layer2Vni implements Vni {
     @Nullable private Ip _sourceAddress;
     @Nullable private Integer _udpPort;
     @Nullable private Integer _vlan;
+    @Nullable private String _nonVlanAwareBridgeDomain;
+    @Nullable private String _vlanAwareBridgeDomain;
     @Nullable private Integer _vni;
     @Nullable private String _srcVrf;
 
@@ -33,18 +37,26 @@ public final class Layer2Vni implements Vni {
 
     public @Nonnull Layer2Vni build() {
       checkArgument(_vni != null, "VNI must not be null.");
-      checkArgument(_vlan != null, "VLAN must not be null.");
+      checkArgument(
+          _vlan != null || _nonVlanAwareBridgeDomain != null,
+          "Must set VLAN or non-vlan-aware bridge domain.");
       checkArgument(_bumTransportMethod != null, "BumTransportMethod must not be null.");
       checkArgument(
           _bumTransportMethod != BumTransportMethod.MULTICAST_GROUP || _bumTransportIps.size() <= 1,
           "Cannot specify more than one multicast group.");
       checkArgument(_srcVrf != null, "Source VRF for VNI cannot be null");
+      String vlanAwareBridgeDomain =
+          _vlan != null
+              ? firstNonNull(_vlanAwareBridgeDomain, DEFAULT_VLAN_AWARE_BRIDGE_DOMAIN_NAME)
+              : null;
       return new Layer2Vni(
           _bumTransportIps,
           _bumTransportMethod,
           _sourceAddress,
           firstNonNull(_udpPort, DEFAULT_UDP_PORT),
           _vlan,
+          vlanAwareBridgeDomain,
+          _nonVlanAwareBridgeDomain,
           _vni,
           _srcVrf);
     }
@@ -69,8 +81,27 @@ public final class Layer2Vni implements Vni {
       return this;
     }
 
-    public @Nonnull Builder setVlan(Integer vlan) {
+    public @Nonnull Builder setNonVlanAwareBridgeDomain(@Nullable String nonVlanAwareBridgeDomain) {
+      if (nonVlanAwareBridgeDomain != null) {
+        _vlan = null;
+      }
+      _nonVlanAwareBridgeDomain = nonVlanAwareBridgeDomain;
+      return this;
+    }
+
+    public @Nonnull Builder setVlan(@Nullable Integer vlan) {
+      if (vlan != null) {
+        _nonVlanAwareBridgeDomain = null;
+      }
       _vlan = vlan;
+      return this;
+    }
+
+    public @Nonnull Builder setVlanAwareBridgeDomain(@Nullable String vlanAwareBridgeDomain) {
+      if (vlanAwareBridgeDomain != null) {
+        _nonVlanAwareBridgeDomain = null;
+      }
+      _vlanAwareBridgeDomain = vlanAwareBridgeDomain;
       return this;
     }
 
@@ -90,7 +121,9 @@ public final class Layer2Vni implements Vni {
   @Nonnull private final BumTransportMethod _bumTransportMethod;
   @Nullable private final Ip _sourceAddress;
   private final int _udpPort;
-  private final int _vlan;
+  private final @Nullable Integer _vlan;
+  private final @Nullable String _vlanAwareBridgeDomain;
+  private final @Nullable String _nonVlanAwareBridgeDomain;
   private final int _vni;
   @Nonnull private final String _srcVrf;
 
@@ -108,7 +141,9 @@ public final class Layer2Vni implements Vni {
       BumTransportMethod bumTransportMethod,
       @Nullable Ip sourceAddress,
       int udpPort,
-      int vlan,
+      @Nullable Integer vlan,
+      @Nullable String vlanAwareBridgeDomain,
+      @Nullable String nonVlanAwareBridgeDomain,
       int vni,
       String srcVrf) {
     _bumTransportIps = bumTransportIps;
@@ -116,6 +151,8 @@ public final class Layer2Vni implements Vni {
     _sourceAddress = sourceAddress;
     _udpPort = udpPort;
     _vlan = vlan;
+    _vlanAwareBridgeDomain = vlanAwareBridgeDomain;
+    _nonVlanAwareBridgeDomain = nonVlanAwareBridgeDomain;
     _vni = vni;
     _srcVrf = srcVrf;
   }
@@ -134,6 +171,8 @@ public final class Layer2Vni implements Vni {
         && Objects.equals(_sourceAddress, rhs._sourceAddress)
         && _udpPort == rhs._udpPort
         && Objects.equals(_vlan, rhs._vlan)
+        && Objects.equals(_vlanAwareBridgeDomain, rhs._vlanAwareBridgeDomain)
+        && Objects.equals(_nonVlanAwareBridgeDomain, rhs._nonVlanAwareBridgeDomain)
         && _vni == rhs._vni
         && _srcVrf.equals(rhs._srcVrf);
   }
@@ -146,6 +185,8 @@ public final class Layer2Vni implements Vni {
         _sourceAddress,
         _udpPort,
         _vlan,
+        _vlanAwareBridgeDomain,
+        _nonVlanAwareBridgeDomain,
         _vni,
         _srcVrf);
   }
@@ -175,8 +216,31 @@ public final class Layer2Vni implements Vni {
     return _udpPort;
   }
 
-  public int getVlan() {
-    return _vlan;
+  /**
+   * The VLAN to bridge to in the vlan-aware bridge.
+   *
+   * <p>Returns {@link Optional#empty()} if this VNI is non-vlan-aware.
+   */
+  public @Nonnull Optional<Integer> getVlan() {
+    return Optional.ofNullable(_vlan);
+  }
+
+  /**
+   * The vlan-aware bridge of which this VNI is a member.
+   *
+   * <p>Returns {@link Optional#empty()} if this VNI is non-vlan-aware.
+   */
+  public @Nonnull Optional<String> getVlanAwareBridgeDomain() {
+    return Optional.ofNullable(_vlanAwareBridgeDomain);
+  }
+
+  /**
+   * The non-vlan-aware bridge of which this VNI is a member.
+   *
+   * <p>Returns {@link Optional#empty()} if this VNI is vlan-aware.
+   */
+  public @Nonnull Optional<String> getNonVlanAwareBridgeDomain() {
+    return Optional.ofNullable(_nonVlanAwareBridgeDomain);
   }
 
   @Override
@@ -197,6 +261,8 @@ public final class Layer2Vni implements Vni {
         .setSourceAddress(_sourceAddress)
         .setVni(_vni)
         .setVlan(_vlan)
+        .setVlanAwareBridgeDomain(_vlanAwareBridgeDomain)
+        .setNonVlanAwareBridgeDomain(_nonVlanAwareBridgeDomain)
         .setUdpPort(_udpPort)
         .setBumTransportIps(_bumTransportIps)
         .setSrcVrf(_srcVrf);

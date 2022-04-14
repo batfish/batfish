@@ -14,6 +14,7 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFER
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.juniper.EthernetSwitching.DEFAULT_VLAN_MEMBER;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
@@ -3246,12 +3247,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
-    ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
+    ImmutableList.Builder<Configuration> outputConfigurationsBuilder = ImmutableList.builder();
     _logicalSystems.keySet().stream()
         .map(this::toVendorIndependentConfiguration)
-        .forEach(outputConfigurations::add);
-    outputConfigurations.add(toVendorIndependentConfiguration());
-    return outputConfigurations.build();
+        .forEach(outputConfigurationsBuilder::add);
+    outputConfigurationsBuilder.add(toVendorIndependentConfiguration());
+    List<Configuration> outputConfigurations = outputConfigurationsBuilder.build();
+
+    for (Configuration c : outputConfigurations) {
+      // TODO: Instead, populate directly in conversion.
+      //       Especially important for this vendor, since it is required to support bridge domains.
+      legacyPopulateInterfaceTopologies(c);
+    }
+
+    return outputConfigurations;
   }
 
   /** Creates and returns a vendor-independent configuration for the named logical-system. */

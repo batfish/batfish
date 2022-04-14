@@ -20,6 +20,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
 import static org.batfish.representation.cisco_asa.AsaConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco_asa.AsaConversions.convertCryptoMapSet;
@@ -3523,6 +3524,9 @@ public final class AsaConfiguration extends VendorConfiguration {
     markConcreteStructure(
         AsaStructureType.BGP_UNDECLARED_PEER_GROUP,
         AsaStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(c);
 
     return ImmutableList.of(c);
   }

@@ -16,6 +16,7 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceInactive;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeDedupedAsPathMatchExprName;
@@ -2263,6 +2264,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     CiscoXrStructureType.CONCRETE_STRUCTURES.forEach(this::markConcreteStructure);
     CiscoXrStructureType.ABSTRACT_STRUCTURES.asMap().forEach(this::markAbstractStructureAllUsages);
+
+    // TODO: Instead, populate directly in conversion.
+    //       Especially important for this vendor, since it is required to support bridge domains,
+    //       l2transport interfaces, etc.
+    legacyPopulateInterfaceTopologies(c);
 
     return ImmutableList.of(c);
   }

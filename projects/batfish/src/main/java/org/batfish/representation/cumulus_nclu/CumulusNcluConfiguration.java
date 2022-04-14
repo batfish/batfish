@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.cumulus_nclu.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
@@ -693,6 +694,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     markStructures();
 
     warnDuplicateClagIds();
+
+    // TODO: Instead, populate directly in conversion.
+    //       Especially important for this vendor, since it is required to support non-vlan-aware
+    //       bridges.
+    legacyPopulateInterfaceTopologies(_c);
 
     return _c;
   }

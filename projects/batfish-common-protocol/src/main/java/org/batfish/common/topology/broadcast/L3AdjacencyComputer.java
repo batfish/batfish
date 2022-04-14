@@ -176,10 +176,13 @@ public class L3AdjacencyComputer {
       verify(domain != null, "Broadcast domain not yet created for device %s", c.getHostname());
       for (Vrf vrf : c.getVrfs().values()) {
         for (Layer2Vni vniSettings : vrf.getLayer2Vnis().values()) {
+          if (!vniSettings.getVlan().isPresent()) {
+            continue;
+          }
           VxlanNode node = new VxlanNode(c.getHostname(), vniSettings.getVni(), VniLayer.LAYER_2);
           L2VNI vni = new L2VNI(node);
           ret.put(node, vni);
-          L2VniToVlan connection = new L2VniToVlan(vniSettings.getVlan());
+          L2VniToVlan connection = new L2VniToVlan(vniSettings.getVlan().get());
           vni.connectToVlan(domain, connection::receiveFromVxlan);
           domain.attachL2VNI(vni, connection::sendToVxlan);
         }

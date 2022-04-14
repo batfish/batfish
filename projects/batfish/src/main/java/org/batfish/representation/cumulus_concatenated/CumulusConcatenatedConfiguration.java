@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus_concatenated;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.BGP_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.fromFrrStructureType;
 import static org.batfish.representation.cumulus_concatenated.CumulusStructureUsage.fromFrrStructureUsage;
@@ -190,6 +191,11 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     initVendorFamily(c);
     warnDuplicateClagIds();
     markStructures();
+
+    // TODO: Instead, populate directly in conversion.
+    //       Especially important for this vendor, since it is required to support non-vlan-aware
+    //       bridges.
+    legacyPopulateInterfaceTopologies(c);
 
     return c;
   }
