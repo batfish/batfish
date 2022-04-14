@@ -16,8 +16,8 @@ public final class L2VniToNonVlanAwareBridgeDomain extends L2VniToBridgeDomain {
   public interface Function extends StateFunction {}
 
   /** Helper for creating an edge from a layer-2 VNI to some non-vlan-aware bridge domain. */
-  public static @Nonnull L2VniToNonVlanAwareBridgeDomain l2VniToNonVlanAwareBridgeDomain() {
-    return L2VNI_TO_NON_VLAN_AWARE_BRIDGE_DOMAIN;
+  public static @Nonnull L2VniToNonVlanAwareBridgeDomain instance() {
+    return INSTANCE;
   }
 
   @VisibleForTesting
@@ -25,8 +25,7 @@ public final class L2VniToNonVlanAwareBridgeDomain extends L2VniToBridgeDomain {
     return new L2VniToNonVlanAwareBridgeDomain(stateFunction);
   }
 
-  private static final L2VniToNonVlanAwareBridgeDomain L2VNI_TO_NON_VLAN_AWARE_BRIDGE_DOMAIN =
-      of(identity());
+  private static final L2VniToNonVlanAwareBridgeDomain INSTANCE = of(identity());
 
   private L2VniToNonVlanAwareBridgeDomain(Function stateFunction) {
     super(stateFunction);

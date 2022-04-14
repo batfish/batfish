@@ -5,7 +5,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-/** A vlan-aware or non-vlan-aware bridge domain. */
+/** A {@link VlanAwareBridgeDomain} or a {@link NonVlanAwareBridgeDomain}. */
 public interface BridgeDomain extends Node {
 
   final class Id {

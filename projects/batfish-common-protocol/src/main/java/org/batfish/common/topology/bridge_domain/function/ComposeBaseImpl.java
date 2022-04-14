@@ -8,7 +8,8 @@ import javax.annotation.Nullable;
  * Base implementation for {@link StateFunction} composition.
  *
  * <p>Due to desired type invariants and the Java type system, it is not possible to make a single
- * {@code Compose} class whose result is of the correct {@link StateFunction} subtype {@code E}.
+ * {@code Compose} class whose result is always of the correct {@link StateFunction} subtype {@code
+ * E}.
  */
 public abstract class ComposeBaseImpl<E extends StateFunction> implements StateFunction {
 

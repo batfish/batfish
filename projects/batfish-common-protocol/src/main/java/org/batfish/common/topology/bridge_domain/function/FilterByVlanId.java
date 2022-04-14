@@ -10,7 +10,7 @@ import org.batfish.common.topology.bridge_domain.edge.VlanAwareBridgeDomainToL2V
 import org.batfish.common.topology.bridge_domain.edge.VlanAwareBridgeDomainToL3;
 import org.batfish.datamodel.IntegerSpace;
 
-/** Filter that accepts state with set VLAN ID in a some space of allowed VLAN IDs. */
+/** Filter that accepts state with set VLAN ID in some space of allowed VLAN IDs. */
 public interface FilterByVlanId
     extends VlanAwareBridgeDomainToL2.Function,
         VlanAwareBridgeDomainToL3.Function,

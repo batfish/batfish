@@ -49,20 +49,15 @@ public final class L2Vni implements Node {
     _toBridgeDomain = edge;
   }
 
-  public void connectToNonVlanAwareBridgeDomain(
-      NonVlanAwareBridgeDomain bridgeDomain, L2VniToNonVlanAwareBridgeDomain edge) {
+  public void connectToNonVlanAwareBridgeDomain(NonVlanAwareBridgeDomain bridgeDomain) {
     checkState(_bridgeDomain == null, "Already attached to bridge domain: %s", _bridgeDomain);
     _bridgeDomain = bridgeDomain;
-    _toBridgeDomain = edge;
+    _toBridgeDomain = L2VniToNonVlanAwareBridgeDomain.instance();
   }
 
   public void connectToL2VniHub(L2VniHub l2VniHub) {
     checkState(_l2VniHub == null, "Already attached to L2VniHub: %s", _l2VniHub);
     _l2VniHub = l2VniHub;
-  }
-
-  public void clearHub() {
-    _l2VniHub = null;
   }
 
   // internal implementation details

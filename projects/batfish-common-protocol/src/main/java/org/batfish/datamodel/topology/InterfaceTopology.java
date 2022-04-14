@@ -51,14 +51,17 @@ public final class InterfaceTopology implements Serializable {
         .build();
   }
 
+  /** Whether this interface is (also) a logical layer-1 interface. */
   public boolean isLogicalLayer1() {
     return _logicalLayer1;
   }
 
+  /** If present, the topology configuration for the layer-2 aspect of this interface. */
   public @Nonnull Optional<Layer2Settings> getLayer2Settings() {
     return Optional.ofNullable(_layer2Settings);
   }
 
+  /** If present, the topology configuration for the layer-3 aspect of this interface. */
   public @Nonnull Optional<Layer3Settings> getLayer3Settings() {
     return Optional.ofNullable(_layer3Settings);
   }

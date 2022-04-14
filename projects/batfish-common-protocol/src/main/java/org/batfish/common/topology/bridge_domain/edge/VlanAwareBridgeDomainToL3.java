@@ -5,11 +5,12 @@ import static org.batfish.common.topology.bridge_domain.function.StateFunctions.
 import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import org.batfish.common.topology.bridge_domain.function.StateFunction;
-import org.batfish.common.topology.bridge_domain.node.L3BridgedInterface;
-import org.batfish.common.topology.bridge_domain.node.NonVlanAwareBridgeDomain;
 import org.batfish.datamodel.IntegerSpace;
 
-/** An edge from a {@link NonVlanAwareBridgeDomain} to a {@link L3BridgedInterface}. */
+/**
+ * An edge from a {@link org.batfish.common.topology.bridge_domain.node.VlanAwareBridgeDomain} to an
+ * {@link org.batfish.common.topology.bridge_domain.node.L3BridgedInterface}.
+ */
 public final class VlanAwareBridgeDomainToL3 extends Edge {
 
   public interface Function extends StateFunction {}

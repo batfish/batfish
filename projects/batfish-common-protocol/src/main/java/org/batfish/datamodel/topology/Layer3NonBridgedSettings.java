@@ -17,17 +17,22 @@ public final class Layer3NonBridgedSettings implements Layer3Settings {
     return new Layer3NonBridgedSettings(l1Interface, fromL1, toL1);
   }
 
+  /**
+   * Helper for generating {@link Layer3NonBridgedSettings} for a layer-3 interface without
+   * encapsulation.
+   */
   public static @Nonnull Layer3NonBridgedSettings noEncapsulation(String l1Interface) {
     return new Layer3NonBridgedSettings(
         l1Interface, l1ToL3NonBridged(null), l3NonBridgedToL1(null));
   }
 
-  public static @Nonnull Layer3NonBridgedSettings encapsulation(
-      String l1Interface, int encapsulationVlan) {
+  /**
+   * Helper for generating {@link Layer3NonBridgedSettings} for a layer-3 interface accepting
+   * traffic with the given tag.
+   */
+  public static @Nonnull Layer3NonBridgedSettings encapsulation(String l1Interface, int tag) {
     return Layer3NonBridgedSettings.of(
-        l1Interface,
-        L1ToL3.l1ToL3NonBridged(encapsulationVlan),
-        L3ToL1.l3NonBridgedToL1(encapsulationVlan));
+        l1Interface, L1ToL3.l1ToL3NonBridged(tag), L3ToL1.l3NonBridgedToL1(tag));
   }
 
   @Override
@@ -40,14 +45,23 @@ public final class Layer3NonBridgedSettings implements Layer3Settings {
     return visitor.visitLayer3NonBridgedSettings(this, arg);
   }
 
+  /** The name of the layer-1 interface to which this interface is attached (possibly itself). */
   public @Nonnull String getL1Interface() {
     return _l1Interface;
   }
 
+  /**
+   * The filter/transformation to apply when traversing from the layer-1 interface to this layer-3
+   * interface.
+   */
   public @Nonnull L1ToL3 getFromL1() {
     return _fromL1;
   }
 
+  /**
+   * The filter/transformation to apply when traversing from this layer-3 interface to the layer-1
+   * interface.
+   */
   public @Nonnull L3ToL1 getToL1() {
     return _toL1;
   }

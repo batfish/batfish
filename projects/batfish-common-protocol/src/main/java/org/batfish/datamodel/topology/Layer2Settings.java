@@ -20,14 +20,23 @@ public final class Layer2Settings implements Serializable {
     return new Layer2Settings(l1Interface, l2ToL1, l1ToL2, bridgeSettings);
   }
 
-  public @Nonnull L2ToL1 getToL1() {
-    return _toL1;
-  }
-
+  /**
+   * The filter/transformation to apply when traversing from the layer-1 interface to this layer-2
+   * interface.
+   */
   public @Nonnull L1ToL2 getFromL1() {
     return _fromL1;
   }
 
+  /**
+   * The filter/transformation to apply when traversing from this interface to the layer-1 layer-2
+   * interface.
+   */
+  public @Nonnull L2ToL1 getToL1() {
+    return _toL1;
+  }
+
+  /** The name of the layer-1 interface to which this interface is attached (possibly itself). */
   public @Nonnull String getL1Interface() {
     return _l1Interface;
   }

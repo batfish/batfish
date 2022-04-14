@@ -13,10 +13,7 @@ public final class L3ToVlanAwareBridgeDomain extends L3ToBridgeDomain {
 
   public interface Function extends StateFunction {}
 
-  /**
-   * Helper for creating an edge from an IRB/Vlan interface to the a device's vlan-aware bridge
-   * domain.
-   */
+  /** Helper for creating an edge from an IRB/Vlan interface to a vlan-aware bridge domain. */
   public static @Nonnull L3ToVlanAwareBridgeDomain irbToBridgeDomain(int vlanId) {
     return of(setVlanId(vlanId));
   }

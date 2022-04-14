@@ -73,8 +73,7 @@ public final class L3AdjacencyComputerTest {
       Map<String, L1Hub> hubs = computeL1Hubs(l1, ImmutableMap.of(), Layer1Topology.EMPTY);
       assertThat(hubs.keySet(), contains(BATFISH_GLOBAL_HUB));
       assertThat(
-          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToL1ForTest().keySet()),
-          containsInAnyOrder(n1, n2, n3));
+          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToL1ForTest()), containsInAnyOrder(n1, n2, n3));
     }
     {
       // One edge.
@@ -90,9 +89,8 @@ public final class L3AdjacencyComputerTest {
       String otherKey =
           Iterables.getOnlyElement(
               Sets.difference(hubs.keySet(), ImmutableSet.of(BATFISH_GLOBAL_HUB)));
-      assertThat(getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToL1ForTest().keySet()), contains(n3));
-      assertThat(
-          getPairs(hubs.get(otherKey).getToL1ForTest().keySet()), containsInAnyOrder(n1, n2));
+      assertThat(getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToL1ForTest()), contains(n3));
+      assertThat(getPairs(hubs.get(otherKey).getToL1ForTest()), containsInAnyOrder(n1, n2));
     }
     {
       // One interface with disconnected edge.
@@ -109,9 +107,8 @@ public final class L3AdjacencyComputerTest {
           Iterables.getOnlyElement(
               Sets.difference(hubs.keySet(), ImmutableSet.of(BATFISH_GLOBAL_HUB)));
       assertThat(
-          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToL1ForTest().keySet()),
-          containsInAnyOrder(n2, n3));
-      assertThat(getPairs(hubs.get(otherKey).getToL1ForTest().keySet()), contains(n1));
+          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getToL1ForTest()), containsInAnyOrder(n2, n3));
+      assertThat(getPairs(hubs.get(otherKey).getToL1ForTest()), contains(n1));
     }
     {
       // Line.
@@ -126,7 +123,7 @@ public final class L3AdjacencyComputerTest {
                           c.getHostname(), i3.getName(), c.getHostname(), i2.getName()))));
       assertThat(hubs, aMapWithSize(1));
       assertThat(
-          getPairs(Iterables.getOnlyElement(hubs.values()).getToL1ForTest().keySet()),
+          getPairs(Iterables.getOnlyElement(hubs.values()).getToL1ForTest()),
           containsInAnyOrder(n1, n2, n3));
     }
   }
@@ -163,7 +160,7 @@ public final class L3AdjacencyComputerTest {
     // With no L1 topology, all 3 interfaces in same domain.
     L3AdjacencyComputer l3 =
         new L3AdjacencyComputer(configs, Layer1Topologies.empty(), VxlanTopology.EMPTY);
-    Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+    Map<NodeInterfacePair, NodeInterfacePair> domains = l3.findAllBroadcastDomains();
     assertThat("all interfaces have a domain", domains, aMapWithSize(3));
     assertThat("all interfaces in same domain", ImmutableSet.copyOf(domains.values()), hasSize(1));
   }
@@ -184,7 +181,7 @@ public final class L3AdjacencyComputerTest {
             configs,
             Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs),
             VxlanTopology.EMPTY);
-    Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+    Map<NodeInterfacePair, NodeInterfacePair> domains = l3.findAllBroadcastDomains();
     assertThat("all interfaces have a domain", domains, aMapWithSize(3));
     assertThat("connected ifaces in same domain", domains.get(n1), equalTo(domains.get(n3)));
     assertThat(
@@ -208,7 +205,7 @@ public final class L3AdjacencyComputerTest {
             configs,
             Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs),
             VxlanTopology.EMPTY);
-    Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+    Map<NodeInterfacePair, NodeInterfacePair> domains = l3.findAllBroadcastDomains();
     assertThat("all interfaces have a domain", domains, aMapWithSize(3));
     assertThat("global hub ifaces in same domain", domains.get(n2), equalTo(domains.get(n3)));
     assertThat(
@@ -227,7 +224,7 @@ public final class L3AdjacencyComputerTest {
     configs.get(n1.getHostname()).getAllInterfaces().get(n1.getInterface()).setEncapsulationVlan(4);
     L3AdjacencyComputer l3 =
         new L3AdjacencyComputer(configs, Layer1Topologies.empty(), VxlanTopology.EMPTY);
-    Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+    Map<NodeInterfacePair, NodeInterfacePair> domains = l3.findAllBroadcastDomains();
     assertThat("all interfaces have a domain", domains, aMapWithSize(3));
     assertThat(
         "unencapsulated interface in same domain", domains.get(n2), equalTo(domains.get(n3)));
@@ -425,7 +422,7 @@ public final class L3AdjacencyComputerTest {
     VxlanTopology vxlanTopology = VxlanTopologyUtils.computeInitialVxlanTopology(configurations);
     L3AdjacencyComputer l3 =
         new L3AdjacencyComputer(configurations, layer1Topologies, vxlanTopology);
-    Map<NodeInterfacePair, Integer> bds = l3.findAllBroadcastDomains();
+    Map<NodeInterfacePair, NodeInterfacePair> bds = l3.findAllBroadcastDomains();
 
     assertThat(bds.get(NodeInterfacePair.of(h11i)), equalTo(bds.get(NodeInterfacePair.of(h21i))));
     assertThat(bds.get(NodeInterfacePair.of(h12i)), equalTo(bds.get(NodeInterfacePair.of(h22i))));

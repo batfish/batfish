@@ -20,12 +20,16 @@ public final class VlanAwareBridgeDomainToL2Vni extends Edge {
 
   /** Helper for creating an edge from a vlan-aware bridge domain to an attached layer-2 VNI. */
   public static @Nonnull VlanAwareBridgeDomainToL2Vni vlanAwareBridgeDomainToL2Vni(int vlan) {
+    // Note that in the future, VNI state may need to be recorded/transformed to support
+    // translations.
     return of(compose(filterByVlanId(IntegerSpace.of(vlan)), clearVlanId()));
   }
 
   /** Helper for creating an edge from a non-vlan-aware bridge domain to an attached layer-2 VNI. */
   public static @Nonnull VlanAwareBridgeDomainToL2Vni nonVlanAwareBridgeDomainToL2Vni() {
-    return NON_VLAN_AWARE_BRIDGE_DOMAIN_TO_L2_VNI;
+    // Note that in the future, VNI state may need to be recorded/transformed to support
+    // translations.
+    return INSTANCE;
   }
 
   @VisibleForTesting
@@ -40,8 +44,7 @@ public final class VlanAwareBridgeDomainToL2Vni extends Edge {
     return new VlanAwareBridgeDomainToL2Vni(stateFunction);
   }
 
-  private static final VlanAwareBridgeDomainToL2Vni NON_VLAN_AWARE_BRIDGE_DOMAIN_TO_L2_VNI =
-      of(identity());
+  private static final VlanAwareBridgeDomainToL2Vni INSTANCE = of(identity());
 
   private static final class Compose extends ComposeBaseImpl<Function> implements Function {
 

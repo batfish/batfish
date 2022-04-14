@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.topology.bridge_domain.node.Node;
 
+/** A pair of a {@link Node} and a {@link State} seen at that node. */
 final class NodeAndState {
 
   public static @Nonnull NodeAndState of(Node node, State state) {

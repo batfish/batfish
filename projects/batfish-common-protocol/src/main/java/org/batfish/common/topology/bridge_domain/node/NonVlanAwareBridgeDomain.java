@@ -15,8 +15,7 @@ import org.batfish.common.topology.bridge_domain.edge.NonVlanAwareBridgeDomainTo
 import org.batfish.common.topology.bridge_domain.edge.NonVlanAwareBridgeDomainToL3;
 
 /**
- * A vlan-aware or non-vlan-aware bridge domain that propagates each frame to a subset of its
- * bridged interfaces.
+ * A non-vlan-aware bridge domain that propagates each frame to a subset of its bridged interfaces.
  *
  * <p>Frames reaching a non-vlan-aware bridge domain will propagate to a subset of its bridged
  * interfaces determined by an arbitrary filter on the state. A device may generally may have any

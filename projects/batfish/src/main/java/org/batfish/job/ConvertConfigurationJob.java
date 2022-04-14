@@ -541,6 +541,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
   }
 
+  /**
+   * Return {@code true} iff there are no undefined references in {@code i}'s {@link
+   * InterfaceTopology}.
+   */
   private static boolean verifyInterfaceTopologyReferences(
       @Nonnull Interface i, @Nonnull Warnings w) {
     InterfaceTopology t = i.getTopology();
@@ -564,6 +568,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     return true;
   }
 
+  /** Return {@code true} iff {@code l2} of {@code i} contains no undefined references. */
   private static boolean verifyInterfaceTopologyReferencesLayer2Settings(
       @Nonnull Interface i, @Nonnull Layer2Settings l2, @Nonnull Warnings w) {
     String hostname = i.getOwner().getHostname();
@@ -579,6 +584,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     return true;
   }
 
+  /** Return {@code true} iff {@code l3} of {@code i} contains no undefined references. */
   private static boolean verifyInterfaceTopologyReferencesLayer3Settings(
       @Nonnull Interface i, @Nonnull Layer3Settings l3, @Nonnull Warnings w) {
     // using Interface arg to avoid creating a third visitor
@@ -895,6 +901,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         }
       }
     }
+    // Remove interfaces with subinterfaces with overlapping allowed input tag spaces
     SetMultimap<String, String> l2ByL1 = computeL2ByL1(c);
     SetMultimap<String, String> l3ByL1 = computeL3ByL1(c);
     Set<String> l1InterfaceNames =
@@ -903,7 +910,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       Set<String> l2s = l2ByL1.get(name);
       Set<String> l3s = l3ByL1.get(name);
       Interface i = c.getAllInterfaces().get(name);
-      if (!verifyL1ToL2AndL1ToL3Edges(i, l2ByL1, l3ByL1, w)) {
+      if (!verifyL1ToL2AndL1ToL3Edges(i, l2s, l3s, w)) {
         c.getAllInterfaces().remove(name);
         l2s.forEach(c.getAllInterfaces()::remove);
         l3s.forEach(c.getAllInterfaces()::remove);
@@ -911,22 +918,23 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
   }
 
+  /**
+   * Given an interface {@code i}, return {@code true} if the allowed input tag spaces of its {@code
+   * l2Interfaces} and {@code l3Interfaces} are mutually disjoint.
+   */
   private static boolean verifyL1ToL2AndL1ToL3Edges(
-      Interface i,
-      SetMultimap<String, String> l2ByL1,
-      SetMultimap<String, String> l3ByL1,
-      Warnings w) {
+      Interface i, Set<String> l2Interfaces, Set<String> l3Interfaces, Warnings w) {
     Configuration c = i.getOwner();
     String name = i.getName();
     Stream<Edge> l2ToL1 =
-        l2ByL1.get(name).stream()
+        l2Interfaces.stream()
             .map(c.getAllInterfaces()::get)
             .map(Interface::getTopology)
             .map(InterfaceTopology::getLayer2Settings)
             .map(Optional::get)
             .map(Layer2Settings::getFromL1);
     Stream<Edge> l3ToL1 =
-        l3ByL1.get(name).stream()
+        l3Interfaces.stream()
             .map(c.getAllInterfaces()::get)
             .map(Interface::getTopology)
             .map(InterfaceTopology::getLayer3Settings)
@@ -943,6 +951,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     return true;
   }
 
+  /**
+   * Return {@code true} iff there is any intersection among the tag spaces allowed by {@code
+   * edges}.
+   */
   private static boolean tagsOverlap(List<Edge> edges) {
     TagCollector collector = new TagCollector();
     for (Edge edge : edges) {
@@ -980,6 +992,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         }
       };
 
+  /** Returns a multimap from l1 interface -> its l2 interfaces. */
   private static @Nonnull SetMultimap<String, String> computeL2ByL1(Configuration c) {
     ImmutableSetMultimap.Builder<String, String> builder = ImmutableSetMultimap.builder();
     for (Interface i : c.getActiveInterfaces().values()) {
@@ -990,6 +1003,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     return builder.build();
   }
 
+  /** Returns a multimap from l1 interface -> its l3 interfaces. */
   private static @Nonnull SetMultimap<String, String> computeL3ByL1(Configuration c) {
     ImmutableSetMultimap.Builder<String, String> builder = ImmutableSetMultimap.builder();
     for (Interface i : c.getActiveInterfaces().values()) {

@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.topology.bridge_domain.edge.L2ToNonVlanAwareBridgeDomain;
 import org.batfish.common.topology.bridge_domain.edge.NonVlanAwareBridgeDomainToL2;
-import org.batfish.common.topology.bridge_domain.edge.NonVlanAwareBridgeDomainToL2.Function;
 
 /** Configuration for bridging a layer-2 interface to a non-vlan-aware bridge domain. */
 public final class Layer2NonVlanAwareBridgeSettings implements Layer2BridgeSettings {
@@ -23,14 +22,24 @@ public final class Layer2NonVlanAwareBridgeSettings implements Layer2BridgeSetti
     return visitor.visitLayer2NonVlanAwareBridgeSettings(this);
   }
 
+  /**
+   * The name of the non-vlan-aware bridge domain to which this interface is connected via these
+   * settings.
+   */
   public @Nonnull String getNonVlanAwareBridgeDomain() {
     return _nonVlanAwareBridgeDomain;
   }
 
-  public @Nonnull Function getFromBridgeDomain() {
+  /**
+   * The filter/transformation to apply when traversing from the bridge domain to this interface.
+   */
+  public @Nonnull NonVlanAwareBridgeDomainToL2.Function getFromBridgeDomain() {
     return _fromBridgeDomain;
   }
 
+  /**
+   * The filter/transformation to apply when traversing from this interface to the bridge domain.
+   */
   public @Nonnull L2ToNonVlanAwareBridgeDomain.Function getToBridgeDomain() {
     return _toBridgeDomain;
   }

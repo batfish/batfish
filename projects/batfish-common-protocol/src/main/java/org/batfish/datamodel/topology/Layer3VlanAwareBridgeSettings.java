@@ -26,14 +26,24 @@ public final class Layer3VlanAwareBridgeSettings implements Layer3Settings {
     return visitor.visitLayer3VlanAwareBridgeSettings(this, arg);
   }
 
+  /**
+   * The name of the vlan-aware bridge domain to which this interface is connected via these
+   * settings.
+   */
   public @Nonnull String getVlanAwareBridge() {
     return _vlanAwareBridge;
   }
 
+  /**
+   * The filter/transformation to apply when traversing from the bridge domain to this interface.
+   */
   public @Nonnull VlanAwareBridgeDomainToL3 getFromBridgeDomain() {
     return _fromBridgeDomain;
   }
 
+  /**
+   * The filter/transformation to apply when traversing from this interface to the bridge domain.
+   */
   public @Nonnull L3ToVlanAwareBridgeDomain getToBridgeDomain() {
     return _toBridgeDomain;
   }

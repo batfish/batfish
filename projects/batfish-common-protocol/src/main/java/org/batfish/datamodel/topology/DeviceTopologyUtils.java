@@ -1,8 +1,7 @@
 package org.batfish.datamodel.topology;
 
-import static org.batfish.common.topology.bridge_domain.edge.L2VniToNonVlanAwareBridgeDomain.l2VniToNonVlanAwareBridgeDomain;
 import static org.batfish.common.topology.bridge_domain.edge.L2VniToVlanAwareBridgeDomain.l2VniToVlanAwareBridgeDomain;
-import static org.batfish.common.topology.bridge_domain.edge.NonVlanAwareBridgeDomainToL2Vni.nonVlanAwareBridgeDomainToL2Vni;
+import static org.batfish.common.topology.bridge_domain.edge.NonVlanAwareBridgeDomainToL2Vni.instance;
 import static org.batfish.common.topology.bridge_domain.edge.VlanAwareBridgeDomainToL2Vni.vlanAwareBridgeDomainToL2Vni;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
@@ -37,6 +36,10 @@ import org.batfish.datamodel.vxlan.VxlanNode;
 /** Helper functions for computing device topology. */
 public final class DeviceTopologyUtils {
 
+  /**
+   * Compute the {@link DeviceTopology} for a configuration based on {@link InterfaceTopology}s of
+   * active interfaces; and {@link Layer2Vni}s.
+   */
   public static @Nonnull DeviceTopology computeDeviceTopology(Configuration c) {
     String hostname = c.getHostname();
     Map<String, Interface> activeInterfaces = c.getActiveInterfaces();
@@ -87,11 +90,18 @@ public final class DeviceTopologyUtils {
         nonVlanAwareBridgeDomains);
   }
 
+  /** Return map from interface name -> interface's topology */
   private static @Nonnull Map<String, InterfaceTopology> computeInterfaceTopologies(
       Map<String, Interface> activeInterfaces) {
     return toImmutableMap(activeInterfaces, Entry::getKey, e -> e.getValue().getOrLegacyTopology());
   }
 
+  /**
+   * Creates {@link L1Interface}s for those {@link Interface}s for which {@link
+   * InterfaceTopology#isLogicalLayer1()} is {@code true}.
+   *
+   * <p>Returns map from interface name -> l1 interface
+   */
   private static @Nonnull Map<String, L1Interface> computeL1Interfaces(
       String hostname, Map<String, InterfaceTopology> interfaceTopologies) {
     return interfaceTopologies.entrySet().stream()
@@ -101,6 +111,14 @@ public final class DeviceTopologyUtils {
                 Entry::getKey, e -> new L1Interface(NodeInterfacePair.of(hostname, e.getKey()))));
   }
 
+  /**
+   * Create {@link NonVlanAwareBridgeDomain}s for all those referenced in in {@link
+   * Layer2NonVlanAwareBridgeSettings#getNonVlanAwareBridgeDomain()}, {@link
+   * Layer3NonVlanAwareBridgeSettings#getNonVlanAwareBridge()}, and {@link
+   * Layer2Vni#getNonVlanAwareBridgeDomain()}.
+   *
+   * <p>Returns map: name -> bridge domain
+   */
   private static @Nonnull Map<String, NonVlanAwareBridgeDomain> computeNonVlanAwareBridgeDomains(
       String hostname,
       Map<String, InterfaceTopology> interfaceTopologies,
@@ -135,6 +153,14 @@ public final class DeviceTopologyUtils {
                 name -> new NonVlanAwareBridgeDomain(BridgeDomain.Id.of(hostname, name))));
   }
 
+  /**
+   * Create {@link VlanAwareBridgeDomain}s for all those referenced in in {@link
+   * Layer2VlanAwareBridgeSettings#getVlanAwareBridgeDomain()}, {@link
+   * Layer3VlanAwareBridgeSettings#getVlanAwareBridge()}, and {@link
+   * Layer2Vni#getVlanAwareBridgeDomain()}.
+   *
+   * <p>Returns map: name -> bridge domain
+   */
   private static @Nonnull Map<String, VlanAwareBridgeDomain> computeVlanAwareBridgeDomains(
       String hostname,
       Map<String, InterfaceTopology> interfaceTopologies,
@@ -169,6 +195,11 @@ public final class DeviceTopologyUtils {
                 name -> new VlanAwareBridgeDomain(BridgeDomain.Id.of(hostname, name))));
   }
 
+  /**
+   * Create {@link L2Interface}s for each {@link Interface} with {@link Layer2Settings}.
+   *
+   * <p>Returns map from interface name -> l2 interface.
+   */
   private static @Nonnull Map<String, L2Interface> computeL2Interfaces(
       String hostname, Map<String, InterfaceTopology> interfaceTopologies) {
     return interfaceTopologies.entrySet().stream()
@@ -178,6 +209,11 @@ public final class DeviceTopologyUtils {
                 Entry::getKey, e -> new L2Interface(NodeInterfacePair.of(hostname, e.getKey()))));
   }
 
+  /**
+   * Create {@link L2Vni}s for each {@link Layer2Vni}.
+   *
+   * <p>Returns map from VNI number -> l2vni.
+   */
   private static @Nonnull Map<Integer, L2Vni> computeL2Vnis(
       String hostname, Map<Integer, Layer2Vni> layer2Vnis) {
     return layer2Vnis.keySet().stream()
@@ -187,6 +223,11 @@ public final class DeviceTopologyUtils {
                 vni -> L2Vni.of(new VxlanNode(hostname, vni, VniLayer.LAYER_2))));
   }
 
+  /**
+   * Create {@link L3Interface}s for each {@link Interface} with {@link Layer3Settings}.
+   *
+   * <p>Returns map from interface name -> l2 interface.
+   */
   private static @Nonnull Map<String, L3Interface> computeL3Interfaces(
       String hostname, Map<String, InterfaceTopology> interfaceTopologies) {
     ImmutableMap.Builder<String, L3Interface> builder = ImmutableMap.builder();
@@ -202,6 +243,10 @@ public final class DeviceTopologyUtils {
     return builder.build();
   }
 
+  /**
+   * Visitor of {@link Layer3Settings} that creates an {@link L3Interface} based on settings
+   * sub-type.
+   */
   private static final Layer3SettingsArgVisitor<L3Interface, NodeInterfacePair> TO_L3_INTERFACE =
       new Layer3SettingsArgVisitor<L3Interface, NodeInterfacePair>() {
         @Override
@@ -231,6 +276,10 @@ public final class DeviceTopologyUtils {
         }
       };
 
+  /**
+   * Populate edges between {@link L2Interface}s and {@link L1Interface}s; and {@link L2Interface}s
+   * and {@link BridgeDomain}s.
+   */
   private static void computeL2InterfaceConnections(
       Map<String, InterfaceTopology> interfaceTopologies,
       Map<String, L2Interface> l2Interfaces,
@@ -289,6 +338,10 @@ public final class DeviceTopologyUtils {
         });
   }
 
+  /**
+   * Populate edges between {@link L3Interface}s and {@link L1Interface}s; and {@link L3Interface}s
+   * and {@link BridgeDomain}s.
+   */
   private static void computeL3InterfaceConnections(
       Map<String, InterfaceTopology> interfaceTopologies,
       Map<String, L3Interface> l3Interfaces,
@@ -358,6 +411,7 @@ public final class DeviceTopologyUtils {
         });
   }
 
+  /** Populate edges between {@link L2Vni}s and {@link BridgeDomain}s. */
   private static void computeL2VniConnections(
       Map<Integer, Layer2Vni> configLayer2Vnis,
       Map<Integer, L2Vni> l2Vnis,
@@ -382,8 +436,8 @@ public final class DeviceTopologyUtils {
             String bridgeName = configLayer2Vni.getNonVlanAwareBridgeDomain().get();
             NonVlanAwareBridgeDomain bridge = nonVlanAwareBridgeDomains.get(bridgeName);
             assert bridge != null;
-            l2vni.connectToNonVlanAwareBridgeDomain(bridge, l2VniToNonVlanAwareBridgeDomain());
-            bridge.connectToL2Vni(l2vni, nonVlanAwareBridgeDomainToL2Vni());
+            l2vni.connectToNonVlanAwareBridgeDomain(bridge);
+            bridge.connectToL2Vni(l2vni, instance());
           }
         });
   }

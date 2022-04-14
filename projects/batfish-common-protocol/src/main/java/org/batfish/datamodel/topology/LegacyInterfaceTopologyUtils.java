@@ -39,6 +39,11 @@ public final class LegacyInterfaceTopologyUtils {
 
   private static final Logger LOGGER = LogManager.getLogger(LegacyInterfaceTopologyUtils.class);
 
+  /**
+   * Helper that populates all interfaces of {@code c} with a legacy {@link InterfaceTopology}.
+   *
+   * <p>No new calls to this method should be made.
+   */
   public static void legacyPopulateInterfaceTopologies(Configuration c) {
     Map<String, Interface> allInterfaces = c.getAllInterfaces();
     for (Interface i : allInterfaces.values()) {
@@ -46,6 +51,22 @@ public final class LegacyInterfaceTopologyUtils {
     }
   }
 
+  /**
+   * Helper that infers {@link InterfaceTopology} for {@code i} based on:
+   *
+   * <ul>
+   *   <li>access vlan
+   *   <li>allowed vlans
+   *   <li>native vlan
+   *   <li>encapuslation vlan
+   *   <li>presence of an IP address
+   *   <li>interface type
+   *   <li>bind dependencies
+   *   <li>interface type
+   * </ul>
+   *
+   * <p>No new calls to this method should be made.
+   */
   public static @Nonnull InterfaceTopology computeLegacyInterfaceTopology(Interface i) {
     InterfaceTopology.Builder builder =
         InterfaceTopology.builder().setLogicalLayer1(isLogicalL1Interface(i));

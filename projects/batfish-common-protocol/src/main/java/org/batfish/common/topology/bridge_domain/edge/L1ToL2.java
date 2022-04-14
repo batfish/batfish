@@ -16,6 +16,10 @@ import org.batfish.datamodel.IntegerSpace;
 public final class L1ToL2 extends Edge {
   public interface Function extends StateFunction {}
 
+  /**
+   * Helper for creating an edge from an l1 interface to a traditional access-mode switchport
+   * interface.
+   */
   public static @Nonnull L1ToL2 l1ToAccess() {
     return of(filterByOuterTag(IntegerSpace.EMPTY, true));
   }

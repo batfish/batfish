@@ -15,12 +15,11 @@ import org.batfish.common.topology.bridge_domain.edge.VlanAwareBridgeDomainToL2V
 import org.batfish.common.topology.bridge_domain.edge.VlanAwareBridgeDomainToL3;
 
 /**
- * A vlan-aware or non-vlan-aware bridge domain that propagates each frame to a subset of its
- * bridged interfaces.
+ * A vlan-aware bridge domain that propagates each frame to a subset of its bridged interfaces.
  *
  * <p>Frames reaching a vlan-aware bridge domain will propagate to the subset of its bridged
- * interfaces that carry traffic for the VLAN ID set in the state. A device typically can have up to
- * one vlan-aware bridge. For now, this is all that Batfish supports.
+ * interfaces that carry traffic for the VLAN ID set in the state. Most devices have exactly one
+ * vlan-aware bridge, but on others an arbitrary number are supported.
  */
 public final class VlanAwareBridgeDomain implements BridgeDomain {
 

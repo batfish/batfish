@@ -3,6 +3,7 @@ package org.batfish.datamodel.topology;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/** (Trivial) topology configuration for a layer-3 tunnel interface. */
 public final class Layer3TunnelSettings implements Layer3Settings {
 
   public static @Nonnull Layer3TunnelSettings instance() {

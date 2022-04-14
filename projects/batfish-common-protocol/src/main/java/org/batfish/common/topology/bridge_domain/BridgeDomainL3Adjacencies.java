@@ -15,8 +15,23 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /**
- * An {@link L3Adjacencies} implementation based on fully modeling L1 and L2 domains, even when no
- * layer-1 information is provided with the snapshot.
+ * An {@link L3Adjacencies} implementation that directly models in configuration the behavior of and
+ * relationships between L1/2/3 interfaces, bridge domains, and VNIs.
+ *
+ * <p>Key design features:
+ *
+ * <ul>
+ *   <li>Edges and the relationships between interfaces, VNIs, and bridge domains are populated
+ *       during conversion. See {@link org.batfish.datamodel.topology.InterfaceTopology} and {@link
+ *       org.batfish.datamodel.vxlan.Layer2Vni}.
+ *   <li>Nodes store edges (and not vice-versa), and thus comprise the graph. Nodes are computed at
+ *       topology computation time from configuration, layer-1 topology, and VxLAN topology.
+ *   <li>Edges contain reified functions modeling filters and transformations of frames and
+ *       classification state thereof. The reified nature enables both concrete and symbolic
+ *       reachability analysis of L2 traffic between nodes.
+ *   <li>Edge transformation types are restricted based on the source and destination node types.
+ *       For instance, a VLAN ID cannot be set while traversing from an L1 interface to an L1 HUB.
+ * </ul>
  *
  * @see L3AdjacencyComputer
  */
@@ -55,11 +70,12 @@ public final class BridgeDomainL3Adjacencies implements L3Adjacencies {
   }
 
   private BridgeDomainL3Adjacencies(
-      Map<NodeInterfacePair, Integer> domains, PointToPointInterfaces pointToPointInterfaces) {
+      Map<NodeInterfacePair, NodeInterfacePair> domains,
+      PointToPointInterfaces pointToPointInterfaces) {
     _domains = ImmutableMap.copyOf(domains);
     _pointToPointInterfaces = pointToPointInterfaces;
   }
 
-  private final @Nonnull Map<NodeInterfacePair, Integer> _domains;
+  private final @Nonnull Map<NodeInterfacePair, NodeInterfacePair> _domains;
   private final @Nonnull PointToPointInterfaces _pointToPointInterfaces;
 }

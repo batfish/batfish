@@ -379,7 +379,7 @@ public final class VxlanTopologyUtils {
                 // TODO: support sessions
                 String name = generatedTenantVniInterfaceName(vni);
                 Interface.builder()
-                    .setName(generatedTenantVniInterfaceName(vni))
+                    .setName(name)
                     .setOwner(c)
                     .setVrf(vrf)
                     .setAdditionalArpIps(l3vni.getSourceAddress().toIpSpace())

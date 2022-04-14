@@ -1,5 +1,6 @@
 package org.batfish.common.topology.bridge_domain;
 
+import javax.annotation.Nonnull;
 import org.batfish.common.topology.bridge_domain.edge.Edge;
 import org.batfish.common.topology.bridge_domain.function.AssignVlanFromOuterTag;
 import org.batfish.common.topology.bridge_domain.function.ClearVlanId;
@@ -16,12 +17,22 @@ import org.batfish.common.topology.bridge_domain.function.TranslateVlan.Translat
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.SubRange;
 
-public class TagCollector {
+/**
+ * A utility that iteratively collects tags allowed by {@link
+ * org.batfish.common.topology.bridge_domain.function.StateFunction}s and reports when an overlap is
+ * discovered.
+ */
+public final class TagCollector {
 
   public TagCollector() {
     _currentlyAllowed = IntegerSpace.EMPTY;
   }
 
+  /**
+   * Add the space of tags allowed on allowed by {@code edge}'s {@link
+   * org.batfish.common.topology.bridge_domain.function.StateFunction} to the running space of
+   * allowed tags, returning {@code true} iff they overlap.
+   */
   public boolean resultsInOverlap(Edge edge) {
     IntegerSpace allowedByEdge = VISITOR.visit(edge.getStateFunction(), ALL_TAGS);
     if (!_currentlyAllowed.intersection(allowedByEdge).isEmpty()) {
@@ -31,7 +42,7 @@ public class TagCollector {
     return false;
   }
 
-  private IntegerSpace _currentlyAllowed;
+  private @Nonnull IntegerSpace _currentlyAllowed;
 
   private static final StateFunctionVisitor<IntegerSpace, IntegerSpace> VISITOR =
       new StateFunctionVisitor<IntegerSpace, IntegerSpace>() {

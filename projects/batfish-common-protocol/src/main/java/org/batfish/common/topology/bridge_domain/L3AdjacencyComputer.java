@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.bridge_domain.edge.Edges;
 import org.batfish.common.topology.bridge_domain.node.L1Hub;
 import org.batfish.common.topology.bridge_domain.node.L1Interface;
 import org.batfish.common.topology.bridge_domain.node.L2Interface;
@@ -41,6 +40,9 @@ import org.jgrapht.alg.util.UnionFind;
 /** Computes the set of L3 interfaces that are in the same broadcast domain as a given interface. */
 final class L3AdjacencyComputer {
   private static final Logger LOGGER = LogManager.getLogger(L3AdjacencyComputer.class);
+
+  private static final boolean ENABLE_VXLAN_ADJACENCIES = true;
+
   private final @Nonnull Map<String, DeviceTopology> _deviceTopologies;
   private final @Nonnull Layer1Topologies _layer1Topologies;
   private final @Nonnull Map<NodeInterfacePair, L1Interface> _l1Interfaces;
@@ -66,9 +68,10 @@ final class L3AdjacencyComputer {
     _l1Interfaces = computeL1Interfaces(_deviceTopologies);
     _l2Interfaces = computeL2Interfaces(_deviceTopologies);
     _l1Hubs = computeL1Hubs(_l1Interfaces, _l2Interfaces, _layer1Topologies.getLogicalL1());
-    _l2Vnis = computeL2Vnis(_deviceTopologies);
-    _l2Vnis.values().forEach(L2Vni::clearHub);
-    _l2VniHubs = computeL2VniHubs(_l2Vnis, vxlanTopology);
+    if (ENABLE_VXLAN_ADJACENCIES) {
+      _l2Vnis = computeL2Vnis(_deviceTopologies);
+      _l2VniHubs = computeL2VniHubs(_l2Vnis, vxlanTopology);
+    }
     _l3Interfaces = computeL3Interfaces(_deviceTopologies);
   }
 
@@ -100,8 +103,15 @@ final class L3AdjacencyComputer {
     return ret.build();
   }
 
-  @VisibleForTesting
-  static @Nonnull Map<String, L2VniHub> computeL2VniHubs(
+  /** Generate edges connecting an {@link L2VniHub} to every one of a list of {@link L2Vni}s. */
+  private static void connectToL2VniHub(L2VniHub l2VniHub, L2Vni... l2Vnis) {
+    for (L2Vni l2Vni : l2Vnis) {
+      l2VniHub.attachL2Vni(l2Vni);
+      l2Vni.connectToL2VniHub(l2VniHub);
+    }
+  }
+
+  private static @Nonnull Map<String, L2VniHub> computeL2VniHubs(
       Map<VxlanNode, L2Vni> l2vnis, VxlanTopology vxlanTopology) {
     Set<EndpointPair<VxlanNode>> l2edges =
         vxlanTopology.getLayer2VniEdges().collect(ImmutableSet.toImmutableSet());
@@ -139,7 +149,7 @@ final class L3AdjacencyComputer {
                 vnis[i] = vni;
                 ++i;
               }
-              Edges.connectToL2VniHub(hub, vnis);
+              connectToL2VniHub(hub, vnis);
               ret.put(hub.getName(), hub);
             });
     return ret.build();
@@ -167,6 +177,14 @@ final class L3AdjacencyComputer {
     return ret.build();
   }
 
+  /** Generate edges connecting an {@link L1Hub} to every one of a list of {@link L1Interface}s. */
+  private static void connectToHub(L1Hub hub, L1Interface... phys) {
+    for (L1Interface p : phys) {
+      hub.addAttachedInterface(p);
+      p.connectToHub(hub);
+    }
+  }
+
   @VisibleForTesting
   static @Nonnull Map<String, L1Hub> computeL1Hubs(
       Map<NodeInterfacePair, L1Interface> l1Interfaces,
@@ -189,7 +207,7 @@ final class L3AdjacencyComputer {
           "Creating a global Ethernet hub with {} physical interfaces",
           interfacesAttachedToGlobalHub.size());
       L1Hub globalHub = new L1Hub(BATFISH_GLOBAL_HUB);
-      Edges.connectToHub(
+      connectToHub(
           globalHub,
           interfacesAttachedToGlobalHub.stream()
               .map(l1Interfaces::get)
@@ -236,7 +254,7 @@ final class L3AdjacencyComputer {
                   interfaces[i] = pi;
                   ++i;
                 }
-                Edges.connectToHub(hub, interfaces);
+                connectToHub(hub, interfaces);
                 ret.put(hub.getId(), hub);
               });
     }
@@ -262,20 +280,24 @@ final class L3AdjacencyComputer {
     return ret.build();
   }
 
-  public @Nonnull Map<NodeInterfacePair, Integer> findAllBroadcastDomains() {
-    ImmutableMap.Builder<NodeInterfacePair, Integer> ret = ImmutableMap.builder();
+  /** Returns a map from L3 interface -> broadcast domain representative L3 interface. */
+  public @Nonnull Map<NodeInterfacePair, NodeInterfacePair> findAllBroadcastDomains() {
+    ImmutableMap.Builder<NodeInterfacePair, NodeInterfacePair> ret = ImmutableMap.builder();
     SortedSet<NodeInterfacePair> unchecked = new TreeSet<>(_l3Interfaces.keySet());
     while (!unchecked.isEmpty()) {
-      Set<NodeInterfacePair> domain = findBroadcastDomain(unchecked.first());
-      int cur = unchecked.size();
-      domain.forEach(i -> ret.put(i, cur));
+      NodeInterfacePair representative = unchecked.first();
+      Set<NodeInterfacePair> domain = findBroadcastDomain(representative);
+      domain.forEach(member -> ret.put(member, representative));
       unchecked.removeAll(domain);
     }
     return ret.build();
   }
 
-  private Set<NodeInterfacePair> findBroadcastDomain(NodeInterfacePair first) {
-    L3Interface originator = _l3Interfaces.get(first);
+  /**
+   * Run a search to determine all L3 interfaces in the broadcast domain for a given representative.
+   */
+  private @Nonnull Set<NodeInterfacePair> findBroadcastDomain(NodeInterfacePair representative) {
+    L3Interface originator = _l3Interfaces.get(representative);
     return Search.originate(originator).stream()
         .map(L3Interface::getInterface)
         .collect(ImmutableSet.toImmutableSet());

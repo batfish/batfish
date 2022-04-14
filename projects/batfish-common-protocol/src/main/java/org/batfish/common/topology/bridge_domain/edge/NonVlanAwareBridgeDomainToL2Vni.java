@@ -15,9 +15,10 @@ import org.batfish.common.topology.bridge_domain.node.NonVlanAwareBridgeDomain;
 public final class NonVlanAwareBridgeDomainToL2Vni extends Edge {
   public interface Function extends StateFunction {}
 
-  /** Helper for creating an edge from a non-vlan-aware bridge domain to an attached layer-2 VNI. */
-  public static @Nonnull NonVlanAwareBridgeDomainToL2Vni nonVlanAwareBridgeDomainToL2Vni() {
-    return NON_VLAN_AWARE_BRIDGE_DOMAIN_TO_L2_VNI;
+  public static @Nonnull NonVlanAwareBridgeDomainToL2Vni instance() {
+    // Note that in the future, VNI state may need to be recorded/transformed to support
+    // translations.
+    return INSTANCE;
   }
 
   @VisibleForTesting
@@ -32,8 +33,7 @@ public final class NonVlanAwareBridgeDomainToL2Vni extends Edge {
     return new NonVlanAwareBridgeDomainToL2Vni(stateFunction);
   }
 
-  private static final NonVlanAwareBridgeDomainToL2Vni NON_VLAN_AWARE_BRIDGE_DOMAIN_TO_L2_VNI =
-      of(identity());
+  private static final NonVlanAwareBridgeDomainToL2Vni INSTANCE = of(identity());
 
   private static final class Compose extends ComposeBaseImpl<Function> implements Function {
 

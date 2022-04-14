@@ -24,6 +24,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
  *   <li>A traditional trunk-mode switchport
  *   <li>An IOS-XR-style l2transport interface
  * </ul>
+ *
+ * <p>A layer-2 interface may connect to an arbitrary number of bridge domains, though the input tag
+ * spaces leading to each bridge domain must be distinct.
  */
 public final class L2Interface implements Node {
   public L2Interface(NodeInterfacePair iface) {

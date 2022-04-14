@@ -39,6 +39,21 @@ final class Search {
     return _broadcastDomain;
   }
 
+  /**
+   * Starting from an originating {@link L3Interface}, recursively traverse out-edges while applying
+   * the filters/transformations of each edge. Add all reached {@link L3Interface}s to the
+   * discovered broadcast domain. Out-edges corresponding to the most-recently-visited node are not
+   * traversed.
+   *
+   * <p>A search branch terminates when:
+   *
+   * <ul>
+   *   <li>A node is reached for which the state at that node has been previously seen.
+   *   <li>The filter on an out-edge rejects the current state.
+   *   <li>There are no out-edges on a node that do not correspond to the most-recently-visited
+   *       node.
+   * </ul>
+   */
   private void search() {
     // Add the originator to the broadcast domain
     _broadcastDomain.add(_originator);
@@ -59,6 +74,10 @@ final class Search {
     }
   }
 
+  /**
+   * Evaluate the state function on an edge. If the function rejects the current state, terminate
+   * this search branch. Otherwise, visit the destination node with the new state.
+   */
   private void traverseEdge(NodeAndState currentNodeAndState, Edge edge, Node toNode) {
     Node currentNode = currentNodeAndState.getNode();
     STATE_FUNCTION_EVALUATOR
@@ -69,6 +88,12 @@ final class Search {
         .ifPresent(nextState -> visit(currentNode, NodeAndState.of(toNode, nextState)));
   }
 
+  /**
+   * If this branch has reacehed an {@link L3Interface}, record it in the discovered broadcast
+   * domain and terminate this search branch. Else if this node has previously been visited with
+   * {@code nodeAndState}, terminate this search branch. Else, queue traversals of all the out-edges
+   * of this node not pointing to {@code lastNode}.
+   */
   private void visit(Node lastNode, NodeAndState nodeAndState) {
     if (_visited.contains(nodeAndState)) {
       // Terminate this branch since we have reached a cycle. This is a common situation, since

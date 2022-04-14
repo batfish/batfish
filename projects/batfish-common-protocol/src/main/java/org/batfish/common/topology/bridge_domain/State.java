@@ -6,6 +6,12 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * A {@link Search} state, including information about the current L2 frame tag(s) and assigned VLAN
+ * if any.
+ *
+ * <p>TODO: include VNI to support VNI translations.
+ */
 final class State {
 
   public static @Nonnull State of(@Nullable Integer outerTag, @Nullable Integer vlan) {

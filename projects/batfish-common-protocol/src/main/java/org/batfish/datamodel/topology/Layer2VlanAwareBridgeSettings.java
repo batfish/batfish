@@ -22,14 +22,24 @@ public final class Layer2VlanAwareBridgeSettings implements Layer2BridgeSettings
     return visitor.visitLayer2VlanAwareBridgeSettings(this);
   }
 
+  /**
+   * The name of the vlan-aware bridge domain to which this interface is connected via these
+   * settings.
+   */
   public @Nonnull String getVlanAwareBridgeDomain() {
     return _vlanAwareBridgeDomain;
   }
 
+  /**
+   * The filter/transformation to apply when traversing from the bridge domain to this interface.
+   */
   public @Nonnull VlanAwareBridgeDomainToL2 getFromBridgeDomain() {
     return _fromBridgeDomain;
   }
 
+  /**
+   * The filter/transformation to apply when traversing from this interface to the bridge domain.
+   */
   public @Nonnull L2ToVlanAwareBridgeDomain getToBridgeDomain() {
     return _toBridgeDomain;
   }
