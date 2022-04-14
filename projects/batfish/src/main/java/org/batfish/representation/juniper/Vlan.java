@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -61,7 +61,7 @@ public class Vlan implements Serializable {
 
   public void addVlanIdListSubrange(SubRange vlanIdListSubrange) {
     if (_vlanIdList == null) {
-      _vlanIdList = new ArrayList<>();
+      _vlanIdList = new LinkedList<>();
       _vlanId = null;
     }
     // Setting vlan-id-list again does not replace original values

@@ -1996,7 +1996,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
   }
 
-  private Optional<SubRange> toSubRange(ParserRuleContext messageCtx, Vlan_rangeContext ctx) {
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Vlan_rangeContext ctx) {
     Optional<Integer> rangeStart = toInteger(messageCtx, ctx.start);
     if (!rangeStart.isPresent()) {
       return Optional.empty();

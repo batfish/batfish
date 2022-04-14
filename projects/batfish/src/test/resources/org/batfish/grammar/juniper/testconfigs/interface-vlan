@@ -20,11 +20,18 @@ set interfaces ge-0/7/0 unit 2 family ethernet-switching interface-mode trunk
 set interfaces vlan unit 103 family inet address 192.168.3.35/24
 set interfaces ge-0/8/0 unit 0 family ethernet-switching vlan members VLAN_ID_LIST_TEST_SINGLETON
 set interfaces ge-0/9/0 unit 0 family ethernet-switching interface-mode trunk
+set interfaces ge-0/9/0 unit 0 family ethernet-switching vlan members VLAN_ID_LIST_TEST_SINGLETON
 set interfaces ge-0/9/0 unit 0 family ethernet-switching vlan members VLAN_ID_LIST_TEST_RANGE
 
+# vlan-id-list should be overruled by vlan-id
+set vlans VLAN_ID_TEST vlan-id-list 100
 set vlans VLAN_ID_TEST vlan-id 101
+# vlan-id should be overruled by vlan-id-list
+set vlans VLAN_ID_LIST_TEST_SINGLETON vlan-id 199
 set vlans VLAN_ID_LIST_TEST_SINGLETON vlan-id-list 200
+# multiple values under vlan-id-list should accumulate
 set vlans VLAN_ID_LIST_TEST_RANGE vlan-id-list 300-400
+set vlans VLAN_ID_LIST_TEST_RANGE vlan-id-list 500
 set vlans VLAN_TEST_UNUSED vlan-id 102
 
 set vlans VLAN_WITH_INTERFACES vlan-id 103

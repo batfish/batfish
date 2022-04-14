@@ -3189,10 +3189,18 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/8/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
     assertThat(c, hasInterface("ge-0/8/0.0", hasAccessVlan(200)));
 
-    // Expecting an Interface in TRUNK mode with allowed VLANs 300-400
+    // Expecting an Interface in TRUNK mode with allowed VLANs 200, 300-400, and 500
     assertThat(c, hasInterface("ge-0/9/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(
-        c, hasInterface("ge-0/9/0.0", hasAllowedVlans(IntegerSpace.of(new SubRange("300-400")))));
+        c,
+        hasInterface(
+            "ge-0/9/0.0",
+            hasAllowedVlans(
+                IntegerSpace.builder()
+                    .including(200)
+                    .including(new SubRange("300-400"))
+                    .including(500)
+                    .build())));
   }
 
   @Test
