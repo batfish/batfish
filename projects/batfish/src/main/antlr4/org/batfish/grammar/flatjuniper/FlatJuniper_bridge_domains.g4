@@ -39,7 +39,7 @@ bd_vlan_id
   )
 ;
 
-bd_vlan_id_list: VLAN_ID_LIST vlan_number;
+bd_vlan_id_list: VLAN_ID_LIST vlan_range;
 
 bd_vlan_tags: VLAN_TAGS OUTER outer = vlan_number INNER inner = vlan_number;
 

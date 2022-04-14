@@ -19,7 +19,7 @@ set bridge-domains bd1 vxlan vni 10000
 
 set routing-instances ri1 bridge-domains bd2 domain-type bridge
 set routing-instances ri1 bridge-domains bd2 vlan-id-list 2
-set routing-instances ri1 bridge-domains bd2 vlan-id-list 3
+set routing-instances ri1 bridge-domains bd2 vlan-id-list 5-10
 set routing-instances ri1 bridge-domains bd2 vlan-tags outer 10 inner 11
 
 set bridge-domains bd3 domain-type bridge

@@ -2054,9 +2054,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (vlanMember instanceof VlanReference) {
       VlanReference vlanReference = (VlanReference) vlanMember;
       Vlan vlan = _masterLogicalSystem.getNamedVlans().get(vlanReference.getName());
-      return vlan == null
-          ? IntegerSpace.EMPTY
-          : vlan.getVlanId() == null ? IntegerSpace.EMPTY : IntegerSpace.of(vlan.getVlanId());
+      if (vlan == null || (vlan.getVlanId() == null && vlan.getVlanIdList() == null)) {
+        return IntegerSpace.EMPTY;
+      }
+      // At most one of vlanId and vlanListId can be defined; setting one clears the other
+      return vlan.getVlanId() != null
+          ? IntegerSpace.of(vlan.getVlanId())
+          : IntegerSpace.unionOfSubRanges(vlan.getVlanIdList());
     } else if (vlanMember instanceof VlanRange) {
       return ((VlanRange) vlanMember).getRange();
     } else if (vlanMember instanceof AllVlans) {
@@ -4214,6 +4218,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // and warn.
     Map<String, Integer> irbVlanIds = new HashMap<>();
     for (Vlan vlan : _masterLogicalSystem.getNamedVlans().values()) {
+      // note: vlan-id-list is not valid on vlans with an L3 interface configured
       Integer vlanId = vlan.getVlanId();
       String l3Interface = vlan.getL3Interface();
       if (l3Interface == null || vlanId == null) {
