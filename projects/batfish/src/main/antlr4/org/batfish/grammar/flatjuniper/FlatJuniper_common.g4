@@ -723,6 +723,11 @@ vlan_number
   uint16
 ;
 
+vlan_range
+:
+  start = vlan_number (DASH end = vlan_number)?
+;
+
 vni_number
 :
   // 0 through 16,777,215
@@ -733,8 +738,5 @@ vni_number
 
 vni_range
 :
-  // Example extended-vni-list [ 10-50 60 70]
-
-  start = vni_number
-  | start = vni_number (DASH end = vni_number)?
+  start = vni_number (DASH end = vni_number)?
 ;

@@ -1,7 +1,7 @@
 #
 set system host-name interface-vlan
 #
-set interfaces ge-0/0/0 unit 0 family ethernet-switching vlan members VLAN_TEST
+set interfaces ge-0/0/0 unit 0 family ethernet-switching vlan members VLAN_ID_TEST
 set interfaces ge-0/1/0 unit 0 family ethernet-switching vlan members VLAN_TEST_UNDEFINED
 set interfaces ge-0/2/0 unit 0 family ethernet-switching
 set interfaces ge-0/3/0 unit 0 family ethernet-switching port-mode trunk
@@ -18,8 +18,13 @@ set interfaces ge-0/7/0 unit 1 family ethernet-switching interface-mode trunk
 set interfaces ge-0/7/0 unit 1 family ethernet-switching vlan members 99
 set interfaces ge-0/7/0 unit 2 family ethernet-switching interface-mode trunk
 set interfaces vlan unit 103 family inet address 192.168.3.35/24
+set interfaces ge-0/8/0 unit 0 family ethernet-switching vlan members VLAN_ID_LIST_TEST_SINGLETON
+set interfaces ge-0/9/0 unit 0 family ethernet-switching interface-mode trunk
+set interfaces ge-0/9/0 unit 0 family ethernet-switching vlan members VLAN_ID_LIST_TEST_RANGE
 
-set vlans VLAN_TEST vlan-id 101
+set vlans VLAN_ID_TEST vlan-id 101
+set vlans VLAN_ID_LIST_TEST_SINGLETON vlan-id-list 200
+set vlans VLAN_ID_LIST_TEST_RANGE vlan-id-list 300-400
 set vlans VLAN_TEST_UNUSED vlan-id 102
 
 set vlans VLAN_WITH_INTERFACES vlan-id 103

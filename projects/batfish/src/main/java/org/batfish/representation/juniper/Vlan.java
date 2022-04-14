@@ -1,11 +1,14 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.SubRange;
 
 @ParametersAreNonnullByDefault
 public class Vlan implements Serializable {
@@ -15,6 +18,7 @@ public class Vlan implements Serializable {
   private @Nonnull Set<String> _interfaces;
   private @Nullable String _l3Interface;
   private @Nullable Integer _vlanId;
+  private @Nullable List<SubRange> _vlanIdList;
   private @Nullable Integer _vniId;
 
   public Vlan(String name) {
@@ -42,12 +46,26 @@ public class Vlan implements Serializable {
     return _vlanId;
   }
 
+  public @Nullable List<SubRange> getVlanIdList() {
+    return _vlanIdList;
+  }
+
   public @Nullable Integer getVniId() {
     return _vniId;
   }
 
   public void setVlanId(int vlanId) {
     _vlanId = vlanId;
+    _vlanIdList = null;
+  }
+
+  public void addVlanIdListSubrange(SubRange vlanIdListSubrange) {
+    if (_vlanIdList == null) {
+      _vlanIdList = new ArrayList<>();
+      _vlanId = null;
+    }
+    // Setting vlan-id-list again does not replace original values
+    _vlanIdList.add(vlanIdListSubrange);
   }
 
   public void setVniId(int vniId) {

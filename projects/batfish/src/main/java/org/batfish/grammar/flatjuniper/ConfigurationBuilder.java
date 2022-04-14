@@ -697,6 +697,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32lContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint8_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlan_numberContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlan_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
@@ -1993,6 +1994,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return RouteDistinguisher.from(
           toInteger(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
     }
+  }
+
+  private Optional<SubRange> toSubRange(ParserRuleContext messageCtx, Vlan_rangeContext ctx) {
+    Optional<Integer> rangeStart = toInteger(messageCtx, ctx.start);
+    if (!rangeStart.isPresent()) {
+      return Optional.empty();
+    }
+    Optional<Integer> rangeEnd = ctx.end == null ? rangeStart : toInteger(messageCtx, ctx.end);
+    if (!rangeEnd.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(rangeStart.get(), rangeEnd.get()));
   }
 
   private static SubRange toSubRange(SubrangeContext ctx) {
@@ -6747,8 +6760,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    int vlan = toInt(ctx.id);
-    _currentNamedVlan.setVlanId(vlan);
+    Optional<Integer> vlan = toInteger(ctx, ctx.id);
+    vlan.ifPresent(_currentNamedVlan::setVlanId);
+  }
+
+  @Override
+  public void exitVlt_vlan_id_list(FlatJuniperParser.Vlt_vlan_id_listContext ctx) {
+    Optional<SubRange> vlanRange = toSubRange(ctx, ctx.vlan_range());
+    vlanRange.ifPresent(_currentNamedVlan::addVlanIdListSubrange);
   }
 
   @Override
