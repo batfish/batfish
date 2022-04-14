@@ -908,9 +908,6 @@ public class A10ConversionTest {
       // no matching interface, no explicit update source
       Warnings warnings = new Warnings(false, true, true);
       assertNull(computeUpdateSource(ImmutableMap.of(), remoteIp, null, warnings));
-      assertThat(
-          warnings,
-          hasRedFlag(hasText("BGP neighbor 10.0.0.2: could not determine update source")));
     }
   }
 

@@ -70651,7 +70651,7 @@
         "aaa_authentication_login_default_tacacs_local" : "PASSED",
         "aaa_group_server_source_interface" : "PASSED",
         "access_list" : "PASSED",
-        "address_family" : "WARNINGS",
+        "address_family" : "PASSED",
         "aggaddress" : "PASSED",
         "arista-event-handler" : "PASSED",
         "arista_acl" : "PASSED",
@@ -70681,7 +70681,7 @@
         "bgp-allow" : "PASSED",
         "bgp-disable" : "PASSED",
         "bgp-enforce-first-as" : "PASSED",
-        "bgp_address_family" : "WARNINGS",
+        "bgp_address_family" : "PASSED",
         "bgp_default_originate_policy" : "PASSED",
         "bgp_nsr" : "PASSED",
         "bgp_route_policy" : "WARNINGS",
@@ -70690,7 +70690,7 @@
         "cisco_acl" : "PASSED",
         "cisco_additional_paths" : "PASSED",
         "cisco_authentication" : "PASSED",
-        "cisco_bgp" : "WARNINGS",
+        "cisco_bgp" : "PASSED",
         "cisco_bgp_confederation" : "PASSED",
         "cisco_cable" : "PASSED",
         "cisco_callhome" : "PASSED",
@@ -70775,7 +70775,7 @@
         "cumulus_nclu_stp" : "PASSED",
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
-        "f5_bigip_imish_malformed" : "WARNINGS",
+        "f5_bigip_imish_malformed" : "PASSED",
         "f5_bigip_structured_cm" : "PASSED",
         "f5_bigip_structured_ltm" : "WARNINGS",
         "f5_bigip_structured_malformed" : "WARNINGS",
@@ -70785,7 +70785,7 @@
         "f5_bigip_structured_net_routing_route_map" : "PASSED",
         "f5_bigip_structured_sys" : "PASSED",
         "f5_bigip_structured_sys_ha_group" : "PASSED",
-        "f5_bigip_structured_with_imish" : "WARNINGS",
+        "f5_bigip_structured_with_imish" : "PASSED",
         "host1" : "PASSED",
         "host2" : "PASSED",
         "if_tag_is" : "PASSED",
@@ -70808,7 +70808,7 @@
         "ios_xe_bgp" : "WARNINGS",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp" : "WARNINGS",
-        "ios_xr_bgp_neighbor_group" : "WARNINGS",
+        "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_class_map" : "PASSED",
         "ios_xr_isis" : "WARNINGS",
         "ios_xr_logging" : "PASSED",
@@ -70869,7 +70869,7 @@
         "no_ip_name_server" : "PASSED",
         "no_mask_reply" : "PASSED",
         "no_snmp_server" : "PASSED",
-        "non_nexus_neighbor_af" : "WARNINGS",
+        "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
         "nxos_bgp" : "WARNINGS",
         "nxos_interface" : "PASSED",
@@ -85339,14 +85339,6 @@
             }
           ]
         },
-        "address_family" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '1.2.3.4'"
-            }
-          ]
-        },
         "arista_bgp" : {
           "Red flags" : [
             {
@@ -85371,35 +85363,11 @@
             }
           ]
         },
-        "bgp_address_family" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '1.10.1.1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '10.12.11.2'"
-            }
-          ]
-        },
         "bgp_route_policy" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '64.57.21.1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Ignoring undefined route-policy static-connected-to-bgp in connected -> BGP redistribution"
-            }
-          ]
-        },
-        "cisco_bgp" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '10.0.1.2'"
             }
           ]
         },
@@ -85559,14 +85527,6 @@
             }
           ]
         },
-        "f5_bigip_imish_malformed" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '3.3.3.3'"
-            }
-          ]
-        },
         "f5_bigip_structured_ltm" : {
           "Red flags" : [
             {
@@ -85599,19 +85559,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '192.0.2.1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Ignoring reference to missing outbound route-map: /Common/MY_IPV4_OUT"
-            }
-          ]
-        },
-        "f5_bigip_structured_with_imish" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '10.0.0.1'"
             }
           ]
         },
@@ -85645,22 +85593,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Ignoring undefined route-policy REDISTRIBUTE_STATIC_POLICY in static -> BGP redistribution"
-            }
-          ]
-        },
-        "ios_xr_bgp_neighbor_group" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '1.2.1.1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '1.2.1.2'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '1.2.1.3'"
             }
           ]
         },
@@ -85816,20 +85748,8 @@
             }
           ]
         },
-        "non_nexus_neighbor_af" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '10.0.0.0'"
-            }
-          ]
-        },
         "nxos_bgp" : {
           "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
-            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"

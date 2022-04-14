@@ -9,14 +9,6 @@
         "configs/cumulus_nclu_range" : "PARTIALLY_UNRECOGNIZED"
       },
       "warnings" : {
-        "as1r1" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '10.12.11.2'"
-            }
-          ]
-        },
         "configs/as1r1.cfg" : {
           "Parse warnings" : [
             {

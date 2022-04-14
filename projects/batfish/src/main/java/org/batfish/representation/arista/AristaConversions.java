@@ -346,11 +346,6 @@ final class AristaConversions {
       /* TODO: Warn here? Seems like this may be standard practice, e.g., for a /31. */
       return firstMatchingInterfaceAddress.get();
     }
-
-    warnings.redFlag(
-        String.format(
-            "BGP neighbor %s in vrf %s: could not determine update source",
-            prefix.getStartIp(), vrfName));
     return null;
   }
 

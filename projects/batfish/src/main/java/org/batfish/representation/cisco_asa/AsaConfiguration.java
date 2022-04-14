@@ -931,9 +931,6 @@ public final class AsaConfiguration extends VendorConfiguration {
           }
         }
       }
-      if (updateSource == null && lpg.getNeighborPrefix().getStartIp().valid()) {
-        _w.redFlag("Could not determine update source for BGP neighbor: '" + lpg.getName() + "'");
-      }
     }
     return updateSource;
   }
