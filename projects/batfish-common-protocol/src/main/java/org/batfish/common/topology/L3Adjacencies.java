@@ -15,7 +15,7 @@ public interface L3Adjacencies extends Serializable {
     NEW_NEW_BRIDGE_DOMAIN
   }
 
-  Method METHOD = Method.OLD;
+  Method METHOD = Method.NEW_NEW_BRIDGE_DOMAIN;
 
   /**
    * Return whether the two interfaces are in the same broadcast domain.
