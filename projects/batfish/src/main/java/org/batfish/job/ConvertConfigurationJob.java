@@ -925,7 +925,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   private static boolean verifyL1ToL2AndL1ToL3Edges(
       Interface i, Set<String> l2Interfaces, Set<String> l3Interfaces, Warnings w) {
     Configuration c = i.getOwner();
-    String name = i.getName();
     Stream<Edge> l2ToL1 =
         l2Interfaces.stream()
             .map(c.getAllInterfaces()::get)
