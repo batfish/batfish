@@ -1,0 +1,65 @@
+!BATFISH_FORMAT: a10_acos
+!
+hostname virtual_server_ipv6
+
+!!! set up vrrp-a properly for code coverage
+! peer interface
+interface ethernet 1
+  ip address 10.0.0.1 /24
+  mtu 1234
+  enable
+!
+
+! vrrp ip owning interface
+interface ethernet 2
+  ip address 10.0.1.1 /24
+  mtu 1234
+  enable
+!
+
+vrrp-a common
+  device-id 1
+  set-id 1
+  enable
+!
+
+vrrp-a peer-group
+  peer 10.0.0.2
+!
+
+vrrp-a vrid 1
+!
+
+health monitor hc1
+  method http expect Success url GET /foo/bar
+!
+
+slb server sg1member1 192.0.2.2
+  port 1234 tcp
+!
+
+slb service-group sg1 tcp
+  method least-connection
+  health-check hc1
+  member sg1member1 1234
+!
+
+ip nat pool foo6_snat 192.0.2.1 192.0.2.1 netmask /32 vrid 1
+
+slb virtual-server vsipv6 dead:beef::1
+  redistribution-flagged
+  vrid 1
+  port 80 http
+    name foo6_http
+    source-nat pool foo6_snat
+    service-group sg1
+    use-rcv-hop-for-resp
+    template http X-Forwarded-For
+  port 443 https
+    name foo6_https
+    source-nat pool foo6_snat
+    service-group sg1
+    use-rcv-hop-for-resp
+    template http X-Forwarded-For
+    template client-ssl foo.example.com
+!
