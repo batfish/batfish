@@ -1231,9 +1231,8 @@ public class A10GrammarTest {
 
     // should generate virtual server with ipv6 target
     assertThat(
-        ((VirtualServerTargetAddress6) vc.getVirtualServers().get("vsipv6").getTarget())
-            .getAddress6(),
-        equalTo(Ip6.parse("dead:beef::1")));
+        vc.getVirtualServers().get("vsipv6").getTarget(),
+        equalTo(new VirtualServerTargetAddress6(Ip6.parse("dead:beef::1"))));
 
     // should not generate reference book address group
     assertThat(
