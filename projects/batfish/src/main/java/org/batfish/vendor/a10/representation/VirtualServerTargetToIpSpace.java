@@ -7,8 +7,15 @@ public class VirtualServerTargetToIpSpace implements VirtualServerTargetVisitor<
   public static final VirtualServerTargetToIpSpace INSTANCE = new VirtualServerTargetToIpSpace();
 
   @Override
-  public IpSpace visitAddress(VirtualServerTargetAddress address) {
-    return address.getAddress().toIpSpace();
+  public IpSpace visitVirtualServerTargetAddress(
+      VirtualServerTargetAddress virtualServerTargetAddress) {
+    return virtualServerTargetAddress.getAddress().toIpSpace();
+  }
+
+  @Override
+  public IpSpace visitVirtualServerTargetAddress6(
+      VirtualServerTargetAddress6 virtualServerTargetAddress6) {
+    throw new IllegalArgumentException("Cannot convert IPv6 target");
   }
 
   private VirtualServerTargetToIpSpace() {}

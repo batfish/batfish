@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
-/** Datamodel class representing an IP address for a load balancer virtual-server */
+/** Datamodel class representing an IPv4 address for a load balancer virtual-server */
 public final class VirtualServerTargetAddress implements VirtualServerTarget {
   @Override
   public int hashCode() {
@@ -35,6 +35,6 @@ public final class VirtualServerTargetAddress implements VirtualServerTarget {
 
   @Override
   public <T> T accept(VirtualServerTargetVisitor<T> visitor) {
-    return visitor.visitAddress(this);
+    return visitor.visitVirtualServerTargetAddress(this);
   }
 }

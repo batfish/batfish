@@ -8,7 +8,7 @@ options {
 
 ss_virtual_server: VIRTUAL_SERVER virtual_server_name virtual_server_target? NEWLINE ssvs_definition*;
 
-virtual_server_target: ip_address;
+virtual_server_target: ip_address | ipv6_address;
 
 ssvs_definition
 :

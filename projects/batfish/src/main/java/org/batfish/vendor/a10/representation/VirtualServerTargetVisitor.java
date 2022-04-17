@@ -6,5 +6,7 @@ public interface VirtualServerTargetVisitor<T> {
     return target.accept(this);
   }
 
-  T visitAddress(VirtualServerTargetAddress address);
+  T visitVirtualServerTargetAddress(VirtualServerTargetAddress virtualServerTargetAddress);
+
+  T visitVirtualServerTargetAddress6(VirtualServerTargetAddress6 virtualServerTargetAddress6);
 }
