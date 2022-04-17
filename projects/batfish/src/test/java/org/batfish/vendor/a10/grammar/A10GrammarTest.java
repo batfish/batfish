@@ -62,6 +62,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GROUP;
+import static org.batfish.vendor.a10.representation.A10StructureType.VIRTUAL_SERVER;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SOURCE_NAT_POOL;
@@ -79,6 +80,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -120,6 +122,7 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -129,6 +132,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
@@ -145,8 +149,11 @@ import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
+import org.batfish.vendor.a10.representation.A10StructureUsage;
 import org.batfish.vendor.a10.representation.AccessList;
 import org.batfish.vendor.a10.representation.AccessListAddressAny;
 import org.batfish.vendor.a10.representation.AccessListAddressHost;
@@ -181,6 +188,7 @@ import org.batfish.vendor.a10.representation.TrunkInterface;
 import org.batfish.vendor.a10.representation.VirtualServer;
 import org.batfish.vendor.a10.representation.VirtualServerPort;
 import org.batfish.vendor.a10.representation.VirtualServerTargetAddress;
+import org.batfish.vendor.a10.representation.VirtualServerTargetAddress6;
 import org.batfish.vendor.a10.representation.Vlan;
 import org.batfish.vendor.a10.representation.VrrpA;
 import org.batfish.vendor.a10.representation.VrrpACommon;
@@ -1192,6 +1200,46 @@ public class A10GrammarTest {
                 "Ethernet1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
             new org.batfish.datamodel.Interface.Dependency(
                 "Ethernet2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+  }
+
+  @Test
+  public void testVirtualServerIpv6() throws IOException {
+    String hostname = "virtual_server_ipv6";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    InitInfoAnswerElement initInfo = batfish.initInfo(batfish.getSnapshot(), false, true);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Should not generate warnings
+    assertThat(initInfo.getWarnings(), not(hasKey(filename)));
+
+    // Should still generate structure and references
+    assertThat(ccae, hasDefinedStructure(filename, VIRTUAL_SERVER, "vsipv6"));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, NAT_POOL, "foo6_snat", VIRTUAL_SERVER_SOURCE_NAT_POOL));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, SERVICE_GROUP, "sg1", A10StructureUsage.VIRTUAL_SERVER_SERVICE_GROUP));
+
+    A10Configuration vc =
+        (A10Configuration) batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // should generate virtual server with ipv6 target
+    assertThat(
+        vc.getVirtualServers().get("vsipv6").getTarget(),
+        equalTo(new VirtualServerTargetAddress6(Ip6.parse("dead:beef::1"))));
+
+    // should not generate reference book address group
+    assertThat(
+        c.getGeneratedReferenceBooks()
+            .get(GeneratedRefBookUtils.getName(hostname, BookType.VirtualAddresses))
+            .getAddressGroups(),
+        empty());
   }
 
   @Test

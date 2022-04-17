@@ -44,10 +44,12 @@ import static org.batfish.vendor.a10.representation.A10Conversion.findVrrpAEnabl
 import static org.batfish.vendor.a10.representation.A10Conversion.getInterfaceEnabledEffective;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsByHaGroup;
+import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
 import static org.batfish.vendor.a10.representation.A10Conversion.toKernelRoute;
-import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchExpr;
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroup;
@@ -86,10 +88,10 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.KernelRoute;
@@ -194,25 +196,6 @@ public class A10ConversionTest {
           arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck)
               || arePortTypesCompatible(ServerPort.Type.UDP, typeToCheck));
     }
-  }
-
-  @Test
-  public void testToMatchCondition() {
-    Ip addr1 = Ip.parse("10.10.10.10");
-    assertThat(
-        _tb.toBDD(
-            toMatchCondition(
-                new VirtualServerTargetAddress(addr1),
-                new VirtualServerPort(80, VirtualServerPort.Type.TCP, 10),
-                VirtualServerTargetToIpSpace.INSTANCE)),
-        equalTo(
-            _tb.toBDD(
-                AclLineMatchExprs.match(
-                    HeaderSpace.builder()
-                        .setDstIps(addr1.toIpSpace())
-                        .setDstPorts(new SubRange(80, 90))
-                        .setIpProtocols(IpProtocol.TCP)
-                        .build()))));
   }
 
   @Test
@@ -409,11 +392,17 @@ public class A10ConversionTest {
         new VirtualServer("vs1Enabled", new VirtualServerTargetAddress(vs1EnabledIp));
     vs1Enabled.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
     vs1Enabled.setVrid(1);
+    VirtualServer vs1EnabledIpv6 =
+        new VirtualServer(
+            "vs1EnabledIpv6", new VirtualServerTargetAddress6(Ip6.parse("dead:beef::1")));
+    vs1EnabledIpv6.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    vs1EnabledIpv6.setVrid(1);
     VirtualServer vs1Disabled =
         new VirtualServer("vs1Disabled", new VirtualServerTargetAddress(vs1DisabledIp));
     vs1Disabled.setVrid(1);
     vs1Disabled.setEnable(false);
-    List<VirtualServer> virtualServers = ImmutableList.of(vs0, vs1Enabled, vs1Disabled);
+    List<VirtualServer> virtualServers =
+        ImmutableList.of(vs0, vs1Enabled, vs1EnabledIpv6, vs1Disabled);
 
     assertThat(
         getVirtualServerIps(virtualServers, 0).collect(ImmutableSet.toImmutableSet()),
@@ -421,6 +410,96 @@ public class A10ConversionTest {
     assertThat(
         getVirtualServerIps(virtualServers, 1).collect(ImmutableSet.toImmutableSet()),
         containsInAnyOrder(vs1EnabledIp));
+  }
+
+  @Test
+  public void testGetVirtualServerIpsForAllVrids() {
+    Ip vs0Ip = Ip.parse("10.0.0.1");
+    Ip vs1EnabledIp = Ip.parse("10.0.1.1");
+    Ip vs1DisabledIp = Ip.parse("10.0.3.1");
+    VirtualServer vs0 = new VirtualServer("vs0", new VirtualServerTargetAddress(vs0Ip));
+    vs0.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    VirtualServer vs1Enabled =
+        new VirtualServer("vs1Enabled", new VirtualServerTargetAddress(vs1EnabledIp));
+    vs1Enabled.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    vs1Enabled.setVrid(1);
+    VirtualServer vs1EnabledIpv6 =
+        new VirtualServer(
+            "vs1EnabledIpv6", new VirtualServerTargetAddress6(Ip6.parse("dead:beef::1")));
+    vs1EnabledIpv6.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    vs1EnabledIpv6.setVrid(1);
+    VirtualServer vs1Disabled =
+        new VirtualServer("vs1Disabled", new VirtualServerTargetAddress(vs1DisabledIp));
+    vs1Disabled.setVrid(1);
+    vs1Disabled.setEnable(false);
+    List<VirtualServer> virtualServers =
+        ImmutableList.of(vs0, vs1Enabled, vs1EnabledIpv6, vs1Disabled);
+
+    assertThat(
+        getVirtualServerIpsForAllVrids(virtualServers).collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(vs0Ip, vs1EnabledIp));
+  }
+
+  @Test
+  public void testGetVirtualServerIpsByHaGroup() {
+    Ip vs0Ip = Ip.parse("10.0.0.1");
+    Ip vs1EnabledIp = Ip.parse("10.0.1.1");
+    Ip vs1DisabledIp = Ip.parse("10.0.3.1");
+    VirtualServer vs0 = new VirtualServer("vs0", new VirtualServerTargetAddress(vs0Ip));
+    vs0.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    VirtualServer vs1Enabled =
+        new VirtualServer("vs1Enabled", new VirtualServerTargetAddress(vs1EnabledIp));
+    vs1Enabled.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    vs1Enabled.setHaGroup(1);
+    VirtualServer vs1EnabledIpv6 =
+        new VirtualServer(
+            "vs1EnabledIpv6", new VirtualServerTargetAddress6(Ip6.parse("dead:beef::1")));
+    vs1EnabledIpv6.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    vs1EnabledIpv6.setHaGroup(1);
+    VirtualServer vs1Disabled =
+        new VirtualServer("vs1Disabled", new VirtualServerTargetAddress(vs1DisabledIp));
+    vs1Disabled.setHaGroup(1);
+    vs1Disabled.setEnable(false);
+    List<VirtualServer> virtualServers =
+        ImmutableList.of(vs0, vs1Enabled, vs1EnabledIpv6, vs1Disabled);
+
+    assertThat(
+        getVirtualServerIpsByHaGroup(virtualServers, 0).collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(vs0Ip));
+    assertThat(
+        getVirtualServerIpsByHaGroup(virtualServers, 1).collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(vs1EnabledIp));
+  }
+
+  @Test
+  public void testGetVirtualServerKernelRoutes() {
+    Ip vs0Ip = Ip.parse("10.0.0.1");
+    Ip vs1EnabledIp = Ip.parse("10.0.1.1");
+    Ip vs1DisabledIp = Ip.parse("10.0.3.1");
+    VirtualServer vs0 = new VirtualServer("vs0", new VirtualServerTargetAddress(vs0Ip));
+    vs0.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    VirtualServer vs1Enabled =
+        new VirtualServer("vs1Enabled", new VirtualServerTargetAddress(vs1EnabledIp));
+    vs1Enabled.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    vs1Enabled.setVrid(1);
+    VirtualServer vs1EnabledIpv6 =
+        new VirtualServer(
+            "vs1EnabledIpv6", new VirtualServerTargetAddress6(Ip6.parse("dead:beef::1")));
+    vs1EnabledIpv6.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
+    vs1EnabledIpv6.setVrid(1);
+    VirtualServer vs1Disabled =
+        new VirtualServer("vs1Disabled", new VirtualServerTargetAddress(vs1DisabledIp));
+    vs1Disabled.setVrid(1);
+    vs1Disabled.setEnable(false);
+    List<VirtualServer> virtualServers =
+        ImmutableList.of(vs0, vs1Enabled, vs1EnabledIpv6, vs1Disabled);
+
+    assertThat(
+        getVirtualServerKernelRoutes(virtualServers)
+            .map(KernelRoute::getNetwork)
+            .map(Prefix::getStartIp)
+            .collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(vs0Ip, vs1EnabledIp));
   }
 
   @Test

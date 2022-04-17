@@ -51,6 +51,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
@@ -76,6 +77,7 @@ import org.batfish.vendor.a10.grammar.A10Parser.Ha_preemption_enableContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_priority_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_set_id_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.HostnameContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ipv6_addressContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Non_default_vridContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_floating_ipContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
@@ -146,6 +148,7 @@ import org.batfish.vendor.a10.representation.VirtualServer;
 import org.batfish.vendor.a10.representation.VirtualServerPort;
 import org.batfish.vendor.a10.representation.VirtualServerTarget;
 import org.batfish.vendor.a10.representation.VirtualServerTargetAddress;
+import org.batfish.vendor.a10.representation.VirtualServerTargetAddress6;
 import org.batfish.vendor.a10.representation.Vlan;
 import org.batfish.vendor.a10.representation.VrrpAFailOverPolicyTemplate;
 import org.batfish.vendor.a10.representation.VrrpAVrid;
@@ -2427,8 +2430,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Nonnull
   VirtualServerTarget toVirtualServerTarget(A10Parser.Virtual_server_targetContext ctx) {
-    assert ctx.ip_address() != null;
-    return new VirtualServerTargetAddress(toIp(ctx.ip_address()));
+    if (ctx.ip_address() != null) {
+      return new VirtualServerTargetAddress(toIp(ctx.ip_address()));
+    } else {
+      assert ctx.ipv6_address() != null;
+      return new VirtualServerTargetAddress6(toIp6(ctx.ipv6_address()));
+    }
+  }
+
+  private @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
+    return Ip6.parse(ctx.getText());
   }
 
   private @Nonnull Optional<String> toString(

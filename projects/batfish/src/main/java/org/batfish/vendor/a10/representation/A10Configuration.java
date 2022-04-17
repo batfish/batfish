@@ -472,6 +472,7 @@ public final class A10Configuration extends VendorConfiguration {
             ReferenceBook.builder(virtualAddressesBookname)
                 .setAddressGroups(
                     _virtualServers.values().stream()
+                        .filter(A10Conversion::isIpv4VirtualServer)
                         .map(
                             vServer ->
                                 new AddressGroup(
@@ -872,12 +873,14 @@ public final class A10Configuration extends VendorConfiguration {
     // Apply transformations to traffic matching virtual servers. These statements return FibLookup
     // after applying the transformation.
     _virtualServers.values().stream()
+        .filter(A10Conversion::isIpv4VirtualServer)
         .filter(A10Conversion::isVirtualServerEnabled)
         .forEach(vs -> statements.add(toStatement(vs, returnFibLookup)));
 
     // Drop any remaining non-ping traffic destined to a VIP.
     Set<Ip> vips =
         _virtualServers.values().stream()
+            .filter(A10Conversion::isIpv4VirtualServer)
             .filter(A10Conversion::isVirtualServerEnabled)
             .map(VirtualServer::getTarget)
             .map(VirtualServerTargetVirtualAddressExtractor.INSTANCE::visit)

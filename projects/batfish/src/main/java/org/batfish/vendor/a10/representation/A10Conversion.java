@@ -165,24 +165,6 @@ public class A10Conversion {
     return Optional.of(IpProtocol.UDP);
   }
 
-  /**
-   * Returns the match condition, when a flow is destined for the specified virtual-server member
-   * (e.g. when NAT should apply for the member).
-   */
-  @VisibleForTesting
-  @Nonnull
-  static AclLineMatchExpr toMatchCondition(
-      VirtualServerTarget target,
-      VirtualServerPort port,
-      VirtualServerTargetToIpSpace virtualServerTargetToIpSpace) {
-    ImmutableList.Builder<AclLineMatchExpr> exprs =
-        ImmutableList.<AclLineMatchExpr>builder()
-            .add(AclLineMatchExprs.matchDst(virtualServerTargetToIpSpace.visit(target)))
-            .add(AclLineMatchExprs.matchDstPort(toIntegerSpace(port)));
-    toProtocol(port).ifPresent(protocol -> exprs.add(AclLineMatchExprs.matchIpProtocol(protocol)));
-    return AclLineMatchExprs.and(exprs.build());
-  }
-
   /** Returns the source transformation step for the specified NAT pool. */
   @Nonnull
   static TransformationStep toSnatTransformationStep(NatPool pool) {
@@ -355,6 +337,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIps(
       Collection<VirtualServer> virtualServers, int vrid) {
     return virtualServers.stream()
+        .filter(A10Conversion::isIpv4VirtualServer)
         .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .filter(vs -> vrid == getVirtualServerVrid(vs))
         .map(A10Conversion::getTargetIp);
@@ -367,6 +350,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIpsByHaGroup(
       Collection<VirtualServer> virtualServers, int haGroup) {
     return virtualServers.stream()
+        .filter(A10Conversion::isIpv4VirtualServer)
         .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .filter(vs -> haGroup == getVirtualServerHaGroup(vs))
         .map(A10Conversion::getTargetIp);
@@ -380,6 +364,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIpsForAllVrids(
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
+        .filter(A10Conversion::isIpv4VirtualServer)
         .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .map(A10Conversion::getTargetIp);
   }
@@ -388,9 +373,29 @@ public class A10Conversion {
   static @Nonnull Stream<KernelRoute> getVirtualServerKernelRoutes(
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
+        .filter(A10Conversion::isIpv4VirtualServer)
         .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .map(A10Conversion::toKernelRoute);
   }
+
+  static boolean isIpv4VirtualServer(VirtualServer virtualServer) {
+    return IS_IPV4_VIRTUAL_SERVER_TARGET.visit(virtualServer.getTarget());
+  }
+
+  private static final VirtualServerTargetVisitor<Boolean> IS_IPV4_VIRTUAL_SERVER_TARGET =
+      new VirtualServerTargetVisitor<Boolean>() {
+        @Override
+        public Boolean visitVirtualServerTargetAddress(
+            VirtualServerTargetAddress virtualServerTargetAddress) {
+          return true;
+        }
+
+        @Override
+        public Boolean visitVirtualServerTargetAddress6(
+            VirtualServerTargetAddress6 virtualServerTargetAddress6) {
+          return false;
+        }
+      };
 
   @VisibleForTesting
   static @Nonnull KernelRoute toKernelRoute(VirtualServer virtualServer) {
@@ -463,8 +468,15 @@ public class A10Conversion {
         new VirtualServerTargetVirtualAddressExtractor();
 
     @Override
-    public Ip visitAddress(VirtualServerTargetAddress address) {
-      return address.getAddress();
+    public Ip visitVirtualServerTargetAddress(
+        VirtualServerTargetAddress virtualServerTargetAddress) {
+      return virtualServerTargetAddress.getAddress();
+    }
+
+    @Override
+    public Ip visitVirtualServerTargetAddress6(
+        VirtualServerTargetAddress6 virtualServerTargetAddress6) {
+      throw new IllegalArgumentException("Cannot convert IPv6 target");
     }
   }
 
@@ -482,8 +494,15 @@ public class A10Conversion {
     }
 
     @Override
-    public Prefix visitAddress(VirtualServerTargetAddress address) {
-      return Prefix.create(address.getAddress(), MAX_PREFIX_LENGTH);
+    public Prefix visitVirtualServerTargetAddress(
+        VirtualServerTargetAddress virtualServerTargetAddress) {
+      return Prefix.create(virtualServerTargetAddress.getAddress(), MAX_PREFIX_LENGTH);
+    }
+
+    @Override
+    public Prefix visitVirtualServerTargetAddress6(
+        VirtualServerTargetAddress6 virtualServerTargetAddress6) {
+      throw new IllegalArgumentException("Cannot extract network from IPv6 target");
     }
   }
 
@@ -900,12 +919,22 @@ public class A10Conversion {
     static final VirtualServerTargetToMatchExpr INSTANCE = new VirtualServerTargetToMatchExpr();
 
     @Override
-    public AclLineMatchExpr visitAddress(VirtualServerTargetAddress address) {
+    public AclLineMatchExpr visitVirtualServerTargetAddress(
+        VirtualServerTargetAddress virtualServerTargetAddress) {
       return AclLineMatchExprs.matchDst(
-          address.getAddress().toIpSpace(),
+          virtualServerTargetAddress.getAddress().toIpSpace(),
           TraceElement.builder()
-              .add(String.format("Matched virtual-server target address %s", address.getAddress()))
+              .add(
+                  String.format(
+                      "Matched virtual-server target address %s",
+                      virtualServerTargetAddress.getAddress()))
               .build());
+    }
+
+    @Override
+    public AclLineMatchExpr visitVirtualServerTargetAddress6(
+        VirtualServerTargetAddress6 virtualServerTargetAddress6) {
+      throw new IllegalArgumentException("Cannot convert IPv6 target");
     }
   }
 
