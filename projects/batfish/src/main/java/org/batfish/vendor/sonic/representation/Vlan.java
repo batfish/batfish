@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.jackson.SingletonOrSingletonList;
 
 /** Represents the settings of a VLAN: https://github.com/Azure/SONiC/wiki/Configuration#vlan */
 public class Vlan implements Serializable {
@@ -39,7 +41,8 @@ public class Vlan implements Serializable {
   private @Nonnull static Vlan create(
       @Nullable @JsonProperty(PROP_DHCP_SERVERS) List<String> dhcpServers,
       @Nullable @JsonProperty(PROP_MEMBERS) ImmutableList<String> members,
-      @Nullable @JsonProperty(PROP_VLANID) Integer vlanId) {
+      @Nullable @JsonProperty(PROP_VLANID) JsonNode vlanIdInput) {
+    Integer vlanId = SingletonOrSingletonList.deserialize(vlanIdInput, Integer.class);
     return Vlan.builder().setDhcpServers(dhcpServers).setMembers(members).setVlanId(vlanId).build();
   }
 
