@@ -249,6 +249,23 @@ public class ConfigDbTest {
   }
 
   @Test
+  public void testDeserializationVlanList() throws JsonProcessingException {
+    String input =
+        "{ \"VLAN\": { \"Vlan2\": {\"dhcp_servers\": [\"1.1.1.1\"], \"members\": [\"Ethernet0\"],"
+            + " \"vlanid\": [\"2\"]}}}";
+    assertThat(
+        deserialize(input, new Warnings()).getVlans(),
+        equalTo(
+            ImmutableMap.of(
+                "Vlan2",
+                Vlan.builder()
+                    .setDhcpServers(ImmutableList.of("1.1.1.1"))
+                    .setMembers(ImmutableList.of("Ethernet0"))
+                    .setVlanId(2)
+                    .build())));
+  }
+
+  @Test
   public void testDeserializationVlanInterface() throws JsonProcessingException {
     String input = "{ \"VLAN_INTERFACE\": {\"Vlan2|10.11.150.11/16\": {}}}";
     assertThat(
