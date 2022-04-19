@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
-import com.google.common.graph.Traverser;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
@@ -296,6 +295,16 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
           // post-order
           elementsHere);
     }
+
+    public void traverse(Consumer<Node<T>> consumer, Predicate<Node<T>> visitNode) {
+      consumer.accept(this);
+      if (_left != null && visitNode.test(_left)) {
+        _left.traverse(consumer, visitNode);
+      }
+      if (_right != null && visitNode.test(_right)) {
+        _right.traverse(consumer, visitNode);
+      }
+    }
   }
 
   private @Nullable Node<T> _root;
@@ -362,10 +371,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     if (_root == null || !visitNode.test(_root)) {
       return;
     }
-    Traverser.<Node<T>>forTree(
-            node -> node.getChildren().filter(visitNode).collect(ImmutableList.toImmutableList()))
-        .depthFirstPostOrder(_root)
-        .forEach(consumer);
+    _root.traverse(consumer, visitNode);
   }
 
   private @Nullable Node<T> exactMatchNode(Prefix p) {
