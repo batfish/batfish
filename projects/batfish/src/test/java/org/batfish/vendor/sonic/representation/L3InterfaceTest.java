@@ -2,6 +2,7 @@ package org.batfish.vendor.sonic.representation;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -11,7 +12,11 @@ public class L3InterfaceTest {
 
   @Test
   public void testJavaSerialization() {
-    L3Interface obj = new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31"));
+    L3Interface obj =
+        new L3Interface(
+            ImmutableMap.of(
+                ConcreteInterfaceAddress.parse("172.19.93.0/31"),
+                InterfaceKeyProperties.builder().setSecondary(true).build()));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
@@ -19,8 +24,12 @@ public class L3InterfaceTest {
   @Test
   public void testEquals() {
     new EqualsTester()
-        .addEqualityGroup(new L3Interface(null), new L3Interface(null))
-        .addEqualityGroup(new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31")))
+        .addEqualityGroup(new L3Interface(ImmutableMap.of()), new L3Interface(ImmutableMap.of()))
+        .addEqualityGroup(
+            new L3Interface(
+                ImmutableMap.of(
+                    ConcreteInterfaceAddress.parse("172.19.93.0/31"),
+                    InterfaceKeyProperties.builder().build())))
         .testEquals();
   }
 }

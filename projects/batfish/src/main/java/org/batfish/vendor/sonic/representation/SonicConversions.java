@@ -1,5 +1,6 @@
 package org.batfish.vendor.sonic.representation;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +32,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IntegerSpace;
@@ -79,12 +82,28 @@ public class SonicConversions {
               .setAdminUp(active);
 
       if (interfaces.containsKey(portName)) {
-        L3Interface l3Interface = interfaces.get(portName);
-        ib.setAddress(l3Interface.getAddress());
+        setInterfaceAddresses(ib, interfaces.get(portName));
       }
 
       ib.build();
     }
+  }
+
+  /**
+   * Sets the concrete addresses of the VI Interface based on the L3Interface. If multiple
+   * non-secondary interfaces are present, the lowest one is picked as primary
+   */
+  @VisibleForTesting
+  static void setInterfaceAddresses(Interface.Builder viInterfaceBuilder, L3Interface l3Interface) {
+    Optional<ConcreteInterfaceAddress> primaryAddress =
+        l3Interface.getAddresses().entrySet().stream()
+            .filter(e -> !firstNonNull(e.getValue().getSecondary(), false))
+            .map(Entry::getKey)
+            .sorted()
+            .findFirst();
+    viInterfaceBuilder.setAddresses(
+        primaryAddress.orElse(null),
+        l3Interface.getAddresses().keySet().toArray(new ConcreteInterfaceAddress[0]));
   }
 
   /** Converts loopbacks under LOOPBACK and LOOPBACK_INTERFACE tables */
@@ -96,26 +115,19 @@ public class SonicConversions {
 
     // TODO: set bandwidth appropriately
 
-    for (String ifaceName : loopbacks) {
-      Interface.builder()
-          .setName(ifaceName)
-          .setOwner(c)
-          .setVrf(vrf)
-          .setType(InterfaceType.LOOPBACK)
-          .build();
-    }
-
-    for (String ifaceName : loopbackInterfaces.keySet()) {
-      Interface viIface =
-          c.getActiveInterfaces().containsKey(ifaceName)
-              ? c.getAllInterfaces().get(ifaceName)
-              : Interface.builder()
-                  .setName(ifaceName)
-                  .setOwner(c)
-                  .setVrf(vrf)
-                  .setType(InterfaceType.LOOPBACK)
-                  .build();
-      viIface.setAddress(loopbackInterfaces.get(ifaceName).getAddress());
+    // create VI interface for names that appear in either loopbacks or loopbackInterfaces
+    // set addresses for those that appear in the latter
+    for (String ifaceName : Sets.union(loopbacks, loopbackInterfaces.keySet())) {
+      Interface.Builder ib =
+          Interface.builder()
+              .setName(ifaceName)
+              .setOwner(c)
+              .setVrf(vrf)
+              .setType(InterfaceType.LOOPBACK);
+      if (loopbackInterfaces.containsKey(ifaceName)) {
+        setInterfaceAddresses(ib, loopbackInterfaces.get(ifaceName));
+      }
+      ib.build();
     }
   }
 
@@ -141,15 +153,16 @@ public class SonicConversions {
       }
       int vlanId = vlan.getVlanId().get(); // must exist since checkVlanId passed
       if (vlanInterfaces.containsKey(vlanName)) {
-        Interface.builder()
-            .setName(vlanName)
-            .setOwner(c)
-            .setVrf(vrf)
-            .setType(InterfaceType.VLAN)
-            .setVlan(vlanId)
-            .setAddress(vlanInterfaces.get(vlanName).getAddress())
-            .setDhcpRelayAddresses(convertDhcpServers(vlan.getDhcpServers(), w))
-            .build();
+        Interface.Builder ib =
+            Interface.builder()
+                .setName(vlanName)
+                .setOwner(c)
+                .setVrf(vrf)
+                .setType(InterfaceType.VLAN)
+                .setVlan(vlanId)
+                .setDhcpRelayAddresses(convertDhcpServers(vlan.getDhcpServers(), w));
+        setInterfaceAddresses(ib, vlanInterfaces.get(vlanName));
+        ib.build();
       }
 
       for (String memberName : vlan.getMembers()) {

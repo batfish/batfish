@@ -36,6 +36,7 @@ import static org.batfish.vendor.sonic.representation.SonicConversions.convertSn
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
 import static org.batfish.vendor.sonic.representation.SonicConversions.getAclRulesByTableName;
 import static org.batfish.vendor.sonic.representation.SonicConversions.isSnmpTable;
+import static org.batfish.vendor.sonic.representation.SonicConversions.setInterfaceAddresses;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -104,7 +105,12 @@ public class SonicConversionsTest {
       convertPorts(
           c,
           ImmutableMap.of("iface", port),
-          ImmutableMap.of("iface", new L3Interface(ConcreteInterfaceAddress.parse(ifaceAddress))),
+          ImmutableMap.of(
+              "iface",
+              new L3Interface(
+                  ImmutableMap.of(
+                      ConcreteInterfaceAddress.parse(ifaceAddress),
+                      InterfaceKeyProperties.builder().build()))),
           vrf);
       assertThat(
           Iterables.getOnlyElement(c.getAllInterfaces().values()),
@@ -142,7 +148,12 @@ public class SonicConversionsTest {
               "Vlan1",
               Vlan.builder().setDhcpServers(ImmutableList.of("10.1.1.1")).setVlanId(1).build()),
           ImmutableMap.of(),
-          ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+          ImmutableMap.of(
+              "Vlan1",
+              new L3Interface(
+                  ImmutableMap.of(
+                      ConcreteInterfaceAddress.parse("1.1.1.1/24"),
+                      InterfaceKeyProperties.builder().build()))),
           vrf,
           new Warnings());
       assertThat(
@@ -177,7 +188,12 @@ public class SonicConversionsTest {
           c,
           ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(12).build()),
           ImmutableMap.of(),
-          ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+          ImmutableMap.of(
+              "Vlan1",
+              new L3Interface(
+                  ImmutableMap.of(
+                      ConcreteInterfaceAddress.parse("1.1.1.1/24"),
+                      InterfaceKeyProperties.builder().build()))),
           vrf,
           new Warnings());
       assertNull(c.getAllInterfaces().get("Vlan1"));
@@ -192,7 +208,12 @@ public class SonicConversionsTest {
           c,
           ImmutableMap.of(),
           ImmutableMap.of(),
-          ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+          ImmutableMap.of(
+              "Vlan1",
+              new L3Interface(
+                  ImmutableMap.of(
+                      ConcreteInterfaceAddress.parse("1.1.1.1/24"),
+                      InterfaceKeyProperties.builder().build()))),
           vrf,
           warnings);
       assertNull(c.getAllInterfaces().get("Vlan1"));
@@ -514,7 +535,11 @@ public class SonicConversionsTest {
           c,
           ImmutableSet.of(),
           ImmutableMap.of(
-              "Loopback0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+              "Loopback0",
+              new L3Interface(
+                  ImmutableMap.of(
+                      ConcreteInterfaceAddress.parse("1.1.1.1/24"),
+                      InterfaceKeyProperties.builder().build()))),
           vrf);
       assertThat(
           c.getAllInterfaces().get("Loopback0"),
@@ -545,7 +570,11 @@ public class SonicConversionsTest {
           c,
           ImmutableSet.of("Loopback0"),
           ImmutableMap.of(
-              "Loopback0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+              "Loopback0",
+              new L3Interface(
+                  ImmutableMap.of(
+                      ConcreteInterfaceAddress.parse("1.1.1.1/24"),
+                      InterfaceKeyProperties.builder().build()))),
           vrf);
       assertThat(
           c.getAllInterfaces().get("Loopback0"),
@@ -726,5 +755,54 @@ public class SonicConversionsTest {
 
     assertFalse(allowsSnmp(AclRule.builder().setIpProtocol(6).setL4DstPort(161).build()));
     assertFalse(allowsSnmp(AclRule.builder().setIpProtocol(17).setL4DstPort(61).build()));
+  }
+
+  @Test
+  public void testSetInterfaceAddresses() {
+    Interface.Builder ib = Interface.builder().setName("iface");
+    ConcreteInterfaceAddress addr1 = ConcreteInterfaceAddress.parse("1.1.1.1/31");
+    ConcreteInterfaceAddress addr2 = ConcreteInterfaceAddress.parse("2.1.1.1/31");
+
+    // no addresses
+    setInterfaceAddresses(ib, new L3Interface(ImmutableMap.of()));
+    assertThat(ib.build().getAllAddresses(), equalTo(ImmutableSet.of()));
+
+    // one non-secondary address
+    setInterfaceAddresses(
+        ib, new L3Interface(ImmutableMap.of(addr1, InterfaceKeyProperties.builder().build())));
+    assertThat(ib.build().getAllAddresses(), equalTo(ImmutableSet.of(addr1)));
+    assertThat(ib.build().getAddress(), equalTo(addr1));
+
+    // two non-secondary addresses (pick lower)
+    setInterfaceAddresses(
+        ib,
+        new L3Interface(
+            ImmutableMap.of(
+                addr1,
+                InterfaceKeyProperties.builder().build(),
+                addr2,
+                InterfaceKeyProperties.builder().build())));
+    assertThat(ib.build().getAllAddresses(), equalTo(ImmutableSet.of(addr1, addr2)));
+    assertThat(ib.build().getAddress(), equalTo(addr1));
+
+    // one secondary and one non-secondary
+    setInterfaceAddresses(
+        ib,
+        new L3Interface(
+            ImmutableMap.of(
+                addr1,
+                InterfaceKeyProperties.builder().setSecondary(true).build(),
+                addr2,
+                InterfaceKeyProperties.builder().build())));
+    assertThat(ib.build().getAllAddresses(), equalTo(ImmutableSet.of(addr1, addr2)));
+    assertThat(ib.build().getAddress(), equalTo(addr2));
+
+    // only secondary addresses: primary is not set
+    setInterfaceAddresses(
+        ib,
+        new L3Interface(
+            ImmutableMap.of(addr1, InterfaceKeyProperties.builder().setSecondary(true).build())));
+    assertThat(ib.build().getAllAddresses(), equalTo(ImmutableSet.of(addr1)));
+    assertThat(ib.build().getAddress(), nullValue());
   }
 }
