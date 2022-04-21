@@ -1,8 +1,11 @@
 package org.batfish.vendor.sonic.representation;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
@@ -13,15 +16,22 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
  * <p>This object is created by parsing the multi-level key encoding in those objects.
  */
 public class L3Interface implements Serializable {
-  // TODO: Does Sonic permit multiple addresses?
-  private final @Nullable ConcreteInterfaceAddress _address;
+  private @Nonnull Map<ConcreteInterfaceAddress, InterfaceKeyProperties> _addresses;
 
-  public L3Interface(@Nullable ConcreteInterfaceAddress address) {
-    _address = address;
+  public L3Interface(Map<ConcreteInterfaceAddress, InterfaceKeyProperties> addresses) {
+    _addresses = ImmutableMap.copyOf(addresses);
   }
 
-  public @Nullable ConcreteInterfaceAddress getAddress() {
-    return _address;
+  public void addAddress(ConcreteInterfaceAddress address, InterfaceKeyProperties properties) {
+    _addresses =
+        ImmutableMap.<ConcreteInterfaceAddress, InterfaceKeyProperties>builder()
+            .putAll(_addresses)
+            .put(address, properties)
+            .build();
+  }
+
+  public @Nonnull Map<ConcreteInterfaceAddress, InterfaceKeyProperties> getAddresses() {
+    return _addresses;
   }
 
   @Override
@@ -33,16 +43,16 @@ public class L3Interface implements Serializable {
       return false;
     }
     L3Interface that = (L3Interface) o;
-    return Objects.equals(_address, that._address);
+    return _addresses.equals(that._addresses);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_address);
+    return Objects.hash(_addresses);
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).omitNullValues().add("address", _address).toString();
+    return MoreObjects.toStringHelper(this).add("addresses", _addresses).toString();
   }
 }

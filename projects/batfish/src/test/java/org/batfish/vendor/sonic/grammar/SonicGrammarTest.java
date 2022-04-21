@@ -57,6 +57,7 @@ import org.batfish.vendor.sonic.representation.AclTable;
 import org.batfish.vendor.sonic.representation.AclTable.Stage;
 import org.batfish.vendor.sonic.representation.AclTable.Type;
 import org.batfish.vendor.sonic.representation.DeviceMetadata;
+import org.batfish.vendor.sonic.representation.InterfaceKeyProperties;
 import org.batfish.vendor.sonic.representation.L3Interface;
 import org.batfish.vendor.sonic.representation.MgmtVrf;
 import org.batfish.vendor.sonic.representation.Port;
@@ -99,7 +100,11 @@ public class SonicGrammarTest {
         vc.getConfigDb().getInterfaces(),
         equalTo(
             ImmutableMap.of(
-                "Ethernet0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
+                "Ethernet0",
+                new L3Interface(
+                    ImmutableMap.of(
+                        ConcreteInterfaceAddress.parse("1.1.1.1/24"),
+                        InterfaceKeyProperties.builder().build())))));
     assertThat(vc.getFrrConfiguration().getRouteMaps().keySet(), equalTo(ImmutableSet.of("TEST")));
 
     Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
@@ -145,7 +150,12 @@ public class SonicGrammarTest {
         ImmutableMap.of("localhost", new DeviceMetadata("mgmt")),
         vc.getConfigDb().getDeviceMetadata());
     assertEquals(
-        ImmutableMap.of("eth0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+        ImmutableMap.of(
+            "eth0",
+            new L3Interface(
+                ImmutableMap.of(
+                    ConcreteInterfaceAddress.parse("1.1.1.1/24"),
+                    InterfaceKeyProperties.builder().setGwAddr("10.11.0.1").build()))),
         vc.getConfigDb().getMgmtInterfaces());
     assertEquals(
         ImmutableMap.of("eth0", Port.builder().setAdminStatusUp(true).build()),
@@ -178,7 +188,12 @@ public class SonicGrammarTest {
         ImmutableMap.of("localhost", new DeviceMetadata("mgmt")),
         vc.getConfigDb().getDeviceMetadata());
     assertEquals(
-        ImmutableMap.of("eth0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+        ImmutableMap.of(
+            "eth0",
+            new L3Interface(
+                ImmutableMap.of(
+                    ConcreteInterfaceAddress.parse("1.1.1.1/24"),
+                    InterfaceKeyProperties.builder().setGwAddr("10.11.0.1").build()))),
         vc.getConfigDb().getMgmtInterfaces());
     assertEquals(
         ImmutableMap.of("eth0", Port.builder().setAdminStatusUp(true).build()),
