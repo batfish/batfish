@@ -1,11 +1,15 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.datamodel.visitors.IpSpaceCanContainReferences.ipSpaceCanContainReferences;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IpSpace;
 
@@ -29,14 +33,34 @@ public final class MemoizedIpSpaceToBDD extends IpSpaceToBDD {
           .concurrencyLevel(1) // super::visit is not threadsafe, don't allocate multiple locks
           .build(CacheLoader.from(super::visit));
 
-  public MemoizedIpSpaceToBDD(BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
-    super(var, namedIpSpaces);
+  private final @Nullable IpSpaceToBDD _nonRefIpSpaceToBDD;
+
+  /**
+   * Create a {@link MemoizedIpSpaceToBDD} instance for {@link IpSpace IP spaces} that may contain
+   * references to named IP spaces in the input map. Leaf IP Spaces (i.e. those guaranteed not to
+   * contain references) are converted using the input {@code nonRefIpSpaceToBDD}.
+   */
+  public MemoizedIpSpaceToBDD(IpSpaceToBDD nonRefIpSpaceToBDD, Map<String, IpSpace> namedIpSpaces) {
+    super(nonRefIpSpaceToBDD.getBDDInteger(), namedIpSpaces);
+    _nonRefIpSpaceToBDD = nonRefIpSpaceToBDD;
+  }
+
+  /**
+   * Create a {@Link MemoizedIpSpaceToBDD} instance for {@link IpSpace IP spaces} that do not
+   * contain references.
+   */
+  public MemoizedIpSpaceToBDD(BDDInteger var) {
+    super(var, ImmutableMap.of());
+    _nonRefIpSpaceToBDD = null;
   }
 
   @Override
   public BDD visit(IpSpace ipSpace) {
-    // Make a copy so that the caller owns it.
-    return _cache.getUnchecked(ipSpace).id();
+    if (_nonRefIpSpaceToBDD == null || ipSpaceCanContainReferences(ipSpace)) {
+      // Use local cache. Make a copy so that the caller owns it.
+      return _cache.getUnchecked(ipSpace).id();
+    }
+    return _nonRefIpSpaceToBDD.visit(ipSpace);
   }
 
   /** Test method only, does not transfer ownership of returned BDD. */

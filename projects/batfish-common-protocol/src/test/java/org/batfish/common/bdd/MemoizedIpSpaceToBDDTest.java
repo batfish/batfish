@@ -4,17 +4,26 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,7 +38,7 @@ public class MemoizedIpSpaceToBDDTest {
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
-    _toBdd = new MemoizedIpSpaceToBDD(pkt.getDstIp(), ImmutableMap.of());
+    _toBdd = new MemoizedIpSpaceToBDD(pkt.getDstIp());
   }
 
   @Test
@@ -94,5 +103,64 @@ public class MemoizedIpSpaceToBDDTest {
     _toBdd.visit(current);
     IpSpace cloned = SerializationUtils.clone(current);
     _toBdd.visit(cloned);
+  }
+
+  @Test
+  public void testChaining_IpSpaceReference() {
+    MemoizedIpSpaceToBDD toBdd2 =
+        new MemoizedIpSpaceToBDD(_toBdd, ImmutableMap.of("IP1", IP1_IP_SPACE));
+
+    IpSpaceReference ref = new IpSpaceReference("IP1");
+    BDD bdd = toBdd2.visit(ref);
+    // outer cache has an entry for the reference, but not the IP
+    assertThat(toBdd2.getMemoizedBddForTesting(ref), equalTo(Optional.of(bdd)));
+    assertThat(toBdd2.getMemoizedBddForTesting(IP1_IP_SPACE), equalTo(Optional.empty()));
+
+    // inner cache has an entry for the IP, but not the reference
+    assertThat(_toBdd.getMemoizedBddForTesting(ref), equalTo(Optional.empty()));
+    assertThat(_toBdd.getMemoizedBddForTesting(IP1_IP_SPACE), equalTo(Optional.of(bdd)));
+  }
+
+  @Test
+  public void testChaining_AclIpSpace() {
+    MemoizedIpSpaceToBDD toBdd2 = new MemoizedIpSpaceToBDD(_toBdd, ImmutableMap.of());
+    toBdd2.visit(ACL_IP_SPACE);
+
+    // outer cache has an entry for the acl, but not the IPs
+    assertTrue(toBdd2.getMemoizedBddForTesting(ACL_IP_SPACE).isPresent());
+    assertFalse(toBdd2.getMemoizedBddForTesting(IP1_IP_SPACE).isPresent());
+    assertFalse(toBdd2.getMemoizedBddForTesting(IP2_IP_SPACE).isPresent());
+
+    // inner cache has an entry for the IPs, but not the acl
+    assertFalse(_toBdd.getMemoizedBddForTesting(ACL_IP_SPACE).isPresent());
+    assertTrue(_toBdd.getMemoizedBddForTesting(IP1_IP_SPACE).isPresent());
+    assertTrue(_toBdd.getMemoizedBddForTesting(IP2_IP_SPACE).isPresent());
+  }
+
+  /**
+   * Test that IpSpaces that cannot contain references are converted/cached by the inner
+   * IpSpaceToBDD instance.
+   */
+  @Test
+  public void testChaining_nonReference() {
+    MemoizedIpSpaceToBDD toBdd2 = new MemoizedIpSpaceToBDD(_toBdd, ImmutableMap.of());
+
+    IpWildcard wc = IpWildcard.parse("0.2.0.0:255.0.255.255");
+    List<IpSpace> nonRefIpSpaces =
+        ImmutableList.of(
+            EmptyIpSpace.INSTANCE,
+            UniverseIpSpace.INSTANCE,
+            IP1_IP_SPACE,
+            Prefix.parse("10.0.0.0/8").toIpSpace(),
+            wc.toIpSpace(),
+            IpWildcardSetIpSpace.create(ImmutableSet.of(IpWildcard.ANY), ImmutableSet.of(wc)));
+
+    for (IpSpace ipSpace : nonRefIpSpaces) {
+      toBdd2.visit(ipSpace);
+      // outer cache does not have an entry
+      assertFalse(toBdd2.getMemoizedBddForTesting(ipSpace).isPresent());
+      // inner cache does have an entry
+      assertTrue(_toBdd.getMemoizedBddForTesting(ipSpace).isPresent());
+    }
   }
 }
