@@ -38,7 +38,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.specifier.InterfaceLinkLocation;
@@ -76,9 +75,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       IpOwners ipOwners) {
     List<Map.Entry<String, String>> allVrfs = sparseKeys(fibs);
 
-    // TODO accept IpSpaceToBDD as parameter
-    IpSpaceToBDD ipSpaceToBDD =
-        new MemoizedIpSpaceToBDD(new BDDPacket().getDstIp(), ImmutableMap.of());
+    // TODO accept IpSpaceToBDD as parameter to reuse work when we build forwarding analysis
+    // multiple times.
+    IpSpaceToBDD ipSpaceToBDD = new BDDPacket().getDstIpSpaceToBDD();
 
     LOGGER.info("Computing owned and unowned IPs");
     // IPs belonging to any interface in the network, even inactive interfaces
