@@ -256,9 +256,17 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.DecContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DescriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dh_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_extended_vni_listContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_multicast_modeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_vni_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evo_vrf_targetContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_autoContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
@@ -4194,9 +4202,49 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitE_extended_vni_list(E_extended_vni_listContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitE_multicast_mode(E_multicast_modeContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitE_vni_options(E_vni_optionsContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitEo_redundant_parent(Eo_redundant_parentContext ctx) {
     String interfaceName = new InterfaceId(ctx.name).getFullName();
     _currentInterfaceOrRange.setRedundantParentInterface(interfaceName);
+  }
+
+  @Override
+  public void exitEvo_vrf_target(Evo_vrf_targetContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEvovt_auto(Evovt_autoContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEvovt_community(Evovt_communityContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEvovt_export(Evovt_exportContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEvovt_import(Evovt_importContext ctx) {
+    todo(ctx);
   }
 
   @Override

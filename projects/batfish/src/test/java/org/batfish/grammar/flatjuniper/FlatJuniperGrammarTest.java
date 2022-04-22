@@ -134,6 +134,7 @@ import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
+import static org.batfish.datamodel.matchers.VniMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -239,75 +240,11 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AclAclLine;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.AnnotatedRoute;
-import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BddTestbed;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.*;
 import org.batfish.datamodel.Bgpv4Route.Builder;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.DiffieHellmanGroup;
-import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GeneratedRoute6;
-import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IkeAuthenticationMethod;
-import org.batfish.datamodel.IkeHashingAlgorithm;
-import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceReference;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
-import org.batfish.datamodel.IpsecEncapsulationMode;
-import org.batfish.datamodel.IpsecProtocol;
-import org.batfish.datamodel.IsisRoute;
-import org.batfish.datamodel.IsoAddress;
-import org.batfish.datamodel.Line;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.LocalRoute;
-import org.batfish.datamodel.MainRibVrfLeakConfig;
-import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfExternalType1Route;
-import org.batfish.datamodel.OspfExternalType2Route;
-import org.batfish.datamodel.OspfInterAreaRoute;
-import org.batfish.datamodel.OspfIntraAreaRoute;
-import org.batfish.datamodel.OspfRoute;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.RouteFilterLine;
-import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SnmpCommunity;
-import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportMode;
-import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -326,19 +263,7 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisProcess;
-import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers;
-import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
-import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
-import org.batfish.datamodel.matchers.IpAccessListMatchers;
-import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
-import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
-import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
-import org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers;
-import org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers;
-import org.batfish.datamodel.matchers.IsisProcessMatchers;
-import org.batfish.datamodel.matchers.OspfAreaMatchers;
-import org.batfish.datamodel.matchers.RouteFilterListMatchers;
-import org.batfish.datamodel.matchers.StubSettingsMatchers;
+import org.batfish.datamodel.matchers.*;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -1586,7 +1511,7 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testEvpnVniListAllExtraction() {
-    parseJuniperConfig("juniper-evpn-vni-list-all");
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-all");
     // TODO
   }
 
@@ -6661,6 +6586,38 @@ public final class FlatJuniperGrammarTest {
         c,
         hasInterface(
             "et-0/0/0.0", hasAllowedVlans(equalTo(IntegerSpace.of(Range.closed(1, 4094))))));
+  }
+
+  @Test
+  public void testVxlanL2vniConversion() {
+    Configuration c = parseConfig("juniper-vxlan-l2vni");
+
+    assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
+    assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getVlan(), 10);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSourceAddress(), null);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSrcVrf(), "default");
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getUdpPort(), 4789);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getVlan(), 20);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress(), null);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSrcVrf(), "default");
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getUdpPort(), 4789);
+  }
+
+  @Test
+  public void testVxlanL3vniConversion() {
+    Configuration c = parseConfig("juniper-vxlan-l3vni");
+
+    assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
+    assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertEquals(
+        c.getDefaultVrf().getLayer3Vnis().get(5010).getSourceAddress(), Ip.parse("10.0.1.111"));
+    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5010).getSrcVrf(), "default");
+    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5010).getUdpPort(), 4789);
+    assertEquals(
+        c.getDefaultVrf().getLayer3Vnis().get(5020).getSourceAddress(), Ip.parse("10.0.2.111"));
+    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5020).getSrcVrf(), "default");
+    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5020).getUdpPort(), 4789);
   }
 
   /** Test that interfaces inherit OSPF settings inside a routing instance. */

@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -185,6 +186,9 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
 import org.batfish.representation.juniper.Interface.InterfaceType;
@@ -2015,6 +2019,46 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return groupsBuilder.build();
   }
 
+  private void convertVxlan() {
+    for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
+      String l3Interface = vxlan.getL3Interface();
+      if (l3Interface == null) {
+        if (vxlan.getVniId() != null) {
+          // Should be a l2vni
+          Layer2Vni vniSettings =
+              Layer2Vni.builder()
+                  .setVni(vxlan.getVniId())
+                  .setVlan(vxlan.getVlanId())
+                  .setUdpPort(Vni.DEFAULT_UDP_PORT)
+                  .setBumTransportMethod(UNICAST_FLOOD_GROUP)
+                  .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
+                  .build();
+          _c.getDefaultVrf().addLayer2Vni(vniSettings);
+        } else {
+          continue;
+        }
+      } else {
+        String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
+        if (vtepSource != null) {
+          Layer3Vni vniSettings =
+              Layer3Vni.builder()
+                  .setVni(vxlan.getVniId())
+                  .setSourceAddress(
+                      _masterLogicalSystem
+                          .getDefaultRoutingInstance()
+                          .getInterfaces()
+                          .get(l3Interface)
+                          .getPrimaryAddress()
+                          .getIp())
+                  .setUdpPort(Vni.DEFAULT_UDP_PORT)
+                  .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
+                  .build();
+          _c.getDefaultVrf().addLayer3Vni(vniSettings);
+        }
+      }
+    }
+  }
+
   private @Nullable Integer computeAccessVlan(String ifaceName, List<VlanMember> vlanMembers) {
     List<VlanMember> effectiveMembers =
         !vlanMembers.isEmpty() ? vlanMembers : ImmutableList.of(DEFAULT_VLAN_MEMBER);
@@ -3819,6 +3863,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     warnIllegalNamedCommunitiesUsedForSet();
 
     _c.computeRoutingPolicySources(_w);
+
+    // convert vxlan.
+    convertVxlan();
 
     return _c;
   }
