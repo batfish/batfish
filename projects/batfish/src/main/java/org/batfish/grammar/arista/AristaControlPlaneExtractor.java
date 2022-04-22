@@ -3164,8 +3164,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbinon_peer_group(Eos_rbinon_peer_groupContext ctx) {
-    assert _currentAristaBgpNeighbor instanceof AristaBgpHasPeerGroup;
-    ((AristaBgpHasPeerGroup) _currentAristaBgpNeighbor).setPeerGroup(null);
+    if (_currentAristaBgpNeighbor instanceof AristaBgpHasPeerGroup) {
+      // clearing the peer group for a concrete neighbor.
+      ((AristaBgpHasPeerGroup) _currentAristaBgpNeighbor).setPeerGroup(null);
+    } else {
+      assert _currentAristaBgpNeighbor instanceof AristaBgpPeerGroupNeighbor;
+      _currentAristaBgpProcess.deletePeerGroup(
+          ((AristaBgpPeerGroupNeighbor) _currentAristaBgpNeighbor).getName());
+    }
   }
 
   @Override
