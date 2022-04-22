@@ -72,15 +72,15 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   }
 
   public BDD toBDD(Ip ip) {
-    return _bddInteger.toBDD(ip);
+    return visit(ip.toIpSpace());
   }
 
   public BDD toBDD(IpWildcard ipWildcard) {
-    return _bddInteger.toBDD(ipWildcard);
+    return visit(ipWildcard.toIpSpace());
   }
 
   public BDD toBDD(Prefix prefix) {
-    return _bddInteger.toBDD(prefix);
+    return visit(prefix.toIpSpace());
   }
 
   @Override
@@ -102,12 +102,12 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitIpIpSpace(IpIpSpace ipIpSpace) {
-    return toBDD(ipIpSpace.getIp());
+    return _bddInteger.toBDD(ipIpSpace.getIp());
   }
 
   @Override
   public BDD visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
-    return toBDD(ipWildcardIpSpace.getIpWildcard());
+    return _bddInteger.toBDD(ipWildcardIpSpace.getIpWildcard());
   }
 
   @Override
@@ -140,7 +140,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    return toBDD(prefixIpSpace.getPrefix());
+    return _bddInteger.toBDD(prefixIpSpace.getPrefix());
   }
 
   @Override
