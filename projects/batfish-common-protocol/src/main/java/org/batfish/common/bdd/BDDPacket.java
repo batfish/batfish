@@ -168,8 +168,8 @@ public class BDDPacket {
             BDDUtils.concatBitvectors(dstIpBitvec, dstPortBitvec),
             BDDUtils.concatBitvectors(srcIpBitvec, srcPortBitvec));
 
-    _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_dstIp);
-    _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_srcIp);
+    _dstIpSpaceToBDD = new IpSpaceToBDD(_dstIp);
+    _srcIpSpaceToBDD = new IpSpaceToBDD(_srcIp);
   }
 
   public @Nonnull BDD getSaneFlowConstraint() {
