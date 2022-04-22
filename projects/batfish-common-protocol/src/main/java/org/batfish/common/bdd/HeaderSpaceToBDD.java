@@ -34,11 +34,11 @@ public final class HeaderSpaceToBDD {
     _dstIpSpaceToBdd =
         namedIpSpaces.isEmpty()
             ? bddPacket.getDstIpSpaceToBDD()
-            : new MemoizedIpSpaceToBDD(bddPacket.getDstIpSpaceToBDD(), namedIpSpaces);
+            : new IpSpaceToBDD(bddPacket.getDstIpSpaceToBDD(), namedIpSpaces);
     _srcIpSpaceToBdd =
         namedIpSpaces.isEmpty()
             ? bddPacket.getSrcIpSpaceToBDD()
-            : new MemoizedIpSpaceToBDD(bddPacket.getSrcIpSpaceToBDD(), namedIpSpaces);
+            : new IpSpaceToBDD(bddPacket.getSrcIpSpaceToBDD(), namedIpSpaces);
   }
 
   /** Returns bdd.not() or {@code null} if given {@link BDD} is null. */
