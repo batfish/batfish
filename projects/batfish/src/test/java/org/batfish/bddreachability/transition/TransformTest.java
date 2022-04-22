@@ -2,8 +2,11 @@ package org.batfish.bddreachability.transition;
 
 import static org.batfish.common.bdd.BDDUtils.bddFactory;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableList;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDInteger;
@@ -198,5 +201,12 @@ public class TransformTest {
 
     assertEquals(x1y3, composite.transitForward(_one));
     assertEquals(x0y2, composite.transitBackward(_one));
+  }
+
+  @Test
+  public void testReduceWithOr() {
+    assertThat(
+        Transform.reduceWithOr(ImmutableList.of(_transformX0, _transformX1, _transformY)),
+        containsInAnyOrder(_transformX0.tryOr(_transformX1).get(), _transformY));
   }
 }

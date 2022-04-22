@@ -48,4 +48,25 @@ public final class BDDPairingFactory {
   public BDD getDomainVarsBdd() {
     return _domainVars.id(); // defensive copy
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof BDDPairingFactory)) {
+      return false;
+    }
+    BDDPairingFactory that = (BDDPairingFactory) o;
+    return Arrays.equals(_domain, that._domain)
+        && Arrays.equals(_codomain, that._codomain)
+        && _domainVars.equals(that._domainVars);
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(_domain)
+        + 31 * Arrays.hashCode(_codomain)
+        + 31 * 31 * _domainVars.hashCode();
+  }
 }

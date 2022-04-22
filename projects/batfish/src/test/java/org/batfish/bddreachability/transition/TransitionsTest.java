@@ -24,6 +24,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDPairingFactory;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
@@ -351,20 +352,54 @@ public class TransitionsTest {
   public void testOr() {
     BDD v0 = var(0);
     BDD v1 = var(1);
+
+    BDD v0Prime = var(2);
+    BDD v1Prime = var(3);
+
+    BDDPairingFactory pairingFactory0 = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    BDDPairingFactory pairingFactory1 = new BDDPairingFactory(new BDD[] {v1}, new BDD[] {v1Prime});
+
+    Transform transformV0_1 = new Transform(v0.and(v0Prime), pairingFactory0);
+    Transform transformV0_2 = new Transform(v0.not().and(v0Prime.not()), pairingFactory0);
+    Transform transformV0_1or2 = new Transform(v0.biimp(v0Prime), pairingFactory0);
+
+    assertEquals(transformV0_1.tryOr(transformV0_2).get(), transformV0_1or2);
+
+    Transform transformV1_1 = new Transform(v1.and(v1Prime), pairingFactory1);
+    Transform transformV1_2 = new Transform(v1.not().and(v1Prime.not()), pairingFactory1);
+    Transform transformV1_1or2 = new Transform(v1.biimp(v1Prime), pairingFactory1);
+
+    assertEquals(transformV1_1.tryOr(transformV1_2).get(), transformV1_1or2);
+
     Transition actual =
         or(
             // constraints get merged
-            constraint(v0), constraint(v1),
+            constraint(v0),
+            constraint(v1),
 
             // EraseAndSets with v0 get merged
-            eraseAndSet(v0, v0), eraseAndSet(v0, v1),
+            eraseAndSet(v0, v0),
+            eraseAndSet(v0, v1),
 
             // EraseAndSets with v1 get merged
-            eraseAndSet(v1, v0), eraseAndSet(v1, v1));
+            eraseAndSet(v1, v0),
+            eraseAndSet(v1, v1),
+
+            // Transforms with v0 get merged
+            transformV0_1,
+            transformV0_2,
+
+            // Transforms with v1 get merged
+            transformV1_1,
+            transformV1_2);
     assertThat(actual, instanceOf(Or.class));
     assertThat(
         ((Or) actual).getTransitions(),
         containsInAnyOrder(
-            constraint(v0.or(v1)), eraseAndSet(v0, v0.or(v1)), eraseAndSet(v1, v0.or(v1))));
+            constraint(v0.or(v1)),
+            eraseAndSet(v0, v0.or(v1)),
+            eraseAndSet(v1, v0.or(v1)),
+            transformV0_1or2,
+            transformV1_1or2));
   }
 }
