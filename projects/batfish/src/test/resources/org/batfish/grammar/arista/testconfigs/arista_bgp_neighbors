@@ -49,6 +49,10 @@ router bgp 1
   neighbor 3.3.3.3 remove-private-as all replace-as
   no neighbor 3.3.3.3 shutdown
 !
+  ! check that we can delete neighbors
+  neighbor 4.4.4.4 remote-as 44
+  no neighbor 4.4.4.4
+!
   network 1.2.3.4/32
 !
   neighbor PARSE_ONLY peer-group
@@ -75,12 +79,19 @@ router bgp 1
   neighbor DYNAMIC send-community
   bgp listen limit 10
   bgp listen range 4.4.4.0/24 peer-group DYNAMIC remote-as 4000
+  ! following deletion will fail, because of missing suffix.
+  no neighbor DYNAMIC
 !
   neighbor 5.5.5.5 enforce-first-as
 !
   ! should not end up in VS
   neighbor DELETED_PG peer-group
   no neighbor DELETED_PG peer-group
+  ! should warn that DELETED_MISSING_PG is not defined
+  no neighbor DELETED_MISSING_PG peer-group
 !
   vrf tenant
     neighbor 2.2.2.2 remote-as 88
+    ! should warn that 3.3.3.3 is not defined in tenant VRF
+    no neighbor 3.3.3.3
+!
