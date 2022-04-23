@@ -78,5 +78,9 @@ router bgp 1
 !
   neighbor 5.5.5.5 enforce-first-as
 !
+  ! should not end up in VS
+  neighbor DELETED_PG peer-group
+  no neighbor DELETED_PG peer-group
+!
   vrf tenant
     neighbor 2.2.2.2 remote-as 88

@@ -39,6 +39,10 @@ public final class AristaBgpProcess implements Serializable {
     return _peerGroups.computeIfAbsent(name, AristaBgpPeerGroupNeighbor::new);
   }
 
+  public @Nullable AristaBgpPeerGroupNeighbor deletePeerGroup(String name) {
+    return _peerGroups.remove(name);
+  }
+
   @Nullable
   public AristaBgpPeerGroupNeighbor getPeerGroup(String name) {
     return _peerGroups.get(name);
