@@ -2,10 +2,10 @@ package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -133,13 +133,12 @@ public class Transform implements Transition {
     return _forwardRelation.equals(transform._forwardRelation)
         && _pairingFactory.equals(transform._pairingFactory)
         && _vars.equals(transform._vars)
-        && Objects.equal(_reverseRelation, transform._reverseRelation)
-        && Objects.equal(_swapPairing, transform._swapPairing);
+        && Objects.equals(_reverseRelation, transform._reverseRelation)
+        && Objects.equals(_swapPairing, transform._swapPairing);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
-        _forwardRelation, _pairingFactory, _vars, _reverseRelation, _swapPairing);
+    return Objects.hash(_forwardRelation, _pairingFactory, _vars, _reverseRelation, _swapPairing);
   }
 }
