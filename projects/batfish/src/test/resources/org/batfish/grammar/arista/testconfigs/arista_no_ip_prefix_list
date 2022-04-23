@@ -3,8 +3,14 @@
 hostname arista_no_ip_prefix_list
 !
 ip prefix-list TEST seq 10 permit 192.168.193.0/24
-!
 no ip prefix-list TEST
 !
 no ip prefix-list OTHER
+no ip prefix-list OTHER seq 20
+!
+ip prefix-list TEST_SEQ seq 10 permit 192.168.10.0/24
+ip prefix-list TEST_SEQ seq 20 permit 192.168.20.0/24
+ip prefix-list TEST_SEQ seq 30 permit 192.168.30.0/24
+no ip prefix-list TEST_SEQ seq 20
+no ip prefix-list TEST_SEQ seq 20
 !

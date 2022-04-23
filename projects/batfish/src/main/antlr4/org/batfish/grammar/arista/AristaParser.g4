@@ -2690,6 +2690,7 @@ no_ip
   IP
   (
     no_ip_igmp
+    | no_ip_prefix_list
     | no_ip_route
     | no_ip_routing
   )
@@ -3281,7 +3282,6 @@ stanza
    | no_aaa_group_server_stanza
    | no_failover
    | no_ip_access_list_stanza
-   | no_ip_prefix_list_stanza
    | no_route_map_stanza
    | route_map_stanza
    | router_multicast_stanza
