@@ -2045,6 +2045,9 @@ public class AristaGrammarTest {
       assertThat(pg.getRouteReflectorClient(), equalTo(Boolean.TRUE));
     }
     {
+      assertThat(config.getAristaBgp().getPeerGroups(), not(hasKey("DELETED_PG")));
+    }
+    {
       Ip neighborAddr = Ip.parse("1.1.1.1");
       AristaBgpV4Neighbor neighbor =
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
