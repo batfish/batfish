@@ -4793,11 +4793,20 @@ public class AristaGrammarTest {
     String hostname = "arista_no_ip_prefix_list";
     AristaConfiguration vc = parseVendorConfig(hostname);
 
-    assertFalse(vc.getPrefixLists().containsKey("TEST"));
+    // Tests that TEST was deleted, OTHER was not created, and that TEST_SEQ exists
+    assertThat(vc.getPrefixLists(), hasKeys("TEST_SEQ"));
+
+    // Tests for TEST_SEQ
+    assertThat(vc.getPrefixLists(), hasKeys("TEST_SEQ"));
+    PrefixList pl = vc.getPrefixLists().get("TEST_SEQ");
+    assertThat("20 was deleted", pl.getLines(), hasKeys(10L, 30L));
 
     assertThat(
         vc.getWarnings().getParseWarnings(),
-        contains(hasComment("Undefined ip prefix-list: OTHER")));
+        containsInAnyOrder(
+            hasComment("No ip prefix-list named OTHER to delete"),
+            hasComment("No ip prefix-list named OTHER to delete"),
+            hasComment("ip prefix-list TEST_SEQ does not have sequence 20 to delete")));
   }
 
   /**
