@@ -459,10 +459,18 @@ netservice_port_specifier
    )
 ;
 
-no_ip_prefix_list_stanza
+no_ip_prefix_list
 :
-   NO IP PREFIX_LIST name = variable NEWLINE
+   PREFIX_LIST name = variable
+   (
+     no_ip_prefix_list_stanza
+     | no_ip_prefix_list_seq
+   )
 ;
+
+no_ip_prefix_list_stanza: NEWLINE;
+
+no_ip_prefix_list_seq: SEQ seqnum = dec NEWLINE;
 
 null_irs_stanza
 :

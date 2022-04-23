@@ -697,6 +697,8 @@ import org.batfish.grammar.arista.AristaParser.Match_semanticsContext;
 import org.batfish.grammar.arista.AristaParser.Match_source_protocol_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Net_is_stanzaContext;
+import org.batfish.grammar.arista.AristaParser.No_ip_prefix_listContext;
+import org.batfish.grammar.arista.AristaParser.No_ip_prefix_list_seqContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_routeContext;
 import org.batfish.grammar.arista.AristaParser.No_route_map_stanzaContext;
@@ -6133,13 +6135,41 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void enterNo_ip_prefix_list(No_ip_prefix_listContext ctx) {
+    String name = ctx.name.getText();
+    _currentPrefixList = _configuration.getPrefixLists().get(name);
+    if (_currentPrefixList == null) {
+      warn(ctx, "No ip prefix-list named " + name + " to delete");
+      _currentPrefixList = new PrefixList(name);
+    }
+  }
+
+  @Override
+  public void exitNo_ip_prefix_list(No_ip_prefix_listContext ctx) {
+    _currentPrefixList = null;
+  }
+
+  @Override
   public void exitNo_ip_prefix_list_stanza(No_ip_prefix_list_stanzaContext ctx) {
-    String prefixListName = ctx.name.getText();
-    if (!_configuration.getPrefixLists().containsKey(prefixListName)) {
-      warn(ctx, "Undefined ip prefix-list: " + prefixListName);
+    // Okay if not present, we already warned.
+    _configuration.getPrefixLists().remove(_currentPrefixList.getName());
+  }
+
+  @Override
+  public void exitNo_ip_prefix_list_seq(No_ip_prefix_list_seqContext ctx) {
+    long seq = toLong(ctx.seqnum);
+    if (!_configuration.getPrefixLists().containsKey(_currentPrefixList.getName())) {
+      // This non-existent prefix list we already warned on, exit early.
       return;
     }
-    _configuration.getPrefixLists().remove(prefixListName);
+    boolean removed = _currentPrefixList.getLines().remove(seq) != null;
+    if (!removed) {
+      warn(
+          ctx,
+          String.format(
+              "ip prefix-list %s does not have sequence %d to delete",
+              _currentPrefixList.getName(), seq));
+    }
   }
 
   @Override
