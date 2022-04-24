@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import java.util.Comparator;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -59,6 +60,18 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
     Ip ip = Ip.parse(parts[0]);
     int networkBits = Integer.parseUnsignedInt(parts[1]);
     return create(ip, networkBits);
+  }
+
+  /**
+   * Return an {@link Optional} {@link ConcreteInterfaceAddress} from a string, or {@link
+   * Optional#empty} if the string does not represent a {@link ConcreteInterfaceAddress}.
+   */
+  public @Nonnull static Optional<ConcreteInterfaceAddress> tryParse(String text) {
+    try {
+      return Optional.of(parse(text));
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
+    }
   }
 
   @Override
