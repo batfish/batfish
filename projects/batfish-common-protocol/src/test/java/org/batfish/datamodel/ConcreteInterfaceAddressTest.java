@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
+import java.util.Optional;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
@@ -30,6 +31,14 @@ public class ConcreteInterfaceAddressTest {
     assertThat(
         ConcreteInterfaceAddress.parse("1.1.1.1/24"),
         equalTo(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24)));
+  }
+
+  @Test
+  public void testTryParse() {
+    assertThat(
+        ConcreteInterfaceAddress.tryParse("1.1.1.1/24"),
+        equalTo(Optional.of(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))));
+    assertThat(ConcreteInterfaceAddress.tryParse("garbade"), equalTo(Optional.empty()));
   }
 
   @Test
