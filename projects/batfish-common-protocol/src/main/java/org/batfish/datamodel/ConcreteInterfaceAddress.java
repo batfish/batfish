@@ -66,8 +66,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
    * Return an {@link Optional} {@link ConcreteInterfaceAddress} from a string, or {@link
    * Optional#empty} if the string does not represent a {@link ConcreteInterfaceAddress}.
    */
-  @Nonnull
-  public static Optional<ConcreteInterfaceAddress> tryParse(@Nonnull String text) {
+  public @Nonnull static Optional<ConcreteInterfaceAddress> tryParse(String text) {
     try {
       return Optional.of(parse(text));
     } catch (IllegalArgumentException e) {
