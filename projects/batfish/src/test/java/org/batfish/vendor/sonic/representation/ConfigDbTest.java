@@ -1,7 +1,9 @@
 package org.batfish.vendor.sonic.representation;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.vendor.sonic.representation.ConfigDb.createInterfaces;
 import static org.batfish.vendor.sonic.representation.ConfigDb.deserialize;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -27,7 +29,7 @@ public class ConfigDbTest {
     Warnings warnings = new Warnings(true, true, true);
     assertThat(
         deserialize(input, warnings).getInterfaces(),
-        equalTo(ImmutableMap.of("Ethernet0", new L3Interface(null))));
+        equalTo(ImmutableMap.of("Ethernet0", new L3Interface(ImmutableMap.of()))));
     assertThat(
         Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
         equalTo("Unimplemented configdb table 'GARBAGE'"));
@@ -97,6 +99,7 @@ public class ConfigDbTest {
             + "\"Ethernet136\": {},"
             + "\"Ethernet136|0:0:0:0:0:ffff:ac13:5d00/127\": {},"
             + "\"Ethernet136|172.19.93.0/31\": {},"
+            + "\"Ethernet136|172.19.94.0/31\": {\"secondary\": \"true\"},"
             + "\"Ethernet137\": {}"
             + "}}";
     assertThat(
@@ -104,9 +107,14 @@ public class ConfigDbTest {
         equalTo(
             ImmutableMap.of(
                 "Ethernet136",
-                new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31")),
+                new L3Interface(
+                    ImmutableMap.of(
+                        ConcreteInterfaceAddress.parse("172.19.93.0/31"),
+                        InterfaceKeyProperties.builder().build(),
+                        ConcreteInterfaceAddress.parse("172.19.94.0/31"),
+                        InterfaceKeyProperties.builder().setSecondary(true).build())),
                 "Ethernet137",
-                new L3Interface(null))));
+                new L3Interface(ImmutableMap.of()))));
   }
 
   @Test
@@ -121,7 +129,7 @@ public class ConfigDbTest {
     String input = "{ \"LOOPBACK_INTERFACE\": {\"Loopback0\": {}}}";
     assertThat(
         deserialize(input, new Warnings()).getLoopbackInterfaces(),
-        equalTo(ImmutableMap.of("Loopback0", new L3Interface(null))));
+        equalTo(ImmutableMap.of("Loopback0", new L3Interface(ImmutableMap.of()))));
   }
 
   @Test
@@ -132,10 +140,11 @@ public class ConfigDbTest {
         deserialize(input, warnings).getMgmtInterfaces(),
         equalTo(
             ImmutableMap.of(
-                "eth0", new L3Interface(ConcreteInterfaceAddress.parse("10.11.150.11/16")))));
-    assertThat(
-        Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
-        equalTo("Unimplemented MGMT_INTERFACE property 'gwaddr'"));
+                "eth0",
+                new L3Interface(
+                    ImmutableMap.of(
+                        ConcreteInterfaceAddress.parse("10.11.150.11/16"),
+                        InterfaceKeyProperties.builder().setGwAddr("10.11.0.1").build())))));
   }
 
   @Test
@@ -272,7 +281,11 @@ public class ConfigDbTest {
         deserialize(input, new Warnings()).getVlanInterfaces(),
         equalTo(
             ImmutableMap.of(
-                "Vlan2", new L3Interface(ConcreteInterfaceAddress.parse("10.11.150.11/16")))));
+                "Vlan2",
+                new L3Interface(
+                    ImmutableMap.of(
+                        ConcreteInterfaceAddress.parse("10.11.150.11/16"),
+                        InterfaceKeyProperties.builder().build())))));
   }
 
   @Test
@@ -293,18 +306,47 @@ public class ConfigDbTest {
 
   @Test
   public void testCreateInterfaces() {
+    Warnings warnings = new Warnings(true, true, true);
     assertThat(
         createInterfaces(
-            ImmutableSet.of(
+            ImmutableMap.of(
                 "Ethernet136",
+                InterfaceKeyProperties.builder().build(),
                 "Ethernet136|172.19.93.0/31",
+                InterfaceKeyProperties.builder().build(),
+                "Ethernet136|172.19.94.0/31",
+                InterfaceKeyProperties.builder()
+                    .setGwAddr("1.1.1.1")
+                    .setForcedMgmtRoutes(ImmutableList.of("2.2.2.2"))
+                    .setSecondary(true)
+                    .build(),
                 "Ethernet136|0:0:0:0:0:ffff:ac13:5d00/127",
-                "Ethernet137")),
+                InterfaceKeyProperties.builder().build(),
+                "Ethernet137",
+                InterfaceKeyProperties.builder().build()),
+            warnings),
         equalTo(
             ImmutableMap.of(
                 "Ethernet136",
-                new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31")),
+                new L3Interface(
+                    ImmutableMap.of(
+                        ConcreteInterfaceAddress.parse("172.19.93.0/31"),
+                        InterfaceKeyProperties.builder().build(),
+                        ConcreteInterfaceAddress.parse("172.19.94.0/31"),
+                        InterfaceKeyProperties.builder()
+                            .setGwAddr("1.1.1.1")
+                            .setForcedMgmtRoutes(ImmutableList.of("2.2.2.2"))
+                            .setSecondary(true)
+                            .build())),
                 "Ethernet137",
-                new L3Interface(null))));
+                new L3Interface(ImmutableMap.of()))));
+
+    assertThat(
+        warnings.getUnimplementedWarnings(),
+        contains(
+            hasText(
+                "Property 'forced_mgmt_routes' of 'Ethernet136|172.19.94.0/31' is not implemented"),
+            hasText("Property 'gwaddr' of 'Ethernet136|172.19.94.0/31' is not implemented")));
+    //        equalTo("Unimplemented MGMT_INTERFACE property 'gwaddr'"));
   }
 }

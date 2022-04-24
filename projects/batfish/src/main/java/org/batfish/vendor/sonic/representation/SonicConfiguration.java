@@ -203,24 +203,23 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     }
     if (_configDb.getPorts().containsKey(ifaceName)) {
       return Optional.ofNullable(_configDb.getInterfaces().get(ifaceName))
-          .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
+          .map(iface -> ImmutableList.copyOf(iface.getAddresses().keySet()))
           .orElse(ImmutableList.of());
     }
     if (_configDb.getLoopbackInterfaces().containsKey(ifaceName)) {
       return Optional.ofNullable(_configDb.getLoopbackInterfaces().get(ifaceName))
-          .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
+          .map(iface -> ImmutableList.copyOf(iface.getAddresses().keySet()))
           .orElse(ImmutableList.of());
     }
     if (_configDb.getMgmtPorts().containsKey(ifaceName)) {
       return Optional.ofNullable(_configDb.getMgmtInterfaces().get(ifaceName))
-          .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
+          .map(iface -> ImmutableList.copyOf(iface.getAddresses().keySet()))
           .orElse(ImmutableList.of());
     }
     if (_configDb.getVlans().containsKey(ifaceName)
         && _configDb.getVlanInterfaces().containsKey(ifaceName)) {
-      return Optional.ofNullable(_configDb.getVlanInterfaces().get(ifaceName).getAddress())
-          .map(ImmutableList::of)
-          .orElse(ImmutableList.of());
+      return ImmutableList.copyOf(
+          _configDb.getVlanInterfaces().get(ifaceName).getAddresses().keySet());
     }
     // should never get here
     throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
