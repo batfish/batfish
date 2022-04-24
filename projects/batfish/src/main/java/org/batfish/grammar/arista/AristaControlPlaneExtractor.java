@@ -527,6 +527,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4u_enabl
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_default_metricContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighbor_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_router_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_allowas_inContext;
@@ -975,6 +976,7 @@ import org.batfish.representation.arista.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpProcess;
 import org.batfish.representation.arista.eos.AristaBgpV4DynamicNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpV4Neighbor;
+import org.batfish.representation.arista.eos.AristaBgpV6Neighbor;
 import org.batfish.representation.arista.eos.AristaBgpVlan;
 import org.batfish.representation.arista.eos.AristaBgpVlanAwareBundle;
 import org.batfish.representation.arista.eos.AristaBgpVlanBase;
@@ -1220,6 +1222,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private AristaBgpAggregateNetwork _currentAristaBgpAggregateNetwork;
   private AristaBgpNeighbor _currentAristaBgpNeighbor;
+  private boolean _currentAristaBgpNeighborIsBrandNew;
   private AristaBgpNeighborAddressFamily _currentAristaBgpNeighborAddressFamily;
   private AristaBgpProcess _currentAristaBgpProcess;
   private AristaBgpVlanBase _currentAristaBgpVlan;
@@ -2757,8 +2760,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _configuration.referenceStructure(
           BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
     } else if (ctx.nid.v6 != null) {
-      // TODO: v6 neighbors
-      _currentAristaBgpNeighbor = new AristaBgpPeerGroupNeighbor("dummy");
+      // TODO: v6 neighbors aren't tracked and most properties aren't modeled.
+      Ip6 ip = toIp6(ctx.nid.v6);
+      _currentAristaBgpNeighbor = new AristaBgpV6Neighbor(ip);
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
@@ -3083,10 +3087,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void enterEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
     if (ctx.nid.v4 != null) {
       Ip address = toIp(ctx.nid.v4);
+      _currentAristaBgpNeighborIsBrandNew =
+          !_currentAristaBgpVrf.getV4neighbors().containsKey(address);
       _currentAristaBgpNeighbor =
           _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
     } else if (ctx.nid.pg != null) {
       String name = ctx.nid.pg.getText();
+      _currentAristaBgpNeighborIsBrandNew =
+          !_currentAristaBgpProcess.getPeerGroups().containsKey(name);
       _currentAristaBgpNeighbor =
           _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _configuration.referenceStructure(
@@ -3105,6 +3113,33 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
     _currentAristaBgpNeighbor = null;
     _currentAristaBgpNeighborAddressFamily = null;
+    _currentAristaBgpNeighborIsBrandNew = false;
+  }
+
+  @Override
+  public void exitEos_rbino_neighbor_neighbor(Eos_rbino_neighbor_neighborContext ctx) {
+    if (_currentAristaBgpNeighbor instanceof AristaBgpPeerGroupNeighbor) {
+      String name = ((AristaBgpPeerGroupNeighbor) _currentAristaBgpNeighbor).getName();
+      warn(
+          ctx,
+          String.format("Incomplete: need peer group suffix to delete BGP peer group %s", name));
+      if (_currentAristaBgpNeighborIsBrandNew) {
+        // Still need to delete it so it doesn't end up created.
+        _currentAristaBgpProcess.deletePeerGroup(name);
+      }
+    } else if (_currentAristaBgpNeighbor instanceof AristaBgpV4Neighbor) {
+      Ip ip = ((AristaBgpV4Neighbor) _currentAristaBgpNeighbor).getIp();
+      _currentAristaBgpVrf.getV4neighbors().remove(ip);
+      if (_currentAristaBgpNeighborIsBrandNew) {
+        warn(
+            ctx,
+            String.format(
+                "No BGP neighbor %s to delete in vrf %s", ip, _currentAristaBgpVrf.getName()));
+      }
+    } else {
+      assert _currentAristaBgpNeighbor instanceof AristaBgpV6Neighbor;
+      // TODO v6 neighbors
+    }
   }
 
   @Override
@@ -3171,8 +3206,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       ((AristaBgpHasPeerGroup) _currentAristaBgpNeighbor).setPeerGroup(null);
     } else {
       assert _currentAristaBgpNeighbor instanceof AristaBgpPeerGroupNeighbor;
-      _currentAristaBgpProcess.deletePeerGroup(
-          ((AristaBgpPeerGroupNeighbor) _currentAristaBgpNeighbor).getName());
+      String name = ((AristaBgpPeerGroupNeighbor) _currentAristaBgpNeighbor).getName();
+      if (_currentAristaBgpNeighborIsBrandNew) {
+        warn(ctx, String.format("No BGP peer-group %s to delete", name));
+        // still have to delete it, since we created it above in case of defalt creation
+      }
+      _currentAristaBgpProcess.deletePeerGroup(name);
     }
   }
 

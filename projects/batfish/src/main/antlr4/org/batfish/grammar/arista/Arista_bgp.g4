@@ -2332,7 +2332,8 @@ eos_rbino_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
   (
-    eos_rbinon_additional_paths
+    eos_rbino_neighbor_neighbor // delete the neighbor
+    | eos_rbinon_additional_paths
     | eos_rbinon_allowas_in
     | eos_rbinon_as_path
     | eos_rbinon_auto_local_addr
@@ -2377,6 +2378,8 @@ eos_rbino_neighbor
     | eos_rbafnonc_weight  // intended rbafnonc - it affects the generic address family
   )
 ;
+
+eos_rbino_neighbor_neighbor: NEWLINE;
 
 eos_rbinon_additional_paths
 :
