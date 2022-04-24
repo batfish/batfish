@@ -215,18 +215,34 @@ public class ConfigDb implements Serializable {
    * address, or with a v6 address.
    */
   @VisibleForTesting
-  static Map<String, L3Interface> createInterfaces(Set<String> interfaceKeys) {
+  static Map<String, L3Interface> createInterfaces(
+      Map<String, InterfaceKeyProperties> interfaceKeyMap, Warnings warnings) {
     Map<String, L3Interface> interfaces = new HashMap<>();
-    for (String key : interfaceKeys) {
+    for (String key : interfaceKeyMap.keySet()) {
       String[] parts = key.split("\\|", 2);
-      interfaces.computeIfAbsent(parts[0], i -> new L3Interface(null));
+      L3Interface l3Interface =
+          interfaces.computeIfAbsent(parts[0], i -> new L3Interface(ImmutableMap.of()));
       if (parts.length == 2) {
-        try {
-          // if the interface appears with a v4 address, overwrite with that version
-          ConcreteInterfaceAddress v4Address = ConcreteInterfaceAddress.parse(parts[1]);
-          interfaces.put(parts[0], new L3Interface(v4Address));
-        } catch (IllegalArgumentException e) {
-          Prefix6.parse(parts[1]); // try to parse as v6; Will throw an exception upon failure
+        Optional<ConcreteInterfaceAddress> v4Address = ConcreteInterfaceAddress.tryParse(parts[1]);
+        if (v4Address.isPresent()) {
+          InterfaceKeyProperties interfaceKeyProperties = interfaceKeyMap.get(key);
+          l3Interface.addAddress(v4Address.get(), interfaceKeyMap.get(key));
+
+          // warn about unimplemented properties
+          if (interfaceKeyProperties.getForcedMgmtRoutes() != null) {
+            warnings.unimplemented(
+                String.format("Property 'forced_mgmt_routes' of '%s' is not implemented", key));
+          }
+          if (interfaceKeyProperties.getGwAddr() != null) {
+            warnings.unimplemented(
+                String.format("Property 'gwaddr' of '%s' is not implemented", key));
+          }
+          continue;
+        }
+        // it is not v4 prefix; try to parse as prefix6 and warn if it isn't that either
+        Optional<Prefix6> prefix6 = Prefix6.tryParse(parts[1]);
+        if (!prefix6.isPresent()) {
+          warnings.redFlag(String.format("Could not parse interface key '%s", key));
         }
       }
     }
@@ -426,9 +442,9 @@ public class ConfigDb implements Serializable {
             case PROP_INTERFACE:
               configDb.setInterfaces(
                   createInterfaces(
-                      mapper
-                          .convertValue(value, new TypeReference<Map<String, Object>>() {})
-                          .keySet()));
+                      mapper.convertValue(
+                          value, new TypeReference<Map<String, InterfaceKeyProperties>>() {}),
+                      _warnings));
               break;
             case PROP_LOOPBACK:
               configDb.setLoopbacks(
@@ -437,24 +453,17 @@ public class ConfigDb implements Serializable {
             case PROP_LOOPBACK_INTERFACE:
               configDb.setLoopbackInterfaces(
                   createInterfaces(
-                      mapper
-                          .convertValue(value, new TypeReference<Map<String, Object>>() {})
-                          .keySet()));
+                      mapper.convertValue(
+                          value, new TypeReference<Map<String, InterfaceKeyProperties>>() {}),
+                      _warnings));
               break;
             case PROP_MGMT_INTERFACE:
               {
-                Map<String, Map<String, Object>> mgmtInterfaceMap =
-                    mapper.convertValue(
-                        value, new TypeReference<Map<String, Map<String, Object>>>() {});
-                configDb.setMgmtInterfaces(createInterfaces(mgmtInterfaceMap.keySet()));
-                Set<String> innerProperties =
-                    mgmtInterfaceMap.values().stream()
-                        .flatMap(map -> map.keySet().stream())
-                        .collect(ImmutableSet.toImmutableSet());
-                innerProperties.forEach(
-                    key ->
-                        _warnings.unimplemented(
-                            String.format("Unimplemented MGMT_INTERFACE property '%s'", key)));
+                configDb.setMgmtInterfaces(
+                    createInterfaces(
+                        mapper.convertValue(
+                            value, new TypeReference<Map<String, InterfaceKeyProperties>>() {}),
+                        _warnings));
                 break;
               }
             case PROP_MGMT_PORT:
@@ -493,9 +502,9 @@ public class ConfigDb implements Serializable {
             case PROP_VLAN_INTERFACE:
               configDb.setVlanInterfaces(
                   createInterfaces(
-                      mapper
-                          .convertValue(value, new TypeReference<Map<String, Object>>() {})
-                          .keySet()));
+                      mapper.convertValue(
+                          value, new TypeReference<Map<String, InterfaceKeyProperties>>() {}),
+                      _warnings));
               break;
             case PROP_VLAN_MEMBER:
               configDb.setVlanMembers(
