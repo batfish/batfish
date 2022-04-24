@@ -102,6 +102,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -2046,6 +2047,10 @@ public class AristaGrammarTest {
     }
     {
       assertThat(config.getAristaBgp().getPeerGroups(), not(hasKey("DELETED_PG")));
+      assertThat(config.getAristaBgp().getPeerGroups(), not(hasKey("DELETED_MISSING_PG")));
+      assertThat(
+          config.getWarnings().getParseWarnings(),
+          hasItems(hasComment("No BGP peer-group DELETED_MISSING_PG to delete")));
     }
     {
       Ip neighborAddr = Ip.parse("1.1.1.1");
@@ -2132,6 +2137,26 @@ public class AristaGrammarTest {
           config.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
       assertThat(neighbor.getEnforceFirstAs(), equalTo(true));
       assertThat(neighbor.getRemoteAs(), nullValue());
+    }
+    // deletions
+    {
+      Ip neighborIp = Ip.parse("4.4.4.4");
+      assertThat(config.getAristaBgp().getDefaultVrf().getV4neighbors(), not(hasKey(neighborIp)));
+    }
+    // improper deletions + warnings
+    {
+      Ip neighborIp = Ip.parse("3.3.3.3");
+      assertThat(
+          config.getAristaBgp().getVrfs().get("tenant").getV4neighbors(), not(hasKey(neighborIp)));
+      assertThat(
+          config.getWarnings().getParseWarnings(),
+          hasItems(hasComment("No BGP neighbor 3.3.3.3 to delete in vrf tenant")));
+    }
+    {
+      assertThat(
+          config.getWarnings().getParseWarnings(),
+          hasItems(
+              hasComment("Incomplete: need peer group suffix to delete BGP peer group DYNAMIC")));
     }
   }
 
