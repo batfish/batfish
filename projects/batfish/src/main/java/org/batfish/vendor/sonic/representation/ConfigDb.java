@@ -223,10 +223,10 @@ public class ConfigDb implements Serializable {
       L3Interface l3Interface =
           interfaces.computeIfAbsent(parts[0], i -> new L3Interface(ImmutableMap.of()));
       if (parts.length == 2) {
-        try {
-          ConcreteInterfaceAddress v4Address = ConcreteInterfaceAddress.parse(parts[1]);
+        Optional<ConcreteInterfaceAddress> v4Address = ConcreteInterfaceAddress.tryParse(parts[1]);
+        if (v4Address.isPresent()) {
           InterfaceKeyProperties interfaceKeyProperties = interfaceKeyMap.get(key);
-          l3Interface.addAddress(v4Address, interfaceKeyMap.get(key));
+          l3Interface.addAddress(v4Address.get(), interfaceKeyMap.get(key));
 
           // warn about unimplemented properties
           if (interfaceKeyProperties.getForcedMgmtRoutes() != null) {
@@ -237,12 +237,12 @@ public class ConfigDb implements Serializable {
             warnings.unimplemented(
                 String.format("Property 'gwaddr' of '%s' is not implemented", key));
           }
-        } catch (IllegalArgumentException e) {
-          Optional<Prefix6> prefix6 = Prefix6.tryParse(parts[1]);
-          if (!prefix6.isPresent()) {
-            // part[1] is neither v4 nor v6
-            warnings.redFlag(String.format("Could not parse interface key '%s", key));
-          }
+          continue;
+        }
+        // it is not v4 prefix; try to parse as prefix6 and warn if it isn't that either
+        Optional<Prefix6> prefix6 = Prefix6.tryParse(parts[1]);
+        if (!prefix6.isPresent()) {
+          warnings.redFlag(String.format("Could not parse interface key '%s", key));
         }
       }
     }
