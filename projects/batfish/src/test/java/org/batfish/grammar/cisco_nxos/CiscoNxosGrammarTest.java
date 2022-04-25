@@ -487,6 +487,10 @@ public final class CiscoNxosGrammarTest {
     return _aclToBdd.toPermitAndDenyBdds(aclLine).getMatchBdd();
   }
 
+  private @Nonnull BDD toIcmpIfBDD() {
+    return toIfBDD(AclLineMatchExprs.and(matchFragmentOffset(0), matchIpProtocol(IpProtocol.ICMP)));
+  }
+
   private @Nonnull BDD toIcmpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
     return toIfBDD(
         AclLineMatchExprs.and(
@@ -3487,6 +3491,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
+              toIcmpIfBDD(),
               toIcmpIfBDD(matchIcmpType(0)),
               toIcmpIfBDD(matchIcmp(1, 2)),
               toIcmpIfBDD(matchIcmp(IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED)),

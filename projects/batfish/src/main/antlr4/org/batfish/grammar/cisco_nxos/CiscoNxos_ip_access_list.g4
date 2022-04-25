@@ -213,8 +213,8 @@ packet_length
 aclla_icmp
 :
   ICMP acllal3_src_address acllal3_dst_address
-  // NX-OS allows multiple l3 options but only one l4 option, interleaved in any order.
-  acllal3_option* acllal4icmp_option acllal3_option*
+  // NX-OS allows multiple l3 options but at most l4 option, interleaved in any order.
+  acllal3_option* acllal4icmp_option? acllal3_option*
   NEWLINE
 ;
 
