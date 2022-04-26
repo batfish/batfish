@@ -121,6 +121,8 @@ ip access-list acl_common_ip_options_ttl
 
 !!! ICMP options
 ip access-list acl_icmp
+  ! without any options
+  permit icmp any any
   ! match ICMP type 0
   ! type can be 0-255
   permit icmp any any 0
