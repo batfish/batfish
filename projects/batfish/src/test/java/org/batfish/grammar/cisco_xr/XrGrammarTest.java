@@ -2805,6 +2805,40 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testNoAggregateAddressExtraction() {
+    String hostname = "xr-no-aggregate-address";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    Map<Prefix, BgpAggregateIpv4Network> aggs =
+        vc.getDefaultVrf().getBgpProcess().getAggregateNetworks();
+    assertThat(aggs, aMapWithSize(1));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("10.3.0.0/16")),
+            equalTo(new BgpAggregateIpv4Network(false, Prefix.parse("10.3.0.0/16"), null, false))));
+  }
+
+  @Test
+  public void testNoAggregateAddressExtractionWarning() {
+    String hostname = "xr-no-aggregate-address";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            contains(
+                allOf(
+                    hasComment("Ignoring reference to non-existent aggregate-address."),
+                    hasText("no aggregate-address 10.123.0.0/16")))));
+  }
+
+  @Test
   public void testAggregateAddressConversion() {
     String hostname = "xr-aggregate-address";
     Configuration c = parseConfig(hostname);
