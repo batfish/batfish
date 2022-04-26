@@ -4182,9 +4182,7 @@ vrfd_address_family
       | vrfd_af_null
       | vrfd_af_route_target
    )*
-   (
-      EXIT_ADDRESS_FAMILY NEWLINE
-   )?
+   address_family_footer
 ;
 
 vrfd_description

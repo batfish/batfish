@@ -29,7 +29,7 @@ router bgp 1
  address-family ipv4 vrf VRF1
   default-information originate
   redistribute static
- exit-address-family
+  ! deliberately missing exit-address-family footer
  !
  address-family ipv4 vrf VRF2
   redistribute static

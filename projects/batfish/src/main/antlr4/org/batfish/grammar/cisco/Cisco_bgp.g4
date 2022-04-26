@@ -11,12 +11,9 @@ activate_bgp_tail
    ACTIVATE NEWLINE
 ;
 
-address_family_header returns [String addressFamilyStr]
+address_family_header
 :
-   ADDRESS_FAMILY af = bgp_address_family
-   {$addressFamilyStr = $af.ctx.getText();}
-
-   NEWLINE
+   ADDRESS_FAMILY af = bgp_address_family NEWLINE
 ;
 
 bgp_address_family
@@ -49,7 +46,9 @@ bgp_address_family
 
 address_family_rb_stanza
 :
-   address_family_header address_family_inner* ( EXIT |  EXIT_ADDRESS_FAMILY ) NEWLINE
+   address_family_header
+   address_family_inner*
+   address_family_footer
 ;
 
 address_family_inner
