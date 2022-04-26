@@ -12,12 +12,9 @@ access_list_action
 
 address_family_footer
 :
-   (
-      (
-         EXIT_ADDRESS_FAMILY
-         | EXIT
-      ) NEWLINE
-   )?
+   // In show data, exit-address-family is usually present but maybe not always.
+   // In incremental changes, exit is just as common.
+   ((EXIT_ADDRESS_FAMILY | EXIT) NEWLINE)?
 ;
 
 bgp_asn
