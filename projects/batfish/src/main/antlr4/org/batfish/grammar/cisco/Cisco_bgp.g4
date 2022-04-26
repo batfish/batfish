@@ -187,12 +187,44 @@ bgp_afip_selection
    ) NEWLINE
 ;
 
-//confederations are not currently implemented
-//not putting this under null so we can warn the user
+// router bgp > bgp <rest of command> only valid at top level
+bgp_rb_stanza
+:
+   BGP
+   (
+     bgp_bestpath_rb_stanza
+   | bgp_confederation_rb_stanza
+   | bgp_default_rb_stanza
+   | bgp_dynamic_med_interval_rb_stanza_null
+   | bgp_enforce_first_as_rb_stanza
+   | bgp_listen_rb_stanza
+   | bgp_log_neighbor_changes_rb_stanza_null
+   | bgp_maxas_limit_rb_stanza
+   | bgp_redistribute_internal_rb_stanza
+   | bgp_refresh_rb_stanza_null
+   | bgp_regexp_rb_stanza_null
+   | bgp_transport_rb_stanza_null
+   | bgp_update_delay_rb_stanza_null
+   | bgp_update_group_rb_stanza_null
+   )
+;
+
+bgp_bestpath_rb_stanza
+:
+  BESTPATH
+  (
+    bgp_bp_compare_routerid_rb_stanza
+  | bgp_bp_rb_stanza_null
+  )
+;
+
+bgp_bp_compare_routerid_rb_stanza: COMPARE_ROUTERID NEWLINE;
+
+bgp_bp_rb_stanza_null: null_rest_of_line;
 
 bgp_confederation_rb_stanza
 :
-   BGP CONFEDERATION
+   CONFEDERATION
    (
      bgp_conf_identifier_rb_stanza
      | bgp_conf_peers_rb_stanza
@@ -209,14 +241,34 @@ bgp_conf_peers_rb_stanza
   PEERS peers += bgp_asn+ NEWLINE
 ;
 
-bgp_enforce_first_as_stanza
+bgp_default_rb_stanza
 :
-   BGP ENFORCE_FIRST_AS NEWLINE
+  DEFAULT
+  (
+    bgp_default_local_preference_rb_stanza_null
+  )
 ;
+
+bgp_default_local_preference_rb_stanza_null: LOCAL_PREFERENCE null_rest_of_line;
+
+bgp_dynamic_med_interval_rb_stanza_null: DYNAMIC_MED_INTERVAL null_rest_of_line;
+
+bgp_enforce_first_as_rb_stanza: ENFORCE_FIRST_AS NEWLINE;
+
+bgp_listen_rb_stanza
+:
+  LISTEN
+  (
+    bgp_listen_limit_rb_stanza_null
+  | bgp_listen_range_rb_stanza
+  )
+;
+
+bgp_listen_limit_rb_stanza_null: LIMIT null_rest_of_line;
 
 bgp_listen_range_rb_stanza
 :
-   BGP LISTEN RANGE
+   RANGE
    (
       IP_PREFIX
       | IPV6_PREFIX
@@ -226,20 +278,55 @@ bgp_listen_range_rb_stanza
    )? NEWLINE
 ;
 
-bgp_maxas_limit_rb_stanza
+bgp_log_neighbor_changes_rb_stanza_null: LOG_NEIGHBOR_CHANGES null_rest_of_line;
+
+bgp_maxas_limit_rb_stanza: MAXAS_LIMIT limit = dec NEWLINE;
+
+bgp_redistribute_internal_rb_stanza: REDISTRIBUTE_INTERNAL NEWLINE;
+
+bgp_refresh_rb_stanza_null: REFRESH null_rest_of_line;
+bgp_regexp_rb_stanza_null: REGEXP null_rest_of_line;
+bgp_transport_rb_stanza_null: TRANSPORT null_rest_of_line;
+bgp_update_delay_rb_stanza_null: UPDATE_DELAY null_rest_of_line;
+bgp_update_group_rb_stanza_null: UPDATE_GROUP null_rest_of_line;
+
+// bgp tail commands that start with "bgp".
+bgp_bgp_tail
 :
-   BGP MAXAS_LIMIT limit = dec NEWLINE
+   BGP
+   (
+     bgp_aggregate_timer_bgp_tail_null
+   | bgp_client_to_client_bgp_tail_null
+   | bgp_dampening_bgp_tail_null
+   | bgp_default_bgp_tail
+   | bgp_fast_external_fallover_bgp_tail_null
+   | bgp_nexthop_bgp_tail_null
+   | bgp_redistribute_internal_bgp_tail_null
+   | bgp_route_map_cache_bgp_tail_null
+   | bgp_scan_time_bgp_tail_null
+   )
 ;
 
-bgp_redistribute_internal_rb_stanza
+bgp_aggregate_timer_bgp_tail_null: AGGREGATE_TIMER null_rest_of_line;
+bgp_client_to_client_bgp_tail_null: CLIENT_TO_CLIENT null_rest_of_line;
+bgp_dampening_bgp_tail_null: DAMPENING null_rest_of_line;
+bgp_default_bgp_tail
 :
-   BGP REDISTRIBUTE_INTERNAL NEWLINE
+  DEFAULT
+  (
+    bgp_default_ipv4_unicast_bgp_tail_null
+    | bgp_default_ipv6_nexthop_bgp_tail_null
+    | bgp_default_route_target_bgp_tail_null
+  )
 ;
-
-bgp_scan_time_bgp_tail
-:
-   BGP SCAN_TIME secs = dec NEWLINE
-;
+bgp_default_ipv4_unicast_bgp_tail_null: IPV4_UNICAST NEWLINE;
+bgp_default_ipv6_nexthop_bgp_tail_null: IPV6_NEXTHOP NEWLINE;
+bgp_default_route_target_bgp_tail_null: ROUTE_TARGET null_rest_of_line;
+bgp_fast_external_fallover_bgp_tail_null: FAST_EXTERNAL_FALLOVER NEWLINE;
+bgp_nexthop_bgp_tail_null: NEXTHOP null_rest_of_line;
+bgp_redistribute_internal_bgp_tail_null: REDISTRIBUTE_INTERNAL NEWLINE;
+bgp_route_map_cache_bgp_tail_null: ROUTE_MAP_CACHE NEWLINE;
+bgp_scan_time_bgp_tail_null: SCAN_TIME secs = dec NEWLINE;
 
 bgp_tail
 :
@@ -249,7 +336,7 @@ bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
    | cluster_id_bgp_tail
-   | bgp_scan_time_bgp_tail
+   | bgp_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail
    | default_shutdown_bgp_tail
@@ -262,7 +349,7 @@ bgp_tail
    | network_bgp_tail
    | network6_bgp_tail
    | next_hop_self_bgp_tail
-   | no_network_bgp_tail
+   | no_bgp_tail
    | null_bgp_tail
    | prefix_list_bgp_tail
    | redistribute_aggregate_bgp_tail
@@ -296,13 +383,6 @@ cluster_id_bgp_tail
 cluster_id_rb_stanza
 :
    BGP cluster_id_bgp_tail
-;
-
-compare_routerid_rb_stanza
-:
-   (
-      BGP? BESTPATH
-   )? COMPARE_ROUTERID NEWLINE
 ;
 
 default_information_originate_rb_stanza
@@ -506,9 +586,39 @@ no_neighbor_shutdown_rb_stanza
    )
 ;
 
-no_network_bgp_tail
+no_bgp_tail
 :
-   NO NETWORK null_rest_of_line
+  NO
+  (
+    no_bgp_bgp_tail
+  | no_network_bgp_tail_null
+  )
+;
+
+no_bgp_bgp_tail
+:
+  BGP
+  (
+    no_bgp_default_bgp_tail
+  | no_bgp_fast_external_fallover_bgp_tail_null
+  )
+;
+
+no_bgp_default_bgp_tail
+:
+  DEFAULT
+  (
+    no_bgp_default_ipv4_unicast_bgp_tail_null
+  )
+;
+
+no_bgp_default_ipv4_unicast_bgp_tail_null: IPV4_UNICAST NEWLINE;
+
+no_bgp_fast_external_fallover_bgp_tail_null: FAST_EXTERNAL_FALLOVER NEWLINE;
+
+no_network_bgp_tail_null
+:
+   NETWORK null_rest_of_line
 ;
 
 no_redistribute_connected_rb_stanza
@@ -553,41 +663,6 @@ null_bgp_tail
       )
       | BFD
       | BFD_ENABLE
-      |
-      (
-         BGP
-         (
-            AGGREGATE_TIMER
-            | ATTRIBUTE_DOWNLOAD
-            |
-            (
-               BESTPATH
-               (
-                  AS_PATH CONFED
-                  | MED
-               )
-            )
-            | CLIENT_TO_CLIENT
-            | DAMPENING
-            | DEFAULT
-            | DETERMINISTIC_MED
-            | DYNAMIC_MED_INTERVAL
-            | FAST_EXTERNAL_FALLOVER
-            | GRACEFUL_RESTART
-            | LISTEN LIMIT
-            | LOG
-            | LOG_NEIGHBOR_CHANGES
-            | NEXTHOP
-            | NON_DETERMINISTIC_MED
-            | REDISTRIBUTE_INTERNAL
-            | REFRESH
-            | REGEXP
-            | ROUTE_MAP_CACHE
-            | TRANSPORT
-            | UPDATE_DELAY
-            | UPDATE_GROUP
-         )
-      )
       | CAPABILITY
       | CLIENT_TO_CLIENT
       | CONNECT_RETRY
@@ -837,14 +912,9 @@ router_bgp_stanza_tail
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza
    | as_path_multipath_relax_rb_stanza
-   | bgp_confederation_rb_stanza
-   | bgp_enforce_first_as_stanza
-   | bgp_listen_range_rb_stanza
-   | bgp_maxas_limit_rb_stanza
-   | bgp_redistribute_internal_rb_stanza
+   | bgp_rb_stanza
    | bgp_tail
    | cluster_id_rb_stanza
-   | compare_routerid_rb_stanza
    | default_information_originate_rb_stanza
    | neighbor_flat_rb_stanza
    | neighbor_group_rb_stanza
