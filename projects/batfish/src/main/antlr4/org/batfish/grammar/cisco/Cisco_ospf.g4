@@ -541,10 +541,9 @@ roi_priority
 
 rov3_address_family
 :
-   ADDRESS_FAMILY IPV6 UNICAST? NEWLINE rov3_common*
-   (
-      EXIT_ADDRESS_FAMILY NEWLINE
-   )?
+   ADDRESS_FAMILY IPV6 UNICAST? NEWLINE
+   rov3_common*
+   address_family_footer
 ;
 
 rov3_common
