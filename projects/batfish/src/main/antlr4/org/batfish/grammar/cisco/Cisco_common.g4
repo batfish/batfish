@@ -93,12 +93,15 @@ ec_ga_la_literal
 :
    ecgalal_asdot_colon
    | ecgalal_colon
+   | ecgalal4_colon
    | ecgalal_ip_colon
 ;
 
 ecgalal_asdot_colon: ga_high16 = uint16 PERIOD ga_low16 = uint16 COLON la = uint16;
 
 ecgalal_colon: ga = uint32 COLON la = uint16;
+
+ecgalal4_colon: ga = uint16 COLON la = uint32;
 
 ecgalal_ip_colon: ga = IP_ADDRESS COLON la = uint16;
 
