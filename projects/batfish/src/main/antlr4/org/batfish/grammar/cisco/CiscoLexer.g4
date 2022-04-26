@@ -2805,6 +2805,7 @@ IPV6
 ;
 
 IPV6_ADDRESS_POOL: 'ipv6-address-pool';
+IPV6_NEXTHOP: 'ipv6-nexthop';
 
 IPV6IP: 'ipv6ip';
 

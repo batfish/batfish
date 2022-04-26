@@ -480,9 +480,10 @@ import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaCo
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_asnContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_bp_compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_conf_identifier_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_conf_peers_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Bgp_enforce_first_as_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_enforce_first_as_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_redistribute_internal_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cd_match_addressContext;
@@ -529,7 +530,6 @@ import org.batfish.grammar.cisco.CiscoParser.Cmm_service_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
-import org.batfish.grammar.cisco.CiscoParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
@@ -1814,7 +1814,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitBgp_enforce_first_as_stanza(Bgp_enforce_first_as_stanzaContext ctx) {
+  public void exitBgp_enforce_first_as_rb_stanza(Bgp_enforce_first_as_rb_stanzaContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     proc.setEnforceFirstAs(true);
   }
@@ -4459,7 +4459,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCompare_routerid_rb_stanza(Compare_routerid_rb_stanzaContext ctx) {
+  public void exitBgp_bp_compare_routerid_rb_stanza(Bgp_bp_compare_routerid_rb_stanzaContext ctx) {
     currentVrf().getBgpProcess().setTieBreaker(BgpTieBreaker.ROUTER_ID);
   }
 
