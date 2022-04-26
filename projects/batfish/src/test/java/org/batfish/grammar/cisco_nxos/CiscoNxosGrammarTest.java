@@ -178,6 +178,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -3984,11 +3985,14 @@ public final class CiscoNxosGrammarTest {
     }
     {
       IpAccessList acl = vc.getIpAccessLists().get("acl_icmp");
+      // check first line (with null L4 options), and then the rest
+      assertThat(((ActionIpAccessListLine) acl.getLines().get(10L)).getL4Options(), nullValue());
       assertThat(
           acl.getLines().values().stream()
               .filter(ActionIpAccessListLine.class::isInstance) // filter ICMPv6
               .map(ActionIpAccessListLine.class::cast)
               .map(ActionIpAccessListLine::getL4Options)
+              .filter(Objects::nonNull)
               .map(IcmpOptions.class::cast)
               .map(icmpOptions -> immutableEntry(icmpOptions.getType(), icmpOptions.getCode()))
               .collect(ImmutableList.toImmutableList()),
