@@ -3014,34 +3014,25 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       boolean summaryOnly = ctx.summary_only != null;
       boolean asSet = ctx.as_set != null;
       if (ctx.aggregate_address_prefix() != null) {
-        toPrefix(ctx.aggregate_address_prefix())
-            .ifPresent(
-                prefix -> {
-                  BgpAggregateIpv4Network net = new BgpAggregateIpv4Network(prefix);
-                  net.setAsSet(asSet);
-                  net.setSummaryOnly(summaryOnly);
-                  if (ctx.rp != null) {
-                    String policyName = toString(ctx.rp);
-                    net.setRoutePolicy(policyName);
-                    _configuration.referenceStructure(
-                        ROUTE_POLICY,
-                        policyName,
-                        BGP_AGGREGATE_ROUTE_POLICY,
-                        ctx.rp.getStart().getLine());
-                  }
-                  proc.getAggregateNetworks().put(prefix, net);
-                });
+        Prefix prefix = toPrefix(ctx.aggregate_address_prefix());
+        BgpAggregateIpv4Network net = new BgpAggregateIpv4Network(prefix);
+        net.setAsSet(asSet);
+        net.setSummaryOnly(summaryOnly);
+        if (ctx.rp != null) {
+          String policyName = toString(ctx.rp);
+          net.setRoutePolicy(policyName);
+          _configuration.referenceStructure(
+              ROUTE_POLICY, policyName, BGP_AGGREGATE_ROUTE_POLICY, ctx.rp.getStart().getLine());
+        }
+        proc.getAggregateNetworks().put(prefix, net);
         return;
       }
       assert ctx.ipv6_aggregate_address_prefix() != null;
-      toPrefix6(ctx.ipv6_aggregate_address_prefix())
-          .ifPresent(
-              prefix6 -> {
-                BgpAggregateIpv6Network net = new BgpAggregateIpv6Network(prefix6);
-                net.setAsSet(asSet);
-                net.setSummaryOnly(summaryOnly);
-                proc.getAggregateIpv6Networks().put(prefix6, net);
-              });
+      Prefix6 prefix6 = toPrefix6(ctx.ipv6_aggregate_address_prefix());
+      BgpAggregateIpv6Network net = new BgpAggregateIpv6Network(prefix6);
+      net.setAsSet(asSet);
+      net.setSummaryOnly(summaryOnly);
+      proc.getAggregateIpv6Networks().put(prefix6, net);
     } else if (_currentIpPeerGroup != null
         || _currentIpv6PeerGroup != null
         || _currentDynamicIpPeerGroup != null
@@ -3052,24 +3043,20 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Nonnull
-  private Optional<Prefix> toPrefix(CiscoXrParser.Aggregate_address_prefixContext ctx) {
+  private Prefix toPrefix(CiscoXrParser.Aggregate_address_prefixContext ctx) {
     if (ctx.network != null) {
       Ip network = toIp(ctx.network);
       Ip subnet = toIp(ctx.subnet);
       int prefixLength = subnet.numSubnetBits();
-      return Optional.of(Prefix.create(network, prefixLength));
-    } else if (ctx.prefix != null) {
-      return Optional.of(Prefix.parse(ctx.prefix.getText()));
+      return Prefix.create(network, prefixLength);
     }
-    return Optional.empty();
+    assert ctx.prefix != null;
+    return Prefix.parse(ctx.prefix.getText());
   }
 
   @Nonnull
-  private Optional<Prefix6> toPrefix6(CiscoXrParser.Ipv6_aggregate_address_prefixContext ctx) {
-    if (ctx.ipv6_prefix == null) {
-      return Optional.empty();
-    }
-    return Optional.of(Prefix6.parse(ctx.ipv6_prefix.getText()));
+  private Prefix6 toPrefix6(CiscoXrParser.Ipv6_aggregate_address_prefixContext ctx) {
+    return Prefix6.parse(ctx.ipv6_prefix.getText());
   }
 
   @Override
@@ -3079,27 +3066,21 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       if (ctx.aggregate_address_prefix() != null) {
-        toPrefix(ctx.aggregate_address_prefix())
-            .ifPresent(
-                prefix -> {
-                  if (!proc.getAggregateNetworks().containsKey(prefix)) {
-                    warn(ctx, "Ignoring reference to non-existent aggregate-address.");
-                    return;
-                  }
-                  proc.getAggregateNetworks().remove(prefix);
-                });
+        Prefix prefix = toPrefix(ctx.aggregate_address_prefix());
+        if (!proc.getAggregateNetworks().containsKey(prefix)) {
+          warn(ctx, "Ignoring reference to non-existent aggregate-address.");
+          return;
+        }
+        proc.getAggregateNetworks().remove(prefix);
         return;
       }
       assert ctx.ipv6_aggregate_address_prefix() != null;
-      toPrefix6(ctx.ipv6_aggregate_address_prefix())
-          .ifPresent(
-              prefix6 -> {
-                if (!proc.getAggregateIpv6Networks().containsKey(prefix6)) {
-                  warn(ctx, "Ignoring reference to non-existent aggregate-address.");
-                  return;
-                }
-                proc.getAggregateIpv6Networks().remove(prefix6);
-              });
+      Prefix6 prefix6 = toPrefix6(ctx.ipv6_aggregate_address_prefix());
+      if (!proc.getAggregateIpv6Networks().containsKey(prefix6)) {
+        warn(ctx, "Ignoring reference to non-existent aggregate-address.");
+        return;
+      }
+      proc.getAggregateIpv6Networks().remove(prefix6);
     } else if (_currentIpPeerGroup != null
         || _currentIpv6PeerGroup != null
         || _currentDynamicIpPeerGroup != null
