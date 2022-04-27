@@ -567,6 +567,7 @@ import org.batfish.grammar.cisco.CiscoParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.Eacl_port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ec_ga_la_literalContext;
+import org.batfish.grammar.cisco.CiscoParser.Ecgalal4_colonContext;
 import org.batfish.grammar.cisco.CiscoParser.Ecgalal_asdot_colonContext;
 import org.batfish.grammar.cisco.CiscoParser.Ecgalal_colonContext;
 import org.batfish.grammar.cisco.CiscoParser.Ecgalal_ip_colonContext;
@@ -9048,6 +9049,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return toExtendedCommunity(ctx.ecgalal_asdot_colon());
     } else if (ctx.ecgalal_colon() != null) {
       return toExtendedCommunity(ctx.ecgalal_colon());
+    } else if (ctx.ecgalal4_colon() != null) {
+      return toExtendedCommunity(ctx.ecgalal4_colon());
     } else {
       assert ctx.ecgalal_ip_colon() != null;
       return toExtendedCommunity(ctx.ecgalal_ip_colon());
@@ -9066,6 +9069,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private @Nonnull ExtendedCommunity toExtendedCommunity(Ecgalal_colonContext ctx) {
     long ga = toUint32(ctx.ga);
     int la = toUint16(ctx.la);
+    return ExtendedCommunity.target(ga, la);
+  }
+
+  private @Nonnull ExtendedCommunity toExtendedCommunity(Ecgalal4_colonContext ctx) {
+    int ga = toUint16(ctx.ga);
+    long la = toUint32(ctx.la);
     return ExtendedCommunity.target(ga, la);
   }
 

@@ -7820,6 +7820,11 @@ M_Extcommunity_UINT16
    F_Uint16 -> type ( UINT16 )
 ;
 
+M_Extcommunity_UINT32
+:
+   F_Uint32 -> type ( UINT32 )
+;
+
 M_Extcommunity_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )

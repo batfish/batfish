@@ -6172,6 +6172,8 @@ public final class CiscoGrammarTest {
           line.getCommunities(),
           contains(
               ExtendedCommunity.target(65000, 1),
+              ExtendedCommunity.target(65000, 1048576),
+              ExtendedCommunity.target(1048576, 1),
               ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
               ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
@@ -6186,6 +6188,8 @@ public final class CiscoGrammarTest {
           line.getCommunities(),
           contains(
               ExtendedCommunity.target(65000, 1),
+              ExtendedCommunity.target(65000, 1048576),
+              ExtendedCommunity.target(1048576, 1),
               ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
               ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
@@ -6216,6 +6220,8 @@ public final class CiscoGrammarTest {
           hasCommunities(
               StandardCommunity.of(1L),
               ExtendedCommunity.target(65000, 1),
+              ExtendedCommunity.target(65000, 1048576),
+              ExtendedCommunity.target(1048576, 1),
               ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
               ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
@@ -6233,6 +6239,8 @@ public final class CiscoGrammarTest {
               StandardCommunity.of(1L),
               ExtendedCommunity.target(99, 99),
               ExtendedCommunity.target(65000, 1),
+              ExtendedCommunity.target(65000, 1048576),
+              ExtendedCommunity.target(1048576, 1),
               ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
               ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
