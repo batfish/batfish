@@ -114,7 +114,8 @@ af_group_rb_stanza
 
 aggregate_address_rb_stanza
 :
-  AGGREGATE_ADDRESS aggregate_address_prefix
+  AGGREGATE_ADDRESS
+  (aggregate_address_prefix | ipv6_aggregate_address_prefix)
   (
     as_set = AS_SET
     | summary_only = SUMMARY_ONLY
@@ -465,7 +466,8 @@ vrf_block_rb_stanza
 
 no_aggregate_address_rb_stanza
 :
-  NO AGGREGATE_ADDRESS aggregate_address_prefix
+  NO AGGREGATE_ADDRESS
+  (aggregate_address_prefix | ipv6_aggregate_address_prefix)
   (
     as_set = AS_SET
     | summary_only = SUMMARY_ONLY
@@ -937,5 +939,6 @@ aggregate_address_prefix
       network = IP_ADDRESS subnet = IP_ADDRESS
     )
     | prefix = IP_PREFIX
-    | ipv6_prefix = IPV6_PREFIX
 ;
+
+ipv6_aggregate_address_prefix: ipv6_prefix = IPV6_PREFIX;
