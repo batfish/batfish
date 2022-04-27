@@ -150,6 +150,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),
   MANAGEMENT_SSH_ACCESS_GROUP("management ssh ip access-group"),
   MANAGEMENT_TELNET_ACCESS_GROUP("management telnet ip access-group"),
+  MPLS_LDP_PASSWORD_REQUIRED_FOR("mpls ldp password required for"),
   MSDP_PEER_SA_LIST("msdp peer sa-list"),
   NAMED_RSA_PUB_KEY_SELF_REF("named rsa pubkey"),
   NETWORK_OBJECT_GROUP_GROUP_OBJECT("object-group network group-object"),
