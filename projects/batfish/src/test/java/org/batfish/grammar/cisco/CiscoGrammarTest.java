@@ -3487,7 +3487,8 @@ public final class CiscoGrammarTest {
 
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP", 2));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP:generic:5:withcolons", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP:v4u:5:withcolons", 1));
 
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
