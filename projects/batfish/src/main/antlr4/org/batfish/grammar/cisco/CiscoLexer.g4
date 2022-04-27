@@ -1981,7 +1981,11 @@ EXPECT: 'expect';
 
 EXPLICIT_NULL: 'explicit-null';
 
-EXPORT: 'export';
+EXPORT: 'export' {
+  if (lastTokenType() == NEWLINE) {
+    pushMode(M_Export);
+  }
+};
 
 EXPORT_LOCALPREF: 'export-localpref';
 
@@ -7786,6 +7790,18 @@ M_Execute_BRACE_RIGHT
 :
    '}' -> type ( BRACE_RIGHT ) , popMode
 ;
+
+mode M_Export;
+// export [(ipv4 | ipv6) (unicast | multicast)] [<prefix-limit: 1->2^31-1>] map [name]
+M_Export_IPV4: 'ipv4' -> type(IPV4);
+M_Export_IPV6: 'ipv6' -> type(IPV6);
+M_Export_MAP: 'map' -> type(MAP), mode(M_Name);
+M_Export_MULTICAST: 'multicast' -> type(MULTICAST);
+M_Export_UNICAST: 'unicast' -> type(UNICAST);
+M_Export_UINT32: F_Uint32 -> type(UINT32);
+// escape hatches if map is not found
+M_Export_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Export_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_Extcommunity;
 
