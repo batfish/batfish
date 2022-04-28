@@ -1321,6 +1321,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private BgpVrfL2VpnEvpnAddressFamilyConfiguration _currentBgpVrfL2VpnEvpnAddressFamily;
   private BgpVrfAddressFamilyAggregateNetworkConfiguration
       _currentBgpVrfAddressFamilyAggregateNetwork;
+  private String _currentBgpVrfName;
   private BgpVrfConfiguration _currentBgpVrfConfiguration;
   private BgpVrfNeighborConfiguration _currentBgpVrfNeighbor;
   private BgpVrfNeighborAddressFamilyConfiguration _currentBgpVrfNeighborAddressFamily;
@@ -3655,7 +3656,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         new BgpVrfAddressFamilyAggregateNetworkConfiguration();
     boolean removed = afConfig.removeAggregateNetwork(prefix);
     if (!removed) {
-      warn(ctx, String.format("Removing non-existent aggregate network: %s", prefix));
+      warn(
+          ctx,
+          String.format(
+              "Removing non-existent aggregate network: %s in vrf: %s",
+              prefix, _currentBgpVrfName));
     }
   }
 
@@ -3760,7 +3765,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         new BgpVrfAddressFamilyAggregateNetworkConfiguration();
     boolean removed = afConfig.removeAggregateNetwork(prefix);
     if (!removed) {
-      warn(ctx, String.format("Removing non-existent aggregate network: %s", prefix));
+      warn(
+          ctx,
+          String.format(
+              "Removing non-existent aggregate network: %s in vrf: %s",
+              prefix, _currentBgpVrfName));
     }
   }
 
@@ -4469,14 +4478,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!nameOrErr.isPresent()) {
       // Dummy BGP config so inner stuff works.
       _currentBgpVrfConfiguration = new BgpVrfConfiguration();
+      _currentBgpVrfName = String.format("(vrf with invalid name: %s)", ctx.name.getText());
       return;
     }
-    _currentBgpVrfConfiguration = _c.getBgpGlobalConfiguration().getOrCreateVrf(nameOrErr.get());
+    String name = nameOrErr.get();
+    _currentBgpVrfName = name;
+    _currentBgpVrfConfiguration = _c.getBgpGlobalConfiguration().getOrCreateVrf(name);
   }
 
   @Override
   public void exitRb_vrf(Rb_vrfContext ctx) {
     _currentBgpVrfConfiguration = _c.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
+    _currentBgpVrfName = DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -4693,12 +4706,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterRouter_bgp(Router_bgpContext ctx) {
     _currentBgpVrfConfiguration = _c.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
+    _currentBgpVrfName = DEFAULT_VRF_NAME;
     _c.getBgpGlobalConfiguration().setLocalAs(toLong(ctx.bgp_asn()));
   }
 
   @Override
   public void exitRouter_bgp(Router_bgpContext ctx) {
     _currentBgpVrfConfiguration = null;
+    _currentBgpVrfName = null;
   }
 
   @Override

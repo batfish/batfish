@@ -17,6 +17,10 @@ route-map sm1 permit 100
 route-map sm2 permit 100
  match tag 5
 !
+
+vrf context v1
+!
+
 router bgp 1
  address-family ipv4 unicast
    ! no suppression, everything more specific contributes, no inheritance
@@ -41,11 +45,25 @@ router bgp 1
    aggregate-address 5.0.0.0 255.255.255.0
    ! extra args for 'no' form are ignored
    no aggregate-address 5.0.0.0/24 as-set
+   ! should warn for removing non-existent aggregate
+   no aggregate-address 100.0.0.0/24
  !
  address-family ipv6 unicast
    aggregate-address feed:beef::/64
    ! to be removed (normalized to prefix/length format)
    aggregate-address dead:beef::/64
    no aggregate-address dead:beef::/64
+   ! should warn for removing non-existent aggregate
+   no aggregate-address beef:afad::/64
+ !
+ vrf v1
+   address-family ipv4 unicast
+     ! should warn for removing non-existent aggregate
+     no aggregate-address 101.0.0.0/24
+   !
+   address-family ipv6 unicast
+     ! should warn for removing non-existent aggregate
+     no aggregate-address beef:face::/64
+   !
  !
 !

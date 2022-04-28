@@ -189,6 +189,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.matchers.ParseWarningMatchers;
@@ -261,6 +262,7 @@ import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -9548,6 +9550,31 @@ public final class CiscoNxosGrammarTest {
                     null,
                     null,
                     generatedAttributeMapName(1L, null)))));
+  }
+
+  @Test
+  public void testAggregateAddressWarnings() throws IOException {
+    String hostname = "nxos-aggregate-address";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    List<ParseWarning> warnings =
+        pvcae.getWarnings().get(filename).getParseWarnings().stream()
+            .filter(pw -> pw.getComment().contains("non-existent aggregate"))
+            .collect(ImmutableList.toImmutableList());
+
+    assertThat(
+        warnings,
+        containsInAnyOrder(
+            hasComment("Removing non-existent aggregate network: 100.0.0.0/24 in vrf: default"),
+            hasComment(
+                "Removing non-existent aggregate network: beef:afad:0:0:0:0:0:0/64 in vrf:"
+                    + " default"),
+            hasComment("Removing non-existent aggregate network: 101.0.0.0/24 in vrf: v1"),
+            hasComment(
+                "Removing non-existent aggregate network: beef:face:0:0:0:0:0:0/64 in vrf: v1")));
   }
 
   @Test
