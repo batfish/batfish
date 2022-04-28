@@ -243,6 +243,7 @@ public final class Transitions {
     List<Transition> disjuncts = new ArrayList<>();
     List<Constraint> constraints = null;
     List<EraseAndSet> eraseAndSets = null;
+    List<Transform> transforms = null;
 
     while (flatTransitions.hasNext()) {
       Transition t = flatTransitions.next();
@@ -262,6 +263,11 @@ public final class Transitions {
           eraseAndSets = new ArrayList<>();
         }
         eraseAndSets.add((EraseAndSet) t);
+      } else if (t instanceof Transform) {
+        if (transforms == null) {
+          transforms = new ArrayList<>();
+        }
+        transforms.add((Transform) t);
       } else if (t != ZERO) { // ignore ZERO
         // unmergable
         disjuncts.add(t);
@@ -277,6 +283,9 @@ public final class Transitions {
 
     if (eraseAndSets != null) {
       disjuncts.addAll(orEraseAndSets(eraseAndSets));
+    }
+    if (transforms != null) {
+      disjuncts.addAll(Transform.reduceWithOr(transforms));
     }
 
     if (disjuncts.isEmpty()) {

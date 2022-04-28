@@ -6,6 +6,7 @@ import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.google.common.collect.Sets;
 import java.util.Arrays;
+import java.util.Objects;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 
@@ -47,5 +48,25 @@ public final class BDDPairingFactory {
    */
   public BDD getDomainVarsBdd() {
     return _domainVars.id(); // defensive copy
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof BDDPairingFactory)) {
+      return false;
+    }
+    BDDPairingFactory that = (BDDPairingFactory) o;
+    return Arrays.equals(_domain, that._domain)
+        && Arrays.equals(_codomain, that._codomain)
+        && _domainVars.equals(that._domainVars);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        Arrays.hashCode(_domain), Arrays.hashCode(_codomain), _domainVars.hashCode());
   }
 }
