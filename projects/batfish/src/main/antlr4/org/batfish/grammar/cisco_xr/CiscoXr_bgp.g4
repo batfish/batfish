@@ -22,6 +22,7 @@ bgp_vrf_address_family
       | additional_paths_send_xr_rb_stanza
       | aggregate_address_rb_stanza
       | bgp_tail
+      | no_aggregate_address_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
@@ -92,6 +93,7 @@ address_family_rb_stanza
       | additional_paths_send_xr_rb_stanza
       | aggregate_address_rb_stanza
       | bgp_tail
+      | no_aggregate_address_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
@@ -113,13 +115,7 @@ af_group_rb_stanza
 aggregate_address_rb_stanza
 :
   AGGREGATE_ADDRESS
-  (
-    (
-      network = IP_ADDRESS subnet = IP_ADDRESS
-    )
-    | prefix = IP_PREFIX
-    | ipv6_prefix = IPV6_PREFIX
-  )
+  (aggregate_address_prefix | ipv6_aggregate_address_prefix)
   (
     as_set = AS_SET
     | summary_only = SUMMARY_ONLY
@@ -466,6 +462,17 @@ vrf_block_rb_stanza
       | router_id_rb_stanza
       | template_peer_session_rb_stanza
    )*
+;
+
+no_aggregate_address_rb_stanza
+:
+  NO AGGREGATE_ADDRESS
+  (aggregate_address_prefix | ipv6_aggregate_address_prefix)
+  (
+    as_set = AS_SET
+    | summary_only = SUMMARY_ONLY
+    | ROUTE_POLICY rp = route_policy_name
+  )* NEWLINE
 ;
 
 no_bgp_enforce_first_as_stanza
@@ -925,3 +932,13 @@ weight_bgp_tail
 :
    WEIGHT weight = uint_legacy NEWLINE
 ;
+
+aggregate_address_prefix
+:
+    (
+      network = IP_ADDRESS subnet = IP_ADDRESS
+    )
+    | prefix = IP_PREFIX
+;
+
+ipv6_aggregate_address_prefix: ipv6_prefix = IPV6_PREFIX;
