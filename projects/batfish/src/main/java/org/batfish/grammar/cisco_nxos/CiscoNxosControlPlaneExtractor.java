@@ -522,9 +522,11 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_queuing_nameCon
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Protocol_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_no_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_no_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_multicastContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_unicastContext;
@@ -1319,6 +1321,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private BgpVrfL2VpnEvpnAddressFamilyConfiguration _currentBgpVrfL2VpnEvpnAddressFamily;
   private BgpVrfAddressFamilyAggregateNetworkConfiguration
       _currentBgpVrfAddressFamilyAggregateNetwork;
+  private String _currentBgpVrfName;
   private BgpVrfConfiguration _currentBgpVrfConfiguration;
   private BgpVrfNeighborConfiguration _currentBgpVrfNeighbor;
   private BgpVrfNeighborAddressFamilyConfiguration _currentBgpVrfNeighborAddressFamily;
@@ -3643,6 +3646,30 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void enterRb_af4_no_aggregate_address(Rb_af4_no_aggregate_addressContext ctx) {
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    BgpVrfIpv4AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv4AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    Prefix prefix = toPrefix(ctx.network);
+    // dummy
+    _currentBgpVrfAddressFamilyAggregateNetwork =
+        new BgpVrfAddressFamilyAggregateNetworkConfiguration();
+    boolean removed = afConfig.removeAggregateNetwork(prefix);
+    if (!removed) {
+      warn(
+          ctx,
+          String.format(
+              "Removing non-existent aggregate network: %s in vrf: %s",
+              prefix, _currentBgpVrfName));
+    }
+  }
+
+  @Override
+  public void exitRb_af4_no_aggregate_address(Rb_af4_no_aggregate_addressContext ctx) {
+    _currentBgpVrfAddressFamilyAggregateNetwork = null;
+  }
+
+  @Override
   public void exitRb_af4_aggregate_address(Rb_af4_aggregate_addressContext ctx) {
     _currentBgpVrfAddressFamilyAggregateNetwork = null;
   }
@@ -3723,6 +3750,31 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_af6_aggregate_address(Rb_af6_aggregate_addressContext ctx) {
+    _currentBgpVrfAddressFamilyAggregateNetwork = null;
+  }
+
+  @Override
+  public void enterRb_af6_no_aggregate_address(Rb_af6_no_aggregate_addressContext ctx) {
+    Prefix6 prefix = toPrefix6(ctx.network);
+
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    BgpVrfIpv6AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv6AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    // dummy
+    _currentBgpVrfAddressFamilyAggregateNetwork =
+        new BgpVrfAddressFamilyAggregateNetworkConfiguration();
+    boolean removed = afConfig.removeAggregateNetwork(prefix);
+    if (!removed) {
+      warn(
+          ctx,
+          String.format(
+              "Removing non-existent aggregate network: %s in vrf: %s",
+              prefix, _currentBgpVrfName));
+    }
+  }
+
+  @Override
+  public void exitRb_af6_no_aggregate_address(Rb_af6_no_aggregate_addressContext ctx) {
     _currentBgpVrfAddressFamilyAggregateNetwork = null;
   }
 
@@ -4426,14 +4478,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!nameOrErr.isPresent()) {
       // Dummy BGP config so inner stuff works.
       _currentBgpVrfConfiguration = new BgpVrfConfiguration();
+      _currentBgpVrfName = String.format("(vrf with invalid name: %s)", ctx.name.getText());
       return;
     }
-    _currentBgpVrfConfiguration = _c.getBgpGlobalConfiguration().getOrCreateVrf(nameOrErr.get());
+    String name = nameOrErr.get();
+    _currentBgpVrfName = name;
+    _currentBgpVrfConfiguration = _c.getBgpGlobalConfiguration().getOrCreateVrf(name);
   }
 
   @Override
   public void exitRb_vrf(Rb_vrfContext ctx) {
     _currentBgpVrfConfiguration = _c.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
+    _currentBgpVrfName = DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -4650,12 +4706,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterRouter_bgp(Router_bgpContext ctx) {
     _currentBgpVrfConfiguration = _c.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
+    _currentBgpVrfName = DEFAULT_VRF_NAME;
     _c.getBgpGlobalConfiguration().setLocalAs(toLong(ctx.bgp_asn()));
   }
 
   @Override
   public void exitRouter_bgp(Router_bgpContext ctx) {
     _currentBgpVrfConfiguration = null;
+    _currentBgpVrfName = null;
   }
 
   @Override

@@ -13,6 +13,7 @@ import org.batfish.datamodel.Prefix6;
  * Represents the BGP configuration for a IPv4 unicast or multicast address family at the VRF level.
  */
 public final class BgpVrfIpv6AddressFamilyConfiguration extends BgpVrfIpAddressFamilyConfiguration {
+
   public static class Network implements Serializable {
     public Network(Prefix6 network, @Nullable String routeMap) {
       _network = network;
@@ -44,6 +45,15 @@ public final class BgpVrfIpv6AddressFamilyConfiguration extends BgpVrfIpAddressF
       Prefix6 prefix) {
     return _aggregateNetworks.computeIfAbsent(
         prefix, p -> new BgpVrfAddressFamilyAggregateNetworkConfiguration());
+  }
+
+  /**
+   * Remove aggregate network identified by {@code prefix} and return {@code true} iff it was
+   * previously present.
+   */
+  public boolean removeAggregateNetwork(Prefix6 prefix) {
+    BgpVrfAddressFamilyAggregateNetworkConfiguration existing = _aggregateNetworks.remove(prefix);
+    return existing != null;
   }
 
   public Collection<Network> getNetworks() {
