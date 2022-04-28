@@ -3772,6 +3772,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER,
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST);
     markConcreteStructure(JuniperStructureType.FIREWALL_FILTER_TERM);
+    markConcreteStructure(JuniperStructureType.FIREWALL_INTERFACE_SET);
     markConcreteStructure(JuniperStructureType.INTERFACE);
     markConcreteStructure(
         JuniperStructureType.POLICY_STATEMENT,

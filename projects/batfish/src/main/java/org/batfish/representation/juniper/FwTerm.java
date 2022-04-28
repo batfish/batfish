@@ -27,6 +27,7 @@ public final class FwTerm implements Serializable {
     PROTOCOL,
     SOURCE,
     SOURCE_EXCEPT,
+    SOURCE_INTERFACE,
     SOURCE_PORT,
     TCP_FLAG
   }
