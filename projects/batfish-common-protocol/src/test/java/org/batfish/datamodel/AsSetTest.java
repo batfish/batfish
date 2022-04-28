@@ -7,6 +7,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -50,7 +51,19 @@ public class AsSetTest {
   public void testJsonSerialization() {
     AsSet set = AsSet.of(1);
     assertThat(BatfishObjectMapper.clone(set, AsSet.class), equalTo(set));
+    // test maximum ASN
+    set = AsSet.of(4294967295L);
+    assertThat(BatfishObjectMapper.clone(set, AsSet.class), equalTo(set));
     set = AsSet.confed(1);
     assertThat(BatfishObjectMapper.clone(set, AsSet.class), equalTo(set));
+    set = AsSet.of(1, 2, 3);
+    assertThat(BatfishObjectMapper.clone(set, AsSet.class), equalTo(set));
+  }
+
+  @Test
+  public void testJsonSerializationFriendly() throws JsonProcessingException {
+    assertThat(
+        BatfishObjectMapper.mapper().readValue("4294967295", AsSet.class),
+        equalTo(AsSet.of(4294967295L)));
   }
 }
