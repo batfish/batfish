@@ -2814,8 +2814,8 @@ public final class XrGrammarTest {
     assertThat(
         aggs,
         hasEntry(
-            equalTo(Prefix.parse("10.3.0.0/16")),
-            equalTo(new BgpAggregateIpv4Network(false, Prefix.parse("10.3.0.0/16"), null, false))));
+            equalTo(Prefix.parse("10.5.0.0/16")),
+            equalTo(new BgpAggregateIpv4Network(false, Prefix.parse("10.5.0.0/16"), null, false))));
   }
 
   @Test
