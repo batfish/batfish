@@ -192,12 +192,26 @@ rb_af4_inner
   // IPv4 ONLY
   rb_af4_aggregate_address
   | rb_af4_network
+  | rb_af4_no
   | rb_af4_redistribute
   // IPv4 or IPv6
   | rb_afip_common
 ;
 
+rb_af4_no
+:
+  NO
+  (
+    rb_af4_no_aggregate_address
+  )
+;
+
 rb_af4_aggregate_address
+:
+  AGGREGATE_ADDRESS network = route_network rb_afip_aa_tail* NEWLINE
+;
+
+rb_af4_no_aggregate_address
 :
   AGGREGATE_ADDRESS network = route_network rb_afip_aa_tail* NEWLINE
 ;
@@ -218,12 +232,26 @@ rb_af6_inner
   // IPv6 ONLY
   rb_af6_aggregate_address
   | rb_af6_network
+  | rb_af6_no
   | rb_af6_redistribute
   // IPv4 or IPv6
   | rb_afip_common
 ;
 
+rb_af6_no
+:
+  NO
+  (
+    rb_af6_no_aggregate_address
+  )
+;
+
 rb_af6_aggregate_address
+:
+  AGGREGATE_ADDRESS network = ipv6_prefix rb_afip_aa_tail* NEWLINE
+;
+
+rb_af6_no_aggregate_address
 :
   AGGREGATE_ADDRESS network = ipv6_prefix rb_afip_aa_tail* NEWLINE
 ;

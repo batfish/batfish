@@ -46,6 +46,15 @@ public final class BgpVrfIpv4AddressFamilyConfiguration extends BgpVrfIpAddressF
         prefix, p -> new BgpVrfAddressFamilyAggregateNetworkConfiguration());
   }
 
+  /**
+   * Remove aggregate network identified by {@code prefix} and return {@code true} iff it was
+   * previously present.
+   */
+  public boolean removeAggregateNetwork(Prefix prefix) {
+    BgpVrfAddressFamilyAggregateNetworkConfiguration existing = _aggregateNetworks.remove(prefix);
+    return existing != null;
+  }
+
   public void addNetwork(Prefix prefix, @Nullable String routeMap) {
     _ipNetworks.put(prefix, new Network(prefix, routeMap));
   }
