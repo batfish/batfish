@@ -3113,7 +3113,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.WCCP_GROUP_LIST,
         CiscoStructureUsage.WCCP_REDIRECT_LIST,
         CiscoStructureUsage.WCCP_SERVICE_LIST);
+    markConcreteStructure(CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED);
     markConcreteStructure(CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE);
+    markConcreteStructure(CiscoStructureType.IPV4_ACCESS_LIST_STANDARD);
     markConcreteStructure(CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE);
 
     markCommunityLists(

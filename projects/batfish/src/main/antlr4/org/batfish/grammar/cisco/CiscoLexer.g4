@@ -2165,7 +2165,12 @@ FLUSH_AT_ACTIVATION: 'flush-at-activation';
 
 FLUSH_R1_ON_NEW_R0: 'flush-r1-on-new-r0';
 
-FOR: 'for';
+FOR: 'for'
+{
+  if (lastTokenType() == REQUIRED) {
+    pushMode(M_Name);
+  }
+};
 
 FORCE: 'force';
 
@@ -4670,6 +4675,7 @@ REQUEST: 'request';
 REQUEST_DATA_SIZE: 'request-data-size';
 
 REQUIRE_WPA: 'require-wpa';
+REQUIRED: 'required';
 RESET: 'reset';
 RESOURCE: 'resource';
 
