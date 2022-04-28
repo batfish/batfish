@@ -1,0 +1,7 @@
+!
+hostname mpls_references
+!
+ip access-list standard MPLS_ACL
+!
+mpls ldp password required for MPLS_ACL
+!

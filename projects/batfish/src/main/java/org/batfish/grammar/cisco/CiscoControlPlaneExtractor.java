@@ -222,6 +222,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_C
 import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.MPLS_LDP_PASSWORD_REQUIRED_FOR;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MSDP_PEER_SA_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
@@ -739,6 +740,7 @@ import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Mldp_pw_requiredContext;
 import org.batfish.grammar.cisco.CiscoParser.Named_portContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_flat_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_group_rb_stanzaContext;
@@ -6928,6 +6930,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitMaximum_peers_bgp_tail(Maximum_peers_bgp_tailContext ctx) {
     todo(ctx);
+  }
+
+  @Override
+  public void exitMldp_pw_required(Mldp_pw_requiredContext ctx) {
+    String name = toString(ctx.acl);
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST_STANDARD,
+        name,
+        MPLS_LDP_PASSWORD_REQUIRED_FOR,
+        ctx.acl.getStart().getLine());
   }
 
   @Override

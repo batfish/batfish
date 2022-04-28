@@ -14,6 +14,7 @@ Cisco_interface,
 Cisco_isis,
 Cisco_line,
 Cisco_logging,
+Cisco_mpls,
 Cisco_nat,
 Cisco_ntp,
 Cisco_ospf,
@@ -3376,6 +3377,7 @@ stanza
    | s_media_termination
    | s_monitor
    | s_monitor_session
+   | s_mpls
    | s_name
    | s_netdestination
    | s_netdestination6

@@ -528,6 +528,17 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testMplsReferences() throws IOException {
+    String hostname = "mpls_references";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae, hasNumReferrers("configs/" + hostname, IPV4_ACCESS_LIST_STANDARD, "MPLS_ACL", 1));
+  }
+
+  @Test
   public void testAaaAuthenticationLogin() throws IOException {
     // test IOS config
     Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
