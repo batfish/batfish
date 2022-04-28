@@ -130,15 +130,16 @@ public class Transform implements Transition {
       return false;
     }
     Transform transform = (Transform) o;
+    // Exclude _reverseRelations and _swapPairing, which are lazy initialized and determined by
+    // _forwardRelation and
+    // _vars.
     return _forwardRelation.equals(transform._forwardRelation)
         && _pairingFactory.equals(transform._pairingFactory)
-        && _vars.equals(transform._vars)
-        && Objects.equals(_reverseRelation, transform._reverseRelation)
-        && Objects.equals(_swapPairing, transform._swapPairing);
+        && _vars.equals(transform._vars);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_forwardRelation, _pairingFactory, _vars, _reverseRelation, _swapPairing);
+    return Objects.hash(_forwardRelation, _pairingFactory, _vars);
   }
 }

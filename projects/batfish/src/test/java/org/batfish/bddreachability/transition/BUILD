@@ -19,6 +19,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/bdd",
         "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
     ],

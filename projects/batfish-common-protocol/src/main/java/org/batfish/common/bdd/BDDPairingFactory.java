@@ -6,6 +6,7 @@ import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.google.common.collect.Sets;
 import java.util.Arrays;
+import java.util.Objects;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 
@@ -65,8 +66,7 @@ public final class BDDPairingFactory {
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(_domain)
-        + 31 * Arrays.hashCode(_codomain)
-        + 31 * 31 * _domainVars.hashCode();
+    return Objects.hash(
+        Arrays.hashCode(_domain), Arrays.hashCode(_codomain), _domainVars.hashCode());
   }
 }

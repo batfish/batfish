@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.testing.EqualsTester;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDInteger;
@@ -208,5 +209,18 @@ public class TransformTest {
     assertThat(
         Transform.reduceWithOr(ImmutableList.of(_transformX0, _transformX1, _transformY)),
         containsInAnyOrder(_transformX0.tryOr(_transformX1).get(), _transformY));
+  }
+
+  @Test
+  public void testEquals() {
+    // transiting initializes _reverseRelation and _swapPairing, but does not affect equality
+    Transform transited = new Transform(_x0, _xPrimedInt.getPairingFactory());
+    transited.transitForward(_one);
+
+    new EqualsTester()
+        .addEqualityGroup(transited, new Transform(_x0, _xPrimedInt.getPairingFactory()))
+        .addEqualityGroup(new Transform(_x1, _xPrimedInt.getPairingFactory()))
+        .addEqualityGroup(new Transform(_x0, _yPrimedInt.getPairingFactory()))
+        .testEquals();
   }
 }
