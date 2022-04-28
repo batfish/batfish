@@ -9369,12 +9369,9 @@ public final class CiscoNxosGrammarTest {
   public void testAggregateAddressExtraction() {
     String hostname = "nxos-aggregate-address";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    BgpVrfConfiguration bgpVrf = vc.getBgpGlobalConfiguration().getVrfs().get(DEFAULT_VRF_NAME);
     Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggs =
-        vc.getBgpGlobalConfiguration()
-            .getVrfs()
-            .get(DEFAULT_VRF_NAME)
-            .getIpv4UnicastAddressFamily()
-            .getAggregateNetworks();
+        bgpVrf.getIpv4UnicastAddressFamily().getAggregateNetworks();
     assertThat(aggs, aMapWithSize(9));
     assertThat(
         aggs,
@@ -9439,6 +9436,15 @@ public final class CiscoNxosGrammarTest {
             equalTo(
                 new BgpVrfAddressFamilyAggregateNetworkConfiguration(
                     "undefined", false, "undefined", false, "undefined"))));
+
+    Map<Prefix6, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggs6 =
+        bgpVrf.getIpv6UnicastAddressFamily().getAggregateNetworks();
+    assertThat(aggs6, aMapWithSize(1));
+    assertThat(
+        aggs6,
+        hasEntry(
+            equalTo(Prefix6.parse("feed:beef::/64")),
+            equalTo(new BgpVrfAddressFamilyAggregateNetworkConfiguration())));
   }
 
   @Test

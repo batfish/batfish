@@ -522,9 +522,11 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Policy_map_queuing_nameCon
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Protocol_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_no_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_no_aggregate_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_multicastContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_unicastContext;
@@ -3643,6 +3645,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void enterRb_af4_no_aggregate_address(Rb_af4_no_aggregate_addressContext ctx) {
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    BgpVrfIpv4AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv4AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    Prefix prefix = toPrefix(ctx.network);
+    // dummy
+    _currentBgpVrfAddressFamilyAggregateNetwork =
+        new BgpVrfAddressFamilyAggregateNetworkConfiguration();
+    boolean removed = afConfig.removeAggregateNetwork(prefix);
+    if (!removed) {
+      warn(ctx, String.format("Removing non-existent aggregate network: %s", prefix));
+    }
+  }
+
+  @Override
+  public void exitRb_af4_no_aggregate_address(Rb_af4_no_aggregate_addressContext ctx) {
+    _currentBgpVrfAddressFamilyAggregateNetwork = null;
+  }
+
+  @Override
   public void exitRb_af4_aggregate_address(Rb_af4_aggregate_addressContext ctx) {
     _currentBgpVrfAddressFamilyAggregateNetwork = null;
   }
@@ -3723,6 +3745,27 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_af6_aggregate_address(Rb_af6_aggregate_addressContext ctx) {
+    _currentBgpVrfAddressFamilyAggregateNetwork = null;
+  }
+
+  @Override
+  public void enterRb_af6_no_aggregate_address(Rb_af6_no_aggregate_addressContext ctx) {
+    Prefix6 prefix = toPrefix6(ctx.network);
+
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    BgpVrfIpv6AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv6AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    // dummy
+    _currentBgpVrfAddressFamilyAggregateNetwork =
+        new BgpVrfAddressFamilyAggregateNetworkConfiguration();
+    boolean removed = afConfig.removeAggregateNetwork(prefix);
+    if (!removed) {
+      warn(ctx, String.format("Removing non-existent aggregate network: %s", prefix));
+    }
+  }
+
+  @Override
+  public void exitRb_af6_no_aggregate_address(Rb_af6_no_aggregate_addressContext ctx) {
     _currentBgpVrfAddressFamilyAggregateNetwork = null;
   }
 

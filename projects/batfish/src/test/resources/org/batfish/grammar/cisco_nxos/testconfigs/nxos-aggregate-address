@@ -37,4 +37,15 @@ router bgp 1
    aggregate-address 3.3.0.0/16 summary-only suppress-map sm2
    ! undefined route-maps
    aggregate-address 4.0.0.0/16 advertise-map undefined attribute-map undefined suppress-map undefined
+   ! to be removed (normalized to prefix/length format)
+   aggregate-address 5.0.0.0 255.255.255.0
+   ! extra args for 'no' form are ignored
+   no aggregate-address 5.0.0.0/24 as-set
+ !
+ address-family ipv6 unicast
+   aggregate-address feed:beef::/64
+   ! to be removed (normalized to prefix/length format)
+   aggregate-address dead:beef::/64
+   no aggregate-address dead:beef::/64
+ !
 !
