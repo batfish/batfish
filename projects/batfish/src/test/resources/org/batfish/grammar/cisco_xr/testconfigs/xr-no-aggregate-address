@@ -1,0 +1,21 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-no-aggregate-address
+!
+router bgp 1
+  bgp router-id 10.1.1.1
+  address-family ipv4 unicast
+    aggregate-address 10.1.0.0/16
+    aggregate-address 10.2.0.0/16 as-set
+    aggregate-address 10.3.0.0 255.255.0.0
+    aggregate-address 10.4.0.0/16
+    aggregate-address 10.5.0.0/16
+    ! Properties after prefix are ignored
+    no aggregate-address 10.1.0.0/16 summary-only
+    no aggregate-address 10.2.0.0/16
+    ! Can specify either prefix or mask
+    no aggregate-address 10.3.0.0/16
+    no aggregate-address 10.4.0.0 255.255.0.0
+    ! Non-existent prefix
+    no aggregate-address 10.123.0.0/16
+!
