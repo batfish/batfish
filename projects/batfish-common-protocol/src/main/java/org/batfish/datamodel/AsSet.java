@@ -90,8 +90,11 @@ public class AsSet implements Serializable, Comparable<AsSet> {
       } else {
         return AsSet.confed(getValues(data.get(PROP_ASNS)));
       }
+    } else if (data.canConvertToLong()) {
+      return AsSet.of(data.asLong());
     } else {
-      throw new IllegalArgumentException(String.format("Cannot deserialize %s", AsSet.class));
+      throw new IllegalArgumentException(
+          String.format("Cannot deserialize %s from %s", AsSet.class, data));
     }
   }
 
