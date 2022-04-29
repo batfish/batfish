@@ -743,7 +743,6 @@ import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.DscpUtil;
-import org.batfish.representation.juniper.Evpn;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
