@@ -1510,15 +1510,35 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testEvpnEncapsulationExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-ingress");
+    assertEquals("vxlan", c.getMasterLogicalSystem().getEvpn().getEncapsulation());
+  }
+
+  @Test
+  public void testEvpnMulticastModeIngressExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-ingress");
+    assertEquals("ingress-replication", c.getMasterLogicalSystem().getEvpn().getMulticastMode());
+  }
+
+  @Test
+  public void testEvpnMulticastModeClientExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-client");
+    assertEquals("client", c.getMasterLogicalSystem().getEvpn().getMulticastMode());
+  }
+
+  @Test
   public void testEvpnVniListAllExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-all");
-    // TODO
+    assertEquals("all", c.getMasterLogicalSystem().getEvpn().getExtendedVniAll());
   }
 
   @Test
   public void testEvpnVniListNoRangeExtraction() {
-    parseJuniperConfig("juniper-evpn-vni-list-no-range");
-    // TODO
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-no-range");
+    assertEquals(
+        Arrays.asList(10101, 10103, 10105),
+        c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
   }
 
   @Test

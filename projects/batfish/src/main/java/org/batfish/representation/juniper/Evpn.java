@@ -2,42 +2,47 @@ package org.batfish.representation.juniper;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.SortedMap;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Configuration of a VNI inside of p_evpn. */
 @ParametersAreNonnullByDefault
 public final class Evpn implements Serializable {
-  public static final Integer DEFAULT_UDP_PORT = 4789;
+
+  private String _multicast_mode;
+  private @Nullable String _extended_vni_all;
+  private @Nullable List<Integer> _extended_vni_list;
+  private @Nullable String _encapsulation;
+
+  public @Nullable String getMulticastMode() {
+    return _multicast_mode;
+  }
+
+  public @Nullable String getEncapsulation() {
+    return _encapsulation;
+  }
 
   public @Nullable String getExtendedVniAll() {
     return _extended_vni_all;
   }
 
-  // Need multicast mode getter
-  // multicast getter for mc group set on the named vlan
-
   public @Nullable List<Integer> getExtendedVniList() {
     return _extended_vni_list;
   }
 
-  public Integer getUdpPort() {
-    return _udpPort;
+  public void setMulticastMode(String multicastMode) {
+    _multicast_mode = multicastMode;
   }
 
-  //////////////////////////////////////////
-  ///// Private implementation details /////
-  //////////////////////////////////////////
+  public void setExtendedVniAll(String extendedVniAll) {
+    _extended_vni_all = extendedVniAll;
+  }
 
-  private Integer _udpPort;
-  private SortedMap<Integer, Integer> _vlanVnis;
-  private String _sourceInterface;
-  private @Nullable String _extended_vni_all;
-  private @Nullable List<Integer> _extended_vni_list;
-  private @Nullable String _rd;
-  private @Nullable String _exportRt;
-  private @Nullable String _importRt;
+  public void setExtendedVniList(List<Integer> extendedVniList) {
+    _extended_vni_list = extendedVniList;
+  }
 
-  @Nonnull SortedMap<String, Integer> _vrfToVni;
+  public void setEncapsulation(String encapsulation) {
+    _encapsulation = encapsulation;
+  }
 }
