@@ -1,30 +1,31 @@
 package org.batfish.bgp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BfConsts;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 @AutoService(Plugin.class)
 public class JsonExternalBgpAdvertisementPlugin extends ExternalBgpAdvertisementPlugin {
+
+  private static class Announcements {
+    @JsonProperty("Announcements")
+    List<BgpAdvertisement> _announcements;
+  }
 
   @Override
   protected void externalBgpAdvertisementPluginInitialize() {}
 
   @Override
   public Set<BgpAdvertisement> loadExternalBgpAdvertisements(NetworkSnapshot snapshot) {
-    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     String externalBgpAnnouncementsFileContents =
         _batfish.readExternalBgpAnnouncementsFile(snapshot);
     if (externalBgpAnnouncementsFileContents != null) {
@@ -34,27 +35,14 @@ public class JsonExternalBgpAdvertisementPlugin extends ExternalBgpAdvertisement
       // extracted from these advertisements.
 
       try {
-        JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
-
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
-
-        for (int index = 0; index < announcements.length(); index++) {
-          JSONObject announcement = new JSONObject();
-          JSONObject announcementSrc = announcements.getJSONObject(index);
-          for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
-            String key = (String) i.next();
-            announcement.put(key, announcementSrc.get(key));
-          }
-          BgpAdvertisement bgpAdvertisement =
-              BatfishObjectMapper.mapper()
-                  .readValue(announcement.toString(), BgpAdvertisement.class);
-          advertSet.add(bgpAdvertisement);
-        }
-
-      } catch (JSONException | IOException e) {
+        Announcements parsedAdverts =
+            BatfishObjectMapper.mapper()
+                .readValue(externalBgpAnnouncementsFileContents, Announcements.class);
+        return new LinkedHashSet<>(parsedAdverts._announcements);
+      } catch (IOException e) {
         throw new BatfishException("Error processing external BGP advertisements file", e);
       }
     }
-    return advertSet;
+    return new LinkedHashSet<>();
   }
 }
