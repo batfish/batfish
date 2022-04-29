@@ -136,52 +136,56 @@ public final class Transitions {
     if (t2 == IDENTITY) {
       return t1;
     }
-    if (t1 instanceof Constraint && t2 instanceof Constraint) {
-      BDD bdd1 = ((Constraint) t1).getConstraint();
-      BDD bdd2 = ((Constraint) t2).getConstraint();
-      return constraint(bdd1.and(bdd2));
-    }
-    if (t1 instanceof Constraint && t2 instanceof EraseAndSet) {
-      BDD constraintBdd = ((Constraint) t1).getConstraint();
-      EraseAndSet eas = (EraseAndSet) t2;
-      BDD eraseVars = eas.getEraseVars();
-      if (!constraintBdd.testsVars(eraseVars)) {
-        // constraint doesn't refer to eraseVars
-        return eraseAndSet(eraseVars, constraintBdd.and(eas.getSetValue()));
+    if (t1 instanceof Constraint) {
+      if (t2 instanceof Constraint) {
+        BDD bdd1 = ((Constraint) t1).getConstraint();
+        BDD bdd2 = ((Constraint) t2).getConstraint();
+        return constraint(bdd1.and(bdd2));
+      } else if (t2 instanceof EraseAndSet) {
+        BDD constraintBdd = ((Constraint) t1).getConstraint();
+        EraseAndSet eas = (EraseAndSet) t2;
+        BDD eraseVars = eas.getEraseVars();
+        if (!constraintBdd.testsVars(eraseVars)) {
+          // constraint doesn't refer to eraseVars
+          return eraseAndSet(eraseVars, constraintBdd.and(eas.getSetValue()));
+        }
+      } else if (t2 instanceof RemoveSourceConstraint) {
+        BDD constraintBdd = ((Constraint) t1).getConstraint();
+        BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
+        BDDFiniteDomain<String> finiteDomain = mgr.getFiniteDomain();
+        return compose(
+            constraint(constraintBdd.and(finiteDomain.getIsValidConstraint())),
+            eraseAndSet(finiteDomain.getVar(), constraintBdd.getFactory().one()));
       }
-      // fall through
+      // can't merge
+      return null;
     }
-    if (t1 instanceof Constraint && t2 instanceof RemoveSourceConstraint) {
-      BDD constraintBdd = ((Constraint) t1).getConstraint();
-      BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
-      BDDFiniteDomain<String> finiteDomain = mgr.getFiniteDomain();
-      return compose(
-          constraint(constraintBdd.and(finiteDomain.getIsValidConstraint())),
-          eraseAndSet(finiteDomain.getVar(), constraintBdd.getFactory().one()));
-    }
-    if (t1 instanceof EraseAndSet && t2 instanceof Constraint) {
-      EraseAndSet eas = (EraseAndSet) t1;
-      BDD vars = eas.getEraseVars();
-      BDD value = eas.getSetValue();
-      BDD constraint = ((Constraint) t2).getConstraint();
-      return eraseAndSet(vars, value.and(constraint));
-    }
-    if (t1 instanceof EraseAndSet && t2 instanceof EraseAndSet) {
-      EraseAndSet eas1 = (EraseAndSet) t1;
-      EraseAndSet eas2 = (EraseAndSet) t2;
-      BDD vars1 = eas1.getEraseVars();
-      BDD vars2 = eas2.getEraseVars();
-      BDD val1 = eas1.getSetValue();
-      BDD val2 = eas2.getSetValue();
-      if (vars1.equals(vars2)) {
-        return eas2;
-      } else if (!vars1.testsVars(vars2)) {
-        return eraseAndSet(vars1.and(vars2), val1.and(val2));
-      } else {
-        // variables sets are different but overlap. probably would only happen as a result of
-        // previous merges
-        return eraseAndSet(vars1.and(vars2), val1.exist(vars2).and(val2));
+    if (t1 instanceof EraseAndSet) {
+      if (t2 instanceof Constraint) {
+        EraseAndSet eas = (EraseAndSet) t1;
+        BDD vars = eas.getEraseVars();
+        BDD value = eas.getSetValue();
+        BDD constraint = ((Constraint) t2).getConstraint();
+        return eraseAndSet(vars, value.and(constraint));
+      } else if (t2 instanceof EraseAndSet) {
+        EraseAndSet eas1 = (EraseAndSet) t1;
+        EraseAndSet eas2 = (EraseAndSet) t2;
+        BDD vars1 = eas1.getEraseVars();
+        BDD vars2 = eas2.getEraseVars();
+        BDD val1 = eas1.getSetValue();
+        BDD val2 = eas2.getSetValue();
+        if (vars1.equals(vars2)) {
+          return eas2;
+        } else if (!vars1.testsVars(vars2)) {
+          return eraseAndSet(vars1.and(vars2), val1.and(val2));
+        } else {
+          // variables sets are different but overlap. probably would only happen as a result of
+          // previous merges
+          return eraseAndSet(vars1.and(vars2), val1.exist(vars2).and(val2));
+        }
       }
+      // can't merge
+      return null;
     }
     if (t1 instanceof RemoveSourceConstraint && t2 instanceof AddSourceConstraint) {
       RemoveSourceConstraint remove = (RemoveSourceConstraint) t1;
