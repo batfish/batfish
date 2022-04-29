@@ -19,6 +19,7 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 import org.batfish.common.bdd.BDDFiniteDomain;
+import org.batfish.common.bdd.BDDPairingFactory;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.ImmutableBDDInteger;
 
@@ -156,6 +157,11 @@ public final class Transitions {
         return compose(
             constraint(constraintBdd.and(finiteDomain.getIsValidConstraint())),
             eraseAndSet(finiteDomain.getVar(), constraintBdd.getFactory().one()));
+      } else if (t2 instanceof Transform) {
+        BDD constraintBdd = ((Constraint) t1).getConstraint();
+        Transform transform = (Transform) t2;
+        return transform(
+            constraintBdd.and(transform.getForwardRelation()), transform.getPairingFactory());
       }
       // can't merge
       return null;
@@ -205,6 +211,17 @@ public final class Transitions {
 
       ImmutableBDDInteger var = mgr.getFiniteDomain().getVar();
       return eraseAndSet(var, add.getSourceBdd());
+    }
+    if (t1 instanceof Transform) {
+      if (t2 instanceof Constraint) {
+        Transform transform = (Transform) t1;
+        BDD constraintBdd =
+            ((Constraint) t2)
+                .getConstraint()
+                .replace(transform.getPairingFactory().getSwapPairing());
+        return transform(
+            constraintBdd.and(transform.getForwardRelation()), transform.getPairingFactory());
+      }
     }
     // couldn't merge
     return null;
@@ -408,5 +425,15 @@ public final class Transitions {
       return transition;
     }
     return new Reverse(transition);
+  }
+
+  public static Transition transform(BDD relation, BDDPairingFactory pairingFactory) {
+    if (relation.isZero()) {
+      return ZERO;
+    }
+    if (relation.isOne()) {
+      return IDENTITY;
+    }
+    return new Transform(relation, pairingFactory);
   }
 }

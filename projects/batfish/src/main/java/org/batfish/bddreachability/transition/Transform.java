@@ -33,8 +33,16 @@ public class Transform implements Transition {
   }
 
   private void init() {
-    _swapPairing = _pairingFactory.makeSwapPairing();
+    _swapPairing = _pairingFactory.getSwapPairing();
     _reverseRelation = _forwardRelation.replace(_swapPairing);
+  }
+
+  BDD getForwardRelation() {
+    return _forwardRelation;
+  }
+
+  BDDPairingFactory getPairingFactory() {
+    return _pairingFactory;
   }
 
   @Override

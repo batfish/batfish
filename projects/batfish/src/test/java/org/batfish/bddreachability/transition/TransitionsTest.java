@@ -303,6 +303,34 @@ public class TransitionsTest {
   }
 
   @Test
+  public void testCompose_Constraint_Transform() {
+    BDD v0 = var(0);
+    BDD v0Prime = var(1);
+    BDD v1 = var(2);
+
+    BDDPairingFactory pairFactory = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+
+    BDD xorRel = v0.xor(v0Prime); // flip the bit
+    Transform xorTransform = new Transform(xorRel, pairFactory);
+
+    BDD trueToFalseRel = v0.diff(v0Prime); // partial function mapping true to false
+    Transform trueToFalseTransform = new Transform(trueToFalseRel, pairFactory);
+
+    BDD falseToTrueRel = v0.less(v0Prime); // partial function mapping true to false
+    Transform falseToTrueTransform = new Transform(falseToTrueRel, pairFactory);
+
+    // constraint first
+    assertEquals(new Transform(xorRel.and(v1), pairFactory), compose(constraint(v1), xorTransform));
+    assertEquals(trueToFalseTransform, compose(constraint(v0), xorTransform));
+    assertEquals(ZERO, compose(constraint(v0.not()), trueToFalseTransform));
+
+    // constraint second
+    assertEquals(new Transform(xorRel.and(v1), pairFactory), compose(xorTransform, constraint(v1)));
+    assertEquals(falseToTrueTransform, compose(xorTransform, constraint(v0)));
+    assertEquals(ZERO, compose(falseToTrueTransform, constraint(v0.not())));
+  }
+
+  @Test
   public void testOr_Identity_Constraint() {
     assertEquals(IDENTITY, or(IDENTITY, constraint(var(0))));
   }
