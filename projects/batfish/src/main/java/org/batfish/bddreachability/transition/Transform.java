@@ -75,11 +75,16 @@ public class Transform implements Transition {
       // vars are not disjoint so we can't compose
       return Optional.empty();
     }
+
+    // if we haven't initialized yet, get the swapPairing from the pairing factory. We don't need
+    // the backward relation
+    BDDPairing swapPairing = _swapPairing != null ? _swapPairing : _pairingFactory.getSwapPairing();
+
     /* vars are disjoint so we can combine them other's relation may constrain (but not transform) variables transformed
      * by this. those constraints should be applied after this's transformation. We do that by moving any constraints on
      * this's domain vars to this's codomain vars.
      */
-    BDD otherForwardRelation = other._forwardRelation.replace(_swapPairing);
+    BDD otherForwardRelation = other._forwardRelation.replace(swapPairing);
     return Optional.of(
         new Transform(
             _forwardRelation.and(otherForwardRelation),

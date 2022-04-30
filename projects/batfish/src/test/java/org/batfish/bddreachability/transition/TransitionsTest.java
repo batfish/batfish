@@ -331,6 +331,25 @@ public class TransitionsTest {
   }
 
   @Test
+  public void testCompose_Transform_Transform() {
+    BDD v0 = var(0);
+    BDD v0Prime = var(1);
+    BDD v1 = var(2);
+    BDD v1Prime = var(3);
+
+    BDDPairingFactory pairingFactory0 = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    BDDPairingFactory pairingFactory1 = new BDDPairingFactory(new BDD[] {v1}, new BDD[] {v1Prime});
+
+    BDD rel0 = v0.and(v0Prime);
+    Transform transformV0 = new Transform(rel0, pairingFactory0);
+    BDD rel1 = v1.and(v1Prime);
+    Transform transformV1 = new Transform(rel1, pairingFactory1);
+
+    // Transform::tryCompose does the real work -- more interesting tests there
+    assertEquals(transformV0.tryCompose(transformV1).get(), compose(transformV0, transformV1));
+  }
+
+  @Test
   public void testOr_Identity_Constraint() {
     assertEquals(IDENTITY, or(IDENTITY, constraint(var(0))));
   }

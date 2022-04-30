@@ -222,6 +222,9 @@ public final class Transitions {
         return transform(
             constraintBdd.and(transform.getForwardRelation()), transform.getPairingFactory());
       }
+      if (t2 instanceof Transform) {
+        return ((Transform) t1).tryCompose((Transform) t2).orElse(null);
+      }
     }
     // couldn't merge
     return null;
