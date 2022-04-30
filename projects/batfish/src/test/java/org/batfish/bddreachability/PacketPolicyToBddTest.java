@@ -4,7 +4,6 @@ import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.PacketPolicyToBdd.STATEMENTS_BEFORE_BREAK;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
-import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.Transformation.always;
@@ -39,6 +38,7 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.bdd.PrimedBDDInteger;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.ExprAclLine;
@@ -373,11 +373,14 @@ public final class PacketPolicyToBddTest {
                 _ipAccessListToBdd,
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
             .getEdges();
-    BDD ipBdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip);
+
+    PrimedBDDInteger srcIp = _bddPacket.getSrcIpPrimedBDDInteger();
+    Transition transform =
+        Transitions.transform(srcIp.getPrimeVar().toBDD(ip), srcIp.getPairingFactory());
     assertThat(
         edges,
         containsInAnyOrder(
-            edge(statement(0), statement(1), eraseAndSet(_bddPacket.getSrcIp(), ipBdd)),
+            edge(statement(0), statement(1), transform),
             edge(statement(1), fibLookupState("vrf"), IDENTITY)));
   }
 

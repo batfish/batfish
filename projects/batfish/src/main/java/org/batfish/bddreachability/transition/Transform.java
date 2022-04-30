@@ -3,10 +3,12 @@ package org.batfish.bddreachability.transition;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Table;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -28,6 +30,17 @@ public class Transform implements Transition {
     _forwardRelation = relation;
     _pairingFactory = pairingFactory;
     _vars = _pairingFactory.getDomainVarsBdd();
+    assert initIfAssertionsEnabled();
+  }
+
+  /**
+   * Initialize eagerly when assertions are enabled, so that the transit methods do not allocate any
+   * BDDs. See {@link org.batfish.bddreachability.BDDReachabilityUtils#fixpoint(Map, Table,
+   * BiFunction)}
+   */
+  private boolean initIfAssertionsEnabled() {
+    init();
+    return true;
   }
 
   private void init() {
