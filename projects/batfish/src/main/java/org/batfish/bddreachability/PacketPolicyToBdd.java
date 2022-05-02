@@ -191,17 +191,25 @@ class PacketPolicyToBdd {
     }
 
     public void visitStatements(List<Statement> statements) {
+      // count how many statements have been processed for the current statement.
       int counter = 0;
+      PacketPolicyStatement currentStatement = currentStatement();
       for (Statement statement : statements) {
         visit(statement);
         if (_nextEdgeConstraint.isZero()) {
           // does not fall through, so exit immediately
           return;
         }
-        ++counter;
-        if (counter % STATEMENTS_BEFORE_BREAK == 0) {
-          addEdge(currentStatement(), nextStatement(), _nextEdgeConstraint);
-          _nextEdgeConstraint = _one;
+        if (currentStatement != currentStatement()) {
+          // statement updated current statement; reset the counter
+          currentStatement = _currentStatement;
+          counter = 0;
+        } else {
+          ++counter;
+          if (counter % STATEMENTS_BEFORE_BREAK == 0) {
+            addEdge(currentStatement(), nextStatement(), _nextEdgeConstraint);
+            _nextEdgeConstraint = _one;
+          }
         }
       }
     }
