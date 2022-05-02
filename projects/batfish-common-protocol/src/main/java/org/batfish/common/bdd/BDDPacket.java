@@ -72,16 +72,16 @@ public class BDDPacket {
 
   // Packet bits
   private final @Nonnull ImmutableBDDInteger _dscp;
-  private final @Nonnull ImmutableBDDInteger _dstIp;
-  private final @Nonnull ImmutableBDDInteger _dstPort;
+  private final @Nonnull PrimedBDDInteger _dstIp;
+  private final @Nonnull PrimedBDDInteger _dstPort;
   private final @Nonnull ImmutableBDDInteger _ecn;
   private final @Nonnull ImmutableBDDInteger _fragmentOffset;
   private final @Nonnull BDDIcmpCode _icmpCode;
   private final @Nonnull BDDIcmpType _icmpType;
   private final @Nonnull BDDIpProtocol _ipProtocol;
   private final @Nonnull BDDPacketLength _packetLength;
-  private final @Nonnull ImmutableBDDInteger _srcIp;
-  private final @Nonnull ImmutableBDDInteger _srcPort;
+  private final @Nonnull PrimedBDDInteger _srcIp;
+  private final @Nonnull PrimedBDDInteger _srcPort;
   private final @Nonnull BDD _tcpAck;
   private final @Nonnull BDD _tcpCwr;
   private final @Nonnull BDD _tcpEce;
@@ -123,8 +123,9 @@ public class BDDPacket {
     _factory = factory;
     // Make sure we have the right number of variables
     int numNeeded =
-        IP_LENGTH * 2
-            + PORT_LENGTH * 2
+        FIRST_PACKET_VAR // reserved for auxiliary variables before packet vars
+            + IP_LENGTH * 4 // primed/unprimed src/dst
+            + PORT_LENGTH * 4 // primed/unprimed src/dst
             + IP_PROTOCOL_LENGTH
             + ICMP_CODE_LENGTH
             + ICMP_TYPE_LENGTH
@@ -139,14 +140,10 @@ public class BDDPacket {
 
     _bitNames = new HashMap<>();
 
-    BDD[] dstIpBitvec = allocateBDDBits("dstIp", IP_LENGTH);
-    BDD[] srcIpBitvec = allocateBDDBits("srcIp", IP_LENGTH);
-    BDD[] dstPortBitvec = allocateBDDBits("dstPort", PORT_LENGTH);
-    BDD[] srcPortBitvec = allocateBDDBits("srcPort", PORT_LENGTH);
-    _dstIp = new ImmutableBDDInteger(_factory, dstIpBitvec);
-    _srcIp = new ImmutableBDDInteger(_factory, srcIpBitvec);
-    _dstPort = new ImmutableBDDInteger(_factory, dstPortBitvec);
-    _srcPort = new ImmutableBDDInteger(_factory, srcPortBitvec);
+    _dstIp = allocatePrimedBDDInteger("dstIp", IP_LENGTH);
+    _srcIp = allocatePrimedBDDInteger("srcIp", IP_LENGTH);
+    _dstPort = allocatePrimedBDDInteger("dstPort", PORT_LENGTH);
+    _srcPort = allocatePrimedBDDInteger("srcPort", PORT_LENGTH);
     _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH));
     _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH));
     _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH));
@@ -165,11 +162,11 @@ public class BDDPacket {
 
     _swapSourceAndDestinationPairing =
         swapPairing(
-            BDDUtils.concatBitvectors(dstIpBitvec, dstPortBitvec),
-            BDDUtils.concatBitvectors(srcIpBitvec, srcPortBitvec));
+            BDDUtils.concatBitvectors(_dstIp.getVar()._bitvec, _dstPort.getVar()._bitvec),
+            BDDUtils.concatBitvectors(_srcIp.getVar()._bitvec, _srcPort.getVar()._bitvec));
 
-    _dstIpSpaceToBDD = new IpSpaceToBDD(_dstIp);
-    _srcIpSpaceToBDD = new IpSpaceToBDD(_srcIp);
+    _dstIpSpaceToBDD = new IpSpaceToBDD(_dstIp.getVar());
+    _srcIpSpaceToBDD = new IpSpaceToBDD(_srcIp.getVar());
   }
 
   public @Nonnull BDD getSaneFlowConstraint() {
@@ -240,6 +237,22 @@ public class BDDPacket {
     addBitNames(name, bits, _nextFreeBDDVarIdx);
     _nextFreeBDDVarIdx += bits;
     return bdds;
+  }
+
+  /** Create a new {@link PrimedBDDInteger} with interleaved unprimed and primed variables. */
+  private PrimedBDDInteger allocatePrimedBDDInteger(String name, int length) {
+    checkArgument(
+        _factory.varNum() >= _nextFreeBDDVarIdx + length * 2,
+        "Not enough variables to create PrimedBDDInteger");
+    BDD[] vars = new BDD[length];
+    BDD[] primedVars = new BDD[length];
+    for (int i = 0; i < length; i++) {
+      _bitNames.put(_nextFreeBDDVarIdx, name + i);
+      vars[i] = _factory.ithVar(_nextFreeBDDVarIdx++);
+      _bitNames.put(_nextFreeBDDVarIdx, name + "'" + i);
+      primedVars[i] = _factory.ithVar(_nextFreeBDDVarIdx++);
+    }
+    return new PrimedBDDInteger(_factory, vars, primedVars);
   }
 
   public IpSpaceToBDD getDstIpSpaceToBDD() {
@@ -323,10 +336,10 @@ public class BDDPacket {
 
   public Flow.Builder getFromFromAssignment(BitSet bits) {
     Flow.Builder fb = Flow.builder();
-    fb.setDstIp(Ip.create(_dstIp.satAssignmentToLong(bits)));
-    fb.setSrcIp(Ip.create(_srcIp.satAssignmentToLong(bits)));
-    fb.setDstPort(_dstPort.satAssignmentToInt(bits));
-    fb.setSrcPort(_srcPort.satAssignmentToInt(bits));
+    fb.setDstIp(Ip.create(_dstIp.getVar().satAssignmentToLong(bits)));
+    fb.setSrcIp(Ip.create(_srcIp.getVar().satAssignmentToLong(bits)));
+    fb.setDstPort(_dstPort.getVar().satAssignmentToInt(bits));
+    fb.setSrcPort(_srcPort.getVar().satAssignmentToInt(bits));
     fb.setIpProtocol(_ipProtocol.satAssignmentToValue(bits));
     fb.setIcmpCode(_icmpCode.satAssignmentToValue(bits));
     fb.setIcmpType(_icmpType.satAssignmentToValue(bits));
@@ -352,11 +365,21 @@ public class BDDPacket {
 
   @Nonnull
   public ImmutableBDDInteger getDstIp() {
+    return _dstIp.getVar();
+  }
+
+  @Nonnull
+  public PrimedBDDInteger getDstIpPrimedBDDInteger() {
     return _dstIp;
   }
 
   @Nonnull
   public ImmutableBDDInteger getDstPort() {
+    return _dstPort.getVar();
+  }
+
+  @Nonnull
+  public PrimedBDDInteger getDstPortPrimedBDDInteger() {
     return _dstPort;
   }
 
@@ -392,11 +415,21 @@ public class BDDPacket {
 
   @Nonnull
   public ImmutableBDDInteger getSrcIp() {
+    return _srcIp.getVar();
+  }
+
+  @Nonnull
+  public PrimedBDDInteger getSrcIpPrimedBDDInteger() {
     return _srcIp;
   }
 
   @Nonnull
   public ImmutableBDDInteger getSrcPort() {
+    return _srcPort.getVar();
+  }
+
+  @Nonnull
+  public PrimedBDDInteger getSrcPortPrimedBDDInteger() {
     return _srcPort;
   }
 

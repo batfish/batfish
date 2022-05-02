@@ -1,5 +1,8 @@
 package org.batfish.common.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.Arrays;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 
@@ -25,5 +28,15 @@ public final class PrimedBDDInteger {
 
   public BDDPairingFactory getPairingFactory() {
     return _pairingFactory;
+  }
+
+  /** Create a {@link BDDPairingFactory} for the input number of most significant variables. */
+  public BDDPairingFactory getPairingFactory(int n) {
+    checkArgument(n <= _var.size(), "Cannot get pairing factory for more vars than exist");
+    if (n == _var.size()) {
+      return _pairingFactory;
+    }
+    return new BDDPairingFactory(
+        Arrays.copyOf(_var._bitvec, n), Arrays.copyOf(_primeVar._bitvec, n));
   }
 }
