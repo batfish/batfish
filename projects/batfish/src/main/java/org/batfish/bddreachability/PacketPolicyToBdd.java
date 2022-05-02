@@ -25,7 +25,8 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.common.bdd.PermitAndDenyBdds;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
@@ -293,10 +294,11 @@ class PacketPolicyToBdd {
 
     @Override
     public Void visitApplyFilter(ApplyFilter applyFilter) {
-      BDD permitBdd =
-          _boolExprToBdd._ipAccessListToBdd.toBdd(new PermittedByAcl(applyFilter.getFilter()));
-      Transition permitConstraint = constraint(permitBdd);
-      Transition denyConstraint = constraint(permitBdd.not());
+      PermitAndDenyBdds permitAndDenyBdds =
+          _boolExprToBdd._ipAccessListToBdd.toPermitAndDenyBdds(
+              new AclAclLine(null, applyFilter.getFilter()));
+      Transition permitConstraint = constraint(permitAndDenyBdds.getPermitBdd());
+      Transition denyConstraint = constraint(permitAndDenyBdds.getDenyBdd());
       @Nullable Transition permitTransition = mergeComposed(_nextEdgeTransition, permitConstraint);
       Transition denyTransition;
       if (permitTransition == null) {
