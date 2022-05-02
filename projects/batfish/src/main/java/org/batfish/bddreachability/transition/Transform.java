@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.BDDPairing;
 import org.batfish.common.bdd.BDDPairingFactory;
 
 /** Apply a transformation encoded as a relation over unprimed and primed variables. */
@@ -24,7 +23,6 @@ public class Transform implements Transition {
 
   // lazy init
   private @Nullable BDD _reverseRelation;
-  private @Nullable BDDPairing _swapPairing;
 
   public Transform(BDD relation, BDDPairingFactory pairingFactory) {
     _forwardRelation = relation;
@@ -33,24 +31,30 @@ public class Transform implements Transition {
   }
 
   private void init() {
-    _swapPairing = _pairingFactory.makeSwapPairing();
-    _reverseRelation = _forwardRelation.replace(_swapPairing);
+    _reverseRelation = _forwardRelation.replace(_pairingFactory.getSwapPairing());
+  }
+
+  BDD getForwardRelation() {
+    return _forwardRelation;
+  }
+
+  BDDPairingFactory getPairingFactory() {
+    return _pairingFactory;
   }
 
   @Override
   public BDD transitForward(BDD bdd) {
-    if (_swapPairing == null) {
-      init();
-    }
-    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars).replaceWith(_swapPairing);
+    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars)
+        .replaceWith(_pairingFactory.getSwapPairing());
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    if (_swapPairing == null) {
+    if (_reverseRelation == null) {
       init();
     }
-    return bdd.applyEx(_reverseRelation, BDDFactory.and, _vars).replaceWith(_swapPairing);
+    return bdd.applyEx(_reverseRelation, BDDFactory.and, _vars)
+        .replaceWith(_pairingFactory.getSwapPairing());
   }
 
   @Override
@@ -67,11 +71,12 @@ public class Transform implements Transition {
       // vars are not disjoint so we can't compose
       return Optional.empty();
     }
+
     /* vars are disjoint so we can combine them other's relation may constrain (but not transform) variables transformed
      * by this. those constraints should be applied after this's transformation. We do that by moving any constraints on
      * this's domain vars to this's codomain vars.
      */
-    BDD otherForwardRelation = other._forwardRelation.replace(_swapPairing);
+    BDD otherForwardRelation = other._forwardRelation.replace(_pairingFactory.getSwapPairing());
     return Optional.of(
         new Transform(
             _forwardRelation.and(otherForwardRelation),

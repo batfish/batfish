@@ -26,7 +26,7 @@ public final class PrimedBDDIntegerTest {
     BDD var5 = var.value(5);
     BDD primeVar2 = primeVar.value(2);
     BDD primeVar5 = primeVar.value(5);
-    BDDPairing swap = primedInteger.getPairingFactory().makeSwapPairing();
+    BDDPairing swap = primedInteger.getPairingFactory().getSwapPairing();
 
     assertEquals(primeVar2, var2.replace(swap));
     assertEquals(var5, primeVar5.replace(swap));

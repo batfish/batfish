@@ -7,6 +7,7 @@ import static org.parboiled.common.Preconditions.checkArgument;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 
@@ -14,6 +15,9 @@ public final class BDDPairingFactory {
   private final BDD[] _domain;
   private final BDD[] _codomain;
   private final BDD _domainVars;
+
+  // lazy init
+  @Nullable BDDPairing _swapPairing;
 
   public BDDPairingFactory(BDD[] domain, BDD[] codomain) {
     checkArgument(domain.length == codomain.length, "domain and codomain must have equal size");
@@ -33,8 +37,11 @@ public final class BDDPairingFactory {
   }
 
   /** Create a {@link BDDPairing} that swaps domain and codomain variables. */
-  public BDDPairing makeSwapPairing() {
-    return swapPairing(_domain, _codomain);
+  public BDDPairing getSwapPairing() {
+    if (_swapPairing == null) {
+      _swapPairing = swapPairing(_domain, _codomain);
+    }
+    return _swapPairing;
   }
 
   public BDDPairingFactory composeWith(BDDPairingFactory other) {

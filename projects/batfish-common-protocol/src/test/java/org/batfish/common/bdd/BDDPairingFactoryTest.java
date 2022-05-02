@@ -50,7 +50,7 @@ public final class BDDPairingFactoryTest {
         primedInteger1
             .getPairingFactory()
             .composeWith(primedInteger2.getPairingFactory())
-            .makeSwapPairing();
+            .getSwapPairing();
 
     assertEquals(xPrime0.and(yPrime1), x0.and(y1).replace(swapBoth));
     assertEquals(x0.and(y1), xPrime0.and(yPrime1).replace(swapBoth));
