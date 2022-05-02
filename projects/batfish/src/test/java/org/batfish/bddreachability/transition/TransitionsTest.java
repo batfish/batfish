@@ -72,19 +72,14 @@ public class TransitionsTest {
   // Composing with Compose flattens
   @Test
   public void composeWithCompose() {
-    Transition t1 = constraint(var(0));
-    Transition t2 = constraint(var(1));
-    Transition t3 = constraint(var(2));
-    Transition eraseAndSet = eraseAndSet(var(0), var(0));
-    Transition or = or(t2, eraseAndSet);
+    Transition eas = eraseAndSet(var(0), var(0));
+    Transition or = or(constraint(var(1)), eas);
     assertThat(or, instanceOf(Or.class));
-    Transition c1 = compose(t1, or);
+    Transition c1 = compose(eas, or);
     assertThat(c1, instanceOf(Composite.class));
-    Transition c2 = compose(t3, or);
-    assertThat(c2, instanceOf(Composite.class));
-    Transition c1c2 = compose(c1, c2);
-    assertThat(c1c2, instanceOf(Composite.class));
-    assertThat(((Composite) c1c2).getTransitions(), contains(t1, or, t3, or));
+    Transition c1c1 = compose(c1, c1);
+    assertThat(c1c1, instanceOf(Composite.class));
+    assertThat(((Composite) c1c1).getTransitions(), contains(eas, or, eas, or));
   }
 
   /** Compose simplifies to zero. */
@@ -246,6 +241,19 @@ public class TransitionsTest {
     Transition t2 = eraseAndSet(v1.and(v2), v1.not().and(v2));
     Transition merged = eraseAndSet(v0.and(v1).and(v2), v0.and(v1.not()).and(v2));
     assertEquals(merged, mergeComposed(t1, t2));
+  }
+
+  @Test
+  public void testMergeComposed_Or_Constraint() {
+    BDD v0 = var(0);
+    BDD v1 = var(1);
+    BDD v2 = var(2);
+    Transition t1 = eraseAndSet(v0, v0);
+    Transition t2 = eraseAndSet(v1, v1);
+    Transition or = or(t1, t2);
+    assertThat(or, instanceOf(Or.class));
+    Transition merged = mergeComposed(or, constraint(v2));
+    assertEquals(merged, or(eraseAndSet(v0, v0.and(v2)), eraseAndSet(v1, v1.and(v2))));
   }
 
   @Test
