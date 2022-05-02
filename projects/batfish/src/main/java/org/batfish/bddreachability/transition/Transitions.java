@@ -6,10 +6,12 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -211,6 +213,23 @@ public final class Transitions {
 
       ImmutableBDDInteger var = mgr.getFiniteDomain().getVar();
       return eraseAndSet(var, add.getSourceBdd());
+    }
+    if (t1 instanceof Or && t2 instanceof Constraint) {
+      Or or = (Or) t1;
+      if (or.getTransitions().size() > 10) {
+        // tune: there is a trade-off here between how much work we do to merge vs work done during
+        // traversal
+        return null;
+      }
+      Transition[] disjuncts =
+          or.getTransitions().stream()
+              .map(disjunct -> mergeComposed(disjunct, t2))
+              .toArray(Transition[]::new);
+      if (Arrays.stream(disjuncts).anyMatch(Objects::isNull)) {
+        // some disjunct failed to merge. TODO minimize this case
+        return null;
+      }
+      return or(disjuncts);
     }
     if (t1 instanceof Transform) {
       if (t2 instanceof Constraint) {
