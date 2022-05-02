@@ -548,4 +548,81 @@ public final class PacketPolicyToBddTest {
     BDD lookedUpBDDs = droppedBDDs.not();
     assertThat(reachableSet, hasEntry(lookedUp, lookedUpBDDs));
   }
+
+  /** Test that we don't insert breaks in long policies if the conversion itself creates breaks. */
+  @Test
+  public void testLongPolicyBreaks_reset() {
+    Return fl = new Return(new FibLookup(new LiteralVrfName("vrf")));
+    Return drop = new Return(Drop.instance());
+
+    // Construct a long packet policy, with more statements than required to create a break.
+    long tenZero = Ip.parse("10.0.0.0").asLong();
+    List<Statement> statements = new ArrayList<>();
+    int numStatements = STATEMENTS_BEFORE_BREAK + 5;
+    int fallThroughStatement =
+        STATEMENTS_BEFORE_BREAK - 1; // this will create a statement and reset the count
+    assertTrue(fallThroughStatement >= 0);
+
+    for (int i = 0; i < numStatements; ++i) {
+      if (i == fallThroughStatement) {
+        statements.add(
+            // fall through
+            new If(new PacketMatchExpr(matchDst(Ip.create(tenZero + i))), ImmutableList.of()));
+      } else {
+        statements.add(
+            new If(new PacketMatchExpr(matchDst(Ip.create(tenZero + i))), ImmutableList.of(drop)));
+      }
+    }
+    PacketPolicy longPolicy = new PacketPolicy(_policyName, statements, fl);
+
+    // Convert longPolicy to a graph, and evaluate it from the initial node.
+    BddPacketPolicy asBdd =
+        PacketPolicyToBdd.evaluate(
+            _hostname,
+            _ingressVrf,
+            longPolicy,
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
+    Table<StateExpr, StateExpr, Transition> table =
+        asBdd.getEdges().stream()
+            .collect(
+                ImmutableTable.toImmutableTable(
+                    Edge::getPreState, Edge::getPostState, Edge::getTransition, Transitions::or));
+    // Ensure there is a break.
+    StateExpr startState = new PacketPolicyStatement(_hostname, _ingressVrf, _policyName, 0);
+    StateExpr secondState = new PacketPolicyStatement(_hostname, _ingressVrf, _policyName, 1);
+    StateExpr thirdState = new PacketPolicyStatement(_hostname, _ingressVrf, _policyName, 2);
+    assertThat(
+        table.rowMap(), allOf(hasKey(startState), hasKey(secondState), not(hasKey(thirdState))));
+
+    // Check that the break happens after the fall-through
+    StateExpr dropped =
+        new PacketPolicyAction(_hostname, _ingressVrf, _policyName, drop.getAction());
+    StateExpr lookedUp =
+        new PacketPolicyAction(_hostname, _ingressVrf, _policyName, fl.getAction());
+    BDD startStateDroppedBDDs =
+        _bddPacket.getDstIp().range(tenZero, tenZero + fallThroughStatement - 1);
+    BDD secondStateDroppedBDDs =
+        _bddPacket
+            .getDstIp()
+            .range(tenZero + fallThroughStatement + 1, tenZero + numStatements - 1);
+
+    assertEquals(table.get(startState, dropped), constraint(startStateDroppedBDDs));
+    assertEquals(table.get(startState, secondState), constraint(startStateDroppedBDDs.not()));
+    assertEquals(table.get(secondState, dropped), constraint(secondStateDroppedBDDs));
+    assertEquals(table.get(secondState, lookedUp), constraint(secondStateDroppedBDDs.not()));
+
+    // Actually traverse the packet policy.
+    BDD droppedBDDs = startStateDroppedBDDs.or(secondStateDroppedBDDs);
+    BDD lookedUpBDDs = droppedBDDs.not();
+
+    Map<StateExpr, BDD> reachableSet = new HashMap<>();
+    reachableSet.put(startState, _bddPacket.getFactory().one());
+    BDDReachabilityUtils.fixpoint(reachableSet, table, Transition::transitForward);
+    assertThat(reachableSet, allOf(hasKey(dropped), hasKey(lookedUp)));
+
+    // Ensure that the right things are dropped and looked up.
+    assertThat(reachableSet, hasEntry(dropped, droppedBDDs));
+    assertThat(reachableSet, hasEntry(lookedUp, lookedUpBDDs));
+  }
 }
