@@ -4,9 +4,11 @@ import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.PacketPolicyToBdd.STATEMENTS_BEFORE_BREAK;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.bddreachability.transition.Transitions.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -31,9 +33,11 @@ import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.PacketPolicyToBdd.BddPacketPolicy;
 import org.batfish.bddreachability.PacketPolicyToBdd.BoolExprToBdd;
+import org.batfish.bddreachability.transition.Transform;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDPairingFactory;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
@@ -183,9 +187,10 @@ public final class PacketPolicyToBddTest {
 
   @Test
   public void testIfFallThrough() {
-    Transformation noop = always().build();
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
+    Ip ip3 = Ip.parse("3.3.3.3");
+    Transformation transformation = always().apply(assignDestinationIp(ip3)).build();
     String vrf = "vrf";
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
@@ -196,38 +201,45 @@ public final class PacketPolicyToBddTest {
                     ImmutableList.of(
                         new If(
                             new PacketMatchExpr(AclLineMatchExprs.matchDst(ip1)),
-                            ImmutableList.of(new ApplyTransformation(noop))),
+                            ImmutableList.of(new ApplyTransformation(transformation))),
                         new If(
-                            new PacketMatchExpr(AclLineMatchExprs.matchDst(ip2)),
+                            new PacketMatchExpr(AclLineMatchExprs.matchSrc(ip2)),
                             ImmutableList.of(new Return(new FibLookup(new LiteralVrfName(vrf)))))),
                     new Return(Drop.instance())),
                 _ipAccessListToBdd,
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
             .getEdges();
 
-    BDD ip1Bdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(ip1);
-    BDD ip2Bdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(ip2);
+    BDD dstIp1Bdd = _bddPacket.getDstIp().toBDD(ip1);
+    BDD srcIp2Bdd = _bddPacket.getSrcIp().toBDD(ip2);
+    BDD dstIpPrime3Bdd = _bddPacket.getDstIpPrimedBDDInteger().getPrimeVar().toBDD(ip3);
 
+    BDDPairingFactory dstPairingFactory = _bddPacket.getDstIpPrimedBDDInteger().getPairingFactory();
     assertThat(
         edges,
         containsInAnyOrder(
-            // if ip1
-            edge(statement(0), statement(1), constraint(ip1Bdd)),
-            // noop transformation (not optimized because should never happen in practice)
-            edge(statement(1), statement(2), IDENTITY),
-            // else
-            edge(statement(0), statement(3), constraint(ip1Bdd.not())),
-            // if ip1 fall through
-            edge(statement(2), statement(3), IDENTITY),
-            // if ip2
-            edge(statement(3), fibLookupState(vrf), constraint(ip2Bdd)),
-            edge(statement(3), _dropState, constraint(ip2Bdd.not()))));
+            // fib lookup
+            edge(
+                statement(0),
+                fibLookupState(vrf),
+                or(
+                    new Transform(dstIp1Bdd.and(dstIpPrime3Bdd).and(srcIp2Bdd), dstPairingFactory),
+                    constraint(dstIp1Bdd.not().and(srcIp2Bdd)))),
+            // drop
+            edge(
+                statement(0),
+                _dropState,
+                or(
+                    new Transform(
+                        dstIp1Bdd.and(dstIpPrime3Bdd).and(srcIp2Bdd.not()), dstPairingFactory),
+                    constraint(dstIp1Bdd.not().and(srcIp2Bdd.not()))))));
   }
 
   @Test
   public void testNoFallThrough() {
-    Transformation noop = always().build();
     Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    Transformation transformation = always().apply(assignDestinationIp(ip2)).build();
     String vrf = "vrf";
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
@@ -239,41 +251,39 @@ public final class PacketPolicyToBddTest {
                         new If(
                             new PacketMatchExpr(AclLineMatchExprs.matchDst(ip1)),
                             ImmutableList.of(
-                                new ApplyTransformation(noop),
+                                new ApplyTransformation(transformation),
                                 new Return(new FibLookup(new LiteralVrfName(vrf)))))),
                     new Return(Drop.instance())),
                 _ipAccessListToBdd,
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
             .getEdges();
 
-    BDD ip1Bdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(ip1);
+    BDD dstIp1Bdd = _bddPacket.getDstIp().toBDD(ip1);
+    BDD dstIpPrime2Bdd = _bddPacket.getDstIpPrimedBDDInteger().getPrimeVar().toBDD(ip2);
 
     assertThat(
         edges,
         containsInAnyOrder(
-            // if ip1
-            edge(statement(0), statement(1), constraint(ip1Bdd)),
-            // noop transformation (not optimized because should never happen in practice)
-            edge(statement(1), statement(2), IDENTITY),
-            // return
-            edge(statement(2), fibLookupState(vrf), IDENTITY),
-            // else
-            edge(statement(0), _dropState, constraint(ip1Bdd.not()))));
+            // fibLookup
+            edge(
+                statement(0),
+                fibLookupState(vrf),
+                new Transform(
+                    dstIp1Bdd.and(dstIpPrime2Bdd),
+                    _bddPacket.getDstIpPrimedBDDInteger().getPairingFactory())),
+            // drop
+            edge(statement(0), _dropState, constraint(dstIp1Bdd.not()))));
   }
 
   @Test
   public void testIfTrue_fallThrough() {
-    Transformation noop = always().build();
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
                 _hostname,
                 _ingressVrf,
                 new PacketPolicy(
                     _policyName,
-                    ImmutableList.of(
-                        new If(
-                            new PacketMatchExpr(TRUE),
-                            ImmutableList.of(new ApplyTransformation(noop)))),
+                    ImmutableList.of(new If(new PacketMatchExpr(TRUE), ImmutableList.of())),
                     new Return(Drop.instance())),
                 _ipAccessListToBdd,
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
@@ -282,15 +292,12 @@ public final class PacketPolicyToBddTest {
     assertThat(
         edges,
         containsInAnyOrder(
-            // if TRUE, then noop
-            edge(statement(0), statement(1), IDENTITY),
             // fall through to default action
-            edge(statement(1), _dropState, IDENTITY)));
+            edge(statement(0), _dropState, IDENTITY)));
   }
 
   @Test
   public void testIfTrue_noFallThrough() {
-    Transformation noop = always().build();
     String vrf = "vrf";
     BddPacketPolicy converted =
         PacketPolicyToBdd.evaluate(
@@ -301,9 +308,7 @@ public final class PacketPolicyToBddTest {
                 ImmutableList.of(
                     new If(
                         new PacketMatchExpr(TRUE),
-                        ImmutableList.of(
-                            new ApplyTransformation(noop),
-                            new Return(new FibLookup(new LiteralVrfName(vrf)))))),
+                        ImmutableList.of(new Return(new FibLookup(new LiteralVrfName(vrf)))))),
                 new Return(Drop.instance())),
             _ipAccessListToBdd,
             EMPTY_IPS_ROUTED_OUT_INTERFACES);
@@ -312,9 +317,7 @@ public final class PacketPolicyToBddTest {
         converted.getEdges(),
         containsInAnyOrder(
             // if TRUE, then noop
-            edge(statement(0), statement(1), IDENTITY),
-            // return
-            edge(statement(1), fibLookupState(vrf), IDENTITY)));
+            edge(statement(0), fibLookupState(vrf), IDENTITY)));
     // Unreachable drop is not tracked.
     assertThat(converted.getActions(), contains(fibLookupState(vrf)));
   }
@@ -377,11 +380,7 @@ public final class PacketPolicyToBddTest {
     PrimedBDDInteger srcIp = _bddPacket.getSrcIpPrimedBDDInteger();
     Transition transform =
         Transitions.transform(srcIp.getPrimeVar().toBDD(ip), srcIp.getPairingFactory());
-    assertThat(
-        edges,
-        containsInAnyOrder(
-            edge(statement(0), statement(1), transform),
-            edge(statement(1), fibLookupState("vrf"), IDENTITY)));
+    assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"), transform)));
   }
 
   @Test
