@@ -378,7 +378,11 @@ public class A10Conversion {
         .map(A10Conversion::toKernelRoute);
   }
 
-  static boolean isIpv4VirtualServer(VirtualServer virtualServer) {
+  /**
+   * Returns {@code true} if the given {@link VirtualServer} has a {@link VirtualServerTarget
+   * target} that uses IPv4 addressing.
+   */
+  public static boolean isIpv4VirtualServer(VirtualServer virtualServer) {
     return IS_IPV4_VIRTUAL_SERVER_TARGET.visit(virtualServer.getTarget());
   }
 
