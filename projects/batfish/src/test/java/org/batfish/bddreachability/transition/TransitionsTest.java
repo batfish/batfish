@@ -72,11 +72,8 @@ public class TransitionsTest {
   // Composing with Compose flattens
   @Test
   public void composeWithCompose() {
-    Transition t1 = constraint(var(0));
-    Transition t2 = constraint(var(1));
-    Transition t3 = constraint(var(2));
     Transition eas = eraseAndSet(var(0), var(0));
-    Transition or = or(t2, eas);
+    Transition or = or(constraint(var(1)), eas);
     assertThat(or, instanceOf(Or.class));
     Transition c1 = compose(eas, or);
     assertThat(c1, instanceOf(Composite.class));
