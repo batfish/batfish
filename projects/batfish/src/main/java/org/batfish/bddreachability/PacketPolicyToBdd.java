@@ -10,7 +10,10 @@ import static org.batfish.bddreachability.transition.Transitions.or;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -56,7 +59,7 @@ class PacketPolicyToBdd {
   @Nonnull private final TransformationToTransition _transformationToTransition;
   private final String _hostname;
   private final String _vrf;
-  private final ImmutableList.Builder<Edge> _edges;
+  private final Map<StateExpr, Map<StateExpr, List<Transition>>> _edges;
   private final ImmutableSet.Builder<PacketPolicyAction> _actions;
 
   /**
@@ -105,7 +108,22 @@ class PacketPolicyToBdd {
     PacketPolicyToBdd evaluator =
         new PacketPolicyToBdd(hostname, vrf, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
     evaluator.process(policy);
-    return new BddPacketPolicy(evaluator._edges.build(), evaluator._actions.build());
+    return new BddPacketPolicy(evaluator.getEdges(), evaluator._actions.build());
+  }
+
+  private List<Edge> getEdges() {
+    return _edges.entrySet().stream()
+        .flatMap(
+            srcEntry -> {
+              StateExpr src = srcEntry.getKey();
+              return srcEntry.getValue().entrySet().stream()
+                  .map(
+                      tgtEntry -> {
+                        StateExpr tgt = tgtEntry.getKey();
+                        return new Edge(src, tgt, Transitions.or(tgtEntry.getValue()));
+                      });
+            })
+        .collect(Collectors.toList());
   }
 
   private PacketPolicyToBdd(
@@ -120,7 +138,7 @@ class PacketPolicyToBdd {
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     _transformationToTransition =
         new TransformationToTransition(ipAccessListToBdd.getBDDPacket(), ipAccessListToBdd);
-    _edges = ImmutableList.builder();
+    _edges = new HashMap<>();
     _actions = ImmutableSet.builder();
   }
 
@@ -147,7 +165,10 @@ class PacketPolicyToBdd {
     if (transition == ZERO) {
       return;
     }
-    _edges.add(new Edge(source, target, transition));
+    _edges
+        .computeIfAbsent(source, s -> new HashMap<>())
+        .computeIfAbsent(target, t -> new ArrayList<>())
+        .add(transition);
     if (target instanceof PacketPolicyAction) {
       _actions.add((PacketPolicyAction) target);
     }
