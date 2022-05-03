@@ -252,6 +252,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_RP_ANNOUN
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_RP_CANDIDATE_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SSM_RANGE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
@@ -814,6 +815,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
+import org.batfish.grammar.cisco.CiscoParser.Pim_ssm_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Pint8Context;
 import org.batfish.grammar.cisco.CiscoParser.Pm_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_event_classContext;
@@ -930,7 +932,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_ip_dhcpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domainContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_name_serverContext;
-import org.batfish.grammar.cisco.CiscoParser.S_ip_pimContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_source_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_sshContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_tacacs_source_interfaceContext;
@@ -3266,11 +3267,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_ip_domain(S_ip_domainContext ctx) {
-    _no = ctx.NO() != null;
-  }
-
-  @Override
-  public void enterS_ip_pim(S_ip_pimContext ctx) {
     _no = ctx.NO() != null;
   }
 
@@ -7539,7 +7535,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitPim_rp_address(Pim_rp_addressContext ctx) {
-    if (!_no && ctx.name != null) {
+    if (ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_RP_ADDRESS_ACL, line);
@@ -7578,6 +7574,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int line = ctx.name.getStart().getLine();
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_SPT_THRESHOLD_ACL, line);
     }
+  }
+
+  @Override
+  public void exitPim_ssm_range(Pim_ssm_rangeContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST_STANDARD, name, PIM_SSM_RANGE, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -8728,11 +8731,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String domainName = ipCtx.getText();
       dnsServers.add(domainName);
     }
-  }
-
-  @Override
-  public void exitS_ip_pim(S_ip_pimContext ctx) {
-    _no = false;
   }
 
   @Override

@@ -186,6 +186,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   PIM_RP_CANDIDATE_ACL("pim rp candidate acl"),
   PIM_SEND_RP_ANNOUNCE_ACL("pim send rp announce acl"),
   PIM_SPT_THRESHOLD_ACL("pim spt threshold acl"),
+  PIM_SSM_RANGE("ip pim ssm range"),
   POLICY_MAP_CLASS("policy-map class"),
   POLICY_MAP_CLASS_SERVICE_POLICY("policy-map class service-policy"),
   POLICY_MAP_EVENT_CLASS("policy-map event class"),
