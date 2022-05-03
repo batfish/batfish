@@ -182,6 +182,8 @@ icmp6_only_type
 
 interface_id: INTERFACE_ID;
 
+interface_wildcard: INTERFACE_WILDCARD;
+
 ip_option
 :
   ANY

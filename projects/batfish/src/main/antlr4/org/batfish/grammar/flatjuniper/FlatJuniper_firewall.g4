@@ -26,6 +26,14 @@ f_family
    ) f_common
 ;
 
+f_interface_set
+:
+   INTERFACE_SET set_name = junos_name (
+      iface_name = interface_id
+      | iface_wildcard = interface_wildcard
+   )
+;
+
 f_filter
 :
    FILTER name = filter_name
@@ -78,6 +86,8 @@ fft_from
       | fftf_icmp_code_except
       | fftf_icmp_type
       | fftf_icmp_type_except
+      | fftf_interface
+      | fftf_interface_set
       | fftf_ip_options
       | fftf_ip_protocol
       | fftf_is_fragment
@@ -234,6 +244,17 @@ fftf_icmp_type_except
       | icmp6_only_type
       | uint8_range
    )
+;
+
+// TODO This should also support interface wildcard
+fftf_interface
+:
+   INTERFACE iface_name = interface_id
+;
+
+fftf_interface_set
+:
+   INTERFACE_SET name = junos_name
 ;
 
 fftf_ip_options
@@ -412,6 +433,7 @@ s_firewall
    (
       f_common
       | f_family
+      | f_interface_set
    )
 ;
 
