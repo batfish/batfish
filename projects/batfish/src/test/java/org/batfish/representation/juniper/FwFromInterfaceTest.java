@@ -18,16 +18,35 @@ public class FwFromInterfaceTest {
 
   @Test
   public void testToAclLineMatchExpr() {
-    FwFromInterface from = new FwFromInterface("iface");
     JuniperConfiguration jc = new JuniperConfiguration();
-    jc.getMasterLogicalSystem().getInterfaces().put("iface", new Interface("iface"));
-    Warnings warnings = new Warnings(true, true, true);
-
-    assertEquals(
-        from.toAclLineMatchExpr(jc, null, warnings),
-        new MatchSrcInterface(
-            ImmutableList.of("iface"), TraceElement.of("Matched source interface iface")));
-    assertThat(warnings.getRedFlagWarnings(), empty());
+    Interface physical = new Interface("iface");
+    Interface logical = new Interface("iface.0");
+    physical.getUnits().put(logical.getName(), logical);
+    jc.getMasterLogicalSystem().getInterfaces().put(physical.getName(), physical);
+    {
+      // match traffic from a physical interface
+      String ifaceName = physical.getName();
+      FwFromInterface from = new FwFromInterface(ifaceName);
+      Warnings warnings = new Warnings(true, true, true);
+      assertEquals(
+          from.toAclLineMatchExpr(jc, null, warnings),
+          new MatchSrcInterface(
+              ImmutableList.of(ifaceName),
+              TraceElement.of("Matched source interface " + ifaceName)));
+      assertThat(warnings.getRedFlagWarnings(), empty());
+    }
+    {
+      // match traffic from a logical interface
+      String ifaceName = logical.getName();
+      FwFromInterface from = new FwFromInterface(ifaceName);
+      Warnings warnings = new Warnings(true, true, true);
+      assertEquals(
+          from.toAclLineMatchExpr(jc, null, warnings),
+          new MatchSrcInterface(
+              ImmutableList.of(ifaceName),
+              TraceElement.of("Matched source interface " + ifaceName)));
+      assertThat(warnings.getRedFlagWarnings(), empty());
+    }
   }
 
   @Test
