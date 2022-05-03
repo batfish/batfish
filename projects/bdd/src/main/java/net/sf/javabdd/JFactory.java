@@ -873,7 +873,7 @@ public class JFactory extends BDDFactory {
     return Math.abs(quantvarset[a]) == quantvarsetID; /* signed check */
   }
 
-  private static final int bddop_and = 0; // NOTE: ite_rec caching exploits bddop_and==0.
+  private static final int bddop_and = 0;
   private static final int bddop_xor = 1;
   private static final int bddop_or = 2;
   private static final int bddop_nand = 3;
@@ -889,6 +889,7 @@ public class JFactory extends BDDFactory {
   private static final int bddop_simplify = 11;
   private static final int bddop_andsat = 12;
   private static final int bddop_diffsat = 13;
+  private static final int bddop_ite = 14;
 
   @Override
   public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
@@ -1044,6 +1045,9 @@ public class JFactory extends BDDFactory {
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
+    if (multiopcache == null) {
+      multiopcache = BddCacheMultiOp_init(cachesize);
+    }
 
     INITREF();
     int res = ite_rec(f, g, h);
@@ -1053,7 +1057,6 @@ public class JFactory extends BDDFactory {
   }
 
   private int ite_rec(int f, int g, int h) {
-    BddCacheDataI entry;
     int res;
 
     if (ISONE(f)) {
@@ -1082,19 +1085,15 @@ public class JFactory extends BDDFactory {
       return apply_rec(f, g);
     }
 
-    // ITE and APPLY share the same cache:
-    //    APPLY is (l, r, op) where op in 0..10 (0=and, ..., 10=not) where l, r are BDD ids.
-    //    ITE is (f, g, -h) where f, g, h are all BDD ids.
-    //
-    // The only possible collision is apply(l, r, bddop_and) and ite(l, r, 0==BDDZERO).
-    // Fortuitously, these are logically equivalent -- if f then g else false === f and g.
-    int hash = APPLYHASH(f, g, -h);
-    entry = BddCache_lookupI(applycache, hash);
-    if (entry.a == f && entry.b == g && entry.c == -h) { // To explain -h, see caching note above.
+    // ITE uses the multiop cache to be cleaned properly.
+    int[] operands = new int[] {f, g, h};
+    int hash = MULTIOPHASH(operands, bddop_ite);
+    MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
+    if (entry.a == bddop_ite && Arrays.equals(operands, entry.operands)) {
       if (CACHESTATS) {
         cachestats.opHit++;
       }
-      return entry.res;
+      return entry.b;
     }
     if (CACHESTATS) {
       cachestats.opMiss++;
@@ -1149,10 +1148,9 @@ public class JFactory extends BDDFactory {
     if (CACHESTATS && entry.a != -1) {
       cachestats.opOverwrite++;
     }
-    entry.a = f;
-    entry.b = g;
-    entry.c = -h; // To explain -h, see caching note above.
-    entry.res = res;
+    entry.operands = operands;
+    entry.a = bddop_ite;
+    entry.b = res;
     entry.hash = hash;
 
     return res;
