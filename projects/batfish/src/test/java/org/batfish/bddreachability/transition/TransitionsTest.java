@@ -196,6 +196,22 @@ public class TransitionsTest {
   }
 
   @Test
+  public void testMergeComposed_Constraint_Or() {
+    BDD v0 = var(0);
+    BDD v0Prime = var(1);
+    BDD v1 = var(2);
+    BDD v2 = var(3);
+    BDDPairingFactory pairFactory = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    Transition t1 = new Transform(v0.xor(v0Prime), pairFactory);
+    Transition t2 = constraint(v1);
+    Transition or = or(t1, t2);
+    assertThat(or, instanceOf(Or.class));
+    Transition merged = mergeComposed(constraint(v2), or);
+    assertEquals(
+        merged, or(new Transform(v0.xor(v0Prime).and(v2), pairFactory), constraint(v1.and(v2))));
+  }
+
+  @Test
   public void testMergeComposed_Constraint_RemoveSourceConstraint() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
