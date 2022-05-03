@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -99,6 +100,15 @@ public final class BDDOps {
     LineAction currentAction = LineAction.PERMIT;
     List<BDD> lineBddsWithCurrentAction = new LinkedList<>();
 
+    BiFunction<BDD, BDD, Void> finalizeBlock =
+        (BDD sameActionBdd, BDD otherActionBdd) -> {
+          BDD blockBdd = or(lineBddsWithCurrentAction);
+          otherActionBdd.diffEq(blockBdd);
+          sameActionBdd.orWith(blockBdd);
+          lineBddsWithCurrentAction.clear();
+          return null;
+        };
+
     for (PermitAndDenyBdds line : Lists.reverse(permitAndDenyBdds)) {
       BDD linePermitBdd = line.getPermitBdd();
       BDD lineDenyBdd = line.getDenyBdd();
@@ -112,13 +122,10 @@ public final class BDDOps {
               // line permits and denies (i.e. AclAclLine)
               lineBddsWithCurrentAction.add(linePermitBdd);
             }
-            BDD permitBlockBdd = or(lineBddsWithCurrentAction);
-            denyBdd.diffEq(permitBlockBdd);
-            permitBdd.orWith(permitBlockBdd);
+            finalizeBlock.apply(permitBdd, denyBdd);
 
-            // switch into deny mode
+            // start a new deny block
             currentAction = LineAction.DENY;
-            lineBddsWithCurrentAction.clear();
             lineBddsWithCurrentAction.add(lineDenyBdd);
           }
           break;
@@ -130,13 +137,10 @@ public final class BDDOps {
               // line permits and denies (i.e. AclAclLine)
               lineBddsWithCurrentAction.add(lineDenyBdd);
             }
-            BDD denyBlockBdd = or(lineBddsWithCurrentAction);
-            permitBdd.diffEq(denyBlockBdd);
-            denyBdd.orWith(denyBlockBdd);
+            finalizeBlock.apply(denyBdd, permitBdd);
 
-            // switch into permit mode
+            // start a new permit block
             currentAction = LineAction.PERMIT;
-            lineBddsWithCurrentAction.clear();
             lineBddsWithCurrentAction.add(linePermitBdd);
           }
           break;
@@ -148,14 +152,10 @@ public final class BDDOps {
     // complete the last piece
     switch (currentAction) {
       case PERMIT:
-        BDD permitBlockBdd = or(lineBddsWithCurrentAction);
-        denyBdd.diffEq(permitBlockBdd);
-        permitBdd.orWith(permitBlockBdd);
+        finalizeBlock.apply(permitBdd, denyBdd);
         break;
       case DENY:
-        BDD denyBlockBdd = or(lineBddsWithCurrentAction);
-        permitBdd.diffEq(denyBlockBdd);
-        denyBdd.orWith(denyBlockBdd);
+        finalizeBlock.apply(denyBdd, permitBdd);
         break;
       default:
         throw new IllegalStateException("Unexpected LineAction " + currentAction);
