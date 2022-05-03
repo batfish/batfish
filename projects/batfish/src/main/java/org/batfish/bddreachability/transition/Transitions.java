@@ -152,6 +152,23 @@ public final class Transitions {
           // constraint doesn't refer to eraseVars
           return eraseAndSet(eraseVars, constraintBdd.and(eas.getSetValue()));
         }
+      } else if (t2 instanceof Or) {
+        Or or = (Or) t2;
+        if (or.getTransitions().size() > 10) {
+          // tune: there is a trade-off here between how much work we do to merge vs work done
+          // during
+          // traversal
+          return null;
+        }
+        Transition[] disjuncts =
+            or.getTransitions().stream()
+                .map(disjunct -> mergeComposed(t1, disjunct))
+                .toArray(Transition[]::new);
+        if (Arrays.stream(disjuncts).anyMatch(Objects::isNull)) {
+          // some disjunct failed to merge. TODO minimize this case
+          return null;
+        }
+        return or(disjuncts);
       } else if (t2 instanceof RemoveSourceConstraint) {
         BDD constraintBdd = ((Constraint) t1).getConstraint();
         BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
