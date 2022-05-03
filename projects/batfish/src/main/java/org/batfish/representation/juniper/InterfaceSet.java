@@ -4,10 +4,13 @@ import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents a set of interfaces specified by `firewall interface-set FOO [interfaces]`. */
-public class InterfaceSet implements Serializable {
-  private final Set<String> _interfaces;
+@ParametersAreNonnullByDefault
+public final class InterfaceSet implements Serializable {
+  private final @Nonnull Set<String> _interfaces;
 
   public InterfaceSet() {
     _interfaces = new HashSet<>();
@@ -21,7 +24,7 @@ public class InterfaceSet implements Serializable {
    * Get the interfaces specified in this interface set. These can be literal interface names or
    * interface wildcards.
    */
-  public Set<String> getInterfaces() {
+  public @Nonnull Set<String> getInterfaces() {
     return ImmutableSet.copyOf(_interfaces);
   }
 }

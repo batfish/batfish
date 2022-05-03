@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -27,7 +28,11 @@ public class FwFromInterface implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    if (!jc.getMasterLogicalSystem().getInterfaces().containsKey(_interfaceName)) {
+    Map<String, Interface> configuredIfaces = jc.getMasterLogicalSystem().getInterfaces();
+    if (!configuredIfaces.containsKey(_interfaceName)
+        && configuredIfaces.values().stream()
+            .flatMap(iface -> iface.getUnits().keySet().stream())
+            .noneMatch(_interfaceName::equals)) {
       w.redFlag(String.format("Missing interface '%s'", _interfaceName));
       return AclLineMatchExprs.FALSE;
     }

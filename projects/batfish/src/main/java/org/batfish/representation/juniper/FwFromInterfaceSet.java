@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
@@ -29,7 +30,6 @@ public class FwFromInterfaceSet implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    // interface sets for non-default logical system are not currently parsed
     InterfaceSet interfaceSet =
         jc.getMasterLogicalSystem().getInterfaceSets().get(_interfaceSetName);
     if (interfaceSet == null) {
@@ -37,20 +37,16 @@ public class FwFromInterfaceSet implements FwFrom {
       return AclLineMatchExprs.FALSE;
     }
 
+    // collect names of all configured physical and logical interfaces
+    Set<String> configuredIfaces =
+        new HashSet<>(jc.getMasterLogicalSystem().getInterfaces().keySet());
+    jc.getMasterLogicalSystem().getInterfaces().values().stream()
+        .flatMap(iface -> iface.getUnits().keySet().stream())
+        .forEach(configuredIfaces::add);
+
     Set<String> interfaces =
         interfaceSet.getInterfaces().stream()
-            .filter(
-                iface -> {
-                  if (!jc.getMasterLogicalSystem().getInterfaces().containsKey(iface)) {
-                    w.redFlag(
-                        String.format(
-                            "Interface-set %s references undefined interface %s. This interface"
-                                + " will be ignored",
-                            _interfaceSetName, iface));
-                    return false;
-                  }
-                  return true;
-                })
+            .filter(configuredIfaces::contains)
             .collect(ImmutableSet.toImmutableSet());
     if (interfaces.isEmpty()) {
       w.redFlag(

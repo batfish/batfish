@@ -191,6 +191,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -1628,6 +1629,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "xe-0/0/0.0", 3));
     // 2 definition lines plus one usage in firewall term "from interface"
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "xe-0/0/2.0", 3));
+
+    /* Check no warnings other than firewall filter terms missing an action */
+    assertThat(
+        ccae.getWarnings().get(hostname).getRedFlagWarnings(),
+        everyItem(WarningMatchers.hasText(containsString("missing action in firewall filter"))));
   }
 
   @Test

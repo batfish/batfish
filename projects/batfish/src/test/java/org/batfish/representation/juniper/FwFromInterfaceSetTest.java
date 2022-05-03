@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 
@@ -22,18 +21,20 @@ public class FwFromInterfaceSetTest {
     FwFromInterfaceSet from = new FwFromInterfaceSet("ifset");
     InterfaceSet ifaceSet = new InterfaceSet();
     ifaceSet.addInterface("iface1");
-    ifaceSet.addInterface("iface2");
+    ifaceSet.addInterface("iface1.0");
 
+    Interface iface1 = new Interface("iface1");
+    iface1.getUnits().put("iface1.0", new Interface("iface1.0"));
     JuniperConfiguration jc = new JuniperConfiguration();
     jc.getMasterLogicalSystem().getInterfaceSets().put("ifset", ifaceSet);
-    jc.getMasterLogicalSystem().getInterfaces().put("iface1", new Interface("iface1"));
-    jc.getMasterLogicalSystem().getInterfaces().put("iface2", new Interface("iface2"));
+    jc.getMasterLogicalSystem().getInterfaces().put("iface1", iface1);
     Warnings warnings = new Warnings(true, true, true);
 
     assertEquals(
         from.toAclLineMatchExpr(jc, null, warnings),
         new MatchSrcInterface(
-            ImmutableList.of("iface1", "iface2"), TraceElement.of("Matched interface-set ifset")));
+            ImmutableList.of("iface1", "iface1.0"),
+            TraceElement.of("Matched interface-set ifset")));
     assertThat(warnings.getRedFlagWarnings(), empty());
   }
 
@@ -53,14 +54,7 @@ public class FwFromInterfaceSetTest {
       assertEquals(from.toAclLineMatchExpr(jc, null, warnings), AclLineMatchExprs.FALSE);
       assertThat(
           warnings.getRedFlagWarnings(),
-          containsInAnyOrder(
-              hasText(
-                  "Interface-set ifset references undefined interface iface1. This interface will"
-                      + " be ignored"),
-              hasText(
-                  "Interface-set ifset references undefined interface iface2. This interface will"
-                      + " be ignored"),
-              hasText("Interface-set ifset does not contain any valid interfaces")));
+          contains(hasText("Interface-set ifset does not contain any valid interfaces")));
     }
     {
       // Interface set contains both defined and undefined interfaces
@@ -70,12 +64,7 @@ public class FwFromInterfaceSetTest {
           from.toAclLineMatchExpr(jc, null, warnings),
           new MatchSrcInterface(
               ImmutableList.of("iface1"), TraceElement.of("Matched interface-set ifset")));
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(
-              hasText(
-                  "Interface-set ifset references undefined interface iface2. This interface will"
-                      + " be ignored")));
+      assertThat(warnings.getRedFlagWarnings(), empty());
     }
   }
 

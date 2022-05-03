@@ -2479,16 +2479,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitF_interface_set(FlatJuniperParser.F_interface_setContext ctx) {
+    String interfaceSetName = toString(ctx.set_name);
+    _configuration.defineFlattenedStructure(FIREWALL_INTERFACE_SET, interfaceSetName, ctx, _parser);
+    InterfaceSet interfaceSet =
+        _currentLogicalSystem
+            .getInterfaceSets()
+            .computeIfAbsent(interfaceSetName, k -> new InterfaceSet());
     if (ctx.iface_name != null) {
-      String interfaceSetName = toString(ctx.set_name);
       String interfaceName = getInterfaceFullName(ctx.iface_name);
-      InterfaceSet interfaceSet =
-          _currentLogicalSystem
-              .getInterfaceSets()
-              .computeIfAbsent(interfaceSetName, k -> new InterfaceSet());
       interfaceSet.addInterface(interfaceName);
-      _configuration.defineFlattenedStructure(
-          FIREWALL_INTERFACE_SET, interfaceSetName, ctx, _parser);
       _configuration.referenceStructure(
           INTERFACE,
           interfaceName,
