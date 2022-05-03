@@ -2339,6 +2339,7 @@ s_ip
   (
     ip_extcommunity_list
     | ip_local
+    | ip_pim
     | ip_sla
   )
 ;
@@ -3352,7 +3353,6 @@ stanza
    | s_ip_name_server
    | s_ip_nat
    | s_ip_nbar
-   | s_ip_pim
    | s_ip_probe
    | s_ip_route_mos
    | s_ip_source_route
@@ -3473,7 +3473,8 @@ no_ip
 :
   IP
   (
-    no_ip_sla
+    no_ip_pim
+    | no_ip_sla
   )
 ;
 

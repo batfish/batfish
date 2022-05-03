@@ -6,6 +6,11 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+ip_pim
+:
+   PIM (VRF vrf = variable)? ip_pim_tail
+;
+
 ip_pim_tail
 :
    pim_accept_register
@@ -142,19 +147,20 @@ pim_ssm
 :
    SSM
    (
-      DEFAULT
-      |
-      (
-         RANGE name = variable
-      )
-   ) NEWLINE
+      pim_ssm_default
+      | pim_ssm_range
+   )
 ;
 
-s_ip_pim
+pim_ssm_default: DEFAULT NEWLINE;
+pim_ssm_range: RANGE name = variable;
+
+no_ip_pim
 :
-   NO? IP PIM
-   (
-      VRF vrf = variable
-   )? ip_pim_tail
+  PIM
+  (
+    nopim_snooping_null
+  )
 ;
 
+nopim_snooping_null: SNOOPING null_rest_of_line;
