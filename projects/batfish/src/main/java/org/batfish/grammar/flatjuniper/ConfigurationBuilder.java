@@ -22,6 +22,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INTERFACE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
@@ -60,7 +61,10 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_FROM_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_FROM_INTERFACE_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_INTERFACE_SET_MEMBER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED_ROUTE_POLICY;
@@ -751,6 +755,8 @@ import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
 import org.batfish.representation.juniper.FwFromIcmpTypeExcept;
+import org.batfish.representation.juniper.FwFromInterface;
+import org.batfish.representation.juniper.FwFromInterfaceSet;
 import org.batfish.representation.juniper.FwFromIpOptions;
 import org.batfish.representation.juniper.FwFromJunosApplication;
 import org.batfish.representation.juniper.FwFromJunosApplicationSet;
@@ -785,6 +791,7 @@ import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
+import org.batfish.representation.juniper.InterfaceSet;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpOptions;
 import org.batfish.representation.juniper.IpUnknownProtocol;
@@ -2468,6 +2475,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
     _configuration.referenceStructure(
         FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitF_interface_set(FlatJuniperParser.F_interface_setContext ctx) {
+    String interfaceSetName = toString(ctx.set_name);
+    _configuration.defineFlattenedStructure(FIREWALL_INTERFACE_SET, interfaceSetName, ctx, _parser);
+    InterfaceSet interfaceSet =
+        _currentLogicalSystem
+            .getInterfaceSets()
+            .computeIfAbsent(interfaceSetName, k -> new InterfaceSet());
+    if (ctx.iface_name != null) {
+      String interfaceName = getInterfaceFullName(ctx.iface_name);
+      interfaceSet.addInterface(interfaceName);
+      _configuration.referenceStructure(
+          INTERFACE,
+          interfaceName,
+          FIREWALL_INTERFACE_SET_MEMBER,
+          getLine(ctx.iface_name.getStop()));
+    } else {
+      assert ctx.iface_wildcard != null;
+      warn(ctx, "Interface wildcards are not yet supported in interface-set");
+    }
   }
 
   @Override
@@ -4338,6 +4367,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Fragment_offsetContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, FRAGMENT_OFFSET_RANGE, "fragment offset");
+  }
+
+  @Override
+  public void exitFftf_interface(FlatJuniperParser.Fftf_interfaceContext ctx) {
+    String interfaceName = getInterfaceFullName(ctx.interface_id());
+    _currentFwTerm.getFroms().add(new FwFromInterface(interfaceName));
+    _configuration.referenceStructure(
+        INTERFACE,
+        interfaceName,
+        FIREWALL_FILTER_TERM_FROM_INTERFACE,
+        getLine(ctx.interface_id().getStop()));
+  }
+
+  @Override
+  public void exitFftf_interface_set(FlatJuniperParser.Fftf_interface_setContext ctx) {
+    String interfaceSetName = toString(ctx.name);
+    _currentFwTerm.getFroms().add(new FwFromInterfaceSet(interfaceSetName));
+    _configuration.referenceStructure(
+        FIREWALL_INTERFACE_SET,
+        interfaceSetName,
+        FIREWALL_FILTER_TERM_FROM_INTERFACE_SET,
+        getLine(ctx.name.getStop()));
   }
 
   @Override

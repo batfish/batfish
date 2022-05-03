@@ -1011,6 +1011,8 @@ INTERFACE_MODE: 'interface-mode';
 
 INTERFACE_RANGE: 'interface-range' -> pushMode(M_Name);
 
+INTERFACE_SET: 'interface-set' -> pushMode(M_InterfaceSet);
+
 INTERFACE_SPECIFIC: 'interface-specific';
 
 INTERFACE_SWITCH: 'interface-switch' -> pushMode(M_Name);
@@ -4623,6 +4625,17 @@ M_InterfaceRoutesRibGroup_INET: 'inet' -> type(INET), mode(M_Name);
 M_InterfaceRoutesRibGroup_INET6: 'inet6' -> type(INET6), mode(M_Name);
 M_InterfaceRoutesRibGroup_WS: F_WhitespaceChar+ -> skip;
 M_InterfaceRoutesRibGroup_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_InterfaceSet;
+M_InterfaceSet_NAME: F_Name -> type(NAME), mode(M_InterfaceIdOrInterfaceWildcard);
+M_InterfaceSet_WS: F_WhitespaceChar+ -> skip;
+M_InterfaceSet_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_InterfaceIdOrInterfaceWildcard;
+M_InterfaceIdOrInterfaceWildcard_INTERFACE_ID: F_InterfaceId -> type(INTERFACE_ID), popMode;
+M_InterfaceIdOrInterfaceWildcard_INTERFACE_WILDCARD: F_NonWhitespaceChar+ -> type(INTERFACE_WILDCARD), popMode;
+M_InterfaceIdOrInterfaceWildcard_WS: F_WhitespaceChar+ -> skip;
+M_InterfaceIdOrInterfaceWildcard_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_IsisRibGroup;
 M_IsisRibGroup_INET: 'inet' -> type(INET), mode(M_Name);

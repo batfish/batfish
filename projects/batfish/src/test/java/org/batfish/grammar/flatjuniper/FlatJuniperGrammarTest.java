@@ -169,6 +169,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_S
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INTERFACE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
@@ -190,6 +191,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -384,6 +386,8 @@ import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpCodeExcept;
 import org.batfish.representation.juniper.FwFromIcmpType;
 import org.batfish.representation.juniper.FwFromIcmpTypeExcept;
+import org.batfish.representation.juniper.FwFromInterface;
+import org.batfish.representation.juniper.FwFromInterfaceSet;
 import org.batfish.representation.juniper.FwFromPacketLength;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromSourcePort;
@@ -1618,6 +1622,18 @@ public final class FlatJuniperGrammarTest {
 
     /* Confirm undefined reference is identified */
     assertThat(ccae, hasUndefinedReference(filename, FIREWALL_FILTER, "FILTER_UNDEF"));
+
+    /* Check interface and interface-set references */
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_INTERFACE_SET, "ifset", 1));
+    // 2 definition lines plus one usage in interface-set
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "xe-0/0/0.0", 3));
+    // 2 definition lines plus one usage in firewall term "from interface"
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "xe-0/0/2.0", 3));
+
+    /* Check no warnings other than firewall filter terms missing an action */
+    assertThat(
+        ccae.getWarnings().get(hostname).getRedFlagWarnings(),
+        everyItem(WarningMatchers.hasText(containsString("missing action in firewall filter"))));
   }
 
   @Test
@@ -1681,7 +1697,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(f, instanceOf(ConcreteFirewallFilter.class));
     ConcreteFirewallFilter cf = (ConcreteFirewallFilter) f;
     assertThat(
-        cf.getTerms(), hasKeys("FRAGMENT_OFFSET", "ICMP_TYPE", "ICMP_CODE", "PACKET_LENGTH"));
+        cf.getTerms(),
+        hasKeys(
+            "FRAGMENT_OFFSET",
+            "ICMP_TYPE",
+            "ICMP_CODE",
+            "INTERFACE_AND_INTERFACE_SET",
+            "PACKET_LENGTH"));
     {
       FwTerm term = cf.getTerms().get("FRAGMENT_OFFSET");
       assertThat(term.getFroms(), hasSize(4));
@@ -1753,6 +1775,20 @@ public final class FlatJuniperGrammarTest {
       {
         FwFromIcmpCodeExcept from = (FwFromIcmpCodeExcept) term.getFroms().get(3);
         assertThat(from.getIcmpCodeRange(), equalTo(new SubRange(33, 34)));
+      }
+    }
+    {
+      FwTerm term = cf.getTerms().get("INTERFACE_AND_INTERFACE_SET");
+      assertThat(term.getFroms(), hasSize(2));
+      assertThat(term.getFroms().get(0), instanceOf(FwFromInterfaceSet.class));
+      assertThat(term.getFroms().get(1), instanceOf(FwFromInterface.class));
+      {
+        FwFromInterfaceSet from = (FwFromInterfaceSet) term.getFroms().get(0);
+        assertThat(from.getInterfaceSetName(), equalTo("ifset"));
+      }
+      {
+        FwFromInterface from = (FwFromInterface) term.getFroms().get(1);
+        assertThat(from.getInterfaceName(), equalTo("xe-0/0/2.0"));
       }
     }
     {

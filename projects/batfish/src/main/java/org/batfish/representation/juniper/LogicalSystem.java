@@ -59,7 +59,7 @@ public class LogicalSystem implements Serializable {
   private final Map<String, InterfaceRange> _interfaceRanges;
 
   private final Map<String, Interface> _interfaces;
-
+  @Nonnull private final Map<String, InterfaceSet> _interfaceSets;
   private final Map<String, Zone> _interfaceZones;
 
   private final Map<String, IpsecPolicy> _ipsecPolicies;
@@ -126,6 +126,7 @@ public class LogicalSystem implements Serializable {
     _ikeProposals = new TreeMap<>();
     _interfaceRanges = new TreeMap<>();
     _interfaces = new TreeMap<>();
+    _interfaceSets = new TreeMap<>();
     _interfaceZones = new TreeMap<>();
     _ipsecPolicies = new TreeMap<>();
     _ipsecProposals = new TreeMap<>();
@@ -260,6 +261,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, Interface> getInterfaces() {
     return _interfaces;
+  }
+
+  public @Nonnull Map<String, InterfaceSet> getInterfaceSets() {
+    return _interfaceSets;
   }
 
   public Map<String, Zone> getInterfaceZones() {

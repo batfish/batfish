@@ -36,6 +36,14 @@ set firewall filter PARSING term ICMP_CODE from icmp-code 30-40
 set firewall filter PARSING term ICMP_CODE from icmp-code-except 31
 set firewall filter PARSING term ICMP_CODE from icmp-code-except 33-34
 #
+set firewall interface-set ifset xe-0/0/0.0
+# TODO Support from interface-set wildcard
+set firewall interface-set ifset xe-0/0/1.*
+set firewall filter PARSING term INTERFACE_AND_INTERFACE_SET from interface-set ifset
+set firewall filter PARSING term INTERFACE_AND_INTERFACE_SET from interface xe-0/0/2.0
+# TODO Support from interface wildcard
+# set firewall filter PARSING term INTERFACE_AND_INTERFACE_SET from interface xe-0/0/3.*
+#
 set firewall filter PARSING term PACKET_LENGTH from packet-length 50
 set firewall filter PARSING term PACKET_LENGTH from packet-length 100-200
 set firewall filter PARSING term PACKET_LENGTH from packet-length-except 70
