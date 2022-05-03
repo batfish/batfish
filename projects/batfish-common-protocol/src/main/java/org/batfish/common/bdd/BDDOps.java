@@ -3,7 +3,6 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,8 +57,10 @@ public final class BDDOps {
       if (lineAction != currentAction) {
         if (currentAction == LineAction.PERMIT) {
           // matched by any of the permit lines, or permitted by the rest of the acl.
+          BDD tmp = result;
           lineBddsWithCurrentAction.add(result);
           result = or(lineBddsWithCurrentAction);
+          tmp.free();
         } else {
           // permitted by the rest of the acl and not matched by any of the deny lines.
           result = result.diffWith(or(lineBddsWithCurrentAction));
@@ -88,29 +89,78 @@ public final class BDDOps {
    * an {@link org.batfish.datamodel.IpAccessList} to a single {@link PermitAndDenyBdds}
    * representing the BDDs of all explicitly permitted and explicitly denied flows.
    *
-   * @param bdds {@link PermitAndDenyBdds} representing flows explicitly matched by each ACL line
+   * @param permitAndDenyBdds {@link PermitAndDenyBdds} representing flows explicitly matched by
+   *     each ACL line
    */
-  public PermitAndDenyBdds bddAclLines(List<PermitAndDenyBdds> bdds) {
-    // TODO Optimizations likely possible. Compare with other bddAclLines() method.
-    // For each line, BDD of the flows that reach that line and are permitted
-    List<BDD> reachAndPermitBdds = new ArrayList<>();
+  public PermitAndDenyBdds bddAclLines(List<PermitAndDenyBdds> permitAndDenyBdds) {
+    BDD permitBdd = _factory.zero();
+    BDD denyBdd = _factory.zero();
 
-    // For each line, BDD of the flows that reach that line and are denied
-    List<BDD> reachAndDenyBdds = new ArrayList<>();
+    LineAction currentAction = LineAction.PERMIT;
+    List<BDD> lineBddsWithCurrentAction = new LinkedList<>();
 
-    // BDD of the flows matched by any previously checked line
-    BDD alreadyMatched = _factory.zero();
+    for (PermitAndDenyBdds line : Lists.reverse(permitAndDenyBdds)) {
+      BDD linePermitBdd = line.getPermitBdd();
+      BDD lineDenyBdd = line.getDenyBdd();
 
-    for (PermitAndDenyBdds currentLine : bdds) {
-      // Find BDDs of flows that reach and match current line with each action
-      BDD reachAndPermit = currentLine.getPermitBdd().diff(alreadyMatched);
-      BDD reachAndDeny = currentLine.getDenyBdd().diff(alreadyMatched);
-      reachAndPermitBdds.add(reachAndPermit);
-      reachAndDenyBdds.add(reachAndDeny);
+      switch (currentAction) {
+        case PERMIT:
+          if (lineDenyBdd.isZero()) {
+            lineBddsWithCurrentAction.add(linePermitBdd);
+          } else {
+            if (!linePermitBdd.isZero()) {
+              // line permits and denies (i.e. AclAclLine)
+              lineBddsWithCurrentAction.add(linePermitBdd);
+            }
+            BDD permitBlockBdd = or(lineBddsWithCurrentAction);
+            denyBdd.diffEq(permitBlockBdd);
+            permitBdd.orWith(permitBlockBdd);
 
-      alreadyMatched = alreadyMatched.or(currentLine.getMatchBdd());
+            // switch into deny mode
+            currentAction = LineAction.DENY;
+            lineBddsWithCurrentAction.clear();
+            lineBddsWithCurrentAction.add(lineDenyBdd);
+          }
+          break;
+        case DENY:
+          if (linePermitBdd.isZero()) {
+            lineBddsWithCurrentAction.add(lineDenyBdd);
+          } else {
+            if (!lineDenyBdd.isZero()) {
+              // line permits and denies (i.e. AclAclLine)
+              lineBddsWithCurrentAction.add(lineDenyBdd);
+            }
+            BDD denyBlockBdd = or(lineBddsWithCurrentAction);
+            permitBdd.diffEq(denyBlockBdd);
+            denyBdd.orWith(denyBlockBdd);
+
+            // switch into permit mode
+            currentAction = LineAction.PERMIT;
+            lineBddsWithCurrentAction.clear();
+            lineBddsWithCurrentAction.add(linePermitBdd);
+          }
+          break;
+        default:
+          throw new IllegalStateException("Unexpected LineAction " + currentAction);
+      }
     }
 
-    return new PermitAndDenyBdds(or(reachAndPermitBdds), or(reachAndDenyBdds));
+    // complete the last piece
+    switch (currentAction) {
+      case PERMIT:
+        BDD permitBlockBdd = or(lineBddsWithCurrentAction);
+        denyBdd.diffEq(permitBlockBdd);
+        permitBdd.orWith(permitBlockBdd);
+        break;
+      case DENY:
+        BDD denyBlockBdd = or(lineBddsWithCurrentAction);
+        permitBdd.diffEq(denyBlockBdd);
+        denyBdd.orWith(denyBlockBdd);
+        break;
+      default:
+        throw new IllegalStateException("Unexpected LineAction " + currentAction);
+    }
+
+    return new PermitAndDenyBdds(permitBdd, denyBdd);
   }
 }
