@@ -8,8 +8,12 @@ import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
 import static org.batfish.bddreachability.transition.Transitions.or;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Table;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,7 +60,7 @@ class PacketPolicyToBdd {
   @Nonnull private final TransformationToTransition _transformationToTransition;
   private final String _hostname;
   private final String _vrf;
-  private final ImmutableList.Builder<Edge> _edges;
+  private final Table<StateExpr, StateExpr, List<Transition>> _edges;
   private final ImmutableSet.Builder<PacketPolicyAction> _actions;
 
   /**
@@ -105,7 +109,20 @@ class PacketPolicyToBdd {
     PacketPolicyToBdd evaluator =
         new PacketPolicyToBdd(hostname, vrf, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
     evaluator.process(policy);
-    return new BddPacketPolicy(evaluator._edges.build(), evaluator._actions.build());
+    return new BddPacketPolicy(buildEdges(evaluator._edges), evaluator._actions.build());
+  }
+
+  /**
+   * Build a list of Edges (with no parallel edges) from the input transition table. All parallel
+   * transitions are merged using {@link Transitions#or(Collection)}.
+   */
+  private static List<Edge> buildEdges(
+      Table<StateExpr, StateExpr, List<Transition>> transitionTable) {
+    return transitionTable.cellSet().stream()
+        .map(
+            cell ->
+                new Edge(cell.getRowKey(), cell.getColumnKey(), Transitions.or(cell.getValue())))
+        .collect(ImmutableList.toImmutableList());
   }
 
   private PacketPolicyToBdd(
@@ -120,7 +137,7 @@ class PacketPolicyToBdd {
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     _transformationToTransition =
         new TransformationToTransition(ipAccessListToBdd.getBDDPacket(), ipAccessListToBdd);
-    _edges = ImmutableList.builder();
+    _edges = HashBasedTable.create();
     _actions = ImmutableSet.builder();
   }
 
@@ -147,7 +164,12 @@ class PacketPolicyToBdd {
     if (transition == ZERO) {
       return;
     }
-    _edges.add(new Edge(source, target, transition));
+    List<Transition> transitions = _edges.get(source, target);
+    if (transitions == null) {
+      transitions = new ArrayList<>();
+      _edges.put(source, target, transitions);
+    }
+    transitions.add(transition);
     if (target instanceof PacketPolicyAction) {
       _actions.add((PacketPolicyAction) target);
     }
