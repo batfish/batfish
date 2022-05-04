@@ -120,6 +120,64 @@ public final class Transitions {
     return new Composite(mergedTransitions);
   }
 
+  /** Helper function for {@link Transitions#mergeComposed(Transition, Transition)}. */
+  private static @Nullable Transition mergeComposed(Transition t1, Or or) {
+    if (t1 == IDENTITY) {
+      return or;
+    }
+    if (t1 == ZERO) {
+      return ZERO;
+    }
+
+    if (!(t1 instanceof Constraint || t1 instanceof Transform)) {
+      return null;
+    }
+
+    if (or.getTransitions().size() > 10) {
+      // tune: there is a trade-off here between how much work we do to merge vs work done during
+      // traversal
+      return null;
+    }
+    Transition[] disjuncts =
+        or.getTransitions().stream()
+            .map(disjunct -> mergeComposed(t1, disjunct))
+            .toArray(Transition[]::new);
+    if (Arrays.stream(disjuncts).anyMatch(Objects::isNull)) {
+      // some disjunct failed to merge. TODO minimize this case
+      return null;
+    }
+    return or(disjuncts);
+  }
+
+  /** Helper function for {@link Transitions#mergeComposed(Transition, Transition)}. */
+  private static @Nullable Transition mergeComposed(Or or, Transition t2) {
+    if (t2 == IDENTITY) {
+      return or;
+    }
+    if (t2 == ZERO) {
+      return ZERO;
+    }
+
+    if (!(t2 instanceof Constraint || t2 instanceof Transform)) {
+      return null;
+    }
+
+    if (or.getTransitions().size() > 10) {
+      // tune: there is a trade-off here between how much work we do to merge vs work done during
+      // traversal
+      return null;
+    }
+    Transition[] disjuncts =
+        or.getTransitions().stream()
+            .map(disjunct -> mergeComposed(disjunct, t2))
+            .toArray(Transition[]::new);
+    if (Arrays.stream(disjuncts).anyMatch(Objects::isNull)) {
+      // some disjunct failed to merge. TODO minimize this case
+      return null;
+    }
+    return or(disjuncts);
+  }
+
   /**
    * Try to compose two transitions by merging into a "simpler" transition.
    *
@@ -153,22 +211,7 @@ public final class Transitions {
           return eraseAndSet(eraseVars, constraintBdd.and(eas.getSetValue()));
         }
       } else if (t2 instanceof Or) {
-        Or or = (Or) t2;
-        if (or.getTransitions().size() > 10) {
-          // tune: there is a trade-off here between how much work we do to merge vs work done
-          // during
-          // traversal
-          return null;
-        }
-        Transition[] disjuncts =
-            or.getTransitions().stream()
-                .map(disjunct -> mergeComposed(t1, disjunct))
-                .toArray(Transition[]::new);
-        if (Arrays.stream(disjuncts).anyMatch(Objects::isNull)) {
-          // some disjunct failed to merge. TODO minimize this case
-          return null;
-        }
-        return or(disjuncts);
+        return mergeComposed(t1, (Or) t2);
       } else if (t2 instanceof RemoveSourceConstraint) {
         BDD constraintBdd = ((Constraint) t1).getConstraint();
         BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
@@ -231,22 +274,8 @@ public final class Transitions {
       ImmutableBDDInteger var = mgr.getFiniteDomain().getVar();
       return eraseAndSet(var, add.getSourceBdd());
     }
-    if (t1 instanceof Or && t2 instanceof Constraint) {
-      Or or = (Or) t1;
-      if (or.getTransitions().size() > 10) {
-        // tune: there is a trade-off here between how much work we do to merge vs work done during
-        // traversal
-        return null;
-      }
-      Transition[] disjuncts =
-          or.getTransitions().stream()
-              .map(disjunct -> mergeComposed(disjunct, t2))
-              .toArray(Transition[]::new);
-      if (Arrays.stream(disjuncts).anyMatch(Objects::isNull)) {
-        // some disjunct failed to merge. TODO minimize this case
-        return null;
-      }
-      return or(disjuncts);
+    if (t1 instanceof Or) {
+      return mergeComposed((Or) t1, t2);
     }
     if (t1 instanceof Transform) {
       if (t2 instanceof Constraint) {
@@ -257,6 +286,9 @@ public final class Transitions {
                 .replace(transform.getPairingFactory().getSwapPairing());
         return transform(
             constraintBdd.and(transform.getForwardRelation()), transform.getPairingFactory());
+      }
+      if (t2 instanceof Or) {
+        return mergeComposed(t1, (Or) t2);
       }
       if (t2 instanceof Transform) {
         return ((Transform) t1).tryCompose((Transform) t2).orElse(null);
