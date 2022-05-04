@@ -10,7 +10,9 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -410,6 +412,89 @@ public class TransformationToTransitionTest {
     expectedIn = _zero;
     actualIn = transition.transitBackward(nonIpPoolBdd.and(portPoolBdd));
     assertThat(actualIn, equalTo(expectedIn));
+  }
+
+  /** Test that src NAT and dst NAT steps simplify to a single Transform. */
+  @Test
+  public void testAssignFromPoolBothIps_simplification() {
+    Ip srcPoolIp = Ip.parse("1.1.1.1");
+    Ip dstPoolIp = Ip.parse("2.2.2.2");
+
+    BDD srcIpBdd = _pkt.getSrcIpPrimedBDDInteger().getPrimeVar().toBDD(srcPoolIp);
+    BDD dstIpBdd = _pkt.getDstIpPrimedBDDInteger().getPrimeVar().toBDD(dstPoolIp);
+
+    Transform expected =
+        new Transform(
+            srcIpBdd.and(dstIpBdd),
+            _pkt.getSrcIpPrimedBDDInteger()
+                .getPairingFactory()
+                .composeWith(_pkt.getDstIpPrimedBDDInteger().getPairingFactory()));
+
+    // src then dst
+    {
+      Transition actual =
+          _toTransition.toTransition(
+              always().apply(assignSourceIp(srcPoolIp), assignDestinationIp(dstPoolIp)).build());
+      assertEquals(expected, actual);
+    }
+
+    // dst then src
+    {
+      Transition actual =
+          _toTransition.toTransition(
+              always().apply(assignDestinationIp(dstPoolIp), assignSourceIp(srcPoolIp)).build());
+      assertEquals(expected, actual);
+    }
+  }
+
+  /**
+   * Test that NAT and PAT steps simplify as much as possible -- to an Or of two Transforms, one for
+   * protocols with ports and one protocols without ports.
+   */
+  @Test
+  public void testAssignFromPoolBothIpAndPort_simplification() {
+    int poolPort = 2000;
+    Ip poolIp = Ip.parse("1.1.1.1");
+
+    BDD poolIpBdd = _pkt.getSrcIpPrimedBDDInteger().getPrimeVar().toBDD(poolIp);
+    BDD poolPortBdd = _pkt.getSrcPortPrimedBDDInteger().getPrimeVar().value(poolPort);
+
+    Transform transformWithPAT =
+        new Transform(
+            _portTransformationProtocols.and(poolIpBdd).and(poolPortBdd),
+            _pkt.getSrcIpPrimedBDDInteger()
+                .getPairingFactory()
+                .composeWith(_pkt.getSrcPortPrimedBDDInteger().getPairingFactory()));
+    Transform transformWithoutPAT =
+        new Transform(
+            _portTransformationProtocols.not().and(poolIpBdd),
+            _pkt.getSrcIpPrimedBDDInteger().getPairingFactory());
+
+    // NAT then PAT
+    {
+      Transition transition =
+          _toTransition.toTransition(
+              always()
+                  .apply(assignSourceIp(poolIp, poolIp), assignSourcePort(poolPort, poolPort))
+                  .build());
+      assertThat(transition, instanceOf(Or.class));
+      assertThat(
+          ((Or) transition).getTransitions(),
+          containsInAnyOrder(transformWithPAT, transformWithoutPAT));
+    }
+
+    // PAT then NAT
+    {
+      Transition transition =
+          _toTransition.toTransition(
+              always()
+                  .apply(assignSourcePort(poolPort, poolPort), assignSourceIp(poolIp, poolIp))
+                  .build());
+      assertThat(transition, instanceOf(Or.class));
+      assertThat(
+          ((Or) transition).getTransitions(),
+          containsInAnyOrder(transformWithPAT, transformWithoutPAT));
+    }
   }
 
   @Test

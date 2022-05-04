@@ -273,6 +273,28 @@ public class TransitionsTest {
   }
 
   @Test
+  public void testMergeComposed_Or_Transform() {
+    BDD v0 = var(0);
+    BDD v0Prime = var(1);
+    BDD v1 = var(2);
+    BDD v1Prime = var(3);
+    BDD v2 = var(4);
+    BDDPairingFactory pairFactory0 = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    Transform transform0 = new Transform(v0.xor(v0Prime), pairFactory0);
+    BDDPairingFactory pairFactory1 = new BDDPairingFactory(new BDD[] {v1}, new BDD[] {v1Prime});
+    Transform transform1 = new Transform(v1.xor(v1Prime), pairFactory1);
+    Transition constraint = constraint(v2);
+    Transition or = or(transform0, constraint);
+    assertThat(or, instanceOf(Or.class));
+    Transition actual = mergeComposed(or, transform1);
+    assertThat(actual, instanceOf(Or.class));
+    assertThat(
+        ((Or) actual).getTransitions(),
+        containsInAnyOrder(
+            mergeComposed(transform0, transform1), mergeComposed(constraint, transform1)));
+  }
+
+  @Test
   public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_merge() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
@@ -297,6 +319,28 @@ public class TransitionsTest {
     RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);
     AddSourceConstraint add = new AddSourceConstraint(mgr, "a");
     assertNull(mergeComposed(remove, add));
+  }
+
+  @Test
+  public void testMergeComposed_Transform_Or() {
+    BDD v0 = var(0);
+    BDD v0Prime = var(1);
+    BDD v1 = var(2);
+    BDD v1Prime = var(3);
+    BDD v2 = var(4);
+    BDDPairingFactory pairFactory0 = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    Transform transform0 = new Transform(v0.xor(v0Prime), pairFactory0);
+    BDDPairingFactory pairFactory1 = new BDDPairingFactory(new BDD[] {v1}, new BDD[] {v1Prime});
+    Transform transform1 = new Transform(v1.xor(v1Prime), pairFactory1);
+    Transition constraint = constraint(v2);
+    Transition or = or(transform0, constraint);
+    assertThat(or, instanceOf(Or.class));
+    Transition actual = mergeComposed(transform1, or);
+    assertThat(actual, instanceOf(Or.class));
+    assertThat(
+        ((Or) actual).getTransitions(),
+        containsInAnyOrder(
+            mergeComposed(transform1, transform0), mergeComposed(transform1, constraint)));
   }
 
   @Test
