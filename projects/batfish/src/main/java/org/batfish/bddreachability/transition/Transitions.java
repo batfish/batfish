@@ -288,12 +288,6 @@ public final class Transitions {
     }
   }
 
-  @Deprecated
-  public static Transition or() {
-    throw new IllegalArgumentException(
-        "Don't call or() with no Transitions -- just use Zero instead.");
-  }
-
   public static Transition or(Transition... transitions) {
     return or(Arrays.stream(transitions));
   }
@@ -302,7 +296,7 @@ public final class Transitions {
     return or(transitions.stream());
   }
 
-  public static Transition or(Stream<Transition> transitions) {
+  private static Transition or(Stream<Transition> transitions) {
     Iterator<Transition> flatTransitions =
         transitions
             .flatMap(t -> t instanceof Or ? ((Or) t).getTransitions().stream() : Stream.of(t))
