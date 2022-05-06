@@ -201,7 +201,7 @@ public class TransitionsTest {
     BDD v0Prime = var(1);
     BDD v1 = var(2);
     BDD v2 = var(3);
-    BDDPairingFactory pairFactory = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    BDDPairingFactory pairFactory = BDDPairingFactory.create(new BDD[] {v0}, new BDD[] {v0Prime});
     Transition t1 = new Transform(v0.xor(v0Prime), pairFactory);
     Transition t2 = constraint(v1);
     Transition or = or(t1, t2);
@@ -279,9 +279,9 @@ public class TransitionsTest {
     BDD v1 = var(2);
     BDD v1Prime = var(3);
     BDD v2 = var(4);
-    BDDPairingFactory pairFactory0 = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    BDDPairingFactory pairFactory0 = BDDPairingFactory.create(new BDD[] {v0}, new BDD[] {v0Prime});
     Transform transform0 = new Transform(v0.xor(v0Prime), pairFactory0);
-    BDDPairingFactory pairFactory1 = new BDDPairingFactory(new BDD[] {v1}, new BDD[] {v1Prime});
+    BDDPairingFactory pairFactory1 = BDDPairingFactory.create(new BDD[] {v1}, new BDD[] {v1Prime});
     Transform transform1 = new Transform(v1.xor(v1Prime), pairFactory1);
     Transition constraint = constraint(v2);
     Transition or = or(transform0, constraint);
@@ -328,9 +328,9 @@ public class TransitionsTest {
     BDD v1 = var(2);
     BDD v1Prime = var(3);
     BDD v2 = var(4);
-    BDDPairingFactory pairFactory0 = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    BDDPairingFactory pairFactory0 = BDDPairingFactory.create(new BDD[] {v0}, new BDD[] {v0Prime});
     Transform transform0 = new Transform(v0.xor(v0Prime), pairFactory0);
-    BDDPairingFactory pairFactory1 = new BDDPairingFactory(new BDD[] {v1}, new BDD[] {v1Prime});
+    BDDPairingFactory pairFactory1 = BDDPairingFactory.create(new BDD[] {v1}, new BDD[] {v1Prime});
     Transform transform1 = new Transform(v1.xor(v1Prime), pairFactory1);
     Transition constraint = constraint(v2);
     Transition or = or(transform0, constraint);
@@ -376,7 +376,7 @@ public class TransitionsTest {
     BDD v0Prime = var(1);
     BDD v1 = var(2);
 
-    BDDPairingFactory pairFactory = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
+    BDDPairingFactory pairFactory = BDDPairingFactory.create(new BDD[] {v0}, new BDD[] {v0Prime});
 
     BDD xorRel = v0.xor(v0Prime); // flip the bit
     Transform xorTransform = new Transform(xorRel, pairFactory);
@@ -405,8 +405,10 @@ public class TransitionsTest {
     BDD v1 = var(2);
     BDD v1Prime = var(3);
 
-    BDDPairingFactory pairingFactory0 = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
-    BDDPairingFactory pairingFactory1 = new BDDPairingFactory(new BDD[] {v1}, new BDD[] {v1Prime});
+    BDDPairingFactory pairingFactory0 =
+        BDDPairingFactory.create(new BDD[] {v0}, new BDD[] {v0Prime});
+    BDDPairingFactory pairingFactory1 =
+        BDDPairingFactory.create(new BDD[] {v1}, new BDD[] {v1Prime});
 
     BDD rel0 = v0.and(v0Prime);
     Transform transformV0 = new Transform(rel0, pairingFactory0);
@@ -471,8 +473,10 @@ public class TransitionsTest {
     BDD v0Prime = var(2);
     BDD v1Prime = var(3);
 
-    BDDPairingFactory pairingFactory0 = new BDDPairingFactory(new BDD[] {v0}, new BDD[] {v0Prime});
-    BDDPairingFactory pairingFactory1 = new BDDPairingFactory(new BDD[] {v1}, new BDD[] {v1Prime});
+    BDDPairingFactory pairingFactory0 =
+        BDDPairingFactory.create(new BDD[] {v0}, new BDD[] {v0Prime});
+    BDDPairingFactory pairingFactory1 =
+        BDDPairingFactory.create(new BDD[] {v1}, new BDD[] {v1Prime});
 
     Transform transformV0_1 = new Transform(v0.and(v0Prime), pairingFactory0);
     Transform transformV0_2 = new Transform(v0.not().and(v0Prime.not()), pairingFactory0);

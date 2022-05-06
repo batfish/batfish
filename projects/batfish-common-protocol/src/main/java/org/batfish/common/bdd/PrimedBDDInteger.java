@@ -15,7 +15,7 @@ public final class PrimedBDDInteger {
   public PrimedBDDInteger(BDDFactory factory, BDD[] bitvec, BDD[] primeBitvec) {
     _var = new ImmutableBDDInteger(factory, bitvec);
     _primeVar = new ImmutableBDDInteger(factory, primeBitvec);
-    _pairingFactory = new BDDPairingFactory(bitvec, primeBitvec);
+    _pairingFactory = BDDPairingFactory.create(bitvec, primeBitvec);
   }
 
   public ImmutableBDDInteger getVar() {
@@ -36,7 +36,7 @@ public final class PrimedBDDInteger {
     if (n == _var.size()) {
       return _pairingFactory;
     }
-    return new BDDPairingFactory(
+    return BDDPairingFactory.create(
         Arrays.copyOf(_var._bitvec, n), Arrays.copyOf(_primeVar._bitvec, n));
   }
 }

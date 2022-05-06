@@ -4,14 +4,18 @@ import static org.batfish.common.bdd.BDDUtils.concatBitvectors;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 import static org.parboiled.common.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 
 public final class BDDPairingFactory {
@@ -22,7 +26,16 @@ public final class BDDPairingFactory {
   // lazy init
   @Nullable BDDPairing _swapPairing;
 
-  public BDDPairingFactory(BDD[] domain, BDD[] codomain) {
+  /* cache to uniquify BDDPairingFactories
+   * each one creates a swapPairing. BDDFactory does not uniquify pairings, so we won't get caching
+   * if we create duplicates!
+   * TODO leaks!
+   */
+  private static BDDFactory CACHE_FACTORY;
+  private static final Map<BDD, BDDPairingFactory> CACHE = new HashMap<>();
+
+  @VisibleForTesting
+  BDDPairingFactory(BDD[] domain, BDD[] codomain, BDD domainVars) {
     checkArgument(domain.length == codomain.length, "domain and codomain must have equal size");
     checkArgument(domain.length > 0, "domain and codomain must contain at least one variable");
     checkArgument(hasDistinctElements(domain), "domain must have distinct variables");
@@ -32,7 +45,17 @@ public final class BDDPairingFactory {
         "domain and codomain must be disjoint");
     _domain = domain;
     _codomain = codomain;
-    _domainVars = domain[0].getFactory().andAll(domain);
+    _domainVars = domainVars;
+  }
+
+  public static BDDPairingFactory create(BDD[] domain, BDD[] codomain) {
+    BDDFactory factory = domain[0].getFactory();
+    BDD domainVars = factory.andAll(domain);
+    if (CACHE_FACTORY != factory) {
+      CACHE.clear();
+      CACHE_FACTORY = factory;
+    }
+    return CACHE.computeIfAbsent(domainVars, vars -> new BDDPairingFactory(domain, codomain, vars));
   }
 
   private static boolean hasDistinctElements(BDD[] vars) {
@@ -48,7 +71,7 @@ public final class BDDPairingFactory {
   }
 
   public BDDPairingFactory composeWith(BDDPairingFactory other) {
-    return new BDDPairingFactory(
+    return BDDPairingFactory.create(
         concatBitvectors(_domain, other._domain), concatBitvectors(_codomain, other._codomain));
   }
 
@@ -82,7 +105,7 @@ public final class BDDPairingFactory {
             .flatMap(Arrays::stream)
             .distinct()
             .toArray(BDD[]::new);
-    return new BDDPairingFactory(domain, codomain);
+    return BDDPairingFactory.create(domain, codomain);
   }
 
   public static BDDPairingFactory union(List<BDDPairingFactory> factories) {
@@ -96,7 +119,7 @@ public final class BDDPairingFactory {
             .flatMap(factory -> Arrays.stream(factory._codomain))
             .distinct()
             .toArray(BDD[]::new);
-    return new BDDPairingFactory(domain, codomain);
+    return BDDPairingFactory.create(domain, codomain);
   }
 
   /**

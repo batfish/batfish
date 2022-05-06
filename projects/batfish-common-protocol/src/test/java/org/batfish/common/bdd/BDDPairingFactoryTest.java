@@ -66,8 +66,10 @@ public final class BDDPairingFactoryTest {
     BDD[] codom1 = {_factory.ithVar(1)};
     BDD[] codom2 = {_factory.ithVar(3)};
     new EqualsTester()
-        .addEqualityGroup(new BDDPairingFactory(dom1, codom1), new BDDPairingFactory(dom1, codom1))
-        .addEqualityGroup(new BDDPairingFactory(dom2, codom2))
+        .addEqualityGroup(
+            new BDDPairingFactory(dom1, codom1, dom1[0]),
+            new BDDPairingFactory(dom1, codom1, dom1[0]))
+        .addEqualityGroup(new BDDPairingFactory(dom2, codom2, dom2[0]))
         .testEquals();
   }
 }
