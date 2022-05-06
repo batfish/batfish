@@ -2,7 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static org.batfish.common.bdd.BDDUtils.bddFactory;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
@@ -10,6 +10,7 @@ import com.google.common.testing.EqualsTester;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDPairingFactory;
 import org.batfish.common.bdd.PrimedBDDInteger;
 import org.junit.Before;
 import org.junit.Test;
@@ -209,9 +210,27 @@ public class TransformTest {
 
   @Test
   public void testReduceWithOr() {
+    /*
     assertThat(
         Transform.reduceWithOr(ImmutableList.of(_transformX0, _transformX1, _transformY)),
         containsInAnyOrder(_transformX0.tryOr(_transformX1).get(), _transformY));
+     */
+
+    BDDPairingFactory xPairingFactory = _xPrimedInt.getPairingFactory();
+    BDDPairingFactory yPairingFactory = _yPrimedInt.getPairingFactory();
+    BDD yIdRel = yPairingFactory.identityRelation(var -> true);
+    BDD xIdRel = xPairingFactory.identityRelation(var -> true);
+
+    assertThat(
+        Transform.reduceWithOr(ImmutableList.of(_transformX0, _transformX1, _transformY)),
+        contains(
+            new Transform(
+                _transformX0
+                    .getForwardRelation()
+                    .or(_transformX1.getForwardRelation())
+                    .and(yIdRel)
+                    .or(_transformY.getForwardRelation().and(xIdRel)),
+                BDDPairingFactory.union(ImmutableList.of(xPairingFactory, yPairingFactory)))));
   }
 
   @Test
