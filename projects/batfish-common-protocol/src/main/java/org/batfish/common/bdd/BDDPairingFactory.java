@@ -7,6 +7,9 @@ import static org.parboiled.common.Preconditions.checkArgument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
@@ -49,6 +52,53 @@ public final class BDDPairingFactory {
         concatBitvectors(_domain, other._domain), concatBitvectors(_codomain, other._codomain));
   }
 
+  public BDD identityRelation(Predicate<BDD> includeDomainVar) {
+    BDD rel = _domainVars.getFactory().one();
+    for (int i = _domain.length - 1; i >= 0; i--) {
+      if (includeDomainVar.test(_domain[i])) {
+        rel.andWith(_domain[i].biimp(_codomain[i]));
+      }
+    }
+    return rel;
+  }
+
+  public boolean domainIncludes(BDD var) {
+    for (int i = 0; i < _domain.length; i++) {
+      if (_domain[i].equals(var)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public BDDPairingFactory union(BDDPairingFactory other) {
+    if (this.equals(other)) {
+      return this;
+    }
+    BDD[] domain =
+        Stream.of(_domain, other._domain).flatMap(Arrays::stream).distinct().toArray(BDD[]::new);
+    BDD[] codomain =
+        Stream.of(_codomain, other._codomain)
+            .flatMap(Arrays::stream)
+            .distinct()
+            .toArray(BDD[]::new);
+    return new BDDPairingFactory(domain, codomain);
+  }
+
+  public static BDDPairingFactory union(List<BDDPairingFactory> factories) {
+    BDD[] domain =
+        factories.stream()
+            .flatMap(factory -> Arrays.stream(factory._domain))
+            .distinct()
+            .toArray(BDD[]::new);
+    BDD[] codomain =
+        factories.stream()
+            .flatMap(factory -> Arrays.stream(factory._codomain))
+            .distinct()
+            .toArray(BDD[]::new);
+    return new BDDPairingFactory(domain, codomain);
+  }
+
   /**
    * Return a {@link BDD} of the variables in the pairing's domain, suitable for use with {@link
    * BDD#exist(BDD)}. The caller owns the {@link BDD} and must free it.
@@ -77,5 +127,9 @@ public final class BDDPairingFactory {
   @Override
   public int hashCode() {
     return _domainVars.hashCode();
+  }
+
+  public boolean includes(BDDPairingFactory pairingFactory) {
+    return Arrays.stream(pairingFactory._domain).allMatch(this::domainIncludes);
   }
 }
