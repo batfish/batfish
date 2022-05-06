@@ -742,6 +742,8 @@ public abstract class BDD {
    */
   public abstract BDD applyEx(BDD that, BDDFactory.BDDOp opr, BDD var);
 
+  public abstract BDD transform(BDD rel, BDDPairing pair);
+
   /**
    * Applies the binary operator <tt>opr</tt> to two BDDs and then performs a unique quantification
    * of the variables from the variable set <tt>var</tt>.

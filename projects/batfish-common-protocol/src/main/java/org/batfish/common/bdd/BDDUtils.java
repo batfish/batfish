@@ -52,4 +52,19 @@ public class BDDUtils {
 
     return pairing;
   }
+
+  /** Create a {@link BDDPairing} for swapping variables. */
+  public static BDDPairing pairing(BDD[] from, BDD[] to) {
+    checkArgument(from.length > 0, "Cannot build pairing for empty bitvectors");
+    checkArgument(from.length == to.length, "Bitvector lengths must be equal");
+
+    BDDFactory factory = from[0].getFactory();
+    BDDPairing pairing = factory.makePair();
+
+    for (int i = 0; i < from.length; i++) {
+      pairing.set(from[i].var(), to[i].var());
+    }
+
+    return pairing;
+  }
 }

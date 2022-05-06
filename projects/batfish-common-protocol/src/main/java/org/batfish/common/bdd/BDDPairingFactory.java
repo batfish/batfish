@@ -1,6 +1,7 @@
 package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDUtils.concatBitvectors;
+import static org.batfish.common.bdd.BDDUtils.pairing;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 import static org.parboiled.common.Preconditions.checkArgument;
 
@@ -25,6 +26,7 @@ public final class BDDPairingFactory {
 
   // lazy init
   @Nullable BDDPairing _swapPairing;
+  @Nullable BDDPairing _primeToUnprimePairing;
 
   /* cache to uniquify BDDPairingFactories
    * each one creates a swapPairing. BDDFactory does not uniquify pairings, so we won't get caching
@@ -68,6 +70,14 @@ public final class BDDPairingFactory {
       _swapPairing = swapPairing(_domain, _codomain);
     }
     return _swapPairing;
+  }
+
+  /** Create a {@link BDDPairing} that maps codomain variables to domain variables. */
+  public BDDPairing getPrimeToUnprimePairing() {
+    if (_primeToUnprimePairing == null) {
+      _primeToUnprimePairing = pairing(_codomain, _domain);
+    }
+    return _primeToUnprimePairing;
   }
 
   public BDDPairingFactory composeWith(BDDPairingFactory other) {
