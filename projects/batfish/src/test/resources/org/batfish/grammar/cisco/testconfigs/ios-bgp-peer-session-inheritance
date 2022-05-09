@@ -2,9 +2,6 @@
 !
 hostname ios-bgp-peer-session-inheritance
 !
-interface Loopback0
-  ip address 10.10.10.1 255.255.255.252
-!
 router bgp 64512
  template peer-session DIRECT-PARENT
   description direct-parent
@@ -12,7 +9,7 @@ router bgp 64512
  exit-peer-session
  !
  template peer-session INDIRECT-PARENT
-  update-source Loopback0
+  cluster-id 23
  exit-peer-session
 
  neighbor 10.10.10.2 remote-as 2

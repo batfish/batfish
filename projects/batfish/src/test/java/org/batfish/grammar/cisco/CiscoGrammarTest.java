@@ -6951,7 +6951,7 @@ public final class CiscoGrammarTest {
     BgpActivePeerConfig neighbor =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.10.10.2"));
     assertThat(neighbor.getDescription(), equalTo("direct-parent"));
-    assertThat(neighbor.getLocalIp(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(neighbor.getClusterId(), equalTo(23L));
 
     assertThat(
         ccae,
