@@ -93,6 +93,14 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
       _removePrivateAsMode = other.getRemovePrivateAsMode();
     }
 
+    if (_routeMapIn == null) {
+      _routeMapIn = other.getRouteMapIn();
+    }
+
+    if (_routeMapOut == null) {
+      _routeMapOut = other.getRouteMapOut();
+    }
+
     if (_routeReflectorClient == null) {
       _routeReflectorClient = other.getRouteReflectorClient();
     }
