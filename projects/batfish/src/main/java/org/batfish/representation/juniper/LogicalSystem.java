@@ -121,7 +121,6 @@ public class LogicalSystem implements Serializable {
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
     _dscpAliases = new TreeMap<>();
-    _evpn = new Evpn();
     _filters = new TreeMap<>();
     _screens = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
@@ -406,6 +405,10 @@ public class LogicalSystem implements Serializable {
 
   public void setDefaultRoutingInstance(RoutingInstance defaultRoutingInstance) {
     _defaultRoutingInstance = defaultRoutingInstance;
+  }
+
+  public void setEvpn(Evpn evpn) {
+    _evpn = evpn;
   }
 
   public void setHostname(String hostname) {

@@ -2021,40 +2021,55 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private void convertVxlan() {
     for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
+      if (vxlan.getVlanId() == null) {
+        continue;
+      }
+      if (vxlan.getVniId() == null) {
+        continue;
+      }
       String l3Interface = vxlan.getL3Interface();
       if (l3Interface == null) {
-        if (vxlan.getVniId() != null) {
-          // Should be a l2vni
-          Layer2Vni vniSettings =
-              Layer2Vni.builder()
-                  .setVni(vxlan.getVniId())
-                  .setVlan(vxlan.getVlanId())
-                  .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                  .setBumTransportMethod(UNICAST_FLOOD_GROUP)
-                  .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
-                  .build();
-          _c.getDefaultVrf().addLayer2Vni(vniSettings);
-        } else {
-          continue;
-        }
+        // Should be a l2vni
+        Layer2Vni vniSettings =
+            Layer2Vni.builder()
+                .setVni(vxlan.getVniId())
+                .setVlan(vxlan.getVlanId())
+                .setUdpPort(Vni.DEFAULT_UDP_PORT)
+                .setBumTransportMethod(UNICAST_FLOOD_GROUP)
+                .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
+                .build();
+        _c.getDefaultVrf().addLayer2Vni(vniSettings);
       } else {
         String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
-        if (vtepSource != null) {
-          Layer3Vni vniSettings =
-              Layer3Vni.builder()
-                  .setVni(vxlan.getVniId())
-                  .setSourceAddress(
-                      _masterLogicalSystem
-                          .getDefaultRoutingInstance()
-                          .getInterfaces()
-                          .get(l3Interface)
-                          .getPrimaryAddress()
-                          .getIp())
-                  .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                  .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
-                  .build();
-          _c.getDefaultVrf().addLayer3Vni(vniSettings);
+        if (vtepSource == null) {
+          continue;
         }
+        if (_masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().get(l3Interface)
+            == null) {
+          continue;
+        }
+        if (_masterLogicalSystem
+                .getDefaultRoutingInstance()
+                .getInterfaces()
+                .get(l3Interface)
+                .getPrimaryAddress()
+            == null) {
+          continue;
+        }
+        Layer3Vni vniSettings =
+            Layer3Vni.builder()
+                .setVni(vxlan.getVniId())
+                .setSourceAddress(
+                    _masterLogicalSystem
+                        .getDefaultRoutingInstance()
+                        .getInterfaces()
+                        .get(l3Interface)
+                        .getPrimaryAddress()
+                        .getIp())
+                .setUdpPort(Vni.DEFAULT_UDP_PORT)
+                .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
+                .build();
+        _c.getAllInterfaces().get(l3Interface).getVrf().addLayer3Vni(vniSettings);
       }
     }
   }
@@ -3388,6 +3403,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // TODO: something with tacplus servers?
     _masterLogicalSystem.getNamedVlans().clear();
     _masterLogicalSystem.getNamedVlans().putAll(ls.getNamedVlans());
+    if (ls.getEvpn() != null) {
+      _masterLogicalSystem.setEvpn(ls.getEvpn());
+    }
     _masterLogicalSystem.getZones().clear();
     _masterLogicalSystem.getZones().putAll(ls.getZones());
 

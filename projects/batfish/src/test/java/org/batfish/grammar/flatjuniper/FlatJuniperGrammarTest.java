@@ -376,6 +376,7 @@ import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DscpUtil;
+import org.batfish.representation.juniper.EvpnEncapsulation;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationPort;
@@ -397,6 +398,7 @@ import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.representation.juniper.NatPacketLocation;
@@ -1587,25 +1589,28 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testEvpnEncapsulationExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-ingress");
-    assertEquals("vxlan", c.getMasterLogicalSystem().getEvpn().getEncapsulation());
+    assertEquals(EvpnEncapsulation.VXLAN, c.getMasterLogicalSystem().getEvpn().getEncapsulation());
   }
 
   @Test
   public void testEvpnMulticastModeIngressExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-ingress");
-    assertEquals("ingress-replication", c.getMasterLogicalSystem().getEvpn().getMulticastMode());
+    assertEquals(
+        MulticastModeOptions.INGRESS_REPLICATION,
+        c.getMasterLogicalSystem().getEvpn().getMulticastMode());
   }
 
   @Test
   public void testEvpnMulticastModeClientExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-client");
-    assertEquals("client", c.getMasterLogicalSystem().getEvpn().getMulticastMode());
+    assertEquals(
+        MulticastModeOptions.CLIENT, c.getMasterLogicalSystem().getEvpn().getMulticastMode());
   }
 
   @Test
   public void testEvpnVniListAllExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-all");
-    assertEquals("all", c.getMasterLogicalSystem().getEvpn().getExtendedVniAll());
+    assertEquals(Boolean.TRUE, c.getMasterLogicalSystem().getEvpn().getExtendedVniAll());
   }
 
   @Test
@@ -1618,8 +1623,10 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testEvpnVniListWithRangeExtraction() {
-    parseJuniperConfig("juniper-evpn-vni-list-with-range");
-    // TODO
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-with-range");
+    assertEquals(
+        Arrays.asList(10101, 10102, 10103, 10105),
+        c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
   }
 
   @Test

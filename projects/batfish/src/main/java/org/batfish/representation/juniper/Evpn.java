@@ -9,20 +9,20 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Evpn implements Serializable {
 
-  private String _multicast_mode;
-  private @Nullable String _extended_vni_all;
+  private Enum _multicast_mode;
+  private @Nullable Boolean _extended_vni_all;
   private @Nullable List<Integer> _extended_vni_list;
-  private @Nullable String _encapsulation;
+  private @Nullable Enum _encapsulation;
 
-  public @Nullable String getMulticastMode() {
+  public @Nullable Enum getMulticastMode() {
     return _multicast_mode;
   }
 
-  public @Nullable String getEncapsulation() {
+  public @Nullable Enum getEncapsulation() {
     return _encapsulation;
   }
 
-  public @Nullable String getExtendedVniAll() {
+  public @Nullable Boolean getExtendedVniAll() {
     return _extended_vni_all;
   }
 
@@ -30,11 +30,11 @@ public final class Evpn implements Serializable {
     return _extended_vni_list;
   }
 
-  public void setMulticastMode(String multicastMode) {
+  public void setMulticastMode(Enum multicastMode) {
     _multicast_mode = multicastMode;
   }
 
-  public void setExtendedVniAll(String extendedVniAll) {
+  public void setExtendedVniAll(Boolean extendedVniAll) {
     _extended_vni_all = extendedVniAll;
   }
 
@@ -42,7 +42,7 @@ public final class Evpn implements Serializable {
     _extended_vni_list = extendedVniList;
   }
 
-  public void setEncapsulation(String encapsulation) {
+  public void setEncapsulation(Enum encapsulation) {
     _encapsulation = encapsulation;
   }
 }
