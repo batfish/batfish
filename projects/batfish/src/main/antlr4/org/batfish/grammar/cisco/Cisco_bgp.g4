@@ -997,6 +997,7 @@ template_peer_session_rb_stanza
    TEMPLATE PEER_SESSION name = variable_permissive NEWLINE
    (
       bgp_tail
+      | inherit_peer_session_bgp_tail
       | remote_as_bgp_tail
    )*
    (

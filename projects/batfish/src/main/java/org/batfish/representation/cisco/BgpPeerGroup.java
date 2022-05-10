@@ -325,6 +325,8 @@ public abstract class BgpPeerGroup implements Serializable {
   }
 
   public void inheritUnsetFields(BgpProcess proc, CiscoConfiguration cv) {
+    // TODO: We are not enforcing any inheritance depths limits, e.g., seven for peer-session
+    // templates---https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3850/software/release/16-11/configuration_guide/rtng/b_1611_rtng_3850_cg/configuring_bgp.html#task_pmr_wsb_fhb
     if (_inherited) {
       return;
     }

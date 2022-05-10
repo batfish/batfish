@@ -5974,6 +5974,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIpPeerGroup.setPeerSession(sessionName);
     } else if (_currentNamedPeerGroup != null) {
       _currentNamedPeerGroup.setPeerSession(sessionName);
+    } else if (_currentPeerSession != null) {
+      _currentPeerSession.setPeerSession(sessionName);
     } else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       // Intentional identity comparison above
       throw new BatfishException("Invalid peer context for inheritance");

@@ -191,6 +191,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GRO
 import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
@@ -225,6 +226,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_SUPPRESS_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
@@ -6934,5 +6936,30 @@ public final class CiscoGrammarTest {
     // isakmp profile
     assertThat(vc.getIsakmpProfiles(), hasKeys("IKE-Sales"));
     assertThat(vc.getIsakmpProfiles().get("IKE-Sales").getVrf(), equalTo("Sales"));
+  }
+
+  @Test
+  public void testBgpPeerSessionInheritance() throws IOException {
+    String hostname = "ios-bgp-peer-session-inheritance";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // check direct inheritance and indirect inheritance
+    BgpActivePeerConfig neighbor =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.10.10.2"));
+    assertThat(neighbor.getDescription(), equalTo("direct-parent"));
+    assertThat(neighbor.getClusterId(), equalTo(23L));
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, BGP_TEMPLATE_PEER_SESSION, "DIRECT-PARENT", BGP_INHERITED_SESSION));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, BGP_TEMPLATE_PEER_SESSION, "INDIRECT-PARENT", BGP_INHERITED_SESSION));
   }
 }
