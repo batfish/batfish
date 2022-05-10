@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-bgp-peer-session-inheritance
+!
+router bgp 64512
+ template peer-session DIRECT-PARENT
+  description direct-parent
+  inherit peer-session INDIRECT-PARENT
+ exit-peer-session
+ !
+ template peer-session INDIRECT-PARENT
+  cluster-id 23
+ exit-peer-session
+
+ neighbor 10.10.10.2 remote-as 2
+ neighbor 10.10.10.2 inherit peer-session DIRECT-PARENT
+!
