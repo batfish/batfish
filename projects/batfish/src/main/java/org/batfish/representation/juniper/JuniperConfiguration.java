@@ -2021,14 +2021,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private void convertVxlan() {
     for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
-      if (vxlan.getVlanId() == null) {
-        continue;
-      }
       if (vxlan.getVniId() == null) {
         continue;
       }
       String l3Interface = vxlan.getL3Interface();
       if (l3Interface == null) {
+        if (vxlan.getVlanId() == null) {
+          continue;
+        }
         // Should be a l2vni
         Layer2Vni vniSettings =
             Layer2Vni.builder()
@@ -2044,30 +2044,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (vtepSource == null) {
           continue;
         }
-        if (_masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().get(l3Interface)
-            == null) {
+        Map<String, Interface> allInterfaces =
+            _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces();
+        if (allInterfaces.get(l3Interface) == null) {
           continue;
         }
-        if (_masterLogicalSystem
-                .getDefaultRoutingInstance()
-                .getInterfaces()
-                .get(l3Interface)
-                .getPrimaryAddress()
-            == null) {
+        if (allInterfaces.get(l3Interface).getPrimaryAddress() == null) {
           continue;
         }
         Layer3Vni vniSettings =
             Layer3Vni.builder()
                 .setVni(vxlan.getVniId())
-                .setSourceAddress(
-                    _masterLogicalSystem
-                        .getDefaultRoutingInstance()
-                        .getInterfaces()
-                        .get(l3Interface)
-                        .getPrimaryAddress()
-                        .getIp())
+                .setSourceAddress(allInterfaces.get(l3Interface).getPrimaryAddress().getIp())
                 .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
+                .setSrcVrf(allInterfaces.get(l3Interface).getRoutingInstance().getName())
                 .build();
         _c.getAllInterfaces().get(l3Interface).getVrf().addLayer3Vni(vniSettings);
       }

@@ -216,14 +216,8 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -1616,17 +1610,20 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testEvpnVniListNoRangeExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-no-range");
-    assertEquals(
-        Arrays.asList(10101, 10103, 10105),
-        c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
+    ArrayList<IntegerSpace> vniList = new ArrayList<>();
+    vniList.add(IntegerSpace.of(10101));
+    vniList.add(IntegerSpace.of(10103));
+    vniList.add(IntegerSpace.of(10105));
+    assertEquals(vniList, c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
   }
 
   @Test
   public void testEvpnVniListWithRangeExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-with-range");
-    assertEquals(
-        Arrays.asList(10101, 10102, 10103, 10105),
-        c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
+    ArrayList<IntegerSpace> vniList = new ArrayList<>();
+    vniList.add(IntegerSpace.of(new SubRange(10101, 10103)));
+    vniList.add(IntegerSpace.of(10105));
+    assertEquals(vniList, c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
   }
 
   @Test

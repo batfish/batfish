@@ -138,8 +138,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -2025,6 +2023,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       int start = toInt(ctx.start);
       return ctx.end != null ? new SubRange(start, toInt(ctx.end)) : SubRange.singleton(start);
     }
+  }
+
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Vni_rangeContext ctx) {
+    Optional<Integer> rangeStart = toInteger(messageCtx, ctx.start);
+    if (!rangeStart.isPresent()) {
+      return Optional.empty();
+    }
+    Optional<Integer> rangeEnd = ctx.end == null ? rangeStart : toInteger(messageCtx, ctx.end);
+    if (!rangeEnd.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(rangeStart.get(), rangeEnd.get()));
   }
 
   private static TcpFlagsMatchConditions toTcpFlags(Tcp_flags_alternativeContext ctx) {
@@ -4220,11 +4231,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitE_encapsulation(E_encapsulationContext ctx) {
     if (ctx.VXLAN() != null) {
       _currentLogicalSystem.getEvpn().setEncapsulation(EvpnEncapsulation.VXLAN);
-    } else if (ctx.MPLS() != null) {
-      _currentLogicalSystem.getEvpn().setEncapsulation(EvpnEncapsulation.MPLS);
     } else {
-      throw new BatfishException(
-          "missing encapsulation-enum mapping for encapsulation: \"" + ctx.getText() + "\"");
+      assert ctx.MPLS() != null;
+      _currentLogicalSystem.getEvpn().setEncapsulation(EvpnEncapsulation.MPLS);
     }
   }
 
@@ -4233,27 +4242,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.ALL() != null) {
       _currentLogicalSystem.getEvpn().setExtendedVniAll(Boolean.TRUE);
     } else {
-      List<Integer> vnis = new ArrayList<>();
+      List<IntegerSpace> vnis = new ArrayList<>();
       for (Vni_rangeContext vni : ctx.vni_range()) {
-        if (vni.getText().contains("-")) {
-          List temp =
-              IntStream.range(
-                      Integer.parseInt(vni.getText().split("-")[0]),
-                      Integer.parseInt(vni.getText().split("-")[1]) + 1)
-                  .boxed()
-                  .collect(Collectors.toList());
-          temp.forEach(
-              (i) -> {
-                vnis.add(Integer.parseInt(i.toString()));
-              });
-        } else {
-          Optional<Integer> maybeVni = toInteger(ctx, vni.start);
-          if (maybeVni.isPresent()) {
-            vnis.add(maybeVni.get());
-          }
+        Optional<SubRange> maybeVniRange = toSubRange(ctx, vni);
+        if (maybeVniRange.isPresent()) {
+          vnis.add(
+              IntegerSpace.of(
+                  new SubRange(maybeVniRange.get().getStart(), maybeVniRange.get().getEnd())));
         }
+        _currentLogicalSystem.getEvpn().setExtendedVniList(vnis);
       }
-      _currentLogicalSystem.getEvpn().setExtendedVniList(vnis);
     }
   }
 
@@ -4262,6 +4260,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.INGRESS_REPLICATION() != null) {
       _currentLogicalSystem.getEvpn().setMulticastMode(MulticastModeOptions.INGRESS_REPLICATION);
     } else {
+      assert ctx.CLIENT() != null;
       _currentLogicalSystem.getEvpn().setMulticastMode(MulticastModeOptions.CLIENT);
     }
   }
