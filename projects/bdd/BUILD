@@ -11,6 +11,7 @@ java_library(
     deps = [
         "@maven//:com_carrotsearch_hppc",
         "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
         "@maven//:org_apache_logging_log4j_log4j_api",
     ],
 )
