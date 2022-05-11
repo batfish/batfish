@@ -1,60 +1,82 @@
 package org.batfish.common.bdd;
 
-import static org.batfish.common.bdd.BDDUtils.concatBitvectors;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
+import net.sf.javabdd.BDDVarPair;
 
 public final class BDDPairingFactory {
-  private final BDD[] _domain;
-  private final BDD[] _codomain;
-  private final BDD _domainVars;
+  private final BDDFactory _bddFactory;
+  private final Set<BDDVarPair> _varPairs;
 
   // lazy init
   @Nullable BDDPairing _swapPairing;
+  @Nullable BDD _domainVars;
 
-  public BDDPairingFactory(BDD[] domain, BDD[] codomain) {
-    checkArgument(domain.length == codomain.length, "domain and codomain must have equal size");
-    checkArgument(domain.length > 0, "domain and codomain must contain at least one variable");
-    checkArgument(hasDistinctElements(domain), "domain must have distinct variables");
-    checkArgument(hasDistinctElements(codomain), "codomain must have distinct variables");
+  public BDDPairingFactory(BDDFactory bddFactory, Set<BDDVarPair> varPairs) {
+    checkArgument(!varPairs.isEmpty(), "BDDPairingFactory must have at least one variable pair.");
+
+    Set<Integer> oldVars = varPairs.stream().map(BDDVarPair::getOldVar).collect(Collectors.toSet());
+    checkArgument(oldVars.size() == varPairs.size(), "domain must have distinct variables");
+
+    Set<Integer> newVars = varPairs.stream().map(BDDVarPair::getNewVar).collect(Collectors.toSet());
+    checkArgument(newVars.size() == varPairs.size(), "codomain must have distinct variables");
+
     checkArgument(
-        Sets.intersection(Sets.newHashSet(domain), Sets.newHashSet(codomain)).isEmpty(),
-        "domain and codomain must be disjoint");
-    _domain = domain;
-    _codomain = codomain;
-    _domainVars = domain[0].getFactory().andAll(domain);
-  }
+        Sets.intersection(oldVars, newVars).isEmpty(), "domain and codomain must be disjoint");
 
-  private static boolean hasDistinctElements(BDD[] vars) {
-    return Arrays.stream(vars).distinct().count() == vars.length;
+    _bddFactory = bddFactory;
+    _varPairs = ImmutableSet.copyOf(varPairs);
   }
 
   /** Create a {@link BDDPairing} that swaps domain and codomain variables. */
   public BDDPairing getSwapPairing() {
     if (_swapPairing == null) {
-      _swapPairing = swapPairing(_domain, _codomain);
+      _swapPairing = swapPairing(_bddFactory, _varPairs);
     }
     return _swapPairing;
   }
 
   public BDDPairingFactory composeWith(BDDPairingFactory other) {
+    checkArgument(
+        _bddFactory == other._bddFactory,
+        "Cannot compose with a BDDPairingFactory for a different BDDFactory");
+    checkArgument(
+        Sets.intersection(_varPairs, other._varPairs).isEmpty(),
+        "Cannot compose two BDDPairingFactories with overlapping var pairs");
     return new BDDPairingFactory(
-        concatBitvectors(_domain, other._domain), concatBitvectors(_codomain, other._codomain));
+        _bddFactory,
+        Stream.of(_varPairs, other._varPairs)
+            .flatMap(Set::stream)
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  public boolean overlapsWith(BDDPairingFactory other) {
+    return !Sets.intersection(_varPairs, other._varPairs).isEmpty();
   }
 
   /**
    * Return a {@link BDD} of the variables in the pairing's domain, suitable for use with {@link
-   * BDD#exist(BDD)}. The caller owns the {@link BDD} and must free it.
+   * BDD#exist(BDD)}. The caller does not own the {@link BDD} and must not mutate or free it.
    */
   public BDD getDomainVarsBdd() {
-    return _domainVars.id(); // defensive copy
+    if (_domainVars == null) {
+      _domainVars =
+          _bddFactory.andAll(
+              _varPairs.stream()
+                  .map(varPair -> _bddFactory.ithVar(varPair.getOldVar()))
+                  .toArray(BDD[]::new));
+    }
+    return _domainVars;
   }
 
   @Override
@@ -66,16 +88,11 @@ public final class BDDPairingFactory {
       return false;
     }
     BDDPairingFactory that = (BDDPairingFactory) o;
-    // only consider domainVars, since 1) the domain is a function of it, and 2) the codomain is a
-    // function of the domain (assuming no accidental variable reuse, etc).
-    assert !_domainVars.equals(that._domainVars)
-        || (ImmutableSet.copyOf(_domain).equals(ImmutableSet.copyOf(that._domain))
-            && ImmutableSet.copyOf(_codomain).equals(ImmutableSet.copyOf(that._codomain)));
-    return _domainVars.equals(that._domainVars);
+    return _varPairs.equals(that._varPairs);
   }
 
   @Override
   public int hashCode() {
-    return _domainVars.hashCode();
+    return _varPairs.hashCode();
   }
 }
