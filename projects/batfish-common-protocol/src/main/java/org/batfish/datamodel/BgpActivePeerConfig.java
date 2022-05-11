@@ -162,8 +162,8 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
               _remoteAsns,
               _ipv4UnicastAddressFamily,
               _evpnAddressFamily);
-      if (_bgpProcess != null) {
-        _bgpProcess.getActiveNeighbors().put(Objects.requireNonNull(_peerAddress), bgpPeerConfig);
+      if (_bgpProcess != null && _peerAddress != null) {
+        _bgpProcess.getActiveNeighbors().put(_peerAddress, bgpPeerConfig);
       }
       return bgpPeerConfig;
     }
