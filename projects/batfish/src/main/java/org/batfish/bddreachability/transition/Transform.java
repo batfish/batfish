@@ -38,11 +38,11 @@ public class Transform implements Transition {
    */
   private boolean initIfAssertionsEnabled() {
     init();
-    _pairingFactory.getDomainVarsBdd(); // pairing factory computes this lazily
     return true;
   }
 
   private void init() {
+    _pairingFactory.getDomainVarsBdd(); // pairing factory computes this lazily
     _reverseRelation = _forwardRelation.replace(_pairingFactory.getSwapPairing());
   }
 

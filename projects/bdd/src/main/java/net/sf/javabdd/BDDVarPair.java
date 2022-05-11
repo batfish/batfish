@@ -1,16 +1,29 @@
 package net.sf.javabdd;
 
-import com.google.common.base.Objects;
+import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.Objects;
+import java.util.Set;
+
+/**
+ * A pair of BDD variables (i.e. created by {@link BDDFactory#ithVar(int)}). For building {@link
+ * BDDPairing BDDPairings} via {@link BDDFactory#getPair(Set)}. .
+ */
 public final class BDDVarPair {
   private final int _oldVar;
   private final int _newVar;
 
+  /**
+   * Build a {@link BDDVarPair} for two single-variable BDDs (i.e. BDDs returned from {@link
+   * BDDFactory#ithVar(int)}.
+   */
   public BDDVarPair(BDD oldVar, BDD newVar) {
-    this(oldVar.var(), newVar.var());
+    this(bddVarId(oldVar), bddVarId(newVar));
   }
 
   public BDDVarPair(int oldVar, int newVar) {
+    // disallow identity pairings -- they are no-ops, but would break caching in BDDFactory#getPair.
+    checkArgument(oldVar != newVar, "Cannot pair a variable with itself");
     this._oldVar = oldVar;
     this._newVar = newVar;
   }
@@ -38,5 +51,10 @@ public final class BDDVarPair {
   @Override
   public int hashCode() {
     return Objects.hashCode(_oldVar, _newVar);
+  }
+
+  private static int bddVarId(BDD bdd) {
+    checkArgument(bdd.high().isOne() && bdd.low().isZero(), "bdd is not a single variable");
+    return bdd.var();
   }
 }
