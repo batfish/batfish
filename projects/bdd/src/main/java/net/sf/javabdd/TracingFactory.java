@@ -665,6 +665,11 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
+    public BDD transform(BDD rel, BDDPairing pair) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public TracedBDDImpl applyUni(BDD that, BDDOp opr, BDD var) {
       throw new UnsupportedOperationException();
     }

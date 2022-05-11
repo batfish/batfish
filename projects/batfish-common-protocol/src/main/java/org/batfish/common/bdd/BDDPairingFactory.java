@@ -20,6 +20,7 @@ public final class BDDPairingFactory {
 
   // lazy init
   @Nullable BDDPairing _swapPairing;
+  @Nullable BDDPairing _primeToUnprimePairing;
   @Nullable BDD _domainVars;
 
   public BDDPairingFactory(BDDFactory bddFactory, Set<BDDVarPair> varPairs) {
@@ -44,6 +45,18 @@ public final class BDDPairingFactory {
       _swapPairing = swapPairing(_bddFactory, _varPairs);
     }
     return _swapPairing;
+  }
+
+  /** Create a {@link BDDPairing} that maps codomain variables to domain variables. */
+  public BDDPairing getPrimeToUnprimePairing() {
+    if (_primeToUnprimePairing == null) {
+      _primeToUnprimePairing =
+          _bddFactory.getPair(
+              _varPairs.stream()
+                  .map(p -> new BDDVarPair(p.getNewVar(), p.getOldVar()))
+                  .collect(ImmutableSet.toImmutableSet()));
+    }
+    return _primeToUnprimePairing;
   }
 
   public BDDPairingFactory composeWith(BDDPairingFactory other) {
