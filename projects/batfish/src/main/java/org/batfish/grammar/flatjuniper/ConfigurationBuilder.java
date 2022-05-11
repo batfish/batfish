@@ -4242,15 +4242,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.ALL() != null) {
       _currentLogicalSystem.getEvpn().setExtendedVniAll(Boolean.TRUE);
     } else {
-      List<IntegerSpace> vnis = new ArrayList<>();
       for (Vni_rangeContext vni : ctx.vni_range()) {
         Optional<SubRange> maybeVniRange = toSubRange(ctx, vni);
-        if (maybeVniRange.isPresent()) {
-          vnis.add(
-              IntegerSpace.of(
-                  new SubRange(maybeVniRange.get().getStart(), maybeVniRange.get().getEnd())));
+        Evpn evpn = _currentLogicalSystem.getEvpn();
+        if (evpn.getExtendedVniList() != null) {
+          evpn.setExtendedVniList(
+              IntegerSpace.builder()
+                  .including(evpn.getExtendedVniList())
+                  .including(maybeVniRange.get())
+                  .build());
+        } else {
+          evpn.setExtendedVniList(IntegerSpace.of(maybeVniRange.get()));
         }
-        _currentLogicalSystem.getEvpn().setExtendedVniList(vnis);
       }
     }
   }

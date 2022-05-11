@@ -1,7 +1,6 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IntegerSpace;
@@ -12,7 +11,7 @@ public final class Evpn implements Serializable {
 
   private MulticastModeOptions _multicast_mode;
   private @Nullable Boolean _extended_vni_all;
-  private @Nullable List<IntegerSpace> _extended_vni_list;
+  private @Nullable IntegerSpace _extended_vni_list;
   private @Nullable EvpnEncapsulation _encapsulation;
 
   public @Nullable MulticastModeOptions getMulticastMode() {
@@ -27,7 +26,7 @@ public final class Evpn implements Serializable {
     return _extended_vni_all;
   }
 
-  public @Nullable List<IntegerSpace> getExtendedVniList() {
+  public @Nullable IntegerSpace getExtendedVniList() {
     return _extended_vni_list;
   }
 
@@ -39,7 +38,7 @@ public final class Evpn implements Serializable {
     _extended_vni_all = extendedVniAll;
   }
 
-  public void setExtendedVniList(List<IntegerSpace> extendedVniList) {
+  public void setExtendedVniList(IntegerSpace extendedVniList) {
     _extended_vni_list = extendedVniList;
   }
 

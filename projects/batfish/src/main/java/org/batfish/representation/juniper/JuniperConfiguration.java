@@ -2044,20 +2044,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (vtepSource == null) {
           continue;
         }
-        Map<String, Interface> allInterfaces =
-            _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces();
-        if (allInterfaces.get(l3Interface) == null) {
+        Interface iface =
+            _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().get(l3Interface);
+        if (iface == null) {
           continue;
         }
-        if (allInterfaces.get(l3Interface).getPrimaryAddress() == null) {
+        if (iface.getPrimaryAddress() == null) {
           continue;
         }
         Layer3Vni vniSettings =
             Layer3Vni.builder()
                 .setVni(vxlan.getVniId())
-                .setSourceAddress(allInterfaces.get(l3Interface).getPrimaryAddress().getIp())
+                .setSourceAddress(iface.getPrimaryAddress().getIp())
                 .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                .setSrcVrf(allInterfaces.get(l3Interface).getRoutingInstance().getName())
+                .setSrcVrf(iface.getRoutingInstance().getName())
                 .build();
         _c.getAllInterfaces().get(l3Interface).getVrf().addLayer3Vni(vniSettings);
       }

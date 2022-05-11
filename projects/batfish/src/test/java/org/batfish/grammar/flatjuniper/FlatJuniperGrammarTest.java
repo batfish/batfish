@@ -1610,20 +1610,18 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testEvpnVniListNoRangeExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-no-range");
-    ArrayList<IntegerSpace> vniList = new ArrayList<>();
-    vniList.add(IntegerSpace.of(10101));
-    vniList.add(IntegerSpace.of(10103));
-    vniList.add(IntegerSpace.of(10105));
-    assertEquals(vniList, c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
+    assertEquals(
+        IntegerSpace.unionOf(
+            IntegerSpace.of(10101), IntegerSpace.of(10103), IntegerSpace.of(10105)),
+        c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
   }
 
   @Test
   public void testEvpnVniListWithRangeExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-with-range");
-    ArrayList<IntegerSpace> vniList = new ArrayList<>();
-    vniList.add(IntegerSpace.of(new SubRange(10101, 10103)));
-    vniList.add(IntegerSpace.of(10105));
-    assertEquals(vniList, c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
+    assertEquals(
+        IntegerSpace.unionOf(IntegerSpace.of(new SubRange(10101, 10103)), IntegerSpace.of(10105)),
+        c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
   }
 
   @Test
