@@ -2,10 +2,16 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
+import net.sf.javabdd.BDDVarPair;
 import net.sf.javabdd.JFactory;
 
 /** Various utility methods for working with {@link BDD}s. */
@@ -38,22 +44,27 @@ public class BDDUtils {
   }
 
   /** Create a {@link BDDPairing} for swapping variables. */
+  public static BDDPairing swapPairing(BDDFactory bddFactory, Set<BDDVarPair> varPairs) {
+    checkArgument(!varPairs.isEmpty(), "Cannot build swapPairing for empty bitvectors");
+
+    return bddFactory.getPair(
+        varPairs.stream()
+            .flatMap(pair -> Stream.of(pair, new BDDVarPair(pair.getNewVar(), pair.getOldVar())))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  /** Create a {@link BDDPairing} for swapping variables. */
   public static BDDPairing swapPairing(BDD[] bv1, BDD[] bv2) {
     checkArgument(bv1.length > 0, "Cannot build swapPairing for empty bitvectors");
     checkArgument(bv1.length == bv2.length, "Bitvector lengths must be equal");
 
-    int l = bv1.length;
-    BDD[] oldvars = new BDD[l * 2];
-    BDD[] newvars = new BDD[l * 2];
-    for (int i = 0; i < l; i++) {
-      // forward
-      oldvars[i] = bv1[i];
-      newvars[i] = bv2[i];
-      // reverse
-      oldvars[l + i] = bv2[i];
-      newvars[l + i] = bv1[i];
-    }
-
-    return bv1[0].getFactory().getPair(oldvars, newvars);
+    return bv1[0]
+        .getFactory()
+        .getPair(
+            IntStream.range(0, bv1.length)
+                .mapToObj(
+                    i -> Stream.of(new BDDVarPair(bv1[i], bv2[i]), new BDDVarPair(bv2[i], bv1[i])))
+                .flatMap(Function.identity())
+                .collect(ImmutableSet.toImmutableSet()));
   }
 }

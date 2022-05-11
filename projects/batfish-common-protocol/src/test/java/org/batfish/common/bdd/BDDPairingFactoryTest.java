@@ -4,10 +4,13 @@ import static org.batfish.common.bdd.BDDUtils.bddFactory;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
+import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
+import net.sf.javabdd.BDDVarPair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,13 +64,15 @@ public final class BDDPairingFactoryTest {
 
   @Test
   public void testEquals() {
-    BDD[] dom1 = {_factory.ithVar(0)};
-    BDD[] dom2 = {_factory.ithVar(2)};
-    BDD[] codom1 = {_factory.ithVar(1)};
-    BDD[] codom2 = {_factory.ithVar(3)};
+    Set<BDDVarPair> pairs1 =
+        ImmutableSet.of(new BDDVarPair(_factory.ithVar(0), _factory.ithVar(1)));
+    Set<BDDVarPair> pairs2 =
+        ImmutableSet.of(new BDDVarPair(_factory.ithVar(2), _factory.ithVar(3)));
+
     new EqualsTester()
-        .addEqualityGroup(new BDDPairingFactory(dom1, codom1), new BDDPairingFactory(dom1, codom1))
-        .addEqualityGroup(new BDDPairingFactory(dom2, codom2))
+        .addEqualityGroup(
+            new BDDPairingFactory(_factory, pairs1), new BDDPairingFactory(_factory, pairs1))
+        .addEqualityGroup(new BDDPairingFactory(_factory, pairs2))
         .testEquals();
   }
 }
