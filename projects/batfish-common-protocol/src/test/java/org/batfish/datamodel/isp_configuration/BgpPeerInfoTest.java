@@ -14,20 +14,21 @@ public class BgpPeerInfoTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new BgpPeerInfo("host", Ip.ZERO, null, null),
-            new BgpPeerInfo("host", Ip.ZERO, null, null),
-            new BgpPeerInfo("HoSt", Ip.ZERO, null, null)) // hostname is canonicalized
-        .addEqualityGroup(new BgpPeerInfo("other", Ip.ZERO, null, null))
-        .addEqualityGroup(new BgpPeerInfo("host", Ip.MAX, null, null))
-        .addEqualityGroup(new BgpPeerInfo("host", Ip.ZERO, "vrf", null))
+            new BgpPeerInfo("host", null, Ip.ZERO, null, null),
+            new BgpPeerInfo("host", null, Ip.ZERO, null, null),
+            new BgpPeerInfo("HoSt", null, Ip.ZERO, null, null)) // hostname is canonicalized
+        .addEqualityGroup(new BgpPeerInfo("other", null, Ip.ZERO, null, null))
+        .addEqualityGroup(new BgpPeerInfo("other", Ip.MAX, Ip.ZERO, null, null))
+        .addEqualityGroup(new BgpPeerInfo("host", null, Ip.MAX, null, null))
+        .addEqualityGroup(new BgpPeerInfo("host", null, Ip.ZERO, "vrf", null))
         .addEqualityGroup(
-            new BgpPeerInfo("host", Ip.ZERO, null, new IspAttachment(null, "iface", null)))
+            new BgpPeerInfo("host", null, Ip.ZERO, null, new IspAttachment(null, "iface", null)))
         .testEquals();
   }
 
   @Test
   public void testJsonSerialization() {
-    BgpPeerInfo bgpPeerInfo = new BgpPeerInfo("host", Ip.ZERO, null, null);
+    BgpPeerInfo bgpPeerInfo = new BgpPeerInfo("host", null, Ip.ZERO, null, null);
     assertThat(BatfishObjectMapper.clone(bgpPeerInfo, BgpPeerInfo.class), equalTo(bgpPeerInfo));
   }
 }

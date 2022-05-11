@@ -1,0 +1,11 @@
+{
+  "bgpPeers": [
+    {
+      "hostname": "border1",
+      "peerAddress": "240.2.2.3",
+      "ispAttachment": {
+        "interface": "GigabitEthernet0/0"
+      }
+    }
+  ]
+}
