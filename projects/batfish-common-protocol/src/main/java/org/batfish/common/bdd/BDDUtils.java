@@ -42,14 +42,18 @@ public class BDDUtils {
     checkArgument(bv1.length > 0, "Cannot build swapPairing for empty bitvectors");
     checkArgument(bv1.length == bv2.length, "Bitvector lengths must be equal");
 
-    BDDFactory factory = bv1[0].getFactory();
-    BDDPairing pairing = factory.makePair();
-
-    for (int i = 0; i < bv1.length; i++) {
-      pairing.set(bv1[i].var(), bv2[i].var());
-      pairing.set(bv2[i].var(), bv1[i].var());
+    int l = bv1.length;
+    BDD[] oldvars = new BDD[l * 2];
+    BDD[] newvars = new BDD[l * 2];
+    for (int i = 0; i < l; i++) {
+      // forward
+      oldvars[i] = bv1[i];
+      newvars[i] = bv2[i];
+      // reverse
+      oldvars[l + i] = bv2[i];
+      newvars[l + i] = bv1[i];
     }
 
-    return pairing;
+    return bv1[0].getFactory().getPair(oldvars, newvars);
   }
 }
