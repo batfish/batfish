@@ -21,7 +21,6 @@ import org.batfish.common.bdd.BDDPairingFactory;
 public class Transform implements Transition {
   private final BDD _forwardRelation;
   private final BDDPairingFactory _pairingFactory;
-  private final BDD _vars;
 
   // lazy init
   private @Nullable BDD _reverseRelation;
@@ -29,7 +28,6 @@ public class Transform implements Transition {
   public Transform(BDD relation, BDDPairingFactory pairingFactory) {
     _forwardRelation = relation;
     _pairingFactory = pairingFactory;
-    _vars = _pairingFactory.getDomainVarsBdd();
     assert initIfAssertionsEnabled();
   }
 
@@ -40,6 +38,7 @@ public class Transform implements Transition {
    */
   private boolean initIfAssertionsEnabled() {
     init();
+    _pairingFactory.getDomainVarsBdd(); // pairing factory computes this lazily
     return true;
   }
 
@@ -57,7 +56,7 @@ public class Transform implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars)
+    return bdd.applyEx(_forwardRelation, BDDFactory.and, _pairingFactory.getDomainVarsBdd())
         .replaceWith(_pairingFactory.getSwapPairing());
   }
 
@@ -66,7 +65,7 @@ public class Transform implements Transition {
     if (_reverseRelation == null) {
       init();
     }
-    return bdd.applyEx(_reverseRelation, BDDFactory.and, _vars)
+    return bdd.applyEx(_reverseRelation, BDDFactory.and, _pairingFactory.getDomainVarsBdd())
         .replaceWith(_pairingFactory.getSwapPairing());
   }
 
@@ -80,7 +79,7 @@ public class Transform implements Transition {
    * applied in series -- first this, then other.
    */
   public Optional<Transform> tryCompose(Transform other) {
-    if (_vars.testsVars(other._vars)) {
+    if (_pairingFactory.overlapsWith(other._pairingFactory)) {
       // vars are not disjoint so we can't compose
       return Optional.empty();
     }
@@ -103,7 +102,7 @@ public class Transform implements Transition {
    * two transforms to have equal domains.
    */
   public Optional<Transform> tryOr(Transform other) {
-    if (!_vars.equals(other._vars)) {
+    if (!_pairingFactory.equals(other._pairingFactory)) {
       return Optional.empty();
     }
     return Optional.of(new Transform(_forwardRelation.or(other._forwardRelation), _pairingFactory));
@@ -115,13 +114,14 @@ public class Transform implements Transition {
     if (transforms.size() == 1) {
       return transforms;
     }
-    Map<BDD, List<Transform>> transformsByVars =
-        transforms.stream().collect(Collectors.groupingBy(t -> t._vars, Collectors.toList()));
-    if (transformsByVars.size() == transforms.size()) {
-      // no two Transforms had the same vars
+    Map<BDDPairingFactory, List<Transform>> transformsByPairingFactory =
+        transforms.stream()
+            .collect(Collectors.groupingBy(t -> t._pairingFactory, Collectors.toList()));
+    if (transformsByPairingFactory.size() == transforms.size()) {
+      // no two Transforms had the same BDDPairingFactory
       return transforms;
     }
-    return transformsByVars.values().stream()
+    return transformsByPairingFactory.values().stream()
         .map(
             transforms1 -> {
               Transform transform = transforms1.get(0);
@@ -148,16 +148,15 @@ public class Transform implements Transition {
       return false;
     }
     Transform transform = (Transform) o;
-    // Exclude _reverseRelations and _swapPairing, which are lazy initialized and determined by
-    // _forwardRelation and
-    // _vars.
+    // Exclude _reverseRelations, _swapPairing and _vars, which are lazy initialized and/or
+    // determined by
+    // _forwardRelation and _pairingFactory.
     return _forwardRelation.equals(transform._forwardRelation)
-        && _pairingFactory.equals(transform._pairingFactory)
-        && _vars.equals(transform._vars);
+        && _pairingFactory.equals(transform._pairingFactory);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_forwardRelation, _pairingFactory, _vars);
+    return Objects.hash(_forwardRelation, _pairingFactory);
   }
 }

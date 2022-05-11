@@ -30,7 +30,7 @@ package net.sf.javabdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
@@ -575,43 +576,7 @@ public abstract class BDDFactory {
     return p;
   }
 
-  private static final class PairCacheKey {
-    private final BDD[] _oldvars;
-    private final BDD[] _newvars;
-
-    private PairCacheKey(BDD[] oldvars, BDD[] newvars) {
-      _oldvars = oldvars;
-      _newvars = newvars;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof PairCacheKey)) {
-        return false;
-      }
-      PairCacheKey that = (PairCacheKey) o;
-      return Arrays.equals(_oldvars, that._oldvars) && Arrays.equals(_newvars, that._newvars);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hashCode(Arrays.hashCode(_oldvars), Arrays.hashCode(_newvars));
-    }
-  }
-
-  /** Copy the input array of BDDs (the array and each individual {@link BDD} is copied). */
-  private static BDD[] copy(BDD[] bdds) {
-    BDD[] result = new BDD[bdds.length];
-    for (int i = 0; i < bdds.length; i++) {
-      result[i] = bdds[i].id();
-    }
-    return result;
-  }
-
-  private Map<PairCacheKey, BDDPairing> _pairCache = null; // lazy init
+  private Map<ImmutableSet<BDDVarPair>, BDDPairing> _pairCache = null; // lazy init
 
   /**
    * Compute a {@link BDDPairing} mapping {@code oldvars} to {@code newvars}. The returned pairing
@@ -622,23 +587,21 @@ public abstract class BDDFactory {
    * <p>The returned {@link BDDPairing} must not be mutated -- it is unsafe to call {@link
    * BDDPairing#set} or {@link BDDPairing#reset()}.
    */
-  public BDDPairing getPair(BDD[] oldvars, BDD[] newvars) {
-    checkArgument(
-        oldvars.length == newvars.length, "getPair: oldvars and newvars must have the same length");
+  public BDDPairing getPair(Set<BDDVarPair> varPairs) {
+    checkArgument(!varPairs.isEmpty(), "getPair: need at least one pair");
     if (_pairCache == null) {
       _pairCache = new HashMap<>();
     }
-    @Nullable BDDPairing pair = _pairCache.get(new PairCacheKey(oldvars, newvars));
+    ImmutableSet<BDDVarPair> key = ImmutableSet.copyOf(varPairs);
+    @Nullable BDDPairing pair = _pairCache.get(key);
     if (pair != null) {
       return pair;
     }
     pair = makePair();
-    for (int i = 0; i < oldvars.length; i++) {
-      pair.set(oldvars[i].var(), newvars[i].var());
+    for (BDDVarPair varPair : varPairs) {
+      pair.set(varPair.getOldVar(), varPair.getNewVar());
     }
-    _pairCache.put(
-        new PairCacheKey(copy(oldvars), copy(newvars)), // defensive copy
-        pair);
+    _pairCache.put(key, pair);
     return pair;
   }
 
