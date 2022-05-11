@@ -535,11 +535,13 @@ public final class IspModelingUtils {
       return Optional.empty();
     }
     BgpActivePeerConfig snapshotBgpPeer = snapshotBgpPeerOpt.get();
-    if (!isValidBgpPeerConfigForBgpPeerInfo(snapshotBgpPeer, remoteIps, remoteAsns)) {
+    Optional<String> invalidReason =
+        validateOrExplainProblemCreatingIspConfig(snapshotBgpPeer, remoteIps, remoteAsns);
+    if (invalidReason.isPresent()) {
       warnings.redFlag(
           String.format(
-              "ISP Modeling: BGP neighbor %s on node %s is invalid.",
-              bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname()));
+              "ISP Modeling: BGP neighbor %s on node %s is invalid: %s.",
+              bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname(), invalidReason.get()));
       return Optional.empty();
     }
     if (bgpPeerInfo.getIspAttachment() == null) {
@@ -1231,22 +1233,37 @@ public final class IspModelingUtils {
     return Optional.empty();
   }
 
+  /**
+   * Determines whether the ISP for the given BGP Peer is allowed by filters and has enough
+   * information to generate, or explain the reason why this cannot happen.
+   */
   @VisibleForTesting
-  static boolean isValidBgpPeerConfigForBgpPeerInfo(
+  static Optional<String> validateOrExplainProblemCreatingIspConfig(
       BgpActivePeerConfig bgpPeerConfig, Set<Ip> allowedRemoteIps, LongSpace allowedRemoteAsns) {
-    return Objects.nonNull(bgpPeerConfig.getLocalAs()) // local AS is defined
-        && Objects.nonNull(
-            bgpPeerConfig.getLocalIp()) // local IP is defined -- used as peer address on ISP
-        && !bgpPeerConfig
-            .getRemoteAsns()
-            .equals(LongSpace.of(bgpPeerConfig.getLocalAs())) // not iBGP
-        && !allowedRemoteAsns
-            .intersection(bgpPeerConfig.getRemoteAsns())
-            .isEmpty() // remote AS is defined and allowed
-        && Objects.nonNull(bgpPeerConfig.getPeerAddress()) // peer address is defined
-        && (allowedRemoteIps.isEmpty()
-            || allowedRemoteIps.contains(
-                bgpPeerConfig.getPeerAddress())); // peer address is allowed
+    if (bgpPeerConfig.getLocalAs() == null) {
+      return Optional.of("unable to determine local AS");
+    } else if (bgpPeerConfig.getRemoteAsns().equals(LongSpace.of(bgpPeerConfig.getLocalAs()))) {
+      return Optional.of("iBGP peers are not supported");
+    } else if (bgpPeerConfig.getRemoteAsns().isEmpty()) {
+      return Optional.of("unable to determine remote AS");
+    } else if (allowedRemoteAsns.intersection(bgpPeerConfig.getRemoteAsns()).isEmpty()) {
+      return Optional.of(
+          String.format(
+              "remote AS %s is not allowed by the filter", bgpPeerConfig.getRemoteAsns()));
+    } else if (bgpPeerConfig.getPeerAddress() == null) {
+      return Optional.of("remote IP is not configured");
+    } else if (!allowedRemoteIps.isEmpty()
+        && !allowedRemoteIps.contains(bgpPeerConfig.getPeerAddress())) {
+      return Optional.of(
+          String.format(
+              "remote IP %s is not allowed by the filter", bgpPeerConfig.getPeerAddress()));
+    } else if (bgpPeerConfig.getLocalIp() == null) {
+      return Optional.of(
+          "unable to determine local IP address. Note that Batfish ISP config today "
+              + "requires local IP or update source to be configured explicitly in order "
+              + "to determine the ISP's BGP configuration");
+    }
+    return Optional.empty();
   }
 
   /**
