@@ -40,6 +40,7 @@ import static org.batfish.common.util.isp.IspModelingUtils.ispPeeringInterfaceNa
 import static org.batfish.common.util.isp.IspModelingUtils.ispToSnapshotInterfaceName;
 import static org.batfish.common.util.isp.IspModelingUtils.makeBgpProcess;
 import static org.batfish.common.util.isp.IspModelingUtils.toIspModel;
+import static org.batfish.common.util.isp.IspModelingUtils.validateOrExplainProblemCreatingIspConfig;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.BgpProcess.testBgpProcess;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
@@ -98,6 +99,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -1003,7 +1005,67 @@ public class IspModelingUtilsTest {
     assertFalse(connection.isPresent());
     assertThat(
         warnings.getRedFlagWarnings(),
-        contains(hasText("ISP Modeling: BGP neighbor 0.0.0.0 on node conf is invalid.")));
+        contains(
+            hasText(
+                "ISP Modeling: BGP neighbor 0.0.0.0 on node conf is invalid: unable to determine"
+                    + " remote AS.")));
+  }
+
+  /** Helper to generate a peer for which ISP can be generated. */
+  private BgpActivePeerConfig.Builder correctBuilder() {
+    return BgpActivePeerConfig.builder()
+        .setPeerAddress(_ispIp)
+        .setLocalIp(_snapshotIp)
+        .setLocalAs(_snapshotAsn)
+        .setRemoteAs(_ispAsn)
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+        .setBgpProcess(_snapshotHost.getDefaultVrf().getBgpProcess());
+  }
+
+  @Test
+  public void testValidateOrExplainProblemCreatingIspConfig() {
+    assertThat(
+        validateOrExplainProblemCreatingIspConfig(
+            correctBuilder().build(), ImmutableSet.of(), ALL_AS_NUMBERS),
+        equalTo(Optional.empty()));
+
+    assertThat(
+        validateOrExplainProblemCreatingIspConfig(
+                correctBuilder().setLocalAs(null).build(), ImmutableSet.of(), ALL_AS_NUMBERS)
+            .get(),
+        containsString("unable to determine local AS"));
+    assertThat(
+        validateOrExplainProblemCreatingIspConfig(
+                correctBuilder().setLocalAs(_ispAsn).build(), ImmutableSet.of(), ALL_AS_NUMBERS)
+            .get(),
+        containsString("iBGP peers are not supported"));
+    assertThat(
+        validateOrExplainProblemCreatingIspConfig(
+                correctBuilder().setRemoteAsns(LongSpace.EMPTY).build(),
+                ImmutableSet.of(),
+                ALL_AS_NUMBERS)
+            .get(),
+        containsString("unable to determine remote AS"));
+    assertThat(
+        validateOrExplainProblemCreatingIspConfig(
+                correctBuilder().build(), ImmutableSet.of(), LongSpace.of(_ispAsn + 3))
+            .get(),
+        containsString("remote AS 1 is not allowed by the filter"));
+    assertThat(
+        validateOrExplainProblemCreatingIspConfig(
+                correctBuilder().setPeerAddress(null).build(), ImmutableSet.of(), ALL_AS_NUMBERS)
+            .get(),
+        containsString("remote IP is not configured"));
+    assertThat(
+        validateOrExplainProblemCreatingIspConfig(
+                correctBuilder().build(), ImmutableSet.of(Ip.ZERO), ALL_AS_NUMBERS)
+            .get(),
+        containsString("remote IP " + _ispIp + " is not allowed by the filter"));
+    assertThat(
+        validateOrExplainProblemCreatingIspConfig(
+                correctBuilder().setLocalIp(null).build(), ImmutableSet.of(), ALL_AS_NUMBERS)
+            .get(),
+        containsString("unable to determine local IP address"));
   }
 
   @Test
