@@ -24,12 +24,7 @@ public final class BDDPairingFactory {
 
   public BDDPairingFactory(BDDFactory bddFactory, Set<BDDVarPair> varPairs) {
     checkArgument(!varPairs.isEmpty(), "BDDPairingFactory must have at least one variable pair.");
-    assert varPairsInvariants(varPairs);
-    _bddFactory = bddFactory;
-    _varPairs = ImmutableSet.copyOf(varPairs);
-  }
 
-  private boolean varPairsInvariants(Set<BDDVarPair> varPairs) {
     Set<Integer> oldVars = varPairs.stream().map(BDDVarPair::getOldVar).collect(Collectors.toSet());
     checkArgument(oldVars.size() == varPairs.size(), "domain must have distinct variables");
 
@@ -39,7 +34,8 @@ public final class BDDPairingFactory {
     checkArgument(
         Sets.intersection(oldVars, newVars).isEmpty(), "domain and codomain must be disjoint");
 
-    return true;
+    _bddFactory = bddFactory;
+    _varPairs = ImmutableSet.copyOf(varPairs);
   }
 
   /** Create a {@link BDDPairing} that swaps domain and codomain variables. */
@@ -54,8 +50,9 @@ public final class BDDPairingFactory {
     checkArgument(
         _bddFactory == other._bddFactory,
         "Cannot compose with a BDDPairingFactory for a different BDDFactory");
-    assert Sets.intersection(_varPairs, other._varPairs).isEmpty()
-        : "Cannot compose two BDDPairingFactories with overlapping var pairs";
+    checkArgument(
+        Sets.intersection(_varPairs, other._varPairs).isEmpty(),
+        "Cannot compose two BDDPairingFactories with overlapping var pairs");
     return new BDDPairingFactory(
         _bddFactory,
         Stream.of(_varPairs, other._varPairs)
