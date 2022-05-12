@@ -43,6 +43,7 @@ public class Transform implements Transition {
 
   private void init() {
     _pairingFactory.getDomainVarsBdd(); // pairing factory computes this lazily
+    _pairingFactory.getPrimeToUnprimePairing();
     _reverseRelation = _forwardRelation.replace(_pairingFactory.getSwapPairing());
   }
 
@@ -56,8 +57,7 @@ public class Transform implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return bdd.applyEx(_forwardRelation, BDDFactory.and, _pairingFactory.getDomainVarsBdd())
-        .replaceWith(_pairingFactory.getSwapPairing());
+    return bdd.transform(_forwardRelation, _pairingFactory.getPrimeToUnprimePairing());
   }
 
   @Override
@@ -65,8 +65,7 @@ public class Transform implements Transition {
     if (_reverseRelation == null) {
       init();
     }
-    return bdd.applyEx(_reverseRelation, BDDFactory.and, _pairingFactory.getDomainVarsBdd())
-        .replaceWith(_pairingFactory.getSwapPairing());
+    return bdd.transform(_reverseRelation, _pairingFactory.getPrimeToUnprimePairing());
   }
 
   @Override

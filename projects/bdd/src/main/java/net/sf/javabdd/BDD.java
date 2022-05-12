@@ -743,6 +743,24 @@ public abstract class BDD {
   public abstract BDD applyEx(BDD that, BDDFactory.BDDOp opr, BDD var);
 
   /**
+   * Shorthand for {@code this.applyEx(rel, BDDFactory.and, vars).replace(pair)}, where
+   *
+   * <ol>
+   *   <li>vars is a varset BDD representation of the codomain of pair
+   *   <li>if pair maps variable V1 to V2, then LEVEL(V1) == LEVEL(V2)+1
+   * </ol>
+   *
+   * <p>Use case: {@code rel} represents a relation (multi-valued or nondeterministic function) as a
+   * constraint over unprimed and and primed variables (unprimed variables represent inputs and
+   * primed variables represent outputs), {@code x} represents a set of values as a constraint over
+   * unprimed variables, and {@code pair} maps the primed variables to their corresponding unprimed
+   * variables. {@code x.transform(rel, pair)} returns the image of {@code x} under {@code rel},
+   * i.e. the set containing all possible results of apply {@code rel} to a value in {@code x},
+   * represented as a constraint over unprimed variables.
+   */
+  public abstract BDD transform(BDD rel, BDDPairing pair);
+
+  /**
    * Applies the binary operator <tt>opr</tt> to two BDDs and then performs a unique quantification
    * of the variables from the variable set <tt>var</tt>.
    *
