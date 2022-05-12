@@ -5,6 +5,7 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIn
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByOriginatingVrf;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -18,6 +19,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.traceroute.TraceDag;
@@ -31,6 +33,7 @@ import org.batfish.datamodel.InterfaceForwardingBehavior;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpaceContainsIp;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.acl.SourcesReferencedOnDevice;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
@@ -47,6 +50,7 @@ import org.batfish.dataplane.TracerouteEngineImpl;
  */
 public class TracerouteEngineImplContext {
   private final Map<String, Configuration> _configurations;
+  Function<String, Set<String>> _interfacesMatchedOnDevice;
   private final Multimap<NodeInterfacePair, FirewallSessionTraceInfo> _sessionsByIngressInterface;
   private final Map<String, Multimap<String, FirewallSessionTraceInfo>> _sessionsByOriginatingVrf;
   private final Map<String, Map<String, Fib>> _fibs;
@@ -63,8 +67,10 @@ public class TracerouteEngineImplContext {
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
       boolean ignoreFilters,
-      Map<String, Configuration> configurations) {
+      Map<String, Configuration> configurations,
+      Function<String, Set<String>> interfacesMatchedOnDevice) {
     _configurations = configurations;
+    _interfacesMatchedOnDevice = interfacesMatchedOnDevice;
     _flows = flows;
     _fibs = fibs;
     _ignoreFilters = ignoreFilters;
@@ -73,6 +79,28 @@ public class TracerouteEngineImplContext {
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
     _sessionsByOriginatingVrf = buildSessionsByOriginatingVrf(sessions);
     _topology = topology;
+  }
+
+  /** For testing only. */
+  @VisibleForTesting
+  TracerouteEngineImplContext(
+      DataPlane dataPlane,
+      Topology topology,
+      Set<FirewallSessionTraceInfo> sessions,
+      Set<Flow> flows,
+      Map<String, Map<String, Fib>> fibs,
+      boolean ignoreFilters,
+      Map<String, Configuration> configurations) {
+    this(
+        dataPlane,
+        topology,
+        sessions,
+        flows,
+        fibs,
+        ignoreFilters,
+        configurations,
+        hostname ->
+            SourcesReferencedOnDevice.activeReferencedSources(configurations.get(hostname)));
   }
 
   /**
@@ -153,6 +181,10 @@ public class TracerouteEngineImplContext {
 
   boolean getIgnoreFilters() {
     return _ignoreFilters;
+  }
+
+  Set<String> getInterfacesMatchedOnDevice(String hostname) {
+    return _interfacesMatchedOnDevice.apply(hostname);
   }
 
   Collection<FirewallSessionTraceInfo> getSessionsForIncomingInterface(
