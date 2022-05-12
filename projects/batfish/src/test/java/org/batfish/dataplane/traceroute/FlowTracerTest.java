@@ -18,7 +18,6 @@ import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.dataplane.traceroute.FlowTracer.buildFirewallSessionTraceInfo;
 import static org.batfish.dataplane.traceroute.FlowTracer.buildRoutingStep;
-import static org.batfish.dataplane.traceroute.FlowTracer.createBreadcrumbInterfaces;
 import static org.batfish.dataplane.traceroute.FlowTracer.getSessionAction;
 import static org.batfish.dataplane.traceroute.FlowTracer.initialFlowTracer;
 import static org.batfish.dataplane.traceroute.FlowTracer.matchSessionReturnFlow;
@@ -201,8 +200,7 @@ public final class FlowTracerTest {
             flow,
             0,
             0,
-            Interners.newStrongInterner(),
-            createBreadcrumbInterfaces(ctxt));
+            Interners.newStrongInterner());
     flowTracer.buildAcceptTrace();
     return Iterables.getOnlyElement(traces);
   }
@@ -343,8 +341,7 @@ public final class FlowTracerTest {
             flow,
             0,
             0,
-            Interners.newStrongInterner(),
-            createBreadcrumbInterfaces(ctxt));
+            Interners.newStrongInterner());
 
     flowTracer.buildAcceptTrace();
     TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
@@ -433,8 +430,7 @@ public final class FlowTracerTest {
               returnFlow,
               0,
               0,
-              Interners.newStrongInterner(),
-              createBreadcrumbInterfaces(ctxt));
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should match session and get forwarded out original ingress interface
@@ -466,8 +462,7 @@ public final class FlowTracerTest {
               nonMatchingReturnFlow,
               0,
               0,
-              Interners.newStrongInterner(),
-              createBreadcrumbInterfaces(ctxt));
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should not match session, so should be dropped (FIB has no routes)
@@ -578,8 +573,7 @@ public final class FlowTracerTest {
               returnFlow,
               0,
               0,
-              Interners.newStrongInterner(),
-              createBreadcrumbInterfaces(ctxt));
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should match session and get accepted.
@@ -628,8 +622,7 @@ public final class FlowTracerTest {
               nonMatchingReturnFlow,
               0,
               0,
-              Interners.newStrongInterner(),
-              createBreadcrumbInterfaces(ctxt));
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should not match session, so should be dropped (FIB has no routes)
@@ -779,8 +772,7 @@ public final class FlowTracerTest {
             returnFlow,
             0,
             0,
-            Interners.newStrongInterner(),
-            createBreadcrumbInterfaces(ctxt));
+            Interners.newStrongInterner());
     flowTracer.processHop();
 
     TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
@@ -929,8 +921,7 @@ public final class FlowTracerTest {
             flow,
             0,
             0,
-            Interners.newStrongInterner(),
-            createBreadcrumbInterfaces(ctxt));
+            Interners.newStrongInterner());
     flowTracer.processHop();
     return !Iterables.getOnlyElement(traces).getNewFirewallSessions().isEmpty();
   }
@@ -1730,8 +1721,7 @@ public final class FlowTracerTest {
             flow,
             0,
             0,
-            Interners.newStrongInterner(),
-            createBreadcrumbInterfaces(ctxt));
+            Interners.newStrongInterner());
 
     {
       FlowDisposition disposition = FlowDisposition.INSUFFICIENT_INFO;
@@ -1951,8 +1941,7 @@ public final class FlowTracerTest {
             flow,
             0,
             0,
-            Interners.newStrongInterner(),
-            createBreadcrumbInterfaces(ctxt));
+            Interners.newStrongInterner());
 
     Ip dstIp2 = Ip.parse("2.2.2.2");
     flowTracer.applyTransformation(
@@ -2088,8 +2077,7 @@ public final class FlowTracerTest {
               flowWithPermittedSrc, // current flow
               0,
               0,
-              Interners.newStrongInterner(),
-              createBreadcrumbInterfaces(ctxt));
+              Interners.newStrongInterner());
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
@@ -2118,8 +2106,7 @@ public final class FlowTracerTest {
               flowWithBlockedSrc, // current flow
               0,
               0,
-              Interners.newStrongInterner(),
-              createBreadcrumbInterfaces(ctxt));
+              Interners.newStrongInterner());
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));

@@ -31,8 +31,6 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionFor
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -55,7 +53,6 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -79,7 +76,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.Evaluator;
-import org.batfish.datamodel.acl.SourcesReferencedOnDevice;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ArpErrorStep;
@@ -236,15 +232,13 @@ class FlowTracer {
   /** Only create one in-memory instance of the same breadcrumb. */
   private final @Nonnull Interner<Breadcrumb> _breadcrumbInterner;
 
-  private final @Nonnull Function<String, Set<String>> _breadcrumbInterfaces;
-
   private @Nonnull Breadcrumb newBreadcrumb(
       @Nonnull String currentNodeName,
       @Nonnull String vrfName,
       @Nullable String ingressInterface,
       @Nonnull Flow currentFlow) {
     String breadcrumbIngressInterface =
-        _breadcrumbInterfaces.apply(currentNodeName).contains(ingressInterface)
+        _tracerouteContext.getInterfacesMatchedOnDevice(currentNodeName).contains(ingressInterface)
             ? ingressInterface
             : null;
     return _breadcrumbInterner.intern(
@@ -275,19 +269,6 @@ class FlowTracer {
         tracerouteContext, node, ingressInterface, originalFlow, new LegacyTraceRecorder(consumer));
   }
 
-  static Function<String, Set<String>> createBreadcrumbInterfaces(
-      TracerouteEngineImplContext tracerouteContext) {
-    LoadingCache<String, Set<String>> interfacesMatchedAgainst =
-        Caffeine.newBuilder()
-            .build(
-                hostname -> {
-                  Configuration c = tracerouteContext.getConfigurations().get(hostname);
-                  assert c != null;
-                  return SourcesReferencedOnDevice.activeReferencedSources(c);
-                });
-    return interfacesMatchedAgainst::get;
-  }
-
   /** Creates an initial {@link FlowTracer} for a new traceroute. */
   @Nonnull
   static FlowTracer initialFlowTracer(
@@ -313,8 +294,7 @@ class FlowTracer {
         originalFlow,
         0,
         0,
-        Interners.newStrongInterner(),
-        createBreadcrumbInterfaces(tracerouteContext));
+        Interners.newStrongInterner());
   }
 
   /**
@@ -347,8 +327,7 @@ class FlowTracer {
         _currentFlow,
         _newSessions.size(),
         _breadcrumbs.size(),
-        _breadcrumbInterner,
-        _breadcrumbInterfaces);
+        _breadcrumbInterner);
   }
 
   private static @Nonnull String initVrfName(
@@ -384,8 +363,7 @@ class FlowTracer {
       Flow currentFlow,
       int origNewSessionsSize,
       int origBreadcrumbsSize,
-      @Nonnull Interner<Breadcrumb> breadcrumbInterner,
-      Function<String, Set<String>> breadcrumbInterfaces) {
+      @Nonnull Interner<Breadcrumb> breadcrumbInterner) {
     assert originalFlow.equals(currentFlow)
             || steps.stream()
                 .anyMatch(step -> step instanceof TransformationStep || step instanceof PolicyStep)
@@ -407,7 +385,6 @@ class FlowTracer {
     _origNewSessionsSize = origNewSessionsSize;
     _origBreadcrumbsSize = origBreadcrumbsSize;
     _breadcrumbInterner = breadcrumbInterner;
-    _breadcrumbInterfaces = breadcrumbInterfaces;
   }
 
   @Nullable
@@ -461,8 +438,7 @@ class FlowTracer {
         _currentFlow,
         _newSessions.size(),
         _breadcrumbs.size(),
-        _breadcrumbInterner,
-        _breadcrumbInterfaces);
+        _breadcrumbInterner);
   }
 
   /** Return forked {@link FlowTracer} on same node and VRF. Used for taking ECMP actions. */
@@ -496,8 +472,7 @@ class FlowTracer {
         _currentFlow,
         _origNewSessionsSize,
         _origBreadcrumbsSize,
-        _breadcrumbInterner,
-        _breadcrumbInterfaces);
+        _breadcrumbInterner);
   }
 
   private void processOutgoingInterfaceEdges(
