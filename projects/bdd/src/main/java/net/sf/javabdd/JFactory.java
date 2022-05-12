@@ -28,6 +28,8 @@
  */
 package net.sf.javabdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
@@ -37,9 +39,11 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -2170,6 +2174,11 @@ public class JFactory extends BDDFactory {
   private int bdd_transform(int l, int r, bddPair pair) {
     CHECK(l);
     CHECK(r);
+
+    if (!_validPairIdsForTransform.contains(pair.id)) {
+      checkArgument(pair.isValidForTransform(), "Input BDDPairing is not valid for transform");
+      _validPairIdsForTransform.add(pair.id);
+    }
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -4657,10 +4666,25 @@ public class JFactory extends BDDFactory {
       sb.append('}');
       return sb.toString();
     }
+
+    /**
+     * Test whether this pairing is compatible with {@link BDD#transform(BDD, BDDPairing)}: the
+     * pairing must map each variable to itself (i.e. noop) or the variable at the previous level.
+     */
+    private boolean isValidForTransform() {
+      for (int i = 0; i < result.length; i++) {
+        int level = LEVEL(result[i]);
+        if (!(level == i || level == i - 1)) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   private bddPair pairs; /* List of all replacement pairs in use */
   private int pairsid; /* Pair identifier */
+  private Set<Integer> _validPairIdsForTransform; /* Set of pairs that can be used with transform */
 
   /**
    * ***********************************************************************
@@ -4669,6 +4693,7 @@ public class JFactory extends BDDFactory {
   private void bdd_pairs_init() {
     pairsid = 0;
     pairs = null;
+    _validPairIdsForTransform = new HashSet<>();
   }
 
   private int update_pairsid() {
@@ -4678,14 +4703,14 @@ public class JFactory extends BDDFactory {
 
     if (pairsid == numIds) {
       // we use more pair IDs than there are pair objects -- each time we mutate a pair we give it a
-      // new ID. so
-      // if we run out, search for an unused one. have to clear the cache too
+      // new ID. so if we run out, search for an unused one. have to clear the cache too
       pairsid = 0;
       for (bddPair p = pairs; p != null; p = p.next) {
         p.id = pairsid++;
       }
       // bdd_operator_reset();
       BddCache_reset(replacecache);
+      _validPairIdsForTransform.clear();
     }
 
     if (pairsid >= numIds) {
