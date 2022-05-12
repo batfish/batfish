@@ -1,5 +1,9 @@
 package org.batfish.dataplane;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -18,6 +22,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.acl.SourcesReferencedOnDevice;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.dataplane.traceroute.TracerouteEngineImplContext;
@@ -33,12 +38,21 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
   private final DataPlane _dataPlane;
   private final Topology _topology;
   private final Map<String, Configuration> _configurations;
+  private final LoadingCache<String, Set<String>> _interfacesMatchedAgainst;
 
   public TracerouteEngineImpl(
       DataPlane dataPlane, Topology topology, Map<String, Configuration> configurations) {
     _dataPlane = dataPlane;
     _topology = topology;
     _configurations = configurations;
+    _interfacesMatchedAgainst =
+        Caffeine.newBuilder()
+            .build(
+                hostname -> {
+                  Configuration c = _configurations.get(hostname);
+                  checkArgument(c != null, "Missing configuration for %s", hostname);
+                  return SourcesReferencedOnDevice.activeReferencedSources(c);
+                });
   }
 
   @Override
@@ -73,7 +87,8 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
                             ImmutableSet.copyOf(c),
                             _dataPlane.getFibs(),
                             ignoreFilters,
-                            _configurations)
+                            _configurations,
+                            _interfacesMatchedAgainst::get)
                         .buildTraceDags()));
     return result.build();
   }
