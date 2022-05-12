@@ -1,7 +1,6 @@
 package org.batfish.bddreachability.transition;
 
 import static org.batfish.common.bdd.BDDUtils.bddFactory;
-import static org.batfish.common.bdd.BDDUtils.bitvector;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -44,10 +43,14 @@ public class TransformTest {
 
     _xPrimedInt =
         new PrimedBDDInteger(
-            _factory, bitvector(_factory, 2, 0, false), bitvector(_factory, 2, 2, false));
+            _factory,
+            new BDD[] {_factory.ithVar(0), _factory.ithVar(2)},
+            new BDD[] {_factory.ithVar(1), _factory.ithVar(3)});
     _yPrimedInt =
         new PrimedBDDInteger(
-            _factory, bitvector(_factory, 2, 4, false), bitvector(_factory, 2, 6, false));
+            _factory,
+            new BDD[] {_factory.ithVar(4), _factory.ithVar(6)},
+            new BDD[] {_factory.ithVar(5), _factory.ithVar(7)});
 
     _x = _xPrimedInt.getVar();
     BDDInteger xPrime = _xPrimedInt.getPrimeVar();

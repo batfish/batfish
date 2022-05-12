@@ -28,6 +28,8 @@
  */
 package net.sf.javabdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
@@ -37,9 +39,11 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -349,6 +353,14 @@ public class JFactory extends BDDFactory {
       int z = opr.id;
       int a = ((BDDImpl) var)._index;
       return makeBDD(bdd_appex(x, y, z, a));
+    }
+
+    @Override
+    public BDD transform(BDD rel, BDDPairing pair) {
+      int x = _index;
+      int y = ((BDDImpl) rel)._index;
+
+      return makeBDD(bdd_transform(x, y, (bddPair) pair));
     }
 
     @Override
@@ -837,6 +849,10 @@ public class JFactory extends BDDFactory {
     return r;
   }
 
+  private static int TRANSFORMHASH(int cacheid, int l, int r) {
+    return TRIPLE(cacheid, l, r);
+  }
+
   private static int REPLACEHASH(int cacheid, int r) {
     return PAIR(cacheid, r);
   }
@@ -1164,7 +1180,7 @@ public class JFactory extends BDDFactory {
     }
     replacepair = pair.result;
     replacelast = pair.last;
-    replaceid = (pair.id << 2) | CACHEID_REPLACE;
+    replaceid = (pair.id << 3) | CACHEID_REPLACE;
 
     INITREF();
     int res = replace_rec(r);
@@ -1207,7 +1223,7 @@ public class JFactory extends BDDFactory {
        * the bdd_correctify calls and restore when it returns.
        */
       int tmp = replaceid;
-      replaceid = (level << 2) | CACHEID_CORRECTIFY;
+      replaceid = (level << 3) | CACHEID_CORRECTIFY;
       res = bdd_correctify(level, READREF(2), READREF(1));
       replaceid = tmp;
     }
@@ -2155,6 +2171,102 @@ public class JFactory extends BDDFactory {
     return res;
   }
 
+  private int bdd_transform(int l, int r, bddPair pair) {
+    CHECK(l);
+    CHECK(r);
+
+    if (!_validPairIdsForTransform.contains(pair.id)) {
+      checkArgument(pair.isValidForTransform(), "Input BDDPairing is not valid for transform");
+      _validPairIdsForTransform.add(pair.id);
+    }
+
+    if (applycache == null) {
+      applycache = BddCacheI_init(cachesize);
+    }
+    if (replacecache == null) {
+      replacecache = BddCacheI_init(cachesize);
+    }
+    replacepair = pair.result;
+    replacelast = pair.last;
+    replaceid = (pair.id << 3) | CACHEID_REPLACE;
+
+    INITREF();
+    int res = transform_rec(l, r);
+    checkresize();
+
+    return res;
+  }
+
+  private int transform_rec(int l, int r) {
+    BddCacheDataI entry;
+    int res;
+
+    if (ISZERO(l) || ISZERO(r)) {
+      return BDDZERO;
+    }
+    if (LEVEL(l) > replacelast && LEVEL(r) > replacelast) {
+      return and_rec(l, r);
+    }
+    int hash = TRANSFORMHASH(replaceid, l, r);
+    entry = BddCache_lookupI(replacecache, hash);
+    if (entry.a == l && entry.b == r && entry.c == replaceid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.res;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss--;
+    }
+
+    int level;
+    if (LEVEL(l) == LEVEL(r)) {
+      level = LEVEL(l);
+      PUSHREF(transform_rec(LOW(l), LOW(r)));
+      PUSHREF(transform_rec(HIGH(l), HIGH(r)));
+    } else if (LEVEL(l) < LEVEL(r)) {
+      level = LEVEL(l);
+      PUSHREF(transform_rec(LOW(l), r));
+      PUSHREF(transform_rec(HIGH(l), r));
+    } else {
+      level = LEVEL(r);
+      PUSHREF(transform_rec(l, LOW(r)));
+      PUSHREF(transform_rec(l, HIGH(r)));
+    }
+
+    int lo = READREF(2);
+    int hi = READREF(1);
+
+    assert LEVEL(lo) >= level && LEVEL(hi) >= level : "Cannot transform up more than one level";
+
+    // check if this level is replaced, i.e. if it's in the codomain of the replacepair. If it is,
+    // it must be mapped from the next level.
+    int nextLevel = level + 1;
+    if (nextLevel < replacepair.length && LEVEL(replacepair[nextLevel]) == level) {
+      // this level has been replaced, i.e. existentially quantified. OR hi and lo
+      res = or_rec(lo, hi);
+    } else {
+      // two cases: replace at this level or keep the level. If replaced, it must be mapped to the
+      // previous level.
+      int codomLevel = LEVEL(replacepair[level]);
+      assert codomLevel == level || codomLevel == level - 1
+          : "Transform can only replace variables to the previous level";
+      res = bdd_makenode(codomLevel, lo, hi);
+    }
+    POPREF(2);
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = l;
+    entry.b = r;
+    entry.c = replaceid;
+    entry.res = res;
+    entry.hash = hash;
+
+    return res;
+  }
+
   private int varset2vartable(int r) {
     if (r < 2) {
       return bdd_error(BDD_VARSET);
@@ -2823,7 +2935,7 @@ public class JFactory extends BDDFactory {
       applycache = BddCacheI_init(cachesize);
     }
     composelevel = bddvar2level[var];
-    replaceid = (composelevel << 2) | CACHEID_COMPOSE;
+    replaceid = (composelevel << 3) | CACHEID_COMPOSE;
 
     INITREF();
     int res = compose_rec(f, g);
@@ -2893,7 +3005,7 @@ public class JFactory extends BDDFactory {
       replacecache = BddCacheI_init(cachesize);
     }
     replacepair = pair.result;
-    replaceid = (pair.id << 2) | CACHEID_VECCOMPOSE;
+    replaceid = (pair.id << 3) | CACHEID_VECCOMPOSE;
     replacelast = pair.last;
 
     INITREF();
@@ -4095,11 +4207,12 @@ public class JFactory extends BDDFactory {
   private static final int CACHEID_SATCOULN = 0x3;
   private static final int CACHEID_PATHCOU = 0x4;
 
-  /* Hash value modifiers for replace/compose */
+  /* Hash value modifiers for replace/compose. Max 8 values */
   private static final int CACHEID_REPLACE = 0x0;
   private static final int CACHEID_COMPOSE = 0x1;
   private static final int CACHEID_VECCOMPOSE = 0x2;
   private static final int CACHEID_CORRECTIFY = 0x3;
+  private static final int CACHEID_TRANSFORM = 0x4;
 
   /* Hash value modifiers for quantification. Max 8 values */
   private static final int CACHEID_EXIST = 0x0;
@@ -4553,10 +4666,25 @@ public class JFactory extends BDDFactory {
       sb.append('}');
       return sb.toString();
     }
+
+    /**
+     * Test whether this pairing is compatible with {@link BDD#transform(BDD, BDDPairing)}: the
+     * pairing must map each variable to itself (i.e. noop) or the variable at the previous level.
+     */
+    private boolean isValidForTransform() {
+      for (int i = 0; i < result.length; i++) {
+        int level = LEVEL(result[i]);
+        if (!(level == i || level == i - 1)) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   private bddPair pairs; /* List of all replacement pairs in use */
   private int pairsid; /* Pair identifier */
+  private Set<Integer> _validPairIdsForTransform; /* Set of pairs that can be used with transform */
 
   /**
    * ***********************************************************************
@@ -4565,18 +4693,28 @@ public class JFactory extends BDDFactory {
   private void bdd_pairs_init() {
     pairsid = 0;
     pairs = null;
+    _validPairIdsForTransform = new HashSet<>();
   }
 
   private int update_pairsid() {
     pairsid++;
 
-    if (pairsid == (INT_MAX >> 2)) {
+    int numIds = INT_MAX >> 3;
+
+    if (pairsid == numIds) {
+      // we use more pair IDs than there are pair objects -- each time we mutate a pair we give it a
+      // new ID. so if we run out, search for an unused one. have to clear the cache too
       pairsid = 0;
       for (bddPair p = pairs; p != null; p = p.next) {
         p.id = pairsid++;
       }
       // bdd_operator_reset();
       BddCache_reset(replacecache);
+      _validPairIdsForTransform.clear();
+    }
+
+    if (pairsid >= numIds) {
+      throw new IllegalStateException("too many pairings");
     }
 
     return pairsid;
