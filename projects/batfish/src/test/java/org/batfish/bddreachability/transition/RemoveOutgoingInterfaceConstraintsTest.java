@@ -9,10 +9,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -62,8 +65,18 @@ public class RemoveOutgoingInterfaceConstraintsTest {
   private static BDDOutgoingOriginalFlowFilterManager getMgrForConfig(Configuration c) {
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(PKT, configs);
+    IpAccessListToBddImpl aclToBdd =
+        new IpAccessListToBddImpl(
+            PKT, srcMgrs.get(c.getHostname()), c.getIpAccessLists(), c.getIpSpaces());
+    Map<String, Map<String, Supplier<BDD>>> aclPermitBdds =
+        ImmutableMap.of(
+            c.getHostname(),
+            CollectionUtil.toImmutableMap(
+                c.getIpAccessLists().values(),
+                IpAccessList::getName,
+                (acl) -> () -> aclToBdd.toBdd(acl)));
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
-        BDDOutgoingOriginalFlowFilterManager.forNetwork(PKT, configs, srcMgrs);
+        BDDOutgoingOriginalFlowFilterManager.forNetwork(PKT, configs, aclPermitBdds);
     return mgrs.get(c.getHostname());
   }
 

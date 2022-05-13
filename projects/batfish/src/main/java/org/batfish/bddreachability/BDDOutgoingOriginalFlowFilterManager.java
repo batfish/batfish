@@ -2,7 +2,6 @@ package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.immutableEntry;
-import static org.batfish.common.bdd.IpAccessListToBdd.toBdds;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -13,13 +12,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -38,6 +39,8 @@ import org.batfish.datamodel.IpAccessList;
  * outgoingOriginalFlowFilter}.
  */
 public final class BDDOutgoingOriginalFlowFilterManager {
+  private static final Logger LOGGER =
+      LogManager.getLogger(BDDOutgoingOriginalFlowFilterManager.class);
   private static final String VAR_NAME = "OutgoingInterface";
 
   /**
@@ -113,7 +116,9 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    * network. A single variable is shared by all of them.
    */
   public static Map<String, BDDOutgoingOriginalFlowFilterManager> forNetwork(
-      BDDPacket pkt, Map<String, Configuration> configs, Map<String, BDDSourceManager> srcMgrs) {
+      BDDPacket pkt,
+      Map<String, Configuration> configs,
+      Map<String, Map<String, Supplier<BDD>>> aclPermitBDDs) {
     // hostname -> set of interfaces that will be values for the config's finite domain
     ImmutableMap.Builder<String, Set<String>> finiteDomainValues = ImmutableMap.builder();
 
@@ -123,6 +128,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
     // hostname -> iface name -> BDD for flows permitted by interface's outgoingOriginalFlowFilter
     Map<String, Map<String, BDD>> filterBdds = new HashMap<>();
 
+    long t = System.currentTimeMillis();
     for (Configuration c : configs.values()) {
       String hostname = c.getHostname();
       Set<String> activeWithFilters =
@@ -153,8 +159,10 @@ public final class BDDOutgoingOriginalFlowFilterManager {
         finiteDomainValues.put(hostname, activeWithFilters);
       }
 
-      filterBdds.put(hostname, buildFilterBdds(pkt, c, srcMgrs.get(hostname)));
+      filterBdds.put(hostname, buildFilterBdds(c, aclPermitBDDs.get(hostname)));
     }
+    t = System.currentTimeMillis() - t;
+    LOGGER.info("computed filter BDDs in {}ms", t);
 
     Map<String, BDDFiniteDomain<String>> finiteDomains =
         BDDFiniteDomain.domainsWithSharedVariable(pkt, VAR_NAME, finiteDomainValues.build());
@@ -162,15 +170,20 @@ public final class BDDOutgoingOriginalFlowFilterManager {
     // Allocate permit var
     BDD permitVar = allocatePermitVar(pkt);
 
-    return toImmutableMap(
-        configs.keySet(),
-        Function.identity(),
-        hostname ->
-            new BDDOutgoingOriginalFlowFilterManager(
-                finiteDomains.get(hostname),
-                repActiveIfacesWithoutOrigFlowFilters.get(hostname),
-                filterBdds.get(hostname),
-                permitVar));
+    t = System.currentTimeMillis();
+    Map<String, BDDOutgoingOriginalFlowFilterManager> result =
+        toImmutableMap(
+            configs.keySet(),
+            Function.identity(),
+            hostname ->
+                new BDDOutgoingOriginalFlowFilterManager(
+                    finiteDomains.get(hostname),
+                    repActiveIfacesWithoutOrigFlowFilters.get(hostname),
+                    filterBdds.get(hostname),
+                    permitVar));
+    t = System.currentTimeMillis() - t;
+    LOGGER.info("computed BDDOutgoingOriginalFlowFilterManager in {}ms", t);
+    return result;
   }
 
   /**
@@ -178,7 +191,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    * outgoingOriginalFlowFilters} to the permit BDD for each interface's outgoingOriginalFlowFilter.
    */
   private static Map<String, BDD> buildFilterBdds(
-      BDDPacket pkt, Configuration c, BDDSourceManager srcMgr) {
+      Configuration c, Map<String, Supplier<BDD>> aclPermitBDDs) {
     // Map of interface name -> outgoingOriginalFlowFilter for that interface.
     // Only includes active interfaces with outgoing original flow filters.
     Map<String, IpAccessList> origFlowFilters =
@@ -187,12 +200,8 @@ public final class BDDOutgoingOriginalFlowFilterManager {
             .filter(e -> e.getValue() != null)
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
 
-    // Map of filter name -> permit BDD for filter
-    Map<String, BDD> filterBddsByAclName =
-        toBdds(pkt, origFlowFilters.values(), c.getIpAccessLists(), c.getIpSpaces(), srcMgr);
-
     return toImmutableMap(
-        origFlowFilters, Entry::getKey, e -> filterBddsByAclName.get(e.getValue().getName()));
+        origFlowFilters, Entry::getKey, e -> aclPermitBDDs.get(e.getValue().getName()).get());
   }
 
   /**

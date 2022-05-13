@@ -5,6 +5,7 @@ import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.removeOutgoingInterfaceConstraints;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -21,11 +22,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
@@ -106,8 +109,18 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   private BDDOutgoingOriginalFlowFilterManager getMgrForConfig(Configuration c) {
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(_pkt, configs);
+    IpAccessListToBddImpl aclToBdd =
+        new IpAccessListToBddImpl(
+            _pkt, srcMgrs.get(c.getHostname()), c.getIpAccessLists(), c.getIpSpaces());
+    Map<String, Map<String, Supplier<BDD>>> aclPermitBdds =
+        ImmutableMap.of(
+            c.getHostname(),
+            toImmutableMap(
+                c.getIpAccessLists().values(),
+                IpAccessList::getName,
+                (acl) -> () -> aclToBdd.toBdd(acl)));
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
-        BDDOutgoingOriginalFlowFilterManager.forNetwork(_pkt, configs, srcMgrs);
+        BDDOutgoingOriginalFlowFilterManager.forNetwork(_pkt, configs, aclPermitBdds);
     return mgrs.get(c.getHostname());
   }
 
@@ -264,10 +277,28 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     Configuration c3 = createConfig(nf, ImmutableSet.of());
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
-
     Map<String, BDDSourceManager> bddSrcMgrs = BDDSourceManager.forNetwork(_pkt, configs, false);
+
+    Map<String, IpAccessListToBdd> aclToBdds =
+        toImmutableMap(
+            configs.values(),
+            Configuration::getHostname,
+            c ->
+                new IpAccessListToBddImpl(
+                    _pkt, bddSrcMgrs.get(c.getHostname()), c.getIpAccessLists(), c.getIpSpaces()));
+
+    Map<String, Map<String, Supplier<BDD>>> aclPermitBdds =
+        toImmutableMap(
+            aclToBdds,
+            Map.Entry::getKey,
+            entry ->
+                toImmutableMap(
+                    configs.get(entry.getKey()).getIpAccessLists().values(),
+                    IpAccessList::getName,
+                    acl -> () -> entry.getValue().toBdd(acl)));
+
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
-        BDDOutgoingOriginalFlowFilterManager.forNetwork(_pkt, configs, bddSrcMgrs);
+        BDDOutgoingOriginalFlowFilterManager.forNetwork(_pkt, configs, aclPermitBdds);
     BDDOutgoingOriginalFlowFilterManager mgr1 = mgrs.get(c1.getHostname());
     BDDOutgoingOriginalFlowFilterManager mgr2 = mgrs.get(c2.getHostname());
     BDDOutgoingOriginalFlowFilterManager mgr3 = mgrs.get(c3.getHostname());

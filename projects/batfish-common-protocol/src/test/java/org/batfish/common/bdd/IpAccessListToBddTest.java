@@ -61,20 +61,30 @@ public class IpAccessListToBddTest {
   public void testPermittedByAcl2() {
     Ip fooIp = Ip.parse("1.1.1.1");
     BDD fooIpBDD = _pkt.getDstIp().value(fooIp.asLong());
+    IpAccessList acl1 =
+        IpAccessList.builder()
+            .setName("acl1")
+            .setLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()))
+            .build();
+    IpAccessList acl2 =
+        IpAccessList.builder()
+            .setName("acl2")
+            .setLines(accepting(new PermittedByAcl("acl1")))
+            .build();
+    IpAccessList acl3 =
+        IpAccessList.builder()
+            .setName("acl3")
+            .setLines(accepting(new PermittedByAcl("acl2")))
+            .build();
     Map<String, IpAccessList> namedAcls =
         ImmutableMap.of(
-            "foo",
-            aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build())),
-            "acl",
-            aclWithLines(accepting(new PermittedByAcl("foo"))));
+            acl1.getName(), acl1,
+            acl2.getName(), acl2,
+            acl3.getName(), acl3);
 
     BDD bdd =
         IpAccessListToBdd.toBDD(
-            _pkt,
-            aclWithLines(accepting(new PermittedByAcl("acl"))),
-            namedAcls,
-            ImmutableMap.of(),
-            BDDSourceManager.empty(_pkt));
+            _pkt, acl3, namedAcls, ImmutableMap.of(), BDDSourceManager.empty(_pkt));
     assertThat(bdd, equalTo(fooIpBDD));
   }
 
@@ -85,10 +95,9 @@ public class IpAccessListToBddTest {
     IpAccessList fooAcl =
         aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
-    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
     BDD bdd =
         new IpAccessListToBddImpl(_pkt, BDDSourceManager.empty(_pkt), namedAcls, ImmutableMap.of())
-            .toBdd(acl);
+            .toBdd(new DeniedByAcl("foo"));
     assertThat(bdd, equalTo(fooIpBDD.not()));
   }
 
@@ -97,11 +106,14 @@ public class IpAccessListToBddTest {
     Ip fooIp = Ip.parse("1.1.1.1");
     BDD fooIpBDD = _pkt.getDstIp().value(fooIp.asLong());
     IpAccessList fooAcl =
-        aclWithLines(
-            rejectingHeaderSpace(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()),
-            ACCEPT_ALL);
-    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
+        IpAccessList.builder()
+            .setName("foo")
+            .setLines(
+                rejectingHeaderSpace(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()),
+                ACCEPT_ALL)
+            .build();
     IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl, acl.getName(), acl);
     BDD bdd =
         new IpAccessListToBddImpl(_pkt, BDDSourceManager.empty(_pkt), namedAcls, ImmutableMap.of())
             .toBdd(acl);
@@ -115,27 +127,26 @@ public class IpAccessListToBddTest {
     IpAccessList fooAcl =
         aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
-    IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     BDD bdd =
         new IpAccessListToBddImpl(_pkt, BDDSourceManager.empty(_pkt), namedAcls, ImmutableMap.of())
-            .toBdd(acl);
+            .toBdd(new PermittedByAcl("foo"));
     assertThat(bdd, equalTo(fooIpBDD));
   }
 
   @Test
   public void testDeniedByAcl_undefined() {
-    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(
             _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined filter reference: foo");
-    ipAccessListToBdd.toBdd(acl);
+    ipAccessListToBdd.toBdd(new DeniedByAcl("foo"));
   }
 
   @Test
   public void testDeniedByAcl_circular() {
-    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    IpAccessList acl =
+        IpAccessList.builder().setName("foo").setLines(accepting(new DeniedByAcl("foo"))).build();
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", acl);
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(_pkt, BDDSourceManager.empty(_pkt), namedAcls, ImmutableMap.of());
@@ -146,25 +157,27 @@ public class IpAccessListToBddTest {
 
   @Test
   public void testPermittedByAcl_undefined() {
-    IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(
             _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined filter reference: foo");
-    ipAccessListToBdd.toBdd(acl);
+    ipAccessListToBdd.toBdd(new PermittedByAcl("foo"));
   }
 
   @Test
   public void testPermittedByAcl_circular() {
-    PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
-    IpAccessList fooAcl = aclWithLines(accepting(permittedByAcl));
-    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName("foo")
+            .setLines(accepting(new PermittedByAcl("foo")))
+            .build();
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", acl);
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(_pkt, BDDSourceManager.empty(_pkt), namedAcls, ImmutableMap.of());
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular filter reference: foo");
-    ipAccessListToBdd.toBdd(fooAcl);
+    ipAccessListToBdd.toBdd(acl);
   }
 
   @Test
