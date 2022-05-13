@@ -58,7 +58,7 @@ public class IspConfigurationTest {
             new IspConfiguration(
                 ImmutableList.of(
                     new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
-                ImmutableList.of(new BgpPeerInfo("other", Ip.ZERO, null, null)),
+                ImmutableList.of(new BgpPeerInfo("other", null, Ip.ZERO, null, null)),
                 new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
                 ImmutableList.of(new IspNodeInfo(42, "n1")),
                 ImmutableList.of()))
@@ -86,7 +86,7 @@ public class IspConfigurationTest {
     IspConfiguration ispConfiguration =
         new IspConfiguration(
             ImmutableList.of(new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
-            ImmutableList.of(new BgpPeerInfo("node", Ip.ZERO, null, null)),
+            ImmutableList.of(new BgpPeerInfo("node", null, Ip.ZERO, null, null)),
             new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
             ImmutableList.of(new IspNodeInfo(42, "n1")),
             ImmutableList.of(new IspPeeringInfo(new Peer(1L), new Peer(2L))));
