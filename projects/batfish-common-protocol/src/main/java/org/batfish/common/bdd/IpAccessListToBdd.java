@@ -143,7 +143,12 @@ public abstract class IpAccessListToBdd {
                 .map(this::toPermitAndDenyBdds)
                 .collect(ImmutableList.toImmutableList()));
     t = System.currentTimeMillis() - t;
-    LOGGER.info("toPermitAndDenyBdds({}): {}ms", acl.getName(), t);
+    LOGGER.info(
+        "toPermitAndDenyBdds({}): {}ms  ({} lines, {} values for tracking sources)",
+        acl.getName(),
+        t,
+        acl.getLines().size(),
+        _bddSrcManager.getFiniteDomain().getValueBdds().size());
     return result;
   }
 
