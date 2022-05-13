@@ -68,6 +68,7 @@ public class BDDPacket {
 
   private final Map<Integer, String> _bitNames;
   private final BDDFactory _factory;
+  private int _nextFreeBDDVarIdxBeforePacketVars = 0;
   private int _nextFreeBDDVarIdx = FIRST_PACKET_VAR;
 
   // Packet bits
@@ -199,12 +200,32 @@ public class BDDPacket {
    * @return A {@link BDD} representing the sentence "this variable is true" for the new variable.
    */
   public BDD allocateBDDBit(String name) {
+    return allocateBDDBit(name, false);
+  }
+
+  public BDD allocateBDDBit(String name, boolean preferBeforePacketVars) {
+    return preferBeforePacketVars && _nextFreeBDDVarIdxBeforePacketVars < FIRST_PACKET_VAR
+        ? allocateBDDBitBeforePacketVars(name)
+        : allocateBDDBitAfterPacketVars(name);
+  }
+
+  private BDD allocateBDDBitAfterPacketVars(String name) {
     if (_factory.varNum() < _nextFreeBDDVarIdx + 1) {
       _factory.setVarNum(_nextFreeBDDVarIdx + 1);
     }
     _bitNames.put(_nextFreeBDDVarIdx, name);
     BDD bdd = _factory.ithVar(_nextFreeBDDVarIdx);
     _nextFreeBDDVarIdx++;
+    return bdd;
+  }
+
+  public BDD allocateBDDBitBeforePacketVars(String name) {
+    checkArgument(
+        _nextFreeBDDVarIdxBeforePacketVars < FIRST_PACKET_VAR,
+        "No unassigned variable before packet vars");
+    _bitNames.put(_nextFreeBDDVarIdxBeforePacketVars, name);
+    BDD bdd = _factory.ithVar(_nextFreeBDDVarIdxBeforePacketVars);
+    _nextFreeBDDVarIdxBeforePacketVars++;
     return bdd;
   }
 
@@ -216,7 +237,36 @@ public class BDDPacket {
    * @return The new variable.
    */
   public ImmutableBDDInteger allocateBDDInteger(String name, int bits) {
-    return new ImmutableBDDInteger(_factory, allocateBDDBits(name, bits));
+    return allocateBDDInteger(name, bits, false);
+  }
+
+  public ImmutableBDDInteger allocateBDDInteger(
+      String name, int bits, boolean preferBeforePacketVars) {
+    BDD[] vars =
+        preferBeforePacketVars && _nextFreeBDDVarIdxBeforePacketVars + bits < FIRST_PACKET_VAR
+            ? allocateBDDBitsBeforePacketVars(name, bits)
+            : allocateBDDBits(name, bits);
+    return new ImmutableBDDInteger(_factory, vars);
+  }
+
+  /**
+   * Allocate {@link BDD} variables.
+   *
+   * @param name Used for debugging.
+   * @param bits The number of bits to allocate.
+   * @return An array of the new {@link BDD} variables.
+   */
+  private BDD[] allocateBDDBitsBeforePacketVars(String name, int bits) {
+    checkArgument(
+        _nextFreeBDDVarIdxBeforePacketVars + bits < FIRST_PACKET_VAR,
+        "not enough unassigned variables before packet vars");
+    BDD[] bdds = new BDD[bits];
+    for (int i = 0; i < bits; i++) {
+      bdds[i] = _factory.ithVar(_nextFreeBDDVarIdxBeforePacketVars + i);
+    }
+    addBitNames(name, bits, _nextFreeBDDVarIdxBeforePacketVars);
+    _nextFreeBDDVarIdxBeforePacketVars += bits;
+    return bdds;
   }
 
   /**

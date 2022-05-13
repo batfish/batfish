@@ -83,10 +83,15 @@ public final class BDDFiniteDomain<V> {
    */
   public static <K, V> Map<K, BDDFiniteDomain<V>> domainsWithSharedVariable(
       BDDPacket pkt, String varName, Map<K, Set<V>> values) {
+    return domainsWithSharedVariable(pkt, varName, values, false);
+  }
+
+  public static <K, V> Map<K, BDDFiniteDomain<V>> domainsWithSharedVariable(
+      BDDPacket pkt, String varName, Map<K, Set<V>> values, boolean preferBeforePacketVars) {
     checkArgument(!values.isEmpty(), "empty values map");
     int maxSize = values.values().stream().mapToInt(Set::size).max().getAsInt();
     int bitsRequired = computeBitsRequired(maxSize);
-    ImmutableBDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired);
+    ImmutableBDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired, preferBeforePacketVars);
     return toImmutableMap(
         values, Entry::getKey, entry -> new BDDFiniteDomain<>(var, entry.getValue()));
   }

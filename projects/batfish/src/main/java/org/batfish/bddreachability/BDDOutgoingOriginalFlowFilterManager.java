@@ -1,6 +1,5 @@
 package org.batfish.bddreachability;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
@@ -97,9 +96,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
   }
 
   private static BDD allocatePermitVar(BDDPacket pkt) {
-    // Allocate permit var
-    checkState(BDDPacket.FIRST_PACKET_VAR > 0, "Can't allocate permit BDD variable");
-    return pkt.getFactory().ithVar(0);
+    return pkt.allocateBDDBit("Outgoing Original Flow Filter permit/deny bit", true);
   }
 
   /** Returns an empty {@link BDDOutgoingOriginalFlowFilterManager}. */
@@ -165,7 +162,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
     LOGGER.info("computed filter BDDs in {}ms", t);
 
     Map<String, BDDFiniteDomain<String>> finiteDomains =
-        BDDFiniteDomain.domainsWithSharedVariable(pkt, VAR_NAME, finiteDomainValues.build());
+        BDDFiniteDomain.domainsWithSharedVariable(pkt, VAR_NAME, finiteDomainValues.build(), true);
 
     // Allocate permit var
     BDD permitVar = allocatePermitVar(pkt);
