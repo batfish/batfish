@@ -179,7 +179,7 @@ public final class BDDSourceManager {
             });
 
     Map<String, BDDFiniteDomain<String>> finiteDomains =
-        BDDFiniteDomain.domainsWithSharedVariable(pkt, VAR_NAME, valuesToTrack);
+        BDDFiniteDomain.domainsWithSharedVariable(pkt, VAR_NAME, valuesToTrack, true);
 
     return toImmutableMap(
         finiteDomains,
