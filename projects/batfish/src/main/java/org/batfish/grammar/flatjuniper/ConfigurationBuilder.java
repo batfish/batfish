@@ -55,6 +55,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPOR
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_FAMILY_INET_UNICAST_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAINS_ROUTING_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAIN_SELF_REF;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
@@ -2483,9 +2484,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         ipBgpGroups.put(remoteAddress, ipBgpGroup);
       }
       _currentBgpGroup = ipBgpGroup;
+      _configuration.defineStructure(
+          JuniperStructureType.BGP_NEIGHBOR, remoteAddress.toString(), ctx);
+      _configuration.referenceStructure(
+          JuniperStructureType.BGP_NEIGHBOR,
+          remoteAddress.toString(),
+          BGP_NEIGHBOR_SELF_REFERENCE,
+          getLine(ctx.ip_address().start));
     } else if (ctx.ipv6_address() != null) {
       _currentBgpGroup.setIpv6(true);
       _currentBgpGroup = DUMMY_BGP_GROUP;
+      String remoteAddress = toIp6(ctx.ipv6_address()).toString();
+      _configuration.defineStructure(JuniperStructureType.BGP_NEIGHBOR, remoteAddress, ctx);
+      _configuration.referenceStructure(
+          JuniperStructureType.BGP_NEIGHBOR,
+          remoteAddress,
+          BGP_NEIGHBOR_SELF_REFERENCE,
+          getLine(ctx.ipv6_address().start));
     }
   }
 
