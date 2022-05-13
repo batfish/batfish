@@ -1,5 +1,6 @@
 package org.batfish.common.util.isp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.naturalOrder;
@@ -27,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
@@ -485,7 +487,9 @@ public final class IspModelingUtils {
       checkArgument(peerAddress != null, "Peer address should not be null");
       ConcreteInterfaceAddress ifaceAddress =
           getSnapshotIfaceAddressForBgpPeer(
-                  (BgpActivePeerConfig) bgpPeerConfig, snapshotIface.getAllConcreteAddresses())
+                  (BgpActivePeerConfig) bgpPeerConfig,
+                  null,
+                  snapshotIface.getAllConcreteAddresses())
               .get();
       InterfaceAddress ispInterfaceAddress =
           ConcreteInterfaceAddress.create(peerAddress, ifaceAddress.getNetworkBits());
@@ -500,7 +504,10 @@ public final class IspModelingUtils {
 
   /**
    * Given a {@link BgpPeerInfo} object, return the corresponding {@link SnapshotConnection} object.
-   * Nothing is returned if the interface established BGP sessions with multiple ISPs.
+   *
+   * <p>{@link Optional#empty()} is returned if the interface established BGP sessions with multiple
+   * ISPs, if the peer has incomplete configuration, if the peer's configuration is not allowed by
+   * the ISP Configuration, and other cases.
    */
   @VisibleForTesting
   static Optional<SnapshotConnection> getSnapshotConnectionForBgpPeerInfo(
@@ -509,22 +516,44 @@ public final class IspModelingUtils {
       LongSpace remoteAsns,
       Map<String, Configuration> configurations,
       Warnings warnings) {
+    // 0a. Resolve the device indicated by the BgpPeerInfo.
     Configuration snapshotBgpHost = configurations.get(bgpPeerInfo.getHostname());
     if (snapshotBgpHost == null) {
       warnings.redFlag(
           String.format("ISP Modeling: Non-existent border node %s", bgpPeerInfo.getHostname()));
       return Optional.empty();
     }
-    String bgpPeerVrf =
-        bgpPeerInfo.getVrf() == null
-            ? snapshotBgpHost.getDefaultVrf().getName()
-            : bgpPeerInfo.getVrf();
+
+    // 0b. Resolve the user-provided (or default) VRF in which to find the peering.
+    String bgpPeerVrf;
+    if (bgpPeerInfo.getVrf() != null) {
+      Optional<String> matchingVrf =
+          snapshotBgpHost.getVrfs().values().stream()
+              .map(Vrf::getName)
+              .filter(name -> name.equalsIgnoreCase(bgpPeerInfo.getVrf()))
+              .sorted()
+              .findFirst();
+      if (!matchingVrf.isPresent()) {
+        warnings.redFlag(
+            String.format(
+                "ISP Modeling: No VRF %s found on node %s",
+                bgpPeerInfo.getVrf(), snapshotBgpHost.getHostname()));
+        return Optional.empty();
+      }
+      bgpPeerVrf = matchingVrf.get();
+    } else {
+      bgpPeerVrf = snapshotBgpHost.getDefaultVrf().getName();
+    }
+
+    // 1. Find the BgpActivePeerConfig for which we are creating an ISP neighbor.
     Optional<BgpActivePeerConfig> snapshotBgpPeerOpt =
-        snapshotBgpHost.getVrfs().values().stream()
-            // Assume that case-insensitive matching is good enough, though some vendors have
-            // case-sensitive names per lab testing
-            .filter(vrf -> vrf.getName().equalsIgnoreCase(bgpPeerVrf))
-            .flatMap(vrf -> vrf.getBgpProcess().getActiveNeighbors().values().stream())
+        snapshotBgpHost
+            .getVrfs()
+            .get(bgpPeerVrf)
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .values()
+            .stream()
             .filter(peer -> bgpPeerInfo.getPeerAddress().equals(peer.getPeerAddress()))
             .findFirst();
     if (!snapshotBgpPeerOpt.isPresent()) {
@@ -535,6 +564,8 @@ public final class IspModelingUtils {
       return Optional.empty();
     }
     BgpActivePeerConfig snapshotBgpPeer = snapshotBgpPeerOpt.get();
+
+    // 1a. And validate that peer is not malformed or incompletely configured.
     Optional<String> invalidReason =
         validateOrExplainProblemCreatingIspConfig(snapshotBgpPeer, remoteIps, remoteAsns);
     if (invalidReason.isPresent()) {
@@ -544,9 +575,39 @@ public final class IspModelingUtils {
               bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname(), invalidReason.get()));
       return Optional.empty();
     }
+
+    // 1c. Determine the local IP for the BGP peering, if any.
+    Optional<ConcreteInterfaceAddress> localInterfaceAddressForBgpPeeringOpt =
+        getSnapshotIfaceAddressForBgpPeer(
+            snapshotBgpPeer,
+            bgpPeerInfo.getOverrideLocalAddress(),
+            snapshotBgpHost.getAllInterfaces().values().stream()
+                .filter(iface -> iface.getVrfName().equalsIgnoreCase(bgpPeerVrf))
+                .flatMap(iface -> iface.getAllConcreteAddresses().stream())
+                .collect(ImmutableSet.toImmutableSet()));
+    if (!localInterfaceAddressForBgpPeeringOpt.isPresent()) {
+      warnings.redFlag(
+          String.format(
+              "ISP Modeling: No compatible source interface found for neighbor %s on node %s vrf %s"
+                  + " (configured local address %s, ISP overridden local address %s)",
+              bgpPeerInfo.getPeerAddress(),
+              snapshotBgpHost.getHostname(),
+              bgpPeerVrf,
+              firstNonNull(snapshotBgpPeer.getLocalIp(), "none"),
+              firstNonNull(bgpPeerInfo.getOverrideLocalAddress(), "none")));
+      return Optional.empty();
+    }
+    ConcreteInterfaceAddress localInterfaceAddressForBgpPeering =
+        localInterfaceAddressForBgpPeeringOpt.get();
+
+    // 2. Find where the ISP should attach into the network. Validate provided host and interface
+    // names.
     if (bgpPeerInfo.getIspAttachment() == null) {
       return Optional.of(
-          new SnapshotConnection(ImmutableList.of(), IspBgpActivePeer.create(snapshotBgpPeer)));
+          new SnapshotConnection(
+              ImmutableList.of(),
+              IspBgpActivePeer.create(
+                  snapshotBgpPeer, localInterfaceAddressForBgpPeering.getIp())));
     }
 
     IspAttachment ispAttachment = bgpPeerInfo.getIspAttachment();
@@ -561,6 +622,7 @@ public final class IspModelingUtils {
               "ISP Modeling: Non-existent ISP attachment node %s", ispAttachment.getHostname()));
       return Optional.empty();
     }
+
     Interface attachmentIface =
         attachmentHost.getAllInterfaces().values().stream()
             .filter(i -> i.getName().equalsIgnoreCase(ispAttachment.getInterface()))
@@ -573,45 +635,30 @@ public final class IspModelingUtils {
               ispAttachment.getInterface(), attachmentHostname));
       return Optional.empty();
     }
+    // TODO: Enforce attachmentIface interface type constraint here.
+    // TODO: support aggregate/redundant interfaces.
 
-    // TODO: Enforce interface type constraint here
-
-    // One last thing that we need to figure out is the prefix length to use for the address on the
-    // ISP's BGP interface (the address will be the local IP of the snapshot BGP peer). Cases to
+    // One last thing that we need to figure out is the prefix length to use for the address on
+    // the ISP's BGP interface (the address will snapshotBgpPeer.getPeerAddress()). Cases to
     // consider for how the attachment interface is configured:
-    // 1. Is not Layer3 ==> pick length based on the interface that has the BGP peer's local IP.
-    // Assume that the interface provides L2 connectivity to the snapshot BGP interface.
+    // 1. Is not Layer3 ==> pick length based on the interface that has the BGP peer's local IP or
+    // single-hop compatible IP. Assume that the interface provides L2 connectivity to the
+    // snapshot BGP interface.
     // 2. Is Layer3 and owns the local IP of the peering ==> use this address's prefix length.
     // 3. Is Layer3 but does NOT own the local IP of the peering ==> do not make the connection at
     // all for now. Additional configuration is needed to enable connectivity from the ISP to the
     // snapshot's BGP interface.
 
-    assert snapshotBgpPeer.getLocalIp() != null; // requirement for a valid peer
-    Optional<ConcreteInterfaceAddress> snapshotBgpIfaceAddress;
-    if (attachmentIface.getAllAddresses().isEmpty()) { // case 1
-      snapshotBgpIfaceAddress =
-          inferSnapshotBgpIfaceAddress(
-              snapshotBgpHost.getAllInterfaces().values().stream()
-                  .filter(iface -> iface.getVrfName().equalsIgnoreCase(bgpPeerVrf))
-                  .collect(ImmutableSet.toImmutableSet()),
-              snapshotBgpPeer.getLocalIp());
-      if (!snapshotBgpIfaceAddress.isPresent()) {
-        warnings.redFlag(
-            String.format(
-                "ISP Modeling: No active interface with local IP %s found for neighbor %s on node"
-                    + " %s",
-                snapshotBgpPeer.getLocalIp(),
-                bgpPeerInfo.getPeerAddress(),
-                snapshotBgpHost.getHostname()));
-        return Optional.empty();
-      }
-    } else {
-      snapshotBgpIfaceAddress =
+    int ispPrefixLength = localInterfaceAddressForBgpPeering.getNetworkBits();
+    if (!attachmentIface.getAllAddresses().isEmpty()) {
+      // case 3
+      Optional<ConcreteInterfaceAddress> attachmentInterfaceAddressThatAlsoHasLocalIp =
           attachmentIface.getAllConcreteAddresses().stream()
-              .filter(addr -> Objects.equals(addr.getIp(), snapshotBgpPeer.getLocalIp()))
+              .filter(
+                  addr -> Objects.equals(addr.getIp(), localInterfaceAddressForBgpPeering.getIp()))
               .sorted()
               .findFirst();
-      if (!snapshotBgpIfaceAddress.isPresent()) {
+      if (!attachmentInterfaceAddressThatAlsoHasLocalIp.isPresent()) {
         warnings.redFlag(
             String.format(
                 "ISP Modeling: The attachment interface %s[%s] cannot enable the BGP peering to"
@@ -620,15 +667,17 @@ public final class IspModelingUtils {
                 attachmentHost,
                 attachmentIface.getName(),
                 snapshotBgpPeer.getPeerAddress(),
-                snapshotBgpPeer.getLocalIp()));
+                localInterfaceAddressForBgpPeering.getIp()));
         return Optional.empty();
       }
+      ispPrefixLength = attachmentInterfaceAddressThatAlsoHasLocalIp.get().getNetworkBits();
     }
 
     return Optional.of(
         makeSnapshotConnectionForBgpPeerInfo(
             snapshotBgpPeer,
-            snapshotBgpIfaceAddress.get().getNetworkBits(),
+            ConcreteInterfaceAddress.create(
+                localInterfaceAddressForBgpPeering.getIp(), ispPrefixLength),
             attachmentIface,
             ispAttachment.getVlanTag()));
   }
@@ -644,7 +693,7 @@ public final class IspModelingUtils {
    */
   private static SnapshotConnection makeSnapshotConnectionForBgpPeerInfo(
       BgpActivePeerConfig snapshotBgpPeer,
-      int networkBits,
+      ConcreteInterfaceAddress snapshotBgpPeerInterfaceAddress,
       Interface snapshotAttachmentIface,
       @Nullable Integer vlanTag) {
     String snapshotAttachmentHostname = snapshotAttachmentIface.getOwner().getHostname();
@@ -656,11 +705,13 @@ public final class IspModelingUtils {
     Ip peerAddress = snapshotBgpPeer.getPeerAddress();
     checkArgument(peerAddress != null, "Peer address should not be null");
     InterfaceAddress ispInterfaceAddress =
-        ConcreteInterfaceAddress.create(peerAddress, networkBits);
+        ConcreteInterfaceAddress.create(
+            peerAddress, snapshotBgpPeerInterfaceAddress.getNetworkBits());
     IspInterface ispInterface =
         new IspInterface(ispIfaceName, ispInterfaceAddress, snapshotL1node, vlanTag);
     return new SnapshotConnection(
-        ImmutableList.of(ispInterface), IspBgpActivePeer.create(snapshotBgpPeer));
+        ImmutableList.of(ispInterface),
+        IspBgpActivePeer.create(snapshotBgpPeer, snapshotBgpPeerInterfaceAddress.getIp()));
   }
 
   /**
@@ -1195,7 +1246,8 @@ public final class IspModelingUtils {
       BgpActivePeerConfig activePeerConfig = (BgpActivePeerConfig) bgpPeerConfig;
 
       return Objects.nonNull(activePeerConfig.getPeerAddress()) // peer address is defined
-          && getSnapshotIfaceAddressForBgpPeer(activePeerConfig, interfaceAddresses).isPresent()
+          && getSnapshotIfaceAddressForBgpPeer(activePeerConfig, null, interfaceAddresses)
+              .isPresent()
           && (allowedRemoteIps.isEmpty()
               || allowedRemoteIps.contains(
                   activePeerConfig.getPeerAddress())); // peer address is allowed
@@ -1209,27 +1261,51 @@ public final class IspModelingUtils {
   }
 
   /**
+   * Returns the first (lowest in sorted order) of the given interface addresses that matches the
+   * given filter, or {@link Optional#empty()} if none matches.
+   */
+  private static Optional<ConcreteInterfaceAddress> firstMatching(
+      Set<ConcreteInterfaceAddress> addresses, Predicate<ConcreteInterfaceAddress> filter) {
+    return addresses.stream().filter(filter).sorted().findFirst();
+  }
+
+  /**
    * Returns the interface address, among {@code interfaceAddresses}, that is valid for to use as
    * local IP for {@code bgpPeerConfig}. The Optional is empty when there is no such address.
+   *
+   * <p>The priority of the search is:
+   *
+   * <ol>
+   *   <li>If {@code overrideLocalIp} is present, a {@link ConcreteInterfaceAddress} with address
+   *       equal to that IP.
+   *   <li>If {@code bgpPeerConfig} has a localIp, a {@link ConcreteInterfaceAddress} with address
+   *       equal to that IP.
+   *   <li>If {@code bgpPeerConfig} is a single-hop eBGP session, a {@link ConcreteInterfaceAddress}
+   *       with a subnet containing its peer address.
+   * </ol>
    */
   private static Optional<ConcreteInterfaceAddress> getSnapshotIfaceAddressForBgpPeer(
-      BgpActivePeerConfig bgpPeerConfig, Set<ConcreteInterfaceAddress> interfaceAddresses) {
-    // If the peer config has an explicit local IP, then the interface should have that IP.
-    // Otherwise, if the session is eBGP-singlehop, the interface should have a prefix that contains
-    // the remote address. For other session types, we cannot be sure that this
-    // interface will be used, so we return empty.
-    if (Objects.nonNull(bgpPeerConfig.getLocalIp())) {
-      return interfaceAddresses.stream()
-          .filter(addr -> addr.getIp().equals(bgpPeerConfig.getLocalIp()))
-          .sorted() // for determinism
-          .findFirst();
-    } else if (Objects.nonNull(bgpPeerConfig.getPeerAddress())
-        && getSessionType(bgpPeerConfig) == EBGP_SINGLEHOP) {
-      return interfaceAddresses.stream()
-          .filter(addr -> addr.getPrefix().containsIp(bgpPeerConfig.getPeerAddress()))
-          .sorted() // for determinism
-          .findFirst();
+      BgpActivePeerConfig bgpPeerConfig,
+      @Nullable Ip overrideLocalIp,
+      Set<ConcreteInterfaceAddress> interfaceAddresses) {
+    // Check overrideLocalIp first if present.
+    if (overrideLocalIp != null) {
+      return firstMatching(interfaceAddresses, addr -> addr.getIp().equals(overrideLocalIp));
     }
+
+    // Check configured localIp next if present.
+    if (bgpPeerConfig.getLocalIp() != null) {
+      return firstMatching(
+          interfaceAddresses, addr -> addr.getIp().equals(bgpPeerConfig.getLocalIp()));
+    }
+
+    // Check peer-address containment for single-hop eBGP sessions only next.
+    if (bgpPeerConfig.getPeerAddress() != null && getSessionType(bgpPeerConfig) == EBGP_SINGLEHOP) {
+      return firstMatching(
+          interfaceAddresses, addr -> addr.getPrefix().containsIp(bgpPeerConfig.getPeerAddress()));
+    }
+
+    // Nothing else to try.
     return Optional.empty();
   }
 
@@ -1257,11 +1333,6 @@ public final class IspModelingUtils {
       return Optional.of(
           String.format(
               "remote IP %s is not allowed by the filter", bgpPeerConfig.getPeerAddress()));
-    } else if (bgpPeerConfig.getLocalIp() == null) {
-      return Optional.of(
-          "unable to determine local IP address. Note that Batfish ISP config today "
-              + "requires local IP or update source to be configured explicitly in order "
-              + "to determine the ISP's BGP configuration");
     }
     return Optional.empty();
   }
