@@ -61,6 +61,15 @@ public class IspModelingTest {
   }
 
   @Test
+  public void testBasicBgpPeerInfoInferredLocalIp() throws IOException {
+    IBatfish batfish = setup("basic-bgppeerinfo-implicit", ImmutableList.of("border1.cfg"), false);
+    BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
+
+    // internet to ISP and ISP to border (4 uni edges)
+    assertThat(bgpTopology.getGraph().edges(), hasSize(4));
+  }
+
+  @Test
   public void testSviPeering() throws IOException {
     IBatfish batfish = setup("svi-peering", ImmutableList.of("border1.cfg", "border2.cfg"), true);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());

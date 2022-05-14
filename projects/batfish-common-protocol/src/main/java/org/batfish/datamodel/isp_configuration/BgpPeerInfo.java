@@ -26,21 +26,25 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 public class BgpPeerInfo {
   private static final String PROP_HOSTNAME = "hostname";
+  private static final String PROP_OVERRIDE_LOCAL_ADDRESS = "overrideLocalAddress";
   private static final String PROP_PEER_ADDRESS = "peerAddress";
   private static final String PROP_VRF = "vrf";
   private static final String PROP_ISP_ATTACHMENT = "ispAttachment";
 
   @Nonnull private final String _hostname;
+  @Nullable private final Ip _overrideLocalAddress;
   @Nonnull private final Ip _peerAddress;
   @Nullable private final String _vrf;
   @Nullable private final IspAttachment _ispAttachment;
 
   public BgpPeerInfo(
       String hostname,
+      @Nullable Ip overrideLocalAddress,
       Ip peerAddress,
       @Nullable String vrf,
       @Nullable IspAttachment ispAttachment) {
     _hostname = hostname.toLowerCase();
+    _overrideLocalAddress = overrideLocalAddress;
     _peerAddress = peerAddress;
     _vrf = vrf;
     _ispAttachment = ispAttachment;
@@ -49,29 +53,59 @@ public class BgpPeerInfo {
   @JsonCreator
   private static BgpPeerInfo jsonCreator(
       @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
+      @JsonProperty(PROP_OVERRIDE_LOCAL_ADDRESS) @Nullable Ip localAddress,
       @JsonProperty(PROP_PEER_ADDRESS) @Nullable Ip peerAddress,
       @JsonProperty(PROP_VRF) @Nullable String vrf,
       @JsonProperty(PROP_ISP_ATTACHMENT) @Nullable IspAttachment bgpPeerConnectivity) {
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
     checkArgument(peerAddress != null, "Missing %s", PROP_PEER_ADDRESS);
-    return new BgpPeerInfo(hostname, peerAddress, vrf, bgpPeerConnectivity);
+    return new BgpPeerInfo(hostname, localAddress, peerAddress, vrf, bgpPeerConnectivity);
   }
 
+  /**
+   * The hostname of the device on which this peering is configured. Required in order to find the
+   * configuration of the peering with the ISP.
+   */
   @JsonProperty(PROP_HOSTNAME)
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
+  /**
+   * The local IP on the device on which this peering is configured, used to populate the peer
+   * address (aka, this device) on the generated ISP peer.
+   *
+   * <p>This configuration is not required if the local IP (or update source) is configured in the
+   * BGP peering itself.
+   */
+  @JsonProperty(PROP_OVERRIDE_LOCAL_ADDRESS)
+  public @Nullable Ip getOverrideLocalAddress() {
+    return _overrideLocalAddress;
+  }
+
+  /**
+   * The peer IP (aka, the ISP's IP) on the device on which this peering is configured. Required in
+   * order to find the configuration of the peering with the ISP.
+   */
   @JsonProperty(PROP_PEER_ADDRESS)
   public @Nonnull Ip getPeerAddress() {
     return _peerAddress;
   }
 
+  /**
+   * The name of the VRF in which the peering is configured.
+   *
+   * <p>This configuration is not required, and will use the default VRF if not populated.
+   */
   @JsonProperty(PROP_VRF)
   public @Nullable String getVrf() {
     return _vrf;
   }
 
+  /**
+   * Information about where in the snapshot the ISP is physically connected. May describe a
+   * location on the device indicated by {@link #getHostname()} or on a different device.
+   */
   @JsonProperty(PROP_ISP_ATTACHMENT)
   public @Nullable IspAttachment getIspAttachment() {
     return _ispAttachment;
@@ -81,6 +115,7 @@ public class BgpPeerInfo {
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add("hostname", _hostname)
+        .add("overrideLocalAddress", _overrideLocalAddress)
         .add("peerAddress", _peerAddress)
         .add("vrf", _vrf)
         .add("ispAttachment", _ispAttachment)
@@ -97,6 +132,7 @@ public class BgpPeerInfo {
     }
     BgpPeerInfo that = (BgpPeerInfo) o;
     return _hostname.equals(that._hostname)
+        && Objects.equals(_overrideLocalAddress, that._overrideLocalAddress)
         && _peerAddress.equals(that._peerAddress)
         && Objects.equals(_vrf, that._vrf)
         && Objects.equals(_ispAttachment, that._ispAttachment);
@@ -104,6 +140,6 @@ public class BgpPeerInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _peerAddress, _vrf, _ispAttachment);
+    return Objects.hash(_hostname, _overrideLocalAddress, _peerAddress, _vrf, _ispAttachment);
   }
 }

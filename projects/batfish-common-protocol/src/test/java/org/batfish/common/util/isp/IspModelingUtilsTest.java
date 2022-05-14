@@ -320,7 +320,7 @@ public class IspModelingUtilsTest {
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build());
 
-    // wrong explict local IP
+    // wrong explicit local IP
     assertFalse(
         isValidBgpPeerForBorderInterfaceInfo(
             bgpActivePeerConfig.setLocalIp(Ip.parse("2.2.2.2")).build(),
@@ -822,6 +822,7 @@ public class IspModelingUtilsTest {
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
                 _snapshotHostname,
+                null,
                 _ispIp,
                 null,
                 new IspAttachment(null, _snapshotInterfaceName, null)),
@@ -837,7 +838,7 @@ public class IspModelingUtilsTest {
   public void testGetSnapshotConnectionForBgpPeerInfo_noAttachment() {
     Optional<SnapshotConnection> snapshotConnection =
         getSnapshotConnectionForBgpPeerInfo(
-            new BgpPeerInfo(_snapshotHostname, _ispIp, null, null),
+            new BgpPeerInfo(_snapshotHostname, null, _ispIp, null, null),
             ImmutableSet.of(),
             ALL_AS_NUMBERS,
             ImmutableMap.of(_snapshotHostname, _snapshotHost),
@@ -858,6 +859,7 @@ public class IspModelingUtilsTest {
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
                 _snapshotHostname,
+                null,
                 _ispIp,
                 null,
                 new IspAttachment(null, attachIface.getName(), null)),
@@ -892,6 +894,7 @@ public class IspModelingUtilsTest {
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
                 _snapshotHostname,
+                null,
                 _ispIp,
                 null,
                 new IspAttachment(attachHost.getHostname(), attachIface.getName(), null)),
@@ -919,6 +922,7 @@ public class IspModelingUtilsTest {
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
                 _snapshotHostname,
+                null,
                 _ispIp,
                 null,
                 new IspAttachment(null, _snapshotInterfaceName, 23)),
@@ -946,7 +950,7 @@ public class IspModelingUtilsTest {
     Optional<SnapshotConnection> connection =
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
-                "other", _ispIp, null, new IspAttachment(null, _snapshotInterfaceName, null)),
+                "other", null, _ispIp, null, new IspAttachment(null, _snapshotInterfaceName, null)),
             ImmutableSet.of(),
             ALL_AS_NUMBERS,
             ImmutableMap.of(_snapshotHostname, _snapshotHost),
@@ -964,6 +968,7 @@ public class IspModelingUtilsTest {
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
                 _snapshotHostname,
+                null,
                 Ip.ZERO,
                 null,
                 new IspAttachment(null, _snapshotInterfaceName, null)),
@@ -995,6 +1000,7 @@ public class IspModelingUtilsTest {
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
                 _snapshotHostname,
+                null,
                 bgpPeer.getPeerAddress(),
                 null,
                 new IspAttachment(null, _snapshotInterfaceName, null)),
@@ -1061,11 +1067,6 @@ public class IspModelingUtilsTest {
                 correctBuilder().build(), ImmutableSet.of(Ip.ZERO), ALL_AS_NUMBERS)
             .get(),
         containsString("remote IP " + _ispIp + " is not allowed by the filter"));
-    assertThat(
-        validateOrExplainProblemCreatingIspConfig(
-                correctBuilder().setLocalIp(null).build(), ImmutableSet.of(), ALL_AS_NUMBERS)
-            .get(),
-        containsString("unable to determine local IP address"));
   }
 
   @Test
@@ -1075,6 +1076,7 @@ public class IspModelingUtilsTest {
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
                 _snapshotHostname,
+                null,
                 _ispIp,
                 null,
                 new IspAttachment("other", _snapshotInterfaceName, null)),
@@ -1094,7 +1096,7 @@ public class IspModelingUtilsTest {
     Optional<SnapshotConnection> connection =
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
-                _snapshotHostname, _ispIp, null, new IspAttachment(null, "other", null)),
+                _snapshotHostname, null, _ispIp, null, new IspAttachment(null, "other", null)),
             ImmutableSet.of(),
             ALL_AS_NUMBERS,
             ImmutableMap.of(_snapshotHostname, _snapshotHost),
@@ -1118,6 +1120,7 @@ public class IspModelingUtilsTest {
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
                 _snapshotHostname,
+                null,
                 _ispIp,
                 null,
                 new IspAttachment(null, attachIface.getName(), null)),
