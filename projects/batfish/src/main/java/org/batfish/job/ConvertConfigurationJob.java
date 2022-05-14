@@ -76,6 +76,7 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.SourcesReferencedOnDevice;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
@@ -487,6 +488,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
     removeInvalidAcls(c, w);
+    // Verify that tracking references is safe, which will catch ACL invariant violations.
+    SourcesReferencedOnDevice.allReferencedSources(c);
   }
 
   private static void verifyOspfAreas(Configuration c, Warnings w) {
