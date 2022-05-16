@@ -31,6 +31,10 @@ public final class AristaDynamicSourceNat implements Serializable {
     _overload = overload;
   }
 
+  public @Nonnull String getNatAclName() {
+    return _natAclName;
+  }
+
   public Optional<Transformation> toTransformation(
       Ip interfaceIp, Map<String, NatPool> natPools, @Nullable Transformation orElse) {
     NatPool natPool =

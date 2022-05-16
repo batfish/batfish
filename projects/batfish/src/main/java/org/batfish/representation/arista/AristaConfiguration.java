@@ -1373,6 +1373,17 @@ public final class AristaConfiguration extends VendorConfiguration {
     Ip interfaceIp = address.getIp();
     Transformation next = newIface.getOutgoingTransformation();
     for (AristaDynamicSourceNat nat : Lists.reverse(aristaDynamicSourceNats)) {
+      if (!_extendedAccessLists.containsKey(nat.getNatAclName())) {
+        // https://www.arista.com/en/um-eos/eos-data-plane-security#xx1143262
+        // Commands referencing nonexistent ACLs are accepted by the CLI but not installed in
+        // hardware until the ACL is created.
+        _w.redFlag(
+            String.format(
+                "ip nat source commands referencing nonexistent ACL %s are not installed until"
+                    + " the ACL is created",
+                nat.getNatAclName()));
+        continue;
+      }
       next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
     }
     newIface.setOutgoingTransformation(next);

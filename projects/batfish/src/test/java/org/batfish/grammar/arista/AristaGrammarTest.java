@@ -1041,6 +1041,10 @@ public class AristaGrammarTest {
                 // overload rule, so use the interface IP
                 .apply(assignSourceIp(Ip.parse("8.8.8.8"), Ip.parse("8.8.8.8")))
                 .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet5");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(iface.getOutgoingTransformation(), nullValue());
   }
 
   /**
