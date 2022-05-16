@@ -1,10 +1,13 @@
 package org.batfish.common.bdd;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,5 +61,15 @@ public final class BDDFiniteDomainTest {
     assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(1)), equalTo(1));
     assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(2)), equalTo(2));
     assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(3)), equalTo(3));
+  }
+
+  @Test
+  public void testDomainsWithSharedVariable_preferBeforePacketVars() {
+    Map<String, BDDFiniteDomain<String>> domains =
+        BDDFiniteDomain.domainsWithSharedVariable(
+            _pkt, "name", ImmutableMap.of("n1", ImmutableSet.of("v1", "v2")), true);
+    assertThat(
+        domains.values().iterator().next().getConstraintForValue("v1").var(),
+        lessThan(_pkt.getDstIp().value(0).var()));
   }
 }
