@@ -235,7 +235,7 @@ public class BDDPacket {
    * @param name Used for debugging.
    * @return A {@link BDD} representing the sentence "this variable is true" for the new variable.
    */
-  public BDD allocateBDDBitBeforePacketVars(String name) {
+  private BDD allocateBDDBitBeforePacketVars(String name) {
     checkArgument(
         _nextFreeBDDVarIdxBeforePacketVars < FIRST_PACKET_VAR,
         "No unassigned variable before packet vars");
@@ -271,7 +271,7 @@ public class BDDPacket {
     BDD[] vars =
         preferBeforePacketVars && _nextFreeBDDVarIdxBeforePacketVars + bits < FIRST_PACKET_VAR
             ? allocateBDDBitsBeforePacketVars(name, bits)
-            : allocateBDDBits(name, bits);
+            : allocateBDDBitsAfterPacketVars(name, bits);
     return new ImmutableBDDInteger(_factory, vars);
   }
 
@@ -303,7 +303,7 @@ public class BDDPacket {
    * @param bits The number of bits to allocate.
    * @return An array of the new {@link BDD} variables.
    */
-  private BDD[] allocateBDDBits(String name, int bits) {
+  private BDD[] allocateBDDBitsAfterPacketVars(String name, int bits) {
     if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
       _factory.setVarNum(_nextFreeBDDVarIdx + bits);
     }
