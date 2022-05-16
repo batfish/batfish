@@ -16,6 +16,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsPsh;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsRst;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsUrg;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -44,12 +45,28 @@ public class BDDPacketTest {
   }
 
   @Test
+  public void testAllocateBDDBit_beforePacketVars() {
+    BDDPacket pkt = new BDDPacket();
+    BDD bdd = pkt.allocateBDDBit("foo", true);
+    assertThat(bdd, notNullValue());
+    assertThat(bdd.var(), lessThan(pkt.getDstIp().value(0).var()));
+  }
+
+  @Test
   public void testAllocateBDDInteger() {
     BDDPacket pkt = new BDDPacket();
     int varNum = pkt.getFactory().varNum();
     BDDInteger var = pkt.allocateBDDInteger("foo", 5);
     assertThat(var, notNullValue());
     assertThat(pkt.getFactory().varNum(), equalTo(varNum + 5));
+  }
+
+  @Test
+  public void testAllocateBDDInteger_beforePacketVars() {
+    BDDPacket pkt = new BDDPacket();
+    BDDInteger var = pkt.allocateBDDInteger("foo", 5, true);
+    assertThat(var, notNullValue());
+    assertThat(var.value(0).var(), lessThan(pkt.getDstIp().value(0).var()));
   }
 
   @Test

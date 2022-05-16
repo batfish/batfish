@@ -83,10 +83,23 @@ public final class BDDFiniteDomain<V> {
    */
   public static <K, V> Map<K, BDDFiniteDomain<V>> domainsWithSharedVariable(
       BDDPacket pkt, String varName, Map<K, Set<V>> values) {
+    return domainsWithSharedVariable(pkt, varName, values, false);
+  }
+
+  /**
+   * Create multiple domains (never in use at the same time) backed by the same variable. For
+   * example, we can use this to track domains that are per-node.
+   *
+   * @param preferBeforePacketVars Whether the {@link BDD BDD} variables should be allocated before
+   *     the variables used to encode packet headers. If true, and there are no remaining variables
+   *     before the packet headers, will try to allocate after.
+   */
+  public static <K, V> Map<K, BDDFiniteDomain<V>> domainsWithSharedVariable(
+      BDDPacket pkt, String varName, Map<K, Set<V>> values, boolean preferBeforePacketVars) {
     checkArgument(!values.isEmpty(), "empty values map");
     int maxSize = values.values().stream().mapToInt(Set::size).max().getAsInt();
     int bitsRequired = computeBitsRequired(maxSize);
-    ImmutableBDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired);
+    ImmutableBDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired, preferBeforePacketVars);
     return toImmutableMap(
         values, Entry::getKey, entry -> new BDDFiniteDomain<>(var, entry.getValue()));
   }
