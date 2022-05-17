@@ -1,13 +1,13 @@
 package org.batfish.representation.frr;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
@@ -20,16 +20,23 @@ public final class BgpNeighborTest {
 
   @Test
   public void testInheritFrom() {
+    BgpVrf vrf = new BgpVrf("vrf");
+    BgpIpv4UnicastAddressFamily vrfIpv4u = new BgpIpv4UnicastAddressFamily();
+    vrf.setIpv4Unicast(vrfIpv4u);
+    BgpL2vpnEvpnAddressFamily vrfL2VpnEvpn = new BgpL2vpnEvpnAddressFamily();
+    vrf.setL2VpnEvpn(vrfL2VpnEvpn);
+
     BgpPeerGroupNeighbor pg = new BgpPeerGroupNeighbor("pg");
     pg.setBgpNeighborSource(new BgpNeighborSourceAddress(Ip.MAX));
     pg.setDescription("pg desc");
     pg.setEbgpMultihop(true);
+    vrf.getNeighbors().put(pg.getName(), pg);
     BgpNeighborIpv4UnicastAddressFamily pgIpv4 = new BgpNeighborIpv4UnicastAddressFamily();
     pgIpv4.setNextHopSelf(true);
-    pg.setIpv4UnicastAddressFamily(pgIpv4);
+    vrfIpv4u.getNeighbors().put(pg.getName(), pgIpv4);
     BgpNeighborL2vpnEvpnAddressFamily pgL2vpn = new BgpNeighborL2vpnEvpnAddressFamily();
     pgL2vpn.setRouteReflectorClient(true);
-    pg.setL2vpnEvpnAddressFamily(pgL2vpn);
+    vrfL2VpnEvpn.getNeighbors().put(pg.getName(), pgL2vpn);
     pg.setRemoteAs(RemoteAs.explicit(8));
     {
       // all props set, inherit nothing
@@ -39,36 +46,43 @@ public final class BgpNeighborTest {
       leaf.setEbgpMultihop(false);
       BgpNeighborIpv4UnicastAddressFamily leafIpv4 = new BgpNeighborIpv4UnicastAddressFamily();
       leafIpv4.setNextHopSelf(false);
-      leaf.setIpv4UnicastAddressFamily(leafIpv4);
+      vrfIpv4u.getNeighbors().put(leaf.getName(), leafIpv4);
       BgpNeighborL2vpnEvpnAddressFamily leafL2vpn = new BgpNeighborL2vpnEvpnAddressFamily();
       leafL2vpn.setRouteReflectorClient(false);
-      leaf.setL2vpnEvpnAddressFamily(leafL2vpn);
+      vrfL2VpnEvpn.getNeighbors().put(leaf.getName(), leafL2vpn);
       leaf.setPeerGroup("pg");
       leaf.setRemoteAs(RemoteAs.external());
 
-      leaf.inheritFrom(ImmutableMap.of("pg", pg));
+      leaf.inheritFrom(vrf);
 
       assertThat(leaf.getBgpNeighborSource(), equalTo(new BgpNeighborSourceAddress(Ip.ZERO)));
       assertThat(leaf.getDescription(), equalTo("leaf desc"));
       assertThat(leaf.getEbgpMultihop(), equalTo(false));
-      assertThat(leaf.getIpv4UnicastAddressFamily().getNextHopSelf(), not(equalTo(Boolean.TRUE)));
-      assertThat(
-          leaf.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), not(equalTo(Boolean.TRUE)));
+      assertThat(leafIpv4.getNextHopSelf(), not(equalTo(Boolean.TRUE)));
+      assertThat(leafL2vpn.getRouteReflectorClient(), not(equalTo(Boolean.TRUE)));
       assertThat(leaf.getPeerGroup(), equalTo("pg"));
       assertThat(leaf.getRemoteAs(), equalTo(RemoteAs.external()));
+
+      vrfIpv4u.getNeighbors().remove(leaf.getName());
+      vrfL2VpnEvpn.getNeighbors().remove(leaf.getName());
     }
     {
       // no props set, inherit everything applicable
       BgpIpNeighbor leaf = new BgpIpNeighbor("leaf", Ip.parse("1.2.3.4"));
       leaf.setPeerGroup("pg");
-      leaf.inheritFrom(ImmutableMap.of("pg", pg));
+      vrf.getNeighbors().put(leaf.getName(), leaf);
+      leaf.inheritFrom(vrf);
 
       assertThat(leaf.getBgpNeighborSource(), equalTo(new BgpNeighborSourceAddress(Ip.MAX)));
-      // don't inherit description
-      assertThat(leaf.getDescription(), nullValue());
+      assertThat("don't inherit description", leaf.getDescription(), nullValue());
       assertThat(leaf.getEbgpMultihop(), equalTo(true));
-      assertThat(leaf.getIpv4UnicastAddressFamily().getNextHopSelf(), equalTo(Boolean.TRUE));
-      assertThat(leaf.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), equalTo(Boolean.TRUE));
+      assertThat(vrfIpv4u.getNeighbors(), hasKey(leaf.getName()));
+      assertThat(
+          vrfIpv4u.getNeighbors().get(leaf.getName()).getNextHopSelf(), equalTo(Boolean.TRUE));
+      assertThat(vrfL2VpnEvpn.getNeighbors(), hasKey(leaf.getName()));
+      assertThat(
+          vrfL2VpnEvpn.getNeighbors().get(leaf.getName()).getRouteReflectorClient(),
+          equalTo(Boolean.TRUE));
       assertThat(leaf.getRemoteAs(), equalTo(RemoteAs.explicit(8)));
     }
   }

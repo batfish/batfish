@@ -104,7 +104,6 @@ import org.batfish.grammar.frr.FrrParser.PrefixContext;
 import org.batfish.grammar.frr.FrrParser.Rb_neighborContext;
 import org.batfish.grammar.frr.FrrParser.Rb_networkContext;
 import org.batfish.grammar.frr.FrrParser.Rb_redistributeContext;
-import org.batfish.grammar.frr.FrrParser.Rbaf_ipv4_unicastContext;
 import org.batfish.grammar.frr.FrrParser.Rbaf_l2vpn_evpnContext;
 import org.batfish.grammar.frr.FrrParser.Rbafi6_importContext;
 import org.batfish.grammar.frr.FrrParser.Rbafi_aggregate_addressContext;
@@ -293,7 +292,9 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable Ipv6PrefixList _currentIpv6PrefixList;
+  private @Nullable BgpIpv4UnicastAddressFamily _currentBgpIpv4UnicastAddressFamily;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
+  private @Nullable BgpL2vpnEvpnAddressFamily _currentBgpL2vpnEvpnAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
   private @Nullable FrrInterface _currentInterface;
   private OspfArea _currentOspfArea;
@@ -492,26 +493,28 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       _vc.referenceStructure(
           VRF, vrfName, FrrStructureUsage.BGP_VRF, ctx.vrf_name().getStart().getLine());
     }
+    _currentBgpIpv4UnicastAddressFamily = _currentBgpVrf.getOrCreateIpv4Unicast();
     _currentBgpVrf.setAutonomousSystem(parseLong(ctx.autonomous_system().getText()));
   }
 
   @Override
   public void exitS_router_bgp(S_router_bgpContext ctx) {
     _currentBgpVrf = null;
-  }
-
-  @Override
-  public void enterRbaf_ipv4_unicast(Rbaf_ipv4_unicastContext ctx) {
-    if (_currentBgpVrf.getIpv4Unicast() == null) {
-      _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
-    }
+    _currentBgpIpv4UnicastAddressFamily = null;
   }
 
   @Override
   public void enterRbaf_l2vpn_evpn(Rbaf_l2vpn_evpnContext ctx) {
-    if (_currentBgpVrf.getL2VpnEvpn() == null) {
-      _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
+    _currentBgpL2vpnEvpnAddressFamily = _currentBgpVrf.getL2VpnEvpn();
+    if (_currentBgpL2vpnEvpnAddressFamily == null) {
+      _currentBgpL2vpnEvpnAddressFamily = new BgpL2vpnEvpnAddressFamily();
+      _currentBgpVrf.setL2VpnEvpn(_currentBgpL2vpnEvpnAddressFamily);
     }
+  }
+
+  @Override
+  public void exitRbaf_l2vpn_evpn(Rbaf_l2vpn_evpnContext ctx) {
+    _currentBgpL2vpnEvpnAddressFamily = null;
   }
 
   @Override
@@ -621,18 +624,18 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
 
   @Override
   public void exitRbafl_advertise_all_vni(Rbafl_advertise_all_vniContext ctx) {
-    _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
+    _currentBgpL2vpnEvpnAddressFamily.setAdvertiseAllVni(true);
   }
 
   @Override
   public void exitRbafl_advertise_default_gw(Rbafl_advertise_default_gwContext ctx) {
-    _currentBgpVrf.getL2VpnEvpn().setAdvertiseDefaultGw(true);
+    _currentBgpL2vpnEvpnAddressFamily.setAdvertiseDefaultGw(true);
   }
 
   @Override
   public void enterRbafla_ipv4_unicast(Rbafla_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
-    _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
+    _currentBgpL2vpnEvpnAddressFamily.setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
     if (ctx.rm != null) {
       _w.addWarning(
           ctx,
@@ -770,19 +773,13 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void enterRbafl_neighbor(Rbafl_neighborContext ctx) {
     String neighborName = ctx.neighbor.getText();
-    BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
-    if (neighbor == null) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          String.format("neighbor %s does not exist", neighborName));
-    } else {
-      _currentBgpNeighborL2vpnEvpnAddressFamily = neighbor.getL2vpnEvpnAddressFamily();
-      if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
-        _currentBgpNeighborL2vpnEvpnAddressFamily = new BgpNeighborL2vpnEvpnAddressFamily();
-        neighbor.setL2vpnEvpnAddressFamily(_currentBgpNeighborL2vpnEvpnAddressFamily);
-      }
+    _currentBgpNeighborL2vpnEvpnAddressFamily =
+        _currentBgpL2vpnEvpnAddressFamily.getNeighbors().get(neighborName);
+    if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
+      _currentBgpNeighborL2vpnEvpnAddressFamily = new BgpNeighborL2vpnEvpnAddressFamily();
+      _currentBgpL2vpnEvpnAddressFamily
+          .getNeighbors()
+          .put(neighborName, _currentBgpNeighborL2vpnEvpnAddressFamily);
     }
   }
 
@@ -804,16 +801,13 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       throw new BatfishException("neighbor name or address");
     }
 
-    BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
-    if (bgpNeighbor == null) {
-      _w.addWarning(
-          ctx, getFullText(ctx), _parser, String.format("neighbor %s does not exist", name));
-    } else {
-      _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
-      if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
-        _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
-        bgpNeighbor.setIpv4UnicastAddressFamily(_currentBgpNeighborIpv4UnicastAddressFamily);
-      }
+    _currentBgpNeighborIpv4UnicastAddressFamily =
+        _currentBgpIpv4UnicastAddressFamily.getNeighbors().get(name);
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
+      _currentBgpIpv4UnicastAddressFamily
+          .getNeighbors()
+          .put(name, _currentBgpNeighborIpv4UnicastAddressFamily);
     }
   }
 
@@ -832,19 +826,16 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     } else if (ctx.ipv6 != null) {
       name = ctx.ipv6.getText();
     } else {
-      throw new BatfishException("neightbor name or address");
+      throw new BatfishException("neighbor name or address");
     }
 
-    BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
-    if (bgpNeighbor == null) {
-      _w.addWarning(
-          ctx, getFullText(ctx), _parser, String.format("neighbor %s does not exist", name));
-    } else {
-      _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
-      if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
-        _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
-        bgpNeighbor.setIpv4UnicastAddressFamily(_currentBgpNeighborIpv4UnicastAddressFamily);
-      }
+    _currentBgpNeighborIpv4UnicastAddressFamily =
+        _currentBgpIpv4UnicastAddressFamily.getNeighbors().get(name);
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
+      _currentBgpIpv4UnicastAddressFamily
+          .getNeighbors()
+          .put(name, _currentBgpNeighborIpv4UnicastAddressFamily);
     }
   }
 
