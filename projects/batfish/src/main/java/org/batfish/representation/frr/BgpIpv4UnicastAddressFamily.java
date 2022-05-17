@@ -12,11 +12,13 @@ public class BgpIpv4UnicastAddressFamily implements Serializable {
 
   private final @Nonnull Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration>
       _aggregateNetworks;
+  private final @Nonnull Map<String, BgpNeighborIpv4UnicastAddressFamily> _neighbors;
   private final @Nonnull Map<Prefix, BgpNetwork> _networks;
   private final @Nonnull Map<FrrRoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
   public BgpIpv4UnicastAddressFamily() {
     _aggregateNetworks = new HashMap<>();
+    _neighbors = new HashMap<>();
     _networks = new HashMap<>();
     _redistributionPolicies = new TreeMap<>();
   }
@@ -24,6 +26,10 @@ public class BgpIpv4UnicastAddressFamily implements Serializable {
   @Nonnull
   public Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> getAggregateNetworks() {
     return _aggregateNetworks;
+  }
+
+  public @Nonnull Map<String, BgpNeighborIpv4UnicastAddressFamily> getNeighbors() {
+    return _neighbors;
   }
 
   public @Nonnull Map<Prefix, BgpNetwork> getNetworks() {

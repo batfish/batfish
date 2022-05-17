@@ -308,21 +308,21 @@ public final class FrrConversionsTest {
 
     {
       // if no local-as set, do not set next-hop-self
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, null);
+      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, null, null);
       assertNull(setNextHop);
     }
 
     {
       // if is not ibgp, do not set next-hop-self
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, 20000L);
+      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, null, 20000L);
       assertNull(setNextHop);
     }
 
     {
       // if is ibgp but no address family set, do not set next-hop-self
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, 10000L);
+      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, null, 10000L);
       assertNull(setNextHop);
     }
 
@@ -330,9 +330,7 @@ public final class FrrConversionsTest {
       // if is ibgp but neighbor configuration does not have next-hop-self set, do not set
       // next-hop-self
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
-      bgpNeighbor.setIpv4UnicastAddressFamily(new BgpNeighborIpv4UnicastAddressFamily());
-
-      assertNull(getSetNextHop(bgpNeighbor, 10000L));
+      assertNull(getSetNextHop(bgpNeighbor, new BgpNeighborIpv4UnicastAddressFamily(), 10000L));
     }
 
     {
@@ -340,9 +338,8 @@ public final class FrrConversionsTest {
       // return null.
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
-      assertNull(getSetNextHop(bgpNeighbor, 10000L));
+      assertNull(getSetNextHop(bgpNeighbor, ipv4af, 10000L));
     }
   }
 
@@ -676,7 +673,11 @@ public final class FrrConversionsTest {
     BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
         new BgpNeighborIpv4UnicastAddressFamily();
     ipv4UnicastAddressFamily.setDefaultOriginate(true);
-    neighbor.setIpv4UnicastAddressFamily(ipv4UnicastAddressFamily);
+    BgpVrf bgpVrf = new BgpVrf("vrf");
+    bgpVrf
+        .getOrCreateIpv4Unicast()
+        .getNeighbors()
+        .put(neighbor.getName(), ipv4UnicastAddressFamily);
 
     org.batfish.datamodel.BgpProcess newProc =
         org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
@@ -689,15 +690,7 @@ public final class FrrConversionsTest {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
-        viConfig,
-        _vc,
-        _frr,
-        neighbor,
-        10000L,
-        new BgpVrf("vrf"),
-        newProc,
-        peerConfigBuilder,
-        new Warnings());
+        viConfig, _vc, _frr, neighbor, 10000L, bgpVrf, newProc, peerConfigBuilder, new Warnings());
 
     // there should be a generated default route
     assertThat(
@@ -722,7 +715,11 @@ public final class FrrConversionsTest {
     neighbor.setRemoteAs(RemoteAs.internal());
     BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
         new BgpNeighborIpv4UnicastAddressFamily();
-    neighbor.setIpv4UnicastAddressFamily(ipv4UnicastAddressFamily);
+    BgpVrf bgpVrf = new BgpVrf("vrf");
+    bgpVrf
+        .getOrCreateIpv4Unicast()
+        .getNeighbors()
+        .put(neighbor.getName(), ipv4UnicastAddressFamily);
 
     org.batfish.datamodel.BgpProcess newProc =
         org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
@@ -740,7 +737,7 @@ public final class FrrConversionsTest {
           _frr,
           neighbor,
           10000L,
-          new BgpVrf("vrf"),
+          bgpVrf,
           newProc,
           BgpActivePeerConfig.builder().setPeerAddress(peerIp),
           new Warnings());
@@ -768,7 +765,7 @@ public final class FrrConversionsTest {
           _frr,
           neighbor,
           10000L,
-          new BgpVrf("vrf"),
+          bgpVrf,
           newProc,
           BgpActivePeerConfig.builder().setPeerAddress(peerIp),
           new Warnings());
@@ -862,7 +859,7 @@ public final class FrrConversionsTest {
     BgpNeighborL2vpnEvpnAddressFamily bgpNeighborL2vpnEvpnAddressFamily =
         new BgpNeighborL2vpnEvpnAddressFamily();
     bgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
-    neighbor.setL2vpnEvpnAddressFamily(bgpNeighborL2vpnEvpnAddressFamily);
+    bgpVrf.getL2VpnEvpn().getNeighbors().put(neighbor.getName(), bgpNeighborL2vpnEvpnAddressFamily);
     neighbor.setRemoteAs(RemoteAs.external());
 
     long localAs = 101L;
@@ -910,7 +907,7 @@ public final class FrrConversionsTest {
     BgpNeighborL2vpnEvpnAddressFamily bgpNeighborL2vpnEvpnAddressFamily =
         new BgpNeighborL2vpnEvpnAddressFamily();
     bgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
-    neighbor.setL2vpnEvpnAddressFamily(bgpNeighborL2vpnEvpnAddressFamily);
+    bgpVrf.getL2VpnEvpn().getNeighbors().put(neighbor.getName(), bgpNeighborL2vpnEvpnAddressFamily);
     neighbor.setRemoteAs(RemoteAs.external());
 
     BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
@@ -1044,9 +1041,11 @@ public final class FrrConversionsTest {
 
     neighborIpv4UnicastFamily.setRouteMapIn("peerMapIn");
 
-    neighbor.setIpv4UnicastAddressFamily(neighborIpv4UnicastFamily);
-
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+    bgpVrf
+        .getOrCreateIpv4Unicast()
+        .getNeighbors()
+        .put(neighbor.getName(), neighborIpv4UnicastFamily);
 
     Configuration config = new Configuration("host", ConfigurationFormat.CUMULUS_CONCATENATED);
 
@@ -1941,72 +1940,68 @@ public final class FrrConversionsTest {
       // If eBGP and next-hop-self is NOT set, then next-hop should not be self.
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(false);
       ipv4af.setNextHopSelfAll(false);
-      assertThat(getSetNextHop(bgpNeighbor, 20000L), equalTo(null));
+      assertThat(getSetNextHop(bgpNeighbor, ipv4af, 20000L), equalTo(null));
     }
 
     {
       // If eBGP and next-hop-self is set WITHOUT force, then next-hop should be self.
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
       ipv4af.setNextHopSelfAll(false);
       assertThat(
-          getSetNextHop(bgpNeighbor, 20000L), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+          getSetNextHop(bgpNeighbor, ipv4af, 20000L),
+          equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
 
     {
       // If eBGP and next-hop-self is set WITH force, then next-hop should be self.
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
       ipv4af.setNextHopSelfAll(true);
       assertThat(
-          getSetNextHop(bgpNeighbor, 20000L), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+          getSetNextHop(bgpNeighbor, ipv4af, 20000L),
+          equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
 
     {
       // If iBGP and next-hop-self NOT set, then next-hop should be null.
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(false);
       ipv4af.setNextHopSelfAll(false);
-      assertThat(getSetNextHop(bgpNeighbor, 10000L), equalTo(null));
+      assertThat(getSetNextHop(bgpNeighbor, ipv4af, 10000L), equalTo(null));
     }
 
     {
       // If iBGP and next-hop-self is set WITHOUT force, then next-hop should be null.
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
       ipv4af.setNextHopSelfAll(false);
-      assertThat(getSetNextHop(bgpNeighbor, 10000L), equalTo(null));
+      assertThat(getSetNextHop(bgpNeighbor, ipv4af, 10000L), equalTo(null));
     }
 
     {
       // If iBGP and next-hop-self is set WITH force, then next-hop should be self.
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
       ipv4af.setNextHopSelfAll(true);
       assertThat(
-          getSetNextHop(bgpNeighbor, 10000L), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+          getSetNextHop(bgpNeighbor, ipv4af, 10000L),
+          equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
 
     {
       // If iBGP and force is null, then next-hop should be null.
       bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
-      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelfAll(true);
-      assertThat(getSetNextHop(bgpNeighbor, 10000L), equalTo(null));
+      assertThat(getSetNextHop(bgpNeighbor, ipv4af, 10000L), equalTo(null));
     }
   }
 

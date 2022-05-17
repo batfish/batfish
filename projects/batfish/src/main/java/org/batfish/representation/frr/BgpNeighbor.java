@@ -1,7 +1,6 @@
 package org.batfish.representation.frr;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -99,8 +98,6 @@ public abstract class BgpNeighbor implements Serializable {
 
   // Inheritable properties
   private @Nullable RemoteAs _remoteAs;
-  private @Nullable BgpNeighborIpv4UnicastAddressFamily _ipv4UnicastAddressFamily;
-  private @Nullable BgpNeighborL2vpnEvpnAddressFamily _l2vpnEvpnAddressFamily;
   private @Nullable Boolean _ebgpMultihop;
   private @Nullable BgpNeighborSource _bgpNeighborSource;
   private @Nullable Long _localAs;
@@ -123,28 +120,6 @@ public abstract class BgpNeighbor implements Serializable {
 
   public void setDescription(@Nullable String description) {
     _description = description;
-  }
-
-  @Nullable
-  public BgpNeighborIpv4UnicastAddressFamily getIpv4UnicastAddressFamily() {
-    return _ipv4UnicastAddressFamily;
-  }
-
-  public BgpNeighbor setIpv4UnicastAddressFamily(
-      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily) {
-    _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
-    return this;
-  }
-
-  @Nullable
-  public BgpNeighborL2vpnEvpnAddressFamily getL2vpnEvpnAddressFamily() {
-    return _l2vpnEvpnAddressFamily;
-  }
-
-  public BgpNeighbor setL2vpnEvpnAddressFamily(
-      @Nullable BgpNeighborL2vpnEvpnAddressFamily l2vpnEvpnAddressFamily) {
-    _l2vpnEvpnAddressFamily = l2vpnEvpnAddressFamily;
-    return this;
   }
 
   @Nullable
@@ -180,13 +155,13 @@ public abstract class BgpNeighbor implements Serializable {
     _remoteAs = remoteAs;
   }
 
-  protected void inheritFrom(@Nonnull Map<String, BgpNeighbor> peers) {
+  protected void inheritFrom(@Nonnull BgpVrf vrf) {
     if (_inherited) {
       return;
     }
     _inherited = true;
 
-    @Nullable BgpNeighbor other = _peerGroup == null ? null : peers.get(_peerGroup);
+    @Nullable BgpNeighbor other = _peerGroup == null ? null : vrf.getNeighbors().get(_peerGroup);
     if (other == null) {
       return;
     }
@@ -207,16 +182,32 @@ public abstract class BgpNeighbor implements Serializable {
       _remoteAs = other.getRemoteAs();
     }
 
-    if (_ipv4UnicastAddressFamily == null) {
-      _ipv4UnicastAddressFamily = other.getIpv4UnicastAddressFamily();
-    } else if (other.getIpv4UnicastAddressFamily() != null) {
-      _ipv4UnicastAddressFamily.inheritFrom(other.getIpv4UnicastAddressFamily());
+    // IPv4 inheritance
+    {
+      BgpIpv4UnicastAddressFamily ipv4uaf = vrf.getIpv4Unicast();
+      if (ipv4uaf != null && ipv4uaf.getNeighbors().containsKey(other._name)) {
+        BgpNeighborIpv4UnicastAddressFamily otherIpv4u = ipv4uaf.getNeighbors().get(other._name);
+        BgpNeighborIpv4UnicastAddressFamily ipv4u = ipv4uaf.getNeighbors().get(_name);
+        if (ipv4u == null) {
+          ipv4u = new BgpNeighborIpv4UnicastAddressFamily();
+          ipv4uaf.getNeighbors().put(_name, ipv4u);
+        }
+        ipv4u.inheritFrom(otherIpv4u);
+      }
     }
 
-    if (_l2vpnEvpnAddressFamily == null) {
-      _l2vpnEvpnAddressFamily = other.getL2vpnEvpnAddressFamily();
-    } else if (other.getL2vpnEvpnAddressFamily() != null) {
-      _l2vpnEvpnAddressFamily.inheritFrom(other.getL2vpnEvpnAddressFamily());
+    // L2VPN inheritance
+    {
+      BgpL2vpnEvpnAddressFamily l2evpnaf = vrf.getL2VpnEvpn();
+      if (l2evpnaf != null && l2evpnaf.getNeighbors().containsKey(other._name)) {
+        BgpNeighborL2vpnEvpnAddressFamily otherL2evpn = l2evpnaf.getNeighbors().get(other._name);
+        BgpNeighborL2vpnEvpnAddressFamily l2evpn = l2evpnaf.getNeighbors().get(_name);
+        if (l2evpn == null) {
+          l2evpn = new BgpNeighborL2vpnEvpnAddressFamily();
+          l2evpnaf.getNeighbors().put(_name, l2evpn);
+        }
+        l2evpn.inheritFrom(otherL2evpn);
+      }
     }
 
     if (_localAs == null) {
