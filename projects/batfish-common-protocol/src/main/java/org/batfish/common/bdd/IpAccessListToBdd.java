@@ -1,13 +1,9 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +13,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
@@ -46,25 +44,13 @@ import org.batfish.datamodel.acl.TrueExpr;
  */
 @ParametersAreNonnullByDefault
 public abstract class IpAccessListToBdd {
-
-  /** Converts the given {@code aclsToConvert} to {@link BDD BDDs} using the given context. */
-  public static Map<String, BDD> toBdds(
-      BDDPacket pkt,
-      Collection<IpAccessList> aclsToConvert,
-      Map<String, IpAccessList> aclEnv,
-      Map<String, IpSpace> ipSpaceEnv,
-      BDDSourceManager bddSrcManager) {
-    IpAccessListToBdd converter = new IpAccessListToBddImpl(pkt, bddSrcManager, aclEnv, ipSpaceEnv);
-    return toImmutableMap(aclsToConvert, IpAccessList::getName, converter::toBdd);
-  }
+  private static final Logger LOGGER = LogManager.getLogger(IpAccessListToBdd.class);
 
   /**
    * Converts the given {@link IpAccessList} to a {@link BDD} using the given context.
    *
    * <p>Note that if converting multiple {@link IpAccessList ACLs} with the same context,
    * considerable work can be saved by creating a single {@link IpAccessListToBdd} and reusing it.
-   *
-   * @see #toBdds(BDDPacket, Collection, Map, Map, BDDSourceManager)
    */
   public static BDD toBDD(
       BDDPacket pkt,
@@ -73,22 +59,6 @@ public abstract class IpAccessListToBdd {
       Map<String, IpSpace> ipSpaceEnv,
       BDDSourceManager bddSrcManager) {
     return new IpAccessListToBddImpl(pkt, bddSrcManager, aclEnv, ipSpaceEnv).toBdd(acl);
-  }
-
-  /**
-   * Converts the given {@link IpAccessList} to a {@link BDD}.
-   *
-   * <p>The {@link IpAccessList} must be self-contained, with no references to source {@link
-   * org.batfish.datamodel.Interface}, named {@link IpAccessList ACLs} or {@link IpSpace IP spaces}.
-   *
-   * <p>Note that if converting multiple {@link IpAccessList ACLs} with the same context,
-   * considerable work can be saved by creating a single {@link IpAccessListToBdd} and reusing it.
-   *
-   * @see #toBdds(BDDPacket, Collection, Map, Map, BDDSourceManager)
-   * @see #toBDD(BDDPacket, IpAccessList, Map, Map, BDDSourceManager)
-   */
-  public static BDD toBDD(BDDPacket pkt, IpAccessList acl) {
-    return toBDD(pkt, acl, ImmutableMap.of(), ImmutableMap.of(), BDDSourceManager.empty(pkt));
   }
 
   /** Map of ACL name to {@link PermitAndDenyBdds} of the packets explicitly matched by that ACL */
@@ -162,15 +132,24 @@ public abstract class IpAccessListToBdd {
    */
   @Nonnull
   public final BDD toBdd(IpAccessList acl) {
-    return toPermitAndDenyBdds(acl).getPermitBdd();
+    return getPermitAndDenyBdds(acl.getName()).getPermitBdd();
   }
 
-  @VisibleForTesting
-  public PermitAndDenyBdds toPermitAndDenyBdds(IpAccessList acl) {
-    return _bddOps.bddAclLines(
-        acl.getLines().stream()
-            .map(this::toPermitAndDenyBdds)
-            .collect(ImmutableList.toImmutableList()));
+  private PermitAndDenyBdds toPermitAndDenyBdds(IpAccessList acl) {
+    long t = System.currentTimeMillis();
+    PermitAndDenyBdds result =
+        _bddOps.bddAclLines(
+            acl.getLines().stream()
+                .map(this::toPermitAndDenyBdds)
+                .collect(ImmutableList.toImmutableList()));
+    t = System.currentTimeMillis() - t;
+    LOGGER.debug(
+        "toPermitAndDenyBdds({}): {}ms  ({} lines, {} values for tracking sources)",
+        acl.getName(),
+        t,
+        acl.getLines().size(),
+        _bddSrcManager.getFiniteDomain().getValueBdds().size());
+    return result;
   }
 
   private PermitAndDenyBdds getPermitAndDenyBdds(String aclName) {

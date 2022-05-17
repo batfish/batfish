@@ -74,9 +74,9 @@ public class SearchFiltersAnswererDifferentialTest {
         .build();
     _ib.setOwner(refConfig).build();
     String aclName = "aclName";
-    IpAccessList refAcl = _ab.setName(aclName).setOwner(config).build();
+    IpAccessList refAcl = _ab.setName(aclName).setOwner(refConfig).build();
     IpAccessList acl =
-        _ab.setOwner(refConfig)
+        _ab.setOwner(config)
             .setLines(
                 ImmutableList.of(
                     accepting()
@@ -114,7 +114,7 @@ public class SearchFiltersAnswererDifferentialTest {
             getBatfish(refConfig, config),
             DEFAULT_PARAMS,
             _pkt);
-    result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
+    result = getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
     assertThat(result.getDecreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));

@@ -47,6 +47,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
@@ -152,6 +154,8 @@ import org.batfish.symbolic.state.VrfAccept;
  */
 @ParametersAreNonnullByDefault
 public final class BDDReachabilityAnalysisFactory {
+  private static final Logger LOGGER = LogManager.getLogger(BDDReachabilityAnalysisFactory.class);
+
   // node name --> acl name --> set of packets denied by the acl.
   private final Map<String, Map<String, Supplier<BDD>>> _aclDenyBDDs;
 
@@ -271,6 +275,14 @@ public final class BDDReachabilityAnalysisFactory {
             : null;
     _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
     _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs, initializeSessions);
+
+    _configs = configs;
+    _dstIpSpaceToBDD = _bddPacket.getDstIpSpaceToBDD();
+    _srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
+
+    _aclPermitBDDs = computeAclBDDs(this::ipAccessListToBddForNode, configs);
+    _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
+
     if (_ignoreFilters) {
       // If ignoring filters, make all BDDOutgoingOriginalFlowFilterManagers trivial; they should
       // never enforce any constraints.
@@ -280,14 +292,11 @@ public final class BDDReachabilityAnalysisFactory {
           toImmutableMap(configs.keySet(), Function.identity(), k -> empty);
     } else {
       _bddOutgoingOriginalFlowFilterManagers =
-          BDDOutgoingOriginalFlowFilterManager.forNetwork(_bddPacket, configs, _bddSourceManagers);
+          BDDOutgoingOriginalFlowFilterManager.forNetwork(
+              _bddPacket,
+              configs,
+              (hostname, aclName) -> _aclPermitBDDs.get(hostname).get(aclName).get());
     }
-    _configs = configs;
-    _dstIpSpaceToBDD = _bddPacket.getDstIpSpaceToBDD();
-    _srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
-
-    _aclPermitBDDs = computeAclBDDs(this::ipAccessListToBddForNode, configs);
-    _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
 
     _bddIncomingTransformations = computeBDDIncomingTransformations();
     _bddOutgoingTransformations = computeBDDOutgoingTransformations();
@@ -415,37 +424,47 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Map<String, Map<String, Transition>> computeBDDIncomingTransformations() {
-    return toImmutableMap(
-        _configs,
-        Entry::getKey, /* node */
-        nodeEntry -> {
-          Configuration node = nodeEntry.getValue();
-          TransformationToTransition toTransition =
-              new TransformationToTransition(_bddPacket, ipAccessListToBddForNode(node));
-          return node.activeL3Interfaces()
-              .filter(Interface::canReceiveIpTraffic)
-              .collect(
-                  ImmutableMap.toImmutableMap(
-                      Interface::getName,
-                      iface -> toTransition.toTransition(iface.getIncomingTransformation())));
-        });
+    long start = System.currentTimeMillis();
+    Map<String, Map<String, Transition>> result =
+        toImmutableMap(
+            _configs,
+            Entry::getKey, /* node */
+            nodeEntry -> {
+              Configuration node = nodeEntry.getValue();
+              TransformationToTransition toTransition =
+                  new TransformationToTransition(_bddPacket, ipAccessListToBddForNode(node));
+              return node.activeL3Interfaces()
+                  .filter(Interface::canReceiveIpTraffic)
+                  .collect(
+                      ImmutableMap.toImmutableMap(
+                          Interface::getName,
+                          iface -> toTransition.toTransition(iface.getIncomingTransformation())));
+            });
+    long t = System.currentTimeMillis() - start;
+    LOGGER.info("computeBDDIncomingTransformations: {}ms", t);
+    return result;
   }
 
   private Map<String, Map<String, Transition>> computeBDDOutgoingTransformations() {
-    return toImmutableMap(
-        _configs,
-        Entry::getKey, /* node */
-        nodeEntry -> {
-          Configuration node = nodeEntry.getValue();
-          TransformationToTransition toTransition =
-              new TransformationToTransition(_bddPacket, ipAccessListToBddForNode(node));
-          return node.activeL3Interfaces()
-              .filter(Interface::canSendIpTraffic)
-              .collect(
-                  ImmutableMap.toImmutableMap(
-                      Interface::getName,
-                      iface -> toTransition.toTransition(iface.getOutgoingTransformation())));
-        });
+    long start = System.currentTimeMillis();
+    Map<String, Map<String, Transition>> result =
+        toImmutableMap(
+            _configs,
+            Entry::getKey, /* node */
+            nodeEntry -> {
+              Configuration node = nodeEntry.getValue();
+              TransformationToTransition toTransition =
+                  new TransformationToTransition(_bddPacket, ipAccessListToBddForNode(node));
+              return node.activeL3Interfaces()
+                  .filter(Interface::canSendIpTraffic)
+                  .collect(
+                      ImmutableMap.toImmutableMap(
+                          Interface::getName,
+                          iface -> toTransition.toTransition(iface.getOutgoingTransformation())));
+            });
+    long t = System.currentTimeMillis() - start;
+    LOGGER.info("computeBDDOutgoingTransformations: {}ms", t);
+    return result;
   }
 
   private static @Nonnull Map<String, Map<String, BDD>> computeVrfForwardingBehaviorBDDs(
@@ -844,6 +863,7 @@ public final class BDDReachabilityAnalysisFactory {
                           return Stream.of(enterPolicyEdge);
                         }
 
+                        long t = System.currentTimeMillis();
                         PacketPolicyToBdd.BddPacketPolicy bddPacketPolicy =
                             PacketPolicyToBdd.evaluate(
                                 nodeName,
@@ -855,6 +875,9 @@ public final class BDDReachabilityAnalysisFactory {
                                     (key) ->
                                         _ipsRoutesOutInterfacesFactory.getIpsRoutedOutInterfaces(
                                             nodeName, vrfName)));
+                        t = System.currentTimeMillis() - t;
+                        LOGGER.debug(
+                            "converted packet policy on {}/{} to BDD: {}ms", nodeName, vrfName, t);
 
                         PacketPolicyActionToEdges actionToEdges =
                             new PacketPolicyActionToEdges(nodeName, policyName, vrfName);
