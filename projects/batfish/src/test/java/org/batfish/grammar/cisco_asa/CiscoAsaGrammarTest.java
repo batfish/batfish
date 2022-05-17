@@ -142,6 +142,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDMatchers;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -706,24 +707,31 @@ public final class CiscoAsaGrammarTest {
   public void testAsaGh5875() throws IOException {
     Configuration c = parseConfig("asa-gh-5875");
     BDDPacket p = new BDDPacket();
+    BDDSourceManager srcManager = BDDSourceManager.empty(p);
 
     {
       String aclName = computeServiceObjectGroupAclName("IP_GROUP");
       assertThat(c, hasIpAccessList(aclName));
       IpAccessList acl = c.getIpAccessLists().get(aclName);
-      assertThat(IpAccessListToBdd.toBDD(p, acl), BDDMatchers.isOne());
+      assertThat(
+          IpAccessListToBdd.toBDD(p, acl, c.getIpAccessLists(), c.getIpSpaces(), srcManager),
+          BDDMatchers.isOne());
     }
     {
       String aclName = computeServiceObjectGroupAclName("TCP_GROUP");
       assertThat(c, hasIpAccessList(aclName));
       IpAccessList acl = c.getIpAccessLists().get(aclName);
-      assertThat(IpAccessListToBdd.toBDD(p, acl), equalTo(p.getIpProtocol().value(IpProtocol.TCP)));
+      assertThat(
+          IpAccessListToBdd.toBDD(p, acl, c.getIpAccessLists(), c.getIpSpaces(), srcManager),
+          equalTo(p.getIpProtocol().value(IpProtocol.TCP)));
     }
     {
       String aclName = computeServiceObjectGroupAclName("AH_GROUP");
       assertThat(c, hasIpAccessList(aclName));
       IpAccessList acl = c.getIpAccessLists().get(aclName);
-      assertThat(IpAccessListToBdd.toBDD(p, acl), equalTo(p.getIpProtocol().value(IpProtocol.AHP)));
+      assertThat(
+          IpAccessListToBdd.toBDD(p, acl, c.getIpAccessLists(), c.getIpSpaces(), srcManager),
+          equalTo(p.getIpProtocol().value(IpProtocol.AHP)));
     }
   }
 

@@ -1842,6 +1842,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     IpAccessList originalFlowFilter =
         nf.aclBuilder()
+            .setOwner(c1)
             .setLines(ExprAclLine.accepting(AclLineMatchExprs.matchDst(Ip.parse("1.1.1.1"))))
             .build();
 
@@ -1912,6 +1913,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     IpAccessList originalFlowFilter =
         nf.aclBuilder()
+            .setOwner(c1)
             .setLines(ExprAclLine.accepting(AclLineMatchExprs.matchDst(Ip.parse("1.1.1.1"))))
             .build();
 

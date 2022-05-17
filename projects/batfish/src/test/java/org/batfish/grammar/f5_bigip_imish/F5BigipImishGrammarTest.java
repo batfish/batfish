@@ -257,7 +257,7 @@ public final class F5BigipImishGrammarTest {
     String acl2Name = "acl2";
 
     // setup
-    IpAccessListToBdd toBDD = toBDD();
+    IpAccessListToBdd toBDD = toBDD(c);
 
     // acl1
     assertThat(c.getIpAccessLists(), hasKey(acl1Name));
@@ -1321,10 +1321,10 @@ public final class F5BigipImishGrammarTest {
     assertThat(peer4.getLocalIp(), equalTo(Ip.parse("10.0.4.1")));
   }
 
-  private @Nonnull IpAccessListToBdd toBDD() {
+  private @Nonnull IpAccessListToBdd toBDD(Configuration c) {
     BDDPacket pkt = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
-    return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
+    return new IpAccessListToBddImpl(pkt, mgr, c.getIpAccessLists(), c.getIpSpaces());
   }
 
   @Test
