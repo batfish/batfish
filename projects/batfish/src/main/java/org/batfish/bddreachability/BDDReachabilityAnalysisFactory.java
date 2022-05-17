@@ -876,7 +876,7 @@ public final class BDDReachabilityAnalysisFactory {
                                         _ipsRoutesOutInterfacesFactory.getIpsRoutedOutInterfaces(
                                             nodeName, vrfName)));
                         t = System.currentTimeMillis() - t;
-                        LOGGER.info(
+                        LOGGER.debug(
                             "converted packet policy on {}/{} to BDD: {}ms", nodeName, vrfName, t);
 
                         PacketPolicyActionToEdges actionToEdges =
