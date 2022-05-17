@@ -160,9 +160,7 @@ public final class SessionInstrumentationTest {
       _srcMgrs = ImmutableMap.of(FW, _fwSrcMgr, SOURCE1, _source1SrcMgr);
       _outgoingOriginalFlowFilterMgrs =
           forNetwork(
-              _pkt,
-              ImmutableMap.of(FW, _fw, SOURCE1, _source1),
-              ImmutableMap.of(FW, ImmutableMap.of(), SOURCE1, ImmutableMap.of()));
+              _pkt, ImmutableMap.of(FW, _fw, SOURCE1, _source1), (hostname, aclName) -> null);
     }
 
     // Setup filter BDDs

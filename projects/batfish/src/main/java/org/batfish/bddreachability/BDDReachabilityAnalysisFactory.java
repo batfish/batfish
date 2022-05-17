@@ -292,7 +292,10 @@ public final class BDDReachabilityAnalysisFactory {
           toImmutableMap(configs.keySet(), Function.identity(), k -> empty);
     } else {
       _bddOutgoingOriginalFlowFilterManagers =
-          BDDOutgoingOriginalFlowFilterManager.forNetwork(_bddPacket, configs, _aclPermitBDDs);
+          BDDOutgoingOriginalFlowFilterManager.forNetwork(
+              _bddPacket,
+              configs,
+              (hostname, aclName) -> _aclPermitBDDs.get(hostname).get(aclName).get());
     }
 
     _bddIncomingTransformations = computeBDDIncomingTransformations();

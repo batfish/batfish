@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
@@ -38,6 +38,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.junit.Test;
@@ -112,13 +113,9 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     IpAccessListToBddImpl aclToBdd =
         new IpAccessListToBddImpl(
             _pkt, srcMgrs.get(c.getHostname()), c.getIpAccessLists(), c.getIpSpaces());
-    Map<String, Map<String, Supplier<BDD>>> aclPermitBdds =
-        ImmutableMap.of(
-            c.getHostname(),
-            toImmutableMap(
-                c.getIpAccessLists().values(),
-                IpAccessList::getName,
-                (acl) -> () -> aclToBdd.toBdd(acl)));
+    BiFunction<String, String, BDD> aclPermitBdds =
+        (hostname, aclName) ->
+            aclToBdd.toBdd(configs.get(hostname).getIpAccessLists().get(aclName));
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
         BDDOutgoingOriginalFlowFilterManager.forNetwork(_pkt, configs, aclPermitBdds);
     return mgrs.get(c.getHostname());
@@ -287,15 +284,8 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
                 new IpAccessListToBddImpl(
                     _pkt, bddSrcMgrs.get(c.getHostname()), c.getIpAccessLists(), c.getIpSpaces()));
 
-    Map<String, Map<String, Supplier<BDD>>> aclPermitBdds =
-        toImmutableMap(
-            aclToBdds,
-            Map.Entry::getKey,
-            entry ->
-                toImmutableMap(
-                    configs.get(entry.getKey()).getIpAccessLists().values(),
-                    IpAccessList::getName,
-                    acl -> () -> entry.getValue().toBdd(acl)));
+    BiFunction<String, String, BDD> aclPermitBdds =
+        (hostname, aclName) -> aclToBdds.get(hostname).toBdd(new PermittedByAcl(aclName));
 
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
         BDDOutgoingOriginalFlowFilterManager.forNetwork(_pkt, configs, aclPermitBdds);

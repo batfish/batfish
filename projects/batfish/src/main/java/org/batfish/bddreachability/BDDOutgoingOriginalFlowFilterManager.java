@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -115,7 +115,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
   public static Map<String, BDDOutgoingOriginalFlowFilterManager> forNetwork(
       BDDPacket pkt,
       Map<String, Configuration> configs,
-      Map<String, Map<String, Supplier<BDD>>> aclPermitBDDs) {
+      BiFunction<String, String, BDD> aclPermitBDDs) {
     // hostname -> set of interfaces that will be values for the config's finite domain
     ImmutableMap.Builder<String, Set<String>> finiteDomainValues = ImmutableMap.builder();
 
@@ -156,7 +156,8 @@ public final class BDDOutgoingOriginalFlowFilterManager {
         finiteDomainValues.put(hostname, activeWithFilters);
       }
 
-      filterBdds.put(hostname, buildFilterBdds(c, aclPermitBDDs.get(hostname)));
+      filterBdds.put(
+          hostname, buildFilterBdds(c, aclName -> aclPermitBDDs.apply(hostname, aclName)));
     }
     t = System.currentTimeMillis() - t;
     LOGGER.info("computed filter BDDs in {}ms", t);
@@ -188,7 +189,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    * outgoingOriginalFlowFilters} to the permit BDD for each interface's outgoingOriginalFlowFilter.
    */
   private static Map<String, BDD> buildFilterBdds(
-      Configuration c, Map<String, Supplier<BDD>> aclPermitBDDs) {
+      Configuration c, Function<String, BDD> aclPermitBDDs) {
     // Map of interface name -> outgoingOriginalFlowFilter for that interface.
     // Only includes active interfaces with outgoing original flow filters.
     Map<String, IpAccessList> origFlowFilters =
@@ -198,7 +199,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
 
     return toImmutableMap(
-        origFlowFilters, Entry::getKey, e -> aclPermitBDDs.get(e.getValue().getName()).get());
+        origFlowFilters, Entry::getKey, e -> aclPermitBDDs.apply(e.getValue().getName()));
   }
 
   /**
