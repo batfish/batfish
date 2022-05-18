@@ -3,11 +3,8 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
-import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
-import com.google.common.collect.RangeSet;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Map;
@@ -17,6 +14,7 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDTraversal;
+import org.batfish.datamodel.LongSpace;
 
 public class ImmutableBDDInteger extends BDDInteger {
   // Lazy init
@@ -84,22 +82,22 @@ public class ImmutableBDDInteger extends BDDInteger {
     return value;
   }
 
-  private static class ToRangeSet implements BDDTraversal {
+  private static class ToLongSpace implements BDDTraversal {
     private final Map<Integer, Integer> _varToPosition;
     private final int _numBits;
     private long _currentVal;
     private int _nextPos;
-    ImmutableRangeSet.Builder<Long> _rangesBuilder;
+    LongSpace.Builder _rangesBuilder;
 
-    private ToRangeSet(Map<Integer, Integer> varToPosition) {
+    private ToLongSpace(Map<Integer, Integer> varToPosition) {
       _varToPosition = ImmutableMap.copyOf(varToPosition);
       _currentVal = 0;
       _nextPos = 0;
       _numBits = _varToPosition.size();
-      _rangesBuilder = ImmutableRangeSet.builder();
+      _rangesBuilder = LongSpace.builder();
     }
 
-    public RangeSet<Long> build() {
+    public LongSpace build() {
       return _rangesBuilder.build();
     }
 
@@ -107,8 +105,7 @@ public class ImmutableBDDInteger extends BDDInteger {
       int unconstrainedBits = _numBits - _nextPos;
       long startInclusive = _currentVal << unconstrainedBits;
       long endExclusive = (_currentVal + 1) << unconstrainedBits;
-      _rangesBuilder.add(
-          Range.closedOpen(startInclusive, endExclusive).canonical(DiscreteDomain.longs()));
+      _rangesBuilder.including(Range.closedOpen(startInclusive, endExclusive));
     }
 
     @Override
@@ -167,7 +164,7 @@ public class ImmutableBDDInteger extends BDDInteger {
     }
   }
 
-  public RangeSet<Long> toRangeSet(BDD bdd) {
+  public LongSpace toLongSpace(BDD bdd) {
     if (_varToPosition == null) {
       ImmutableMap.Builder<Integer, Integer> builder =
           ImmutableMap.builderWithExpectedSize(_bitvec.length);
@@ -177,7 +174,7 @@ public class ImmutableBDDInteger extends BDDInteger {
       _varToPosition = builder.build();
     }
 
-    ToRangeSet traversal = new ToRangeSet(_varToPosition);
+    ToLongSpace traversal = new ToLongSpace(_varToPosition);
     bdd.traverse(traversal);
     return traversal._rangesBuilder.build();
   }
