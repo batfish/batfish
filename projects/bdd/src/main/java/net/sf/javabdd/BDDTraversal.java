@@ -11,16 +11,16 @@ public interface BDDTraversal {
   void backtrack();
 
   /**
-   * Called when taking the high (true) branch of the variable {@code var}.
+   * Called before taking the high (true) branch of the variable {@code var}.
    *
-   * @return whether to continue the traversal. If false, will backtrack.
+   * @return whether to continue the traversal. If false, will not take the branch.
    */
-  boolean high(int var);
+  boolean traverse_high(int var);
 
   /**
-   * Called when taking the low (false) branch of the variable {@code var}.
+   * Called before taking the low (false) branch of the variable {@code var}.
    *
-   * @return whether to continue the traversal. If false, will backtrack.
+   * @return whether to continue the traversal. If false, will not take the branch.
    */
-  boolean low(int var);
+  boolean traverse_low(int var);
 }

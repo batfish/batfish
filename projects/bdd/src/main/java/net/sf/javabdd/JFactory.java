@@ -3616,15 +3616,15 @@ public class JFactory extends BDDFactory {
     }
 
     int var = bdd_var(bdd);
-    if (traversal.high(var)) {
+    if (traversal.traverse_high(var)) {
       bdd_traverse(traversal, HIGH(bdd));
+      traversal.backtrack();
     }
-    traversal.backtrack();
 
-    if (traversal.low(var)) {
+    if (traversal.traverse_low(var)) {
       bdd_traverse(traversal, LOW(bdd));
+      traversal.backtrack();
     }
-    traversal.backtrack();
   }
 
   // Makes a node for the purposes of a satisfying assignment. The resulting node tests the given

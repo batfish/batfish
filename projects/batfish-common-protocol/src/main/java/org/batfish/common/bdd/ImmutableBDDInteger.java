@@ -127,15 +127,10 @@ public class ImmutableBDDInteger extends BDDInteger {
     }
 
     @Override
-    public boolean high(int var) {
+    public boolean traverse_high(int var) {
       @Nullable Integer pos = _varToPosition.get(var);
       if (pos == null) {
         addRange();
-
-        // for backtracking
-        _currentVal <<= 1;
-        _nextPos++;
-
         return false;
       }
 
@@ -152,15 +147,10 @@ public class ImmutableBDDInteger extends BDDInteger {
     }
 
     @Override
-    public boolean low(int var) {
+    public boolean traverse_low(int var) {
       @Nullable Integer pos = _varToPosition.get(var);
       if (pos == null) {
         addRange();
-
-        // for backtracking
-        _currentVal <<= 1;
-        _nextPos++;
-
         return false;
       }
 
