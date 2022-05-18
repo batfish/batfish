@@ -4,12 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
 import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -19,7 +19,9 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDTraversal;
 
 public class ImmutableBDDInteger extends BDDInteger {
-  private BDD _vars;
+  // Lazy init
+  private BDD _vars = null;
+  private Map<Integer, Integer> _varToPosition = null;
 
   public ImmutableBDDInteger(BDDFactory factory, BDD[] bitvec) {
     super(factory, bitvec);
@@ -83,20 +85,17 @@ public class ImmutableBDDInteger extends BDDInteger {
   }
 
   private static class ToRangeSet implements BDDTraversal {
-    private final Map<Integer, Integer> _varToPosition = new HashMap<>();
+    private final Map<Integer, Integer> _varToPosition;
     private final int _numBits;
     private long _currentVal;
     private int _nextPos;
     ImmutableRangeSet.Builder<Long> _rangesBuilder;
 
-    private ToRangeSet(BDD[] bitvec) {
-      for (int i = 0; i < bitvec.length; i++) {
-        _varToPosition.put(bitvec[i].var(), i);
-      }
-
+    private ToRangeSet(Map<Integer, Integer> varToPosition) {
+      _varToPosition = ImmutableMap.copyOf(varToPosition);
       _currentVal = 0;
       _nextPos = 0;
-      _numBits = bitvec.length;
+      _numBits = _varToPosition.size();
       _rangesBuilder = ImmutableRangeSet.builder();
     }
 
@@ -169,7 +168,16 @@ public class ImmutableBDDInteger extends BDDInteger {
   }
 
   public RangeSet<Long> toRangeSet(BDD bdd) {
-    ToRangeSet traversal = new ToRangeSet(_bitvec);
+    if (_varToPosition == null) {
+      ImmutableMap.Builder<Integer, Integer> builder =
+          ImmutableMap.builderWithExpectedSize(_bitvec.length);
+      for (int i = 0; i < _bitvec.length; i++) {
+        builder.put(_bitvec[i].var(), i);
+      }
+      _varToPosition = builder.build();
+    }
+
+    ToRangeSet traversal = new ToRangeSet(_varToPosition);
     bdd.traverse(traversal);
     return traversal._rangesBuilder.build();
   }
