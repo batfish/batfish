@@ -2188,7 +2188,7 @@ public class JFactory extends BDDFactory {
     }
     replacepair = pair.result;
     replacelast = pair.last;
-    replaceid = (pair.id << 3) | CACHEID_REPLACE;
+    replaceid = (pair.id << 3) | CACHEID_TRANSFORM;
 
     INITREF();
     int res = transform_rec(l, r);
