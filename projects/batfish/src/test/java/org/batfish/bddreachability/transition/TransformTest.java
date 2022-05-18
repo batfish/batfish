@@ -210,26 +210,19 @@ public class TransformTest {
 
   @Test
   public void testReduceWithOr() {
-    /*
-    assertThat(
-        Transform.reduceWithOr(ImmutableList.of(_transformX0, _transformX1, _transformY)),
-        containsInAnyOrder(_transformX0.tryOr(_transformX1).get(), _transformY));
-     */
-
     BDDPairingFactory xPairingFactory = _xPrimedInt.getPairingFactory();
     BDDPairingFactory yPairingFactory = _yPrimedInt.getPairingFactory();
-    BDD yIdRel = yPairingFactory.identityRelation(var -> true);
-    BDD xIdRel = xPairingFactory.identityRelation(var -> true);
+    BDD yIdRel = yPairingFactory.identityRelation();
+    BDD xIdRel = xPairingFactory.identityRelation();
 
     assertThat(
         Transform.reduceWithOr(ImmutableList.of(_transformX0, _transformX1, _transformY)),
         contains(
             new Transform(
-                _transformX0
-                    .getForwardRelation()
-                    .or(_transformX1.getForwardRelation())
-                    .and(yIdRel)
-                    .or(_transformY.getForwardRelation().and(xIdRel)),
+                _factory.orAll(
+                    _transformX0.getForwardRelation().and(yIdRel),
+                    _transformX1.getForwardRelation().and(yIdRel),
+                    _transformY.getForwardRelation().and(xIdRel)),
                 BDDPairingFactory.union(ImmutableList.of(xPairingFactory, yPairingFactory)))));
   }
 
