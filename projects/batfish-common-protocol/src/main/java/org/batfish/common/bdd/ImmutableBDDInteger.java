@@ -85,9 +85,9 @@ public class ImmutableBDDInteger extends BDDInteger {
   private static class ToRangeSet implements BDDTraversal {
     private final Map<Integer, Integer> _varToPosition = new HashMap<>();
     private final int _numBits;
-    private int _currentVal;
+    private long _currentVal;
     private int _nextPos;
-    ImmutableRangeSet.Builder<Integer> _rangesBuilder;
+    ImmutableRangeSet.Builder<Long> _rangesBuilder;
 
     private ToRangeSet(BDD[] bitvec) {
       for (int i = 0; i < bitvec.length; i++) {
@@ -100,16 +100,16 @@ public class ImmutableBDDInteger extends BDDInteger {
       _rangesBuilder = ImmutableRangeSet.builder();
     }
 
-    public RangeSet<Integer> build() {
+    public RangeSet<Long> build() {
       return _rangesBuilder.build();
     }
 
     private void addRange() {
       int unconstrainedBits = _numBits - _nextPos;
-      int startInclusive = _currentVal << unconstrainedBits;
-      int endExclusive = (_currentVal + 1) << unconstrainedBits;
+      long startInclusive = _currentVal << unconstrainedBits;
+      long endExclusive = (_currentVal + 1) << unconstrainedBits;
       _rangesBuilder.add(
-          Range.closedOpen(startInclusive, endExclusive).canonical(DiscreteDomain.integers()));
+          Range.closedOpen(startInclusive, endExclusive).canonical(DiscreteDomain.longs()));
     }
 
     @Override
@@ -139,11 +139,12 @@ public class ImmutableBDDInteger extends BDDInteger {
       if (pos == _nextPos) {
         _currentVal = (_currentVal << 1) + 1;
         _nextPos += 1;
+        return true;
       } else {
-        // not sure how to handle this
-        throw new UnsupportedOperationException("TODO");
+        // there are at least 2^(pos - _nextPos) ranges within here. this should happen ~never, so
+        // just skip
+        return false;
       }
-      return true;
     }
 
     @Override
@@ -158,15 +159,16 @@ public class ImmutableBDDInteger extends BDDInteger {
       if (pos == _nextPos) {
         _currentVal <<= 1;
         _nextPos++;
+        return true;
       } else {
-        // not sure how to handle this
-        throw new UnsupportedOperationException("TODO");
+        // there are at least 2^(pos - _nextPos) ranges within here. this should happen ~never, so
+        // just skip
+        return false;
       }
-      return true;
     }
   }
 
-  RangeSet<Integer> toRangeSet(BDD bdd) {
+  RangeSet<Long> toRangeSet(BDD bdd) {
     ToRangeSet traversal = new ToRangeSet(_bitvec);
     bdd.traverse(traversal);
     return traversal._rangesBuilder.build();
