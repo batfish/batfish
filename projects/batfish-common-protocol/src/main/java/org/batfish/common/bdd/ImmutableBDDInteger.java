@@ -168,7 +168,7 @@ public class ImmutableBDDInteger extends BDDInteger {
     }
   }
 
-  RangeSet<Long> toRangeSet(BDD bdd) {
+  public RangeSet<Long> toRangeSet(BDD bdd) {
     ToRangeSet traversal = new ToRangeSet(_bitvec);
     bdd.traverse(traversal);
     return traversal._rangesBuilder.build();
