@@ -3,15 +3,17 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Optional;
-import javax.annotation.Nonnull;
-
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDTraversal;
@@ -81,18 +83,20 @@ public class ImmutableBDDInteger extends BDDInteger {
   }
 
   private static class ToRangeSet implements BDDTraversal {
-    private final int _firstVar;
+    private final Map<Integer, Integer> _varToPosition = new HashMap<>();
     private final int _numBits;
     private int _currentVal;
-    private int _nextVar;
+    private int _nextPos;
     ImmutableRangeSet.Builder<Integer> _rangesBuilder;
 
-    private ToRangeSet(int firstVar, int numBits) {
-      _firstVar = firstVar;
-      _numBits = numBits;
+    private ToRangeSet(BDD[] bitvec) {
+      for (int i = 0; i < bitvec.length; i++) {
+        _varToPosition.put(bitvec[i].var(), i);
+      }
 
       _currentVal = 0;
-      _nextVar = firstVar;
+      _nextPos = 0;
+      _numBits = bitvec.length;
       _rangesBuilder = ImmutableRangeSet.builder();
     }
 
@@ -101,11 +105,11 @@ public class ImmutableBDDInteger extends BDDInteger {
     }
 
     private void addRange() {
-      int unconstrainedBits = _numBits - (_nextVar - _firstVar);
+      int unconstrainedBits = _numBits - _nextPos;
       int startInclusive = _currentVal << unconstrainedBits;
       int endExclusive = (_currentVal + 1) << unconstrainedBits;
       _rangesBuilder.add(
-              Range.closedOpen(startInclusive, endExclusive).canonical(DiscreteDomain.integers()));
+          Range.closedOpen(startInclusive, endExclusive).canonical(DiscreteDomain.integers()));
     }
 
     @Override
@@ -119,48 +123,61 @@ public class ImmutableBDDInteger extends BDDInteger {
     @Override
     public void backtrack() {
       _currentVal >>= 1;
-      _nextVar--;
+      _nextPos--;
     }
 
     @Override
     public boolean high(int var) {
-      if (var >= _firstVar + _numBits) {
+      @Nullable Integer pos = _varToPosition.get(var);
+      if (pos == null) {
         addRange();
 
         // for backtracking
         _currentVal <<= 1;
-        _nextVar++;
+        _nextPos++;
 
         return false;
       }
 
-      checkArgument(var == _nextVar);
-      _currentVal = (_currentVal << 1) + 1;
-      _nextVar += 1;
+      checkArgument(pos >= _nextPos);
+
+      if (pos == _nextPos) {
+        _currentVal = (_currentVal << 1) + 1;
+        _nextPos += 1;
+      } else {
+        // not sure how to handle this
+        throw new UnsupportedOperationException("TODO");
+      }
       return true;
     }
 
     @Override
     public boolean low(int var) {
-      if (var >= _firstVar + _numBits) {
+      @Nullable Integer pos = _varToPosition.get(var);
+      if (pos == null) {
         addRange();
 
         // for backtracking
         _currentVal <<= 1;
-        _nextVar++;
+        _nextPos++;
 
         return false;
       }
 
-      checkArgument(var == _nextVar);
-      _currentVal <<= 1;
-      _nextVar++;
+      checkArgument(pos >= _nextPos);
+      if (pos == _nextPos) {
+        _currentVal <<= 1;
+        _nextPos++;
+      } else {
+        // not sure how to handle this
+        throw new UnsupportedOperationException("TODO");
+      }
       return true;
     }
   }
 
   RangeSet<Integer> toRangeSet(BDD bdd) {
-    ToRangeSet traversal = new ToRangeSet(_bitvec[0].level(), _bitvec.length);
+    ToRangeSet traversal = new ToRangeSet(_bitvec);
     bdd.traverse(traversal);
     return traversal._rangesBuilder.build();
   }
