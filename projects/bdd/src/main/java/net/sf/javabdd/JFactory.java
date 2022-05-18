@@ -4674,10 +4674,6 @@ public class JFactory extends BDDFactory {
 
     @Override
     public String toString() {
-      return "";
-    }
-
-    String toString2() {
       StringBuilder sb = new StringBuilder();
       sb.append('{');
       boolean any = false;
