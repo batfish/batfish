@@ -35,6 +35,11 @@ public final class BDDFlowConstraintGenerator {
   }
 
   public interface PreferenceRefiner {
+    /**
+     * @param bdd such that bdd.isZero() returns false.
+     * @return a BDD not == to the input. if isZero(), then the input bdd does not satisfy the
+     *     preference.
+     */
     BDD refine(BDD bdd);
   }
 
@@ -63,14 +68,16 @@ public final class BDDFlowConstraintGenerator {
       return new RefineFirst(null, ImmutableList.copyOf(children));
     }
 
+    @Override
     public BDD refine(BDD bdd) {
-      BDD tmp = _guard == null ? bdd : _guard.and(bdd);
+      BDD tmp = _guard == null ? bdd.id() : _guard.and(bdd);
       if (tmp.isZero()) {
         return tmp;
       }
       for (PreferenceRefiner child : _children) {
         BDD res = child.refine(tmp);
         if (!res.isZero()) {
+          tmp.free();
           return res;
         }
       }
@@ -105,10 +112,11 @@ public final class BDDFlowConstraintGenerator {
       for (PreferenceRefiner child : _children) {
         BDD tmp2 = child.refine(tmp);
         if (tmp2.isZero()) {
-          continue;
+          tmp2.free();
+        } else {
+          tmp.free();
+          tmp = tmp2;
         }
-        //        tmp.free();
-        tmp = tmp2;
       }
       return tmp;
     }
