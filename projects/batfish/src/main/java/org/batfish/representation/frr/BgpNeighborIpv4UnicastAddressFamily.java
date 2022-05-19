@@ -82,11 +82,13 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     }
 
     if (_defaultOriginate == null) {
-      _defaultOriginate = other.getDefaultOriginate();
+      _defaultOriginate = other._defaultOriginate;
+      _defaultOriginateRouteMap = other._defaultOriginateRouteMap;
     }
 
-    if (_defaultOriginateRouteMap == null) {
-      _defaultOriginateRouteMap = other.getDefaultOriginateRouteMap();
+    if (_nextHopSelf == null) {
+      _nextHopSelf = other._nextHopSelf;
+      _nextHopSelfAll = other._nextHopSelfAll;
     }
 
     if (_removePrivateAsMode == null) {

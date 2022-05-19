@@ -1,6 +1,9 @@
 package org.batfish.representation.frr;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** L2VPN EVPN settings for BGP */
@@ -9,6 +12,11 @@ public class BgpL2vpnEvpnAddressFamily implements Serializable {
   private boolean _advertiseAllVni;
   private boolean _advertiseDefaultGw;
   private @Nullable BgpL2VpnEvpnIpv4Unicast _advertiseIpv4Unicast;
+  private final @Nonnull Map<String, BgpNeighborL2vpnEvpnAddressFamily> _neighbors;
+
+  public BgpL2vpnEvpnAddressFamily() {
+    _neighbors = new HashMap<>();
+  }
 
   /** Whether to generate type 3 VTEP reachability advertisements for all defined VNIs */
   public boolean getAdvertiseAllVni() {
@@ -38,5 +46,9 @@ public class BgpL2vpnEvpnAddressFamily implements Serializable {
 
   public void setAdvertiseIpv4Unicast(@Nullable BgpL2VpnEvpnIpv4Unicast advertiseIpv4Unicast) {
     _advertiseIpv4Unicast = advertiseIpv4Unicast;
+  }
+
+  public @Nonnull Map<String, BgpNeighborL2vpnEvpnAddressFamily> getNeighbors() {
+    return _neighbors;
   }
 }

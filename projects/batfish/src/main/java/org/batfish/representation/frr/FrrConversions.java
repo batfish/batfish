@@ -534,7 +534,7 @@ public final class FrrConversions {
 
     org.batfish.datamodel.BgpProcess viBgpProcess =
         c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
-    neighbor.inheritFrom(bgpVrf.getNeighbors());
+    neighbor.inheritFrom(bgpVrf);
     Long localAs = null;
     if (neighbor.getLocalAs() != null) {
       localAs = neighbor.getLocalAs();
@@ -632,6 +632,9 @@ public final class FrrConversions {
     @Nullable
     RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(c, neighbor, bgpVrf);
 
+    @Nullable
+    BgpNeighborIpv4UnicastAddressFamily ipv4u =
+        bgpVrf.getIpv4UnicastConfiguration(neighbor.getName());
     peerConfigBuilder
         .setBgpProcess(newProc)
         .setClusterId(inferClusterId(bgpVrf, newProc.getRouterId(), neighbor, localAs))
@@ -642,18 +645,13 @@ public final class FrrConversions {
         .setRemoteAsns(neighbor.getRemoteAs().getRemoteAs(localAs))
         .setEbgpMultihop(firstNonNull(neighbor.getEbgpMultihop(), false))
         .setGeneratedRoutes(
-            bgpDefaultOriginate(neighbor)
-                ? ImmutableSet.of(
-                    getGeneratedDefaultRoute(
-                        neighbor.getIpv4UnicastAddressFamily().getDefaultOriginateRouteMap()))
+            bgpDefaultOriginate(ipv4u)
+                ? ImmutableSet.of(getGeneratedDefaultRoute(ipv4u.getDefaultOriginateRouteMap()))
                 : null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
-                neighbor.getIpv4UnicastAddressFamily(),
-                bgpVrf.getDefaultIpv4Unicast(),
-                exportRoutingPolicy,
-                importRoutingPolicy))
+                ipv4u, bgpVrf.getDefaultIpv4Unicast(), exportRoutingPolicy, importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(
                 c, vc, frr, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, w))
@@ -751,7 +749,10 @@ public final class FrrConversions {
 
     // If default originate is set for a neighbor, we will send it a "fresh" default route is not
     // subjected to the neighbor's outgoing route map. We will drop other default routes.
-    if (bgpDefaultOriginate(neighbor)) {
+    @Nullable
+    BgpNeighborIpv4UnicastAddressFamily ipv4u =
+        bgpVrf.getIpv4UnicastConfiguration(neighbor.getName());
+    if (bgpDefaultOriginate(ipv4u)) {
       initBgpDefaultRouteExportPolicy(c);
       peerExportPolicy.addStatement(
           new If(
@@ -765,10 +766,9 @@ public final class FrrConversions {
 
     // remove private as if set
     // TODO(handle different types of RemovePrivateAs)
-    if (neighbor.getIpv4UnicastAddressFamily() != null
-        && neighbor.getIpv4UnicastAddressFamily().getRemovePrivateAsMode() != null
-        && neighbor.getIpv4UnicastAddressFamily().getRemovePrivateAsMode()
-            != RemovePrivateAsMode.NONE) {
+    if (ipv4u != null
+        && ipv4u.getRemovePrivateAsMode() != null
+        && ipv4u.getRemovePrivateAsMode() != RemovePrivateAsMode.NONE) {
       peerExportPolicy.addStatement(RemovePrivateAs.toStaticStatement());
     }
 
@@ -813,7 +813,8 @@ public final class FrrConversions {
   @VisibleForTesting
   static @Nullable RoutingPolicy computeBgpNeighborImportRoutingPolicy(
       Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    BooleanExpr peerImportConditions = getBgpNeighborImportPolicyCallExpr(neighbor);
+    BooleanExpr peerImportConditions =
+        getBgpNeighborImportPolicyCallExpr(bgpVrf.getIpv4UnicastConfiguration(neighbor.getName()));
     if (peerImportConditions == null) {
       return null;
     }
@@ -838,7 +839,8 @@ public final class FrrConversions {
   private static BooleanExpr computePeerExportConditions(BgpNeighbor neighbor, BgpVrf bgpVrf) {
     BooleanExpr commonCondition =
         new CallExpr(generatedBgpCommonExportPolicyName(bgpVrf.getVrfName()));
-    BooleanExpr peerCondition = getBgpNeighborExportPolicyCallExpr(neighbor);
+    BooleanExpr peerCondition =
+        getBgpNeighborExportPolicyCallExpr(bgpVrf.getIpv4UnicastConfiguration(neighbor.getName()));
 
     return peerCondition == null
         ? commonCondition
@@ -848,7 +850,8 @@ public final class FrrConversions {
   private static List<Statement> getAcceptStatements(
       BgpNeighbor neighbor, BgpVrf bgpVrf, @Nullable Long localAs) {
     ImmutableList.Builder<Statement> acceptStatements = ImmutableList.builder();
-    SetNextHop setNextHop = getSetNextHop(neighbor, localAs);
+    SetNextHop setNextHop =
+        getSetNextHop(neighbor, bgpVrf.getIpv4UnicastConfiguration(neighbor.getName()), localAs);
     SetMetric setMaxMedMetric = getSetMaxMedMetric(bgpVrf);
 
     if (setNextHop != null) {
@@ -862,29 +865,34 @@ public final class FrrConversions {
     return acceptStatements.build();
   }
 
-  private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(BgpNeighbor neighbor) {
-    return Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+  private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(
+      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4u) {
+    return Optional.ofNullable(ipv4u)
         .map(BgpNeighborIpv4UnicastAddressFamily::getRouteMapOut)
         .map(CallExpr::new)
         .orElse(null);
   }
 
-  private static @Nullable CallExpr getBgpNeighborImportPolicyCallExpr(BgpNeighbor neighbor) {
-    return Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+  private static @Nullable CallExpr getBgpNeighborImportPolicyCallExpr(
+      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4u) {
+    return Optional.ofNullable(ipv4u)
         .map(BgpNeighborIpv4UnicastAddressFamily::getRouteMapIn)
         .map(CallExpr::new)
         .orElse(null);
   }
 
   @VisibleForTesting
-  static @Nullable SetNextHop getSetNextHop(BgpNeighbor neighbor, @Nullable Long localAs) {
+  static @Nullable SetNextHop getSetNextHop(
+      BgpNeighbor neighbor,
+      @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4u,
+      @Nullable Long localAs) {
     if (neighbor.getRemoteAs() == null || localAs == null) {
       return null;
     }
 
     // TODO: Need to handle dynamic neighbors.
     boolean nextHopSelf =
-        Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+        Optional.ofNullable(ipv4u)
             .map(BgpNeighborIpv4UnicastAddressFamily::getNextHopSelf)
             .orElse(false);
 
@@ -893,9 +901,8 @@ public final class FrrConversions {
     if (isIBgp) {
       // Check for "force".
       // TODO: Handle v6 AFI.
-      BgpNeighborIpv4UnicastAddressFamily ipv4af = neighbor.getIpv4UnicastAddressFamily();
-      if (ipv4af != null) {
-        Boolean nextHopSelfAll = ipv4af.getNextHopSelfAll();
+      if (ipv4u != null) {
+        Boolean nextHopSelfAll = ipv4u.getNextHopSelfAll();
         if (nextHopSelfAll == null || !nextHopSelfAll) {
           nextHopSelf = false;
         }
@@ -1103,10 +1110,9 @@ public final class FrrConversions {
                 Statements.ExitAccept.toStaticStatement())));
   }
 
-  /** Returns whether we originate default toward this neighbor */
-  private static boolean bgpDefaultOriginate(BgpNeighbor neighbor) {
-    return neighbor.getIpv4UnicastAddressFamily() != null
-        && Boolean.TRUE.equals(neighbor.getIpv4UnicastAddressFamily().getDefaultOriginate());
+  /** Returns whether we originate default toward a neighbor with this configuration */
+  private static boolean bgpDefaultOriginate(@Nullable BgpNeighborIpv4UnicastAddressFamily ipv4u) {
+    return ipv4u != null && Boolean.TRUE.equals(ipv4u.getDefaultOriginate());
   }
 
   private static @Nullable EvpnAddressFamily toEvpnAddressFamily(
@@ -1120,12 +1126,13 @@ public final class FrrConversions {
       RoutingPolicy routingPolicy,
       Warnings w) {
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
+    BgpNeighborL2vpnEvpnAddressFamily l2evpn = bgpVrf.getL2EvpnConfiguration(neighbor.getName());
     // sadly, we allow localAs == null in VI datamodel
     if (evpnConfig == null
         || localAs == null
-        || neighbor.getL2vpnEvpnAddressFamily() == null
+        || l2evpn == null
         // l2vpn evpn AF must be explicitly activated for neighbor
-        || !firstNonNull(neighbor.getL2vpnEvpnAddressFamily().getActivated(), Boolean.FALSE)) {
+        || !firstNonNull(l2evpn.getActivated(), Boolean.FALSE)) {
       return null;
     }
     ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
@@ -1225,9 +1232,7 @@ public final class FrrConversions {
                 .setSendExtendedCommunity(true)
                 .setAllowRemoteAsOut(ALWAYS) // no outgoing remote-as check on Cumulus
                 .build())
-        .setRouteReflectorClient(
-            firstNonNull(
-                neighbor.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), Boolean.FALSE))
+        .setRouteReflectorClient(firstNonNull(l2evpn.getRouteReflectorClient(), Boolean.FALSE))
         .setExportPolicy(routingPolicy.getName())
         .build();
   }
@@ -1586,8 +1591,7 @@ public final class FrrConversions {
       default:
         w.redFlag(
             String.format(
-                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.",
-                type.toString()));
+                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.", type));
         return null;
     }
   }
