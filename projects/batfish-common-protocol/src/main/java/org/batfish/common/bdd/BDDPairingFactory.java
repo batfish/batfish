@@ -43,6 +43,14 @@ public final class BDDPairingFactory {
     _varPairs = ImmutableSet.copyOf(varPairs);
   }
 
+  private void initDomainVars() {
+    _domainVars =
+        _bddFactory.andAll(
+            _varPairs.stream()
+                .map(varPair -> _bddFactory.ithVar(varPair.getOldVar()))
+                .toArray(BDD[]::new));
+  }
+
   /** Create a {@link BDDPairing} that swaps domain and codomain variables. */
   public BDDPairing getSwapPairing() {
     if (_swapPairing == null) {
@@ -110,6 +118,9 @@ public final class BDDPairingFactory {
   }
 
   public boolean domainIncludes(BDD var) {
+    if (_domainVars == null) {
+      initDomainVars();
+    }
     return _domainVars.testsVars(var);
   }
 
@@ -137,11 +148,7 @@ public final class BDDPairingFactory {
    */
   public BDD getDomainVarsBdd() {
     if (_domainVars == null) {
-      _domainVars =
-          _bddFactory.andAll(
-              _varPairs.stream()
-                  .map(varPair -> _bddFactory.ithVar(varPair.getOldVar()))
-                  .toArray(BDD[]::new));
+      initDomainVars();
     }
     return _domainVars;
   }
