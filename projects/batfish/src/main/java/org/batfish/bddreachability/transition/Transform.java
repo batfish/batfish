@@ -3,7 +3,9 @@ package org.batfish.bddreachability.transition;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Table;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -100,11 +102,28 @@ public class Transform implements Transition {
    * transforms, the effect of merging is to non-deterministically choose between them. Requires the
    * two transforms to have equal domains.
    */
-  public Optional<Transform> tryOr(Transform other) {
+  public Transform or(Transform other) {
     if (!_pairingFactory.equals(other._pairingFactory)) {
-      return Optional.empty();
+      BDDPairingFactory unionPairingFactory = _pairingFactory.union(other._pairingFactory);
+      return this.expandTo(unionPairingFactory).or(other.expandTo(unionPairingFactory));
     }
-    return Optional.of(new Transform(_forwardRelation.or(other._forwardRelation), _pairingFactory));
+    return new Transform(_forwardRelation.or(other._forwardRelation), _pairingFactory);
+  }
+
+  private static Transform orAllEqualPairingFactory(List<Transform> transforms) {
+    assert transforms.stream().map(Transform::getPairingFactory).distinct().count() == 1
+        : "All transforms must have the same pairing factory";
+    Transform transform = transforms.get(0);
+    if (transforms.size() == 1) {
+      return transform;
+    }
+    BDDFactory bddFactory = transform._forwardRelation.getFactory();
+    BDD forwardRel =
+        bddFactory.orAll(
+            transforms.stream()
+                .map(t -> t._forwardRelation)
+                .collect(ImmutableList.toImmutableList()));
+    return new Transform(forwardRel, transform._pairingFactory);
   }
 
   /** Reduce the input list of transforms by combining those with equal domain variables. */
@@ -113,29 +132,40 @@ public class Transform implements Transition {
     if (transforms.size() == 1) {
       return transforms;
     }
-    Map<BDDPairingFactory, List<Transform>> transformsByPairingFactory =
+    Collection<Transform> reducedTransforms =
         transforms.stream()
-            .collect(Collectors.groupingBy(t -> t._pairingFactory, Collectors.toList()));
-    if (transformsByPairingFactory.size() == transforms.size()) {
-      // no two Transforms had the same BDDPairingFactory
-      return transforms;
+            .collect(
+                Collectors.groupingBy(
+                    t -> t._pairingFactory,
+                    Collectors.collectingAndThen(
+                        Collectors.toList(), Transform::orAllEqualPairingFactory)))
+            .values();
+    if (reducedTransforms.size() == 1) {
+      return ImmutableList.of(Iterables.getOnlyElement(reducedTransforms));
     }
-    return transformsByPairingFactory.values().stream()
-        .map(
-            transforms1 -> {
-              Transform transform = transforms1.get(0);
-              if (transforms1.size() == 1) {
-                return transform;
-              }
-              BDDFactory bddFactory = transform._forwardRelation.getFactory();
-              BDD forwardRel =
-                  bddFactory.orAll(
-                      transforms1.stream()
-                          .map(t -> t._forwardRelation)
-                          .collect(ImmutableList.toImmutableList()));
-              return new Transform(forwardRel, transform._pairingFactory);
-            })
-        .collect(Collectors.toList());
+    BDDPairingFactory unionPairingFactory =
+        BDDPairingFactory.union(
+            reducedTransforms.stream()
+                .map(Transform::getPairingFactory)
+                .collect(Collectors.toList()));
+    return ImmutableList.of(
+        orAllEqualPairingFactory(
+            reducedTransforms.stream()
+                .map(transform -> transform.expandTo(unionPairingFactory))
+                .collect(Collectors.toList())));
+  }
+
+  public Transform expandTo(BDDPairingFactory factory) {
+    assert factory.includes(_pairingFactory)
+        : "Cannot expand to a factory that does not include all transformed vars";
+    if (factory.equals(_pairingFactory)) {
+      return this;
+    }
+
+    // compute the identity relation on variables that only exist in the expanded factory
+    BDD idRel = factory.identityRelation(var -> !_pairingFactory.domainIncludes(var));
+    // TODO: ensure we can use andWith (i.e. free bdds from this)
+    return new Transform(idRel.andEq(_forwardRelation), factory);
   }
 
   @Override
@@ -148,8 +178,7 @@ public class Transform implements Transition {
     }
     Transform transform = (Transform) o;
     // Exclude _reverseRelations, _swapPairing and _vars, which are lazy initialized and/or
-    // determined by
-    // _forwardRelation and _pairingFactory.
+    // determined by _forwardRelation and _pairingFactory.
     return _forwardRelation.equals(transform._forwardRelation)
         && _pairingFactory.equals(transform._pairingFactory);
   }

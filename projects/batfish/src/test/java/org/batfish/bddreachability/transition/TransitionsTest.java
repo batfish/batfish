@@ -202,22 +202,6 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposed_Constraint_Or() {
-    BDD v0 = var(0);
-    BDD v0Prime = var(1);
-    BDD v1 = var(2);
-    BDD v2 = var(3);
-    BDDPairingFactory pairFactory = new BDDPairingFactory(_factory, makeVarPairs(v0, v0Prime));
-    Transition t1 = new Transform(v0.xor(v0Prime), pairFactory);
-    Transition t2 = constraint(v1);
-    Transition or = or(t1, t2);
-    assertThat(or, instanceOf(Or.class));
-    Transition merged = mergeComposed(constraint(v2), or);
-    assertEquals(
-        merged, or(new Transform(v0.xor(v0Prime).and(v2), pairFactory), constraint(v1.and(v2))));
-  }
-
-  @Test
   public void testMergeComposed_Constraint_RemoveSourceConstraint() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
@@ -279,28 +263,6 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposed_Or_Transform() {
-    BDD v0 = var(0);
-    BDD v0Prime = var(1);
-    BDD v1 = var(2);
-    BDD v1Prime = var(3);
-    BDD v2 = var(4);
-    BDDPairingFactory pairFactory0 = new BDDPairingFactory(_factory, makeVarPairs(v0, v0Prime));
-    Transform transform0 = new Transform(v0.xor(v0Prime), pairFactory0);
-    BDDPairingFactory pairFactory1 = new BDDPairingFactory(_factory, makeVarPairs(v1, v1Prime));
-    Transform transform1 = new Transform(v1.xor(v1Prime), pairFactory1);
-    Transition constraint = constraint(v2);
-    Transition or = or(transform0, constraint);
-    assertThat(or, instanceOf(Or.class));
-    Transition actual = mergeComposed(or, transform1);
-    assertThat(actual, instanceOf(Or.class));
-    assertThat(
-        ((Or) actual).getTransitions(),
-        containsInAnyOrder(
-            mergeComposed(transform0, transform1), mergeComposed(constraint, transform1)));
-  }
-
-  @Test
   public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_merge() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
@@ -325,28 +287,6 @@ public class TransitionsTest {
     RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);
     AddSourceConstraint add = new AddSourceConstraint(mgr, "a");
     assertNull(mergeComposed(remove, add));
-  }
-
-  @Test
-  public void testMergeComposed_Transform_Or() {
-    BDD v0 = var(0);
-    BDD v0Prime = var(1);
-    BDD v1 = var(2);
-    BDD v1Prime = var(3);
-    BDD v2 = var(4);
-    BDDPairingFactory pairFactory0 = new BDDPairingFactory(_factory, makeVarPairs(v0, v0Prime));
-    Transform transform0 = new Transform(v0.xor(v0Prime), pairFactory0);
-    BDDPairingFactory pairFactory1 = new BDDPairingFactory(_factory, makeVarPairs(v1, v1Prime));
-    Transform transform1 = new Transform(v1.xor(v1Prime), pairFactory1);
-    Transition constraint = constraint(v2);
-    Transition or = or(transform0, constraint);
-    assertThat(or, instanceOf(Or.class));
-    Transition actual = mergeComposed(transform1, or);
-    assertThat(actual, instanceOf(Or.class));
-    assertThat(
-        ((Or) actual).getTransitions(),
-        containsInAnyOrder(
-            mergeComposed(transform1, transform0), mergeComposed(transform1, constraint)));
   }
 
   @Test
@@ -482,22 +422,21 @@ public class TransitionsTest {
 
     Transform transformV0_1 = new Transform(v0.and(v0Prime), pairingFactory0);
     Transform transformV0_2 = new Transform(v0.not().and(v0Prime.not()), pairingFactory0);
-    Transform transformV0_1or2 = new Transform(v0.biimp(v0Prime), pairingFactory0);
-
-    assertEquals(transformV0_1.tryOr(transformV0_2).get(), transformV0_1or2);
 
     Transform transformV1_1 = new Transform(v1.and(v1Prime), pairingFactory1);
     Transform transformV1_2 = new Transform(v1.not().and(v1Prime.not()), pairingFactory1);
-    Transform transformV1_1or2 = new Transform(v1.biimp(v1Prime), pairingFactory1);
 
-    assertEquals(transformV1_1.tryOr(transformV1_2).get(), transformV1_1or2);
+    BDDPairingFactory mergedPairingFactory = pairingFactory0.union(pairingFactory1);
+    Transform mergedTransform =
+        new Transform(
+            _factory.orAll(
+                v0.or(v1).and(mergedPairingFactory.identityRelation()),
+                v0.biimp(v0Prime).and(pairingFactory1.identityRelation()),
+                v1.biimp(v1Prime).and(pairingFactory0.identityRelation())),
+            mergedPairingFactory);
 
     Transition actual =
         or(
-            // constraints get merged
-            constraint(v0),
-            constraint(v1),
-
             // EraseAndSets with v0 get merged
             eraseAndSet(v0, v0),
             eraseAndSet(v0, v1),
@@ -506,21 +445,21 @@ public class TransitionsTest {
             eraseAndSet(v1, v0),
             eraseAndSet(v1, v1),
 
-            // Transforms with v0 get merged
+            // constraints get merged into mergedTransform
+            constraint(v0),
+            constraint(v1),
+
+            // all Transforms get merged
             transformV0_1,
             transformV0_2,
-
-            // Transforms with v1 get merged
             transformV1_1,
             transformV1_2);
     assertThat(actual, instanceOf(Or.class));
     assertThat(
         ((Or) actual).getTransitions(),
         containsInAnyOrder(
-            constraint(v0.or(v1)),
-            eraseAndSet(v0, v0.or(v1)),
+            eraseAndSet(v0, v0.or(v1)), // TODO merge these into the transform too
             eraseAndSet(v1, v0.or(v1)),
-            transformV0_1or2,
-            transformV1_1or2));
+            mergedTransform));
   }
 }
