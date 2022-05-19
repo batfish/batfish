@@ -131,6 +131,15 @@ public class BgpVrf implements Serializable {
     _confederationId = confederationId;
   }
 
+  public @Nullable BgpNeighborIpv4UnicastAddressFamily getIpv4UnicastConfiguration(
+      String neighbor) {
+    return _ipv4Unicast == null ? null : _ipv4Unicast.getNeighbors().get(neighbor);
+  }
+
+  public @Nullable BgpNeighborL2vpnEvpnAddressFamily getL2EvpnConfiguration(String neighbor) {
+    return _l2VpnEvpn == null ? null : _l2VpnEvpn.getNeighbors().get(neighbor);
+  }
+
   @Nonnull
   public Map<Prefix, BgpNetwork> getNetworks() {
     return _networks;
