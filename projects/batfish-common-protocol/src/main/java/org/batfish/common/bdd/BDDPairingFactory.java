@@ -3,9 +3,13 @@ package org.batfish.common.bdd;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 import static org.parboiled.common.Preconditions.checkArgument;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -78,6 +82,56 @@ public final class BDDPairingFactory {
   }
 
   /**
+   * Return the identity function on this' domain, encoded as a relation between unprimed and primed
+   * variables.
+   */
+  public BDD identityRelation() {
+    return identityRelation(Predicates.alwaysTrue());
+  }
+
+  /**
+   * Return the identity function on a subset of this' domain, encoded as a relation between
+   * unprimed and primed variables.
+   */
+  public BDD identityRelation(Predicate<BDD> includeDomainVar) {
+    return _bddFactory.andAllAndFree(
+        _varPairs.stream()
+            .map(
+                varPair -> {
+                  BDD oldVar = _bddFactory.ithVar(varPair.getOldVar());
+                  if (includeDomainVar.test(oldVar)) {
+                    return oldVar.biimpWith(_bddFactory.ithVar(varPair.getNewVar()));
+                  }
+                  oldVar.free();
+                  return null;
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList()));
+  }
+
+  public boolean domainIncludes(BDD var) {
+    return _domainVars.testsVars(var);
+  }
+
+  public BDDPairingFactory union(BDDPairingFactory other) {
+    if (this.includes(other)) {
+      return this;
+    }
+    return new BDDPairingFactory(
+        _bddFactory, ImmutableSet.copyOf(Sets.union(_varPairs, other._varPairs)));
+  }
+
+  public static BDDPairingFactory union(List<BDDPairingFactory> factories) {
+    checkArgument(!factories.isEmpty(), "factories cannot be empty");
+    BDDFactory bddFactory = factories.iterator().next()._bddFactory;
+    Set<BDDVarPair> varPairs =
+        factories.stream()
+            .flatMap(factory -> factory._varPairs.stream())
+            .collect(ImmutableSet.toImmutableSet());
+    return new BDDPairingFactory(bddFactory, varPairs);
+  }
+
+  /**
    * Return a {@link BDD} of the variables in the pairing's domain, suitable for use with {@link
    * BDD#exist(BDD)}. The caller does not own the {@link BDD} and must not mutate or free it.
    */
@@ -107,5 +161,10 @@ public final class BDDPairingFactory {
   @Override
   public int hashCode() {
     return _varPairs.hashCode();
+  }
+
+  public boolean includes(BDDPairingFactory other) {
+    checkArgument(_bddFactory == other._bddFactory, "BDD factories must be identical");
+    return this._varPairs.containsAll(other._varPairs);
   }
 }

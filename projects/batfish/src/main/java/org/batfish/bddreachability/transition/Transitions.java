@@ -371,15 +371,37 @@ public final class Transitions {
     // only add a constraint if we didn't find identity
     if (foundIdentity) {
       disjuncts.add(IDENTITY);
-    } else if (constraints != null) {
-      disjuncts.add(orConstraints(constraints));
+      constraints = null;
     }
 
     if (eraseAndSets != null) {
       disjuncts.addAll(orEraseAndSets(eraseAndSets));
     }
     if (transforms != null) {
-      disjuncts.addAll(Transform.reduceWithOr(transforms));
+      Transform transform = Iterables.getOnlyElement(Transform.reduceWithOr(transforms));
+
+      if (constraints != null) {
+        // convert constraints into a transform
+        BDDFactory factory = constraints.get(0).getConstraint().getFactory();
+        BDD constraint =
+            constraints.size() == 1
+                ? Iterables.getOnlyElement(constraints).getConstraint()
+                : factory.orAll(
+                    constraints.stream()
+                        .map(Constraint::getConstraint)
+                        .collect(Collectors.toList()));
+        BDD idRel = transform.getPairingFactory().identityRelation(var -> true);
+        Transform constraintTransform =
+            new Transform(constraint.and(idRel), transform.getPairingFactory());
+        disjuncts.add(transform.or(constraintTransform));
+        constraints = null;
+      } else {
+        disjuncts.add(transform);
+      }
+    }
+
+    if (constraints != null) {
+      disjuncts.add(orConstraints(constraints));
     }
 
     if (disjuncts.isEmpty()) {

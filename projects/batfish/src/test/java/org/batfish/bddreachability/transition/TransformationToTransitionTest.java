@@ -10,9 +10,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -21,6 +19,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDReachabilityUtils;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDPairingFactory;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -459,16 +458,15 @@ public class TransformationToTransitionTest {
     BDD poolIpBdd = _pkt.getSrcIpPrimedBDDInteger().getPrimeVar().toBDD(poolIp);
     BDD poolPortBdd = _pkt.getSrcPortPrimedBDDInteger().getPrimeVar().value(poolPort);
 
-    Transform transformWithPAT =
+    BDDPairingFactory ipPairingFactory = _pkt.getSrcIpPrimedBDDInteger().getPairingFactory();
+    BDDPairingFactory portPairingFactory = _pkt.getSrcPortPrimedBDDInteger().getPairingFactory();
+    BDDPairingFactory ipAndPortPairingFactory = ipPairingFactory.composeWith(portPairingFactory);
+
+    Transform expected =
         new Transform(
-            _portTransformationProtocols.and(poolIpBdd).and(poolPortBdd),
-            _pkt.getSrcIpPrimedBDDInteger()
-                .getPairingFactory()
-                .composeWith(_pkt.getSrcPortPrimedBDDInteger().getPairingFactory()));
-    Transform transformWithoutPAT =
-        new Transform(
-            _portTransformationProtocols.not().and(poolIpBdd),
-            _pkt.getSrcIpPrimedBDDInteger().getPairingFactory());
+            _portTransformationProtocols.ite(
+                poolIpBdd.and(poolPortBdd), poolIpBdd.and(portPairingFactory.identityRelation())),
+            ipAndPortPairingFactory);
 
     // NAT then PAT
     {
@@ -477,10 +475,7 @@ public class TransformationToTransitionTest {
               always()
                   .apply(assignSourceIp(poolIp, poolIp), assignSourcePort(poolPort, poolPort))
                   .build());
-      assertThat(transition, instanceOf(Or.class));
-      assertThat(
-          ((Or) transition).getTransitions(),
-          containsInAnyOrder(transformWithPAT, transformWithoutPAT));
+      assertEquals(expected, transition);
     }
 
     // PAT then NAT
@@ -490,10 +485,7 @@ public class TransformationToTransitionTest {
               always()
                   .apply(assignSourcePort(poolPort, poolPort), assignSourceIp(poolIp, poolIp))
                   .build());
-      assertThat(transition, instanceOf(Or.class));
-      assertThat(
-          ((Or) transition).getTransitions(),
-          containsInAnyOrder(transformWithPAT, transformWithoutPAT));
+      assertEquals(expected, transition);
     }
   }
 
