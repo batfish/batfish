@@ -102,18 +102,12 @@ public class Transform implements Transition {
    * transforms, the effect of merging is to non-deterministically choose between them. Requires the
    * two transforms to have equal domains.
    */
-  public Optional<Transform> tryOr(Transform other) {
+  public Transform or(Transform other) {
     if (!_pairingFactory.equals(other._pairingFactory)) {
-      BDD idRel =
-          _pairingFactory.identityRelation(var -> !other._pairingFactory.domainIncludes(var));
-      BDD otherIdRel =
-          other._pairingFactory.identityRelation(var -> !_pairingFactory.domainIncludes(var));
-      BDD newRel = idRel.andEq(_forwardRelation);
-      BDD otherNewRel = otherIdRel.andEq(other._forwardRelation);
-      return Optional.of(
-          new Transform(newRel.orWith(otherNewRel), _pairingFactory.union(other._pairingFactory)));
+      BDDPairingFactory unionPairingFactory = _pairingFactory.union(other._pairingFactory);
+      return this.expandTo(unionPairingFactory).or(other.expandTo(unionPairingFactory));
     }
-    return Optional.of(new Transform(_forwardRelation.or(other._forwardRelation), _pairingFactory));
+    return new Transform(_forwardRelation.or(other._forwardRelation), _pairingFactory);
   }
 
   private static Transform orAllEqualPairingFactory(List<Transform> transforms) {

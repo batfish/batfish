@@ -103,7 +103,7 @@ public class TransformTest {
     assertEquals(_x0, _transformX1.transitForward(x01));
 
     // merging unions outputs
-    Transform merged = _transformX0.tryOr(_transformX1).get();
+    Transform merged = _transformX0.or(_transformX1);
     assertEquals(x12, merged.transitForward(_x0));
     assertEquals(_x0, merged.transitForward(_x1));
     assertEquals(x012, merged.transitForward(x01));

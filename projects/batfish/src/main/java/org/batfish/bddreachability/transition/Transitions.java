@@ -393,7 +393,7 @@ public final class Transitions {
         BDD idRel = transform.getPairingFactory().identityRelation(var -> true);
         Transform constraintTransform =
             new Transform(constraint.and(idRel), transform.getPairingFactory());
-        disjuncts.add(transform.tryOr(constraintTransform).get());
+        disjuncts.add(transform.or(constraintTransform));
         constraints = null;
       } else {
         disjuncts.add(transform);

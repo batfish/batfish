@@ -94,7 +94,7 @@ public final class BDDPairingFactory {
    * unprimed and primed variables.
    */
   public BDD identityRelation(Predicate<BDD> includeDomainVar) {
-    return _bddFactory.andAll(
+    return _bddFactory.andAllAndFree(
         _varPairs.stream()
             .map(
                 varPair -> {
@@ -112,7 +112,7 @@ public final class BDDPairingFactory {
   }
 
   public BDDPairingFactory union(BDDPairingFactory other) {
-    if (this.equals(other)) {
+    if (this.includes(other)) {
       return this;
     }
     return new BDDPairingFactory(
