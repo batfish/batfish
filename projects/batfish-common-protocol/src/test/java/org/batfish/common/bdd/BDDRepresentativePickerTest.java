@@ -1,9 +1,10 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.common.bdd.BDDFlowConstraintGenerator.RefineFirst.refineFirst;
+import static org.batfish.common.bdd.BDDFlowConstraintGenerator.refine;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IpProtocol;
 import org.junit.Test;
@@ -15,7 +16,8 @@ public class BDDRepresentativePickerTest {
     BDD bdd1 = pkt.getIpProtocol().value(IpProtocol.UDP);
     BDD bdd2 = pkt.getIpProtocol().value(IpProtocol.TCP);
     BDD bdd = pkt.getIpProtocol().value(IpProtocol.UDP);
-    BDD pickedBDD = BDDRepresentativePicker.pickRepresentative(bdd, ImmutableList.of(bdd1, bdd2));
+    BDD pickedBDD =
+        BDDRepresentativePicker.pickRepresentative(bdd, refineFirst(refine(bdd1), refine(bdd2)));
     // check pickedBDD is in bdd
     assertThat(pickedBDD.and(bdd), equalTo(pickedBDD));
   }
@@ -26,7 +28,8 @@ public class BDDRepresentativePickerTest {
     BDD bdd1 = pkt.getIpProtocol().value(IpProtocol.UDP);
     BDD bdd2 = pkt.getIpProtocol().value(IpProtocol.TCP);
     BDD bdd = pkt.getIpProtocol().value(IpProtocol.TCP);
-    BDD pickedBDD = BDDRepresentativePicker.pickRepresentative(bdd, ImmutableList.of(bdd1, bdd2));
+    BDD pickedBDD =
+        BDDRepresentativePicker.pickRepresentative(bdd, refineFirst(refine(bdd1), refine(bdd2)));
     // check pickedBDD is in bdd
     assertThat(pickedBDD.and(bdd), equalTo(pickedBDD));
   }

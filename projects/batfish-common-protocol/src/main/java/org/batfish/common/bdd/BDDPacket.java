@@ -384,7 +384,7 @@ public class BDDPacket {
       return saneBDD;
     }
     return BDDRepresentativePicker.pickRepresentative(
-        saneBDD, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
+        saneBDD, _flowConstraintGeneratorSupplier.get().getFlowPreference(preference));
   }
 
   /**
