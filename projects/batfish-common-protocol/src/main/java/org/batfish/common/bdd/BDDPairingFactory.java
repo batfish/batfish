@@ -98,10 +98,12 @@ public final class BDDPairingFactory {
         _varPairs.stream()
             .map(
                 varPair -> {
-                  BDD domVar = _bddFactory.ithVar(varPair.getOldVar());
-                  return includeDomainVar.test(domVar)
-                      ? domVar.biimp(_bddFactory.ithVar(varPair.getNewVar()))
-                      : null;
+                  BDD oldVar = _bddFactory.ithVar(varPair.getOldVar());
+                  if (includeDomainVar.test(oldVar)) {
+                    return oldVar.biimpWith(_bddFactory.ithVar(varPair.getNewVar()));
+                  }
+                  oldVar.free();
+                  return null;
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.toList()));
