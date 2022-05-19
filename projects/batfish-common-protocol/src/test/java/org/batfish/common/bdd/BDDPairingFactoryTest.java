@@ -3,6 +3,8 @@ package org.batfish.common.bdd;
 import static org.batfish.common.bdd.BDDUtils.bddFactory;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -60,6 +62,16 @@ public final class BDDPairingFactoryTest {
     assertEquals(
         x0.and(xPrime1).and(y2).and(yPrime3),
         xPrime0.and(x1).and(yPrime2).and(y3).replace(swapBoth));
+  }
+
+  @Test
+  public void testDomainIncludes() {
+    BDD bdd0 = _factory.ithVar(0);
+    BDD bdd1 = _factory.ithVar(1);
+    BDDPairingFactory pairingFactory =
+        new BDDPairingFactory(_factory, ImmutableSet.of(new BDDVarPair(bdd0, bdd1)));
+    assertTrue(pairingFactory.domainIncludes(bdd0));
+    assertFalse(pairingFactory.domainIncludes(bdd1));
   }
 
   @Test
