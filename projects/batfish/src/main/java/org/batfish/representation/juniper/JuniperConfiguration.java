@@ -3156,6 +3156,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private Set<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {
     String nextTable = route.getNextTable();
+    Prefix prefix = route.getPrefix();
     String nextVrf = null;
     if (nextTable != null) {
       RibId ribId = toRibId(getHostname(), nextTable, _w);
@@ -3163,7 +3164,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _w.redFlag(
             String.format(
                 "Static route for prefix %s contains illegal next-table value: %s",
-                route.getPrefix(), nextTable));
+                prefix, nextTable));
         return ImmutableSet.of();
       }
       if (!ribId.getRibName().equals(RibId.DEFAULT_RIB_NAME)) {
@@ -3178,54 +3179,65 @@ public final class JuniperConfiguration extends VendorConfiguration {
           String.format(
               "Static route for prefix %s illegally contains both next-table and"
                   + " qualified-next-hop",
-              route.getPrefix()));
+              prefix));
       return ImmutableSet.of();
     }
-
+    if (route.getDrop() && !route.getQualifiedNextHops().isEmpty()) {
+      _w.redFlag(
+          String.format(
+              "Static route for prefix %s cannot contain both discard nexthop and"
+                  + " qualified-next-hop. Ignoring this route.",
+              prefix));
+      return ImmutableSet.of();
+    }
     ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
 
     // static route corresponding to the next hop
     Boolean noInstall = firstNonNull(route.getNoInstall(), Boolean.FALSE);
     // TOOD: return routing-instance-level default setting instead of false
     Boolean resolve = firstNonNull(route.getResolve(), Boolean.FALSE);
-    viStaticRoutes.add(
+
+    org.batfish.datamodel.StaticRoute.Builder rBuilder =
         org.batfish.datamodel.StaticRoute.builder()
-            .setNetwork(route.getPrefix())
-            .setNextHop(
-                route.getDrop() || noInstall
-                    ? NextHopDiscard.instance()
-                    : nextVrf != null
-                        ? NextHopVrf.of(nextVrf)
-                        : NextHop.legacyConverter(
-                            route.getNextHopInterface(), route.getNextHopIp()))
+            .setNetwork(prefix)
             .setAdministrativeCost(route.getDistance())
             .setMetric(route.getMetric())
             .setTag(firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG))
             .setNonForwarding(noInstall)
-            .setRecursive(resolve)
-            .build());
+            .setRecursive(resolve);
+    if (route.getDrop() || noInstall) {
+      viStaticRoutes.add(rBuilder.setNextHop(NextHopDiscard.instance()).build());
+    } else if (nextVrf != null) {
+      viStaticRoutes.add(rBuilder.setNextHop(NextHopVrf.of(nextVrf)).build());
+    } else if (route.getNextHopInterface() != null || route.getNextHopIp() != null) {
+      viStaticRoutes.add(
+          rBuilder
+              .setNextHop(
+                  NextHop.legacyConverter(route.getNextHopInterface(), route.getNextHopIp()))
+              .build());
+    }
 
     // populating static routes from each qualified next hop while overriding applicable properties
-    for (QualifiedNextHop qualifiedNextHop : route.getQualifiedNextHops().values()) {
-      viStaticRoutes.add(
+    for (QualifiedNextHop qualNextHop : route.getQualifiedNextHops().values()) {
+      org.batfish.datamodel.StaticRoute.Builder qrBuilder =
           org.batfish.datamodel.StaticRoute.builder()
-              .setNetwork(route.getPrefix())
-              .setNextHop(
-                  route.getDrop() || noInstall
-                      ? NextHopDiscard.instance()
-                      : NextHop.legacyConverter(
-                          qualifiedNextHop.getNextHop().getNextHopInterface(),
-                          qualifiedNextHop.getNextHop().getNextHopIp()))
-              .setAdministrativeCost(
-                  firstNonNull(qualifiedNextHop.getPreference(), route.getDistance()))
-              .setMetric(firstNonNull(qualifiedNextHop.getMetric(), route.getMetric()))
-              .setTag(
-                  firstNonNull(
-                      qualifiedNextHop.getTag(),
-                      firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG)))
+              .setNetwork(prefix)
+              .setAdministrativeCost(route.getDistance())
+              .setMetric(route.getMetric())
+              .setTag(firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG))
               .setNonForwarding(noInstall)
-              .setRecursive(resolve)
-              .build());
+              .setRecursive(resolve);
+
+      qrBuilder.setNextHop(
+          noInstall
+              ? NextHopDiscard.instance()
+              : NextHop.legacyConverter(
+                  qualNextHop.getNextHop().getNextHopInterface(),
+                  qualNextHop.getNextHop().getNextHopIp()));
+      Optional.ofNullable(qualNextHop.getPreference()).ifPresent(qrBuilder::setAdministrativeCost);
+      Optional.ofNullable(qualNextHop.getMetric()).ifPresent(qrBuilder::setMetric);
+      Optional.ofNullable(qualNextHop.getTag()).ifPresent(qrBuilder::setTag);
+      viStaticRoutes.add(qrBuilder.build());
     }
     return viStaticRoutes.build();
   }
