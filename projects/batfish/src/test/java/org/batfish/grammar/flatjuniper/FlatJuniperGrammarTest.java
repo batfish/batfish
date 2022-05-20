@@ -5725,6 +5725,18 @@ public final class FlatJuniperGrammarTest {
                             .setNextHop(NextHopVrf.of("ri2"))
                             .setAdministrativeCost(5)
                             .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("10.0.0.0/16"))
+                            .setNextHopIp(Ip.parse("1.2.3.4"))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("10.0.0.0/16"))
+                            .setNextHopIp(Ip.parse("1.2.3.5"))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build()))),
             hasVrf(
                 "ri2",
@@ -5749,6 +5761,7 @@ public final class FlatJuniperGrammarTest {
                         .setNextHopIp(Ip.parse("2.3.4.5"))
                         .setAdministrativeCost(150)
                         .setRecursive(false)
+                        .setMetric(6L)
                         .build(),
                     // inherits admin from the static route preference
                     StaticRoute.builder()
@@ -5756,6 +5769,7 @@ public final class FlatJuniperGrammarTest {
                         .setNextHopInterface("ge-0/0/0.0")
                         .setAdministrativeCost(150)
                         .setRecursive(false)
+                        .setMetric(6L)
                         .build(),
                     // qualified next-hop overrides admin and tag
                     StaticRoute.builder()
@@ -5763,6 +5777,7 @@ public final class FlatJuniperGrammarTest {
                         .setNextHopIp(Ip.parse("1.2.3.4"))
                         .setAdministrativeCost(180)
                         .setTag(12L)
+                        .setMetric(7L)
                         .setRecursive(false)
                         .build(),
                     StaticRoute.builder()
@@ -5771,6 +5786,37 @@ public final class FlatJuniperGrammarTest {
                         .setAdministrativeCost(5)
                         .setRecursive(false)
                         .build()))));
+  }
+
+  @Test
+  public void testStaticRoutesWarnings() throws IOException {
+    String hostname = "static-routes-warn";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                containsString("cannot contain both discard nexthop and qualified-next-hop")),
+            WarningMatchers.hasText(
+                containsString("contains both next-table and qualified-next-hop"))));
+    // Only the valid route is added
+    assertThat(
+        c,
+        allOf(
+            hasDefaultVrf(
+                hasStaticRoutes(
+                    containsInAnyOrder(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("10.0.1.0/24"))
+                            .setNextHop(NextHopDiscard.instance())
+                            .setNonForwarding(true)
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
+                            .build())))));
   }
 
   @Test

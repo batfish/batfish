@@ -8,12 +8,17 @@ set routing-options static route 4.0.0.0/8 next-hop ge-0/0/0.0
 set routing-options static route 6.0.0.0/8 next-hop 10.0.0.1
 set routing-options static route 6.0.0.0/8 resolve
 set routing-options static route 7.0.0.0/8 next-table ri2.inet.0
+# Static route with only qualified-next-hops is valid
+set routing-options static route 10.0.0.0/16 qualified-next-hop 1.2.3.4
+set routing-options static route 10.0.0.0/16 qualified-next-hop 1.2.3.5
 #
 set routing-instances ri3 routing-options static route 5.5.5.0/24 preference 150
 set routing-instances ri3 routing-options static route 5.5.5.0/24 next-hop 2.3.4.5
+set routing-instances ri3 routing-options static route 5.5.5.0/24 metric 6
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop ge-0/0/0.0
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 preference 180
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 tag 12
+set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 metric 7
 set routing-instances ri3 routing-options static route 8.0.0.0/8 next-table inet.0
-
+#
 set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/24
