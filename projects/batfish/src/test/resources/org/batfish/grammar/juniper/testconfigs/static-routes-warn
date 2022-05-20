@@ -1,0 +1,15 @@
+#
+set system host-name static-routes-warn
+#
+set routing-instances ri2 routing-options static route 10.2.0.0/16 next-hop 10.0.0.2
+# Valid
+set routing-options static route 10.0.1.0/24 no-install
+set routing-options static route 10.0.1.0/24 qualified-next-hop 10.0.0.1
+# Invalid - cannot have discard and qualified-next-hop
+set routing-options static route 10.0.2.0/24 discard
+set routing-options static route 10.0.2.0/24 qualified-next-hop 10.0.0.2
+# Invalid - cannot have next-table and qualified-next-hop
+set routing-options static route 10.0.3.0/24 next-table ri2.inet.0
+set routing-options static route 10.0.3.0/24 qualified-next-hop 10.0.0.3
+#
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/24
