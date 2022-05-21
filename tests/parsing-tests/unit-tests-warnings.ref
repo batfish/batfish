@@ -222,14 +222,14 @@
         "Line" : 10,
         "Text" : "60 permit tcp any any eq mlag ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "Unsupported clause in extended access list: ttleq255"
+        "Comment" : "Batfish does not model packet TTLs"
       },
       {
         "Filename" : "configs/cisco_acl",
         "Line" : 11,
         "Text" : "70 permit udp any any eq mlag ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
-        "Comment" : "Unsupported clause in extended access list: ttleq255"
+        "Comment" : "Batfish does not model packet TTLs"
       },
       {
         "Filename" : "configs/cisco_acl",
