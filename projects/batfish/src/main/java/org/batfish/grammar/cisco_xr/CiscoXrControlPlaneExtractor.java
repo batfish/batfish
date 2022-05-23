@@ -3773,7 +3773,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             icmpCode = toInteger(feature.icmp_message_code);
           }
         } else {
-          warn(ctx, "Unsupported clause in extended access list: " + feature.getText());
+          warn(ctx, "Unsupported clause in extended access list: " + getFullText(feature));
           return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
       }
@@ -3922,7 +3922,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       } else if (feature.UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
       } else {
-        // warn(ctx, "Unsupported clause in IPv6 extended access list: " + feature.getText());
+        // warn(ctx, "Unsupported clause in IPv6 extended access list: " + getFullText(feature));
       }
     }
     String name = getFullText(ctx).trim();
