@@ -3772,6 +3772,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           if (feature.icmp_message_code != null) {
             icmpCode = toInteger(feature.icmp_message_code);
           }
+        } else if (feature.TTL() != null) {
+          // special case this warning to reduce user confusion
+          // "ttl eq 255" is a common pattern to limit traffic to neighboring routers
+          warn(ctx, "Batfish does not model packet TTLs");
+          return UnimplementedAccessListServiceSpecifier.INSTANCE;
         } else {
           warn(ctx, "Unsupported clause in extended access list: " + feature.getText());
           return UnimplementedAccessListServiceSpecifier.INSTANCE;

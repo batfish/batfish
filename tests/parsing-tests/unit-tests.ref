@@ -69171,13 +69171,13 @@
               "Text" : "20 permit ip any any tracked"
             },
             {
-              "Comment" : "Unsupported clause in extended access list: ttleq255",
+              "Comment" : "Batfish does not model packet TTLs",
               "Line" : 10,
               "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
               "Text" : "60 permit tcp any any eq mlag ttl eq 255"
             },
             {
-              "Comment" : "Unsupported clause in extended access list: ttleq255",
+              "Comment" : "Batfish does not model packet TTLs",
               "Line" : 11,
               "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
               "Text" : "70 permit udp any any eq mlag ttl eq 255"
