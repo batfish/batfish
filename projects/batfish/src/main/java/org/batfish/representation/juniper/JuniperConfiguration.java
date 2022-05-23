@@ -1560,6 +1560,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface iface,
       String vrfName) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces(vrfName).get(interfaceName);
+    if (newIface == null) {
+      // No VI interface was created. This can happen, for example, for irb; only irb.N are
+      // populated in VI.
+      return;
+    }
     OspfInterfaceSettings ospfInterfaceSettings = iface.getEffectiveOspfSettings();
     if (ospfInterfaceSettings == null) {
       return;

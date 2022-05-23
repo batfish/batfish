@@ -6820,6 +6820,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/0/3.0", hasOspfCost(equalTo(1))));
   }
 
+  /** Test of bfe#8498 crash. */
+  @Test
+  public void testOspfInterfaceAllCrash() {
+    parseConfig("ospf-area-interface-all-crash");
+  }
+
   /** Test that using the physical interface in OSPF context maps things to unit 0 */
   @Test
   public void testOspfImplicitUnit0() {
