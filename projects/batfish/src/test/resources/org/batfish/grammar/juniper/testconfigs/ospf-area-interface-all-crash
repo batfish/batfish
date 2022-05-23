@@ -1,0 +1,4 @@
+set system host-name ospf-area-interface-all-crash
+# Test of bfe#8498
+set interfaces irb unit 903 family inet
+set protocols ospf area 0.0.0.0 interface all passive
