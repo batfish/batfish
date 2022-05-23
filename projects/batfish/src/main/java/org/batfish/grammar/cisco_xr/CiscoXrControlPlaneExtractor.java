@@ -3778,7 +3778,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           warn(ctx, "Batfish does not model packet TTLs");
           return UnimplementedAccessListServiceSpecifier.INSTANCE;
         } else {
-          warn(ctx, "Unsupported clause in extended access list: " + feature.getText());
+          warn(ctx, "Unsupported clause in extended access list: " + getFullText(feature));
           return UnimplementedAccessListServiceSpecifier.INSTANCE;
         }
       }
@@ -3927,7 +3927,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       } else if (feature.UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
       } else {
-        // warn(ctx, "Unsupported clause in IPv6 extended access list: " + feature.getText());
+        // warn(ctx, "Unsupported clause in IPv6 extended access list: " + getFullText(feature));
       }
     }
     String name = getFullText(ctx).trim();
