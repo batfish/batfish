@@ -181,6 +181,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
+import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
@@ -5684,6 +5685,38 @@ public final class FlatJuniperGrammarTest {
                             .setAdministrativeCost(5)
                             .setRecursive(false)
                             .build())))));
+  }
+
+  @Test
+  public void testStaticRouteOverwrite() {
+    JuniperConfiguration c = parseJuniperConfig("static-route-overwrite");
+    Map<Prefix, org.batfish.representation.juniper.StaticRoute> staticRoutes =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get(DEFAULT_VRF_NAME)
+            .getRibs()
+            .get(RIB_IPV4_UNICAST)
+            .getStaticRoutes();
+    org.batfish.representation.juniper.StaticRoute r0 =
+        staticRoutes.get(Prefix.parse("10.0.0.0/16"));
+    org.batfish.representation.juniper.StaticRoute r1 =
+        staticRoutes.get(Prefix.parse("10.1.0.0/16"));
+    org.batfish.representation.juniper.StaticRoute r2 =
+        staticRoutes.get(Prefix.parse("10.2.0.0/16"));
+    org.batfish.representation.juniper.StaticRoute r3 =
+        staticRoutes.get(Prefix.parse("10.3.0.0/16"));
+
+    // Old next-hops are cleared
+    assertFalse(r0.getDrop());
+    assertNull(r1.getNextHopIp());
+    assertNull(r2.getNextHopInterface());
+    assertNull(r3.getNextTable());
+
+    // New next-hops are set
+    assertThat(r0.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
+    assertThat(r1.getNextHopInterface(), equalTo("ge-0/0/0.0"));
+    assertThat(r2.getNextTable(), equalTo("ri2.inet.0"));
+    assertTrue(r3.getDrop());
   }
 
   @Test

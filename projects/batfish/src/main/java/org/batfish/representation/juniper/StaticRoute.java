@@ -110,6 +110,7 @@ public class StaticRoute implements Serializable {
   }
 
   public void setDrop(boolean drop) {
+    clearNextHops();
     _drop = drop;
   }
 
@@ -118,10 +119,12 @@ public class StaticRoute implements Serializable {
   }
 
   public void setNextHopInterface(String nextHopInterface) {
+    clearNextHops();
     _nextHopInterface = nextHopInterface;
   }
 
   public void setNextHopIp(Ip nextHopIp) {
+    clearNextHops();
     _nextHopIp = nextHopIp;
   }
 
@@ -152,6 +155,17 @@ public class StaticRoute implements Serializable {
   }
 
   public void setNextTable(@Nullable String nextTable) {
+    clearNextHops();
     _nextTable = nextTable;
+  }
+
+  /**
+   * Clear existing next hops. Used to make sure only one next hop field is set at any given time.
+   */
+  private void clearNextHops() {
+    _nextHopIp = null;
+    _nextHopInterface = null;
+    _nextTable = null;
+    _drop = false;
   }
 }
