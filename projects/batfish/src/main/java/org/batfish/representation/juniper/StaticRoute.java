@@ -113,21 +113,24 @@ public class StaticRoute implements Serializable {
     _distance = distance;
   }
 
-  public void setDrop(boolean drop) {
+  /** Clears other next hops and sets discard/drop for the route. */
+  public void setDrop() {
     clearNextHops();
-    _drop = drop;
+    _drop = true;
   }
 
   public void setMetric(int metric) {
     _metric = metric;
   }
 
+  /** Adds a next hop interface for the route. Also clears the next table and discard property. */
   public void addNextHopInterface(String nextHopInterface) {
     _nextTable = null;
     _drop = false;
     _nextHopInterface.add(nextHopInterface);
   }
 
+  /** Adds a next hop IP for the route. Also clears the next table and discard property. */
   public void addNextHopIp(Ip nextHopIp) {
     _nextTable = null;
     _drop = false;
@@ -160,6 +163,7 @@ public class StaticRoute implements Serializable {
     return _nextTable;
   }
 
+  /** Clears other next hops and sets next table for the route. */
   public void setNextTable(@Nullable String nextTable) {
     clearNextHops();
     _nextTable = nextTable;

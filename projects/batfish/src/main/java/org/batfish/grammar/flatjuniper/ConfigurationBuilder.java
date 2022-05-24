@@ -5973,7 +5973,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_discard(Rosr_discardContext ctx) {
-    _currentStaticRoute.setDrop(true);
+    _currentStaticRoute.setDrop();
   }
 
   @Override
@@ -6015,7 +6015,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_reject(Rosr_rejectContext ctx) {
-    _currentStaticRoute.setDrop(true);
+    _currentStaticRoute.setDrop();
   }
 
   @Override
