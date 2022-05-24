@@ -82,7 +82,7 @@
         <jsr305.version>3.0.2</jsr305.version>
         <junit.version>4.12</junit.version>
         <log4j.version>2.17.2</log4j.version>
-        <lz4.version>1.7.1</lz4.version>
+        <lz4.version>1.8.0</lz4.version>
         <mockito.version>3.3.3</mockito.version>
         <parboiled.version>1.3.1</parboiled.version>
         <re2j.version>1.6</re2j.version>
