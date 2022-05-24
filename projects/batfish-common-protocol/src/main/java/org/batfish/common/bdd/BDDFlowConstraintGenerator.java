@@ -43,6 +43,11 @@ public final class BDDFlowConstraintGenerator {
     BDD refine(BDD bdd);
   }
 
+  /**
+   * A {@link PreferenceRefiner} that returns after the first sub-refiner successfully refines the
+   * input. This is useful for an ordered list of mutually-exclusive preferences: once the first
+   * preference consistent with the input is found, we can skip the rest.
+   */
   static final class RefineFirst implements PreferenceRefiner {
     private final @Nullable BDD _guard;
     private final List<PreferenceRefiner> _children;
@@ -88,6 +93,16 @@ public final class BDDFlowConstraintGenerator {
     }
   }
 
+  /**
+   * A {@link PreferenceRefiner} that tries to refine the input using an ordered list of
+   * sub-refiners. Each refiner is considered in order. At each step, if that sub-refiner is
+   * consistent with the current BDD, its refinement is adopted and we continue to the next
+   * sub-refiner. If it is inconsistent, ignore it and continue.
+   *
+   * <p>This is useful for a collection of preferences that are not mutually-exclusive. Note that
+   * order is still important, because the input BDD may be consistent with two preferences
+   * separately but not together.
+   */
   static final class RefineAll implements PreferenceRefiner {
     private final @Nullable BDD _guard;
     private final List<PreferenceRefiner> _children;
