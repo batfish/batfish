@@ -70,18 +70,21 @@ public final class BDDFlowConstraintGenerator {
 
     @Override
     public BDD refine(BDD bdd) {
-      BDD tmp = _guard == null ? bdd.id() : _guard.and(bdd);
-      if (tmp.isZero()) {
-        return tmp;
+      BDD matchGuard = _guard == null ? bdd.id() : _guard.and(bdd);
+      if (matchGuard.isZero()) {
+        return matchGuard;
       }
       for (PreferenceRefiner child : _children) {
-        BDD res = child.refine(tmp);
-        if (!res.isZero()) {
-          tmp.free();
-          return res;
+        BDD matchChild = child.refine(matchGuard);
+        if (matchChild.isZero()) {
+          matchChild.free();
+        } else {
+          matchGuard.free();
+          return matchChild;
         }
       }
-      return tmp;
+      // guard matched, but no child did.
+      return matchGuard;
     }
   }
 
@@ -104,21 +107,21 @@ public final class BDDFlowConstraintGenerator {
 
     @Override
     public BDD refine(BDD bdd) {
-      BDD tmp = _guard == null ? bdd.id() : _guard.and(bdd);
-      if (tmp.isZero()) {
-        return tmp;
+      BDD res = _guard == null ? bdd.id() : _guard.and(bdd);
+      if (res.isZero()) {
+        return res;
       }
 
       for (PreferenceRefiner child : _children) {
-        BDD tmp2 = child.refine(tmp);
-        if (tmp2.isZero()) {
-          tmp2.free();
-        } else {
+        BDD tmp = child.refine(res);
+        if (tmp.isZero()) {
           tmp.free();
-          tmp = tmp2;
+        } else {
+          res.free();
+          res = tmp;
         }
       }
-      return tmp;
+      return res;
     }
   }
 
