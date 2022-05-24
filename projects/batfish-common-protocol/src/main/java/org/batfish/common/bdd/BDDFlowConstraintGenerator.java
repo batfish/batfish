@@ -1,10 +1,14 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.common.bdd.BDDFlowConstraintGenerator.RefineAll.refineAll;
+import static org.batfish.common.bdd.BDDFlowConstraintGenerator.RefineFirst.refineFirst;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import java.util.EnumMap;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IcmpType;
@@ -30,6 +34,116 @@ public final class BDDFlowConstraintGenerator {
     TRACEROUTE
   }
 
+  public interface BddRefiner {
+    /**
+     * @param bdd such that bdd.isZero() returns false.
+     * @return a BDD not == to the input. if isZero(), then the input bdd does not satisfy the
+     *     preference.
+     */
+    BDD refine(BDD bdd);
+  }
+
+  /**
+   * A {@link BddRefiner} that returns after the first sub-refiner successfully refines the input.
+   * This is useful for an ordered list of mutually-exclusive preferences: once the first preference
+   * consistent with the input is found, we can skip the rest.
+   */
+  static final class RefineFirst implements BddRefiner {
+    private final @Nullable BDD _guard;
+    private final List<BddRefiner> _children;
+
+    private RefineFirst(BDD guard, List<BddRefiner> children) {
+      _guard = guard;
+      _children = ImmutableList.copyOf(children);
+    }
+
+    static RefineFirst refineFirst(List<BddRefiner> children) {
+      return new RefineFirst(null, children);
+    }
+
+    static RefineFirst refineFirst(BDD guard, List<BddRefiner> children) {
+      return new RefineFirst(guard, children);
+    }
+
+    static RefineFirst refineFirst(BDD guard, BddRefiner... children) {
+      return new RefineFirst(guard, ImmutableList.copyOf(children));
+    }
+
+    static RefineFirst refineFirst(BddRefiner... children) {
+      return new RefineFirst(null, ImmutableList.copyOf(children));
+    }
+
+    @Override
+    public BDD refine(BDD bdd) {
+      BDD matchGuard = _guard == null ? bdd.id() : _guard.and(bdd);
+      if (matchGuard.isZero()) {
+        return matchGuard;
+      }
+      for (BddRefiner child : _children) {
+        BDD matchChild = child.refine(matchGuard);
+        if (matchChild.isZero()) {
+          matchChild.free();
+        } else {
+          matchGuard.free();
+          return matchChild;
+        }
+      }
+      // guard matched, but no child did.
+      return matchGuard;
+    }
+  }
+
+  /**
+   * A {@link BddRefiner} that tries to refine the input using an ordered list of sub-refiners. Each
+   * refiner is considered in order. At each step, if that sub-refiner is consistent with the
+   * current BDD, its refinement is adopted and we continue to the next sub-refiner. If it is
+   * inconsistent, ignore it and continue.
+   *
+   * <p>This is useful for a collection of preferences that are not mutually-exclusive. Note that
+   * order is still important, because the input BDD may be consistent with two preferences
+   * separately but not together.
+   */
+  static final class RefineAll implements BddRefiner {
+    private final @Nullable BDD _guard;
+    private final List<BddRefiner> _children;
+
+    private RefineAll(@Nullable BDD guard, List<BddRefiner> children) {
+      _guard = guard;
+      _children = ImmutableList.copyOf(children);
+    }
+
+    static RefineAll refineAll(BDD guard, BddRefiner... children) {
+      return new RefineAll(guard, ImmutableList.copyOf(children));
+    }
+
+    static RefineAll refineAll(BddRefiner... children) {
+      return new RefineAll(null, ImmutableList.copyOf(children));
+    }
+
+    @Override
+    public BDD refine(BDD bdd) {
+      BDD res = _guard == null ? bdd.id() : _guard.and(bdd);
+      if (res.isZero()) {
+        return res;
+      }
+
+      for (BddRefiner child : _children) {
+        BDD tmp = child.refine(res);
+        if (tmp.isZero()) {
+          tmp.free();
+        } else {
+          res.free();
+          res = tmp;
+        }
+      }
+      return res;
+    }
+  }
+
+  static RefineFirst refine(BDD guard) {
+    return new RefineFirst(guard, ImmutableList.of());
+  }
+
   @VisibleForTesting static final Prefix PRIVATE_SUBNET_10 = Prefix.parse("10.0.0.0/8");
   @VisibleForTesting static final Prefix PRIVATE_SUBNET_172 = Prefix.parse("172.16.0.0/12");
   @VisibleForTesting static final Prefix PRIVATE_SUBNET_192 = Prefix.parse("192.168.0.0/16");
@@ -47,68 +161,82 @@ public final class BDDFlowConstraintGenerator {
 
   private final BDDPacket _bddPacket;
   private final BDDOps _bddOps;
-  private final List<BDD> _icmpConstraints;
-  private final List<BDD> _udpConstraints;
-  private final List<BDD> _tcpConstraints;
-  private final BDD _defaultPacketLength;
-  private final List<BDD> _ipConstraints;
-  private final BDD _udpTraceroute;
+  private final BddRefiner _icmpConstraints;
+  private final BddRefiner _udpConstraints;
+  private final BddRefiner _tcpConstraints;
+  private final BddRefiner _defaultPacketLength;
+  private final BddRefiner _ipConstraints;
+
+  private final EnumMap<FlowPreference, BddRefiner> _refinerCache =
+      new EnumMap<>(FlowPreference.class);
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
     _bddPacket = pkt;
     _bddOps = new BDDOps(pkt.getFactory());
-    _defaultPacketLength = _bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH);
-    _udpTraceroute = computeUdpTraceroute();
+    _defaultPacketLength = refine(_bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH));
     _icmpConstraints = computeICMPConstraint();
     _udpConstraints = computeUDPConstraints();
     _tcpConstraints = computeTCPConstraints();
     _ipConstraints = computeIpConstraints();
   }
 
-  private List<BDD> computeICMPConstraint() {
+  private BddRefiner computeICMPConstraint() {
     BDD icmp = _bddPacket.getIpProtocol().value(IpProtocol.ICMP);
     BDDIcmpType type = _bddPacket.getIcmpType();
     BDD codeZero = _bddPacket.getIcmpCode().value(0);
     // Prefer ICMP Echo_Request, then anything with code 0, then anything ICMP/
-    return ImmutableList.of(
-        _bddOps.and(icmp, type.value(IcmpType.ECHO_REQUEST), codeZero),
-        _bddOps.and(icmp, codeZero),
-        icmp);
+    return refineFirst(
+        icmp, refine(_bddOps.and(type.value(IcmpType.ECHO_REQUEST), codeZero)), refine(codeZero));
   }
 
   private BDD emphemeralPort(BDDInteger portInteger) {
     return portInteger.geq(NamedPort.EPHEMERAL_LOWEST.number());
   }
 
-  private List<BDD> tcpPortPreferences(BDD tcp, BDDInteger tcpPort) {
-    return ImmutableList.of(
-        _bddOps.and(tcp, tcpPort.value(NamedPort.HTTP.number())),
-        _bddOps.and(tcp, tcpPort.value(NamedPort.HTTPS.number())),
-        _bddOps.and(tcp, tcpPort.value(NamedPort.SSH.number())),
+  private BddRefiner tcpNonEphemeralPortPreferences(BDDInteger tcpPort) {
+    return refineFirst(
+        refine(tcpPort.value(NamedPort.HTTP.number())),
+        refine(tcpPort.value(NamedPort.HTTPS.number())),
+        refine(tcpPort.value(NamedPort.SSH.number())),
         // at least not zero if possible
-        _bddOps.and(tcp, tcpPort.value(0).not()));
+        refine(tcpPort.value(0).not()));
   }
 
-  private List<BDD> tcpFlagPreferences(BDD tcp) {
-    return ImmutableList.of(
-        // Force all the rarely used flags off
-        _bddOps.and(tcp, _bddPacket.getTcpCwr().not()),
-        _bddOps.and(tcp, _bddPacket.getTcpEce().not()),
-        _bddOps.and(tcp, _bddPacket.getTcpPsh().not()),
-        _bddOps.and(tcp, _bddPacket.getTcpUrg().not()),
-        // Less rarely used flags
-        _bddOps.and(tcp, _bddPacket.getTcpFin().not()),
-        // Sometimes used flags
-        _bddOps.and(tcp, _bddPacket.getTcpRst().not()),
-        // Prefer SYN, SYN_ACK, ACK
-        _bddOps.and(tcp, _bddPacket.getTcpSyn(), _bddPacket.getTcpAck().not()),
-        _bddOps.and(tcp, _bddPacket.getTcpAck(), _bddPacket.getTcpSyn()),
-        _bddOps.and(tcp, _bddPacket.getTcpAck()));
+  private BddRefiner tcpFlagPreferences() {
+    BDD syn = _bddPacket.getTcpSyn();
+    BDD ack = _bddPacket.getTcpAck();
+    BDD notAck = ack.not();
+    BDD notCwr = _bddPacket.getTcpCwr().not();
+    BDD notEce = _bddPacket.getTcpEce().not();
+    BDD notPsh = _bddPacket.getTcpPsh().not();
+    BDD notUrg = _bddPacket.getTcpUrg().not();
+    BDD notFin = _bddPacket.getTcpFin().not();
+    BDD notRst = _bddPacket.getTcpRst().not();
+    return refineFirst(
+        // syn only
+        refine(_bddOps.and(syn, notAck, notCwr, notEce, notPsh, notUrg, notFin, notRst)),
+        // syn+ack only
+        refine(_bddOps.and(syn, ack, notCwr, notEce, notPsh, notUrg, notFin, notRst)),
+        // fall back to slow search
+        refineAll(
+            // Force all the rarely used flags off
+            refine(notCwr),
+            refine(notEce),
+            refine(notPsh),
+            refine(notUrg),
+            // Less rarely used flags
+            refine(notFin),
+            // Sometimes used flags
+            refine(notRst),
+            // Prefer SYN, SYN_ACK, ACK
+            refine(_bddOps.and(syn, notAck)),
+            refine(_bddOps.and(ack, syn)),
+            refine(_bddOps.and(ack))));
   }
 
   // Get TCP packets with special named ports, trying to find cases where only one side is
   // ephemeral.
-  private List<BDD> computeTCPConstraints() {
+  private BddRefiner computeTCPConstraints() {
     BDDInteger dstPort = _bddPacket.getDstPort();
     BDDInteger srcPort = _bddPacket.getSrcPort();
     BDD tcp = _bddPacket.getIpProtocol().value(IpProtocol.TCP);
@@ -116,61 +244,62 @@ public final class BDDFlowConstraintGenerator {
     BDD srcPortEphemeral = emphemeralPort(srcPort);
     BDD dstPortEphemeral = emphemeralPort(dstPort);
 
-    return ImmutableList.<BDD>builder()
-        // First, try to nudge src and dst port apart. E.g., if one is ephemeral the other is not.
-        .add(_bddOps.and(tcp, srcPortEphemeral, dstPortEphemeral.not()))
-        .add(_bddOps.and(tcp, srcPortEphemeral.not(), dstPortEphemeral))
-        // Next, execute port preferences.
-        .addAll(tcpPortPreferences(tcp, srcPort))
-        .addAll(tcpPortPreferences(tcp, dstPort))
-        // Next execute flag preferences.
-        .addAll(tcpFlagPreferences(tcp))
-        // Anything TCP.
-        .add(tcp)
-        .build();
+    BddRefiner nonEphemeralDstPortPreferences = tcpNonEphemeralPortPreferences(dstPort);
+    BddRefiner nonEphemeralSrcPortPreferences = tcpNonEphemeralPortPreferences(srcPort);
+
+    return refineAll(
+        tcp,
+        refineFirst(
+            // First, try to nudge src and dst port apart. E.g., if one is ephemeral the other is
+            // not.
+            refineFirst(srcPortEphemeral.diff(dstPortEphemeral), nonEphemeralDstPortPreferences),
+            refineFirst(dstPortEphemeral.diff(srcPortEphemeral), nonEphemeralSrcPortPreferences),
+            // If both are non-ephemeral, apply port preferences
+            refineAll(
+                dstPortEphemeral.nor(srcPortEphemeral),
+                refineFirst(nonEphemeralDstPortPreferences),
+                refineFirst(nonEphemeralSrcPortPreferences))),
+        tcpFlagPreferences());
   }
 
-  private List<BDD> udpPortPreferences(BDD udp, BDDInteger tcpPort) {
-    return ImmutableList.of(
-        _bddOps.and(udp, tcpPort.value(NamedPort.DOMAIN.number())),
-        _bddOps.and(udp, tcpPort.value(NamedPort.SNMP.number())),
-        _bddOps.and(udp, tcpPort.value(NamedPort.SNMPTRAP.number())),
+  private BddRefiner udpNonEphemeralPortPreferences(BDDInteger tcpPort) {
+    return refineFirst(
+        refine(tcpPort.value(NamedPort.DOMAIN.number())),
+        refine(tcpPort.value(NamedPort.SNMP.number())),
+        refine(tcpPort.value(NamedPort.SNMPTRAP.number())),
         // at least not zero if possible
-        _bddOps.and(udp, tcpPort.value(0).not()));
-  }
-
-  private BDD computeUdpTraceroute() {
-    BDDInteger dstPort = _bddPacket.getDstPort();
-    BDDInteger srcPort = _bddPacket.getSrcPort();
-    BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
-    return _bddOps.and(
-        udp,
-        dstPort.range(UDP_TRACEROUTE_FIRST_PORT, UDP_TRACEROUTE_LAST_PORT),
-        srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
+        refine(tcpPort.value(0).not()));
   }
 
   // Get UDP packets with special named ports, trying to find cases where only one side is
   // ephemeral.
-  private List<BDD> computeUDPConstraints() {
+  private BddRefiner computeUDPConstraints() {
     BDDInteger dstPort = _bddPacket.getDstPort();
     BDDInteger srcPort = _bddPacket.getSrcPort();
     BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
 
+    BDD udpTraceroute =
+        _bddOps.and(
+            udp,
+            dstPort.range(UDP_TRACEROUTE_FIRST_PORT, UDP_TRACEROUTE_LAST_PORT),
+            srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
+
     BDD srcPortEphemeral = emphemeralPort(srcPort);
     BDD dstPortEphemeral = emphemeralPort(dstPort);
 
-    return ImmutableList.<BDD>builder()
+    BddRefiner nonEphemeralDstPortPreferences = udpNonEphemeralPortPreferences(dstPort);
+    BddRefiner nonEphemeralSrcPortPreferences = udpNonEphemeralPortPreferences(srcPort);
+    return refineFirst(
+        udp,
         // Try for UDP traceroute.
-        .add(_udpTraceroute)
+        refine(udpTraceroute),
         // Next, try to nudge src and dst port apart. E.g., if one is ephemeral the other is not.
-        .add(_bddOps.and(udp, srcPortEphemeral, dstPortEphemeral.not()))
-        .add(_bddOps.and(udp, srcPortEphemeral.not(), dstPortEphemeral))
+        refineFirst(srcPortEphemeral.diff(dstPortEphemeral), nonEphemeralDstPortPreferences),
+        refineFirst(dstPortEphemeral.diff(srcPortEphemeral), nonEphemeralSrcPortPreferences),
         // Next, execute port preferences
-        .addAll(udpPortPreferences(udp, srcPort))
-        .addAll(udpPortPreferences(udp, dstPort))
-        // Anything UDP.
-        .add(udp)
-        .build();
+        refineAll(
+            refineFirst(nonEphemeralDstPortPreferences),
+            refineFirst(nonEphemeralSrcPortPreferences)));
   }
 
   @VisibleForTesting
@@ -187,62 +316,64 @@ public final class BDDFlowConstraintGenerator {
         ip.toBDD(RESERVED_DOCUMENTATION_203));
   }
 
-  private static List<BDD> ipPreferences(BDDInteger ipInteger) {
-    return ImmutableList.of(
+  private static BddRefiner publicIpPreferences(BDDInteger ipInteger) {
+    return refineFirst(
         // First, one of the special IPs.
-        ipInteger.value(Ip.parse("8.8.8.8").asLong()),
-        ipInteger.value(Ip.parse("1.1.1.1").asLong()),
+        refine(ipInteger.value(Ip.parse("8.8.8.8").asLong())),
+        refine(ipInteger.value(Ip.parse("1.1.1.1").asLong())),
         // Next, at least don't start with 0.
-        ipInteger.geq(Ip.parse("1.0.0.0").asLong()),
+        refine(ipInteger.geq(Ip.parse("1.0.0.0").asLong())),
         // Next, try to be in class A.
-        ipInteger.leq(Ip.parse("126.255.255.254").asLong()));
+        refine(ipInteger.leq(Ip.parse("126.255.255.254").asLong())));
   }
 
-  private List<BDD> computeIpConstraints() {
+  private BddRefiner computeIpConstraints() {
     BDD srcIpPrivate = isPrivateIp(_bddOps, _bddPacket.getSrcIpSpaceToBDD());
     BDD dstIpPrivate = isPrivateIp(_bddOps, _bddPacket.getDstIpSpaceToBDD());
 
-    return ImmutableList.<BDD>builder()
+    BddRefiner publicDstIpPrefs = publicIpPreferences(_bddPacket.getDstIp());
+    BddRefiner publicSrcIpPrefs = publicIpPreferences(_bddPacket.getSrcIp());
+    return refineAll(
         // 0. Try to not use documentation IPs if that is possible.
-        .add(isDocumentationIp(_bddOps, _bddPacket.getSrcIpSpaceToBDD()).not())
-        .add(isDocumentationIp(_bddOps, _bddPacket.getDstIpSpaceToBDD()).not())
-        // First, try to nudge src and dst IP apart. E.g., if one is private the other should be
+        refine(isDocumentationIp(_bddOps, _bddPacket.getSrcIpSpaceToBDD()).not()),
+        refine(isDocumentationIp(_bddOps, _bddPacket.getDstIpSpaceToBDD()).not()),
+
+        // Try to nudge src and dst IP apart. E.g., if one is private the other should be
         // public.
-        .add(_bddOps.and(srcIpPrivate, dstIpPrivate.not()))
-        .add(_bddOps.and(srcIpPrivate.not(), dstIpPrivate))
-        // Next, execute IP preferences
-        .addAll(ipPreferences(_bddPacket.getSrcIp()))
-        .addAll(ipPreferences(_bddPacket.getDstIp()))
-        .build();
+        refineFirst(
+            // private --> public
+            refineFirst(srcIpPrivate.diff(dstIpPrivate), publicDstIpPrefs),
+            // public --> private
+            refineFirst(dstIpPrivate.diff(srcIpPrivate), publicSrcIpPrefs),
+            // public --> public
+            refineAll(dstIpPrivate.nor(srcIpPrivate), publicDstIpPrefs, publicSrcIpPrefs)));
   }
 
-  public List<BDD> generateFlowPreference(FlowPreference preference) {
+  public BddRefiner getFlowPreference(FlowPreference preference) {
+    return _refinerCache.computeIfAbsent(preference, this::generateFlowPreference);
+  }
+
+  private BddRefiner generateFlowPreference(FlowPreference preference) {
     switch (preference) {
       case DEBUGGING:
-        return ImmutableList.<BDD>builder()
-            .addAll(_icmpConstraints)
-            .addAll(_udpConstraints)
-            .addAll(_tcpConstraints)
-            .addAll(_ipConstraints)
-            .add(_defaultPacketLength)
-            .build();
+        return refineAll(
+            // application preferences
+            refineFirst(_icmpConstraints, _udpConstraints, _tcpConstraints),
+            _ipConstraints,
+            _defaultPacketLength);
       case APPLICATION:
       case TESTFILTER:
-        return ImmutableList.<BDD>builder()
-            .addAll(_tcpConstraints)
-            .addAll(_udpConstraints)
-            .addAll(_icmpConstraints)
-            .addAll(_ipConstraints)
-            .add(_defaultPacketLength)
-            .build();
+        return refineAll(
+            // application preferences
+            refineFirst(_tcpConstraints, _udpConstraints, _icmpConstraints),
+            _ipConstraints,
+            _defaultPacketLength);
       case TRACEROUTE:
-        return ImmutableList.<BDD>builder()
-            .addAll(_udpConstraints)
-            .addAll(_tcpConstraints)
-            .addAll(_icmpConstraints)
-            .addAll(_ipConstraints)
-            .add(_defaultPacketLength)
-            .build();
+        return refineAll(
+            // application preferences
+            refineFirst(_udpConstraints, _tcpConstraints, _icmpConstraints),
+            _ipConstraints,
+            _defaultPacketLength);
       default:
         throw new BatfishException("Not supported flow preference");
     }
