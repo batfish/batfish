@@ -1,0 +1,20 @@
+#
+set system host-name static-route-overwrite
+#
+set routing-instances ri2 routing-options static route 10.0.0.0/8 next-hop 10.0.0.1
+#
+# These static routes should all be overwritten
+set routing-options static route 10.0.0.0/16 discard
+set routing-options static route 10.1.0.0/16 next-table ri2.inet.0
+set routing-options static route 10.2.0.0/16 next-hop 10.0.0.1
+set routing-options static route 10.2.0.0/16 next-hop ge-0/0/0.0
+set routing-options static route 10.3.0.0/16 next-table ri2.inet.0
+#
+# These are the only static routes that should persist
+set routing-options static route 10.0.0.0/16 next-hop 10.0.0.1
+set routing-options static route 10.1.0.0/16 next-hop ge-0/0/0.0
+set routing-options static route 10.2.0.0/16 next-table ri2.inet.0
+set routing-options static route 10.3.0.0/16 discard
+#
+#
+set interfaces ge-0/0/0 unit 0 family inet address 192.0.2.1/24

@@ -142,6 +142,8 @@ import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -3214,12 +3216,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       viStaticRoutes.add(rBuilder.setNextHop(NextHopDiscard.instance()).build());
     } else if (nextVrf != null) {
       viStaticRoutes.add(rBuilder.setNextHop(NextHopVrf.of(nextVrf)).build());
-    } else if (route.getNextHopInterface() != null || route.getNextHopIp() != null) {
-      viStaticRoutes.add(
-          rBuilder
-              .setNextHop(
-                  NextHop.legacyConverter(route.getNextHopInterface(), route.getNextHopIp()))
-              .build());
+    } else if (!route.getNextHopInterface().isEmpty() || !route.getNextHopIp().isEmpty()) {
+      for (String nhInt : route.getNextHopInterface()) {
+        viStaticRoutes.add(rBuilder.setNextHop(NextHopInterface.of(nhInt)).build());
+      }
+      for (Ip nhIp : route.getNextHopIp()) {
+        viStaticRoutes.add(rBuilder.setNextHop(NextHopIp.of(nhIp)).build());
+      }
     }
 
     // populating static routes from each qualified next hop while overriding applicable properties
