@@ -63,58 +63,37 @@ public class CoordConsts {
   /** Various constants used as keys on multi-part form data */
   public static final String SVC_KEY_ADD_WORKER = "addworker";
 
-  public static final String SVC_KEY_AGGREGATIONS = "aggregations";
+  /**
+   * Note that despite the name and the value this has nothing to do with the former Batfish
+   * analysis concept.
+   */
   public static final String SVC_KEY_ANALYSIS_ANSWERS_OPTIONS = "analysisanswersoptions";
-  public static final String SVC_KEY_ANALYSIS_QUESTIONS = "analysisquestions";
-  public static final String SVC_KEY_ANALYSIS_LIST = "analysislist";
-  public static final String SVC_KEY_ANALYSIS_NAME = "analysisname";
-  public static final String SVC_KEY_ANALYSIS_TYPE = "analysistype";
+
   public static final String SVC_KEY_ANSWER = "answer";
-  public static final String SVC_KEY_ANSWERS = "answers";
   public static final String SVC_KEY_API_KEY = "apikey";
   public static final String SVC_KEY_ASSERTION = "assertion";
-  public static final String SVC_KEY_AUTO_ANALYZE = "autoanalyze";
-  public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_COMPLETION_TYPE = "completiontype";
-  public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
   public static final String SVC_KEY_CONTAINER_NAME = "container";
-  public static final String SVC_KEY_CONTAINER_PREFIX = "containerprefix";
-  public static final String SVC_KEY_DEL_ANALYSIS_QUESTIONS = "delanalysisquestions";
   public static final String SVC_KEY_DEL_WORKER = "delworker";
-  public static final String SVC_KEY_DELTA_SNAPSHOT_NAME = "deltasnapshotname";
-  public static final String SVC_KEY_DELTA_TESTRIG_NAME = "deltatestrigname";
   public static final String SVC_KEY_EXCEPTIONS = "exceptions";
   public static final String SVC_KEY_FAILURE = "failure";
   public static final String SVC_KEY_FILE = "file";
-  public static final String SVC_KEY_FORCE = "force";
   public static final String SVC_KEY_MAX_SUGGESTIONS = "maxsuggestions";
   public static final String SVC_KEY_NETWORK_LIST = "networklist";
   public static final String SVC_KEY_NETWORK_NAME = "networkname";
   public static final String SVC_KEY_NETWORK_PREFIX = "networkprefix";
-  public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
-  public static final String SVC_KEY_OBJECT_NAME = "objectname";
-  public static final String SVC_KEY_PLUGIN_ID = "pluginid";
   public static final String SVC_KEY_QUERY = "query";
   public static final String SVC_KEY_QUERY_METADATA = "querymetadata";
   public static final String SVC_KEY_QUESTION = "question";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
   public static final String SVC_KEY_REFERENCE_SNAPSHOT_NAME = "referencesnapshotname";
-  public static final String SVC_KEY_RESULT = "result";
-  public static final String SVC_KEY_SETTINGS = "settings";
-  public static final String SVC_KEY_SNAPSHOT_INFO = "snapshotinfo";
-  public static final String SVC_KEY_SNAPSHOT_LIST = "snapshotlist";
-  public static final String SVC_KEY_SNAPSHOT_METADATA = "snapshotmetadata";
   public static final String SVC_KEY_SNAPSHOT_NAME = "snapshotname";
   public static final String SVC_KEY_SUCCESS = "success";
   public static final String SVC_KEY_SUGGESTED = "suggested";
   public static final String SVC_KEY_SUGGESTIONS = "suggestions";
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";
-  public static final String SVC_KEY_TESTRIG_INFO = "testriginfo";
-  public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
-  public static final String SVC_KEY_TESTRIG_METADATA = "testrigmetadata";
-  public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
   public static final String SVC_KEY_VERBOSE = "verbose";
   public static final String SVC_KEY_VERSION = "version";
   public static final String SVC_KEY_WORK_LIST = "worklist";
@@ -128,33 +107,20 @@ public class CoordConsts {
   public static final String SVC_RSC_AUTO_COMPLETE = "autocomplete";
 
   public static final String SVC_RSC_CHECK_API_KEY = "checkapikey";
-  public static final String SVC_RSC_CONFIGURE_ANALYSIS = "configureanalysis";
-  public static final String SVC_RSC_DEL_ANALYSIS = "delanalysis";
-  public static final String SVC_RSC_DEL_CONTAINER = "delcontainer";
   public static final String SVC_RSC_DEL_NETWORK = "delnetwork";
   public static final String SVC_RSC_DEL_QUESTION = "delquestion";
   public static final String SVC_RSC_DEL_SNAPSHOT = "delsnapshot";
-  public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
   public static final String SVC_RSC_CONFIGURE_QUESTION_TEMPLATE = "configurequestiontemplate";
-  public static final String SVC_RSC_GET_ANALYSIS_ANSWER = "getanalysisanswer";
-  public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
-  public static final String SVC_RSC_GET_ANALYSIS_ANSWERS_METRICS = "getanalysisanswersmetrics";
-  public static final String SVC_RSC_GET_ANALYSIS_ANSWERS_ROWS = "getanalysisanswersrows";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_ANSWER_METRICS = "getanswermetrics";
   public static final String SVC_RSC_GET_ANSWER_ROWS = "getanswerrows";
   public static final String SVC_RSC_GET_ANSWER_ROWS2 = "getanswerrows2";
-  public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
-  public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
   public static final String SVC_RSC_GET_NETWORK = "getnetwork";
   public static final String SVC_RSC_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
   public static final String SVC_RSC_GETSTATUS = "getstatus";
-  public static final String SVC_RSC_INIT_CONTAINER = "initcontainer";
   public static final String SVC_RSC_INIT_NETWORK = "initnetwork";
   public static final String SVC_RSC_KILL_WORK = "killwork";
-  public static final String SVC_RSC_LIST_ANALYSES = "listanalyses";
-  public static final String SVC_RSC_LIST_CONTAINERS = "listcontainers";
   public static final String SVC_RSC_LIST_INCOMPLETE_WORK = "listincompletework";
   public static final String SVC_RSC_LIST_NETWORKS = "listnetworks";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
@@ -164,5 +130,4 @@ public class CoordConsts {
   public static final String SVC_RSC_QUEUE_WORK = "queuework";
   public static final String SVC_RSC_UPLOAD_QUESTION = "uploadquestion";
   public static final String SVC_RSC_UPLOAD_SNAPSHOT = "uploadsnapshot";
-  public static final String SVC_RSC_UPLOAD_TESTRIG = "uploadtestrig";
 }

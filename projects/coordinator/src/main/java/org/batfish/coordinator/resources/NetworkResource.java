@@ -2,7 +2,6 @@ package org.batfish.coordinator.resources;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static org.batfish.common.CoordConstsV2.RSC_ANALYSES;
 import static org.batfish.common.CoordConstsV2.RSC_FORK;
 import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
@@ -47,12 +46,6 @@ public class NetworkResource {
     _name = name;
   }
 
-  /** Relocate the request to {@link AnalysesResource} */
-  @Path(RSC_ANALYSES)
-  public AnalysesResource getAnalysesResource() {
-    return new AnalysesResource(_name);
-  }
-
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
@@ -76,7 +69,7 @@ public class NetworkResource {
   /** Relocate the request to {@link QuestionsResource}. */
   @Path(RSC_QUESTIONS)
   public QuestionsResource getAdHocQuestionsResource() {
-    return new QuestionsResource(_name, null);
+    return new QuestionsResource(_name);
   }
 
   /** Relocate the request to {@link ReferenceLibraryResource}. */

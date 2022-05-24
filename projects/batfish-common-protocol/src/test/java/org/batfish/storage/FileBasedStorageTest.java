@@ -69,7 +69,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -671,15 +670,8 @@ public final class FileBasedStorageTest {
     _storage.writeId(new SnapshotId("snapshot1_id"), "snapshot1", new NetworkId("net1_id"));
     _storage.writeId(new SnapshotId("snapshot2_id"), "snapshot2", new NetworkId("net1_id"));
 
-    // different ancestors
-    _storage.writeId(
-        new SnapshotId("snapshot1_id_other"),
-        "snapshot3",
-        new NetworkId("net1_id"),
-        new AnalysisId("analysis1_id")); //
-
     // different ID type
-    _storage.writeId(new QuestionId("question1_id"), "snapshot4", new NetworkId("net1_id"));
+    _storage.writeId(new QuestionId("question1_id"), "snapshot3", new NetworkId("net1_id"));
 
     assertThat(
         _storage.listResolvableNames(SnapshotId.class, new NetworkId("net1_id")),

@@ -17,18 +17,15 @@ import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
 import org.batfish.datamodel.answers.Answer;
 
-/** Resource for handling requests about a specific ad-hoc or analysis question's answer */
+/** Resource for handling requests about a specific ad-hoc question's answer */
 @ParametersAreNonnullByDefault
 public final class AnswerResource {
-
-  private final String _analysis;
 
   private final String _network;
 
   private final String _questionName;
 
-  public AnswerResource(String network, @Nullable String analysis, String questionName) {
-    _analysis = analysis;
+  public AnswerResource(String network, String questionName) {
     _network = network;
     _questionName = questionName;
   }
@@ -58,19 +55,17 @@ public final class AnswerResource {
                 _network,
                 filterAnswerBean.snapshot,
                 _questionName,
-                filterAnswerBean.referenceSnapshot,
-                _analysis);
+                filterAnswerBean.referenceSnapshot);
     if (ans == null) {
       return Response.status(Status.NOT_FOUND)
           .entity(
               String.format(
                   "Answer not found for question %s on network: %s, snapshot: %s,"
-                      + " referenceSnapshot: %s, analysis: %s",
+                      + " referenceSnapshot: %s",
                   _questionName,
                   _network,
                   filterAnswerBean.snapshot,
-                  filterAnswerBean.referenceSnapshot,
-                  _analysis))
+                  filterAnswerBean.referenceSnapshot))
           .build();
     }
 
@@ -100,16 +95,14 @@ public final class AnswerResource {
           .entity(String.format("Snapshot %s not found in network %s", snapshot, _network))
           .build();
     }
-    Answer ans =
-        Main.getWorkMgr()
-            .getAnswer(_network, snapshot, _questionName, referenceSnapshot, _analysis);
+    Answer ans = Main.getWorkMgr().getAnswer(_network, snapshot, _questionName, referenceSnapshot);
     if (ans == null) {
       return Response.status(Status.NOT_FOUND)
           .entity(
               String.format(
                   "Answer not found for question %s on network: %s, snapshot: %s,"
-                      + " referenceSnapshot: %s, analysis: %s",
-                  _questionName, _network, snapshot, referenceSnapshot, _analysis))
+                      + " referenceSnapshot: %s",
+                  _questionName, _network, snapshot, referenceSnapshot))
           .build();
     }
     return Response.ok().entity(ans).build();

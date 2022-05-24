@@ -37,7 +37,6 @@ public class BfConsts {
   public static final String ABSPATH_DEFAULT_SALT = "org/batfish/common/util/salt";
 
   public static final String ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG = "alwaysanswerworkjson";
-  public static final String ARG_ANALYSIS_NAME = "analysisname";
   public static final String ARG_BDP_DETAIL = "bdpdetail";
   public static final String ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS =
       "bdpmaxoscillationrecoveryattempts";
@@ -61,8 +60,6 @@ public class BfConsts {
   public static final String ARG_TASK_PLUGIN = "taskplugin";
   public static final String ARG_TESTRIG = "testrig";
   public static final String ARG_VERBOSE_PARSE = "verboseparse";
-
-  public static final String COMMAND_ANALYZE = "analyze";
   public static final String COMMAND_ANSWER = "answer";
   public static final String COMMAND_DUMP_DP = "dp";
   public static final String COMMAND_INIT_INFO = "initinfo";

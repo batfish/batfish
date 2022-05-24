@@ -1253,19 +1253,8 @@ public class Client extends AbstractClient implements IClient {
       List<String> parameters,
       boolean delta) {
     Command command = delta ? Command.INIT_REFERENCE_SNAPSHOT : Command.INIT_SNAPSHOT;
-    if (!isValidArgument(options, parameters, 1, 1, 2, command)) {
+    if (!isValidArgument(options, parameters, 0, 1, 2, command)) {
       return false;
-    }
-
-    boolean autoAnalyze = false;
-    if (options.size() == 1) {
-      if (options.get(0).equals("-autoanalyze")) {
-        autoAnalyze = true;
-      } else {
-        _logger.errorf("Unknown option: %s\n", options.get(0));
-        printUsage(command);
-        return false;
-      }
     }
 
     String testrigLocation = parameters.get(0);
@@ -1284,20 +1273,18 @@ public class Client extends AbstractClient implements IClient {
       _logger.output("\n");
     }
 
-    if (!uploadTestrig(testrigLocation, testrigName, autoAnalyze)) {
+    if (!uploadTestrig(testrigLocation, testrigName)) {
       unsetTestrig(delta);
       return false;
     }
     _logger.output("Uploaded snapshot.\n");
 
-    if (!autoAnalyze) {
-      _logger.output("Parsing now.\n");
-      WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName);
+    _logger.output("Parsing now.\n");
+    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName);
 
-      if (!execute(wItemParse, outWriter)) {
-        unsetTestrig(delta);
-        return false;
-      }
+    if (!execute(wItemParse, outWriter)) {
+      unsetTestrig(delta);
+      return false;
     }
 
     if (!delta) {
@@ -2232,7 +2219,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean uploadTestrig(String fileOrDir, String testrigName, boolean autoAnalyze) {
+  private boolean uploadTestrig(String fileOrDir, String testrigName) {
     Path initialUploadTarget = Paths.get(fileOrDir);
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
@@ -2242,8 +2229,7 @@ public class Client extends AbstractClient implements IClient {
     }
     try {
       boolean result =
-          _workHelper.uploadSnapshot(
-              _currContainerName, testrigName, uploadTarget.toString(), autoAnalyze);
+          _workHelper.uploadSnapshot(_currContainerName, testrigName, uploadTarget.toString());
       return result;
     } finally {
       if (createZip) {

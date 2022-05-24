@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkState;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
@@ -16,7 +15,6 @@ public final class WorkDetails {
 
   public static final class Builder {
 
-    private @Nullable AnalysisId _analysisId;
     private boolean _isDifferential;
     private @Nullable NetworkId _networkId;
     private @Nullable QuestionId _questionId;
@@ -31,18 +29,7 @@ public final class WorkDetails {
       checkState(_snapshotId != null, "Missing snapshotId");
       checkState(_workType != null, "Missing workType");
       return new WorkDetails(
-          _networkId,
-          _snapshotId,
-          _isDifferential,
-          _workType,
-          _referenceSnapshotId,
-          _analysisId,
-          _questionId);
-    }
-
-    public @Nonnull Builder setAnalysisId(@Nullable AnalysisId analysisId) {
-      _analysisId = analysisId;
-      return this;
+          _networkId, _snapshotId, _isDifferential, _workType, _referenceSnapshotId, _questionId);
     }
 
     public @Nonnull Builder setIsDifferential(boolean isDifferential) {
@@ -79,7 +66,7 @@ public final class WorkDetails {
   public enum WorkType {
     DATAPLANE_DEPENDENT_ANSWERING,
     DATAPLANING,
-    INDEPENDENT_ANSWERING, // answering includes analyzing
+    INDEPENDENT_ANSWERING,
     PARSING,
     PARSING_DEPENDENT_ANSWERING,
     UNKNOWN
@@ -89,7 +76,6 @@ public final class WorkDetails {
     return new Builder();
   }
 
-  private final @Nullable AnalysisId _analysisId;
   private final boolean _isDifferential;
   private final @Nonnull NetworkId _networkId;
   private final @Nullable QuestionId _questionId;
@@ -103,19 +89,13 @@ public final class WorkDetails {
       boolean isDifferential,
       WorkType workType,
       @Nullable SnapshotId referenceSnapshotId,
-      @Nullable AnalysisId analysisId,
       @Nullable QuestionId questionId) {
     _networkId = networkId;
     _snapshotId = snapshotId;
     _isDifferential = isDifferential;
     _workType = workType;
     _referenceSnapshotId = referenceSnapshotId;
-    _analysisId = analysisId;
     _questionId = questionId;
-  }
-
-  public @Nullable AnalysisId getAnalysisId() {
-    return _analysisId;
   }
 
   public boolean isDifferential() {

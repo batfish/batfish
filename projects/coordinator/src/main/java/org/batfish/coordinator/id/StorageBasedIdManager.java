@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.UUID;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.Id;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -48,11 +46,6 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
   }
 
   @Override
-  public void assignAnalysis(String analysis, NetworkId networkId, AnalysisId analysisId) {
-    writeId(analysisId, analysis, networkId);
-  }
-
-  @Override
   public void assignNetwork(String network, NetworkId networkId) {
     writeId(networkId, network);
   }
@@ -63,12 +56,8 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
   }
 
   @Override
-  public void assignQuestion(
-      String question,
-      NetworkId networkId,
-      QuestionId questionId,
-      @Nullable AnalysisId analysisId) {
-    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+  public void assignQuestion(String question, NetworkId networkId, QuestionId questionId) {
+    Id[] ancestors = new Id[] {networkId};
     writeId(questionId, question, ancestors);
   }
 
@@ -78,30 +67,19 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
   }
 
   @Override
-  public boolean deleteAnalysis(String analysis, NetworkId networkId) {
-    return deleteNameIdMapping(AnalysisId.class, analysis, networkId);
-  }
-
-  @Override
   public boolean deleteNetwork(String network) {
     return deleteNameIdMapping(NetworkId.class, network);
   }
 
   @Override
-  public boolean deleteQuestion(
-      String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+  public boolean deleteQuestion(String question, NetworkId networkId) {
+    Id[] ancestors = new Id[] {networkId};
     return deleteNameIdMapping(QuestionId.class, question, ancestors);
   }
 
   @Override
   public boolean deleteSnapshot(String snapshot, NetworkId networkId) {
     return deleteNameIdMapping(SnapshotId.class, snapshot, networkId);
-  }
-
-  @Override
-  public @Nonnull AnalysisId generateAnalysisId() {
-    return new AnalysisId(uuid());
   }
 
   @Override

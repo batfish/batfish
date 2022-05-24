@@ -19,7 +19,6 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -36,7 +35,6 @@ import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspConfigurationException;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
 import org.batfish.identifiers.NetworkId;
@@ -149,7 +147,7 @@ public interface StorageProvider {
       throws IOException;
 
   /**
-   * Store the answer to an ad-hoc or analysis question.
+   * Store the answer to an ad-hoc question.
    *
    * @param network The id of the network
    * @param snapshot The id of the snapshot
@@ -161,7 +159,7 @@ public interface StorageProvider {
       throws IOException;
 
   /**
-   * Store the metadata for the answer to an ad-hoc or analysis question.
+   * Store the metadata for the answer to an ad-hoc question.
    *
    * @param network The id of the network
    * @param snapshot The id of the snapshot
@@ -174,31 +172,25 @@ public interface StorageProvider {
       throws IOException;
 
   /**
-   * Load the text of a JSON-serialized ad-hoc or analysis question
+   * Load the text of a JSON-serialized ad-hoc question
    *
    * @param network The name of the network
    * @param question The name of the question
-   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
-   *     for an ad-hoc question
    * @throws IOException if there is some other error
    */
   @Nonnull
-  String loadQuestion(NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
-      throws IOException;
+  String loadQuestion(NetworkId network, QuestionId question) throws IOException;
 
   /**
    * Returns {@code true} iff the specified question exists.
    *
    * @param network The name of the network
    * @param question The name of the question
-   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
-   *     for an ad-hoc question
    */
-  boolean checkQuestionExists(
-      NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
+  boolean checkQuestionExists(NetworkId network, QuestionId question);
 
   /**
-   * Load the JSON-serialized answer to an ad-hoc or analysis question.
+   * Load the JSON-serialized answer to an ad-hoc question.
    *
    * @param network The id of the network
    * @param snapshot The id of the snapshot
@@ -211,7 +203,7 @@ public interface StorageProvider {
       throws FileNotFoundException, IOException;
 
   /**
-   * Load the metadata for the answer to an ad-hoc or analysis question.
+   * Load the metadata for the answer to an ad-hoc question.
    *
    * @param network The id of the network
    * @param snapshot The id of the snapshot
@@ -239,13 +231,9 @@ public interface StorageProvider {
    * @param questionStr The JSON-serialized text of the question
    * @param network The name of the network
    * @param question The name of the question
-   * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
-   *     for an ad-hoc question
    * @throws IOException if there is an error
    */
-  void storeQuestion(
-      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
-      throws IOException;
+  void storeQuestion(String questionStr, NetworkId network, QuestionId question) throws IOException;
 
   /** Returns {@code true} iff the specified network question exists. */
   boolean checkNetworkExists(NetworkId network);
@@ -257,38 +245,7 @@ public interface StorageProvider {
    * @throws IOException if there is an error reading the question class ID
    */
   @Nonnull
-  String loadQuestionClassId(NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
-      throws FileNotFoundException, IOException;
-
-  /**
-   * Returns {@code true} iff metadata for the analysis with specified ID exists.
-   *
-   * @param networkId The ID of the network
-   * @param analysisId The ID of the analysis
-   */
-  boolean hasAnalysisMetadata(NetworkId networkId, AnalysisId analysisId);
-
-  /**
-   * Stores metadata for the analysis in the given network.
-   *
-   * @param analysisMetadata The metadata to write
-   * @param networkId The ID of the network
-   * @param analysisId The ID of the analysis
-   */
-  void storeAnalysisMetadata(
-      AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
-      throws IOException;
-
-  /**
-   * Loads metadata for the analysis in the given network.
-   *
-   * @param networkId The ID of the network
-   * @param analysisId The ID of the analysis
-   * @throws FileNotFoundException if metadata does not exist
-   * @throws IOException if there is an error reading the metadata.
-   */
-  @Nonnull
-  String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
+  String loadQuestionClassId(NetworkId networkId, QuestionId questionId)
       throws FileNotFoundException, IOException;
 
   /**

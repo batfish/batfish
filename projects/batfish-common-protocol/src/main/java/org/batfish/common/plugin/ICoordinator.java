@@ -11,10 +11,5 @@ public interface ICoordinator {
 
   Set<String> getNetworkNames();
 
-  void initSnapshot(
-      String networkName,
-      String snapshotName,
-      Path srcDir,
-      boolean autoAnalyze,
-      Instant creationTime);
+  void initSnapshot(String networkName, String snapshotName, Path srcDir, Instant creationTime);
 }

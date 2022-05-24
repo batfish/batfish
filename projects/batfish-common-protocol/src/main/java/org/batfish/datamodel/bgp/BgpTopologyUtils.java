@@ -148,12 +148,14 @@ public final class BgpTopologyUtils {
       @Nullable TracerouteEngine tracerouteEngine,
       Map<String, Map<String, Fib>> fibs,
       L3Adjacencies l3Adjacencies) {
-    checkArgument(
-        !checkReachability || !keepInvalid,
-        "Cannot check reachability while keeping invalid peers");
-    checkArgument(
-        !checkReachability || tracerouteEngine != null,
-        "Cannot check reachability without a traceroute engine");
+    if (checkReachability) {
+      checkArgument(!keepInvalid, "Cannot check reachability while keeping invalid peers");
+      checkArgument(
+          tracerouteEngine != null, "Cannot check reachability without a traceroute engine");
+    } else {
+      checkArgument(
+          tracerouteEngine == null, "Unused traceroute engine when not checking reachability");
+    }
     // TODO: handle duplicate ips on different vrfs
 
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);

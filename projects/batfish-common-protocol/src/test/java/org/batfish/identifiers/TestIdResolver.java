@@ -6,18 +6,12 @@ import java.util.Set;
 public class TestIdResolver implements IdResolver {
 
   @Override
-  public Optional<AnalysisId> getAnalysisId(String analysis, NetworkId networkId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public AnswerId getAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
       NodeRolesId networkNodeRolesId,
-      SnapshotId referenceSnapshotId,
-      AnalysisId analysisId) {
+      SnapshotId referenceSnapshotId) {
     throw new UnsupportedOperationException();
   }
 
@@ -32,8 +26,7 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public Optional<QuestionId> getQuestionId(
-      String question, NetworkId networkId, AnalysisId analysisId) {
+  public Optional<QuestionId> getQuestionId(String question, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 
@@ -48,11 +41,6 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public boolean hasAnalysisId(String analysis, NetworkId networkId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public boolean hasNetworkId(String network) {
     throw new UnsupportedOperationException();
   }
@@ -63,7 +51,7 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public boolean hasQuestionId(String question, NetworkId networkId, AnalysisId analysisId) {
+  public boolean hasQuestionId(String question, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 
@@ -73,17 +61,12 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public Set<String> listAnalyses(NetworkId networkId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Set<String> listNetworks() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Set<String> listQuestions(NetworkId networkId, AnalysisId analysisId) {
+  public Set<String> listQuestions(NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 

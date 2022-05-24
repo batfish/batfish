@@ -119,13 +119,12 @@ public enum Command {
     descs.put(
         INIT_REFERENCE_SNAPSHOT,
         new CommandUsage(
-            "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
+            "<snapshot zipfile or directory> [<snapshot-name>]",
             "Initialize the reference snapshot"));
     descs.put(
         INIT_SNAPSHOT,
         new CommandUsage(
-            "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
-            "Initialize the snapshot"));
+            "<snapshot zipfile or directory> [<snapshot-name>]", "Initialize the snapshot"));
     descs.put(
         LOAD_QUESTIONS,
         new CommandUsage(
