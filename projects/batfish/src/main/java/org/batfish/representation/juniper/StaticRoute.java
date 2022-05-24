@@ -3,10 +3,12 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -25,9 +27,9 @@ public class StaticRoute implements Serializable {
 
   private int _metric;
 
-  private String _nextHopInterface;
+  @Nonnull private Set<String> _nextHopInterface;
 
-  private Ip _nextHopIp;
+  @Nonnull private Set<Ip> _nextHopIp;
 
   private List<String> _policies;
 
@@ -54,6 +56,8 @@ public class StaticRoute implements Serializable {
     // default admin costs for static routes in Juniper
     _distance = DEFAULT_ADMIN_DISTANCE;
     _qualifiedNextHops = new HashMap<>();
+    _nextHopInterface = new HashSet<>();
+    _nextHopIp = new HashSet<>();
   }
 
   public Set<Community> getCommunities() {
@@ -72,11 +76,11 @@ public class StaticRoute implements Serializable {
     return _metric;
   }
 
-  public String getNextHopInterface() {
+  public Set<String> getNextHopInterface() {
     return _nextHopInterface;
   }
 
-  public Ip getNextHopIp() {
+  public Set<Ip> getNextHopIp() {
     return _nextHopIp;
   }
 
@@ -109,20 +113,28 @@ public class StaticRoute implements Serializable {
     _distance = distance;
   }
 
-  public void setDrop(boolean drop) {
-    _drop = drop;
+  /** Clears other next hops and sets discard/drop for the route. */
+  public void setDrop() {
+    clearNextHops();
+    _drop = true;
   }
 
   public void setMetric(int metric) {
     _metric = metric;
   }
 
-  public void setNextHopInterface(String nextHopInterface) {
-    _nextHopInterface = nextHopInterface;
+  /** Adds a next hop interface for the route. Also clears the next table and discard property. */
+  public void addNextHopInterface(String nextHopInterface) {
+    _nextTable = null;
+    _drop = false;
+    _nextHopInterface.add(nextHopInterface);
   }
 
-  public void setNextHopIp(Ip nextHopIp) {
-    _nextHopIp = nextHopIp;
+  /** Adds a next hop IP for the route. Also clears the next table and discard property. */
+  public void addNextHopIp(Ip nextHopIp) {
+    _nextTable = null;
+    _drop = false;
+    _nextHopIp.add(nextHopIp);
   }
 
   public void setNoInstall(@Nullable Boolean noInstall) {
@@ -151,7 +163,19 @@ public class StaticRoute implements Serializable {
     return _nextTable;
   }
 
+  /** Clears other next hops and sets next table for the route. */
   public void setNextTable(@Nullable String nextTable) {
+    clearNextHops();
     _nextTable = nextTable;
+  }
+
+  /**
+   * Clear existing next hops. Used to make sure only one next hop field is set at any given time.
+   */
+  private void clearNextHops() {
+    _nextHopIp.clear();
+    _nextHopInterface.clear();
+    _nextTable = null;
+    _drop = false;
   }
 }

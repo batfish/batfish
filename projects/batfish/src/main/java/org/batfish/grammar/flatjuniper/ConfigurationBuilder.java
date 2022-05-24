@@ -5973,7 +5973,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_discard(Rosr_discardContext ctx) {
-    _currentStaticRoute.setDrop(true);
+    _currentStaticRoute.setDrop();
   }
 
   @Override
@@ -5986,10 +5986,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitRosr_next_hop(Rosr_next_hopContext ctx) {
     if (ctx.ip_address() != null) {
       Ip nextHopIp = toIp(ctx.ip_address());
-      _currentStaticRoute.setNextHopIp(nextHopIp);
+      _currentStaticRoute.addNextHopIp(nextHopIp);
     } else if (ctx.interface_id() != null) {
       String ifaceName = getInterfaceFullName(ctx.interface_id());
-      _currentStaticRoute.setNextHopInterface(ifaceName);
+      _currentStaticRoute.addNextHopInterface(ifaceName);
       _configuration.referenceStructure(
           INTERFACE,
           ifaceName,
@@ -6015,7 +6015,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_reject(Rosr_rejectContext ctx) {
-    _currentStaticRoute.setDrop(true);
+    _currentStaticRoute.setDrop();
   }
 
   @Override
