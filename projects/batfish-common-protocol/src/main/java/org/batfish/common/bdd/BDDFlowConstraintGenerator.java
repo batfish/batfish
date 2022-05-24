@@ -166,7 +166,6 @@ public final class BDDFlowConstraintGenerator {
   private final BddRefiner _tcpConstraints;
   private final BddRefiner _defaultPacketLength;
   private final BddRefiner _ipConstraints;
-  private final BDD _udpTraceroute;
 
   private final EnumMap<FlowPreference, BddRefiner> _refinerCache =
       new EnumMap<>(FlowPreference.class);
@@ -175,7 +174,6 @@ public final class BDDFlowConstraintGenerator {
     _bddPacket = pkt;
     _bddOps = new BDDOps(pkt.getFactory());
     _defaultPacketLength = refine(_bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH));
-    _udpTraceroute = computeUdpTraceroute();
     _icmpConstraints = computeICMPConstraint();
     _udpConstraints = computeUDPConstraints();
     _tcpConstraints = computeTCPConstraints();
@@ -218,7 +216,7 @@ public final class BDDFlowConstraintGenerator {
         // syn only
         refine(_bddOps.and(syn, notAck, notCwr, notEce, notPsh, notUrg, notFin, notRst)),
         // syn+ack only
-        refine(_bddOps.and(syn, notAck, notCwr, notEce, notPsh, notUrg, notFin, notRst)),
+        refine(_bddOps.and(syn, ack, notCwr, notEce, notPsh, notUrg, notFin, notRst)),
         // fall back to slow search
         refineAll(
             // Force all the rarely used flags off
@@ -273,22 +271,18 @@ public final class BDDFlowConstraintGenerator {
         refine(tcpPort.value(0).not()));
   }
 
-  private BDD computeUdpTraceroute() {
-    BDDInteger dstPort = _bddPacket.getDstPort();
-    BDDInteger srcPort = _bddPacket.getSrcPort();
-    BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
-    return _bddOps.and(
-        udp,
-        dstPort.range(UDP_TRACEROUTE_FIRST_PORT, UDP_TRACEROUTE_LAST_PORT),
-        srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
-  }
-
   // Get UDP packets with special named ports, trying to find cases where only one side is
   // ephemeral.
   private BddRefiner computeUDPConstraints() {
     BDDInteger dstPort = _bddPacket.getDstPort();
     BDDInteger srcPort = _bddPacket.getSrcPort();
     BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
+
+    BDD udpTraceroute =
+        _bddOps.and(
+            udp,
+            dstPort.range(UDP_TRACEROUTE_FIRST_PORT, UDP_TRACEROUTE_LAST_PORT),
+            srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
 
     BDD srcPortEphemeral = emphemeralPort(srcPort);
     BDD dstPortEphemeral = emphemeralPort(dstPort);
@@ -298,7 +292,7 @@ public final class BDDFlowConstraintGenerator {
     return refineFirst(
         udp,
         // Try for UDP traceroute.
-        refine(_udpTraceroute),
+        refine(udpTraceroute),
         // Next, try to nudge src and dst port apart. E.g., if one is ephemeral the other is not.
         refineFirst(srcPortEphemeral.diff(dstPortEphemeral), nonEphemeralDstPortPreferences),
         refineFirst(dstPortEphemeral.diff(srcPortEphemeral), nonEphemeralSrcPortPreferences),
@@ -337,18 +331,22 @@ public final class BDDFlowConstraintGenerator {
     BDD srcIpPrivate = isPrivateIp(_bddOps, _bddPacket.getSrcIpSpaceToBDD());
     BDD dstIpPrivate = isPrivateIp(_bddOps, _bddPacket.getDstIpSpaceToBDD());
 
+    BddRefiner publicDstIpPrefs = publicIpPreferences(_bddPacket.getDstIp());
+    BddRefiner publicSrcIpPrefs = publicIpPreferences(_bddPacket.getSrcIp());
     return refineAll(
         // 0. Try to not use documentation IPs if that is possible.
         refine(isDocumentationIp(_bddOps, _bddPacket.getSrcIpSpaceToBDD()).not()),
         refine(isDocumentationIp(_bddOps, _bddPacket.getDstIpSpaceToBDD()).not()),
 
-        // First, try to nudge src and dst IP apart. E.g., if one is private the other should be
+        // Try to nudge src and dst IP apart. E.g., if one is private the other should be
         // public.
         refineFirst(
-            refineFirst(
-                srcIpPrivate.diff(dstIpPrivate), publicIpPreferences(_bddPacket.getDstIp())),
-            refineFirst(
-                dstIpPrivate.diff(srcIpPrivate), publicIpPreferences(_bddPacket.getSrcIp()))));
+            // private --> public
+            refineFirst(srcIpPrivate.diff(dstIpPrivate), publicDstIpPrefs),
+            // public --> private
+            refineFirst(dstIpPrivate.diff(srcIpPrivate), publicSrcIpPrefs),
+            // public --> public
+            refineAll(dstIpPrivate.nor(srcIpPrivate), publicDstIpPrefs, publicSrcIpPrefs)));
   }
 
   public BddRefiner getFlowPreference(FlowPreference preference) {

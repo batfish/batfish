@@ -12,7 +12,8 @@ import net.sf.javabdd.BDD;
 public final class BDDRepresentativePicker {
 
   /**
-   * Picks a representative assignment, possibly from a combination of the given preference BDDs.
+   * Picks a representative assignment using the input {@link
+   * BDDFlowConstraintGenerator.BddRefiner}.
    */
   public static @Nonnull BDD pickRepresentative(
       BDD bdd, BDDFlowConstraintGenerator.BddRefiner preference) {
