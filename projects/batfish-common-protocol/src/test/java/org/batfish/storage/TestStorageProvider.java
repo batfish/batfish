@@ -17,7 +17,6 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -34,7 +33,6 @@ import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspConfigurationException;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
 import org.batfish.identifiers.NetworkId;
@@ -130,19 +128,17 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public String loadQuestion(NetworkId network, QuestionId analysis, AnalysisId question)
-      throws IOException {
+  public String loadQuestion(NetworkId network, QuestionId question) throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public boolean checkQuestionExists(NetworkId network, QuestionId question, AnalysisId analysis) {
+  public boolean checkQuestionExists(NetworkId network, QuestionId question) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public void storeQuestion(
-      String questionStr, NetworkId network, QuestionId question, AnalysisId analysis)
+  public void storeQuestion(String questionStr, NetworkId network, QuestionId question)
       throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
@@ -185,26 +181,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public String loadQuestionClassId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
-      throws FileNotFoundException, IOException {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
-  public boolean hasAnalysisMetadata(NetworkId networkId, AnalysisId analysisId) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
-  public void storeAnalysisMetadata(
-      AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
-      throws IOException {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
-  public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
+  public String loadQuestionClassId(NetworkId networkId, QuestionId questionId)
       throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }

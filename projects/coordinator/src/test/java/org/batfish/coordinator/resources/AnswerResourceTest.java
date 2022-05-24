@@ -71,21 +71,6 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
             snapshot));
   }
 
-  private Builder getAnalysisAnswerTarget(
-      String network, String question, String analysis, @Nullable String snapshot) {
-    return addHeader(
-        addSnapshotQuery(
-            target(CoordConsts.SVC_CFG_WORK_MGR2)
-                .path(CoordConstsV2.RSC_NETWORKS)
-                .path(network)
-                .path(CoordConstsV2.RSC_ANALYSES)
-                .path(analysis)
-                .path(CoordConstsV2.RSC_QUESTIONS)
-                .path(question)
-                .path(CoordConstsV2.RSC_ANSWER),
-            snapshot));
-  }
-
   private static WebTarget addSnapshotQuery(WebTarget webTarget, @Nullable String snapshot) {
     return snapshot == null ? webTarget : webTarget.queryParam("snapshot", snapshot);
   }
@@ -113,33 +98,10 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     Answer expectedAnswer = new Answer();
     expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
-    setupQuestionAndAnswer(network, snapshot, question, null, expectedAnswer);
+    setupQuestionAndAnswer(network, snapshot, question, expectedAnswer);
 
     try (Response response = getAnswerTarget(network, question, snapshot).get()) {
       // Confirm the existing answer is successfully fetched
-      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-      assertThat(
-          BatfishObjectMapper.writeString(response.readEntity(Answer.class)),
-          equalTo(expectedAnswerString));
-    }
-  }
-
-  @Test
-  public void testGetAnalysisAnswer() throws IOException {
-    String network = "network";
-    String analysis = "analysis";
-    String snapshot = "snapshot";
-    String question = "question";
-
-    Main.getWorkMgr().initNetwork(network, null);
-    uploadTestSnapshot(network, snapshot, _folder);
-    Answer expectedAnswer = new Answer();
-    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
-    String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
-    setupQuestionAndAnswer(network, snapshot, question, analysis, expectedAnswer);
-
-    try (Response response = getAnalysisAnswerTarget(network, question, analysis, snapshot).get()) {
-      // Confirm the existing analysis answer is successfully fetched
       assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
       assertThat(
           BatfishObjectMapper.writeString(response.readEntity(Answer.class)),
@@ -230,7 +192,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     // Setup infrastructure + answer
     Main.getWorkMgr().initNetwork(network, null);
     uploadTestSnapshot(network, snapshot, _folder);
-    setupQuestionAndAnswer(network, snapshot, question, null, baseAnswer);
+    setupQuestionAndAnswer(network, snapshot, question, baseAnswer);
 
     // expectedAnswer is same as baseAnswer but only contains the first row
     TableViewRow expectedRow = new TableViewRow(0, Row.of("colName", "value1"));
@@ -280,7 +242,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     // Setup infrastructure + answer
     Main.getWorkMgr().initNetwork(network, null);
     uploadTestSnapshot(network, snapshot, _folder);
-    setupQuestionAndAnswer(network, snapshot, question, null, baseAnswer);
+    setupQuestionAndAnswer(network, snapshot, question, baseAnswer);
 
     // expectedAnswer just contains a TableView with the same rows as baseAnswer
     TableView expectedTableView =
@@ -315,7 +277,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
 
     Main.getWorkMgr().initNetwork(network, null);
     uploadTestSnapshot(network, snapshot, _folder);
-    setupQuestionAndAnswer(network, snapshot, question, null, new Answer());
+    setupQuestionAndAnswer(network, snapshot, question, new Answer());
 
     // Post arbitrary item that is not an AnswerRowsOptions object
     try (Response responseBadFilter =

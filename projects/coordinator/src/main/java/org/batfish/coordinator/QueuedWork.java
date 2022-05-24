@@ -130,9 +130,6 @@ public class QueuedWork {
     if (_details.getQuestionId() != null) {
       params.put(BfConsts.ARG_QUESTION_NAME, _details.getQuestionId().getId());
     }
-    if (_details.getAnalysisId() != null) {
-      params.put(BfConsts.ARG_ANALYSIS_NAME, _details.getAnalysisId().getId());
-    }
     if (_details.getReferenceSnapshotId() != null) {
       params.put(BfConsts.ARG_DELTA_TESTRIG, _details.getReferenceSnapshotId().getId());
     }

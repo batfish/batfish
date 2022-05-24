@@ -3,7 +3,6 @@ package org.batfish.coordinator;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -11,20 +10,15 @@ import static org.junit.Assert.fail;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import javax.ws.rs.core.Response;
-import org.apache.commons.io.FileUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.ColumnFilter;
@@ -39,12 +33,9 @@ import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.Question;
@@ -54,7 +45,6 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.table.TableView;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
@@ -69,9 +59,6 @@ import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link WorkMgrService}. */
 public class WorkMgrServiceTest {
-
-  private static TableMetadata MOCK_TABLE_METADATA =
-      new TableMetadata(ImmutableList.of(new ColumnMetadata("col", Schema.STRING, "desc")));
 
   @Rule public TemporaryFolder _networksFolder = new TemporaryFolder();
   @Rule public TemporaryFolder _questionsTemplatesFolder = new TemporaryFolder();
@@ -141,137 +128,6 @@ public class WorkMgrServiceTest {
           Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
       assertThat(network, equalTo(expected));
     }
-  }
-
-  @Test
-  public void testConfigureAnalysis() throws Exception {
-    initNetwork();
-    // test init and add questions to analysis
-    String questionName = "q1";
-    String analysisName = "analysis";
-    String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"questionContent\"}}", questionName);
-    File analysisFile = _networksFolder.newFile("analysis");
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysisName,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
-    assertTrue(idm().hasQuestionId(questionName, _networkId, analysisId));
-    // test delete questions
-    String questionsToDelete = String.format("[%s]", questionName);
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "",
-        analysisName,
-        null,
-        questionsToDelete,
-        null);
-    assertFalse(idm().hasQuestionId(questionName, _networkId, analysisId));
-    JSONArray result =
-        _service.configureAnalysis(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            "",
-            "analysis",
-            null,
-            questionsToDelete,
-            null);
-    assertThat(result.getString(0), equalTo(CoordConsts.SVC_KEY_FAILURE));
-  }
-
-  @Test
-  public void testGetAnalysisAnswer() throws Exception {
-    initNetwork();
-    initSnapshot();
-    String analysisName = "analysis1";
-    String questionName = "question1";
-    Question questionObj = new TestQuestion();
-    String questionContent = BatfishObjectMapper.writeString(questionObj);
-    String question2Name = "question2Name";
-
-    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
-    File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysisName,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
-    AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                analysisId);
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    TableAnswerElement table = new TableAnswerElement(MOCK_TABLE_METADATA);
-    table.postProcessAnswer(questionObj, table.getRows().getData());
-    testAnswer.addAnswerElement(table);
-    testAnswer.setQuestion(questionObj);
-    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
-    AnswerMetadata answerMetadata =
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
-
-    WorkItem workItem = new WorkItem(_networkName, _snapshotName);
-    String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
-
-    JSONArray answer1Output =
-        _service.getAnalysisAnswer(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            analysisName,
-            questionName,
-            workItemString);
-
-    JSONArray answer2Output =
-        _service.getAnalysisAnswer(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            analysisName,
-            question2Name,
-            null);
-
-    assertThat(answer1Output.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
-    assertThat(answer2Output.get(0), equalTo(CoordConsts.SVC_KEY_FAILURE));
-
-    JSONObject answerJsonObject = (JSONObject) answer1Output.get(1);
-    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
-    String answerString =
-        BatfishObjectMapper.mapper().readValue(answerJsonString, new TypeReference<String>() {});
-    assertThat(
-        BatfishObjectMapper.mapper().readTree(answerString),
-        equalTo(BatfishObjectMapper.mapper().readTree(testAnswerStr)));
   }
 
   @Test
@@ -382,494 +238,6 @@ public class WorkMgrServiceTest {
     }
   }
 
-  @Test
-  public void testConfigureAnalysisInContainer() throws Exception {
-    initNetwork();
-    // test init and add questions to analysis
-    String questionName = "q1";
-    String analysisName = "a1";
-    String analysisJsonString =
-        String.format("{\"%s\":{\"question\":\"questionContent\"}}", questionName);
-    File analysisFile = _networksFolder.newFile("analysis");
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysisName,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
-    assertTrue(idm().hasQuestionId(questionName, _networkId, analysisId));
-    // test delete questions
-    String questionsToDelete = String.format("[%s]", questionName);
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "",
-        analysisName,
-        null,
-        questionsToDelete,
-        null);
-    assertFalse(idm().hasQuestionId(questionName, _networkId, analysisId));
-    JSONArray result =
-        _service.configureAnalysis(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            "",
-            "analysis",
-            null,
-            questionsToDelete,
-            null);
-    assertThat(result.getString(0), equalTo(CoordConsts.SVC_KEY_FAILURE));
-  }
-
-  @Test
-  public void testGetAnalysisAnswerInContainer() throws Exception {
-    initNetwork();
-    initSnapshot();
-    String analysisName = "analysis1";
-    String questionName = "question1";
-    Question questionObj = new TestQuestion();
-    String questionContent = BatfishObjectMapper.writeString(questionObj);
-    String question2Name = "question2Name";
-
-    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
-    File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysisName,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
-    AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                analysisId);
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    testAnswer.addAnswerElement(new StringAnswerElement("foo"));
-    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
-    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(
-            _networkId,
-            _snapshotId,
-            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()),
-            answerId);
-
-    WorkItem workItem = new WorkItem(_networkName, _snapshotName);
-    String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
-
-    JSONArray answer1Output =
-        _service.getAnalysisAnswer(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            analysisName,
-            questionName,
-            workItemString);
-
-    JSONArray answer2Output =
-        _service.getAnalysisAnswer(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            analysisName,
-            question2Name,
-            null);
-
-    assertThat(answer1Output.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
-    assertThat(answer2Output.get(0), equalTo(CoordConsts.SVC_KEY_FAILURE));
-
-    JSONObject answerJsonObject = (JSONObject) answer1Output.get(1);
-    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
-    String answerString =
-        BatfishObjectMapper.mapper().readValue(answerJsonString, new TypeReference<String>() {});
-    assertThat(answerString, equalTo(testAnswerStr));
-  }
-
-  @Test
-  public void testGetAnalysisAnswersMetrics() throws Exception {
-    initNetwork();
-    initSnapshot();
-    String analysisName = "analysis1";
-    String questionName = "question1";
-    Question questionObj = new TestQuestion();
-    String questionContent = BatfishObjectMapper.writeString(questionObj);
-    String analysisQuestionsStr =
-        BatfishObjectMapper.writePrettyString(ImmutableList.of(questionName));
-
-    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
-    File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysisName,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
-    AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                analysisId);
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    testAnswer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
-    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
-    AnswerMetadata answerMetadata =
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
-
-    JSONArray answerOutput =
-        _service.getAnalysisAnswersMetrics(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            analysisName,
-            analysisQuestionsStr,
-            null);
-
-    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
-
-    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
-    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
-    GetAnalysisAnswerMetricsAnswer structuredAnswer =
-        BatfishObjectMapper.mapper()
-            .readValue(answerJsonString, new TypeReference<GetAnalysisAnswerMetricsAnswer>() {});
-    assertThat(
-        structuredAnswer,
-        equalTo(new GetAnalysisAnswerMetricsAnswer(ImmutableMap.of(questionName, answerMetadata))));
-  }
-
-  @Test
-  public void testGetAnalysisAnswersRows() throws Exception {
-    initNetwork();
-    initSnapshot();
-    String analysisName = "analysis1";
-    String questionName = "question1";
-    Question questionObj = new TestQuestion();
-    String questionContent = BatfishObjectMapper.writeString(questionObj);
-    String columnName = "col";
-    Map<String, AnswerRowsOptions> analysisAnswersOptions =
-        ImmutableMap.of(
-            questionName,
-            new AnswerRowsOptions(
-                ImmutableSet.of(columnName),
-                ImmutableList.of(new ColumnFilter(columnName, "", false)),
-                Integer.MAX_VALUE,
-                0,
-                ImmutableList.of(new ColumnSortOption(columnName, false)),
-                false));
-    String analysisAnswersOptionsStr =
-        BatfishObjectMapper.writePrettyString(analysisAnswersOptions);
-
-    int value = 5;
-
-    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
-    File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysisName,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
-    AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                analysisId);
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
-    AnswerMetadata answerMetadata =
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
-
-    JSONArray answerOutput =
-        _service.getAnalysisAnswersRows(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            analysisName,
-            analysisAnswersOptionsStr,
-            null);
-
-    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
-
-    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
-    String answersJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWERS);
-    Map<String, Answer> structuredAnswers =
-        BatfishObjectMapper.mapper()
-            .readValue(answersJsonString, new TypeReference<Map<String, Answer>>() {});
-
-    assertThat(structuredAnswers.keySet(), equalTo(ImmutableSet.of(questionName)));
-
-    Answer processedAnswer = structuredAnswers.get(questionName);
-    TableAnswerElement processedTable =
-        (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
-
-    assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
-  }
-
-  @Test
-  public void testGetAnswerMetricsAnalysis() throws Exception {
-    initNetwork();
-    initSnapshot();
-    String analysisName = "analysis1";
-    String questionName = "question1";
-    Question questionObj = new TestQuestion();
-    String questionContent = BatfishObjectMapper.writeString(questionObj);
-
-    String analysisJsonString = String.format("{\"%s\":%s}", questionName, questionContent);
-    File analysisFile = _networksFolder.newFile(analysisName);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysisName,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
-    AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                analysisId);
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    testAnswer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
-    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
-    AnswerMetadata answerMetadata =
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
-
-    JSONArray answerOutput =
-        _service.getAnswerMetrics(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            analysisName,
-            questionName,
-            null);
-
-    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
-
-    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
-    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
-    AnswerMetadata structuredAnswer =
-        BatfishObjectMapper.mapper()
-            .readValue(answerJsonString, new TypeReference<AnswerMetadata>() {});
-    assertThat(structuredAnswer, equalTo(answerMetadata));
-  }
-
-  @Test
-  public void testGetAnswerMetricsAdHoc() throws Exception {
-    initNetwork();
-    initSnapshot();
-    String question = "question1";
-    Question questionObj = new TestQuestion();
-    String questionContent = BatfishObjectMapper.writeString(questionObj);
-
-    Main.getWorkMgr().uploadQuestion(_networkName, question, questionContent);
-    QuestionId questionId = idm().getQuestionId(question, _networkId, null).get();
-    AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
-    Answer testAnswer = new Answer();
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    testAnswer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
-    String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
-    AnswerMetadata answerMetadata =
-        AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
-
-    JSONArray answerOutput =
-        _service.getAnswerMetrics(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            null,
-            question,
-            null);
-
-    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
-
-    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
-    String answerJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
-    AnswerMetadata structuredAnswer =
-        BatfishObjectMapper.mapper()
-            .readValue(answerJsonString, new TypeReference<AnswerMetadata>() {});
-    assertThat(structuredAnswer, equalTo(answerMetadata));
-  }
-
-  @Test
-  public void testGetAnswerRowsAnalysis() throws Exception {
-    initNetwork();
-    initSnapshot();
-    String analysis = "analysis1";
-    String question = "question1";
-    Question questionObj = new TestQuestion();
-    String questionContent = BatfishObjectMapper.writeString(questionObj);
-    String columnName = "col";
-    AnswerRowsOptions answersRowsOptions =
-        new AnswerRowsOptions(
-            ImmutableSet.of(columnName),
-            ImmutableList.of(new ColumnFilter(columnName, "", false)),
-            Integer.MAX_VALUE,
-            0,
-            ImmutableList.of(new ColumnSortOption(columnName, false)),
-            false);
-    String answerRowsOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
-    int value = 5;
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
-
-    String analysisJsonString = String.format("{\"%s\":%s}", question, questionContent);
-    File analysisFile = _networksFolder.newFile(analysis);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysis,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId).get();
-    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId).get();
-    AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                analysisId);
-
-    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, answer, answerId);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(
-            _networkId,
-            _snapshotId,
-            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()),
-            answerId);
-
-    JSONArray answerOutput =
-        _service.getAnswerRows(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            question,
-            analysis,
-            answerRowsOptionsStr,
-            null);
-
-    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
-
-    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
-    String answersJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
-    Answer processedAnswer =
-        BatfishObjectMapper.mapper().readValue(answersJsonString, new TypeReference<Answer>() {});
-
-    TableAnswerElement processedTable =
-        (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
-
-    assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
-  }
-
   private static IdManager idm() {
     return Main.getWorkMgr().getIdManager();
   }
@@ -904,12 +272,10 @@ public class WorkMgrServiceTest {
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     String answer = BatfishObjectMapper.writePrettyString(testAnswer);
 
-    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkId, questionId, null);
-    idm().assignQuestion(question, _networkId, questionId, null);
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkId, questionId);
+    idm().assignQuestion(question, _networkId, questionId);
     AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
+        idm().getAnswerId(_networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null);
     Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, answer, answerId);
     Main.getWorkMgr()
         .getStorage()
@@ -927,7 +293,6 @@ public class WorkMgrServiceTest {
             _snapshotName,
             null,
             question,
-            null,
             answerRowsOptionsStr,
             null);
 
@@ -942,93 +307,6 @@ public class WorkMgrServiceTest {
         (TableAnswerElement) processedAnswer.getAnswerElements().get(0);
 
     assertThat(processedTable.getRowsList(), equalTo(ImmutableList.of(Row.of(columnName, value))));
-  }
-
-  @Test
-  public void testGetAnswerRows2Analysis() throws Exception {
-    initNetwork();
-    initSnapshot();
-    String analysis = "analysis1";
-    String question = "question1";
-    Question questionObj = new TestQuestion();
-    String questionContent = BatfishObjectMapper.writeString(questionObj);
-    String columnName = "col";
-    AnswerRowsOptions answersRowsOptions =
-        new AnswerRowsOptions(
-            ImmutableSet.of(columnName),
-            ImmutableList.of(new ColumnFilter(columnName, "", false)),
-            Integer.MAX_VALUE,
-            0,
-            ImmutableList.of(new ColumnSortOption(columnName, false)),
-            false);
-    String answerRowsOptionsStr = BatfishObjectMapper.writePrettyString(answersRowsOptions);
-    int value = 5;
-    Answer testAnswer = new Answer();
-    testAnswer.addAnswerElement(
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value)));
-    testAnswer.setStatus(AnswerStatus.SUCCESS);
-    String answer = BatfishObjectMapper.writePrettyString(testAnswer);
-
-    String analysisJsonString = String.format("{\"%s\":%s}", question, questionContent);
-    File analysisFile = _networksFolder.newFile(analysis);
-    FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
-
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        BatfishVersion.getVersionStatic(),
-        _networkName,
-        "new",
-        analysis,
-        new FileInputStream(analysisFile),
-        "",
-        null);
-    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId).get();
-    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId).get();
-    AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                analysisId);
-
-    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, answer, answerId);
-    Main.getWorkMgr()
-        .getStorage()
-        .storeAnswerMetadata(
-            _networkId,
-            _snapshotId,
-            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()),
-            answerId);
-
-    JSONArray answerOutput =
-        _service.getAnswerRows2(
-            CoordConsts.DEFAULT_API_KEY,
-            BatfishVersion.getVersionStatic(),
-            _networkName,
-            _snapshotName,
-            null,
-            question,
-            analysis,
-            answerRowsOptionsStr,
-            null);
-
-    assertThat(answerOutput.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
-
-    JSONObject answerJsonObject = (JSONObject) answerOutput.get(1);
-    String answersJsonString = answerJsonObject.getString(CoordConsts.SVC_KEY_ANSWER);
-    Answer processedAnswer =
-        BatfishObjectMapper.mapper().readValue(answersJsonString, new TypeReference<Answer>() {});
-
-    TableView processedTable = (TableView) processedAnswer.getAnswerElements().get(0);
-
-    assertThat(processedTable.getInnerRows(), equalTo(ImmutableList.of(Row.of(columnName, value))));
   }
 
   @Test
@@ -1061,12 +339,10 @@ public class WorkMgrServiceTest {
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     String answer = BatfishObjectMapper.writePrettyString(testAnswer);
 
-    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkId, questionId, null);
-    idm().assignQuestion(question, _networkId, questionId, null);
+    Main.getWorkMgr().getStorage().storeQuestion(questionContent, _networkId, questionId);
+    idm().assignQuestion(question, _networkId, questionId);
     AnswerId answerId =
-        idm()
-            .getAnswerId(
-                _networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
+        idm().getAnswerId(_networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null);
     Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, answer, answerId);
     Main.getWorkMgr()
         .getStorage()
@@ -1084,7 +360,6 @@ public class WorkMgrServiceTest {
             _snapshotName,
             null,
             question,
-            null,
             answerRowsOptionsStr,
             null);
 
