@@ -191,6 +191,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasEntry;
@@ -5708,13 +5709,14 @@ public final class FlatJuniperGrammarTest {
 
     // Old next-hops are cleared
     assertFalse(r0.getDrop());
-    assertNull(r1.getNextHopIp());
-    assertNull(r2.getNextHopInterface());
+    assertNull(r1.getNextTable());
+    assertThat(r2.getNextHopIp(), emptyIterable());
+    assertThat(r2.getNextHopInterface(), emptyIterable());
     assertNull(r3.getNextTable());
 
     // New next-hops are set
-    assertThat(r0.getNextHopIp(), equalTo(Ip.parse("10.0.0.1")));
-    assertThat(r1.getNextHopInterface(), equalTo("ge-0/0/0.0"));
+    assertThat(r0.getNextHopIp(), contains(Ip.parse("10.0.0.1")));
+    assertThat(r1.getNextHopInterface(), contains("ge-0/0/0.0"));
     assertThat(r2.getNextTable(), equalTo("ri2.inet.0"));
     assertTrue(r3.getDrop());
   }
@@ -5744,6 +5746,18 @@ public final class FlatJuniperGrammarTest {
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("4.0.0.0/8"))
                             .setNextHopInterface("ge-0/0/0.0")
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("4.0.0.0/8"))
+                            .setNextHopIp(Ip.parse("10.0.0.1"))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("4.0.0.0/8"))
+                            .setNextHopIp(Ip.parse("10.0.0.2"))
                             .setAdministrativeCost(5)
                             .setRecursive(false)
                             .build(),
