@@ -34,7 +34,7 @@ public final class BDDFlowConstraintGenerator {
     TRACEROUTE
   }
 
-  public interface PreferenceRefiner {
+  public interface BddRefiner {
     /**
      * @param bdd such that bdd.isZero() returns false.
      * @return a BDD not == to the input. if isZero(), then the input bdd does not satisfy the
@@ -44,32 +44,32 @@ public final class BDDFlowConstraintGenerator {
   }
 
   /**
-   * A {@link PreferenceRefiner} that returns after the first sub-refiner successfully refines the
-   * input. This is useful for an ordered list of mutually-exclusive preferences: once the first
-   * preference consistent with the input is found, we can skip the rest.
+   * A {@link BddRefiner} that returns after the first sub-refiner successfully refines the input.
+   * This is useful for an ordered list of mutually-exclusive preferences: once the first preference
+   * consistent with the input is found, we can skip the rest.
    */
-  static final class RefineFirst implements PreferenceRefiner {
+  static final class RefineFirst implements BddRefiner {
     private final @Nullable BDD _guard;
-    private final List<PreferenceRefiner> _children;
+    private final List<BddRefiner> _children;
 
-    private RefineFirst(BDD guard, List<PreferenceRefiner> children) {
+    private RefineFirst(BDD guard, List<BddRefiner> children) {
       _guard = guard;
       _children = ImmutableList.copyOf(children);
     }
 
-    static RefineFirst refineFirst(List<PreferenceRefiner> children) {
+    static RefineFirst refineFirst(List<BddRefiner> children) {
       return new RefineFirst(null, children);
     }
 
-    static RefineFirst refineFirst(BDD guard, List<PreferenceRefiner> children) {
+    static RefineFirst refineFirst(BDD guard, List<BddRefiner> children) {
       return new RefineFirst(guard, children);
     }
 
-    static RefineFirst refineFirst(BDD guard, PreferenceRefiner... children) {
+    static RefineFirst refineFirst(BDD guard, BddRefiner... children) {
       return new RefineFirst(guard, ImmutableList.copyOf(children));
     }
 
-    static RefineFirst refineFirst(PreferenceRefiner... children) {
+    static RefineFirst refineFirst(BddRefiner... children) {
       return new RefineFirst(null, ImmutableList.copyOf(children));
     }
 
@@ -79,7 +79,7 @@ public final class BDDFlowConstraintGenerator {
       if (matchGuard.isZero()) {
         return matchGuard;
       }
-      for (PreferenceRefiner child : _children) {
+      for (BddRefiner child : _children) {
         BDD matchChild = child.refine(matchGuard);
         if (matchChild.isZero()) {
           matchChild.free();
@@ -94,29 +94,29 @@ public final class BDDFlowConstraintGenerator {
   }
 
   /**
-   * A {@link PreferenceRefiner} that tries to refine the input using an ordered list of
-   * sub-refiners. Each refiner is considered in order. At each step, if that sub-refiner is
-   * consistent with the current BDD, its refinement is adopted and we continue to the next
-   * sub-refiner. If it is inconsistent, ignore it and continue.
+   * A {@link BddRefiner} that tries to refine the input using an ordered list of sub-refiners. Each
+   * refiner is considered in order. At each step, if that sub-refiner is consistent with the
+   * current BDD, its refinement is adopted and we continue to the next sub-refiner. If it is
+   * inconsistent, ignore it and continue.
    *
    * <p>This is useful for a collection of preferences that are not mutually-exclusive. Note that
    * order is still important, because the input BDD may be consistent with two preferences
    * separately but not together.
    */
-  static final class RefineAll implements PreferenceRefiner {
+  static final class RefineAll implements BddRefiner {
     private final @Nullable BDD _guard;
-    private final List<PreferenceRefiner> _children;
+    private final List<BddRefiner> _children;
 
-    private RefineAll(@Nullable BDD guard, List<PreferenceRefiner> children) {
+    private RefineAll(@Nullable BDD guard, List<BddRefiner> children) {
       _guard = guard;
       _children = ImmutableList.copyOf(children);
     }
 
-    static RefineAll refineAll(BDD guard, PreferenceRefiner... children) {
+    static RefineAll refineAll(BDD guard, BddRefiner... children) {
       return new RefineAll(guard, ImmutableList.copyOf(children));
     }
 
-    static RefineAll refineAll(PreferenceRefiner... children) {
+    static RefineAll refineAll(BddRefiner... children) {
       return new RefineAll(null, ImmutableList.copyOf(children));
     }
 
@@ -127,7 +127,7 @@ public final class BDDFlowConstraintGenerator {
         return res;
       }
 
-      for (PreferenceRefiner child : _children) {
+      for (BddRefiner child : _children) {
         BDD tmp = child.refine(res);
         if (tmp.isZero()) {
           tmp.free();
@@ -161,14 +161,14 @@ public final class BDDFlowConstraintGenerator {
 
   private final BDDPacket _bddPacket;
   private final BDDOps _bddOps;
-  private final PreferenceRefiner _icmpConstraints;
-  private final PreferenceRefiner _udpConstraints;
-  private final PreferenceRefiner _tcpConstraints;
-  private final PreferenceRefiner _defaultPacketLength;
-  private final PreferenceRefiner _ipConstraints;
+  private final BddRefiner _icmpConstraints;
+  private final BddRefiner _udpConstraints;
+  private final BddRefiner _tcpConstraints;
+  private final BddRefiner _defaultPacketLength;
+  private final BddRefiner _ipConstraints;
   private final BDD _udpTraceroute;
 
-  private final EnumMap<FlowPreference, PreferenceRefiner> _refinerCache =
+  private final EnumMap<FlowPreference, BddRefiner> _refinerCache =
       new EnumMap<>(FlowPreference.class);
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
@@ -182,7 +182,7 @@ public final class BDDFlowConstraintGenerator {
     _ipConstraints = computeIpConstraints();
   }
 
-  private PreferenceRefiner computeICMPConstraint() {
+  private BddRefiner computeICMPConstraint() {
     BDD icmp = _bddPacket.getIpProtocol().value(IpProtocol.ICMP);
     BDDIcmpType type = _bddPacket.getIcmpType();
     BDD codeZero = _bddPacket.getIcmpCode().value(0);
@@ -195,7 +195,7 @@ public final class BDDFlowConstraintGenerator {
     return portInteger.geq(NamedPort.EPHEMERAL_LOWEST.number());
   }
 
-  private PreferenceRefiner tcpNonEphemeralPortPreferences(BDDInteger tcpPort) {
+  private BddRefiner tcpNonEphemeralPortPreferences(BDDInteger tcpPort) {
     return refineFirst(
         refine(tcpPort.value(NamedPort.HTTP.number())),
         refine(tcpPort.value(NamedPort.HTTPS.number())),
@@ -204,7 +204,7 @@ public final class BDDFlowConstraintGenerator {
         refine(tcpPort.value(0).not()));
   }
 
-  private PreferenceRefiner tcpFlagPreferences() {
+  private BddRefiner tcpFlagPreferences() {
     BDD syn = _bddPacket.getTcpSyn();
     BDD ack = _bddPacket.getTcpAck();
     BDD notAck = ack.not();
@@ -238,7 +238,7 @@ public final class BDDFlowConstraintGenerator {
 
   // Get TCP packets with special named ports, trying to find cases where only one side is
   // ephemeral.
-  private PreferenceRefiner computeTCPConstraints() {
+  private BddRefiner computeTCPConstraints() {
     BDDInteger dstPort = _bddPacket.getDstPort();
     BDDInteger srcPort = _bddPacket.getSrcPort();
     BDD tcp = _bddPacket.getIpProtocol().value(IpProtocol.TCP);
@@ -246,8 +246,8 @@ public final class BDDFlowConstraintGenerator {
     BDD srcPortEphemeral = emphemeralPort(srcPort);
     BDD dstPortEphemeral = emphemeralPort(dstPort);
 
-    PreferenceRefiner nonEphemeralDstPortPreferences = tcpNonEphemeralPortPreferences(dstPort);
-    PreferenceRefiner nonEphemeralSrcPortPreferences = tcpNonEphemeralPortPreferences(srcPort);
+    BddRefiner nonEphemeralDstPortPreferences = tcpNonEphemeralPortPreferences(dstPort);
+    BddRefiner nonEphemeralSrcPortPreferences = tcpNonEphemeralPortPreferences(srcPort);
 
     return refineAll(
         tcp,
@@ -264,7 +264,7 @@ public final class BDDFlowConstraintGenerator {
         tcpFlagPreferences());
   }
 
-  private PreferenceRefiner udpNonEphemeralPortPreferences(BDDInteger tcpPort) {
+  private BddRefiner udpNonEphemeralPortPreferences(BDDInteger tcpPort) {
     return refineFirst(
         refine(tcpPort.value(NamedPort.DOMAIN.number())),
         refine(tcpPort.value(NamedPort.SNMP.number())),
@@ -285,7 +285,7 @@ public final class BDDFlowConstraintGenerator {
 
   // Get UDP packets with special named ports, trying to find cases where only one side is
   // ephemeral.
-  private PreferenceRefiner computeUDPConstraints() {
+  private BddRefiner computeUDPConstraints() {
     BDDInteger dstPort = _bddPacket.getDstPort();
     BDDInteger srcPort = _bddPacket.getSrcPort();
     BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
@@ -293,8 +293,8 @@ public final class BDDFlowConstraintGenerator {
     BDD srcPortEphemeral = emphemeralPort(srcPort);
     BDD dstPortEphemeral = emphemeralPort(dstPort);
 
-    PreferenceRefiner nonEphemeralDstPortPreferences = udpNonEphemeralPortPreferences(dstPort);
-    PreferenceRefiner nonEphemeralSrcPortPreferences = udpNonEphemeralPortPreferences(srcPort);
+    BddRefiner nonEphemeralDstPortPreferences = udpNonEphemeralPortPreferences(dstPort);
+    BddRefiner nonEphemeralSrcPortPreferences = udpNonEphemeralPortPreferences(srcPort);
     return refineFirst(
         udp,
         // Try for UDP traceroute.
@@ -322,7 +322,7 @@ public final class BDDFlowConstraintGenerator {
         ip.toBDD(RESERVED_DOCUMENTATION_203));
   }
 
-  private static PreferenceRefiner publicIpPreferences(BDDInteger ipInteger) {
+  private static BddRefiner publicIpPreferences(BDDInteger ipInteger) {
     return refineFirst(
         // First, one of the special IPs.
         refine(ipInteger.value(Ip.parse("8.8.8.8").asLong())),
@@ -333,7 +333,7 @@ public final class BDDFlowConstraintGenerator {
         refine(ipInteger.leq(Ip.parse("126.255.255.254").asLong())));
   }
 
-  private PreferenceRefiner computeIpConstraints() {
+  private BddRefiner computeIpConstraints() {
     BDD srcIpPrivate = isPrivateIp(_bddOps, _bddPacket.getSrcIpSpaceToBDD());
     BDD dstIpPrivate = isPrivateIp(_bddOps, _bddPacket.getDstIpSpaceToBDD());
 
@@ -351,11 +351,11 @@ public final class BDDFlowConstraintGenerator {
                 dstIpPrivate.diff(srcIpPrivate), publicIpPreferences(_bddPacket.getSrcIp()))));
   }
 
-  public PreferenceRefiner getFlowPreference(FlowPreference preference) {
+  public BddRefiner getFlowPreference(FlowPreference preference) {
     return _refinerCache.computeIfAbsent(preference, this::generateFlowPreference);
   }
 
-  private PreferenceRefiner generateFlowPreference(FlowPreference preference) {
+  private BddRefiner generateFlowPreference(FlowPreference preference) {
     switch (preference) {
       case DEBUGGING:
         return refineAll(

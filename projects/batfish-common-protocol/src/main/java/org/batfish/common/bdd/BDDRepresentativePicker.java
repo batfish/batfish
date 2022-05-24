@@ -15,7 +15,7 @@ public final class BDDRepresentativePicker {
    * Picks a representative assignment, possibly from a combination of the given preference BDDs.
    */
   public static @Nonnull BDD pickRepresentative(
-      BDD bdd, BDDFlowConstraintGenerator.PreferenceRefiner preference) {
+      BDD bdd, BDDFlowConstraintGenerator.BddRefiner preference) {
     if (bdd.isZero()) {
       return bdd;
     }

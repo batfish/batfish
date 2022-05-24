@@ -49,7 +49,7 @@ public class BDDFlowConstraintGeneratorTest {
     BDDIpProtocol ipProtocol = pkt.getIpProtocol();
     BDD tcp = ipProtocol.value(IpProtocol.TCP);
 
-    BDDFlowConstraintGenerator.PreferenceRefiner refiner =
+    BDDFlowConstraintGenerator.BddRefiner refiner =
         refineFirst(
             // guard
             tcp,
@@ -81,7 +81,7 @@ public class BDDFlowConstraintGeneratorTest {
     BDD ack = pkt.getTcpAck();
     BDD notAck = ack.not();
 
-    BDDFlowConstraintGenerator.PreferenceRefiner refiner = refineAll(tcp, refine(syn), refine(ack));
+    BDDFlowConstraintGenerator.BddRefiner refiner = refineAll(tcp, refine(syn), refine(ack));
 
     // both children match
     assertEquals(factory.andAll(tcp, syn, ack), refiner.refine(factory.one()));
