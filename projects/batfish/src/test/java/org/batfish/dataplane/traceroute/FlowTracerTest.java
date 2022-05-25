@@ -707,11 +707,11 @@ public final class FlowTracerTest {
     // Routes and NHIPs don't really matter; we will differentiate based on egress interface used.
     FibEntry origDstFibEntry =
         new FibEntry(
-            new FibForward(Ip.parse("12.12.12.12"), preNatEgressIface),
+            FibForward.of(Ip.parse("12.12.12.12"), preNatEgressIface),
             ImmutableList.of(StaticRoute.testBuilder().setNetwork(preNatDstIp.toPrefix()).build()));
     FibEntry transformedDstFibEntry =
         new FibEntry(
-            new FibForward(Ip.parse("13.13.13.13"), postNatEgressIface),
+            FibForward.of(Ip.parse("13.13.13.13"), postNatEgressIface),
             ImmutableList.of(
                 StaticRoute.testBuilder().setNetwork(postNatDstIp.toPrefix()).build()));
     TracerouteEngineImplContext ctxt =
@@ -839,7 +839,7 @@ public final class FlowTracerTest {
                     dstIp,
                     ImmutableSet.of(
                         new FibEntry(
-                            new FibForward(dstIp, eth3.getName()), ImmutableList.of(route)))))
+                            FibForward.of(dstIp, eth3.getName()), ImmutableList.of(route)))))
             .build();
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
@@ -1021,7 +1021,7 @@ public final class FlowTracerTest {
                 ImmutableMap.of(
                     dstIp,
                     ImmutableSet.of(
-                        new FibEntry(new FibNextVrf(nextVrfName), ImmutableList.of(nextVrfRoute)))))
+                        new FibEntry(FibNextVrf.of(nextVrfName), ImmutableList.of(nextVrfRoute)))))
             .build();
     Fib nextFib =
         MockFib.builder()
@@ -1126,7 +1126,7 @@ public final class FlowTracerTest {
                 ImmutableMap.of(
                     dstIp,
                     ImmutableSet.of(
-                        new FibEntry(new FibNextVrf(nextVrfName), ImmutableList.of(nextVrfRoute)))))
+                        new FibEntry(FibNextVrf.of(nextVrfName), ImmutableList.of(nextVrfRoute)))))
             .build();
     Fib nextFib =
         MockFib.builder()
@@ -1211,8 +1211,7 @@ public final class FlowTracerTest {
                 ImmutableMap.of(
                     dstIp,
                     ImmutableSet.of(
-                        new FibEntry(
-                            new FibNextVrf(vrf2Name), ImmutableList.of(vrf1NextVrfRoute)))))
+                        new FibEntry(FibNextVrf.of(vrf2Name), ImmutableList.of(vrf1NextVrfRoute)))))
             .build();
     Fib fib2 =
         MockFib.builder()
@@ -1220,8 +1219,7 @@ public final class FlowTracerTest {
                 ImmutableMap.of(
                     dstIp,
                     ImmutableSet.of(
-                        new FibEntry(
-                            new FibNextVrf(vrf1Name), ImmutableList.of(vrf2NextVrfRoute)))))
+                        new FibEntry(FibNextVrf.of(vrf1Name), ImmutableList.of(vrf2NextVrfRoute)))))
             .build();
     List<TraceAndReverseFlow> traces = new ArrayList<>();
     ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
@@ -1310,7 +1308,7 @@ public final class FlowTracerTest {
                     dstIp,
                     ImmutableSet.of(
                         new FibEntry(
-                            new FibForward(finalNhip, finalNhif),
+                            FibForward.of(finalNhip, finalNhif),
                             ImmutableList.of(
                                 StaticRoute.testBuilder()
                                     .setAdmin(1)
@@ -1318,7 +1316,7 @@ public final class FlowTracerTest {
                                     .setNextHopIp(Ip.parse("1.2.3.4"))
                                     .build())),
                         new FibEntry(
-                            new FibForward(finalNhip, finalNhif),
+                            FibForward.of(finalNhip, finalNhif),
                             ImmutableList.of(
                                 StaticRoute.testBuilder()
                                     .setAdmin(1)
@@ -1586,7 +1584,7 @@ public final class FlowTracerTest {
   @Test
   public void testBuildRoutingStepFibForward() {
     Prefix prefix = Prefix.parse("12.12.12.12/30");
-    FibForward fibForward = new FibForward(Ip.parse("1.1.1.1"), "iface1");
+    FibForward fibForward = FibForward.of(Ip.parse("1.1.1.1"), "iface1");
     Set<FibEntry> fibEntries =
         ImmutableSet.of(
             new FibEntry(
@@ -1615,7 +1613,7 @@ public final class FlowTracerTest {
   @Test
   public void testBuildRoutingStepFibNextVrf() {
     Prefix prefix = Prefix.parse("12.12.12.12/30");
-    FibNextVrf fibNextVrf = new FibNextVrf("iface1");
+    FibNextVrf fibNextVrf = FibNextVrf.of("iface1");
     Set<FibEntry> fibEntries =
         ImmutableSet.of(
             new FibEntry(

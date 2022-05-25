@@ -366,11 +366,10 @@ public final class PacketPolicyEvaluatorTest {
                         _flow.getDstIp(),
                         ImmutableSet.of(
                             new FibEntry(
-                                new FibForward(Ip.MAX, vrfIface), ImmutableList.of(fakeRoute))),
+                                FibForward.of(Ip.MAX, vrfIface), ImmutableList.of(fakeRoute))),
                         nextVrIp,
                         ImmutableSet.of(
-                            new FibEntry(
-                                new FibNextVrf(nextVrfName), ImmutableList.of(fakeRoute)))))
+                            new FibEntry(FibNextVrf.of(nextVrfName), ImmutableList.of(fakeRoute)))))
                 .build(),
             nextVrfName,
             MockFib.builder()
@@ -379,12 +378,11 @@ public final class PacketPolicyEvaluatorTest {
                         _flow.getDstIp(),
                         ImmutableSet.of(
                             new FibEntry(
-                                new FibForward(Ip.MAX, nextVrfIface), ImmutableList.of(fakeRoute))),
+                                FibForward.of(Ip.MAX, nextVrfIface), ImmutableList.of(fakeRoute))),
                         nextVrIp,
                         ImmutableSet.of(
                             new FibEntry(
-                                new FibForward(Ip.MAX, nextVrfIface),
-                                ImmutableList.of(fakeRoute)))))
+                                FibForward.of(Ip.MAX, nextVrfIface), ImmutableList.of(fakeRoute)))))
                 .build());
 
     Action trueAction = new FibLookup(new LiteralVrfName("finalVrf"));

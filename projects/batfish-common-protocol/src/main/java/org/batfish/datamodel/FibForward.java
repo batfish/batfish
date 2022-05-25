@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -15,15 +17,24 @@ import org.batfish.datamodel.visitors.FibActionVisitor;
  */
 @ParametersAreNonnullByDefault
 public final class FibForward implements FibAction {
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (16 bytes data, would be 16 MiB total ignoring overhead).
+  private static final LoadingCache<FibForward, FibForward> CACHE =
+      Caffeine.newBuilder().softValues().maximumSize(1 << 16).build(x -> x);
 
   private final @Nullable Ip _arpIp;
   private final @Nonnull String _interfaceName;
 
-  public FibForward(@Nullable Ip arpIp, String interfaceName) {
+  private FibForward(@Nullable Ip arpIp, String interfaceName) {
     // TODO: remove once Route.UNSET_NEXT_HOP_IP and Ip.AUTO are killed
     assert !Route.UNSET_ROUTE_NEXT_HOP_IP.equals(arpIp);
     _arpIp = arpIp;
     _interfaceName = interfaceName;
+  }
+
+  public static FibForward of(@Nullable Ip arpIp, String interfaceName) {
+    return CACHE.get(new FibForward(arpIp, interfaceName));
   }
 
   /**

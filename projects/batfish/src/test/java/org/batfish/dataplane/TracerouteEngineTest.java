@@ -225,7 +225,7 @@ public class TracerouteEngineTest {
                     arpIp,
                     ImmutableSet.of(
                         new FibEntry(
-                            new FibForward(arpIp, i4Name),
+                            FibForward.of(arpIp, i4Name),
                             ImmutableList.of(new ConnectedRoute(i4.getPrimaryNetwork(), i4Name))))))
             .build();
 
@@ -263,10 +263,10 @@ public class TracerouteEngineTest {
                     arpIp,
                     ImmutableSet.of(
                         new FibEntry(
-                            new FibForward(arpIp, i1Name),
+                            FibForward.of(arpIp, i1Name),
                             ImmutableList.of(new ConnectedRoute(i1.getPrimaryNetwork(), i1Name))),
                         new FibEntry(
-                            new FibForward(arpIp, i4Name),
+                            FibForward.of(arpIp, i4Name),
                             ImmutableList.of(new ConnectedRoute(i4.getPrimaryNetwork(), i4Name))))))
             .build();
     assertFalse(
