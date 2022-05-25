@@ -19,7 +19,6 @@ import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.errorprone.annotations.MustBeClosed;
@@ -42,7 +41,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -87,18 +85,15 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.NextHopComparator;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
-import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
-import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
@@ -128,7 +123,6 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.table.TableView;
 import org.batfish.datamodel.table.TableViewRow;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -477,7 +471,6 @@ public class WorkMgr extends AbstractCoordinator {
   WorkDetails computeWorkDetails(WorkItem workItem) throws IOException {
     String referenceSnapshotName = WorkItemBuilder.getReferenceSnapshotName(workItem);
     String questionName = WorkItemBuilder.getQuestionName(workItem);
-    String analysisName = WorkItemBuilder.getAnalysisName(workItem);
 
     WorkType workType = WorkType.UNKNOWN;
 
@@ -496,37 +489,13 @@ public class WorkMgr extends AbstractCoordinator {
       if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
       }
-      Question question =
-          Question.parseQuestion(getQuestion(workItem.getNetwork(), questionName, analysisName));
+      Question question = Question.parseQuestion(getQuestion(workItem.getNetwork(), questionName));
       workType =
           question.getIndependent()
               ? WorkType.INDEPENDENT_ANSWERING
               : question.getDataPlane()
                   ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
                   : WorkType.PARSING_DEPENDENT_ANSWERING;
-    }
-
-    if (WorkItemBuilder.isAnalyzingWorkItem(workItem)) {
-      if (workType != WorkType.UNKNOWN) {
-        throw new BatfishException("Cannot do composite work. Separate ANALYZE from other work.");
-      }
-      if (analysisName == null) {
-        throw new BatfishException("Analysis name not provided for ANALYZE work");
-      }
-      Set<String> qNames = listAnalysisQuestions(workItem.getNetwork(), analysisName);
-      // compute the strongest dependency among the embedded questions
-      workType = WorkType.INDEPENDENT_ANSWERING;
-      for (String qName : qNames) {
-        Question question =
-            Question.parseQuestion(getQuestion(workItem.getNetwork(), qName, analysisName));
-        if (question.getDataPlane()) {
-          workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
-          break;
-        }
-        if (!question.getIndependent()) {
-          workType = WorkType.PARSING_DEPENDENT_ANSWERING;
-        }
-      }
     }
 
     // TODO: grab IDs once, and earlier; validate resolvable names
@@ -541,140 +510,10 @@ public class WorkMgr extends AbstractCoordinator {
       builder.setReferenceSnapshotId(
           _idManager.getSnapshotId(referenceSnapshotName, networkId).get());
     }
-    AnalysisId analysisId = null;
-    if (analysisName != null) {
-      analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
-      builder.setAnalysisId(analysisId);
-    }
     if (questionName != null) {
-      builder.setQuestionId(_idManager.getQuestionId(questionName, networkId, analysisId).get());
+      builder.setQuestionId(_idManager.getQuestionId(questionName, networkId).get());
     }
     return builder.build();
-  }
-
-  /**
-   * Create, update, or truncate an analysis with provided questions or and/or question names.
-   *
-   * @param network The network in which the analysis resides
-   * @param newAnalysis Whether or not to create a new analysis. Incompatible with {@code
-   *     delQuestionsStr}.
-   * @param analysis The name of the analysis
-   * @param questionsToAdd The questions to be added to or initially populate the analysis.
-   * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
-   *     with {@code newAnalysis}.
-   * @param suggested An optional Boolean indicating whether analysis is suggested (default: false).
-   * @throws IllegalArgumentException if network does not exist; or if {@code newAnalysis} is {@code
-   *     false} and analysis does not exist; or if {@code newAnalysis} is {@code true} and analysis
-   *     already exists; or if a question to delete does not exist; or if a question to add already
-   *     exists.
-   * @throws IOException if there is some other error configuration the analysis
-   */
-  public void configureAnalysis(
-      String network,
-      boolean newAnalysis,
-      String analysis,
-      Map<String, String> questionsToAdd,
-      List<String> questionsToDelete,
-      @Nullable Boolean suggested)
-      throws IOException {
-    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-    checkArgument(networkIdOpt.isPresent(), "Invalid network: %s", network);
-    NetworkId networkId = networkIdOpt.get();
-    AnalysisId analysisId = null;
-
-    // Reasons to throw error for a new analysis:
-    // 1. Analysis with same name already exists
-    // 2. questionsToDelete is not empty
-    Optional<AnalysisId> analysisIdOpt = _idManager.getAnalysisId(analysis, networkId);
-    if (newAnalysis) {
-      checkArgument(
-          !analysisIdOpt.isPresent(),
-          "Analysis %s for network %s already exists",
-          analysis,
-          network);
-      checkArgument(questionsToDelete.isEmpty(), "Cannot delete questions from a new analysis");
-      analysisId = _idManager.generateAnalysisId();
-    } else {
-      // Reasons to throw error for an existing analysis:
-      // 1. Analysis directory does not exist
-      // 2. questionsToDelete includes a question that doesn't exist in the analysis
-      // 3. questionsToAdd includes a question that already exists and won't be deleted
-      checkArgument(
-          analysisIdOpt.isPresent(),
-          "Analysis '%s' does not exist for network '%s'",
-          analysis,
-          network);
-      analysisId = analysisIdOpt.get();
-      for (String qName : questionsToDelete) {
-        if (!_idManager.hasQuestionId(qName, networkId, analysisId)) {
-          throw new IllegalArgumentException(
-              String.format("Question '%s' does not exist for analysis '%s'", qName, analysis));
-        }
-      }
-      for (Entry<String, String> entry : questionsToAdd.entrySet()) {
-        String qName = entry.getKey();
-        if (!questionsToDelete.contains(qName)
-            && _idManager.hasQuestionId(qName, networkId, analysisId)) {
-          throw new IllegalArgumentException(
-              String.format(
-                  "Question '%s' already exists for analysis '%s'", entry.getKey(), analysis));
-        }
-      }
-    }
-
-    // Create metadata if it's a new analysis, or update it if suggested is not null
-    if (newAnalysis || suggested != null) {
-      AnalysisMetadata metadata;
-      if (newAnalysis) {
-        metadata = new AnalysisMetadata(Instant.now(), (suggested != null) && suggested);
-      } else if (!_storage.hasAnalysisMetadata(networkId, analysisId)) {
-        // Configuring an old analysis with no metadata file; create one. Know suggested != null
-        metadata = new AnalysisMetadata(Instant.MIN, suggested);
-      } else {
-        try {
-          metadata = AnalysisMetadataMgr.readMetadata(networkId, analysisId);
-          metadata.setSuggested(suggested);
-        } catch (IOException e) {
-          throw new BatfishException(
-              "Unable to read metadata file for analysis '" + analysis + "'", e);
-        }
-      }
-      // Write metadata to file
-      try {
-        AnalysisMetadataMgr.writeMetadata(metadata, networkId, analysisId);
-      } catch (IOException e) {
-        throw new BatfishException("Could not write analysisMetadata", e);
-      }
-    }
-
-    /* Delete questionsToDelete and add questionsToAdd */
-    for (String qName : questionsToDelete) {
-      _idManager.deleteQuestion(qName, networkId, analysisId);
-    }
-    for (Entry<String, String> entry : questionsToAdd.entrySet()) {
-      String qName = entry.getKey();
-      String qText = entry.getValue();
-      QuestionId questionId = _idManager.generateQuestionId();
-      _storage.storeQuestion(qText, networkId, questionId, analysisId);
-      _idManager.assignQuestion(qName, networkId, questionId, analysisId);
-    }
-    // TODO: always assign a new AnalysisId if analysis changes?
-    if (newAnalysis) {
-      _idManager.assignAnalysis(analysis, networkId, analysisId);
-    }
-  }
-
-  /**
-   * Delete the specified analysis under the specified network. Returns {@code true} if deletion is
-   * successful. Returns {@code false} if either network or analysis does not exist.
-   */
-  public boolean delAnalysis(@Nonnull String network, @Nonnull String analysis) {
-    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-    if (!networkIdOpt.isPresent()) {
-      return false;
-    }
-    NetworkId networkId = networkIdOpt.get();
-    return _idManager.deleteAnalysis(analysis, networkId);
   }
 
   /**
@@ -723,45 +562,28 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Delete the specified question under the specified network and analysis. If {@code analysis} is
-   * {@code null}, deletes an ad-hoc question. Returns {@code true} if deletion is successful.
-   * Returns {@code false} if network, (non-null) analysis, or question does not exist.
+   * Delete the specified question under the specified network. Returns {@code true} if deletion is
+   * successful. Returns {@code false} if network or question does not exist.
    */
-  public boolean delQuestion(
-      @Nonnull String network, @Nonnull String question, @Nullable String analysis) {
+  public boolean delQuestion(@Nonnull String network, @Nonnull String question) {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
       return false;
     }
     NetworkId networkId = networkIdOpt.get();
-    AnalysisId analysisId;
-    if (analysis != null) {
-      Optional<AnalysisId> analysisIdOpt = _idManager.getAnalysisId(analysis, networkId);
-      if (!analysisIdOpt.isPresent()) {
-        return false;
-      }
-      analysisId = analysisIdOpt.get();
-    } else {
-      analysisId = null;
-    }
-    return _idManager.deleteQuestion(question, networkId, analysisId);
+    return _idManager.deleteQuestion(question, networkId);
   }
 
   /**
    * Get the answer for the specified question.
    *
-   * @throws IllegalArgumentException if the network, question, analysis, or snapshots cannot be
-   *     found
+   * @throws IllegalArgumentException if the network, question, or snapshots cannot be found
    * @throws IOException if there are any other errors
    */
   public @Nullable Answer getAnswer(
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
+      String network, String snapshot, String question, @Nullable String referenceSnapshot)
       throws IOException {
-    String ansString = loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    String ansString = loadAnswer(network, snapshot, question, referenceSnapshot);
     return ansString == null
         ? null
         : BatfishObjectMapper.mapper().readValue(ansString, Answer.class);
@@ -769,14 +591,10 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Get the answer string for the specified question. */
   public @Nonnull String getAnswerString(
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
+      String network, String snapshot, String question, @Nullable String referenceSnapshot)
       throws JsonProcessingException {
     try {
-      String answer = loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
+      String answer = loadAnswer(network, snapshot, question, referenceSnapshot);
       if (answer == null) {
         Answer ans = Answer.failureAnswer("Not answered", null);
         ans.setStatus(AnswerStatus.NOTFOUND);
@@ -786,14 +604,9 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (IOException e) {
       String message =
           String.format(
-              "Could not get answer: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s,"
-                  + " analysis=%s: %s",
-              network,
-              snapshot,
-              question,
-              referenceSnapshot,
-              analysis,
-              Throwables.getStackTraceAsString(e));
+              "Could not get answer: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s:"
+                  + " %s",
+              network, snapshot, question, referenceSnapshot, Throwables.getStackTraceAsString(e));
       Answer ans = Answer.failureAnswer(message, null);
       ans.setStatus(AnswerStatus.FAILURE);
       return BatfishObjectMapper.writeString(ans);
@@ -805,29 +618,14 @@ public class WorkMgr extends AbstractCoordinator {
    * answered.
    */
   private @Nullable String loadAnswer(
-      String network,
-      String snapshot,
-      String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis)
+      String network, String snapshot, String question, @Nullable String referenceSnapshot)
       throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     checkArgument(networkIdOpt.isPresent(), "Missing network: '%s'", network);
     NetworkId networkId = networkIdOpt.get();
-    AnalysisId analysisId = null;
-    if (analysis != null) {
-      Optional<AnalysisId> analysisIdOpt = _idManager.getAnalysisId(analysis, networkId);
-      checkArgument(
-          analysisIdOpt.isPresent(), "Missing analysis: '%s' for network '%s'", analysis, network);
-      analysisId = analysisIdOpt.get();
-    }
-    Optional<QuestionId> questionIdOpt = _idManager.getQuestionId(question, networkId, analysisId);
+    Optional<QuestionId> questionIdOpt = _idManager.getQuestionId(question, networkId);
     checkArgument(
-        questionIdOpt.isPresent(),
-        "Missing question '%s'%s for network '%s'",
-        question,
-        analysis != null ? String.format(" for analysis '%s'", analysis) : "",
-        network);
+        questionIdOpt.isPresent(), "Missing question '%s' for network '%s'", question, network);
     QuestionId questionId = questionIdOpt.get();
     Optional<SnapshotId> snapshotIdOpt = _idManager.getSnapshotId(snapshot, networkId);
     checkArgument(
@@ -847,7 +645,7 @@ public class WorkMgr extends AbstractCoordinator {
     NodeRolesId networkNodeRolesId = getOrDefaultNodeRolesId(networkId);
     AnswerId answerId =
         _idManager.getAnswerId(
-            networkId, snapshotId, questionId, networkNodeRolesId, referenceSnapshotId, analysisId);
+            networkId, snapshotId, questionId, networkNodeRolesId, referenceSnapshotId);
     // No metadata means the question has not been answered
     if (!_storage.hasAnswerMetadata(networkId, snapshotId, answerId)) {
       return null;
@@ -875,84 +673,18 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.getCompletedWork(networkId, snapshotIdOpt.get());
   }
 
-  public @Nonnull Map<String, String> getAnalysisAnswers(
-      String network,
-      String snapshot,
-      String referenceSnapshot,
-      String analysis,
-      Set<String> analysisQuestions)
-      throws JsonProcessingException {
-    Set<String> questions =
-        analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
-    ImmutableSortedMap.Builder<String, String> result = ImmutableSortedMap.naturalOrder();
-    for (String questionName : questions) {
-      try {
-        result.put(
-            questionName,
-            getAnswerString(network, snapshot, questionName, referenceSnapshot, analysis));
-      } catch (Exception e) {
-        _logger.errorf(
-            "Got exception in getAnalysisAnswers: %s\n", Throwables.getStackTraceAsString(e));
-        result.put(
-            questionName,
-            BatfishObjectMapper.mapper()
-                .writeValueAsString(Answer.failureAnswer(e.getMessage(), null)));
-      }
-    }
-    return result.build();
-  }
-
-  public @Nonnull Map<String, AnswerMetadata> getAnalysisAnswersMetadata(
-      String network,
-      String snapshot,
-      String referenceSnapshot,
-      String analysis,
-      Set<String> analysisQuestions) {
-    Set<String> questions =
-        analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
-    ImmutableSortedMap.Builder<String, AnswerMetadata> result = ImmutableSortedMap.naturalOrder();
-    for (String question : questions) {
-      try {
-        result.put(
-            question, getAnswerMetadata(network, snapshot, question, referenceSnapshot, analysis));
-      } catch (Exception e) {
-        _logger.errorf(
-            "Got exception in getAnalysisAnswersMetadata: %s\n",
-            Throwables.getStackTraceAsString(e));
-        result.put(question, AnswerMetadata.forStatus(AnswerStatus.FAILURE));
-      }
-    }
-    return result.build();
-  }
-
   public @Nonnull AnswerMetadata getAnswerMetadata(
       @Nonnull String network,
       @Nonnull String snapshot,
       @Nonnull String question,
-      @Nullable String referenceSnapshot,
-      @Nullable String analysis) {
+      @Nullable String referenceSnapshot) {
     try {
       Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
       checkArgument(networkIdOpt.isPresent(), "Missing network: '%s'", network);
       NetworkId networkId = networkIdOpt.get();
-      AnalysisId analysisId = null;
-      if (analysis != null) {
-        Optional<AnalysisId> analysisIdOpt = _idManager.getAnalysisId(analysis, networkId);
-        checkArgument(
-            analysisIdOpt.isPresent(),
-            "Missing analysis: '%s' for network '%s'",
-            analysis,
-            network);
-        analysisId = analysisIdOpt.get();
-      }
-      Optional<QuestionId> questionIdOpt =
-          _idManager.getQuestionId(question, networkId, analysisId);
+      Optional<QuestionId> questionIdOpt = _idManager.getQuestionId(question, networkId);
       checkArgument(
-          questionIdOpt.isPresent(),
-          "Missing question '%s'%s for network '%s'",
-          question,
-          analysis != null ? String.format(" for analysis '%s'", analysis) : "",
-          network);
+          questionIdOpt.isPresent(), "Missing question '%s' for network '%s'", question, network);
       QuestionId questionId = questionIdOpt.get();
       Optional<SnapshotId> snapshotIdOpt = _idManager.getSnapshotId(snapshot, networkId);
       checkArgument(
@@ -972,12 +704,7 @@ public class WorkMgr extends AbstractCoordinator {
       NodeRolesId networkNodeRolesId = getOrDefaultNodeRolesId(networkId);
       AnswerId answerId =
           _idManager.getAnswerId(
-              networkId,
-              snapshotId,
-              questionId,
-              networkNodeRolesId,
-              referenceSnapshotId,
-              analysisId);
+              networkId, snapshotId, questionId, networkNodeRolesId, referenceSnapshotId);
       if (!_storage.hasAnswerMetadata(networkId, snapshotId, answerId)) {
         return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
       }
@@ -985,13 +712,8 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (IOException e) {
       _logger.errorf(
           "Could not get answer metadata: network=%s, snapshot=%s, question=%s,"
-              + " referenceSnapshot=%s, analysis=%s: %s",
-          network,
-          snapshot,
-          question,
-          referenceSnapshot,
-          analysis,
-          Throwables.getStackTraceAsString(e));
+              + " referenceSnapshot=%s: %s",
+          network, snapshot, question, referenceSnapshot, Throwables.getStackTraceAsString(e));
       return AnswerMetadata.forStatus(AnswerStatus.FAILURE);
     }
   }
@@ -1114,50 +836,32 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Checks if the specified question exists. */
-  public boolean checkQuestionExists(String network, String question, @Nullable String analysis) {
+  public boolean checkQuestionExists(String network, String question) {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
       return false;
     }
     NetworkId networkId = networkIdOpt.get();
-    AnalysisId analysisId = null;
-    if (analysis != null) {
-      Optional<AnalysisId> analysisIdOpt = _idManager.getAnalysisId(analysis, networkId);
-      if (!analysisIdOpt.isPresent()) {
-        return false;
-      }
-      analysisId = analysisIdOpt.get();
-    }
-    return _idManager.hasQuestionId(question, networkId, analysisId);
+    return _idManager.hasQuestionId(question, networkId);
   }
 
   /**
-   * Get content of given question under network and analysis. Gets ad-hoc question content if
-   * analysis is {@code null}. Returns {@code null} if network, analysis (when non-null), or
-   * question does not exist.
+   * Get content of given ad-hoc question under network. Returns {@code null} if network or question
+   * does not exist.
    *
    * @throws IOException if there is an error reading the question
    */
-  public @Nullable String getQuestion(String network, String question, @Nullable String analysis)
-      throws IOException {
+  public @Nullable String getQuestion(String network, String question) throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
       return null;
     }
     NetworkId networkId = networkIdOpt.get();
-    AnalysisId analysisId = null;
-    if (analysis != null) {
-      Optional<AnalysisId> analysisIdOpt = _idManager.getAnalysisId(analysis, networkId);
-      if (!analysisIdOpt.isPresent()) {
-        return null;
-      }
-      analysisId = analysisIdOpt.get();
-    }
-    Optional<QuestionId> questionIdOpt = _idManager.getQuestionId(question, networkId, analysisId);
+    Optional<QuestionId> questionIdOpt = _idManager.getQuestionId(question, networkId);
     if (!questionIdOpt.isPresent()) {
       return null;
     }
-    return _storage.loadQuestion(networkId, questionIdOpt.get(), analysisId);
+    return _storage.loadQuestion(networkId, questionIdOpt.get());
   }
 
   public QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
@@ -1234,12 +938,8 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public void initSnapshot(
-      String networkName,
-      String snapshotName,
-      Path srcDir,
-      boolean autoAnalyze,
-      Instant creationTime) {
-    initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, creationTime, null);
+      String networkName, String snapshotName, Path srcDir, Instant creationTime) {
+    initSnapshot(networkName, snapshotName, srcDir, creationTime, null);
   }
 
   /** Move runtime_data.json under batfish/ if it's at the top level. */
@@ -1271,7 +971,6 @@ public class WorkMgr extends AbstractCoordinator {
       String networkName,
       String snapshotName,
       Path srcDir,
-      boolean autoAnalyze,
       Instant creationTime,
       @Nullable SnapshotId parentSnapshotId) {
     Path subDir = getSnapshotSubdir(srcDir);
@@ -1362,14 +1061,6 @@ public class WorkMgr extends AbstractCoordinator {
         "Environment data for snapshot:%s; bgpTables:%s, nodeRoles:%s referenceBooks:%s\n",
         snapshotName, bgpTables, roleData, referenceLibraryData);
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
-    if (autoAnalyze) {
-      for (WorkItem workItem : getAutoWorkQueue(networkName, snapshotName)) {
-        boolean queued = queueWork(workItem);
-        if (!queued) {
-          _logger.errorf("Unable to queue work while auto processing: %s", workItem);
-        }
-      }
-    }
   }
 
   /**
@@ -1554,7 +1245,6 @@ public class WorkMgr extends AbstractCoordinator {
           networkName,
           snapshotName,
           newSnapshotInputsDir.getParent(),
-          false,
           creationTime,
           baseSnapshotId);
     } finally {
@@ -1678,80 +1368,8 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writeString(baseList));
   }
 
-  List<WorkItem> getAutoWorkQueue(String networkName, String testrigName) {
-    List<WorkItem> autoWorkQueue = new LinkedList<>();
-
-    WorkItem parseWork = WorkItemBuilder.getWorkItemParse(networkName, testrigName);
-    autoWorkQueue.add(parseWork);
-
-    Set<String> analysisNames = listAnalyses(networkName, AnalysisType.ALL);
-    for (String analysis : analysisNames) {
-      WorkItem analyzeWork =
-          WorkItemBuilder.getWorkItemRunAnalysis(analysis, networkName, testrigName);
-      autoWorkQueue.add(analyzeWork);
-    }
-    return autoWorkQueue;
-  }
-
   private static boolean isWellKnownNetworkFile(Path path) {
     return WELL_KNOWN_NETWORK_FILENAMES.contains(path.getFileName().toString());
-  }
-
-  /**
-   * Returns the Analysis names which exist in the network and match the {@link AnalysisType}
-   *
-   * @param network Network name
-   * @param analysisType {@link AnalysisType} requested
-   * @return {@link Set} of network names, or {@code null} if network does not exist.
-   */
-  public @Nullable SortedSet<String> listAnalyses(String network, AnalysisType analysisType) {
-    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-    if (!networkIdOpt.isPresent()) {
-      return null;
-    }
-    NetworkId networkId = networkIdOpt.get();
-    SortedSet<String> analyses =
-        _idManager.listAnalyses(networkId).stream()
-            .filter(
-                analysis -> {
-                  Optional<AnalysisId> analysisIdOpt =
-                      _idManager.getAnalysisId(analysis, networkId);
-                  checkArgument(
-                      analysisIdOpt.isPresent(),
-                      "Analysis '%s' for network '%s' was deleted in the middle of this operation",
-                      analysis,
-                      network);
-                  return selectAnalysis(analysisIdOpt.get(), analysisType, networkId);
-                })
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-    return analyses;
-  }
-
-  private boolean selectAnalysis(
-      AnalysisId analysisId, AnalysisType analysisType, NetworkId networkId) {
-    if (analysisType == AnalysisType.ALL) {
-      return true;
-    }
-    boolean suggested = AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(networkId, analysisId);
-    return (analysisType == AnalysisType.SUGGESTED && suggested
-        || analysisType == AnalysisType.USER && !suggested);
-  }
-
-  /**
-   * List questions for the given network and analysis. Returns list of questions if successful, or
-   * {@code null} if network or analysis does not exist.
-   */
-  public @Nullable SortedSet<String> listAnalysisQuestions(String network, String analysis) {
-    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-    if (!networkIdOpt.isPresent()) {
-      return null;
-    }
-    NetworkId networkId = networkIdOpt.get();
-    Optional<AnalysisId> analysisIdOpt = _idManager.getAnalysisId(analysis, networkId);
-    if (!analysisIdOpt.isPresent()) {
-      return null;
-    }
-    return ImmutableSortedSet.copyOf(_idManager.listQuestions(networkId, analysisIdOpt.get()));
   }
 
   public SortedSet<String> listNetworks(String apiKey) {
@@ -1795,7 +1413,7 @@ public class WorkMgr extends AbstractCoordinator {
       return null;
     }
     NetworkId networkId = networkIdOpt.get();
-    Set<String> questions = _idManager.listQuestions(networkId, null);
+    Set<String> questions = _idManager.listQuestions(networkId);
     if (!verbose) {
       questions =
           questions.stream()
@@ -1951,8 +1569,8 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     QuestionId questionId = _idManager.generateQuestionId();
-    _storage.storeQuestion(questionJson, networkId, questionId, null);
-    _idManager.assignQuestion(question, networkId, questionId, null);
+    _storage.storeQuestion(questionJson, networkId, questionId);
+    _idManager.assignQuestion(question, networkId, questionId);
     return true;
   }
 
@@ -1975,10 +1593,8 @@ public class WorkMgr extends AbstractCoordinator {
    * @param networkName Name of the network to upload the snapshot to.
    * @param snapshotName Name of the new snapshot.
    * @param fileStream {@link InputStream} of the snapshot zip.
-   * @param autoAnalyze Boolean determining if the snapshot analysis should be triggered on upload.
    */
-  public void uploadSnapshot(
-      String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
+  public void uploadSnapshot(String networkName, String snapshotName, InputStream fileStream) {
     LOGGER.info("Beginning snapshot upload to {}/{}", networkName, snapshotName);
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(networkName);
     checkArgument(networkIdOpt.isPresent(), "Missing network: '%s'", networkName);
@@ -2006,7 +1622,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     try {
-      initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze, creationTime);
+      initSnapshot(networkName, snapshotName, unzipDir, creationTime);
     } catch (Exception e) {
       throw new BatfishException(
           String.format("Error initializing snapshot: %s", e.getMessage()), e);
@@ -2023,20 +1639,6 @@ public class WorkMgr extends AbstractCoordinator {
       return false;
     }
     return _storage.checkNetworkExists(networkIdOpt.get());
-  }
-
-  /**
-   * Filter and sort {@code rawAnswers} according to options specified in {@code
-   * analysisAnswersOptions}
-   */
-  public Map<String, Answer> processAnalysisAnswers(
-      Map<String, String> rawAnswers, Map<String, AnswerRowsOptions> answersRowsOptions) {
-    return CollectionUtil.toImmutableMap(
-        rawAnswers,
-        Entry::getKey,
-        rawAnswersEntry ->
-            processAnswerRows(
-                rawAnswersEntry.getValue(), answersRowsOptions.get(rawAnswersEntry.getKey())));
   }
 
   @VisibleForTesting

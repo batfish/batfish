@@ -10,7 +10,6 @@ import java.io.UncheckedIOException;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.storage.StorageProvider;
 
 /**
@@ -48,18 +47,12 @@ public class StorageBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull Optional<AnalysisId> getAnalysisId(String analysis, NetworkId networkId) {
-    return readId(AnalysisId.class, analysis, networkId).map(AnalysisId::new);
-  }
-
-  @Override
   public @Nonnull AnswerId getAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
       NodeRolesId networkNodeRolesId,
-      SnapshotId referenceSnapshotId,
-      AnalysisId analysisId) {
+      SnapshotId referenceSnapshotId) {
     return new AnswerId(
         hash(
             ImmutableList.of(
@@ -67,8 +60,7 @@ public class StorageBasedIdResolver implements IdResolver {
                     snapshotId,
                     questionId,
                     networkNodeRolesId,
-                    ofNullable(referenceSnapshotId),
-                    ofNullable(analysisId))
+                    ofNullable(referenceSnapshotId))
                 .toString()));
   }
 
@@ -83,9 +75,8 @@ public class StorageBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull Optional<QuestionId> getQuestionId(
-      String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+  public @Nonnull Optional<QuestionId> getQuestionId(String question, NetworkId networkId) {
+    Id[] ancestors = new Id[] {networkId};
     return readId(QuestionId.class, question, ancestors).map(QuestionId::new);
   }
 
@@ -100,11 +91,6 @@ public class StorageBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public boolean hasAnalysisId(String analysis, NetworkId networkId) {
-    return _s.hasId(AnalysisId.class, analysis, networkId);
-  }
-
-  @Override
   public boolean hasNetworkId(String network) {
     return _s.hasId(NetworkId.class, network);
   }
@@ -115,9 +101,8 @@ public class StorageBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public boolean hasQuestionId(
-      String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+  public boolean hasQuestionId(String question, NetworkId networkId) {
+    Id[] ancestors = new Id[] {networkId};
     return _s.hasId(QuestionId.class, question, ancestors);
   }
 
@@ -127,18 +112,13 @@ public class StorageBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull Set<String> listAnalyses(NetworkId networkId) {
-    return listResolvableNames(AnalysisId.class, networkId);
-  }
-
-  @Override
   public @Nonnull Set<String> listNetworks() {
     return listResolvableNames(NetworkId.class);
   }
 
   @Override
-  public @Nonnull Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId) {
-    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+  public @Nonnull Set<String> listQuestions(NetworkId networkId) {
+    Id[] ancestors = new Id[] {networkId};
     return listResolvableNames(QuestionId.class, ancestors);
   }
 
