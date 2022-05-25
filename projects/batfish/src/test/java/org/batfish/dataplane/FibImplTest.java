@@ -236,7 +236,7 @@ public final class FibImplTest {
 
     assertThat(
         fib.allEntries(),
-        contains(new FibEntry(new FibNextVrf(nextVrf), ImmutableList.of(nextVrfRoute))));
+        contains(new FibEntry(FibNextVrf.of(nextVrf), ImmutableList.of(nextVrfRoute))));
   }
 
   @Test

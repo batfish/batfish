@@ -414,7 +414,7 @@ public final class PacketPolicyToBddTest {
                   ImmutableMap.of(
                       Ip.ZERO,
                       ImmutableSet.of(
-                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)))))
+                          new FibEntry(FibForward.of(Ip.ZERO, iface1), ImmutableList.of(route1)))))
               .build();
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces = new IpsRoutedOutInterfaces(fib);
       BoolExprToBdd toBdd = new BoolExprToBdd(_ipAccessListToBdd, ipsRoutedOutInterfaces);
@@ -429,7 +429,7 @@ public final class PacketPolicyToBddTest {
                   ImmutableMap.of(
                       Ip.ZERO,
                       ImmutableSet.of(
-                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)))))
+                          new FibEntry(FibForward.of(Ip.ZERO, iface1), ImmutableList.of(route1)))))
               .setMatchingIps(ImmutableMap.of(prefix1, prefix1.toIpSpace()))
               .build();
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces = new IpsRoutedOutInterfaces(fib);
@@ -445,8 +445,8 @@ public final class PacketPolicyToBddTest {
                   ImmutableMap.of(
                       Ip.ZERO,
                       ImmutableSet.of(
-                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)),
-                          new FibEntry(new FibForward(Ip.ZERO, iface2), ImmutableList.of(route2)))))
+                          new FibEntry(FibForward.of(Ip.ZERO, iface1), ImmutableList.of(route1)),
+                          new FibEntry(FibForward.of(Ip.ZERO, iface2), ImmutableList.of(route2)))))
               .setMatchingIps(
                   ImmutableMap.of(prefix1, prefix1.toIpSpace(), prefix2, prefix2.toIpSpace()))
               .build();
