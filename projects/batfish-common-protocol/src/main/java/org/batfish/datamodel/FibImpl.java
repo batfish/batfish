@@ -163,7 +163,7 @@ public final class FibImpl implements Fib {
 
             @Override
             public FibAction visitNextHopInterface(NextHopInterface nextHopInterface) {
-              return new FibForward(node.getFinalNextHopIp(), nextHopInterface.getInterfaceName());
+              return FibForward.of(node.getFinalNextHopIp(), nextHopInterface.getInterfaceName());
             }
 
             @Override
@@ -173,7 +173,7 @@ public final class FibImpl implements Fib {
 
             @Override
             public FibAction visitNextHopVrf(NextHopVrf nextHopVrf) {
-              return new FibNextVrf(nextHopVrf.getVrfName());
+              return FibNextVrf.of(nextHopVrf.getVrfName());
             }
 
             @Override
@@ -181,7 +181,7 @@ public final class FibImpl implements Fib {
               // Forward out the VXLAN "interface", which will send to the correct remote node by
               // "ARPing" for the VTEP IP.
               String forwardingIface = generatedTenantVniInterfaceName(nextHopVtep.getVni());
-              return new FibForward(nextHopVtep.getVtepIp(), forwardingIface);
+              return FibForward.of(nextHopVtep.getVtepIp(), forwardingIface);
             }
           }.visit(route.getNextHop());
       entriesBuilder.add(new FibEntry(fibAction, stack));

@@ -11,19 +11,19 @@ public final class FibForwardTest {
 
   @Test
   public void testEquals() {
-    FibForward fibForward = new FibForward(Ip.parse("1.1.1.1"), "eth0");
+    FibForward fibForward = FibForward.of(Ip.parse("1.1.1.1"), "eth0");
 
     new EqualsTester()
-        .addEqualityGroup(fibForward, fibForward, new FibForward(Ip.parse("1.1.1.1"), "eth0"))
-        .addEqualityGroup(new FibForward(Ip.parse("1.1.1.2"), "eth0"))
-        .addEqualityGroup(new FibForward(Ip.parse("1.1.1.1"), "eth1"))
+        .addEqualityGroup(fibForward, fibForward, FibForward.of(Ip.parse("1.1.1.1"), "eth0"))
+        .addEqualityGroup(FibForward.of(Ip.parse("1.1.1.2"), "eth0"))
+        .addEqualityGroup(FibForward.of(Ip.parse("1.1.1.1"), "eth1"))
         .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
-    FibForward fibForward = new FibForward(Ip.parse("1.1.1.1"), "eth0");
+    FibForward fibForward = FibForward.of(Ip.parse("1.1.1.1"), "eth0");
 
     assertEquals(fibForward, SerializationUtils.clone(fibForward));
   }

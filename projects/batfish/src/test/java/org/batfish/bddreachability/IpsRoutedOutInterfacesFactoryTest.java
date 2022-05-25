@@ -66,7 +66,7 @@ public class IpsRoutedOutInterfacesFactoryTest {
                       Ip.ZERO,
                       ImmutableSet.of(
                           new FibEntry(FibNullRoute.INSTANCE, ImmutableList.of(nullRoute)),
-                          new FibEntry(new FibNextVrf("vrf"), ImmutableList.of(nextVrfRoute)))))
+                          new FibEntry(FibNextVrf.of("vrf"), ImmutableList.of(nextVrfRoute)))))
               .build();
       assertEquals(
           ImmutableMap.of(), IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib));
@@ -80,7 +80,7 @@ public class IpsRoutedOutInterfacesFactoryTest {
                   ImmutableMap.of(
                       Ip.ZERO,
                       ImmutableSet.of(
-                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)))))
+                          new FibEntry(FibForward.of(Ip.ZERO, iface1), ImmutableList.of(route1)))))
               .build();
       Map<String, IpSpace> map =
           IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
@@ -95,7 +95,7 @@ public class IpsRoutedOutInterfacesFactoryTest {
                   ImmutableMap.of(
                       Ip.ZERO,
                       ImmutableSet.of(
-                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)))))
+                          new FibEntry(FibForward.of(Ip.ZERO, iface1), ImmutableList.of(route1)))))
               .setMatchingIps(ImmutableMap.of(prefix1, prefix1.toIpSpace()))
               .build();
       Map<String, IpSpace> map =
@@ -112,8 +112,8 @@ public class IpsRoutedOutInterfacesFactoryTest {
                   ImmutableMap.of(
                       Ip.ZERO,
                       ImmutableSet.of(
-                          new FibEntry(new FibForward(Ip.ZERO, iface1), ImmutableList.of(route1)),
-                          new FibEntry(new FibForward(Ip.ZERO, iface2), ImmutableList.of(route2)))))
+                          new FibEntry(FibForward.of(Ip.ZERO, iface1), ImmutableList.of(route1)),
+                          new FibEntry(FibForward.of(Ip.ZERO, iface2), ImmutableList.of(route2)))))
               .setMatchingIps(
                   ImmutableMap.of(prefix1, prefix1.toIpSpace(), prefix2, prefix2.toIpSpace()))
               .build();

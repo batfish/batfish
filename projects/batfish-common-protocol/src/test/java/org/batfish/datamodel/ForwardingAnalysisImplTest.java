@@ -764,7 +764,7 @@ public class ForwardingAnalysisImplTest {
                             Ip.ZERO,
                             ImmutableSet.of(
                                 new FibEntry(
-                                    new FibNextVrf(v2),
+                                    FibNextVrf.of(v2),
                                     ImmutableList.of(
                                         StaticRoute.testBuilder()
                                             .setAdmin(1)
@@ -781,7 +781,7 @@ public class ForwardingAnalysisImplTest {
                             Ip.ZERO,
                             ImmutableSet.of(
                                 new FibEntry(
-                                    new FibNextVrf(v1),
+                                    FibNextVrf.of(v1),
                                     ImmutableList.of(
                                         StaticRoute.testBuilder()
                                             .setAdmin(1)
@@ -831,7 +831,7 @@ public class ForwardingAnalysisImplTest {
                             ImmutableSet.of(
                                 new FibEntry(FibNullRoute.INSTANCE, ImmutableList.of(nullRoute)),
                                 new FibEntry(
-                                    new FibForward(null, otherRoute.getNextHopInterface()),
+                                    FibForward.of(null, otherRoute.getNextHopInterface()),
                                     ImmutableList.of(otherRoute)))))
                     .build()));
     IpSpace result =
@@ -847,7 +847,7 @@ public class ForwardingAnalysisImplTest {
 
   private static FibEntry mockFibEntry(Prefix network) {
     return new FibEntry(
-        new FibForward(Ip.ZERO, "iface"),
+        FibForward.of(Ip.ZERO, "iface"),
         ImmutableList.of(
             StaticRoute.testBuilder().setAdministrativeCost(1).setNetwork(network).build()));
   }
@@ -994,7 +994,7 @@ public class ForwardingAnalysisImplTest {
             .setFibEntries(
                 ImmutableMap.of(
                     P1.getFirstHostIp(),
-                    ImmutableSet.of(new FibEntry(new FibForward(null, i1), ImmutableList.of(r1)))))
+                    ImmutableSet.of(new FibEntry(FibForward.of(null, i1), ImmutableList.of(r1)))))
             .build();
     Map<String, Map<String, Fib>> fibs =
         ImmutableMap.of(
@@ -1422,8 +1422,7 @@ public class ForwardingAnalysisImplTest {
                 ImmutableMap.of(
                     arpIp,
                     ImmutableSet.of(
-                        new FibEntry(
-                            new FibForward(arpIp, i1.getName()), ImmutableList.of(route)))))
+                        new FibEntry(FibForward.of(arpIp, i1.getName()), ImmutableList.of(route)))))
             .build();
 
     Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
@@ -1496,8 +1495,7 @@ public class ForwardingAnalysisImplTest {
                 ImmutableMap.of(
                     prefix.getFirstHostIp(),
                     ImmutableSet.of(
-                        new FibEntry(
-                            new FibForward(null, i1.getName()), ImmutableList.of(route1)))))
+                        new FibEntry(FibForward.of(null, i1.getName()), ImmutableList.of(route1)))))
             .build();
 
     MockFib fib2 =
@@ -1507,8 +1505,7 @@ public class ForwardingAnalysisImplTest {
                 ImmutableMap.of(
                     prefix.getFirstHostIp(),
                     ImmutableSet.of(
-                        new FibEntry(
-                            new FibForward(null, i2.getName()), ImmutableList.of(route2)))))
+                        new FibEntry(FibForward.of(null, i2.getName()), ImmutableList.of(route2)))))
             .build();
 
     Map<String, Map<String, Fib>> fibs =
