@@ -15,7 +15,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
@@ -168,15 +167,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public boolean getAlwaysIncludeAnswerInWorkJsonLog() {
     return _config.getBoolean(BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG);
-  }
-
-  public @Nullable AnalysisId getAnalysisName() {
-    String id = _config.getString(BfConsts.ARG_ANALYSIS_NAME);
-    return id != null ? new AnalysisId(id) : null;
-  }
-
-  public boolean getAnalyze() {
-    return _config.getBoolean(BfConsts.COMMAND_ANALYZE);
   }
 
   public boolean getAnswer() {
@@ -435,7 +425,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private void initConfigDefaults() {
     setDefaultProperty(BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG, false);
-    setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
     setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, 5);
@@ -492,7 +481,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_TRACING_ENABLE, false);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
     setDefaultProperty(ARG_VERSION, false);
-    setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
     setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
     setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
     setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
@@ -506,8 +494,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(
         BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG,
         "always include answer to question in work json log");
-
-    addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
 
     addBooleanOption(
         BfConsts.ARG_BDP_DETAIL,
@@ -689,8 +675,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         BfConsts.ARG_VERBOSE_PARSE,
         "(developer option) include parse/convert data in init-testrig answer");
 
-    addBooleanOption(BfConsts.COMMAND_ANALYZE, "run provided analysis");
-
     addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
     addBooleanOption(BfConsts.COMMAND_DUMP_DP, "compute and serialize data plane");
@@ -710,6 +694,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     // deprecated and ignored
     for (String deprecatedStringArg :
         new String[] {
+          "analysisname",
+          "analyze",
           "deltaenv",
           "diffactive",
           "enable_cisco_nx_parser",
@@ -763,8 +749,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     // REGULAR OPTIONS
     getBooleanOptionValue(BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG);
-    getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
-    getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
     getBooleanOptionValue(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_DETAIL);

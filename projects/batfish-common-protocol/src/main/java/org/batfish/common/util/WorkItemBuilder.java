@@ -11,17 +11,6 @@ public class WorkItemBuilder {
       String testrigName,
       String deltaTestrig,
       boolean isDifferential) {
-    return getWorkItemAnswerQuestion(
-        questionName, containerName, testrigName, deltaTestrig, null, isDifferential);
-  }
-
-  public static WorkItem getWorkItemAnswerQuestion(
-      String questionName,
-      String containerName,
-      String testrigName,
-      String deltaTestrig,
-      String analysisName,
-      boolean isDifferential) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
     wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
@@ -30,9 +19,6 @@ public class WorkItemBuilder {
     }
     if (deltaTestrig != null) {
       wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
-    }
-    if (analysisName != null) {
-      wItem.addRequestParam(BfConsts.ARG_ANALYSIS_NAME, analysisName);
     }
     return wItem;
   }
@@ -52,19 +38,6 @@ public class WorkItemBuilder {
     return wItem;
   }
 
-  public static WorkItem getWorkItemRunAnalysis(
-      String analysisName, String containerName, String testrigName) {
-    WorkItem wItem = new WorkItem(containerName, testrigName);
-    wItem.addRequestParam(BfConsts.COMMAND_ANALYZE, "");
-    wItem.addRequestParam(BfConsts.ARG_ANALYSIS_NAME, analysisName);
-    wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
-    return wItem;
-  }
-
-  public static boolean isAnalyzingWorkItem(WorkItem workItem) {
-    return workItem.getRequestParams().containsKey(BfConsts.COMMAND_ANALYZE);
-  }
-
   public static boolean isAnsweringWorkItem(WorkItem workItem) {
     return workItem.getRequestParams().containsKey(BfConsts.COMMAND_ANSWER);
   }
@@ -79,10 +52,6 @@ public class WorkItemBuilder {
 
   public static boolean isParsingWorkItem(WorkItem workItem) {
     return workItem.getRequestParams().containsKey(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
-  }
-
-  public static String getAnalysisName(WorkItem workItem) {
-    return workItem.getRequestParams().get(BfConsts.ARG_ANALYSIS_NAME);
   }
 
   public static String getQuestionName(WorkItem workItem) {

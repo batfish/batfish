@@ -409,8 +409,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  public boolean uploadSnapshot(
-      String networkName, String snapshotName, String zipfileName, boolean autoAnalyze) {
+  public boolean uploadSnapshot(String networkName, String snapshotName, String zipfileName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_SNAPSHOT);
 
@@ -422,7 +421,6 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
       addFileMultiPart(multiPart, CoordConsts.SVC_KEY_ZIPFILE, zipfileName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_AUTO_ANALYZE, String.valueOf(autoAnalyze));
 
       return postData(webTarget, multiPart) != null;
     } catch (Exception e) {

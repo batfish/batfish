@@ -94,7 +94,6 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.TestIdResolver;
@@ -120,8 +119,7 @@ public class BatfishTest {
         BatfishTestUtils.getBatfish(
             new TestStorageProvider() {
               @Override
-              public String loadQuestion(
-                  NetworkId network, QuestionId analysis, AnalysisId question) {
+              public String loadQuestion(NetworkId network, QuestionId question) {
                 return "{\"differential\": false,\"instance\": {\"description\": \"Outputs cases"
                     + " where undefined structures (e.g., ACL, routemaps) are"
                     + " referenced.\",\"instanceName\":"

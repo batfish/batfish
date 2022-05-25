@@ -74,7 +74,6 @@ import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.ZipUtility;
-import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -92,7 +91,6 @@ import org.batfish.datamodel.isp_configuration.IspConfigurationException;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.VxlanTopology;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
 import org.batfish.identifiers.NetworkId;
@@ -134,7 +132,6 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_ANSWERS_DIR = "answers";
   private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
   private static final String RELPATH_ANSWER_JSON = "answer.json";
-  private static final String RELPATH_ANALYSES_DIR = "analyses";
   private static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
   private static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   private static final String RELPATH_DATA_PLANE = "dp";
@@ -648,20 +645,17 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String loadQuestion(
-      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) throws IOException {
-    return readFileToString(getQuestionPath(network, question, analysis), UTF_8);
+  public @Nonnull String loadQuestion(NetworkId network, QuestionId question) throws IOException {
+    return readFileToString(getQuestionPath(network, question), UTF_8);
   }
 
   @Override
-  public boolean checkQuestionExists(
-      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
-    return Files.exists(getQuestionPath(network, question, analysis));
+  public boolean checkQuestionExists(NetworkId network, QuestionId question) {
+    return Files.exists(getQuestionPath(network, question));
   }
 
-  private @Nonnull Path getQuestionPath(
-      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
-    return getQuestionDir(network, question, analysis).resolve(BfConsts.RELPATH_QUESTION_FILE);
+  private @Nonnull Path getQuestionPath(NetworkId network, QuestionId question) {
+    return getAdHocQuestionDir(network, question).resolve(BfConsts.RELPATH_QUESTION_FILE);
   }
 
   @Override
@@ -720,10 +714,9 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeQuestion(
-      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
+  public void storeQuestion(String questionStr, NetworkId network, QuestionId question)
       throws IOException {
-    Path questionPath = getQuestionPath(network, question, analysis);
+    Path questionPath = getQuestionPath(network, question);
     mkdirs(questionPath.getParent());
     writeStringToFile(questionPath, questionStr, UTF_8);
   }
@@ -740,35 +733,12 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public String loadQuestionClassId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
-    return Question.parseQuestion(loadQuestion(networkId, questionId, analysisId)).getName();
-  }
-
-  @Override
-  public boolean hasAnalysisMetadata(NetworkId networkId, AnalysisId analysisId) {
-    return Files.exists(getAnalysisMetadataPath(networkId, analysisId));
-  }
-
-  private @Nonnull Path getAnalysisMetadataPath(NetworkId networkId, AnalysisId analysisId) {
-    return getNetworkAnalysisDir(networkId, analysisId).resolve(RELPATH_METADATA_FILE);
+  public String loadQuestionClassId(NetworkId networkId, QuestionId questionId) throws IOException {
+    return Question.parseQuestion(loadQuestion(networkId, questionId)).getName();
   }
 
   private @Nonnull Path getSnapshotMetadataPath(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_METADATA_FILE);
-  }
-
-  @Override
-  public void storeAnalysisMetadata(
-      AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
-      throws IOException {
-    writeJsonFile(getAnalysisMetadataPath(networkId, analysisId), analysisMetadata);
-  }
-
-  @Override
-  public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
-      throws FileNotFoundException, IOException {
-    return readFileToString(getAnalysisMetadataPath(networkId, analysisId), UTF_8);
   }
 
   @Override
@@ -1716,15 +1686,6 @@ public class FileBasedStorage implements StorageProvider {
     return getNetworkDir(networkId).resolve(RELPATH_QUESTIONS_DIR);
   }
 
-  private @Nonnull Path getAnalysisQuestionDir(
-      NetworkId network, QuestionId question, AnalysisId analysis) {
-    return getAnalysisQuestionsDir(network, analysis).resolve(question.getId());
-  }
-
-  private @Nonnull Path getAnalysisQuestionsDir(NetworkId network, AnalysisId analysis) {
-    return getNetworkAnalysisDir(network, analysis).resolve(RELPATH_QUESTIONS_DIR);
-  }
-
   @VisibleForTesting
   @Nonnull
   Path getAnswersDir(NetworkId networkId, SnapshotId snapshotId) {
@@ -1744,10 +1705,6 @@ public class FileBasedStorage implements StorageProvider {
   @Nonnull
   private Path getOldAnswerDir(AnswerId answerId) {
     return getOldAnswersDir().resolve(answerId.getId());
-  }
-
-  private @Nonnull Path getNetworkAnalysisDir(NetworkId network, AnalysisId analysis) {
-    return getNetworkDir(network).resolve(RELPATH_ANALYSES_DIR).resolve(analysis.getId());
   }
 
   private @Nonnull Path getNetworksDir() {
@@ -1777,13 +1734,6 @@ public class FileBasedStorage implements StorageProvider {
 
   private Path getOldNodeRolesDir() {
     return _baseDir.resolve(RELPATH_NODE_ROLES_DIR);
-  }
-
-  private @Nonnull Path getQuestionDir(
-      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
-    return analysis != null
-        ? getAnalysisQuestionDir(network, question, analysis)
-        : getAdHocQuestionDir(network, question);
   }
 
   @VisibleForTesting

@@ -30,7 +30,6 @@ import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.parseCheckpointManagementData;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -157,7 +156,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ConvertStatus;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
@@ -167,7 +165,6 @@ import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
@@ -197,7 +194,6 @@ import org.batfish.grammar.palo_alto_nested.PaloAltoNestedCombinedParser;
 import org.batfish.grammar.palo_alto_nested.PaloAltoNestedFlattener;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
-import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.NetworkId;
@@ -497,83 +493,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     loadPlugins();
   }
 
-  private Answer analyze() {
-    try {
-      Answer answer = new Answer();
-      AnswerSummary summary = new AnswerSummary();
-      AnalysisId analysisName = _settings.getAnalysisName();
-      NetworkId containerName = _settings.getContainer();
-      RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
-      _idResolver
-          .listQuestions(containerName, analysisName)
-          .forEach(
-              questionName -> {
-                Optional<QuestionId> questionIdOpt =
-                    _idResolver.getQuestionId(questionName, containerName, analysisName);
-                checkArgument(
-                    questionIdOpt.isPresent(),
-                    "Question '%s' for analysis '%s' for network '%s' was deleted in the middle of"
-                        + " this operation",
-                    questionName,
-                    containerName,
-                    analysisName);
-                _settings.setQuestionName(questionIdOpt.get());
-                Answer currentAnswer = answer();
-                // Ensuring that question was parsed successfully
-                if (currentAnswer.getQuestion() != null) {
-                  try {
-                    // TODO: This can be represented much cleanly and easily with a Json
-                    _logger.infof(
-                        "Ran question:%s from analysis:%s in container:%s; work-id:%s, status:%s, "
-                            + "computed dataplane:%s, parameters:%s\n",
-                        questionName,
-                        analysisName,
-                        containerName,
-                        getTaskId(),
-                        currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
-                        currentAnswer.getQuestion().getDataPlane(),
-                        BatfishObjectMapper.writeString(
-                            currentAnswer.getQuestion().getInstance().getVariables()));
-                  } catch (JsonProcessingException e) {
-                    throw new BatfishException(
-                        String.format(
-                            "Error logging question %s in analysis %s", questionName, analysisName),
-                        e);
-                  }
-                }
-                try {
-                  outputAnswer(currentAnswer);
-                  outputAnswerMetadata(currentAnswer);
-                  ae.getAnswers().put(questionName, currentAnswer);
-                } catch (Exception e) {
-                  Answer errorAnswer = new Answer();
-                  errorAnswer.addAnswerElement(
-                      new BatfishStackTrace(new BatfishException("Failed to output answer", e)));
-                  ae.getAnswers().put(questionName, errorAnswer);
-                }
-                ae.getAnswers().put(questionName, currentAnswer);
-                summary.combine(currentAnswer.getSummary());
-              });
-
-      answer.addAnswerElement(ae);
-      answer.setSummary(summary);
-      return answer;
-    } finally {
-      // ensure question name is null so logger does not try to write analysis answer into a
-      // question's answer folder
-      _settings.setQuestionName(null);
-    }
-  }
-
   public Answer answer() {
     Question question = null;
 
     // return right away if we cannot parse the question successfully
     String rawQuestionStr;
     try {
-      rawQuestionStr =
-          _storage.loadQuestion(
-              _settings.getContainer(), _settings.getQuestionName(), _settings.getAnalysisName());
+      rawQuestionStr = _storage.loadQuestion(_settings.getContainer(), _settings.getQuestionName());
     } catch (Exception e) {
       Answer answer = new Answer();
       BatfishException exception = new BatfishException("Could not read question", e);
@@ -1464,14 +1390,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     SnapshotId referenceSnapshot = _settings.getDiffQuestion() ? _referenceSnapshot : null;
     NetworkId networkId = _settings.getContainer();
-    AnalysisId analysisId = _settings.getAnalysisName();
     NodeRolesId networkNodeRolesId =
         _idResolver
             .getNetworkNodeRolesId(networkId)
             .orElse(NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID);
     AnswerId baseAnswerId =
         _idResolver.getAnswerId(
-            networkId, _snapshot, questionId, networkNodeRolesId, referenceSnapshot, analysisId);
+            networkId, _snapshot, questionId, networkNodeRolesId, referenceSnapshot);
 
     _storage.storeAnswerMetadata(
         networkId,
@@ -2159,11 +2084,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (_settings.getAnswer()) {
       answer.append(answer());
-      action = true;
-    }
-
-    if (_settings.getAnalyze()) {
-      answer.append(analyze());
       action = true;
     }
 
@@ -3207,14 +3127,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SnapshotId referenceSnapshot = _settings.getDiffQuestion() ? _referenceSnapshot : null;
     NetworkId networkId = _settings.getContainer();
     QuestionId questionId = _settings.getQuestionName();
-    AnalysisId analysisId = _settings.getAnalysisName();
     NodeRolesId networkNodeRolesId =
         _idResolver
             .getNetworkNodeRolesId(networkId)
             .orElse(NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID);
     AnswerId baseAnswerId =
         _idResolver.getAnswerId(
-            networkId, _snapshot, questionId, networkNodeRolesId, referenceSnapshot, analysisId);
+            networkId, _snapshot, questionId, networkNodeRolesId, referenceSnapshot);
     _storage.storeAnswer(networkId, _snapshot, structuredAnswerString, baseAnswerId);
   }
 
