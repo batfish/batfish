@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import java.io.ObjectStreamException;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -79,5 +80,10 @@ public final class FibForward implements FibAction {
   @Override
   public <T> T accept(FibActionVisitor<T> visitor) {
     return visitor.visitFibForward(this);
+  }
+
+  /** Re-intern after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.get(this);
   }
 }

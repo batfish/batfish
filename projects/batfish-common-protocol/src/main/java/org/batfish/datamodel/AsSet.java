@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 import com.google.errorprone.annotations.concurrent.LazyInit;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -186,5 +187,10 @@ public class AsSet implements Serializable, Comparable<AsSet> {
       return Long.toString(_value[0]);
     }
     return "{" + StringUtils.join(_value, ',') + "}";
+  }
+
+  /** Re-intern after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.get(this);
   }
 }

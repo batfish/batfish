@@ -8,6 +8,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.io.ObjectStreamException;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -129,5 +130,10 @@ public final class NextHopInterface implements NextHop {
         ip);
     _interfaceName = interfaceName;
     _ip = ip;
+  }
+
+  /** Re-intern after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.getUnchecked(this);
   }
 }

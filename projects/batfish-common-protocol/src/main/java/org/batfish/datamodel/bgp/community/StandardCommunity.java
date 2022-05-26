@@ -47,7 +47,7 @@ public final class StandardCommunity extends Community {
   public static final StandardCommunity ROUTE_FILTER_V6 =
       StandardCommunity.of(WellKnownCommunity.ROUTE_FILTER_V6);
 
-  private long _value;
+  private final long _value;
 
   // Cached string representation
   @Nullable private String _str;
