@@ -34,7 +34,9 @@ import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
 import com.carrotsearch.hppc.procedures.IntProcedure;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -60,19 +62,19 @@ import org.apache.logging.log4j.Logger;
  * <p>It was originally authored by John Whaley, and has since been heavily modified and improved by
  * the Batfish Authors.
  */
-public class JFactory extends BDDFactory {
+public class JFactory extends BDDFactory implements Serializable {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
   private static final boolean CACHESTATS = false;
 
   /** A cache of BDDImpls that have been freed and may now be reused. */
-  private final Queue<BDDImpl> _bddReuse = new LinkedList<>();
+  private transient Queue<BDDImpl> _bddReuse;
 
   /** The limit on the size of {@link #_bddReuse}. */
   private static final int BDD_REUSE_LIMIT = 1024;
 
   /** The number of BDDImpl objects reused since the last garbage collection. */
-  private long reusedBDDs;
+  private transient long reusedBDDs;
 
   /**
    * Whether to flush (clear completely) the cache when live BDD nodes are garbage collected. If
@@ -89,6 +91,16 @@ public class JFactory extends BDDFactory {
   protected JFactory() {
     supportSet = new int[0];
     bddrefstack = new IntStack();
+    _bddReuse = new LinkedList<>();
+  }
+
+  private void readObject(java.io.ObjectInputStream stream)
+      throws IOException, ClassNotFoundException {
+    stream.defaultReadObject();
+    supportSet = new int[0];
+    bddrefstack = new IntStack();
+    _bddReuse = new LinkedList<>();
+    quantvarset = new int[bddvarnum];
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -653,7 +665,7 @@ public class JFactory extends BDDFactory {
   private int bddfreenum; /* Number of free nodes */
   private int bddproduced; /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
-  private final IntStack bddrefstack; /* BDDs referenced during the current computation. */
+  private transient IntStack bddrefstack; /* BDDs referenced during the current computation. */
   private int[] bddvar2level; /* Variable -> level table */
   private int[] bddlevel2var; /* Level -> variable table */
   private boolean bddresized; /* Flag indicating a resize of the nodetable */
@@ -4242,31 +4254,31 @@ public class JFactory extends BDDFactory {
     {1, 1, 0, 0}, /* not                       ( ! )         */
   };
 
-  private int applyop; /* Current operator for apply */
-  private int appexop; /* Current operator for appex */
-  private int appexid; /* Current cache id for appex */
-  private int quantid; /* Current cache id for quantifications */
-  private int[] quantvarset; /* Current variable set for quant. */
-  private int quantvarsetID; /* Current id used in quantvarset */
-  private int quantlast; /* Current last variable to be quant. */
-  private int replaceid; /* Current cache id for replace */
-  private int[] replacepair; /* Current replace pair */
-  private int replacelast; /* Current last var. level to replace */
-  private int composelevel; /* Current variable used for compose */
-  private int miscid; /* Current cache id for other results */
-  private int supportID; /* Current ID (true value) for support */
-  private int supportMin; /* Min. used level in support calc. */
-  private int supportMax; /* Max. used level in support calc. */
-  @Nonnull private int[] supportSet; /* The found support set */
-  private BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
-  private BddCache quantcache; /* Cache for exist/forall results */
-  private BddCache appexcache; /* Cache for appex/appall results */
-  private BddCache replacecache; /* Cache for replace results */
-  private BddCache misccache; /* Cache for other results */
-  private BddCache multiopcache; /* Cache for varargs operators */
-  private BddCache countcache; /* Cache for count results */
+  private transient int applyop; /* Current operator for apply */
+  private transient int appexop; /* Current operator for appex */
+  private transient int appexid; /* Current cache id for appex */
+  private transient int quantid; /* Current cache id for quantifications */
+  private transient int[] quantvarset; /* Current variable set for quant. */
+  private transient int quantvarsetID; /* Current id used in quantvarset */
+  private transient int quantlast; /* Current last variable to be quant. */
+  private transient int replaceid; /* Current cache id for replace */
+  private transient int[] replacepair; /* Current replace pair */
+  private transient int replacelast; /* Current last var. level to replace */
+  private transient int composelevel; /* Current variable used for compose */
+  private transient int miscid; /* Current cache id for other results */
+  private transient int supportID; /* Current ID (true value) for support */
+  private transient int supportMin; /* Min. used level in support calc. */
+  private transient int supportMax; /* Max. used level in support calc. */
+  @Nonnull private transient int[] supportSet; /* The found support set */
+  private transient BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
+  private transient BddCache quantcache; /* Cache for exist/forall results */
+  private transient BddCache appexcache; /* Cache for appex/appall results */
+  private transient BddCache replacecache; /* Cache for replace results */
+  private transient BddCache misccache; /* Cache for other results */
+  private transient BddCache multiopcache; /* Cache for varargs operators */
+  private transient BddCache countcache; /* Cache for count results */
   private int cacheratio;
-  private int satPolarity;
+  private transient int satPolarity;
   /* Used instead of local variable in order
   to avoid compiler warning about 'first'
   being clobbered by setjmp */
@@ -4624,7 +4636,7 @@ public class JFactory extends BDDFactory {
     p.last = 0;
   }
 
-  class bddPair extends BDDPairing {
+  class bddPair extends BDDPairing implements Serializable {
     int[] result;
     int last;
     int id;
@@ -4956,10 +4968,10 @@ public class JFactory extends BDDFactory {
     bdd_setvarorder(neworder);
   }
 
-  private int[] extroots;
-  private int extrootsize;
+  private transient int[] extroots;
+  private transient int extrootsize;
 
-  private levelData[] levels; /* Indexed by variable! */
+  private transient levelData[] levels; /* Indexed by variable! */
 
   static class levelData {
     int start; /* Start of this sub-table (entry in "bddnodes") */
@@ -4974,7 +4986,7 @@ public class JFactory extends BDDFactory {
   }
 
   /* Interaction matrix */
-  private imatrix iactmtx;
+  private transient imatrix iactmtx;
 
   private int bdd_getnodenum() {
     return bddnodesize - bddfreenum;

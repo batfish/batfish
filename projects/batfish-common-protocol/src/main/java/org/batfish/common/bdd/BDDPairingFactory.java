@@ -6,6 +6,7 @@ import static org.parboiled.common.Preconditions.checkArgument;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -18,7 +19,7 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.BDDVarPair;
 
-public final class BDDPairingFactory {
+public final class BDDPairingFactory implements Serializable {
   private final BDDFactory _bddFactory;
   private final Set<BDDVarPair> _varPairs;
 

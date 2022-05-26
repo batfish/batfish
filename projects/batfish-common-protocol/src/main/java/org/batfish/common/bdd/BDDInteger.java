@@ -3,6 +3,8 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,22 +14,32 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
-public abstract class BDDInteger {
+public abstract class BDDInteger implements Serializable {
   protected final BDDFactory _factory;
   protected final BDD[] _bitvec;
   protected final long _maxVal;
 
   // Temporary ArrayLists used to optimize some internal computations.
-  private final List<BDD> _trues;
-  private final List<BDD> _falses;
+  private transient List<BDD> _trues;
+  private transient List<BDD> _falses;
 
   protected BDDInteger(BDDFactory factory, BDD[] bitvec) {
     checkArgument(bitvec.length < 64, "Only lengths up to 63 are supported");
     _factory = factory;
     _bitvec = bitvec;
     _maxVal = 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - bitvec.length);
-    _trues = new ArrayList<>(bitvec.length);
-    _falses = new ArrayList<>(bitvec.length);
+    initTransientFields();
+  }
+
+  private void readObject(java.io.ObjectInputStream stream)
+      throws IOException, ClassNotFoundException {
+    stream.defaultReadObject();
+    initTransientFields();
+  }
+
+  private void initTransientFields() {
+    _trues = new ArrayList<>(_bitvec.length);
+    _falses = new ArrayList<>(_bitvec.length);
   }
 
   /** Returns the number of bits in this {@link BDDInteger}. */

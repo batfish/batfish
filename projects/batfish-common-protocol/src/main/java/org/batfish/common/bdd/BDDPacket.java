@@ -6,6 +6,8 @@ import static org.batfish.common.bdd.BDDUtils.swapPairing;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.errorprone.annotations.concurrent.LazyInit;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +30,7 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
  *
  * @author Ryan Beckett
  */
-public class BDDPacket {
+public class BDDPacket implements Serializable {
 
   /*
    * Initial size of the BDD factory node table. Automatically resized as needed. Increasing this
@@ -93,13 +95,12 @@ public class BDDPacket {
   private final @Nonnull BDD _tcpUrg;
 
   private final BDDPairing _swapSourceAndDestinationPairing;
-  private final IpSpaceToBDD _dstIpSpaceToBDD;
-  private final IpSpaceToBDD _srcIpSpaceToBDD;
   @LazyInit private @Nullable BDD _saneFlow;
 
   // Generating flow preference for representative flow picking
-  private final Supplier<BDDFlowConstraintGenerator> _flowConstraintGeneratorSupplier =
-      Suppliers.memoize(() -> new BDDFlowConstraintGenerator(this));
+  private transient Supplier<BDDFlowConstraintGenerator> _flowConstraintGeneratorSupplier;
+  private transient IpSpaceToBDD _dstIpSpaceToBDD;
+  private transient IpSpaceToBDD _srcIpSpaceToBDD;
 
   public static BDDFactory defaultFactory(BiFunction<Integer, Integer, BDDFactory> init) {
     BDDFactory factory =
@@ -166,8 +167,20 @@ public class BDDPacket {
             BDDUtils.concatBitvectors(_dstIp.getVar()._bitvec, _dstPort.getVar()._bitvec),
             BDDUtils.concatBitvectors(_srcIp.getVar()._bitvec, _srcPort.getVar()._bitvec));
 
+    initTransientFields();
+  }
+
+  private void initTransientFields() {
+    _flowConstraintGeneratorSupplier =
+        Suppliers.memoize(() -> new BDDFlowConstraintGenerator(this));
     _dstIpSpaceToBDD = new IpSpaceToBDD(_dstIp.getVar());
     _srcIpSpaceToBDD = new IpSpaceToBDD(_srcIp.getVar());
+  }
+
+  private void readObject(java.io.ObjectInputStream stream)
+      throws IOException, ClassNotFoundException {
+    stream.defaultReadObject();
+    initTransientFields();
   }
 
   public @Nonnull BDD getSaneFlowConstraint() {

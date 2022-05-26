@@ -3,6 +3,7 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.Lists;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +14,7 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.LineAction;
 
-public final class BDDOps {
+public final class BDDOps implements Serializable {
   private final BDDFactory _factory;
 
   public BDDOps(BDDFactory factory) {

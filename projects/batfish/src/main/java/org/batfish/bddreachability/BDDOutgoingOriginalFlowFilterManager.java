@@ -6,6 +6,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,7 +38,7 @@ import org.batfish.datamodel.IpAccessList;
  * permitted by that egress interface's {@link Interface#getOutgoingOriginalFlowFilter()
  * outgoingOriginalFlowFilter}.
  */
-public final class BDDOutgoingOriginalFlowFilterManager {
+public final class BDDOutgoingOriginalFlowFilterManager implements Serializable {
   private static final Logger LOGGER =
       LogManager.getLogger(BDDOutgoingOriginalFlowFilterManager.class);
   private static final String VAR_NAME = "OutgoingInterface";
