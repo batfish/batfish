@@ -2,11 +2,21 @@ package org.batfish.datamodel;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
 public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
+  private static class DefaultSameRoutePreference
+      implements Comparator<AnnotatedRoute<AbstractRoute>>, Serializable {
+    private static final DefaultSameRoutePreference INSTANCE = new DefaultSameRoutePreference();
+
+    @Override
+    public int compare(AnnotatedRoute<AbstractRoute> o1, AnnotatedRoute<AbstractRoute> o2) {
+      return 0;
+    }
+  }
 
   public static class Builder {
 
@@ -19,7 +29,7 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
     private Builder() {
       _longestPrefixMatchResults = ImmutableMap.of();
       _mergeRouteTrues = ImmutableSet.of();
-      _routePreferenceComparator = (a, b) -> 0;
+      _routePreferenceComparator = DefaultSameRoutePreference.INSTANCE;
       _routes = ImmutableSet.of();
       _backupRoutes = ImmutableSet.of();
     }

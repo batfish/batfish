@@ -1,14 +1,13 @@
 package org.batfish.datamodel;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 
@@ -20,21 +19,25 @@ public class MockDataPlane implements DataPlane {
     @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
     @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
     @Nonnull private Map<String, Map<String, Fib>> _fibs;
-    @Nullable private ForwardingAnalysis _forwardingAnalysis;
-
-    @Nonnull
-    private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> _ribs;
-
+    @Nonnull private ForwardingAnalysis _forwardingAnalysis;
     @Nonnull private Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
     @Nonnull private Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
+    private @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+        _prefixTracingInfoSummary;
+    private @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+        _ribs;
 
     private Builder() {
-      _bgpRoutes = HashBasedTable.create();
-      _evpnRoutes = HashBasedTable.create();
+      _bgpRoutes = ImmutableTable.of();
+      _bgpBackupRoutes = ImmutableTable.of();
+      _evpnRoutes = ImmutableTable.of();
+      _evpnBackupRoutes = ImmutableTable.of();
       _fibs = ImmutableMap.of();
+      _forwardingAnalysis = MockForwardingAnalysis.builder().build();
+      _layer2VniSettings = ImmutableTable.of();
+      _layer3VniSettings = ImmutableTable.of();
+      _prefixTracingInfoSummary = ImmutableSortedMap.of();
       _ribs = ImmutableSortedMap.of();
-      _layer2VniSettings = HashBasedTable.create();
-      _layer3VniSettings = HashBasedTable.create();
     }
 
     public MockDataPlane build() {
@@ -85,6 +88,14 @@ public class MockDataPlane implements DataPlane {
       return this;
     }
 
+    public Builder setPrefixTracingInfoSummary(
+        @Nonnull
+            SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+                prefixTracingInfoSummary) {
+      _prefixTracingInfoSummary = prefixTracingInfoSummary;
+      return this;
+    }
+
     public Builder setRibs(
         SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs) {
       _ribs = ribs;
@@ -96,19 +107,20 @@ public class MockDataPlane implements DataPlane {
     return new Builder();
   }
 
-  @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
-  @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
-  @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
-  @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
+  @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+  @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
+  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
+  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
   @Nonnull private final Map<String, Map<String, Fib>> _fibs;
-  @Nullable private final ForwardingAnalysis _forwardingAnalysis;
+  @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
 
-  @Nonnull
-  private final SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+  @Nonnull private final Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+  @Nonnull private final Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
+  private final @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+      _prefixTracingInfoSummary;
+  private final @Nonnull SortedMap<
+          String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       _ribs;
-
-  @Nonnull private Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
-  @Nonnull private Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
 
   private MockDataPlane(Builder builder) {
     _bgpRoutes = builder._bgpRoutes;
@@ -117,9 +129,10 @@ public class MockDataPlane implements DataPlane {
     _evpnBackupRoutes = builder._evpnBackupRoutes;
     _fibs = builder._fibs;
     _forwardingAnalysis = builder._forwardingAnalysis;
-    _ribs = ImmutableSortedMap.copyOf(builder._ribs);
     _layer2VniSettings = builder._layer2VniSettings;
     _layer3VniSettings = builder._layer3VniSettings;
+    _prefixTracingInfoSummary = builder._prefixTracingInfoSummary;
+    _ribs = ImmutableSortedMap.copyOf(builder._ribs);
   }
 
   @Nonnull
@@ -152,9 +165,8 @@ public class MockDataPlane implements DataPlane {
     return _fibs;
   }
 
-  @Nullable
   @Override
-  public ForwardingAnalysis getForwardingAnalysis() {
+  public @Nonnull ForwardingAnalysis getForwardingAnalysis() {
     return _forwardingAnalysis;
   }
 
@@ -168,7 +180,7 @@ public class MockDataPlane implements DataPlane {
   @Nonnull
   public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       getPrefixTracingInfoSummary() {
-    return ImmutableSortedMap.of();
+    return _prefixTracingInfoSummary;
   }
 
   @Nonnull
