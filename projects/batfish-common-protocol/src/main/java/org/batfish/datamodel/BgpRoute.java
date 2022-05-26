@@ -57,6 +57,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         boolean receivedFromRouteReflectorClient,
         @Nullable RoutingProtocol srcProtocol,
         int weight) {
+      checkArgument(
+          protocol == RoutingProtocol.BGP
+              || protocol == RoutingProtocol.IBGP
+              || protocol == RoutingProtocol.AGGREGATE,
+          "Invalid BgpRoute protocol");
       // Intern.
       return ATTRIBUTE_CACHE.get(
           new BgpRouteAttributes(
@@ -93,11 +98,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       _localPreference = localPreference;
       _med = med;
       _originatorIp = originatorIp;
-      _originMechanism = originMechanism;
-      _originType = originType;
-      _protocol = protocol;
+      _originMechanism = (byte) originMechanism.ordinal();
+      _originType = (byte) originType.ordinal();
+      _protocol = (byte) protocol.ordinal();
       _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
-      _srcProtocol = srcProtocol;
+      _srcProtocol = srcProtocol == null ? -1 : (byte) srcProtocol.ordinal();
       _weight = weight;
     }
 
@@ -136,11 +141,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         h = h * 31 + Long.hashCode(_localPreference);
         h = h * 31 + Long.hashCode(_med);
         h = h * 31 + _originatorIp.hashCode();
-        h = h * 31 + _originMechanism.ordinal();
-        h = h * 31 + _originType.ordinal();
-        h = h * 31 + _protocol.ordinal();
+        h = h * 31 + _originMechanism;
+        h = h * 31 + _originType;
+        h = h * 31 + _protocol;
         h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
-        h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
+        h = h * 31 + _srcProtocol;
         h = h * 31 + _weight;
         _hashCode = h;
       }
@@ -153,12 +158,37 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     protected final long _localPreference;
     protected final long _med;
     protected final @Nonnull Ip _originatorIp;
-    protected final @Nonnull OriginMechanism _originMechanism;
-    protected final @Nonnull OriginType _originType;
-    protected final @Nonnull RoutingProtocol _protocol;
     protected final boolean _receivedFromRouteReflectorClient;
-    protected final @Nullable RoutingProtocol _srcProtocol;
     protected final int _weight;
+
+    /////
+    // Java enums are by-reference; using bytes of their ordinals (-1 for null) saves substantial
+    // memory.
+    /////
+    /** Non-null */
+    protected final byte _originMechanism;
+    /** Non-null */
+    protected final byte _originType;
+    /** Non-null */
+    protected final byte _protocol;
+    /** -1 for null */
+    protected final byte _srcProtocol;
+
+    public @Nonnull OriginMechanism getOriginMechanism() {
+      return OriginMechanism.fromOrdinal(_originMechanism);
+    }
+
+    public @Nonnull OriginType getOriginType() {
+      return OriginType.fromOrdinal(_originType);
+    }
+
+    public @Nonnull RoutingProtocol getProtocol() {
+      return RoutingProtocol.fromOrdinal(_protocol);
+    }
+
+    public @Nullable RoutingProtocol getSrcProtocol() {
+      return _srcProtocol == -1 ? null : RoutingProtocol.fromOrdinal(_srcProtocol);
+    }
 
     /** Re-intern after deserialization. */
     private Object readResolve() throws ObjectStreamException {
@@ -450,11 +480,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, admin, tag, nonRouting, nonForwarding);
-    checkArgument(
-        attributes._protocol == RoutingProtocol.BGP
-            || attributes._protocol == RoutingProtocol.IBGP
-            || attributes._protocol == RoutingProtocol.AGGREGATE,
-        "Invalid BgpRoute protocol");
     _attributes = attributes;
     _nextHop = nextHop;
     _receivedFromIp = receivedFromIp;
@@ -521,14 +546,14 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Nonnull
   @JsonProperty(PROP_ORIGIN_MECHANISM)
   public OriginMechanism getOriginMechanism() {
-    return _attributes._originMechanism;
+    return _attributes.getOriginMechanism();
   }
 
   @Nonnull
   @JsonProperty(PROP_ORIGIN_TYPE)
   @Override
   public OriginType getOriginType() {
-    return _attributes._originType;
+    return _attributes.getOriginType();
   }
 
   @Nonnull
@@ -536,7 +561,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonProperty(PROP_PROTOCOL)
   @Override
   public RoutingProtocol getProtocol() {
-    return _attributes._protocol;
+    return _attributes.getProtocol();
   }
 
   @Nullable
@@ -553,7 +578,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonProperty(PROP_SRC_PROTOCOL)
   @Override
   public @Nullable RoutingProtocol getSrcProtocol() {
-    return _attributes._srcProtocol;
+    return _attributes.getSrcProtocol();
   }
 
   @JsonProperty(PROP_WEIGHT)
@@ -578,7 +603,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   /** Whether the route is a trackable redistributed local route. */
   @JsonIgnore
   public boolean isTrackableLocalRoute() {
-    switch (_attributes._originMechanism) {
+    switch (_attributes.getOriginMechanism()) {
       case NETWORK:
       case REDISTRIBUTE:
         return true;
@@ -587,7 +612,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         return false;
       default:
         throw new IllegalArgumentException(
-            String.format("Unhandled OriginMechanism: %s", _attributes._originMechanism));
+            String.format("Unhandled OriginMechanism: %s", _attributes.getOriginMechanism()));
     }
   }
 }

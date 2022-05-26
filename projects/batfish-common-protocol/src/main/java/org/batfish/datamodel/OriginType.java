@@ -48,4 +48,10 @@ public enum OriginType {
   public int getPreference() {
     return _preference;
   }
+
+  private static OriginType[] VALUES = OriginType.values();
+
+  public static OriginType fromOrdinal(int ordinal) {
+    return VALUES[ordinal];
+  }
 }
