@@ -11,6 +11,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -167,5 +168,10 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
   @Override
   public String toString() {
     return _asSets.toString();
+  }
+
+  /** Re-intern after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return of(_asSets);
   }
 }
