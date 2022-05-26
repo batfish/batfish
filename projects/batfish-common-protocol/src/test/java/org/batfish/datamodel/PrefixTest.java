@@ -6,12 +6,15 @@ import static org.batfish.datamodel.Prefix.strict;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import net.sf.javabdd.BDD;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.bdd.BDDUtils;
 import org.batfish.common.bdd.ImmutableBDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -144,5 +147,23 @@ public class PrefixTest {
     p1 = Prefix.parse("0.0.0.0/32");
     p2 = Prefix.parse("0.0.0.255/32");
     assertThat(longestCommonPrefix(p1, p2), equalTo(Prefix.parse("0.0.0.0/24")));
+  }
+
+  private static void assertSerialization(Prefix p) {
+    assertThat(p, sameInstance(BatfishObjectMapper.clone(p, Prefix.class)));
+    assertThat(p, sameInstance(SerializationUtils.clone(p)));
+  }
+
+  @Test
+  public void testSerialization() {
+    for (Prefix p :
+        new Prefix[] {
+          Prefix.ZERO,
+          Prefix.parse("1.2.3.4/5"),
+          Prefix.parse("1.2.3.4/32"),
+          Prefix.parse("255.255.255.255/32")
+        }) {
+      assertSerialization(p);
+    }
   }
 }
