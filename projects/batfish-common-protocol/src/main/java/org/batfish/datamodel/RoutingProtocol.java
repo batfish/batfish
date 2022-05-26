@@ -844,4 +844,10 @@ public enum RoutingProtocol {
   public String protocolName() {
     return _protocolName;
   }
+
+  private static RoutingProtocol[] VALUES = RoutingProtocol.values();
+
+  public static RoutingProtocol fromOrdinal(int ordinal) {
+    return VALUES[ordinal];
+  }
 }
