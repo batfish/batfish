@@ -6,9 +6,12 @@ import static org.batfish.storage.FileBasedStorage.ISP_CONFIGURATION_KEY;
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.batfish.storage.FileBasedStorage.keyInDir;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -23,6 +26,9 @@ import static org.junit.Assert.fail;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import java.io.ByteArrayInputStream;
@@ -58,13 +64,27 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.EvpnType5Route;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MockDataPlane;
+import org.batfish.datamodel.MockFib;
+import org.batfish.datamodel.MockForwardingAnalysis;
+import org.batfish.datamodel.MockRib;
+import org.batfish.datamodel.OriginMechanism;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -914,5 +934,68 @@ public final class FileBasedStorageTest {
   public void testKeyInDir() {
     assertTrue(keyInDir("configs/rtr.cfg", "configs"));
     assertFalse(keyInDir("configs.ignore", "configs"));
+  }
+
+  /** Test that the dataplane serializes and deserializes successfully. */
+  @Test
+  public void testDataplane() throws IOException {
+    NetworkSnapshot snapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+
+    // Most fields are tested shallowly. However, since BGP and EVPN have two different fields where
+    // a mixup would still be type-correct, actually test them with distinct values.
+    Bgpv4Route bgp = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO).build();
+    Bgpv4Route bgpBackup = Bgpv4Route.testBuilder().setNetwork(Prefix.MULTICAST).build();
+    EvpnType5Route evpn =
+        EvpnType5Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHopInterface("blah")
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
+            .setVni(1)
+            .build();
+    EvpnType5Route evpnBackup = evpn.toBuilder().setNetwork(Prefix.MULTICAST).build();
+    ForwardingAnalysis fa =
+        MockForwardingAnalysis.builder()
+            .setArpReplies(ImmutableMap.of("n", ImmutableMap.of("i", UniverseIpSpace.INSTANCE)))
+            .build();
+
+    DataPlane dp =
+        MockDataPlane.builder()
+            .setBgpRoutes(ImmutableTable.of("n", "v", ImmutableSet.of(bgp)))
+            .setBgpBackupRoutes(ImmutableTable.of("n", "v", ImmutableSet.of(bgpBackup)))
+            .setEvpnRoutes(ImmutableTable.of("n", "v", ImmutableSet.of(evpn)))
+            .setEvpnBackupRoutes(ImmutableTable.of("n", "v", ImmutableSet.of(evpnBackup)))
+            .setForwardingAnalysis(fa)
+            .setFibs(ImmutableMap.of("n", ImmutableMap.of("v", MockFib.builder().build())))
+            .setLayer2VniSettings(ImmutableTable.of("n", "v2", ImmutableSet.of()))
+            .setLayer3VniSettings(ImmutableTable.of("n", "v3", ImmutableSet.of()))
+            .setPrefixTracingInfoSummary(
+                ImmutableSortedMap.of("n", ImmutableSortedMap.of("vp", ImmutableMap.of())))
+            .setRibs(
+                ImmutableSortedMap.of("n", ImmutableSortedMap.of("vr", MockRib.builder().build())))
+            .build();
+
+    _storage.storeDataPlane(dp, snapshot);
+    DataPlane dp2 = _storage.loadDataPlane(snapshot);
+    assertThat(Iterables.getOnlyElement(dp2.getBgpRoutes().cellSet()).getValue(), contains(bgp));
+    assertThat(
+        Iterables.getOnlyElement(dp2.getBgpBackupRoutes().cellSet()).getValue(),
+        contains(bgpBackup));
+    assertThat(Iterables.getOnlyElement(dp2.getEvpnRoutes().cellSet()).getValue(), contains(evpn));
+    assertThat(
+        Iterables.getOnlyElement(dp2.getEvpnBackupRoutes().cellSet()).getValue(),
+        contains(evpnBackup));
+    assertThat(dp2.getFibs(), hasEntry(equalTo("n"), hasKey("v")));
+    assertThat(
+        dp2.getForwardingAnalysis().getArpReplies().get("n"),
+        hasEntry("i", UniverseIpSpace.INSTANCE));
+    assertThat(dp2.getLayer2Vnis().rowMap(), hasEntry(equalTo("n"), hasKey("v2")));
+    assertThat(dp2.getLayer3Vnis().rowMap(), hasEntry(equalTo("n"), hasKey("v3")));
+    assertThat(dp2.getPrefixTracingInfoSummary(), hasEntry(equalTo("n"), hasKey("vp")));
+    assertThat(dp2.getRibs(), hasEntry(equalTo("n"), hasKey("vr")));
   }
 }
