@@ -74,6 +74,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -1167,15 +1168,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
     try {
-      DataPlane dp = _cachedDataPlanes.getIfPresent(snapshot);
-      if (dp == null) {
-        newBatch("Loading data plane from disk", 0);
-        dp = _storage.loadDataPlane(snapshot);
-        _cachedDataPlanes.put(snapshot, dp);
-      }
-      return dp;
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+      return _cachedDataPlanes.get(
+          snapshot,
+          () -> {
+            LOGGER.info("Data plane cache miss on snapshot {}", snapshot);
+            long start = System.currentTimeMillis();
+            newBatch("Loading data plane from disk", 0);
+            DataPlane dp = _storage.loadDataPlane(snapshot);
+            LOGGER.info(
+                "Loading data plane for snapshot {} took {}ms",
+                snapshot,
+                System.currentTimeMillis() - start);
+            return dp;
+          });
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
     }
   }
 
