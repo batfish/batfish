@@ -9,6 +9,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -158,6 +159,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     protected final boolean _receivedFromRouteReflectorClient;
     protected final @Nullable RoutingProtocol _srcProtocol;
     protected final int _weight;
+
+    /** Re-intern after deserialization. */
+    private Object readResolve() throws ObjectStreamException {
+      return ATTRIBUTE_CACHE.get(this);
+    }
   }
 
   /** Local-preference has a maximum value of u32 max. */

@@ -9,6 +9,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedSet;
@@ -149,6 +150,11 @@ public final class CommunitySet implements Serializable {
                     assert set instanceof ImmutableSet;
                     return new CommunitySet((ImmutableSet<Community>) set);
                   }));
+
+  /** Re-intern after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return of(_communities);
+  }
 
   /* Cache the hashcode */
   private transient int _hashCode = 0;

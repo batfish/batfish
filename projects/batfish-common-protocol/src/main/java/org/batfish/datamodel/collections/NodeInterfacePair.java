@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -93,5 +94,10 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
     return hostCmp != 0
         ? hostCmp
         : InterfaceNameComparator.instance().compare(_interfaceName, other._interfaceName);
+  }
+
+  /** Re-intern after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.getUnchecked(this);
   }
 }

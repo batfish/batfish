@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import java.io.ObjectStreamException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.FibActionVisitor;
@@ -48,5 +49,10 @@ public class FibNextVrf implements FibAction {
   @Override
   public int hashCode() {
     return _nextVrf.hashCode();
+  }
+
+  /** Re-intern after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.get(_nextVrf);
   }
 }
