@@ -21,7 +21,7 @@ junit_tests(
         "//projects/question",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
-        "@maven//:javax_annotation_javax_annotation_api",
+        "@maven//:jakarta_annotation_jakarta_annotation_api",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
     ],
