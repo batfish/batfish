@@ -63,7 +63,7 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:com_ibm_icu_icu4j",
         "@maven//:commons_io_commons_io",
-        "@maven//:javax_ws_rs_javax_ws_rs_api",
+        "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_collections4",
         "@maven//:org_apache_commons_commons_configuration2",

@@ -32,7 +32,7 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:commons_io_commons_io",
         "@maven//:io_github_java_diff_utils_java_diff_utils",
-        "@maven//:javax_ws_rs_javax_ws_rs_api",
+        "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_codehaus_jettison_jettison",
         "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
