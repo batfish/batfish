@@ -30,7 +30,7 @@
                                         jakarta.activation:jakarta.activation-api
                                     </ignoredUnusedDeclaredDependency>
                                     <ignoredUnusedDeclaredDependency>
-                                        javax.xml.bind:jaxb-api
+                                        jakarta.xml.bind:jakarta.xml.bind-api
                                     </ignoredUnusedDeclaredDependency>
                                     <ignoredUnusedDeclaredDependency>
                                         org.apache.logging.log4j:log4j-core
@@ -175,8 +175,8 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
             <scope>runtime</scope>
         </dependency>
 
