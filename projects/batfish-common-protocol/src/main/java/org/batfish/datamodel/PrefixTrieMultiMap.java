@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.graph.Traverser;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
@@ -541,5 +542,38 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
     return _root != null
         && prefixSpace.getPrefixRanges().stream().anyMatch(_root::intersectsPrefixRange);
+  }
+
+  private static class SerializedForm<T> implements Serializable {
+    private final ImmutableList<Prefix> _keys;
+    private final ImmutableList<Set<T>> _values;
+
+    private SerializedForm(ImmutableList<Prefix> keys, ImmutableList<Set<T>> values) {
+      _keys = keys;
+      _values = values;
+    }
+
+    public static <T> SerializedForm<T> of(PrefixTrieMultiMap<T> map) {
+      ImmutableList.Builder<Prefix> keys = ImmutableList.builder();
+      ImmutableList.Builder<Set<T>> values = ImmutableList.builder();
+      map.traverseEntries(
+          (prefix, elements) -> {
+            keys.add(prefix);
+            values.add(elements);
+          });
+      return new SerializedForm<>(keys.build(), values.build());
+    }
+
+    public Object readResolve() throws ObjectStreamException {
+      PrefixTrieMultiMap<T> ret = new PrefixTrieMultiMap<>();
+      for (int i = 0; i < _keys.size(); ++i) {
+        ret.putAll(_keys.get(i), _values.get(i));
+      }
+      return ret;
+    }
+  }
+
+  private Object writeReplace() throws ObjectStreamException {
+    return SerializedForm.of(this);
   }
 }
