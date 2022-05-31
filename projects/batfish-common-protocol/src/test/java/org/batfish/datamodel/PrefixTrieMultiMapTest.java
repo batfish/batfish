@@ -26,6 +26,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
 import org.junit.Rule;
 import org.junit.Test;
@@ -519,6 +520,21 @@ public class PrefixTrieMultiMapTest {
     assertEquals(ImmutableSet.of(p111), getOverlappingKeys.apply("1.1.1.1/32"));
     assertEquals(ImmutableSet.of(p123, p1234), getOverlappingKeys.apply("1.2.3.4/32"));
     assertEquals(ImmutableSet.of(p123), getOverlappingKeys.apply("1.2.3.5/32"));
+  }
+
+  @Test
+  public void testSerialization() {
+    PrefixTrieMultiMap<Integer> ptmm = new PrefixTrieMultiMap<>();
+    int i = 0;
+    ptmm.put(Prefix.ZERO, ++i);
+    ptmm.put(Prefix.parse("10.0.0.0/24"), ++i);
+    ptmm.put(Prefix.parse("10.0.0.1/24"), ++i);
+    ptmm.put(Prefix.parse("10.0.0.0/26"), ++i);
+    ptmm.put(Prefix.parse("10.0.0.0/26"), ++i);
+    ptmm.put(Prefix.parse("10.0.0.64/26"), ++i);
+    ptmm.put(Prefix.parse("20.0.0.0/8"), ++i);
+    ptmm.put(Prefix.parse("192.168.0.0/16"), ++i);
+    assertThat(ptmm, equalTo(SerializationUtils.clone(ptmm)));
   }
 
   private static RangeSet<Ip> toRangeSet(Prefix prefix) {
