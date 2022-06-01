@@ -139,6 +139,7 @@ public class JuniperConfigurationTest {
                 .build()));
   }
 
+  /** Validate vrf assigned to l3vni is the same as the l3interface on a vlan. */
   @Test
   public void testL3VniVrf() {
     JuniperConfiguration config = createConfig();

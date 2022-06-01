@@ -1,8 +1,4 @@
 #
 set system host-name juniper-evpn-multicast-client
 #
-set protocols evpn encapsulation vxlan
 set protocols evpn multicast-mode client
-set protocols evpn default-gateway no-gateway-community
-set protocols evpn extended-vni-list all
-set protocols evpn duplicate-mac-detection auto-recovery-time 15
