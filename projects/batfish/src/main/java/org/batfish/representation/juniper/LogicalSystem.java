@@ -98,6 +98,8 @@ public class LogicalSystem implements Serializable {
 
   private NavigableSet<String> _tacplusServers;
 
+  private Map<String, TunnelAttribute> _tunnelAttributes;
+
   private final Map<String, Vlan> _namedVlans;
 
   @Nullable private SwitchOptions _switchOptions;
@@ -143,6 +145,7 @@ public class LogicalSystem implements Serializable {
     _securityPolicies = new TreeMap<>();
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
+    _tunnelAttributes = new TreeMap<>();
     _namedVlans = new TreeMap<>();
     _switchOptions = new SwitchOptions();
     _zones = new TreeMap<>();
@@ -376,6 +379,10 @@ public class LogicalSystem implements Serializable {
 
   public NavigableSet<String> getTacplusServers() {
     return _tacplusServers;
+  }
+
+  public Map<String, TunnelAttribute> getTunnelAttributes() {
+    return _tunnelAttributes;
   }
 
   public Map<String, Vlan> getNamedVlans() {

@@ -445,6 +445,7 @@ import org.batfish.representation.juniper.ScreenOption;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
+import org.batfish.representation.juniper.TunnelAttribute;
 import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.VrrpGroup;
@@ -1840,6 +1841,38 @@ public final class FlatJuniperGrammarTest {
             "xe-0/0/3.0-o",
             allOf(
                 rejects(src1235, null, c), rejects(src1236, null, c), rejects(src8888, null, c))));
+  }
+
+  @Test
+  public void testTunnelAttributeExtraction() {
+    JuniperConfiguration vc = parseJuniperConfig("tunnel-attributes");
+    Map<String, TunnelAttribute> tunnelAttributes =
+        vc.getMasterLogicalSystem().getTunnelAttributes();
+    {
+      TunnelAttribute tunnelAttr = tunnelAttributes.get("tunnel-attr-1");
+      assertThat(tunnelAttr.getRemoteEndPoint(), equalTo(Ip.parse("1.2.3.4")));
+      assertThat(tunnelAttr.getType(), equalTo(TunnelAttribute.Type.IPIP));
+    }
+    {
+      TunnelAttribute tunnelAttr = tunnelAttributes.get("tunnel-attr-2");
+      assertThat(tunnelAttr.getRemoteEndPoint(), equalTo(Ip.parse("5.6.7.8")));
+      assertNull(tunnelAttr.getType());
+    }
+    {
+      TunnelAttribute tunnelAttr = tunnelAttributes.get("tunnel-attr-3");
+      assertNull(tunnelAttr.getRemoteEndPoint());
+      assertThat(tunnelAttr.getType(), equalTo(TunnelAttribute.Type.IPIP));
+    }
+  }
+
+  @Test
+  public void testTunnelAttributeConversion() {
+    Configuration c = parseConfig("tunnel-attributes");
+    Map<String, org.batfish.datamodel.TunnelAttribute> tunnelAttrs = c.getTunnelAttributes();
+    // Only the attribute with both type and remote endpoint set should be converted
+    org.batfish.datamodel.TunnelAttribute expectedTunnelAttr =
+        new org.batfish.datamodel.TunnelAttribute(Ip.parse("1.2.3.4"));
+    assertThat(tunnelAttrs, equalTo(ImmutableMap.of("tunnel-attr-1", expectedTunnelAttr)));
   }
 
   @Test

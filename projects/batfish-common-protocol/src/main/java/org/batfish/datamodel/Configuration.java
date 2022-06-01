@@ -201,6 +201,7 @@ public final class Configuration implements Serializable {
   private static final String PROP_TACACS_SERVERS = "tacacsServers";
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
   private static final String PROP_TRACKING_GROUPS = "trackingGroups";
+  private static final String PROP_TUNNEL_ATTRIBUTES = "tunnelAttributes";
   private static final String PROP_VENDOR_FAMILY = "vendorFamily";
   private static final String PROP_VRFS = "vrfs";
   private static final String PROP_ZONES = "zones";
@@ -314,6 +315,8 @@ public final class Configuration implements Serializable {
 
   private Map<String, TrackMethod> _trackingGroups;
 
+  private Map<String, TunnelAttribute> _tunnelAttributes;
+
   private VendorFamily _vendorFamily;
 
   private Map<String, Vrf> _vrfs;
@@ -373,6 +376,7 @@ public final class Configuration implements Serializable {
     _snmpTrapServers = new TreeSet<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
+    _tunnelAttributes = new TreeMap<>();
     _vendorFamily = new VendorFamily();
     _vrfs = new TreeMap<>();
     _zones = new TreeMap<>();
@@ -828,6 +832,11 @@ public final class Configuration implements Serializable {
     return _trackingGroups;
   }
 
+  @JsonProperty(PROP_TUNNEL_ATTRIBUTES)
+  public @Nonnull Map<String, TunnelAttribute> getTunnelAttributes() {
+    return _tunnelAttributes;
+  }
+
   /** Object containing vendor-specific information for this node. */
   @JsonProperty(PROP_VENDOR_FAMILY)
   public VendorFamily getVendorFamily() {
@@ -1076,6 +1085,11 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_TRACKING_GROUPS)
   public void setTrackingGroups(@Nonnull Map<String, TrackMethod> trackingGroups) {
     _trackingGroups = trackingGroups;
+  }
+
+  @JsonProperty(PROP_TUNNEL_ATTRIBUTES)
+  public void setTunnelAttributes(@Nonnull Map<String, TunnelAttribute> tunnelAttributes) {
+    _tunnelAttributes = tunnelAttributes;
   }
 
   @JsonProperty(PROP_VENDOR_FAMILY)

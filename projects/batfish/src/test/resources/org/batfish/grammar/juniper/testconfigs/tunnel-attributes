@@ -1,0 +1,10 @@
+#
+set system host-name tunnel-attributes
+#
+# Endpoint and type
+set policy-options tunnel-attribute tunnel-attr-1 remote-end-point 1.2.3.4
+set policy-options tunnel-attribute tunnel-attr-1 tunnel-type ipip
+# Endpoint, no type
+set policy-options tunnel-attribute tunnel-attr-2 remote-end-point 5.6.7.8
+# Type, no endpoint
+set policy-options tunnel-attribute tunnel-attr-3 tunnel-type ipip
