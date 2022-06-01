@@ -113,7 +113,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   private static final class Node<T> implements Serializable {
 
     @Nonnull private final Prefix _prefix;
-    @Nonnull private Set<T> _elements;
+    @Nonnull private ImmutableSet<T> _elements;
 
     @Nullable private Node<T> _left;
     @Nullable private Node<T> _right;
@@ -333,7 +333,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     Consumer<Node<T>> nodeConsumer =
         node -> {
           if (!node._elements.isEmpty()) {
-            consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements));
+            consumer.accept(node._prefix, node._elements);
           }
         };
     if (visitNode == null) {
@@ -395,7 +395,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   @Nonnull
   public Set<T> get(Prefix p) {
     Node<T> node = exactMatchNode(p);
-    return node == null ? ImmutableSet.of() : ImmutableSet.copyOf(node._elements);
+    return node == null ? ImmutableSet.of() : node._elements;
   }
 
   /**
@@ -441,7 +441,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   public Set<T> longestPrefixMatch(Ip address, int maxPrefixLength) {
     Node<T> node = longestMatchNonEmptyNode(Prefix.create(address, maxPrefixLength));
     assert node == null || !node._elements.isEmpty();
-    return node == null ? ImmutableSet.of() : ImmutableSet.copyOf(node._elements);
+    return node == null ? ImmutableSet.of() : node._elements;
   }
 
   /**
@@ -533,6 +533,21 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   /** Remove all elements from the multimap. */
   public void clear() {
     _root = null;
+  }
+
+  /** Make and return a new (shallow) copy of this. */
+  public PrefixTrieMultiMap<T> copy() {
+    Node<T> root =
+        fold(
+            (prefix, elems, leftResult, rightResult) -> {
+              Node<T> ret = new Node<>(prefix, elems);
+              ret._left = leftResult;
+              ret._right = rightResult;
+              return ret;
+            });
+    PrefixTrieMultiMap<T> ret = new PrefixTrieMultiMap<>();
+    ret._root = root;
+    return ret;
   }
 
   /**
