@@ -174,12 +174,14 @@ import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
@@ -435,6 +437,8 @@ import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenTag;
+import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
+import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
 import org.batfish.representation.juniper.Resolution;
 import org.batfish.representation.juniper.ResolutionRib;
 import org.batfish.representation.juniper.RoutingInformationBase;
@@ -4239,6 +4243,17 @@ public final class FlatJuniperGrammarTest {
       assertThat(policy.getTerms().get("TMIN").getThens(), contains(new PsThenTag(0)));
       assertThat(policy.getTerms().get("TMAX").getThens(), contains(new PsThenTag(MAX_TAG)));
     }
+    {
+      PolicyStatement policy =
+          c.getMasterLogicalSystem().getPolicyStatements().get("TUNNEL_ATTR_POLICY");
+      assertThat(policy.getTerms(), hasKeys("SET_TUNNEL_ATTR", "REMOVE_TUNNEL_ATTR"));
+      assertThat(
+          policy.getTerms().get("SET_TUNNEL_ATTR").getThens(),
+          contains(new PsThenTunnelAttributeSet("TA")));
+      assertThat(
+          policy.getTerms().get("REMOVE_TUNNEL_ATTR").getThens(),
+          contains(PsThenTunnelAttributeRemove.INSTANCE));
+    }
   }
 
   @Test
@@ -4543,10 +4558,10 @@ public final class FlatJuniperGrammarTest {
             filename, INTERFACE, "et-0/0/0.0", OSPF_AREA_INTERFACE, containsInAnyOrder(6, 17)));
   }
 
-  /** Test definition and reference tracking for named communities. */
+  /** Test definition and reference tracking for named communities and tunnel attributes. */
   @Test
   public void testJuniperCommunityReference() throws IOException {
-    String hostname = "juniper-community-reference";
+    String hostname = "juniper-references-in-policy";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -4559,6 +4574,10 @@ public final class FlatJuniperGrammarTest {
         ccae,
         hasDefinedStructureWithDefinitionLines(
             filename, COMMUNITY, "UNUSED", containsInAnyOrder(5, 6)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, TUNNEL_ATTRIBUTE, "SET", containsInAnyOrder(10, 11)));
 
     // defined references
     assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "MATCHED", 1));
@@ -4566,12 +4585,22 @@ public final class FlatJuniperGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "ADDED", 1));
     assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "DELETED", 1));
     assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "SET", 1));
+    assertThat(ccae, hasNumReferrers(filename, TUNNEL_ATTRIBUTE, "SET", 1));
+    assertThat(ccae, hasNumReferrers(filename, TUNNEL_ATTRIBUTE, "UNUSED", 0));
 
     // undefined references
     assertThat(
         ccae,
         hasUndefinedReferenceWithReferenceLines(
-            filename, COMMUNITY, "UNDEFINED", POLICY_STATEMENT_FROM_COMMUNITY, contains(12)));
+            filename, COMMUNITY, "UNDEFINED", POLICY_STATEMENT_FROM_COMMUNITY, contains(16)));
+    assertThat(
+        ccae,
+        hasUndefinedReferenceWithReferenceLines(
+            filename,
+            TUNNEL_ATTRIBUTE,
+            "UNDEFINED",
+            POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE,
+            contains(21)));
   }
 
   @Test

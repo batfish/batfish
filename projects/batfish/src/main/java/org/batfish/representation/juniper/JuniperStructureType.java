@@ -47,6 +47,7 @@ public enum JuniperStructureType implements StructureType {
    */
   SECURITY_POLICY_TERM("security policy term"),
   SECURITY_PROFILE("security-profile"),
+  TUNNEL_ATTRIBUTE("tunnel-attribute"),
   VLAN("vlan");
 
   private final String _description;

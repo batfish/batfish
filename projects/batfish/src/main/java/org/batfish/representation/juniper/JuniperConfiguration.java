@@ -3839,6 +3839,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     markConcreteStructure(JuniperStructureType.SECURITY_POLICY);
     markConcreteStructure(JuniperStructureType.SECURITY_POLICY_TERM);
+    markConcreteStructure(JuniperStructureType.TUNNEL_ATTRIBUTE);
 
     warnEmptyPrefixLists();
     warnIllegalNamedCommunitiesUsedForSet();
