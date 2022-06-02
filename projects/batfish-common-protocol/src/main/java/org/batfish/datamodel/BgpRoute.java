@@ -14,12 +14,14 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute.Builder;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -56,6 +58,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         RoutingProtocol protocol,
         boolean receivedFromRouteReflectorClient,
         @Nullable RoutingProtocol srcProtocol,
+        @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
         int weight) {
       checkArgument(
           protocol == RoutingProtocol.BGP
@@ -76,6 +79,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
               protocol,
               receivedFromRouteReflectorClient,
               srcProtocol,
+              tunnelEncapsulationAttribute,
               weight));
     }
 
@@ -91,6 +95,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         RoutingProtocol protocol,
         boolean receivedFromRouteReflectorClient,
         @Nullable RoutingProtocol srcProtocol,
+        @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
         int weight) {
       _asPath = firstNonNull(asPath, AsPath.empty());
       _clusterList = clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.get(clusterList);
@@ -103,6 +108,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       _protocol = (byte) protocol.ordinal();
       _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
       _srcProtocol = srcProtocol == null ? -1 : (byte) srcProtocol.ordinal();
+      _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
       _weight = weight;
     }
 
@@ -126,7 +132,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
           && _originatorIp.equals(that._originatorIp)
           && _originMechanism == that._originMechanism
           && _originType == that._originType
-          && _srcProtocol == that._srcProtocol;
+          && _srcProtocol == that._srcProtocol
+          && Objects.equals(_tunnelEncapsulationAttribute, that._tunnelEncapsulationAttribute);
     }
 
     private transient int _hashCode;
@@ -146,6 +153,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         h = h * 31 + _protocol;
         h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
         h = h * 31 + _srcProtocol;
+        h =
+            h * 31
+                + (_tunnelEncapsulationAttribute == null
+                    ? 0
+                    : _tunnelEncapsulationAttribute.hashCode());
         h = h * 31 + _weight;
         _hashCode = h;
       }
@@ -159,6 +171,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     protected final long _med;
     protected final @Nonnull Ip _originatorIp;
     protected final boolean _receivedFromRouteReflectorClient;
+    protected final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     protected final int _weight;
 
     /////
@@ -234,6 +247,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     protected boolean _receivedFromRouteReflectorClient;
     @Nullable protected RoutingProtocol _srcProtocol;
+    @Nullable protected TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     protected int _weight;
 
     protected Builder() {
@@ -434,6 +448,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     @Nonnull
+    public B setTunnelEncapsulationAttribute(
+        @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
+      _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
+      return getThis();
+    }
+
+    @Nonnull
     @Override
     public B setWeight(int weight) {
       _weight = weight;
@@ -458,6 +479,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
       "receivedFromRouteReflectorClient";
   static final String PROP_SRC_PROTOCOL = "srcProtocol";
+  static final String PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE = "tunnelEncapsulationAttribute";
   static final String PROP_WEIGHT = "weight";
 
   protected final @Nonnull BgpRouteAttributes _attributes;
@@ -579,6 +601,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Override
   public @Nullable RoutingProtocol getSrcProtocol() {
     return _attributes.getSrcProtocol();
+  }
+
+  @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
+  public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
+    return _attributes._tunnelEncapsulationAttribute;
   }
 
   @JsonProperty(PROP_WEIGHT)
