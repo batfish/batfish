@@ -14,7 +14,7 @@ public final class AnnotatedRoute<R extends AbstractRoute>
 
   @Nonnull private final R _route;
   @Nonnull private final String _sourceVrf;
-  private int _hashCode;
+  private transient int _hashCode;
 
   public AnnotatedRoute(R route, String sourceVrf) {
     _route = route;
