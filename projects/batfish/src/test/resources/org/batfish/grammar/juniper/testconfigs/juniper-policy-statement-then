@@ -1,6 +1,9 @@
 #
 set system host-name juniper-policy-statement-then
 #
+set policy-options tunnel-attribute TA remote-end-point 1.1.1.1
+set policy-options tunnel-attribute TA tunnel-type ipip
+#
 set policy-options policy-statement COLOR_POLICY term TSETMIN then color 0
 set policy-options policy-statement COLOR_POLICY term TADDMAX then color add 4294967295
 set policy-options policy-statement COLOR_POLICY term TSUB3 then color subtract 3
@@ -15,3 +18,5 @@ set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TSUB3 then loca
 set policy-options policy-statement TAG_POLICY term TMIN then tag 0
 set policy-options policy-statement TAG_POLICY term TMAX then tag 4294967295
 #
+set policy-options policy-statement TUNNEL_ATTR_POLICY term SET_TUNNEL_ATTR then tunnel-attribute set TA
+set policy-options policy-statement TUNNEL_ATTR_POLICY term REMOVE_TUNNEL_ATTR then tunnel-attribute remove all
