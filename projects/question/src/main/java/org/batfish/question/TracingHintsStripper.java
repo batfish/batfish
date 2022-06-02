@@ -9,6 +9,7 @@ import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.RemoveTunnelAttribute;
 import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -22,6 +23,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTunnelAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -80,6 +82,12 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
   @Override
   public Statement visitExcludeAsPath(ExcludeAsPath excludeAsPath, Void arg) {
     return excludeAsPath;
+  }
+
+  @Override
+  public Statement visitRemoveTunnelAttribute(
+      RemoveTunnelAttribute removeTunnelAttribute, Void arg) {
+    return removeTunnelAttribute;
   }
 
   @Override
@@ -146,6 +154,11 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
   @Override
   public Statement visitSetDefaultTag(SetDefaultTag setDefaultTag, Void arg) {
     return setDefaultTag;
+  }
+
+  @Override
+  public Statement visitSetTunnelAttribute(SetTunnelAttribute setTunnelAttribute, Void arg) {
+    return setTunnelAttribute;
   }
 
   @Override

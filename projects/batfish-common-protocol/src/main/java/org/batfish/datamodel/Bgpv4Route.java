@@ -60,6 +60,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
               _protocol,
               _receivedFromRouteReflectorClient,
               _srcProtocol,
+              _tunnelAttribute,
               _weight),
           _receivedFromIp,
           getNetwork(),
@@ -102,6 +103,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
+      @Nullable @JsonProperty(PROP_TUNNEL_ATTRIBUTE) TunnelAttribute tunnelAttribute,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
     checkArgument(originMechanism != null, "Missing %s", PROP_ORIGIN_MECHANISM);
@@ -123,6 +125,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
             protocol,
             receivedFromRouteReflectorClient,
             srcProtocol,
+            tunnelAttribute,
             weight),
         receivedFromIp,
         network,
@@ -184,6 +187,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(_tag)
+        .setTunnelAttribute(_attributes._tunnelAttribute)
         .setWeight(_attributes._weight);
   }
 
@@ -246,6 +250,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .add("_receivedFromIp", _receivedFromIp)
         .add("_receivedFromRouteReflectorClient", _attributes._receivedFromRouteReflectorClient)
         .add("_srcProtocol", _attributes._srcProtocol)
+        .add("_tunnelAttribute", _attributes._tunnelAttribute)
         .add("_weight", _attributes._weight)
         .toString();
   }

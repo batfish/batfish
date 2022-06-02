@@ -63,6 +63,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
               _protocol,
               _receivedFromRouteReflectorClient,
               _srcProtocol,
+              _tunnelAttribute,
               _weight),
           _receivedFromIp,
           _nextHop,
@@ -117,6 +118,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_VNI) Integer vni,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
+      @Nullable @JsonProperty(PROP_TUNNEL_ATTRIBUTE) TunnelAttribute tunnelAttribute,
       @Nullable @JsonProperty(PROP_VNI_IP) Ip vniIp,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(admin == EVPN_ADMIN, "Cannot create EVPN route with non-default admin");
@@ -143,6 +145,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
             protocol,
             receivedFromRouteReflectorClient,
             srcProtocol,
+            tunnelAttribute,
             weight),
         receivedFromIp,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
@@ -198,6 +201,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(_tag)
+        .setTunnelAttribute(_attributes._tunnelAttribute)
         .setVni(_vni)
         .setVniIp(_vniIp)
         .setWeight(_attributes._weight);

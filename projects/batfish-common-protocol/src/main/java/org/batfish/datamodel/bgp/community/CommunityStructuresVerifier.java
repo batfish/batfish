@@ -93,6 +93,7 @@ import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.RemoveTunnelAttribute;
 import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -106,6 +107,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTunnelAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
@@ -699,6 +701,12 @@ public final class CommunityStructuresVerifier {
     }
 
     @Override
+    public Void visitRemoveTunnelAttribute(
+        RemoveTunnelAttribute removeTunnelAttribute, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
     public Void visitSetAdministrativeCost(
         SetAdministrativeCost setAdministrativeCost, CommunityStructuresVerifierContext arg) {
       return null;
@@ -770,6 +778,12 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitSetDefaultTag(
         SetDefaultTag setDefaultTag, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitSetTunnelAttribute(
+        SetTunnelAttribute setTunnelAttribute, CommunityStructuresVerifierContext arg) {
       return null;
     }
 

@@ -26,6 +26,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.TunnelAttribute;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.as_path.AsPathExpr;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
@@ -55,6 +56,7 @@ public class Environment {
         .setRouteFilterLists(c.getRouteFilterLists())
         .setRoute6FilterLists(c.getRoute6FilterLists())
         .setRoutingPolicies(c.getRoutingPolicies())
+        .setTunnelAttributes(c.getTunnelAttributes())
         .setUseOutputAttributes(useOutputAttributesFor(c));
   }
 
@@ -113,6 +115,7 @@ public class Environment {
   private final Map<String, Route6FilterList> _route6FilterLists;
   private final Map<String, RouteFilterList> _routeFilterLists;
   @Nullable private final String _routeSourceVrf;
+  private final Map<String, TunnelAttribute> _tunnelAttributes;
   private final boolean _useOutputAttributes;
   private boolean _writeToIntermediateBgpAttributes;
   private Boolean _suppressed;
@@ -147,6 +150,7 @@ public class Environment {
       boolean readFromIntermediateBgpAttributes,
       Map<String, Route6FilterList> route6FilterLists,
       Map<String, RouteFilterList> routeFilterLists,
+      Map<String, TunnelAttribute> tunnelAttributes,
       boolean useOutputAttributes,
       boolean writeToIntermediateBgpAttributes,
       @Nullable Tracer tracer) {
@@ -182,6 +186,7 @@ public class Environment {
         originalRoute instanceof AnnotatedRoute
             ? ((AnnotatedRoute<?>) originalRoute).getSourceVrf()
             : null;
+    _tunnelAttributes = tunnelAttributes;
     _useOutputAttributes = useOutputAttributes;
     _writeToIntermediateBgpAttributes = writeToIntermediateBgpAttributes;
     _tracer = tracer;
@@ -353,6 +358,10 @@ public class Environment {
     return _routeSourceVrf;
   }
 
+  public Map<String, TunnelAttribute> getTunnelAttributes() {
+    return _tunnelAttributes;
+  }
+
   public boolean getUseOutputAttributes() {
     return _useOutputAttributes;
   }
@@ -439,6 +448,7 @@ public class Environment {
     private boolean _readFromIntermediateBgpAttributes;
     private Map<String, Route6FilterList> _route6FilterLists;
     private Map<String, RouteFilterList> _routeFilterLists;
+    private Map<String, TunnelAttribute> _tunnelAttributes;
     private boolean _useOutputAttributes;
     private boolean _writeToIntermediateBgpAttributes;
     @Nullable Tracer _tracer;
@@ -627,6 +637,7 @@ public class Environment {
           _readFromIntermediateBgpAttributes,
           firstNonNull(_route6FilterLists, ImmutableMap.of()),
           firstNonNull(_routeFilterLists, ImmutableMap.of()),
+          firstNonNull(_tunnelAttributes, ImmutableMap.of()),
           _useOutputAttributes,
           _writeToIntermediateBgpAttributes,
           _tracer);
@@ -639,6 +650,11 @@ public class Environment {
 
     public Builder setRouteFilterLists(Map<String, RouteFilterList> routeFilterLists) {
       _routeFilterLists = toImmutableMap(routeFilterLists);
+      return this;
+    }
+
+    public Builder setTunnelAttributes(Map<String, TunnelAttribute> tunnelAttributes) {
+      _tunnelAttributes = toImmutableMap(tunnelAttributes);
       return this;
     }
 
