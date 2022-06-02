@@ -32,6 +32,7 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityResult;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
@@ -112,6 +113,25 @@ public interface IBatfish extends IPluginConsumer {
   @Nonnull
   InputStream getNetworkObject(NetworkId networkId, String key)
       throws FileNotFoundException, IOException;
+
+  /**
+   * Get a snapshot extended object for the given key
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @MustBeClosed
+  @Nonnull
+  InputStream getSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Put a snapshot extended object for the given key
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  void putSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key, InputStream stream)
+      throws IOException;
 
   /**
    * Get a snapshot input object for the given key
