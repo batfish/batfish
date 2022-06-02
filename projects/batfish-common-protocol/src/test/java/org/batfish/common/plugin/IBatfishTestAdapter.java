@@ -1,5 +1,6 @@
 package org.batfish.common.plugin;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -203,6 +204,19 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public InputStream getNetworkObject(NetworkId networkId, String key) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public InputStream getSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void putSnapshotObject(
+      NetworkId networkId, SnapshotId snapshotId, String key, InputStream stream)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
