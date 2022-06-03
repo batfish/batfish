@@ -1588,7 +1588,7 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testEvpnEncapsulationExtraction() {
-    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-ingress");
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vxlan-encap");
     assertEquals(EvpnEncapsulation.VXLAN, c.getMasterLogicalSystem().getEvpn().getEncapsulation());
   }
 
