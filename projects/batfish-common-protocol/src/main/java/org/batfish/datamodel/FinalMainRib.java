@@ -27,6 +27,15 @@ public final class FinalMainRib implements Serializable {
   }
 
   /**
+   * Returns all the routes in this RIB that advertise the given network.
+   *
+   * @see PrefixTrieMultiMap#get(Prefix)
+   */
+  public @Nonnull Set<AbstractRoute> getRoutes(Prefix p) {
+    return _routeTree.get(p);
+  }
+
+  /**
    * Performs a longest prefix match on the route tree.
    *
    * @see PrefixTrieMultiMap#longestPrefixMatch(Ip)
