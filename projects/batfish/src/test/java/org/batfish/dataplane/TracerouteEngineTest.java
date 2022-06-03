@@ -50,6 +50,7 @@ import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -116,7 +117,8 @@ public class TracerouteEngineTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot); // Construct flows
+    IncrementalDataPlane dp =
+        (IncrementalDataPlane) batfish.loadDataPlane(snapshot); // Construct flows
     Builder fb = builder().setDstIp(parse("3.3.3.3")).setIngressNode(config.getHostname());
 
     Flow flow1 = fb.setIngressInterface(i1.getName()).setIngressVrf(vrf1.getName()).build();

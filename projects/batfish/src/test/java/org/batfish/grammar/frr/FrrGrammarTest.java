@@ -722,7 +722,7 @@ public class FrrGrammarTest {
 
     // frr-reoriginator should get a default route from frr-originator
     assertThat(
-        dp.getRibs().get("frr-reoriginator").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-reoriginator", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 Bgpv4Route.testBuilder()
@@ -740,7 +740,7 @@ public class FrrGrammarTest {
 
     // frr-propagator should get a fresh default route from frr-originator
     assertThat(
-        dp.getRibs().get("frr-propagator").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-propagator", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 Bgpv4Route.testBuilder()
@@ -758,7 +758,7 @@ public class FrrGrammarTest {
 
     // ios-listener should get a propagated route from frr-propagator
     assertThat(
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("ios-listener", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 Bgpv4Route.testBuilder()
@@ -804,7 +804,7 @@ public class FrrGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
 
     assertThat(
-        dp.getRibs().get("frr-listener1").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-listener1", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 Bgpv4Route.testBuilder()
@@ -821,7 +821,7 @@ public class FrrGrammarTest {
                     .build())));
 
     assertThat(
-        dp.getRibs().get("frr-listener3").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-listener3", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 Bgpv4Route.testBuilder()
@@ -837,7 +837,7 @@ public class FrrGrammarTest {
                     .setLocalPreference(100)
                     .build())));
     assertThat(
-        dp.getRibs().get("frr-listener4").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-listener4", DEFAULT_VRF_NAME).getRoutes(),
         not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
@@ -2492,7 +2492,7 @@ public class FrrGrammarTest {
 
     // frr-reoriginator should get a default route from frr-originator
     assertThat(
-        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-listener", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 OspfExternalType2Route.builder()
@@ -2781,7 +2781,7 @@ public class FrrGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
 
     assertThat(
-        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-listener", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 Bgpv4Route.testBuilder()
@@ -2827,7 +2827,7 @@ public class FrrGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
 
     assertThat(
-        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-listener", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 Bgpv4Route.testBuilder()
@@ -2864,19 +2864,19 @@ public class FrrGrammarTest {
         batfish.getTopologyProvider().getBgpTopology(snapshot).getGraph().edges(), hasSize(8));
 
     assertThat(
-        dp.getRibs().get("frr-t2-r1").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-t2-r1", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.13.80.0/21")))));
 
     assertThat(
-        dp.getRibs().get("frr-t2-r2").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-t2-r2", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.13.80.0/21")))));
 
     assertThat(
-        dp.getRibs().get("frr-t2-r1").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-t2-r1", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.8.0.0/20")))));
 
     assertThat(
-        dp.getRibs().get("frr-t2-r2").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-t2-r2", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.8.0.0/20")))));
   }
 

@@ -120,6 +120,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
+import com.google.common.collect.Table;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
@@ -128,7 +129,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -142,7 +142,6 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -159,10 +158,10 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -612,7 +611,7 @@ public class AristaGrammarTest {
             .build();
     {
       // Peer 1 (sets default-originate route-map SET_RM and configures send-community)
-      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF1").getRoutes();
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener", "VRF1").getRoutes();
       Ip peerIp = Ip.parse("10.1.1.1"); // local IP of originating peer
       Bgpv4Route expectedRoute =
           defaultOriginateRoute.toBuilder()
@@ -626,7 +625,7 @@ public class AristaGrammarTest {
     }
     {
       // Peer 2 (sets default-originate route-map SET_RM, does not configure send-community)
-      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF2").getRoutes();
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener", "VRF2").getRoutes();
       Ip peerIp = Ip.parse("10.2.2.1"); // local IP of originating peer
       Bgpv4Route expectedRoute =
           defaultOriginateRoute.toBuilder()
@@ -638,7 +637,7 @@ public class AristaGrammarTest {
     }
     {
       // Peer 3 (sets default-originate route-map UNDEFINED)
-      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF3").getRoutes();
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener", "VRF3").getRoutes();
       Ip peerIp = Ip.parse("10.3.3.1"); // local IP of originating peer
       Bgpv4Route expectedRoute =
           defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
@@ -646,7 +645,7 @@ public class AristaGrammarTest {
     }
     {
       // Peer 4 (sets default-originate without a route-map)
-      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF4").getRoutes();
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener", "VRF4").getRoutes();
       Ip peerIp = Ip.parse("10.4.4.1"); // local IP of originating peer
       Bgpv4Route expectedRoute =
           defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
@@ -742,12 +741,9 @@ public class AristaGrammarTest {
     // - Default VRF main RIB only has a connected route
     // - Both non-default VRFs' main RIBs should contain the static route to 1.1.1.1/32, and VRF2
     //   should also have 2.2.2.2/32
-    Set<AnnotatedRoute<AbstractRoute>> defaultVrfRoutes =
-        dp.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getTypedRoutes();
-    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
-        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
-    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
-        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    Set<AbstractRoute> defaultVrfRoutes = dp.getRibs().get(hostname, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> vrf1Routes = dp.getRibs().get(hostname, "VRF1").getRoutes();
+    Set<AbstractRoute> vrf2Routes = dp.getRibs().get(hostname, "VRF2").getRoutes();
     assertThat(
         defaultVrfRoutes,
         contains(allOf(hasPrefix(connectedPrefix), hasProtocol(RoutingProtocol.CONNECTED))));
@@ -819,17 +815,15 @@ public class AristaGrammarTest {
     assertTrue(
         batfish.loadConfigurations(snapshot).values().stream()
             .allMatch(c -> c.getConfigurationFormat() == ARISTA));
-    DataPlane dp = batfish.loadDataPlane(snapshot);
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp.getRibs();
-    Set<AbstractRoute> r3Routes = ribs.get("r3").get(DEFAULT_VRF_NAME).getRoutes();
+    Table<String, String, FinalMainRib> ribs = batfish.loadDataPlane(snapshot).getRibs();
+    Set<AbstractRoute> r3Routes = ribs.get("r3", DEFAULT_VRF_NAME).getRoutes();
     Set<Prefix> r3Prefixes =
         r3Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Prefix r1Loopback = Prefix.parse("1.1.1.1/32");
     assertTrue(r3Prefixes.contains(r1Loopback));
 
     // check that private AS is present in path in received 1.1.1.1/32 advert on r2
-    Set<AbstractRoute> r2Routes = ribs.get("r2").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = ribs.get("r2", DEFAULT_VRF_NAME).getRoutes();
     boolean r2HasPrivate =
         r2Routes.stream()
             .filter(r -> r.getNetwork().equals(r1Loopback))
@@ -896,7 +890,7 @@ public class AristaGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     Set<AbstractRoute> routes =
-        batfish.loadDataPlane(snapshot).getRibs().get(receiver).get(DEFAULT_VRF_NAME).getRoutes();
+        batfish.loadDataPlane(snapshot).getRibs().get(receiver, DEFAULT_VRF_NAME).getRoutes();
 
     assertThat(
         routes,
@@ -1435,7 +1429,7 @@ public class AristaGrammarTest {
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
     // Sanity check: static routes were created
-    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname, DEFAULT_VRF_NAME).getRoutes();
     assertThat(
         mainRibRoutes.stream().filter(r -> r instanceof org.batfish.datamodel.StaticRoute).count(),
         equalTo(6L));
@@ -1545,7 +1539,7 @@ public class AristaGrammarTest {
             aggRoute4General));
 
     Set<AbstractRoute> mainRibRoutes =
-        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix4General)));
@@ -1615,7 +1609,7 @@ public class AristaGrammarTest {
               equalTo(aggRoute1),
               equalTo(aggRoute2)));
       Set<AbstractRoute> mainRibRoutes =
-          dp.getRibs().get(c2).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+          dp.getRibs().get(c2, Configuration.DEFAULT_VRF_NAME).getRoutes();
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix1)));
       // Suppressed routes still go in the main RIB and are used for forwarding
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix2)));

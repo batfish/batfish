@@ -2752,7 +2752,7 @@ public final class XrGrammarTest {
 
     // Sanity check: Make sure main RIB has all 3 static routes and no BGP routes
     Set<AbstractRoute> mainRibRoutes =
-        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(mainRibRoutes, hasSize(3));
     assertThat(mainRibRoutes, everyItem(instanceOf(StaticRoute.class)));
   }
@@ -3008,7 +3008,7 @@ public final class XrGrammarTest {
             aggRoute4General));
 
     Set<AbstractRoute> mainRibRoutes =
-        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix4General)));
@@ -3078,7 +3078,7 @@ public final class XrGrammarTest {
               equalTo(aggRoute1),
               equalTo(aggRoute2)));
       Set<AbstractRoute> mainRibRoutes =
-          dp.getRibs().get(c2).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+          dp.getRibs().get(c2, Configuration.DEFAULT_VRF_NAME).getRoutes();
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix1)));
       // Suppressed routes still go in the main RIB and are used for forwarding
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix2)));
@@ -3591,7 +3591,7 @@ public final class XrGrammarTest {
     batfish.loadConfigurations(batfish.getSnapshot());
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    Set<AbstractRoute> routes = dp.getRibs().get(hostname).get("default").getRoutes();
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname, "default").getRoutes();
 
     // Rib should have the static route whose NHI is determined from a non-default route
     assertThat(

@@ -1568,7 +1568,7 @@ public class FileBasedStorage implements StorageProvider {
                       dataPlane.getLayer2Vnis().row(hostname),
                       dataPlane.getLayer3Vnis().row(hostname),
                       dataPlane.getPrefixTracingInfoSummary().get(hostname),
-                      dataPlane.getRibs().get(hostname));
+                      dataPlane.getRibs().row(hostname));
               serializeObject(dp, getDataPlaneHostPath(snapshot, hostname));
             });
     serializeObject(

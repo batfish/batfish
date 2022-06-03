@@ -5,12 +5,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -25,7 +23,7 @@ final class PerHostDataPlane implements Serializable {
   private final @Nonnull Map<String, Set<Layer3Vni>> _layer3Vnis;
   private final @Nonnull SortedMap<String, Map<Prefix, Map<String, Set<String>>>>
       _prefixTracingInfoSummary;
-  private final @Nonnull SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> _ribs;
+  private final @Nonnull Map<String, FinalMainRib> _ribs;
 
   public PerHostDataPlane(
       @Nonnull Map<String, Set<Bgpv4Route>> bgpRoutes,
@@ -36,7 +34,7 @@ final class PerHostDataPlane implements Serializable {
       @Nonnull Map<String, Set<Layer2Vni>> layer2Vnis,
       @Nonnull Map<String, Set<Layer3Vni>> layer3Vnis,
       @Nonnull SortedMap<String, Map<Prefix, Map<String, Set<String>>>> prefixTracingInfoSummary,
-      @Nonnull SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribs) {
+      @Nonnull Map<String, FinalMainRib> ribs) {
     _bgpRoutes = bgpRoutes;
     _bgpBackupRoutes = bgpBackupRoutes;
     _evpnRoutes = evpnRoutes;
@@ -81,7 +79,7 @@ final class PerHostDataPlane implements Serializable {
     return _prefixTracingInfoSummary;
   }
 
-  public @Nonnull SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> getRibs() {
+  public @Nonnull Map<String, FinalMainRib> getRibs() {
     return _ribs;
   }
 }
