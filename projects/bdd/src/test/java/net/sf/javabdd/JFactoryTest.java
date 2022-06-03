@@ -11,15 +11,10 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 /** Tests of {@link JFactory}. */
@@ -582,23 +577,9 @@ public class JFactoryTest {
     BDD bdd1 = _factory.ithVar(1);
     BDD bdd2 = _factory.ithVar(2);
     BDD bdd = bdd1.xor(bdd2);
-    BDD bddClone = deepClone(bdd, bdd.getClass());
+    BDD bddClone = SerializationUtils.clone(bdd);
     assertEquals(bdd.toReprString(), bddClone.toReprString());
     bddClone.not(); // can do operations after deserialization
     assertEquals(bdd.not().toReprString(), bddClone.not().toReprString());
-  }
-
-  private static <T extends Serializable> T deepClone(T obj, Class<? extends T> clazz) {
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ObjectOutputStream oos = new ObjectOutputStream(baos);
-      oos.writeObject(obj);
-
-      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-      ObjectInputStream ois = new ObjectInputStream(bais);
-      return clazz.cast(ois.readObject());
-    } catch (IOException | ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
   }
 }
