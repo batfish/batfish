@@ -17,14 +17,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableTable;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.MockRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -35,17 +34,10 @@ import org.junit.Test;
 /** Tests for {@link LpmRoutesAnswerer} */
 public class LpmRoutesAnswererTest {
 
-  private static MockRib getMockRib(Ip ip) {
-    return MockRib.builder()
-        .setLongestPrefixMatchResults(
-            ImmutableMap.of(
-                ip,
-                ImmutableSet.of(
-                    new AnnotatedRoute<>(
-                        new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth0"), "vrf"),
-                    new AnnotatedRoute<>(
-                        new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth1"), "vrf"))))
-        .build();
+  private static FinalMainRib getMockRib() {
+    return FinalMainRib.of(
+        new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth0"),
+        new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth1"));
   }
 
   @Test
@@ -107,15 +99,13 @@ public class LpmRoutesAnswererTest {
         getColumnMetadata().stream()
             .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, Function.identity()));
 
-    final Ip lpmIp = Ip.parse("1.1.1.1");
     List<Row> rows =
         getRows(
-            ImmutableSortedMap.of(
-                "node1",
-                ImmutableSortedMap.of("vrf1", getMockRib(lpmIp)),
-                "node2",
-                ImmutableSortedMap.of("vrf2", getMockRib(lpmIp))),
-            lpmIp,
+            ImmutableTable.<String, String, FinalMainRib>builder()
+                .put("node1,", "vrf1", getMockRib())
+                .put("node2", "vrf2", getMockRib())
+                .build(),
+            Ip.parse("1.1.1.1"),
             ImmutableSet.of("node2"),
             Pattern.compile(".*"),
             columnMap);
@@ -129,15 +119,13 @@ public class LpmRoutesAnswererTest {
         getColumnMetadata().stream()
             .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, Function.identity()));
 
-    final Ip lpmIp = Ip.parse("1.1.1.1");
     List<Row> rows =
         getRows(
-            ImmutableSortedMap.of(
-                "node1",
-                ImmutableSortedMap.of("vrf1", getMockRib(lpmIp)),
-                "node2",
-                ImmutableSortedMap.of("vrf2", getMockRib(lpmIp))),
-            lpmIp,
+            ImmutableTable.<String, String, FinalMainRib>builder()
+                .put("node1", "vrf1", getMockRib())
+                .put("node2", "vrf2", getMockRib())
+                .build(),
+            Ip.parse("1.1.1.1"),
             ImmutableSet.of("node1", "node2"),
             Pattern.compile("vrf1"),
             columnMap);

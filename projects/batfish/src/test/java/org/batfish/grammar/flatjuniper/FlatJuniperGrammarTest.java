@@ -364,6 +364,7 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -862,7 +863,7 @@ public final class FlatJuniperGrammarTest {
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    Set<AbstractRoute> r1Routes = dp.getRibs().get(c1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(c1Name, DEFAULT_VRF_NAME).getRoutes();
 
     assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("10.20.20.0/24")))));
     assertThat(
@@ -3988,8 +3989,8 @@ public final class FlatJuniperGrammarTest {
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2, DEFAULT_VRF_NAME).getRoutes();
 
     // 1.2.3.4/30 does not get exported to r2 because r1 has no IS-IS export policy.
     assertThat(r1Routes, hasItem(hasPrefix(Prefix.parse("1.2.3.4/30"))));
@@ -6242,9 +6243,9 @@ public final class FlatJuniperGrammarTest {
     */
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
-        dp.getRibs().get(hostname).entrySet().stream()
+        dp.getRibsForTesting().get(hostname).entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
 
@@ -6262,10 +6263,10 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
-        dp.getRibs().get(hostname).entrySet().stream()
+        dp.getRibsForTesting().get(hostname).entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
     String vrf2Name = "VRF2";
@@ -6305,10 +6306,10 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
-        dp.getRibs().get(hostname).entrySet().stream()
+        dp.getRibsForTesting().get(hostname).entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
     String vrf2Name = "VRF2";
@@ -6367,10 +6368,10 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
-        dp.getRibs().get(hostname).entrySet().stream()
+        dp.getRibsForTesting().get(hostname).entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
     String vrf2Name = "VRF2";
@@ -7026,7 +7027,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname, DEFAULT_VRF_NAME).getRoutes();
 
     assertThat(mainRibRoutes, hasItem(hasPrefix(Prefix.strict("1.0.0.0/16"))));
     assertThat(mainRibRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));

@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
@@ -128,10 +127,8 @@ public class EvpnNxosTest {
                 hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.1"))))));
 
     // test main RIB routes
-    Set<AnnotatedRoute<AbstractRoute>> r1Routes =
-        dp.getRibs().get("r1").get(TENANT_VRF_NAME).getTypedRoutes();
-    Set<AnnotatedRoute<AbstractRoute>> r2Routes =
-        dp.getRibs().get("r2").get(TENANT_VRF_NAME).getTypedRoutes();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get("r1", TENANT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get("r2", TENANT_VRF_NAME).getRoutes();
 
     assertThat(
         r1Routes,
