@@ -419,10 +419,8 @@ public final class F5BigipStructuredGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> routes1 =
-        dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> routes2 =
-        dp.getRibs().get("r2").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> routes1 = dp.getRibs().get("r1", Configuration.DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> routes2 = dp.getRibs().get("r2", Configuration.DEFAULT_VRF_NAME).getRoutes();
 
     // kernel routes should be installed
     assertThat(routes1, hasItem(isKernelRouteThat(hasPrefix(Prefix.strict("10.0.0.1/32")))));

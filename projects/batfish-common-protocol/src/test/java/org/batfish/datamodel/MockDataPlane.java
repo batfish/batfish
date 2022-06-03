@@ -24,8 +24,7 @@ public class MockDataPlane implements DataPlane {
     @Nonnull private Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
     private @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
         _prefixTracingInfoSummary;
-    private @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-        _ribs;
+    private @Nonnull Table<String, String, FinalMainRib> _ribs;
 
     private Builder() {
       _bgpRoutes = ImmutableTable.of();
@@ -37,7 +36,7 @@ public class MockDataPlane implements DataPlane {
       _layer2VniSettings = ImmutableTable.of();
       _layer3VniSettings = ImmutableTable.of();
       _prefixTracingInfoSummary = ImmutableSortedMap.of();
-      _ribs = ImmutableSortedMap.of();
+      _ribs = ImmutableTable.of();
     }
 
     public MockDataPlane build() {
@@ -96,8 +95,7 @@ public class MockDataPlane implements DataPlane {
       return this;
     }
 
-    public Builder setRibs(
-        SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs) {
+    public Builder setRibs(Table<String, String, FinalMainRib> ribs) {
       _ribs = ribs;
       return this;
     }
@@ -118,9 +116,7 @@ public class MockDataPlane implements DataPlane {
   @Nonnull private final Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
   private final @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       _prefixTracingInfoSummary;
-  private final @Nonnull SortedMap<
-          String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-      _ribs;
+  private final @Nonnull Table<String, String, FinalMainRib> _ribs;
 
   private MockDataPlane(Builder builder) {
     _bgpRoutes = builder._bgpRoutes;
@@ -132,7 +128,7 @@ public class MockDataPlane implements DataPlane {
     _layer2VniSettings = builder._layer2VniSettings;
     _layer3VniSettings = builder._layer3VniSettings;
     _prefixTracingInfoSummary = builder._prefixTracingInfoSummary;
-    _ribs = ImmutableSortedMap.copyOf(builder._ribs);
+    _ribs = ImmutableTable.copyOf(builder._ribs);
   }
 
   @Nonnull
@@ -172,7 +168,7 @@ public class MockDataPlane implements DataPlane {
 
   @Nonnull
   @Override
-  public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs() {
+  public Table<String, String, FinalMainRib> getRibs() {
     return _ribs;
   }
 

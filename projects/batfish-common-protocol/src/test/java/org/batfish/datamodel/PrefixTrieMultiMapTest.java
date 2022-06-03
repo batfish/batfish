@@ -522,7 +522,8 @@ public class PrefixTrieMultiMapTest {
     assertEquals(ImmutableSet.of(p123), getOverlappingKeys.apply("1.2.3.5/32"));
   }
 
-  private static PrefixTrieMultiMap<Integer> makeTestMap() {
+  @Test
+  public void testSerialization() {
     PrefixTrieMultiMap<Integer> ptmm = new PrefixTrieMultiMap<>();
     int i = 0;
     ptmm.put(Prefix.ZERO, ++i);
@@ -533,19 +534,7 @@ public class PrefixTrieMultiMapTest {
     ptmm.put(Prefix.parse("10.0.0.64/26"), ++i);
     ptmm.put(Prefix.parse("20.0.0.0/8"), ++i);
     ptmm.put(Prefix.parse("192.168.0.0/16"), ++i);
-    return ptmm;
-  }
-
-  @Test
-  public void testSerialization() {
-    PrefixTrieMultiMap<Integer> ptmm = makeTestMap();
     assertThat(ptmm, equalTo(SerializationUtils.clone(ptmm)));
-  }
-
-  @Test
-  public void testCopy() {
-    PrefixTrieMultiMap<Integer> ptmm = makeTestMap();
-    assertThat(ptmm, equalTo(ptmm.copy()));
   }
 
   private static RangeSet<Ip> toRangeSet(Prefix prefix) {

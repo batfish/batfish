@@ -11,13 +11,11 @@ import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.NetworkSnapshot;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -65,8 +63,7 @@ public class DynamicBgpTest {
     assertThat(bgpTopology.edges(), hasSize(6));
 
     // Ensure routing info has been exchanged, and routes from r3/r4 exist on r1
-    GenericRib<AnnotatedRoute<AbstractRoute>> r1Rib =
-        dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    FinalMainRib r1Rib = dp.getRibs().get("r1", Configuration.DEFAULT_VRF_NAME);
     assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("9.9.9.33/32"))));
     assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("9.9.9.44/32"))));
   }
@@ -96,8 +93,7 @@ public class DynamicBgpTest {
     assertThat(bgpTopology.edges(), hasSize(6));
 
     // Ensure routing info has been exchanged, and routes from r3/r4 exist on r1
-    GenericRib<AnnotatedRoute<AbstractRoute>> r1Rib =
-        dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    FinalMainRib r1Rib = dp.getRibs().get("r1", Configuration.DEFAULT_VRF_NAME);
     assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("3.3.3.3/32"))));
     assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("4.4.4.4/32"))));
   }
@@ -138,8 +134,7 @@ public class DynamicBgpTest {
     assertThat(bgpTopology.edges(), hasSize(4));
 
     // Ensure routing info has been exchanged, and routes from r3/r4 exist on r1
-    GenericRib<AnnotatedRoute<AbstractRoute>> r1Rib =
-        dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    FinalMainRib r1Rib = dp.getRibs().get("r1", Configuration.DEFAULT_VRF_NAME);
     assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("9.9.9.33/32"))));
     assertThat(r1Rib.getRoutes(), not(hasItem(hasPrefix(Prefix.parse("9.9.9.44/32")))));
   }

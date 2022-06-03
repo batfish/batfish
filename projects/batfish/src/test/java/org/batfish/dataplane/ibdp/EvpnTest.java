@@ -217,7 +217,7 @@ public class EvpnTest {
         (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes = dataplane.getEvpnRoutes();
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> mainRibRoutes =
-        dataplane.getRibs();
+        dataplane.getRibsForTesting();
 
     String vrf1 = "vrf1";
 
