@@ -5800,6 +5800,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPota_tunnel_type(FlatJuniperParser.Pota_tunnel_typeContext ctx) {
     // only known type is IPIP
+    assert ctx.IPIP() != null;
     _currentTunnelAttribute.setType(TunnelAttribute.Type.IPIP);
   }
 
