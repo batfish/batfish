@@ -481,10 +481,6 @@ public final class BDDReachabilityAnalysisFactory {
                 vrfEntry -> toBDD.visit(ipSpaceGetter.apply(vrfEntry.getValue()))));
   }
 
-  IpSpaceToBDD getIpSpaceToBDD() {
-    return _dstIpSpaceToBDD;
-  }
-
   Map<String, Map<String, Map<String, BDD>>> getIfaceAcceptBDDs() {
     return _ifaceAcceptBDDs;
   }

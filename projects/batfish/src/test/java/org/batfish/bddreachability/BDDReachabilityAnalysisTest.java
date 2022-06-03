@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -223,9 +222,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private List<Ip> bddIps(BDD bdd) {
-    BDDInteger bddInteger = _graphFactory.getIpSpaceToBDD().getBDDInteger();
-
-    return bddInteger.getValuesSatisfying(bdd, 10).stream()
+    return _pkt.getDstIp().getValuesSatisfying(bdd, 10).stream()
         .map(Ip::create)
         .collect(Collectors.toList());
   }
