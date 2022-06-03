@@ -940,25 +940,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
             });
   }
 
-  private void convertTunnelAttributes() {
-    _masterLogicalSystem
-        .getTunnelAttributes()
-        .forEach(
-            (name, tunnelAttr) -> {
-              TunnelAttribute.Type type = tunnelAttr.getType();
-              Ip remoteEndpoint = tunnelAttr.getRemoteEndPoint();
-              if (type == null || remoteEndpoint == null) {
-                _w.redFlag(
-                    String.format(
-                        "Ignoring tunnel-attribute %s because its %s is not set",
-                        name, type == null ? "tunnel-type" : "remote-end-point"));
-                return;
-              }
-              _c.getTunnelAttributes()
-                  .put(name, new org.batfish.datamodel.TunnelAttribute(remoteEndpoint));
-            });
-  }
-
   private static class CommunityMemberToCommunity implements CommunityMemberVisitor<Community> {
     @Override
     public Community visitLiteralCommunityMember(LiteralCommunityMember literalCommunityMember) {
@@ -3498,7 +3479,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     convertNamedCommunities();
-    convertTunnelAttributes();
 
     // convert interfaces. Before policies because some policies depend on interfaces
     convertInterfaces();

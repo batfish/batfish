@@ -1866,16 +1866,6 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testTunnelAttributeConversion() {
-    Configuration c = parseConfig("tunnel-attributes");
-    Map<String, org.batfish.datamodel.TunnelAttribute> tunnelAttrs = c.getTunnelAttributes();
-    // Only the attribute with both type and remote endpoint set should be converted
-    org.batfish.datamodel.TunnelAttribute expectedTunnelAttr =
-        new org.batfish.datamodel.TunnelAttribute(Ip.parse("1.2.3.4"));
-    assertThat(tunnelAttrs, equalTo(ImmutableMap.of("tunnel-attr-1", expectedTunnelAttr)));
-  }
-
-  @Test
   public void testFirewallCombinedPolicies() {
     Configuration c = parseConfig("firewall-combined-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
