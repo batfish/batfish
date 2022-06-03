@@ -9,13 +9,13 @@ import org.batfish.datamodel.IntegerSpace;
 @ParametersAreNonnullByDefault
 public final class Evpn implements Serializable {
 
-  private MulticastModeOptions _multicast_mode;
-  private @Nullable Boolean _extended_vni_all;
-  private @Nullable IntegerSpace _extended_vni_list;
+  private MulticastModeOptions _multicastMode;
+  private @Nullable Boolean _extendedVniAll;
+  private @Nullable IntegerSpace _extendedVniList;
   private @Nullable EvpnEncapsulation _encapsulation;
 
   public @Nullable MulticastModeOptions getMulticastMode() {
-    return _multicast_mode;
+    return _multicastMode;
   }
 
   public @Nullable EvpnEncapsulation getEncapsulation() {
@@ -23,23 +23,23 @@ public final class Evpn implements Serializable {
   }
 
   public @Nullable Boolean getExtendedVniAll() {
-    return _extended_vni_all;
+    return _extendedVniAll;
   }
 
   public @Nullable IntegerSpace getExtendedVniList() {
-    return _extended_vni_list;
+    return _extendedVniList;
   }
 
   public void setMulticastMode(MulticastModeOptions multicastMode) {
-    _multicast_mode = multicastMode;
+    _multicastMode = multicastMode;
   }
 
   public void setExtendedVniAll(Boolean extendedVniAll) {
-    _extended_vni_all = extendedVniAll;
+    _extendedVniAll = extendedVniAll;
   }
 
   public void setExtendedVniList(IntegerSpace extendedVniList) {
-    _extended_vni_list = extendedVniList;
+    _extendedVniList = extendedVniList;
   }
 
   public void setEncapsulation(EvpnEncapsulation encapsulation) {
