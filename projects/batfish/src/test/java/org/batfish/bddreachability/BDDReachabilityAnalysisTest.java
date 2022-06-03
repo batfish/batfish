@@ -81,7 +81,6 @@ public final class BDDReachabilityAnalysisTest {
   private final BDDPacket _pkt = new BDDPacket();
 
   private BDDReachabilityAnalysis _graph;
-  private BDDReachabilityAnalysisFactory _graphFactory;
   private TestNetwork _net;
 
   private BDDOps _bddOps;
@@ -157,7 +156,7 @@ public final class BDDReachabilityAnalysisTest {
 
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
-    _graphFactory =
+    BDDReachabilityAnalysisFactory graphFactory =
         new BDDReachabilityAnalysisFactory(
             _pkt,
             _net._configs,
@@ -172,7 +171,7 @@ public final class BDDReachabilityAnalysisTest {
                 new InterfaceLocation(_net._srcNode.getHostname(), _net._link1Src.getName()),
                 UniverseIpSpace.INSTANCE)
             .build();
-    _graph = _graphFactory.bddReachabilityAnalysis(assignment);
+    _graph = graphFactory.bddReachabilityAnalysis(assignment);
     _bddOps = new BDDOps(_pkt.getFactory());
     _dstIface1Ip = DST_PREFIX_1.getStartIp();
     _dstIface1IpBDD = dstIpBDD(_dstIface1Ip);
@@ -250,29 +249,6 @@ public final class BDDReachabilityAnalysisTest {
 
   private BDD or(BDD... bdds) {
     return _bddOps.or(bdds);
-  }
-
-  private Map<String, BDD> ifaceAcceptBDDs(String node) {
-    return _graphFactory.getIfaceAcceptBDDs().get(node).get(DEFAULT_VRF_NAME);
-  }
-
-  @Test
-  public void testIfaceAcceptBDDs() {
-    assertThat(
-        ifaceAcceptBDDs(_dstName),
-        equalTo(
-            ImmutableMap.of(
-                _link1DstName,
-                _link1DstIpBDD,
-                _link2DstName,
-                _link2DstIpBDD,
-                _dstIface1Name,
-                _dstIface1IpBDD,
-                _dstIface2Name,
-                _dstIface2IpBDD)));
-    assertThat(
-        ifaceAcceptBDDs(_srcName),
-        equalTo(ImmutableMap.of(_link1SrcName, _link1SrcIpBDD, _link2SrcName, _link2SrcIpBDD)));
   }
 
   @Test
