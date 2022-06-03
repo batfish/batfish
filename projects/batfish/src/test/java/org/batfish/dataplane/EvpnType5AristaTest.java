@@ -22,7 +22,6 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GenericRib;
@@ -36,6 +35,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.arista.AristaConfiguration;
@@ -62,7 +62,7 @@ public class EvpnType5AristaTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishForTextConfigs(_folder, TESTCONFIGS_PATH + hostname);
     batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
-    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     String vrf1 = "vrf1";
     String vrf2 = "vrf2";
     Ip originatorIp = Ip.parse("12.12.12.2"); // IP of BGP route originator
@@ -70,7 +70,8 @@ public class EvpnType5AristaTest {
 
     // The connected route that vrf1 redistributes into BGP should be a connected route in vrf1, an
     // EVPN route in the default VRF (so no appearance in main RIB), and a BGPv4 route in vrf2.
-    SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribs = dp.getRibs().get(hostname);
+    SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribs =
+        dp.getRibsForTesting().get(hostname);
     assertThat(ribs.get(DEFAULT_VRF_NAME).getRoutes(prefix), empty());
     assertThat(
         ribs.get(vrf1).getRoutes(prefix), contains(hasRoute(instanceOf(ConnectedRoute.class))));

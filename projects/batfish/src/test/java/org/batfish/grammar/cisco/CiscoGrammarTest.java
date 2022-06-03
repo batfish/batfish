@@ -268,6 +268,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
+import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
@@ -290,7 +291,6 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -311,11 +311,11 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -413,6 +413,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
@@ -1019,10 +1020,10 @@ public final class CiscoGrammarTest {
     // Sanity check: All VRFs' main RIBs should contain static default routes
     Matcher<Iterable<? extends AbstractRouteDecorator>> containsStaticDefaultRoute =
         contains(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.STATIC)));
-    assertThat(dp.getRibs().get(hostname).get("VRF1").getTypedRoutes(), containsStaticDefaultRoute);
-    assertThat(dp.getRibs().get(hostname).get("VRF2").getTypedRoutes(), containsStaticDefaultRoute);
-    assertThat(dp.getRibs().get(hostname).get("VRF3").getTypedRoutes(), containsStaticDefaultRoute);
-    assertThat(dp.getRibs().get(hostname).get("VRF4").getTypedRoutes(), containsStaticDefaultRoute);
+    assertThat(dp.getRibs().get(hostname, "VRF1").getRoutes(), containsStaticDefaultRoute);
+    assertThat(dp.getRibs().get(hostname, "VRF2").getRoutes(), containsStaticDefaultRoute);
+    assertThat(dp.getRibs().get(hostname, "VRF3").getRoutes(), containsStaticDefaultRoute);
+    assertThat(dp.getRibs().get(hostname, "VRF4").getRoutes(), containsStaticDefaultRoute);
 
     // Only VRF1 and VRF4 should have default route in BGP
     Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
@@ -1118,10 +1119,8 @@ public final class CiscoGrammarTest {
     Prefix staticPrefix = Prefix.parse("1.1.1.1/32");
 
     // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32
-    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
-        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
-    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
-        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    Set<AbstractRoute> vrf1Routes = dp.getRibs().get(hostname, "VRF1").getRoutes();
+    Set<AbstractRoute> vrf2Routes = dp.getRibs().get(hostname, "VRF2").getRoutes();
     assertThat(
         vrf1Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
     assertThat(
@@ -1164,8 +1163,8 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> r1Routes = dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r2Routes = dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get("r1", DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get("r2", DEFAULT_VRF_NAME).getRoutes();
     assertThat(r1Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("8.8.8.8/32")))));
     assertThat(r2Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("7.7.7.7/32")))));
   }
@@ -1185,7 +1184,7 @@ public final class CiscoGrammarTest {
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<Prefix> receivedEigrpRoutes =
-        dp.getRibs().get("receiver").get(DEFAULT_VRF_NAME).getRoutes().stream()
+        dp.getRibs().get("receiver", DEFAULT_VRF_NAME).getRoutes().stream()
             .filter(r -> r instanceof EigrpRoute)
             .map(AbstractRoute::getNetwork)
             .collect(ImmutableSet.toImmutableSet());
@@ -1777,9 +1776,9 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> l3Routes = dp.getRibs().get(l3Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l3Routes = dp.getRibs().get(l3Name, DEFAULT_VRF_NAME).getRoutes();
 
     // Listener 1
     Ip originatorId = Ip.parse("1.1.1.1");
@@ -1846,8 +1845,8 @@ public final class CiscoGrammarTest {
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<Bgpv4Route> originatorBgpRoutes = dp.getBgpRoutes().get(originatorName, DEFAULT_VRF_NAME);
-    Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name, DEFAULT_VRF_NAME).getRoutes();
 
     Ip originatorId = Ip.parse("1.1.1.1");
     Bgpv4Route redistributedStaticRoute =
@@ -2237,11 +2236,10 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> area1NssaRoutes =
-        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> abrRoutes =
-        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes = dp.getRibs().get(originatorName, DEFAULT_VRF_NAME).getRoutes();
 
     // R1 should have default route, but the ABR and R2 should not
     assertThat(
@@ -2283,11 +2281,10 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> area1NssaRoutes =
-        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> abrRoutes =
-        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes = dp.getRibs().get(originatorName, DEFAULT_VRF_NAME).getRoutes();
 
     // None should have default route
     assertThat(area0Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
@@ -2328,11 +2325,10 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> area1NssaRoutes =
-        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> abrRoutes =
-        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes = dp.getRibs().get(originatorName, DEFAULT_VRF_NAME).getRoutes();
 
     // R1 should have default route, but the ABR and R2 should not
     assertThat(
@@ -2376,8 +2372,8 @@ public final class CiscoGrammarTest {
 
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name, DEFAULT_VRF_NAME).getRoutes();
 
     // R2 should have default route, R1 should not
     assertThat(
@@ -3194,8 +3190,8 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name, DEFAULT_VRF_NAME).getRoutes();
     assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/32")))));
     assertThat(r2Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/32")))));
     assertThat(r1Routes, hasItem(hasPrefix(Prefix.parse("5.6.7.8/32"))));
@@ -4728,10 +4724,10 @@ public final class CiscoGrammarTest {
 
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> area1NssaRoutes =
-        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> abrRoutes = dp.getRibs().get(abrName).get(DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes = dp.getRibs().get(abrName, DEFAULT_VRF_NAME).getRoutes();
 
     // All the devices should have a route to the ABR's loopback
     assertThat(
@@ -4762,10 +4758,10 @@ public final class CiscoGrammarTest {
     assertThat(abrToArea1.getNssa(), hasSuppressType7(true));
 
     batfish.computeDataPlane(snapshot);
-    dp = batfish.loadDataPlane(snapshot);
-    area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
-    area1NssaRoutes = dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
-    abrRoutes = dp.getRibs().get(abrName).get(DEFAULT_VRF_NAME).getRoutes();
+    dp = (IncrementalDataPlane) batfish.loadDataPlane(snapshot);
+    area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
+    area1NssaRoutes = dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+    abrRoutes = dp.getRibs().get(abrName, DEFAULT_VRF_NAME).getRoutes();
 
     // Now the device in area 1 should not have a route to the ABR's loopback
     assertThat(
@@ -5569,7 +5565,7 @@ public final class CiscoGrammarTest {
     // Rule 1's global IP is routable (via iface Ethernet2), but rule 2's global IP isn't.
     // The RIB should therefore have a route corresponding to rule 1, but none for rule 2.
     Set<AbstractRoute> routes =
-        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(routes, allOf(hasItem(rule1Route), not(hasItem(rule2Route))));
 
     // Should see that add-route has no effect outside the default VRF.
@@ -5893,7 +5889,7 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> routes = dp.getRibs().get("receiver").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> routes = dp.getRibs().get("receiver", DEFAULT_VRF_NAME).getRoutes();
     assertThat(routes, hasItem(hasPrefix(Prefix.parse("99.99.99.99/32"))));
   }
 
@@ -6103,9 +6099,10 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribs = dp.getRibs().get(hostname);
-    Set<AbstractRoute> dstVrfRoutes = ribs.get("DST_VRF").getRoutes();
-    Set<AbstractRoute> dstVrfNoImportMapRoutes = ribs.get("DST_VRF_NO_IMPORT_MAP").getRoutes();
+    Table<String, String, FinalMainRib> ribs = dp.getRibs();
+    Set<AbstractRoute> dstVrfRoutes = ribs.get(hostname, "DST_VRF").getRoutes();
+    Set<AbstractRoute> dstVrfNoImportMapRoutes =
+        ribs.get(hostname, "DST_VRF_NO_IMPORT_MAP").getRoutes();
     Matcher<AbstractRoute> leakedRouteMatcher1111 =
         isBgpv4RouteThat(
             allOf(
@@ -6152,9 +6149,9 @@ public final class CiscoGrammarTest {
             .getBgpProcess(),
         notNullValue());
     assertThat(
-        ribs.get("NOT_UNDER_ROUTER_BGP").getRoutes(),
+        ribs.get(hostname, "NOT_UNDER_ROUTER_BGP").getRoutes(),
         containsInAnyOrder(leakedRouteMatcher1111, leakedRouteMatcher2220, leakedRouteMatcher3330));
-    assertThat(ribs.get("DST_IMPOSSIBLE").getRoutes(), empty());
+    assertThat(ribs.get(hostname, "DST_IMPOSSIBLE").getRoutes(), empty());
   }
 
   @Test
@@ -6288,7 +6285,7 @@ public final class CiscoGrammarTest {
     batfish.loadConfigurations(batfish.getSnapshot());
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    Set<AbstractRoute> routes = dp.getRibs().get(hostname).get("default").getRoutes();
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname, "default").getRoutes();
 
     // Rib should have the static route whose NHI is determined from a non-default route
     assertThat(
@@ -6601,7 +6598,7 @@ public final class CiscoGrammarTest {
             aggRoute4General));
 
     Set<AbstractRoute> mainRibRoutes =
-        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix4General)));
@@ -6670,7 +6667,7 @@ public final class CiscoGrammarTest {
               equalTo(aggRoute1),
               equalTo(aggRoute2)));
       Set<AbstractRoute> mainRibRoutes =
-          dp.getRibs().get(c2).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+          dp.getRibs().get(c2, Configuration.DEFAULT_VRF_NAME).getRoutes();
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix1)));
       // Suppressed routes still go in the main RIB and are used for forwarding
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix2)));

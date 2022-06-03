@@ -43,6 +43,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -326,7 +327,8 @@ public class NxosBgpTest {
     batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
-    return dp.getRibs().get(listenerName).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    return dp.getRibs().get(listenerName, Configuration.DEFAULT_VRF_NAME).getRoutes().stream()
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   // Neighbor default-originate overrides outbound route map.

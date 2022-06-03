@@ -14,17 +14,16 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Table;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
@@ -133,9 +132,9 @@ public final class XrVrfLeakingTest {
   }
 
   private Map<String, Map<String, Set<AbstractRoute>>> getBgpRoutes(
-      SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs) {
+      Table<String, String, FinalMainRib> ribs) {
     return toImmutableMap(
-        ribs,
+        ribs.rowMap(),
         Entry::getKey,
         nodeEntry ->
             toImmutableMap(

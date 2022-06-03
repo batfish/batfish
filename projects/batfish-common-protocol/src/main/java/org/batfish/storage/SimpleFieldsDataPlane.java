@@ -11,14 +11,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.ForwardingAnalysis;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -34,9 +32,7 @@ final class SimpleFieldsDataPlane implements DataPlane {
   private final @Nonnull Table<String, String, Set<Layer3Vni>> _layer3Vnis;
   private final @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       _prefixTracingInfoSummary;
-  private final @Nonnull SortedMap<
-          String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-      _ribs;
+  private final @Nonnull Table<String, String, FinalMainRib> _ribs;
 
   private static <T> Table<String, String, T> toTable(
       Map<String, PerHostDataPlane> perHostDataPlane,
@@ -71,15 +67,7 @@ final class SimpleFieldsDataPlane implements DataPlane {
                             Ordering.natural(),
                             Entry::getKey,
                             e -> e.getValue().getPrefixTracingInfoSummary()));
-
-    _ribs =
-        perHostDataPlanes.entrySet().parallelStream()
-            .collect(
-                ImmutableSortedMap
-                    .<Entry<String, PerHostDataPlane>, String,
-                        SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-                        toImmutableSortedMap(
-                            Ordering.natural(), Entry::getKey, e -> e.getValue().getRibs()));
+    _ribs = toTable(perHostDataPlanes, PerHostDataPlane::getRibs);
   }
 
   @Override
@@ -129,8 +117,7 @@ final class SimpleFieldsDataPlane implements DataPlane {
   }
 
   @Override
-  public @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-      getRibs() {
+  public @Nonnull Table<String, String, FinalMainRib> getRibs() {
     return _ribs;
   }
 }

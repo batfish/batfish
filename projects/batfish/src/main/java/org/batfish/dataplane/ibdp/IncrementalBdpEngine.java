@@ -913,7 +913,7 @@ final class IncrementalBdpEngine {
       IncrementalDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
     return toImmutableSortedMap(
-        dp.getRibs(),
+        dp.getRibsForTesting(),
         Entry::getKey,
         nodeEntry ->
             toImmutableSortedMap(

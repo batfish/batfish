@@ -54,7 +54,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Lists;
@@ -64,21 +63,20 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
@@ -96,7 +94,6 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
-import org.batfish.question.routes.RoutesAnswererTest.MockRib;
 import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
@@ -191,29 +188,24 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testMainRibColumnsValue() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
-        ImmutableSortedMap.of(
-            "n1",
-            ImmutableSortedMap.of(
-                Configuration.DEFAULT_VRF_NAME,
-                new MockRib<>(
-                    ImmutableSet.of(
-                        OspfExternalType2Route.builder()
-                            .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
-                            .setAdmin(10)
-                            .setMetric(2L << 34)
-                            .setLsaMetric(2)
-                            .setCostToAdvertiser(2)
-                            .setArea(1L)
-                            .setAdvertiser("n2")
-                            .setOspfMetricType(OspfMetricType.E2)
-                            .setTag(2L << 35)
-                            .build()))));
+    AbstractRoute route =
+        OspfExternalType2Route.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
+            .setAdmin(10)
+            .setMetric(2L << 34)
+            .setLsaMetric(2)
+            .setCostToAdvertiser(2)
+            .setArea(1L)
+            .setAdvertiser("n2")
+            .setOspfMetricType(OspfMetricType.E2)
+            .setTag(2L << 35)
+            .build();
+    FinalMainRib rib = FinalMainRib.of(route);
 
     Multiset<Row> actual =
         getMainRibRoutes(
-            ribs,
+            ImmutableTable.of("n1", Configuration.DEFAULT_VRF_NAME, rib),
             ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
@@ -302,7 +294,7 @@ public class RoutesAnswererUtilTest {
   public void testBgpRibRoutes_empty() {
     Multiset<Row> rows =
         getBgpRibRoutes(
-            ImmutableTable.of(), // no BGP rib for the specifed vrfs
+            ImmutableTable.of(), // no BGP rib for the specified vrfs
             ImmutableTable.of(),
             ImmutableMultimap.of("node", "vrf"),
             null,
@@ -402,7 +394,7 @@ public class RoutesAnswererUtilTest {
   public void testEvpnRibRoutes_empty() {
     Multiset<Row> rows =
         getEvpnRoutes(
-            ImmutableTable.of(), // no EVPN rib for the specifed vrfs
+            ImmutableTable.of(), // no EVPN rib for the specified vrfs
             ImmutableTable.of(),
             ImmutableMultimap.of("node", "vrf"),
             null,
@@ -530,39 +522,34 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testGroupMatchingRoutesByPrefix() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
-        ImmutableSortedMap.of(
-            "n1",
-            ImmutableSortedMap.of(
-                Configuration.DEFAULT_VRF_NAME,
-                new MockRib<>(
-                    ImmutableSet.of(
-                        OspfExternalType2Route.builder()
-                            .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
-                            .setAdmin(10)
-                            .setMetric(30L)
-                            .setLsaMetric(2)
-                            .setCostToAdvertiser(2)
-                            .setArea(1L)
-                            .setAdvertiser("n2")
-                            .setOspfMetricType(OspfMetricType.E2)
-                            .build(),
-                        OspfExternalType2Route.builder()
-                            .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.3")))
-                            .setAdmin(10)
-                            .setMetric(20L)
-                            .setLsaMetric(2)
-                            .setCostToAdvertiser(2)
-                            .setArea(1L)
-                            .setAdvertiser("n2")
-                            .setOspfMetricType(OspfMetricType.E2)
-                            .build()))));
+    FinalMainRib rib =
+        FinalMainRib.of(
+            OspfExternalType2Route.builder()
+                .setNetwork(Prefix.parse("1.1.1.0/24"))
+                .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
+                .setAdmin(10)
+                .setMetric(30L)
+                .setLsaMetric(2)
+                .setCostToAdvertiser(2)
+                .setArea(1L)
+                .setAdvertiser("n2")
+                .setOspfMetricType(OspfMetricType.E2)
+                .build(),
+            OspfExternalType2Route.builder()
+                .setNetwork(Prefix.parse("1.1.1.0/24"))
+                .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.3")))
+                .setAdmin(10)
+                .setMetric(20L)
+                .setLsaMetric(2)
+                .setCostToAdvertiser(2)
+                .setArea(1L)
+                .setAdvertiser("n2")
+                .setOspfMetricType(OspfMetricType.E2)
+                .build());
 
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> grouped =
         groupRoutes(
-            ribs,
+            ImmutableTable.of("n1", Configuration.DEFAULT_VRF_NAME, rib),
             ImmutableSet.of("n1"),
             null,
             ".*",
@@ -810,21 +797,15 @@ public class RoutesAnswererUtilTest {
     RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40).build();
     RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50).build();
 
-    ImmutableMap.Builder<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>
-        immutablelMapBuilderBase = ImmutableMap.builder();
-
-    ImmutableMap.Builder<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>
-        immutablelMapBuilderRef = ImmutableMap.builder();
-
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroupsInBase =
-        immutablelMapBuilderBase
+        ImmutableMap.<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>builder()
             .put(rrsk1, ImmutableSortedSet.of(rra1))
             .put(rrsk2, ImmutableSortedSet.of(rra1, rra2))
             .put(rrsk3, ImmutableSortedSet.of(rra4))
             .build();
 
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroupsInRef =
-        immutablelMapBuilderRef
+        ImmutableMap.<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>builder()
             .put(rrsk1, ImmutableSortedSet.of(rra2))
             .put(rrsk2, ImmutableSortedSet.of(rra1, rra3))
             .put(rrsk4, ImmutableSortedSet.of(rra5))
@@ -878,22 +859,10 @@ public class RoutesAnswererUtilTest {
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(11).build();
     RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(22).build();
 
-    ImmutableMap.Builder<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>
-        immutablelMapBuilderBase = ImmutableMap.builder();
-
-    ImmutableMap.Builder<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>
-        immutablelMapBuilderRef = ImmutableMap.builder();
-
-    Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroupsInBase =
-        immutablelMapBuilderBase.put(rrsk1, ImmutableSortedSet.of(rra1)).build();
-
-    Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroupsInRef =
-        immutablelMapBuilderRef.put(rrsk2, ImmutableSortedSet.of(rra2)).build();
-
     List<DiffRoutesOutput> diffRoutesOutputs =
         getRoutesDiff(
-            ImmutableMap.of(routeRowKey1, innerGroupsInBase),
-            ImmutableMap.of(routeRowKey2, innerGroupsInRef));
+            ImmutableMap.of(routeRowKey1, ImmutableMap.of(rrsk1, ImmutableSortedSet.of(rra1))),
+            ImmutableMap.of(routeRowKey2, ImmutableMap.of(rrsk2, ImmutableSortedSet.of(rra2))));
 
     assertThat(
         diffRoutesOutputs,
@@ -988,39 +957,32 @@ public class RoutesAnswererUtilTest {
   public void testGetMatchingPrefixRoutes_fromRib() {
     AbstractRoute r1 = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "r1");
     AbstractRoute r2 = new ConnectedRoute(Prefix.parse("1.2.1.0/24"), "r2");
-    org.batfish.datamodel.MockRib ribs =
-        org.batfish.datamodel.MockRib.builder()
-            .setRoutes(
-                ImmutableSet.of(new AnnotatedRoute<>(r1, "r1"), new AnnotatedRoute<>(r2, "r2")))
-            .setLongestPrefixMatchResults(
-                ImmutableMap.of(
-                    Ip.parse("1.1.1.1"), ImmutableSet.of(new AnnotatedRoute<>(r1, "r1"))))
-            .build();
+    FinalMainRib rib = FinalMainRib.of(r1, r2);
 
     // both routes are returned when network is null
     assertThat(
-        getMatchingPrefixRoutes(PrefixMatchType.EXACT, null, ribs).collect(Collectors.toSet()),
+        getMatchingPrefixRoutes(PrefixMatchType.EXACT, null, rib).collect(Collectors.toSet()),
         containsInAnyOrder(r1, r2));
 
     // match conditions other than LPM
     assertThat(
-        getMatchingPrefixRoutes(PrefixMatchType.EXACT, Prefix.parse("1.1.1.1/24"), ribs)
+        getMatchingPrefixRoutes(PrefixMatchType.EXACT, Prefix.parse("1.1.1.1/24"), rib)
             .collect(Collectors.toSet()),
         contains(r1));
     assertThat(
-        getMatchingPrefixRoutes(PrefixMatchType.LONGER_PREFIXES, Prefix.parse("1.0.0.0/8"), ribs)
+        getMatchingPrefixRoutes(PrefixMatchType.LONGER_PREFIXES, Prefix.parse("1.0.0.0/8"), rib)
             .collect(Collectors.toSet()),
         containsInAnyOrder(r1, r2));
 
     // LPM
     assertThat(
         getMatchingPrefixRoutes(
-                PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("1.1.1.1/32"), ribs)
+                PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("1.1.1.1/32"), rib)
             .collect(Collectors.toSet()),
         contains(r1));
     assertTrue(
         getMatchingPrefixRoutes(
-                PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("2.1.1.1/32"), ribs)
+                PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("2.1.1.1/32"), rib)
             .collect(Collectors.toSet())
             .isEmpty());
   }
@@ -1030,7 +992,7 @@ public class RoutesAnswererUtilTest {
     return routes.entrySet().stream()
         .collect(
             ImmutableMap.toImmutableMap(
-                e -> e.getKey(), e -> e.getValue().collect(ImmutableSet.toImmutableSet())));
+                Entry::getKey, e -> e.getValue().collect(ImmutableSet.toImmutableSet())));
   }
 
   @Test
