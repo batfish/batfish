@@ -1610,7 +1610,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testEvpnVniListAllExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-all");
-    assertEquals(Boolean.TRUE, c.getMasterLogicalSystem().getEvpn().getExtendedVniAll());
+    assertTrue(c.getMasterLogicalSystem().getEvpn().getExtendedVniAll());
   }
 
   @Test
