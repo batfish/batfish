@@ -33,7 +33,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.HmmRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -179,7 +178,7 @@ public final class IncrementalBdpEngineTest {
             ImmutableSet.of(),
             new TestIpOwners(configurations));
     Set<AbstractRoute> installedStaticRoutes =
-        dp._dataPlane.getRibs().get(c1.getHostname()).get(v1.getName()).getRoutes().stream()
+        dp._dataPlane.getRibs().get(c1.getHostname(), v1.getName()).getRoutes().stream()
             .filter(StaticRoute.class::isInstance)
             .collect(ImmutableSet.toImmutableSet());
 
@@ -246,7 +245,7 @@ public final class IncrementalBdpEngineTest {
             ImmutableSet.of(),
             new TestIpOwners(configurations));
     Set<AbstractRoute> installedStaticRoutes =
-        dp._dataPlane.getRibs().get(c.getHostname()).get(v1.getName()).getRoutes().stream()
+        dp._dataPlane.getRibs().get(c.getHostname(), v1.getName()).getRoutes().stream()
             .filter(StaticRoute.class::isInstance)
             .collect(ImmutableSet.toImmutableSet());
 
@@ -361,11 +360,11 @@ public final class IncrementalBdpEngineTest {
             ImmutableSet.of(),
             new TestIpOwners(configurations));
     Set<AbstractRoute> h1Vrf1HmmRoutes =
-        dp._dataPlane.getRibs().get(h.getHostname()).get(hVrf1.getName()).getRoutes().stream()
+        dp._dataPlane.getRibs().get(h.getHostname(), hVrf1.getName()).getRoutes().stream()
             .filter(HmmRoute.class::isInstance)
             .collect(ImmutableSet.toImmutableSet());
     Set<AbstractRoute> h1Vrf2HmmRoutes =
-        dp._dataPlane.getRibs().get(h.getHostname()).get(hVrf2.getName()).getRoutes().stream()
+        dp._dataPlane.getRibs().get(h.getHostname(), hVrf2.getName()).getRoutes().stream()
             .filter(HmmRoute.class::isInstance)
             .collect(ImmutableSet.toImmutableSet());
 
@@ -448,19 +447,22 @@ public final class IncrementalBdpEngineTest {
     TopologyContext initialTopologyContext =
         TopologyContext.builder().setLayer3Topology(synthesizeL3Topology(configurations)).build();
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
-    DataPlane dp =
-        engine.computeDataPlane(
-                configurations,
-                initialTopologyContext,
-                ImmutableSet.of(),
-                new TestIpOwners(configurations))
-            ._dataPlane;
+    IncrementalDataPlane dp =
+        (IncrementalDataPlane)
+            engine.computeDataPlane(
+                    configurations,
+                    initialTopologyContext,
+                    ImmutableSet.of(),
+                    new TestIpOwners(configurations))
+                ._dataPlane;
 
     // r1 should have the kernel route, but r2 should not.
     assertThat(
-        dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix),
+        dp.getRibsForTesting().get("r1").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix),
         contains(new AnnotatedRoute<>(kernelRoute, DEFAULT_VRF_NAME)));
-    assertThat(dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix), empty());
+    assertThat(
+        dp.getRibsForTesting().get("r2").get(DEFAULT_VRF_NAME).getRoutes(kernelRoutePrefix),
+        empty());
   }
 
   private static class TestIpOwners extends IpOwnersBaseImpl {

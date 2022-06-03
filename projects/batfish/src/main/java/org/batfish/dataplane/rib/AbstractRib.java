@@ -16,6 +16,7 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -175,6 +176,13 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
         .map(Multimap::values)
         .map(ImmutableSet::copyOf)
         .orElse(ImmutableSet.of());
+  }
+
+  /**
+   * Returns a {@link PrefixTrieMultiMap} indexing the routes returned by {@link #getTypedRoutes()}.
+   */
+  public @Nonnull PrefixTrieMultiMap<R> getRouteTree() {
+    return _tree.getRouteTree();
   }
 
   /**

@@ -10,6 +10,7 @@ junit_tests(
     srcs = glob(["*Test.java"]),
     resources = ["//projects/allinone/src/test/resources/org/batfish/e2e/bgp/withdrawals"],
     deps = [
+        "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",

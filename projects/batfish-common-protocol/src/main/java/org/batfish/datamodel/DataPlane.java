@@ -34,9 +34,11 @@ public interface DataPlane extends Serializable {
   @Nonnull
   ForwardingAnalysis getForwardingAnalysis();
 
-  /** Return the set of all (main) RIBs. Map structure: hostname -&gt; VRF name -&gt; GenericRib */
+  /**
+   * Return the set of all (main) RIBs. Table structure: hostname -&gt; VRF name -&gt; FinalMainRib
+   */
   @Nonnull
-  SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs();
+  Table<String, String, FinalMainRib> getRibs();
 
   /**
    * Return the summary of route prefix propagation. Map structure: Hostname -&gt; VRF name -&gt;

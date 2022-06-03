@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -546,6 +547,23 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
               return ret;
             });
     PrefixTrieMultiMap<T> ret = new PrefixTrieMultiMap<>();
+    ret._root = root;
+    return ret;
+  }
+
+  /** Make and return a new (shallow) copy of this, transforming the elements on the way. */
+  public <R> PrefixTrieMultiMap<R> copy(Function<T, R> transform) {
+    Node<R> root =
+        fold(
+            (prefix, elems, leftResult, rightResult) -> {
+              ImmutableSet<R> newElems =
+                  elems.stream().map(transform).collect(ImmutableSet.toImmutableSet());
+              Node<R> ret = new Node<>(prefix, newElems);
+              ret._left = leftResult;
+              ret._right = rightResult;
+              return ret;
+            });
+    PrefixTrieMultiMap<R> ret = new PrefixTrieMultiMap<>();
     ret._root = root;
     return ret;
   }

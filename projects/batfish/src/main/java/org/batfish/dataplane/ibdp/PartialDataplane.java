@@ -17,15 +17,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.L3Adjacencies;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.ForwardingAnalysis;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -93,8 +91,7 @@ public final class PartialDataplane implements DataPlane {
   }
 
   @Override
-  public @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-      getRibs() {
+  public @Nonnull Table<String, String, FinalMainRib> getRibs() {
     throw new UnsupportedOperationException();
   }
 

@@ -141,6 +141,11 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return _root.get(prefix);
   }
 
+  /** Returns a {@link PrefixTrieMultiMap} indexing the routes returned by {@link #getRoutes()}. */
+  public PrefixTrieMultiMap<R> getRouteTree() {
+    return _root.copy();
+  }
+
   /**
    * Add a new route into the RIB, potentially replacing other routes
    *
