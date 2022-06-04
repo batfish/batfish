@@ -5784,7 +5784,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopstta_remove(FlatJuniperParser.Popstta_removeContext ctx) {
-    _currentPsThens.add(PsThenTunnelAttributeRemove.INSTANCE);
+    if (ctx.ALL() != null) {
+      _currentPsThens.add(PsThenTunnelAttributeRemove.INSTANCE);
+    } else {
+      assert ctx.name != null;
+      warn(ctx, "Removing specific tunnel-attributes is not yet supported");
+      _configuration.referenceStructure(
+          TUNNEL_ATTRIBUTE,
+          toString(ctx.name),
+          POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE,
+          getLine(ctx.name.getStop()));
+    }
   }
 
   @Override

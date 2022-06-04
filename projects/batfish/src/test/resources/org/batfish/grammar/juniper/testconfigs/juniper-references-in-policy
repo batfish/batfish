@@ -9,6 +9,8 @@ set policy-options community DELETED members 1
 set policy-options community SET members 1
 set policy-options tunnel-attribute SET remote-end-point 1.1.1.1
 set policy-options tunnel-attribute SET tunnel-type ipip
+set policy-options tunnel-attribute REMOVE remote-end-point 1.1.1.1
+set policy-options tunnel-attribute REMOVE tunnel-type ipip
 set policy-options tunnel-attribute UNUSED remote-end-point 2.2.2.2
 set policy-options tunnel-attribute UNUSED tunnel-type ipip
 #
@@ -19,4 +21,6 @@ set policy-options policy-statement COMMUNITY_POLICY term T1 then community dele
 set policy-options policy-statement COMMUNITY_POLICY term T1 then community set SET
 set policy-options policy-statement COMMUNITY_POLICY term T1 then tunnel-attribute set SET
 set policy-options policy-statement COMMUNITY_POLICY term T1 then tunnel-attribute set UNDEFINED
+set policy-options policy-statement COMMUNITY_POLICY term T1 then tunnel-attribute remove REMOVE
+set policy-options policy-statement COMMUNITY_POLICY term T1 then tunnel-attribute remove UNDEFINED
 set policy-options policy-statement COMMUNITY_POLICY term T1 then accept

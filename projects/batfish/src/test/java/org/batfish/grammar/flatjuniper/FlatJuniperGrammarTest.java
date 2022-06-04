@@ -4578,6 +4578,10 @@ public final class FlatJuniperGrammarTest {
         ccae,
         hasDefinedStructureWithDefinitionLines(
             filename, TUNNEL_ATTRIBUTE, "SET", containsInAnyOrder(10, 11)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, TUNNEL_ATTRIBUTE, "REMOVE", containsInAnyOrder(12, 13)));
 
     // defined references
     assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "MATCHED", 1));
@@ -4586,13 +4590,14 @@ public final class FlatJuniperGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "DELETED", 1));
     assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "SET", 1));
     assertThat(ccae, hasNumReferrers(filename, TUNNEL_ATTRIBUTE, "SET", 1));
+    assertThat(ccae, hasNumReferrers(filename, TUNNEL_ATTRIBUTE, "REMOVE", 1));
     assertThat(ccae, hasNumReferrers(filename, TUNNEL_ATTRIBUTE, "UNUSED", 0));
 
     // undefined references
     assertThat(
         ccae,
         hasUndefinedReferenceWithReferenceLines(
-            filename, COMMUNITY, "UNDEFINED", POLICY_STATEMENT_FROM_COMMUNITY, contains(16)));
+            filename, COMMUNITY, "UNDEFINED", POLICY_STATEMENT_FROM_COMMUNITY, contains(18)));
     assertThat(
         ccae,
         hasUndefinedReferenceWithReferenceLines(
@@ -4600,7 +4605,7 @@ public final class FlatJuniperGrammarTest {
             TUNNEL_ATTRIBUTE,
             "UNDEFINED",
             POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE,
-            contains(21)));
+            containsInAnyOrder(23, 25)));
   }
 
   @Test
