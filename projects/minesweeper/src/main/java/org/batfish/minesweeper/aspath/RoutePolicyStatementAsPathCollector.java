@@ -12,6 +12,7 @@ import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -25,6 +26,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -86,6 +88,12 @@ public class RoutePolicyStatementAsPathCollector
   public Set<SymbolicAsPathRegex> visitExcludeAsPath(
       ExcludeAsPath excludeAsPath, Configuration arg) {
     // if/when TransferBDD gets updated to support AS-path excluding, this will have to be updated
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<SymbolicAsPathRegex> visitRemoveTunnelEncapsulationAttribute(
+      RemoveTunnelEncapsulationAttribute removeTunnelAttribute, Configuration arg) {
     return ImmutableSet.of();
   }
 
@@ -159,6 +167,12 @@ public class RoutePolicyStatementAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitSetDefaultTag(
       SetDefaultTag setDefaultTag, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<SymbolicAsPathRegex> visitSetTunnelEncapsulationAttribute(
+      SetTunnelEncapsulationAttribute setTunnelAttribute, Configuration arg) {
     return ImmutableSet.of();
   }
 
