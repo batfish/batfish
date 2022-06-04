@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
@@ -61,6 +60,7 @@ import net.jpountz.lz4.LZ4FrameInputStream;
 import net.jpountz.lz4.LZ4FrameOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
@@ -76,6 +76,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -135,6 +136,7 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
   private static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   private static final String RELPATH_DATA_PLANE = "dp";
+  private static final String RELPATH_DATA_PLANE_FORWARDING_ANALYSIS = "forwarding_analysis";
   private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   private static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
   private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
@@ -521,35 +523,43 @@ public class FileBasedStorage implements StorageProvider {
     writeJsonFile(answerMetadataPath, answerMetadata);
   }
 
-  /**
-   * Returns a single object of the given class deserialized from the given file. Uses the {@link
-   * FileBasedStorage} default file encoding including serialization format and compression.
-   */
   @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer
-  private <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
+  private <S extends Serializable> S deserializeObjectUnchecked(Path inputFile)
       throws BatfishException {
     Path sanitizedInputFile = validatePath(inputFile);
     try (Closer closer = Closer.create()) {
       FileInputStream fis = closer.register(new FileInputStream(sanitizedInputFile.toFile()));
-      PushbackInputStream pbstream = new PushbackInputStream(fis, DEFAULT_HEADER_LENGTH_BYTES);
+      PushbackInputStream pbstream =
+          closer.register(new PushbackInputStream(fis, DEFAULT_HEADER_LENGTH_BYTES));
       Format f = detectFormat(pbstream);
-      ObjectInputStream ois;
+      InputStream ois;
       if (f == Format.GZIP) {
-        GZIPInputStream gis =
-            closer.register(new GZIPInputStream(pbstream, 8192 /* enlarge buffer */));
-        ois = new ObjectInputStream(gis);
+        ois = closer.register(new GZIPInputStream(pbstream, 8192 /* enlarge buffer */));
       } else if (f == Format.LZ4) {
-        LZ4FrameInputStream lis = closer.register(new LZ4FrameInputStream(pbstream));
-        ois = new ObjectInputStream(lis);
+        ois = closer.register(new LZ4FrameInputStream(pbstream));
       } else if (f == Format.JAVA_SERIALIZED) {
-        ois = new ObjectInputStream(pbstream);
+        ois = pbstream;
       } else {
         throw new BatfishException(
             String.format("Could not detect format of the file %s", sanitizedInputFile));
       }
-      closer.register(ois);
-      return outputClass.cast(ois.readObject());
+      return SerializationUtils.deserialize(ois);
     } catch (Exception e) {
+      throw new BatfishException(
+          String.format("Failed to deserialize object from file %s", sanitizedInputFile), e);
+    }
+  }
+
+  /**
+   * Returns a single object of the given class deserialized from the given file. Uses the {@link
+   * FileBasedStorage} default file encoding including serialization format and compression.
+   */
+  private <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
+      throws BatfishException {
+    try {
+      return outputClass.cast(deserializeObjectUnchecked(inputFile));
+    } catch (ClassCastException e) {
+      Path sanitizedInputFile = validatePath(inputFile);
       throw new BatfishException(
           String.format(
               "Failed to deserialize object of type %s from file %s",
@@ -1523,12 +1533,46 @@ public class FileBasedStorage implements StorageProvider {
   @Nonnull
   @Override
   public DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
-    return deserializeObject(getDataPlanePath(snapshot), DataPlane.class);
+    Map<Path, String> namesByPath = new TreeMap<>();
+    Path dataplanePath = getDataPlanePath(snapshot);
+    try (DirectoryStream<Path> hostDataPlanes = Files.newDirectoryStream(dataplanePath)) {
+      for (Path hostDataPlane : hostDataPlanes) {
+        String name = hostDataPlane.getFileName().toString();
+        if (name.equals(RELPATH_DATA_PLANE_FORWARDING_ANALYSIS)) {
+          continue;
+        }
+        namesByPath.put(hostDataPlane, fromBase64(name));
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Error reading data plane directory", e);
+    }
+    Map<String, PerHostDataPlane> perNodeDataPlanes =
+        deserializeObjects(namesByPath, PerHostDataPlane.class);
+    ForwardingAnalysis forwardingAnalysis =
+        deserializeObjectUnchecked(getDataPlaneForwardingAnalysisPath(snapshot));
+    return new SimpleFieldsDataPlane(perNodeDataPlanes, forwardingAnalysis);
   }
 
   @Override
   public void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException {
-    serializeObject(dataPlane, getDataPlanePath(snapshot));
+    dataPlane.getFibs().keySet().parallelStream()
+        .forEach(
+            hostname -> {
+              PerHostDataPlane dp =
+                  new PerHostDataPlane(
+                      dataPlane.getBgpRoutes().row(hostname),
+                      dataPlane.getBgpBackupRoutes().row(hostname),
+                      dataPlane.getEvpnRoutes().row(hostname),
+                      dataPlane.getEvpnBackupRoutes().row(hostname),
+                      dataPlane.getFibs().get(hostname),
+                      dataPlane.getLayer2Vnis().row(hostname),
+                      dataPlane.getLayer3Vnis().row(hostname),
+                      dataPlane.getPrefixTracingInfoSummary().get(hostname),
+                      dataPlane.getRibs().get(hostname));
+              serializeObject(dp, getDataPlaneHostPath(snapshot, hostname));
+            });
+    serializeObject(
+        dataPlane.getForwardingAnalysis(), getDataPlaneForwardingAnalysisPath(snapshot));
   }
 
   @Override
@@ -1652,6 +1696,14 @@ public class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getDataPlanePath(NetworkSnapshot snapshot) {
     return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_DATA_PLANE);
+  }
+
+  private @Nonnull Path getDataPlaneHostPath(NetworkSnapshot snapshot, String hostname) {
+    return getDataPlanePath(snapshot).resolve(toBase64(hostname));
+  }
+
+  private @Nonnull Path getDataPlaneForwardingAnalysisPath(NetworkSnapshot snapshot) {
+    return getDataPlanePath(snapshot).resolve(RELPATH_DATA_PLANE_FORWARDING_ANALYSIS);
   }
 
   private @Nonnull Path getReferenceLibraryPath(NetworkId network) {

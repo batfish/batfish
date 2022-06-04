@@ -2037,6 +2037,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @MustBeClosed
   @Nonnull
   @Override
+  public InputStream getSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
+      throws IOException {
+    return _storage.loadSnapshotObject(networkId, snapshotId, key);
+  }
+
+  @Nonnull
+  @Override
+  public void putSnapshotObject(
+      NetworkId networkId, SnapshotId snapshotId, String key, InputStream stream)
+      throws IOException {
+    _storage.storeSnapshotObject(stream, networkId, snapshotId, key);
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
   public InputStream getSnapshotInputObject(NetworkSnapshot snapshot, String key)
       throws IOException {
     return _storage.loadSnapshotInputObject(snapshot.getNetwork(), snapshot.getSnapshot(), key);

@@ -64,17 +64,18 @@
         <commons-text.version>1.9</commons-text.version>
         <diffutils.version>4.11</diffutils.version>
         <errorprone.version>2.13.1</errorprone.version>
-        <grizzly.version>2.4.3</grizzly.version>
+        <grizzly.version>2.4.4</grizzly.version>
         <guava.version>31.1-jre</guava.version>
         <hamcrest.version>2.2</hamcrest.version>
         <hppc.version>0.9.1</hppc.version>
         <icu4j.version>69.1</icu4j.version>
         <jackson.version>2.13.3</jackson.version>
         <jakarta-activation.version>1.2.2</jakarta-activation.version>
-        <javax-annotation-api.version>1.3.2</javax-annotation-api.version>
-        <jaxb-api.version>2.3.0</jaxb-api.version>
-        <jaxrs.version>2.1.1</jaxrs.version>
-        <jersey.version>2.27</jersey.version>
+        <jakarta-annotation.version>1.3.5</jakarta-annotation.version>
+        <jakarta.servlet-api.version>4.0.3</jakarta.servlet-api.version>
+        <jakarta.ws.rs-api.version>2.1.6</jakarta.ws.rs-api.version>
+        <jakarta.xml.bind-api.version>2.3.3</jakarta.xml.bind-api.version>
+        <jersey.version>2.35</jersey.version>
         <jettison.version>1.4.1</jettison.version>
         <jgrapht-core.version>1.3.1</jgrapht-core.version>
         <jline.version>3.13.1</jline.version>
@@ -86,7 +87,6 @@
         <mockito.version>3.3.3</mockito.version>
         <parboiled.version>1.3.1</parboiled.version>
         <re2j.version>1.6</re2j.version>
-        <servlet.version>4.0.0</servlet.version>
         <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
 
         <!-- Transitive dependencies managed up for security reasons. -->
@@ -756,27 +756,27 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>${javax-annotation-api.version}</version>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${jakarta-annotation.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${servlet.version}</version>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet-api.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${jaxrs.version}</version>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${jakarta.ws.rs-api.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${jaxb-api.version}</version>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jakarta.xml.bind-api.version}</version>
             </dependency>
 
             <dependency>

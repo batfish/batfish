@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.Ordering;
+import com.google.common.primitives.UnsignedInts;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Optional;
@@ -251,8 +252,22 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return _ip + "/" + _prefixLength;
   }
 
-  /** Cache after deserialization. */
-  private Object readResolve() throws ObjectStreamException {
-    return CACHE.get(this);
+  private Object writeReplace() throws ObjectStreamException {
+    return new SerializedForm(_ip, _prefixLength);
+  }
+
+  /** Optimize serialized form and re-cache after deserialization. */
+  private static class SerializedForm implements Serializable {
+    private final int _ip;
+    private final byte _length;
+
+    public SerializedForm(Ip ip, int prefixLength) {
+      _ip = (int) ip.asLong();
+      _length = (byte) prefixLength;
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+      return CACHE.get(new Prefix(Ip.create(UnsignedInts.toLong(_ip)), _length));
+    }
   }
 }

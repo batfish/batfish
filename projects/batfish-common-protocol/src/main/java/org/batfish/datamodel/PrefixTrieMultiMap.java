@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.graph.Traverser;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
@@ -112,7 +113,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   private static final class Node<T> implements Serializable {
 
     @Nonnull private final Prefix _prefix;
-    @Nonnull private Set<T> _elements;
+    @Nonnull private ImmutableSet<T> _elements;
 
     @Nullable private Node<T> _left;
     @Nullable private Node<T> _right;
@@ -332,7 +333,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     Consumer<Node<T>> nodeConsumer =
         node -> {
           if (!node._elements.isEmpty()) {
-            consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements));
+            consumer.accept(node._prefix, node._elements);
           }
         };
     if (visitNode == null) {
@@ -394,7 +395,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   @Nonnull
   public Set<T> get(Prefix p) {
     Node<T> node = exactMatchNode(p);
-    return node == null ? ImmutableSet.of() : ImmutableSet.copyOf(node._elements);
+    return node == null ? ImmutableSet.of() : node._elements;
   }
 
   /**
@@ -440,7 +441,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   public Set<T> longestPrefixMatch(Ip address, int maxPrefixLength) {
     Node<T> node = longestMatchNonEmptyNode(Prefix.create(address, maxPrefixLength));
     assert node == null || !node._elements.isEmpty();
-    return node == null ? ImmutableSet.of() : ImmutableSet.copyOf(node._elements);
+    return node == null ? ImmutableSet.of() : node._elements;
   }
 
   /**
@@ -534,6 +535,21 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     _root = null;
   }
 
+  /** Make and return a new (shallow) copy of this. */
+  public PrefixTrieMultiMap<T> copy() {
+    Node<T> root =
+        fold(
+            (prefix, elems, leftResult, rightResult) -> {
+              Node<T> ret = new Node<>(prefix, elems);
+              ret._left = leftResult;
+              ret._right = rightResult;
+              return ret;
+            });
+    PrefixTrieMultiMap<T> ret = new PrefixTrieMultiMap<>();
+    ret._root = root;
+    return ret;
+  }
+
   /**
    * Returns {@code true} iff there is any intersection between the prefixes that are keys of this
    * trie and the provided {@code prefixSpace}.
@@ -541,5 +557,38 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
     return _root != null
         && prefixSpace.getPrefixRanges().stream().anyMatch(_root::intersectsPrefixRange);
+  }
+
+  private static class SerializedForm<T> implements Serializable {
+    private final ImmutableList<Prefix> _keys;
+    private final ImmutableList<Set<T>> _values;
+
+    private SerializedForm(ImmutableList<Prefix> keys, ImmutableList<Set<T>> values) {
+      _keys = keys;
+      _values = values;
+    }
+
+    public static <T> SerializedForm<T> of(PrefixTrieMultiMap<T> map) {
+      ImmutableList.Builder<Prefix> keys = ImmutableList.builder();
+      ImmutableList.Builder<Set<T>> values = ImmutableList.builder();
+      map.traverseEntries(
+          (prefix, elements) -> {
+            keys.add(prefix);
+            values.add(elements);
+          });
+      return new SerializedForm<>(keys.build(), values.build());
+    }
+
+    public Object readResolve() throws ObjectStreamException {
+      PrefixTrieMultiMap<T> ret = new PrefixTrieMultiMap<>();
+      for (int i = 0; i < _keys.size(); ++i) {
+        ret.putAll(_keys.get(i), _values.get(i));
+      }
+      return ret;
+    }
+  }
+
+  private Object writeReplace() throws ObjectStreamException {
+    return SerializedForm.of(this);
   }
 }

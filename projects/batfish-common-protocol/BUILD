@@ -91,7 +91,7 @@ java_library(
         "@maven//:com_ibm_icu_icu4j",
         "@maven//:commons_cli_commons_cli",
         "@maven//:commons_io_commons_io",
-        "@maven//:javax_ws_rs_javax_ws_rs_api",
+        "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_configuration2",
         "@maven//:org_apache_commons_commons_lang3",
@@ -142,7 +142,7 @@ junit_tests(
     ]),
     resources = ["//projects/batfish-common-protocol/src/test/resources"],
     runtime_deps = [
-        "@maven//:javax_xml_bind_jaxb_api",
+        "@maven//:jakarta_xml_bind_jakarta_xml_bind_api",
     ],
     deps = [
         ":common",
@@ -159,7 +159,7 @@ junit_tests(
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:commons_io_commons_io",
-        "@maven//:javax_ws_rs_javax_ws_rs_api",
+        "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
         "@maven//:junit_junit",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_lang3",

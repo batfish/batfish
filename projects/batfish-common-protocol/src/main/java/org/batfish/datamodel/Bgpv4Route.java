@@ -177,12 +177,12 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setMetric(_attributes._med)
         .setNextHop(_nextHop)
         .setOriginatorIp(_attributes._originatorIp)
-        .setOriginMechanism(_attributes._originMechanism)
-        .setOriginType(_attributes._originType)
-        .setProtocol(_attributes._protocol)
+        .setOriginMechanism(_attributes.getOriginMechanism())
+        .setOriginType(_attributes.getOriginType())
+        .setProtocol(_attributes.getProtocol())
         .setReceivedFromIp(_receivedFromIp)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
-        .setSrcProtocol(_attributes._srcProtocol)
+        .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(_tag)
         .setWeight(_attributes._weight);
   }

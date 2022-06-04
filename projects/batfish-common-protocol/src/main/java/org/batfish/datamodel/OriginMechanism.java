@@ -20,4 +20,10 @@ public enum OriginMechanism {
    * without an independent network policy.
    */
   REDISTRIBUTE;
+
+  private static OriginMechanism[] VALUES = OriginMechanism.values();
+
+  public static OriginMechanism fromOrdinal(int ordinal) {
+    return VALUES[ordinal];
+  }
 }
