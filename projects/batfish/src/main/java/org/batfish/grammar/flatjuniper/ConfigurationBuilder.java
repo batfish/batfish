@@ -918,6 +918,7 @@ import org.batfish.representation.juniper.StubSettings;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
+import org.batfish.representation.juniper.TunnelAttribute;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
@@ -2256,6 +2257,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private ResolutionRib _currentResolutionRib;
 
   private BridgeDomain _currentBridgeDomain;
+
+  private TunnelAttribute _currentTunnelAttribute;
 
   public ConfigurationBuilder(
       FlatJuniperCombinedParser parser,
@@ -5773,6 +5776,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_tag(Popst_tagContext ctx) {
     _currentPsThens.add(new PsThenTag(toLong(ctx.uint32())));
+  }
+
+  @Override
+  public void enterPo_tunnel_attribute(FlatJuniperParser.Po_tunnel_attributeContext ctx) {
+    String name = toString(ctx.name);
+    _currentTunnelAttribute =
+        _currentLogicalSystem
+            .getTunnelAttributes()
+            .computeIfAbsent(name, k -> new TunnelAttribute());
+  }
+
+  @Override
+  public void exitPo_tunnel_attribute(FlatJuniperParser.Po_tunnel_attributeContext ctx) {
+    _currentTunnelAttribute = null;
+  }
+
+  @Override
+  public void exitPota_remote_end_point(FlatJuniperParser.Pota_remote_end_pointContext ctx) {
+    _currentTunnelAttribute.setRemoteEndPoint(toIp(ctx.ip_address()));
+  }
+
+  @Override
+  public void exitPota_tunnel_type(FlatJuniperParser.Pota_tunnel_typeContext ctx) {
+    // only known type is IPIP
+    assert ctx.IPIP() != null;
+    _currentTunnelAttribute.setType(TunnelAttribute.Type.IPIP);
   }
 
   @Override

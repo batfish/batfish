@@ -78,6 +78,19 @@ po_prefix_list
    )
 ;
 
+po_tunnel_attribute
+:
+   TUNNEL_ATTRIBUTE name = junos_name
+   (
+      pota_remote_end_point
+      | pota_tunnel_type
+   )
+;
+
+pota_remote_end_point: REMOTE_END_POINT ip_address;
+
+pota_tunnel_type: TUNNEL_TYPE IPIP;
+
 poapg_as_path
 :
   AS_PATH name = junos_name regex = AS_PATH_REGEX
@@ -700,5 +713,6 @@ s_policy_options
       | po_condition
       | po_policy_statement
       | po_prefix_list
+      | po_tunnel_attribute
    )
 ;

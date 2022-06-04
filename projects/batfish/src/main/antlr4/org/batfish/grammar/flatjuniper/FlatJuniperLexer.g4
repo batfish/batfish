@@ -2267,6 +2267,8 @@ RELAY_AGENT_OPTION: 'relay-agent-option';
 
 REMOTE: 'remote';
 
+REMOTE_END_POINT: 'remote-end-point';
+
 REMOVE_PRIVATE: 'remove-private';
 
 REMOVED: 'Removed';
@@ -2764,7 +2766,11 @@ TTL_EQ_ZERO_DURING_TRANSIT: 'ttl-eq-zero-during-transit';
 
 TUNNEL: 'tunnel';
 
+TUNNEL_ATTRIBUTE: 'tunnel-attribute' -> pushMode(M_Name);
+
 TUNNEL_ENCAPSULATION_LIMIT_OPTION: 'tunnel-encapsulation-limit-option';
+
+TUNNEL_TYPE: 'tunnel-type';
 
 TYPE: 'type';
 
