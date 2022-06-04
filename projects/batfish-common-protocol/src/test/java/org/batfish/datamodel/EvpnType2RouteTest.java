@@ -88,7 +88,7 @@ public class EvpnType2RouteTest {
             .setVni(1);
     new EqualsTester()
         .addEqualityGroup(erb.build(), erb.build())
-        .addEqualityGroup(erb.setMacAddress(MacAddress.parse("00:11:22:33:44:55")))
+        .addEqualityGroup(erb.setMacAddress(MacAddress.parse("00:11:22:33:44:55")).build())
         .addEqualityGroup(erb.setAsPath(AsPath.ofSingletonAsSets(1L, 1L)).build())
         .addEqualityGroup(erb.setClusterList(ImmutableSet.of(1L)).build())
         .addEqualityGroup(erb.setCommunities(ImmutableSet.of(StandardCommunity.of(1L))).build())
