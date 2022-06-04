@@ -18,6 +18,9 @@ public interface StatementVisitor<T, U> {
 
   T visitExcludeAsPath(ExcludeAsPath excludeAsPath, U arg);
 
+  T visitRemoveTunnelEncapsulationAttribute(
+      RemoveTunnelEncapsulationAttribute removeTunnelEncapsulationAttribute, U arg);
+
   T visitSetAdministrativeCost(SetAdministrativeCost setAdministrativeCost, U arg);
 
   T visitSetCommunities(SetCommunities setCommunities, U arg);
@@ -41,6 +44,9 @@ public interface StatementVisitor<T, U> {
   T visitSetOspfMetricType(SetOspfMetricType setOspfMetricType, U arg);
 
   T visitSetTag(SetTag setTag, U arg);
+
+  T visitSetTunnelEncapsulationAttribute(
+      SetTunnelEncapsulationAttribute setTunnelEncapsulationAttribute, U arg);
 
   T visitSetDefaultTag(SetDefaultTag setDefaultTag, U arg);
 

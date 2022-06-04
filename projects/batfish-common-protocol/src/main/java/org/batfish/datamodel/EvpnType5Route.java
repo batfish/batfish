@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
@@ -61,6 +62,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
               _protocol,
               _receivedFromRouteReflectorClient,
               _srcProtocol,
+              _tunnelEncapsulationAttribute,
               _weight),
           _receivedFromIp,
           getNetwork(),
@@ -102,6 +104,8 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_VNI) Integer vni,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
+      @Nullable @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
+          TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(admin == EVPN_ADMIN, "Cannot create EVPN route with non-default admin");
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
@@ -127,6 +131,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
             protocol,
             receivedFromRouteReflectorClient,
             srcProtocol,
+            tunnelEncapsulationAttribute,
             weight),
         receivedFromIp,
         network,
@@ -172,6 +177,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(_tag)
+        .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
         .setVni(_vni)
         .setWeight(_attributes._weight);
   }
@@ -235,6 +241,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
             _attributes._receivedFromRouteReflectorClient)
         .add(PROP_SRC_PROTOCOL, _attributes._srcProtocol)
         .add(PROP_TAG, _tag)
+        .add(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE, _attributes._tunnelEncapsulationAttribute)
         .add(PROP_WEIGHT, _attributes._weight)
         .toString();
   }

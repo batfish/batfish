@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
@@ -60,6 +61,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
               _protocol,
               _receivedFromRouteReflectorClient,
               _srcProtocol,
+              _tunnelEncapsulationAttribute,
               _weight),
           _receivedFromIp,
           getNetwork(),
@@ -102,6 +104,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
+      @Nullable @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
+          TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
     checkArgument(originMechanism != null, "Missing %s", PROP_ORIGIN_MECHANISM);
@@ -123,6 +127,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
             protocol,
             receivedFromRouteReflectorClient,
             srcProtocol,
+            tunnelEncapsulationAttribute,
             weight),
         receivedFromIp,
         network,
@@ -184,6 +189,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(_tag)
+        .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
         .setWeight(_attributes._weight);
   }
 
@@ -246,6 +252,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .add("_receivedFromIp", _receivedFromIp)
         .add("_receivedFromRouteReflectorClient", _attributes._receivedFromRouteReflectorClient)
         .add("_srcProtocol", _attributes._srcProtocol)
+        .add("_tunnelEncapsulationAttribute", _attributes._tunnelEncapsulationAttribute)
         .add("_weight", _attributes._weight)
         .toString();
   }
