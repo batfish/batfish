@@ -153,11 +153,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         h = h * 31 + _protocol;
         h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
         h = h * 31 + _srcProtocol;
-        h =
-            h * 31
-                + (_tunnelEncapsulationAttribute == null
-                    ? 0
-                    : _tunnelEncapsulationAttribute.hashCode());
+        h = h * 31 + Objects.hashCode(_tunnelEncapsulationAttribute);
         h = h * 31 + _weight;
         _hashCode = h;
       }
