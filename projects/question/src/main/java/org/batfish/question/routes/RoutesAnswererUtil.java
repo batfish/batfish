@@ -187,11 +187,15 @@ public class RoutesAnswererUtil {
       // everything matches if there is not user input
       return rib.getRoutes().stream();
     }
-    if (prefixMatchType == PrefixMatchType.LONGEST_PREFIX_MATCH) {
-      return rib.longestPrefixMatch(network).stream();
+    switch (prefixMatchType) {
+      case EXACT:
+        return rib.getRoutes(network).stream();
+      case LONGEST_PREFIX_MATCH:
+        return rib.longestPrefixMatch(network).stream();
+      default:
+        return rib.getRoutes().stream()
+            .filter(r -> prefixMatches(prefixMatchType, network, r.getNetwork()));
     }
-    return rib.getRoutes().stream()
-        .filter(r -> prefixMatches(prefixMatchType, network, r.getNetwork()));
   }
 
   @VisibleForTesting
