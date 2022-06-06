@@ -7,6 +7,7 @@ import static org.batfish.common.bdd.BDDFiniteDomain.domainsWithSharedVariable;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +32,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
  * that makes the domains smaller (thus fewer BDD variables required; more efficient) and we already
  * track ingress interface.
  */
-public final class LastHopOutgoingInterfaceManager {
+public final class LastHopOutgoingInterfaceManager implements Serializable {
   private static final String VAR_NAME = "LAST_HOP_OUTGOING_IFACE";
   private static final String NO_LAST_HOP_INTERFACE =
       "LastHopOutgoingInterfaceManager.NO_LAST_HOP_INTERFACE";

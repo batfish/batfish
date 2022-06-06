@@ -8,6 +8,7 @@ import static org.batfish.common.util.CommonUtil.forEachWithIndex;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.math.IntMath;
+import java.io.Serializable;
 import java.math.RoundingMode;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,7 +21,7 @@ import net.sf.javabdd.BDDFactory;
 
 /** Given a finite set of values, assigns each an integer id that can be tracked via BDD. */
 @ParametersAreNonnullByDefault
-public final class BDDFiniteDomain<V> {
+public final class BDDFiniteDomain<V> implements Serializable {
   private @Nonnull final BiMap<V, BDD> _valueToBdd;
   private @Nonnull final BiMap<BDD, V> _bddToValue;
   private @Nonnull final BDD _isValidValue;

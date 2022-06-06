@@ -2,12 +2,13 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.Serializable;
 import java.util.BitSet;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IcmpType;
 
 /** Symbolic IcmpType variable represented by an 8-bit BDD. */
-public final class BDDIcmpType {
+public final class BDDIcmpType implements Serializable {
   private final ImmutableBDDInteger _var;
 
   public BDDIcmpType(ImmutableBDDInteger var) {

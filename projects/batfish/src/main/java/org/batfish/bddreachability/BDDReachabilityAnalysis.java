@@ -8,6 +8,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,30 +48,40 @@ import org.batfish.symbolic.state.StateExpr;
  * source, which is very expensive for a large number of sources. For queries that have to consider
  * all packets that can reach the query state, backward reachability is much more efficient.
  */
-public class BDDReachabilityAnalysis {
+public class BDDReachabilityAnalysis implements Serializable {
   private final BDDPacket _bddPacket;
 
   // preState --> postState --> transition from pre to post
   private final Table<StateExpr, StateExpr, Transition> _forwardEdgeTable;
   // postState --> preState --> transition from pre to post
-  private final Supplier<Table<StateExpr, StateExpr, Transition>> _transposedEdgeTable;
+  private transient Supplier<Table<StateExpr, StateExpr, Transition>> _transposedEdgeTable;
 
   // stateExprs that correspond to the IngressLocations of interest
   private final ImmutableSet<StateExpr> _ingressLocationStates;
 
   private final BDD _queryHeaderSpaceBdd;
 
-  BDDReachabilityAnalysis(
+  public BDDReachabilityAnalysis(
       BDDPacket packet,
       Set<StateExpr> ingressLocationStates,
       Stream<Edge> edges,
       BDD queryHeaderSpaceBdd) {
     _bddPacket = packet;
     _forwardEdgeTable = computeForwardEdgeTable(edges);
-    _transposedEdgeTable =
-        Suppliers.memoize(() -> BDDReachabilityUtils.transposeAndMaterialize(_forwardEdgeTable));
     _ingressLocationStates = ImmutableSet.copyOf(ingressLocationStates);
     _queryHeaderSpaceBdd = queryHeaderSpaceBdd;
+    initTransientFields();
+  }
+
+  private void initTransientFields() {
+    _transposedEdgeTable =
+        Suppliers.memoize(() -> BDDReachabilityUtils.transposeAndMaterialize(_forwardEdgeTable));
+  }
+
+  private void readObject(java.io.ObjectInputStream stream)
+      throws IOException, ClassNotFoundException {
+    stream.defaultReadObject();
+    initTransientFields();
   }
 
   Map<StateExpr, BDD> computeReverseReachableStates() {
@@ -148,6 +160,10 @@ public class BDDReachabilityAnalysis {
       Map<StateExpr, BDD> reverseReachableStates) {
     return getIngressLocationBdds(
         reverseReachableStates, _ingressLocationStates, _bddPacket.getFactory().zero());
+  }
+
+  public BDD getQueryHeaderSpaceBdd() {
+    return _queryHeaderSpaceBdd;
   }
 
   public Map<StateExpr, Map<StateExpr, Transition>> getForwardEdgeMap() {

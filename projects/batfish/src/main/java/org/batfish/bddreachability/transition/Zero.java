@@ -27,4 +27,8 @@ public final class Zero implements Transition {
   public <T> T accept(TransitionVisitor<T> visitor) {
     return visitor.visitZero(this);
   }
+
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

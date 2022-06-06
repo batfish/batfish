@@ -3,13 +3,14 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDVarPair;
 
 /** A wrapper around an {@link ImmutableBDDInteger} with primed variables for encoding relations. */
-public final class PrimedBDDInteger {
+public final class PrimedBDDInteger implements Serializable {
   private final ImmutableBDDInteger _var;
   private final ImmutableBDDInteger _primeVar;
   private final BDDPairingFactory _pairingFactory;

@@ -14,6 +14,7 @@ import com.google.common.hash.Hashing;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 /** Tests of {@link JFactory}. */
@@ -568,5 +569,17 @@ public class JFactoryTest {
     assertEquals(one, ite.project(_factory.ithVar(5)));
     assertEquals(one, ite.project(_factory.ithVar(7)));
     assertEquals(one, ite.project(_factory.ithVar(9))); // last var
+  }
+
+  @Test
+  public void testSerialization() {
+    _factory.setVarNum(10);
+    BDD bdd1 = _factory.ithVar(1);
+    BDD bdd2 = _factory.ithVar(2);
+    BDD bdd = bdd1.xor(bdd2);
+    BDD bddClone = SerializationUtils.clone(bdd);
+    assertEquals(bdd.toReprString(), bddClone.toReprString());
+    bddClone.not(); // can do operations after deserialization
+    assertEquals(bdd.not().toReprString(), bddClone.not().toReprString());
   }
 }

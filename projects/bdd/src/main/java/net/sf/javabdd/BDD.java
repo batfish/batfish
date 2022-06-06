@@ -29,6 +29,7 @@
 package net.sf.javabdd;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -58,7 +59,7 @@ import javax.annotation.Nullable;
  * @author John Whaley
  * @version $Id: BDD.java,v 1.13 2005/06/03 20:20:16 joewhaley Exp $
  */
-public abstract class BDD {
+public abstract class BDD implements Serializable {
 
   /**
    * Returns the factory that created this BDD.

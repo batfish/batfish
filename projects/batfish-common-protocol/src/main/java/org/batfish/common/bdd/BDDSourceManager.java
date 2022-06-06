@@ -8,6 +8,7 @@ import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.activeA
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,7 +38,7 @@ import org.batfish.datamodel.acl.SourcesReferencedOnDevice;
  * node, and to check the source of a packet when an ACL includes a {@link
  * org.batfish.datamodel.acl.MatchSrcInterface} or {@link OriginatingFromDevice} expression.
  */
-public final class BDDSourceManager {
+public final class BDDSourceManager implements Serializable {
   private static final String VAR_NAME = "PacketSource";
 
   /**
