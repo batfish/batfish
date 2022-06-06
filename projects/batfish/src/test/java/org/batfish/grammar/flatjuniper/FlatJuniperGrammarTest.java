@@ -380,6 +380,7 @@ import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DscpUtil;
+import org.batfish.representation.juniper.EvpnEncapsulation;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationPort;
@@ -403,6 +404,7 @@ import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.representation.juniper.NatPacketLocation;
@@ -1592,21 +1594,47 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testEvpnEncapsulationExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vxlan-encap");
+    assertEquals(EvpnEncapsulation.VXLAN, c.getMasterLogicalSystem().getEvpn().getEncapsulation());
+  }
+
+  @Test
+  public void testEvpnMulticastModeIngressExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-ingress");
+    assertEquals(
+        MulticastModeOptions.INGRESS_REPLICATION,
+        c.getMasterLogicalSystem().getEvpn().getMulticastMode());
+  }
+
+  @Test
+  public void testEvpnMulticastModeClientExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-client");
+    assertEquals(
+        MulticastModeOptions.CLIENT, c.getMasterLogicalSystem().getEvpn().getMulticastMode());
+  }
+
+  @Test
   public void testEvpnVniListAllExtraction() {
-    parseJuniperConfig("juniper-evpn-vni-list-all");
-    // TODO
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-all");
+    assertTrue(c.getMasterLogicalSystem().getEvpn().getExtendedVniAll());
   }
 
   @Test
   public void testEvpnVniListNoRangeExtraction() {
-    parseJuniperConfig("juniper-evpn-vni-list-no-range");
-    // TODO
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-no-range");
+    assertEquals(
+        IntegerSpace.unionOf(
+            IntegerSpace.of(10101), IntegerSpace.of(10103), IntegerSpace.of(10105)),
+        c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
   }
 
   @Test
   public void testEvpnVniListWithRangeExtraction() {
-    parseJuniperConfig("juniper-evpn-vni-list-with-range");
-    // TODO
+    JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-with-range");
+    assertEquals(
+        IntegerSpace.unionOf(IntegerSpace.of(new SubRange(10101, 10103)), IntegerSpace.of(10105)),
+        c.getMasterLogicalSystem().getEvpn().getExtendedVniList());
   }
 
   @Test
@@ -6835,6 +6863,38 @@ public final class FlatJuniperGrammarTest {
         c,
         hasInterface(
             "et-0/0/0.0", hasAllowedVlans(equalTo(IntegerSpace.of(Range.closed(1, 4094))))));
+  }
+
+  @Test
+  public void testVxlanL2vniConversion() {
+    Configuration c = parseConfig("juniper-vxlan-l2vni");
+
+    assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
+    assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getVlan(), 10);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSourceAddress(), null);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSrcVrf(), "default");
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getUdpPort(), 4789);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getVlan(), 20);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress(), null);
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSrcVrf(), "default");
+    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getUdpPort(), 4789);
+  }
+
+  @Test
+  public void testVxlanL3vniConversion() {
+    Configuration c = parseConfig("juniper-vxlan-l3vni");
+
+    assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
+    assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertEquals(
+        c.getDefaultVrf().getLayer3Vnis().get(5010).getSourceAddress(), Ip.parse("10.0.1.111"));
+    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5010).getSrcVrf(), "default");
+    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5010).getUdpPort(), 4789);
+    assertEquals(
+        c.getDefaultVrf().getLayer3Vnis().get(5020).getSourceAddress(), Ip.parse("10.0.2.111"));
+    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5020).getSrcVrf(), "default");
+    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5020).getUdpPort(), 4789);
   }
 
   /** Test that interfaces inherit OSPF settings inside a routing instance. */

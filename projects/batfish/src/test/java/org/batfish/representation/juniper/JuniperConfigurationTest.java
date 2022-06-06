@@ -79,6 +79,8 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
+import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
@@ -138,11 +140,37 @@ public class JuniperConfigurationTest {
                 .build()));
   }
 
+  /** Validate vrf assigned to l3vni is the same as the l3interface on a vlan. */
+  @Test
+  public void testL3VniVrf() {
+    JuniperConfiguration config = createConfig();
+    String iface1Name = "iface1";
+    Vrf vrf = new Vrf("vrf");
+    org.batfish.datamodel.Interface.builder()
+        .setName(iface1Name)
+        .setOwner(config._c)
+        .setVrf(vrf)
+        .build();
+    config._c.setVrfs(ImmutableMap.of("vrf", vrf));
+    Vlan vlan10 = new Vlan("VLAN-10");
+    vlan10.setVniId(10110);
+    vlan10.setVlanId(10);
+    vlan10.setL3Interface(iface1Name);
+    config.getMasterLogicalSystem().getNamedVlans().put("VLAN-10", vlan10);
+    Layer3Vni l3vni =
+        Layer3Vni.builder()
+            .setVni(10100)
+            .setUdpPort(Vni.DEFAULT_UDP_PORT)
+            .setSrcVrf(vrf.getName())
+            .build();
+    config._c.getVrfs().get("vrf").addLayer3Vni(l3vni);
+    assertThat(l3vni, equalTo(config._c.getVrfs().get("vrf").getLayer3Vnis().get(10100)));
+  }
+
   @Test
   public void testSecurityPolicyToIpAccessList() {
     JuniperConfiguration config = createConfig();
     ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
-
     FwTerm term = new FwTerm("term");
     String ipAddrPrefix = "1.2.3.0/24";
     term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix), ipAddrPrefix));

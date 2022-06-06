@@ -1,0 +1,4 @@
+#
+set system host-name juniper-evpn-vxlan-encap
+#
+set protocols evpn encapsulation vxlan

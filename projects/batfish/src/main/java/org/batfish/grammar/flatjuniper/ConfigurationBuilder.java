@@ -260,9 +260,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.DecContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DescriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dh_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_encapsulationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_extended_vni_listContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_multicast_modeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.E_vni_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evo_vrf_targetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
@@ -426,6 +431,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_default_metricConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ospf_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_evpnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -707,6 +713,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vni_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_numberContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ZoneContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
@@ -738,6 +745,8 @@ import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.DscpUtil;
+import org.batfish.representation.juniper.Evpn;
+import org.batfish.representation.juniper.EvpnEncapsulation;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
@@ -813,6 +822,7 @@ import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.JunosApplicationSetReference;
 import org.batfish.representation.juniper.LiteralCommunityMember;
 import org.batfish.representation.juniper.LogicalSystem;
+import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.NamedAsPath;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NamedCommunity;
@@ -2033,6 +2043,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
   }
 
+  private @Nonnull Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, Vni_rangeContext ctx) {
+    Optional<Integer> rangeStart = toInteger(messageCtx, ctx.start);
+    if (!rangeStart.isPresent()) {
+      return Optional.empty();
+    }
+    Optional<Integer> rangeEnd = ctx.end == null ? rangeStart : toInteger(messageCtx, ctx.end);
+    if (!rangeEnd.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(rangeStart.get(), rangeEnd.get()));
+  }
+
   private static TcpFlagsMatchConditions toTcpFlags(Tcp_flags_alternativeContext ctx) {
     TcpFlagsMatchConditions.Builder tcpFlagsConditionsBuilder = TcpFlagsMatchConditions.builder();
     TcpFlags.Builder tcpFlagsBuilder = TcpFlags.builder();
@@ -2918,6 +2941,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterP_bgp(P_bgpContext ctx) {
     _currentBgpGroup = _currentRoutingInstance.getMasterBgpGroup();
+  }
+
+  @Override
+  public void enterP_evpn(P_evpnContext ctx) {
+    if (_currentLogicalSystem.getEvpn() == null) {
+      _currentLogicalSystem.setEvpn(new Evpn());
+    }
   }
 
   @Override
@@ -4240,9 +4270,60 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitE_encapsulation(E_encapsulationContext ctx) {
+    if (ctx.VXLAN() != null) {
+      _currentLogicalSystem.getEvpn().setEncapsulation(EvpnEncapsulation.VXLAN);
+    } else {
+      assert ctx.MPLS() != null;
+      _currentLogicalSystem.getEvpn().setEncapsulation(EvpnEncapsulation.MPLS);
+    }
+  }
+
+  @Override
+  public void exitE_extended_vni_list(E_extended_vni_listContext ctx) {
+    if (ctx.ALL() != null) {
+      _currentLogicalSystem.getEvpn().setExtendedVniAll(Boolean.TRUE);
+    } else {
+      for (Vni_rangeContext vni : ctx.vni_range()) {
+        Optional<SubRange> maybeVniRange = toSubRange(ctx, vni);
+        Evpn evpn = _currentLogicalSystem.getEvpn();
+        if (evpn.getExtendedVniList() != null) {
+          evpn.setExtendedVniList(
+              IntegerSpace.builder()
+                  .including(evpn.getExtendedVniList())
+                  .including(maybeVniRange.get())
+                  .build());
+        } else {
+          evpn.setExtendedVniList(IntegerSpace.of(maybeVniRange.get()));
+        }
+      }
+    }
+  }
+
+  @Override
+  public void exitE_multicast_mode(E_multicast_modeContext ctx) {
+    if (ctx.INGRESS_REPLICATION() != null) {
+      _currentLogicalSystem.getEvpn().setMulticastMode(MulticastModeOptions.INGRESS_REPLICATION);
+    } else {
+      assert ctx.CLIENT() != null;
+      _currentLogicalSystem.getEvpn().setMulticastMode(MulticastModeOptions.CLIENT);
+    }
+  }
+
+  @Override
+  public void exitE_vni_options(E_vni_optionsContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitEo_redundant_parent(Eo_redundant_parentContext ctx) {
     String interfaceName = new InterfaceId(ctx.name).getFullName();
     _currentInterfaceOrRange.setRedundantParentInterface(interfaceName);
+  }
+
+  @Override
+  public void exitEvo_vrf_target(Evo_vrf_targetContext ctx) {
+    todo(ctx);
   }
 
   @Override

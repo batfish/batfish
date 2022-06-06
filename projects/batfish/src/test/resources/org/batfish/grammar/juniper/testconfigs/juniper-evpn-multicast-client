@@ -1,0 +1,4 @@
+#
+set system host-name juniper-evpn-multicast-client
+#
+set protocols evpn multicast-mode client

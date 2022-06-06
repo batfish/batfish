@@ -413,6 +413,7 @@ ifi_address
       | ifia_preferred
       | ifia_primary
       | ifia_vrrp_group
+      | ifia_virtual_gateway_address
    )?
 ;
 
@@ -477,6 +478,11 @@ ifia_preferred
 ifia_primary
 :
    PRIMARY
+;
+
+ifia_virtual_gateway_address
+:
+   VIRTUAL_GATEWAY_ADDRESS ip = ip_address
 ;
 
 ifia_vrrp_group

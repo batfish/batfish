@@ -13,7 +13,10 @@ e_default_gateway
 
 e_encapsulation
 :
-    ENCAPSULATION VXLAN
+    ENCAPSULATION (
+      VXLAN
+      | MPLS
+    )
 ;
 
 e_extended_vni_list
