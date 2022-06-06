@@ -510,6 +510,7 @@ popst_common
    | popst_priority
    | popst_reject
    | popst_tag
+   | popst_tunnel_attribute
 ;
 
 popst_community_add
@@ -691,6 +692,19 @@ popst_tag
 :
    TAG uint32
 ;
+
+popst_tunnel_attribute
+:
+   TUNNEL_ATTRIBUTE
+   (
+      popstta_remove
+      | popstta_set
+   )
+;
+
+popstta_remove: REMOVE (ALL | name = junos_name);
+
+popstta_set: SET name = junos_name;
 
 popsto_level
 :
