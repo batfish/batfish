@@ -146,7 +146,6 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1007,8 +1006,7 @@ public final class CiscoAsaGrammarTest {
     Prefix staticPrefix2 = Prefix.parse("2.2.2.2/32");
 
     // Sanity check: Main RIB should contain both static routes
-    Set<AnnotatedRoute<AbstractRoute>> mainRibRoutes =
-        dp.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getTypedRoutes();
+    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname, DEFAULT_VRF_NAME).getRoutes();
     assertThat(
         mainRibRoutes,
         containsInAnyOrder(
@@ -1327,7 +1325,7 @@ public final class CiscoAsaGrammarTest {
             aggRoute4General));
 
     Set<AbstractRoute> mainRibRoutes =
-        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix4General)));
@@ -1397,7 +1395,7 @@ public final class CiscoAsaGrammarTest {
               equalTo(aggRoute1),
               equalTo(aggRoute2)));
       Set<AbstractRoute> mainRibRoutes =
-          dp.getRibs().get(c2).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+          dp.getRibs().get(c2, Configuration.DEFAULT_VRF_NAME).getRoutes();
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix1)));
       // Suppressed routes still go in the main RIB and are used for forwarding
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix2)));

@@ -4,7 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.StreamUtil.toListInRandomOrder;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import java.io.Serializable;
 import java.util.List;
@@ -23,6 +25,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Prefix;
@@ -33,6 +36,18 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 @ParametersAreNonnullByDefault
 public final class IncrementalDataPlane implements Serializable, DataPlane {
   private static final Logger LOGGER = LogManager.getLogger(IncrementalDataPlane.class);
+
+  private static @Nonnull Table<String, String, FinalMainRib> computeRibs(List<VirtualRouter> vrs) {
+    return vrs.parallelStream()
+        .collect(
+            ImmutableTable.toImmutableTable(
+                vr -> vr.getConfiguration().getHostname(),
+                VirtualRouter::getName,
+                vr ->
+                    FinalMainRib.of(
+                        vr.getMainRib().getTypedRoutes().stream()
+                            .map(AnnotatedRoute::getAbstractRoute))));
+  }
 
   @Override
   public @Nonnull Map<String, Map<String, Fib>> getFibs() {
@@ -87,9 +102,14 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-      getRibs() {
+  public @Nonnull Table<String, String, FinalMainRib> getRibs() {
     return _ribs;
+  }
+
+  @VisibleForTesting
+  public @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+      getRibsForTesting() {
+    return _annotatedRibs;
   }
 
   //////////
@@ -135,7 +155,9 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   @Nonnull
   private final SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-      _ribs;
+      _annotatedRibs;
+
+  @Nonnull private final Table<String, String, FinalMainRib> _ribs;
 
   @Nonnull
   private final SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
@@ -162,10 +184,26 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     LOGGER.info("Computing EVPN BGP backup routes");
     _evpnBackupRoutes = DataplaneUtil.computeEvpnBackupRoutes(nodes, _evpnRoutes);
     LOGGER.info("Computing main RIBs");
-    _ribs = DataplaneUtil.computeRibs(nodes);
+    _ribs = computeRibs(vrs);
     _prefixTracerSummary = computePrefixTracingInfo(nodes);
     _layer2VniSettings = DataplaneUtil.computeLayer2VniSettings(nodes);
     _layer3VniSettings = DataplaneUtil.computeLayer3VniSettings(nodes);
+
+    // For testing only
+    _annotatedRibs = computeAnnotatedRibs(nodes);
+  }
+
+  private static @Nonnull SortedMap<
+          String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+      computeAnnotatedRibs(Map<String, Node> nodes) {
+    return toImmutableSortedMap(
+        nodes,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableSortedMap(
+                nodeEntry.getValue().getVirtualRouters(),
+                VirtualRouter::getName,
+                VirtualRouter::getMainRib));
   }
 
   private static SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>

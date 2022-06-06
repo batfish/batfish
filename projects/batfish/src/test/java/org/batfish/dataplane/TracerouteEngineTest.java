@@ -116,9 +116,10 @@ public class TracerouteEngineTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot); // Construct flows
-    Builder fb = builder().setDstIp(parse("3.3.3.3")).setIngressNode(config.getHostname());
+    DataPlane dp = batfish.loadDataPlane(snapshot);
 
+    // Construct flows
+    Builder fb = builder().setDstIp(parse("3.3.3.3")).setIngressNode(config.getHostname());
     Flow flow1 = fb.setIngressInterface(i1.getName()).setIngressVrf(vrf1.getName()).build();
     Flow flow2 = fb.setIngressInterface(i2.getName()).setIngressVrf(vrf2.getName()).build();
 

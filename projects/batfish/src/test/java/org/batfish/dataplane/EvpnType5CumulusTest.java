@@ -10,15 +10,14 @@ import static org.hamcrest.Matchers.hasItem;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Table;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
@@ -50,8 +49,7 @@ public class EvpnType5CumulusTest {
     batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp.getRibs();
+    Table<String, String, FinalMainRib> ribs = dp.getRibs();
     String vrf1 = "vrf1";
     final ImmutableList<String> leafs = ImmutableList.of("leaf1", "leaf2", "leaf3", "leaf4");
 
@@ -71,7 +69,7 @@ public class EvpnType5CumulusTest {
             ImmutableSet.of("swp4", "swp14"));
 
     for (String leaf : leafs) {
-      Set<AbstractRoute> routes = ribs.get(leaf).get(vrf1).getRoutes();
+      Set<AbstractRoute> routes = ribs.get(leaf, vrf1).getRoutes();
       for (Prefix prefix : prefixes) {
         for (String nextHopIface : nextHopInterfaces.get(leaf)) {
           assertThat(

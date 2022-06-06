@@ -57,7 +57,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -244,10 +243,8 @@ public class CumulusConcatenatedGrammarTest {
 
     // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32,
     // and VRF2 should also have 2.2.2.2/32
-    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
-        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
-    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
-        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    Set<AbstractRoute> vrf1Routes = dp.getRibs().get(hostname, "VRF1").getRoutes();
+    Set<AbstractRoute> vrf2Routes = dp.getRibs().get(hostname, "VRF2").getRoutes();
     assertThat(
         vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
     assertThat(

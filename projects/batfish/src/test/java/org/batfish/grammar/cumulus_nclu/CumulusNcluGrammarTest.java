@@ -285,8 +285,8 @@ public final class CumulusNcluGrammarTest {
     // Ensure reachability between nodes
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> n1Routes = dp.getRibs().get(node1).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> n2Routes = dp.getRibs().get(node2).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> n1Routes = dp.getRibs().get(node1, DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> n2Routes = dp.getRibs().get(node2, DEFAULT_VRF_NAME).getRoutes();
 
     assertThat(n1Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("6.6.6.6/32")))));
     assertThat(n2Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("5.5.5.5/32")))));

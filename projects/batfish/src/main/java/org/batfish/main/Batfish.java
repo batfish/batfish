@@ -128,8 +128,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -139,10 +137,10 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -687,8 +685,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
 
         @Override
-        public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-            getRibs() {
+        public Table<String, String, FinalMainRib> getRibs() {
           throw new UnsupportedOperationException();
         }
 

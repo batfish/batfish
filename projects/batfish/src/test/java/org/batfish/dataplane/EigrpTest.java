@@ -1,6 +1,5 @@
 package org.batfish.dataplane;
 
-import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -11,18 +10,15 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Table;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -54,7 +50,7 @@ public class EigrpTest {
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
-    Map<String, Map<String, Set<AbstractRoute>>> routes = getRoutes(dp.getRibs());
+    Table<String, String, FinalMainRib> ribs = dp.getRibs();
 
     ////////////////////////
     // All assertions based on GNS3 and output of "show ip route"
@@ -69,56 +65,56 @@ public class EigrpTest {
       String node = "dc1lan";
       // 172.16.1.1 is connected.
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.2.1/32"),
           RoutingProtocol.EIGRP,
           130816,
           Ip.parse("11.11.11.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.3.1/32"),
           RoutingProtocol.EIGRP,
           131072,
           Ip.parse("11.11.11.2"));
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("172.16.4.1/32"),
       //          RoutingProtocol.EIGRP_EX,
       //          5632,
       //          Ip.parse("11.11.11.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.5.1/32"),
           RoutingProtocol.EIGRP_EX,
           5632,
           Ip.parse("11.11.11.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.6.1/32"),
           RoutingProtocol.EIGRP_EX,
           5632,
           Ip.parse("11.11.11.2"));
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("33.33.33.0/24"),
       //          RoutingProtocol.EIGRP_EX,
       //          5632,
       //          Ip.parse("11.11.11.2"));
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("44.44.44.0/24"),
       //          RoutingProtocol.EIGRP_EX,
       //          5632,
       //          Ip.parse("11.11.11.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("55.55.55.0/24"),
           RoutingProtocol.EIGRP_EX,
@@ -132,7 +128,7 @@ public class EigrpTest {
     {
       String node = "dc1";
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.1.1/32"),
           RoutingProtocol.EIGRP,
@@ -140,7 +136,7 @@ public class EigrpTest {
           Ip.parse("11.11.11.1"));
       // 172.16.1.2 is connected.
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.3.1/32"),
           RoutingProtocol.EIGRP,
@@ -148,21 +144,21 @@ public class EigrpTest {
           Ip.parse("22.22.22.2"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("172.16.4.1/32"),
       //          RoutingProtocol.EIGRP_EX,
       //          5376,
       //          Ip.parse("22.22.22.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.5.1/32"),
           RoutingProtocol.EIGRP_EX,
           5376,
           Ip.parse("22.22.22.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.6.1/32"),
           RoutingProtocol.EIGRP_EX,
@@ -170,7 +166,7 @@ public class EigrpTest {
           Ip.parse("22.22.22.2"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("33.33.33.0/24"),
       //          RoutingProtocol.EIGRP_EX,
@@ -178,14 +174,14 @@ public class EigrpTest {
       //          Ip.parse("22.22.22.2"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("44.44.44.0/24"),
       //          RoutingProtocol.EIGRP_EX,
       //          5376,
       //          Ip.parse("22.22.22.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("55.55.55.0/24"),
           RoutingProtocol.EIGRP_EX,
@@ -199,14 +195,14 @@ public class EigrpTest {
     {
       String node = "dc1border";
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.1.1/32"),
           RoutingProtocol.EIGRP,
           131072,
           Ip.parse("22.22.22.1"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.2.1/32"),
           RoutingProtocol.EIGRP,
@@ -215,21 +211,21 @@ public class EigrpTest {
       // 172.16.3.1 is connected.
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("172.16.4.1/32"),
       //          RoutingProtocol.EIGRP_EX,
       //          61440,
       //          Ip.parse("33.33.33.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.5.1/32"),
           RoutingProtocol.EIGRP_EX,
           61440,
           Ip.parse("33.33.33.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.6.1/32"),
           RoutingProtocol.EIGRP_EX,
@@ -237,7 +233,7 @@ public class EigrpTest {
           Ip.parse("33.33.33.2"));
 
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("11.11.11.0/24"),
           RoutingProtocol.EIGRP,
@@ -245,14 +241,14 @@ public class EigrpTest {
           Ip.parse("22.22.22.1"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("44.44.44.0/24"),
       //          RoutingProtocol.EIGRP_EX,
       //          61440,
       //          Ip.parse("33.33.33.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("55.55.55.0/24"),
           RoutingProtocol.EIGRP_EX,
@@ -266,14 +262,14 @@ public class EigrpTest {
     {
       String node = "dc2border";
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.1.1/32"),
           RoutingProtocol.EIGRP_EX,
           61440,
           Ip.parse("33.33.33.1"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.2.1/32"),
           RoutingProtocol.EIGRP_EX,
@@ -281,7 +277,7 @@ public class EigrpTest {
           Ip.parse("33.33.33.1"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("172.16.3.1/32"),
       //          RoutingProtocol.EIGRP_EX,
@@ -289,14 +285,14 @@ public class EigrpTest {
       //          Ip.parse("33.33.33.1"));
       // 172.16.4.1 is connected.
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.5.1/32"),
           RoutingProtocol.EIGRP,
           130816,
           Ip.parse("44.44.44.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.6.1/32"),
           RoutingProtocol.EIGRP,
@@ -304,7 +300,7 @@ public class EigrpTest {
           Ip.parse("44.44.44.2"));
 
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("11.11.11.0/24"),
           RoutingProtocol.EIGRP_EX,
@@ -312,7 +308,7 @@ public class EigrpTest {
           Ip.parse("33.33.33.1"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("22.22.22.0/24"),
       //          RoutingProtocol.EIGRP_EX,
@@ -326,14 +322,14 @@ public class EigrpTest {
     {
       String node = "dc2";
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.1.1/32"),
           RoutingProtocol.EIGRP_EX,
           5376,
           Ip.parse("44.44.44.1"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.2.1/32"),
           RoutingProtocol.EIGRP_EX,
@@ -341,7 +337,7 @@ public class EigrpTest {
           Ip.parse("44.44.44.1"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("172.16.3.1/32"),
       //          RoutingProtocol.EIGRP_EX,
@@ -349,7 +345,7 @@ public class EigrpTest {
       //          Ip.parse("44.44.44.1"));
 
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.4.1/32"),
           RoutingProtocol.EIGRP,
@@ -357,7 +353,7 @@ public class EigrpTest {
           Ip.parse("44.44.44.1"));
       // 172.16.5.1 is connected.
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.6.1/32"),
           RoutingProtocol.EIGRP,
@@ -365,7 +361,7 @@ public class EigrpTest {
           Ip.parse("55.55.55.1"));
 
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("11.11.11.0/24"),
           RoutingProtocol.EIGRP_EX,
@@ -373,7 +369,7 @@ public class EigrpTest {
           Ip.parse("44.44.44.1"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("22.22.22.0/24"),
       //          RoutingProtocol.EIGRP_EX,
@@ -381,7 +377,7 @@ public class EigrpTest {
       //          Ip.parse("44.44.44.1"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("33.33.33.0/24"),
       //          RoutingProtocol.EIGRP_EX,
@@ -395,14 +391,14 @@ public class EigrpTest {
     {
       String node = "dc2lan";
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.1.1/32"),
           RoutingProtocol.EIGRP_EX,
           5632,
           Ip.parse("55.55.55.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.2.1/32"),
           RoutingProtocol.EIGRP_EX,
@@ -410,7 +406,7 @@ public class EigrpTest {
           Ip.parse("55.55.55.2"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("172.16.3.1/32"),
       //          RoutingProtocol.EIGRP_EX,
@@ -418,14 +414,14 @@ public class EigrpTest {
       //          Ip.parse("55.55.55.2"));
 
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.4.1/32"),
           RoutingProtocol.EIGRP,
           131072,
           Ip.parse("55.55.55.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("172.16.5.1/32"),
           RoutingProtocol.EIGRP,
@@ -434,7 +430,7 @@ public class EigrpTest {
       // 172.16.6.1 is connected.
 
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("11.11.11.0/24"),
           RoutingProtocol.EIGRP_EX,
@@ -442,7 +438,7 @@ public class EigrpTest {
           Ip.parse("55.55.55.2"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("22.22.22.0/24"),
       //          RoutingProtocol.EIGRP_EX,
@@ -450,14 +446,14 @@ public class EigrpTest {
       //          Ip.parse("55.55.55.2"));
       // missing
       //      assertRoute(
-      //          routes,
+      //          ribs,
       //          node,
       //          Prefix.parse("33.33.33.0/24"),
       //          RoutingProtocol.EIGRP_EX,
       //          5632,
       //          Ip.parse("55.55.55.2"));
       assertRoute(
-          routes,
+          ribs,
           node,
           Prefix.parse("44.44.44.0/24"),
           RoutingProtocol.EIGRP,
@@ -467,13 +463,13 @@ public class EigrpTest {
   }
 
   private void assertRoute(
-      Map<String, Map<String, Set<AbstractRoute>>> allRoutes,
+      Table<String, String, FinalMainRib> allRoutes,
       String node,
       Prefix prefix,
       RoutingProtocol protocol,
       long metric,
       @Nullable Ip nextHopIp) {
-    Set<AbstractRoute> routes = allRoutes.get(node).get(Configuration.DEFAULT_VRF_NAME);
+    Set<AbstractRoute> routes = allRoutes.get(node, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(
         routes,
         hasItem(
@@ -482,15 +478,5 @@ public class EigrpTest {
                 hasProtocol(protocol),
                 hasMetric(metric),
                 nextHopIp != null ? hasNextHopIp(nextHopIp) : hasNextHopIp(anything()))));
-  }
-
-  private Map<String, Map<String, Set<AbstractRoute>>> getRoutes(
-      SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs) {
-    return toImmutableMap(
-        ribs,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(), Entry::getKey, vrfEntry -> vrfEntry.getValue().getRoutes()));
   }
 }
