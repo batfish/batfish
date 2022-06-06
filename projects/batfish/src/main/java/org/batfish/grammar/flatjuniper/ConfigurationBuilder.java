@@ -264,10 +264,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evo_vrf_targetContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_autoContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_communityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_exportContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
@@ -4281,26 +4277,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEvo_vrf_target(Evo_vrf_targetContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEvovt_auto(Evovt_autoContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEvovt_community(Evovt_communityContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEvovt_export(Evovt_exportContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitEvovt_import(Evovt_importContext ctx) {
     todo(ctx);
   }
 

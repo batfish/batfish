@@ -41553,7 +41553,7 @@
             "                        UINT8:'100')",
             "                      (evo_vrf_target",
             "                        VRF_TARGET:'vrf-target'",
-            "                        (evovt_community",
+            "                        (evovt_community*",
             "                          comm = (vt_community*",
             "                            TARGET:'target'  <== mode:M_VrfTarget",
             "                            COLON:':'  <== mode:M_VrfTarget",
@@ -41585,7 +41585,7 @@
             "                        UINT8:'101')",
             "                      (evo_vrf_target",
             "                        VRF_TARGET:'vrf-target'",
-            "                        (evovt_community",
+            "                        (evovt_community*",
             "                          comm = (vt_community*",
             "                            TARGET:'target'  <== mode:M_VrfTarget",
             "                            COLON:':'  <== mode:M_VrfTarget",
@@ -70235,12 +70235,6 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 211,
-              "Parser_Context" : "[evovt_community evo_vrf_target e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "target:100:100"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 211,
               "Parser_Context" : "[evo_vrf_target e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "vrf-target target:100:100"
             },
@@ -70249,12 +70243,6 @@
               "Line" : 209,
               "Parser_Context" : "[e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "vni-options vni 100 vrf-target target:100:100"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 214,
-              "Parser_Context" : "[evovt_community evo_vrf_target e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "target:101:101"
             },
             {
               "Comment" : "This feature is not currently supported",
