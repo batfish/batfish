@@ -2269,6 +2269,8 @@ REMOTE: 'remote';
 
 REMOTE_END_POINT: 'remote-end-point';
 
+REMOVE: 'remove' -> pushMode(M_Remove);
+
 REMOVE_PRIVATE: 'remove-private';
 
 REMOVED: 'Removed';
@@ -2467,7 +2469,7 @@ SET
 :
   'set'
   {
-    if (lastTokenType() == COMMUNITY) {
+    if (lastTokenType() == COMMUNITY || lastTokenType() == TUNNEL_ATTRIBUTE) {
       pushMode(M_Name);
     }
   }
@@ -2766,7 +2768,15 @@ TTL_EQ_ZERO_DURING_TRANSIT: 'ttl-eq-zero-during-transit';
 
 TUNNEL: 'tunnel';
 
-TUNNEL_ATTRIBUTE: 'tunnel-attribute' -> pushMode(M_Name);
+TUNNEL_ATTRIBUTE
+:
+  'tunnel-attribute'
+  {
+    if (lastTokenType() == POLICY_OPTIONS) {
+      pushMode(M_Name);
+    }
+  }
+;
 
 TUNNEL_ENCAPSULATION_LIMIT_OPTION: 'tunnel-encapsulation-limit-option';
 
@@ -4174,6 +4184,14 @@ M_MetricType_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
+
+
+
+mode M_Remove;
+M_Remove_ALL: 'all' -> type(ALL), popMode;
+M_Remove_WS: F_WhitespaceChar+ -> skip;
+M_Remove_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Remove_NAME: F_Name -> type(NAME), popMode;
 
 mode M_RouteDistinguisher;
 M_RouteDistinguisher_COLON: ':' -> type(COLON);

@@ -41,6 +41,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_IN
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
+import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE_ROUTE_POLICY;
@@ -108,6 +109,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.RESOLUTION_RIB_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_SELF_REFERENCE;
@@ -897,6 +899,8 @@ import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
 import org.batfish.representation.juniper.PsThenTag;
+import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
+import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
 import org.batfish.representation.juniper.QualifiedNextHop;
 import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.Resolution;
@@ -5860,12 +5864,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPopstta_remove(FlatJuniperParser.Popstta_removeContext ctx) {
+    if (ctx.ALL() != null) {
+      _currentPsThens.add(PsThenTunnelAttributeRemove.INSTANCE);
+    } else {
+      assert ctx.name != null;
+      warn(ctx, "Removing specific tunnel-attributes is not yet supported");
+      _configuration.referenceStructure(
+          TUNNEL_ATTRIBUTE,
+          toString(ctx.name),
+          POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE,
+          getLine(ctx.name.getStop()));
+    }
+  }
+
+  @Override
+  public void exitPopstta_set(FlatJuniperParser.Popstta_setContext ctx) {
+    String tunnelAttrName = toString(ctx.name);
+    _currentPsThens.add(new PsThenTunnelAttributeSet(tunnelAttrName));
+    _configuration.referenceStructure(
+        TUNNEL_ATTRIBUTE,
+        tunnelAttrName,
+        POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE,
+        getLine(ctx.name.getStop()));
+  }
+
+  @Override
   public void enterPo_tunnel_attribute(FlatJuniperParser.Po_tunnel_attributeContext ctx) {
     String name = toString(ctx.name);
     _currentTunnelAttribute =
         _currentLogicalSystem
             .getTunnelAttributes()
             .computeIfAbsent(name, k -> new TunnelAttribute());
+    _configuration.defineFlattenedStructure(TUNNEL_ATTRIBUTE, name, ctx, _parser);
   }
 
   @Override
