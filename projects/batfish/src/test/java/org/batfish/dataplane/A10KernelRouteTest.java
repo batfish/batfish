@@ -20,6 +20,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -51,13 +52,13 @@ public final class A10KernelRouteTest {
    *    ethernet1 ethernet1
    *    .1  10.0.1.0/24  .2
    *           bgp
-   * - There is a BGP session betwen r1 and r2 on ethernet1
+   * - There is a BGP session between r1 and r2 on ethernet1
    * - There is vrrp-a between r1 and r2 on ethernet2
    * - r1 and r2 both have a floating-ip 10.0.1.10
    * - r1 and r2 redistribute floating IPs into BGP
    * - r1 has higher priority, so:
    *   - 10.0.1.10/32 should appear in r1's BGP RIB as a local route
-   *   - 10.0.1.10/32 should appear in r2's BGP RIB as a receeived route route
+   *   - 10.0.1.10/32 should appear in r2's BGP RIB as a received route route
    */
   @Before
   public void setup() throws IOException {
@@ -75,10 +76,10 @@ public final class A10KernelRouteTest {
 
   @Test
   public void testMainRibRoutes() {
-    DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
+    IncrementalDataPlane dp = (IncrementalDataPlane) _batfish.loadDataPlane(_batfish.getSnapshot());
 
     assertThat(
-        dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes(KERNEL_PREFIX).stream()
+        dp.getRibsForTesting().get("r1").get(DEFAULT_VRF_NAME).getRoutes(KERNEL_PREFIX).stream()
             .map(AnnotatedRoute::getAbstractRoute)
             .collect(ImmutableSet.toImmutableSet()),
         contains(
@@ -88,7 +89,7 @@ public final class A10KernelRouteTest {
                 .setNetwork(KERNEL_PREFIX)
                 .build()));
     assertThat(
-        dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes(KERNEL_PREFIX).stream()
+        dp.getRibsForTesting().get("r2").get(DEFAULT_VRF_NAME).getRoutes(KERNEL_PREFIX).stream()
             .map(AnnotatedRoute::getAbstractRoute)
             .collect(ImmutableSet.toImmutableSet()),
         contains(isBgpv4RouteThat(allOf(hasAsPath(equalTo(AsPath.ofSingletonAsSets(1L)))))));

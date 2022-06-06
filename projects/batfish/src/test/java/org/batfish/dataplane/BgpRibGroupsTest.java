@@ -22,7 +22,6 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -43,6 +42,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -268,11 +268,11 @@ public class BgpRibGroupsTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, folder);
     batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
 
     // Only 2.2.2.0/24 in VRF2
     Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
-        dp.getRibs().get("r1").get(VRF_2).getTypedRoutes();
+        dp.getRibsForTesting().get("r1").get(VRF_2).getTypedRoutes();
     assertThat(vrf2Routes, hasSize(1));
     assertThat(
         vrf2Routes,
@@ -295,7 +295,7 @@ public class BgpRibGroupsTest {
 
     // 3.3.3.0/24 as expected in default VRF
     Set<AnnotatedRoute<AbstractRoute>> defaultVrfRoutes =
-        dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getTypedRoutes();
+        dp.getRibsForTesting().get("r1").get(Configuration.DEFAULT_VRF_NAME).getTypedRoutes();
     assertThat(
         defaultVrfRoutes,
         hasItem(

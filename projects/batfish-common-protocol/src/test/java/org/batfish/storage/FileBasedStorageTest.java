@@ -69,12 +69,12 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EvpnType5Route;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.MockForwardingAnalysis;
-import org.batfish.datamodel.MockRib;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -975,8 +975,7 @@ public final class FileBasedStorageTest {
             .setLayer3VniSettings(ImmutableTable.of("n", "v3", ImmutableSet.of()))
             .setPrefixTracingInfoSummary(
                 ImmutableSortedMap.of("n", ImmutableSortedMap.of("vp", ImmutableMap.of())))
-            .setRibs(
-                ImmutableSortedMap.of("n", ImmutableSortedMap.of("vr", MockRib.builder().build())))
+            .setRibs(ImmutableTable.of("n", "vr", FinalMainRib.of()))
             .build();
 
     _storage.storeDataPlane(dp, snapshot);
@@ -996,6 +995,6 @@ public final class FileBasedStorageTest {
     assertThat(dp2.getLayer2Vnis().rowMap(), hasEntry(equalTo("n"), hasKey("v2")));
     assertThat(dp2.getLayer3Vnis().rowMap(), hasEntry(equalTo("n"), hasKey("v3")));
     assertThat(dp2.getPrefixTracingInfoSummary(), hasEntry(equalTo("n"), hasKey("vp")));
-    assertThat(dp2.getRibs(), hasEntry(equalTo("n"), hasKey("vr")));
+    assertThat(dp2.getRibs().rowMap(), hasEntry(equalTo("n"), hasKey("vr")));
   }
 }

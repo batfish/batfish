@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Prefix;
@@ -65,8 +64,7 @@ public class HmmTest {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
 
     // test main RIB routes
-    Set<AnnotatedRoute<AbstractRoute>> r1Routes =
-        dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getTypedRoutes();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get("r1", DEFAULT_VRF_NAME).getRoutes();
 
     assertThat(
         r1Routes,

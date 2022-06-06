@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Comparator.comparingInt;
-import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.questions.BgpRouteStatus.BACKUP;
 import static org.batfish.datamodel.questions.BgpRouteStatus.BEST;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
@@ -41,7 +40,6 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -55,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -67,7 +64,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnRoute;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
@@ -159,7 +156,7 @@ public class RoutesAnswererUtil {
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static <T extends AbstractRouteDecorator> Multiset<Row> getMainRibRoutes(
-      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
+      Table<String, String, FinalMainRib> ribs,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
@@ -169,7 +166,7 @@ public class RoutesAnswererUtil {
         getTableMetadata(RibProtocol.MAIN).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
-            Optional.ofNullable(ribs.getOrDefault(hostname, ImmutableSortedMap.of()).get(vrfName))
+            Optional.ofNullable(ribs.get(hostname, vrfName))
                 .map(rib -> getMatchingPrefixRoutes(prefixMatchType, network, rib))
                 .orElse(Stream.empty())
                 .filter(route -> protocolSpec.getProtocols().contains(route.getProtocol()))
@@ -181,20 +178,17 @@ public class RoutesAnswererUtil {
 
   /**
    * Given the prefixMatchType and network (user input), returns routes from the {@code rib} that
-   * match
+   * match.
    */
   @VisibleForTesting
-  static <T extends AbstractRouteDecorator> Stream<AbstractRoute> getMatchingPrefixRoutes(
-      PrefixMatchType prefixMatchType, @Nullable Prefix network, GenericRib<T> rib) {
+  static Stream<AbstractRoute> getMatchingPrefixRoutes(
+      PrefixMatchType prefixMatchType, @Nullable Prefix network, FinalMainRib rib) {
     if (network == null) {
       // everything matches if there is not user input
       return rib.getRoutes().stream();
     }
     if (prefixMatchType == PrefixMatchType.LONGEST_PREFIX_MATCH) {
-      return rib
-          .longestPrefixMatch(network.getStartIp(), network.getPrefixLength(), alwaysTrue())
-          .stream()
-          .map(AbstractRouteDecorator::getAbstractRoute);
+      return rib.longestPrefixMatch(network).stream();
     }
     return rib.getRoutes().stream()
         .filter(r -> prefixMatches(prefixMatchType, network, r.getNetwork()));
@@ -723,7 +717,7 @@ public class RoutesAnswererUtil {
    */
   public static <T extends AbstractRouteDecorator>
       Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupRoutes(
-          SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
+          Table<String, String, FinalMainRib> ribs,
           Set<String> matchingNodes,
           @Nullable Prefix network,
           String vrfRegex,
@@ -731,38 +725,40 @@ public class RoutesAnswererUtil {
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesGroups =
         new HashMap<>();
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
-    ribs.forEach(
-        (node, vrfMap) -> {
-          if (matchingNodes.contains(node)) {
-            vrfMap.forEach(
-                (vrfName, rib) -> {
-                  if (compiledVrfRegex.matcher(vrfName).matches()) {
-                    rib.getRoutes().stream()
-                        .filter(
-                            route ->
-                                (network == null || network.equals(route.getNetwork()))
-                                    && protocolSpec.getProtocols().contains(route.getProtocol()))
-                        .forEach(
-                            route ->
-                                routesGroups
-                                    .computeIfAbsent(
-                                        new RouteRowKey(node, vrfName, route.getNetwork()),
-                                        k -> new HashMap<>())
-                                    .computeIfAbsent(
-                                        new RouteRowSecondaryKey(
-                                            route.getNextHop(), route.getProtocol().protocolName()),
-                                        k -> new TreeSet<>())
-                                    .add(
-                                        RouteRowAttribute.builder()
-                                            .setNextHopInterface(route.getNextHopInterface())
-                                            .setAdminDistance(route.getAdministrativeCost())
-                                            .setMetric(route.getMetric())
-                                            .setTag(route.getTag())
-                                            .build()));
-                  }
-                });
-          }
-        });
+    for (String node : ribs.rowKeySet()) {
+      if (!matchingNodes.contains(node)) {
+        continue;
+      }
+      for (Map.Entry<String, FinalMainRib> entry : ribs.row(node).entrySet()) {
+        String vrfName = entry.getKey();
+        if (!compiledVrfRegex.matcher(vrfName).matches()) {
+          continue;
+        }
+        FinalMainRib rib = entry.getValue();
+        rib.getRoutes().stream()
+            .filter(
+                route ->
+                    (network == null || network.equals(route.getNetwork()))
+                        && protocolSpec.getProtocols().contains(route.getProtocol()))
+            .forEach(
+                route ->
+                    routesGroups
+                        .computeIfAbsent(
+                            new RouteRowKey(node, vrfName, route.getNetwork()),
+                            k -> new HashMap<>())
+                        .computeIfAbsent(
+                            new RouteRowSecondaryKey(
+                                route.getNextHop(), route.getProtocol().protocolName()),
+                            k -> new TreeSet<>())
+                        .add(
+                            RouteRowAttribute.builder()
+                                .setNextHopInterface(route.getNextHopInterface())
+                                .setAdminDistance(route.getAdministrativeCost())
+                                .setMetric(route.getMetric())
+                                .setTag(route.getTag())
+                                .build()));
+      }
+    }
     return routesGroups;
   }
 

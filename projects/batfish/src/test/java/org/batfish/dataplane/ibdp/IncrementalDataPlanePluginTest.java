@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
@@ -47,7 +48,6 @@ import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -59,11 +59,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
@@ -333,9 +333,9 @@ public class IncrementalDataPlanePluginTest {
 
     // Check main RIB routes
     Set<AbstractRoute> r2MainRibRoutes =
-        dataplane.getRibs().get("r2").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dataplane.getRibs().get("r2", Configuration.DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> r3MainRibRoutes =
-        dataplane.getRibs().get("r3").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        dataplane.getRibs().get("r3", Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(
         r2MainRibRoutes, hasItem(allOf(hasPrefix(advPrefix), hasProtocol(RoutingProtocol.STATIC))));
     assertThat(
@@ -359,11 +359,10 @@ public class IncrementalDataPlanePluginTest {
     IncrementalDataPlanePlugin dataPlanePlugin = new IncrementalDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp._dataPlane.getRibs();
+    Table<String, String, FinalMainRib> ribs = dp._dataPlane.getRibs();
 
-    Set<AbstractRoute> r1Routes = ribs.get("r1").get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r3Routes = ribs.get("r3").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r1Routes = ribs.get("r1", DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3Routes = ribs.get("r3", DEFAULT_VRF_NAME).getRoutes();
     Set<Prefix> r1Prefixes =
         r1Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes =
@@ -405,11 +404,10 @@ public class IncrementalDataPlanePluginTest {
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp.getRibs();
+    Table<String, String, FinalMainRib> ribs = dp.getRibs();
 
-    Set<AbstractRoute> r1Routes = ribs.get("r1").get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r3Routes = ribs.get("r3").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r1Routes = ribs.get("r1", DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3Routes = ribs.get("r3", DEFAULT_VRF_NAME).getRoutes();
 
     // r1 and r3's respective static routes were redistributed into BGP and reached each other
     Prefix r1StaticPrefix = Prefix.parse("21.21.21.21/32");
@@ -434,11 +432,10 @@ public class IncrementalDataPlanePluginTest {
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp.getRibs();
+    Table<String, String, FinalMainRib> ribs = dp.getRibs();
 
-    Set<AbstractRoute> r1Routes = ribs.get("r1").get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r3Routes = ribs.get("r3").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r1Routes = ribs.get("r1", DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3Routes = ribs.get("r3", DEFAULT_VRF_NAME).getRoutes();
 
     // r1 and r3's respective static routes were redistributed into BGP and reached each other
     Prefix r1StaticPrefix = Prefix.parse("21.21.21.21/32");
@@ -463,10 +460,9 @@ public class IncrementalDataPlanePluginTest {
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp._dataPlane.getRibs();
-    Set<AbstractRoute> r2aRoutes = ribs.get("r2a").get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r2bRoutes = ribs.get("r2b").get(DEFAULT_VRF_NAME).getRoutes();
+    Table<String, String, FinalMainRib> ribs = dp._dataPlane.getRibs();
+    Set<AbstractRoute> r2aRoutes = ribs.get("r2a", DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2bRoutes = ribs.get("r2b", DEFAULT_VRF_NAME).getRoutes();
     Set<Prefix> r2aPrefixes =
         r2aRoutes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r2bPrefixes =
@@ -501,11 +497,10 @@ public class IncrementalDataPlanePluginTest {
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp._dataPlane.getRibs();
+    Table<String, String, FinalMainRib> ribs = dp._dataPlane.getRibs();
 
-    Set<AbstractRoute> r2Routes = ribs.get("r2").get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> r3Routes = ribs.get("r3").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = ribs.get("r2", DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3Routes = ribs.get("r3", DEFAULT_VRF_NAME).getRoutes();
     Set<Prefix> r2Prefixes =
         r2Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes =
@@ -595,8 +590,7 @@ public class IncrementalDataPlanePluginTest {
             new TestIpOwners(configs, topologyContext.getL3Adjacencies()));
 
     // generating fibs should not crash
-    assertThat(
-        dp._dataPlane.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getRoutes(), contains(sr));
+    assertThat(dp._dataPlane.getRibs().get(hostname, DEFAULT_VRF_NAME).getRoutes(), contains(sr));
   }
 
   @Test
@@ -666,7 +660,7 @@ public class IncrementalDataPlanePluginTest {
     DataPlane dp = dataPlanePlugin.computeDataPlane(batfish.getSnapshot())._dataPlane;
 
     assertThat(
-        dp.getRibs().get(n1.getHostname()).get(vrf.getName()).getRoutes(),
+        dp.getRibs().get(n1.getHostname(), vrf.getName()).getRoutes(),
         hasItem(hasPrefix(genRoutePrefix)));
   }
 

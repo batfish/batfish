@@ -535,21 +535,6 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     _root = null;
   }
 
-  /** Make and return a new (shallow) copy of this. */
-  public PrefixTrieMultiMap<T> copy() {
-    Node<T> root =
-        fold(
-            (prefix, elems, leftResult, rightResult) -> {
-              Node<T> ret = new Node<>(prefix, elems);
-              ret._left = leftResult;
-              ret._right = rightResult;
-              return ret;
-            });
-    PrefixTrieMultiMap<T> ret = new PrefixTrieMultiMap<>();
-    ret._root = root;
-    return ret;
-  }
-
   /**
    * Returns {@code true} iff there is any intersection between the prefixes that are keys of this
    * trie and the provided {@code prefixSpace}.

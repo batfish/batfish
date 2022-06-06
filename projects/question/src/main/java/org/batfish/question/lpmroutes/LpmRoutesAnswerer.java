@@ -1,22 +1,20 @@
 package org.batfish.question.lpmroutes;
 
-import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Table;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.regex.Pattern;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRouteDecorator;
-import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -62,26 +60,26 @@ public class LpmRoutesAnswerer extends Answerer {
 
   @VisibleForTesting
   static <T extends AbstractRouteDecorator> List<Row> getRows(
-      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
+      Table<String, String, FinalMainRib> ribs,
       Ip ip,
       Set<String> nodes,
       Pattern vrfRegex,
       Map<String, ColumnMetadata> columnMap) {
 
     ImmutableList.Builder<Row> builder = ImmutableList.builder();
-    for (Entry<String, SortedMap<String, GenericRib<T>>> nodeEntry : ribs.entrySet()) {
+    for (Entry<String, Map<String, FinalMainRib>> nodeEntry : ribs.rowMap().entrySet()) {
       if (!nodes.contains(nodeEntry.getKey())) {
         continue;
       }
 
-      for (Entry<String, GenericRib<T>> vrfEntry : nodeEntry.getValue().entrySet()) {
+      for (Entry<String, FinalMainRib> vrfEntry : nodeEntry.getValue().entrySet()) {
         if (!vrfRegex.matcher(vrfEntry.getKey()).matches()) {
           continue;
         }
 
         // TODO: implement resolution restriction
         toRow(
-                vrfEntry.getValue().longestPrefixMatch(ip, alwaysTrue()),
+                vrfEntry.getValue().longestPrefixMatch(ip),
                 nodeEntry.getKey(),
                 vrfEntry.getKey(),
                 ip,

@@ -1,7 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
-import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 
 import com.google.common.collect.ImmutableMap;
@@ -16,21 +15,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -66,18 +61,6 @@ public final class DataplaneUtil {
     LOGGER.info("Computing location info");
     Map<Location, LocationInfo> locationInfo = computeLocationInfo(ipOwners, configs);
     return new ForwardingAnalysisImpl(configs, fibs, layer3Topology, locationInfo, ipOwners);
-  }
-
-  static @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-      computeRibs(Map<String, Node> nodes) {
-    return toImmutableSortedMap(
-        nodes,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableSortedMap(
-                nodeEntry.getValue().getVirtualRouters(),
-                VirtualRouter::getName,
-                VirtualRouter::getMainRib));
   }
 
   static @Nonnull Table<String, String, Set<Bgpv4Route>> computeBgpRoutes(List<VirtualRouter> vrs) {
