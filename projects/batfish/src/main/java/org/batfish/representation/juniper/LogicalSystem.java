@@ -46,6 +46,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Integer> _dscpAliases;
 
+  private Evpn _evpn;
+
   private final Map<String, FirewallFilter> _filters;
 
   private final Map<String, ConcreteFirewallFilter> _securityPolicies;
@@ -219,6 +221,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, Integer> getDscpAliases() {
     return _dscpAliases;
+  }
+
+  public Evpn getEvpn() {
+    return _evpn;
   }
 
   public Map<String, FirewallFilter> getFirewallFilters() {
@@ -411,6 +417,10 @@ public class LogicalSystem implements Serializable {
 
   public void setDefaultRoutingInstance(RoutingInstance defaultRoutingInstance) {
     _defaultRoutingInstance = defaultRoutingInstance;
+  }
+
+  public void setEvpn(Evpn evpn) {
+    _evpn = evpn;
   }
 
   public void setHostname(String hostname) {

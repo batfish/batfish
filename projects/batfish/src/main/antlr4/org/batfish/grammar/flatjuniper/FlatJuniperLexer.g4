@@ -2821,6 +2821,8 @@ VIRTUAL_CHANNEL: 'virtual-channel';
 
 VIRTUAL_CHASSIS: 'virtual-chassis';
 
+VIRTUAL_GATEWAY_ADDRESS: 'virtual-gateway-address';
+
 VIRTUAL_ROUTER: 'virtual-router';
 
 VIRTUAL_SWITCH: 'virtual-switch';

@@ -1,0 +1,4 @@
+#
+set system host-name juniper-evpn-multicast-ingress
+#
+set protocols evpn multicast-mode ingress-replication
