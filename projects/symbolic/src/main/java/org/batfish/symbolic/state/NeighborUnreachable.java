@@ -15,4 +15,8 @@ public class NeighborUnreachable implements StateExpr {
   public String toString() {
     return getClass().getSimpleName();
   }
+
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

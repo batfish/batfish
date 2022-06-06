@@ -19,4 +19,8 @@ public final class BlackHole implements StateExpr {
   public String toString() {
     return getClass().getSimpleName();
   }
+
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

@@ -124,7 +124,7 @@ public class BDDMultipathInconsistencyTest {
             .getIngressLocationReachableBDDs();
 
     BDD tcpBdd = _pkt.getIpProtocol().value(IpProtocol.TCP);
-    BDD dstIpBDD = _graphFactory.getIpSpaceToBDD().toBDD(_dstIface2Ip);
+    BDD dstIpBDD = _pkt.getDstIpSpaceToBDD().toBDD(_dstIface2Ip);
     BDD srcIpBDD = srcIpBDD(Ip.MAX);
     BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
 

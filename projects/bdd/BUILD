@@ -42,6 +42,7 @@ junit_tests(
         ":bdd_testlib",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
+        "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_hamcrest_hamcrest",
     ],

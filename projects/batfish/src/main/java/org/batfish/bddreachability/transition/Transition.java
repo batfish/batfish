@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+import java.io.Serializable;
 import net.sf.javabdd.BDD;
 
 /**
@@ -10,7 +11,7 @@ import net.sf.javabdd.BDD;
  * may be {@link BDD#free freed} by downstream code, and it is the caller's responsibility to free
  * the input BDD.
  */
-public interface Transition {
+public interface Transition extends Serializable {
   BDD transitForward(BDD bdd);
 
   BDD transitBackward(BDD bdd);

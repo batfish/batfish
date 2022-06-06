@@ -2,11 +2,12 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.Serializable;
 import java.util.BitSet;
 import net.sf.javabdd.BDD;
 
 /** Symbolic packet length variable represented by a 16-bit {@link BDD}. */
-public final class BDDPacketLength {
+public final class BDDPacketLength implements Serializable {
   private final ImmutableBDDInteger _var;
 
   public BDDPacketLength(ImmutableBDDInteger var) {

@@ -3,6 +3,7 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
@@ -10,7 +11,7 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 
-public class ImmutableBDDInteger extends BDDInteger {
+public class ImmutableBDDInteger extends BDDInteger implements Serializable {
   private BDD _vars;
 
   public ImmutableBDDInteger(BDDFactory factory, BDD[] bitvec) {

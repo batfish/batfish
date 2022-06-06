@@ -3,13 +3,14 @@ package net.sf.javabdd;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Objects;
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * A pair of BDD variables (i.e. created by {@link BDDFactory#ithVar(int)}). For building {@link
  * BDDPairing BDDPairings} via {@link BDDFactory#getPair(Set)}. .
  */
-public final class BDDVarPair {
+public final class BDDVarPair implements Serializable {
   private final int _oldVar;
   private final int _newVar;
 

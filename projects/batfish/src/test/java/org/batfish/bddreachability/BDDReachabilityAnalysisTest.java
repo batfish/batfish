@@ -32,8 +32,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -79,10 +79,9 @@ import org.junit.rules.TemporaryFolder;
 public final class BDDReachabilityAnalysisTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
-  private final BDDPacket _pkt = new BDDPacket();
+  private BDDPacket _pkt;
 
   private BDDReachabilityAnalysis _graph;
-  private BDDReachabilityAnalysisFactory _graphFactory;
   private TestNetwork _net;
 
   private BDDOps _bddOps;
@@ -137,12 +136,33 @@ public final class BDDReachabilityAnalysisTest {
   private PreOutEdgePostNat _srcPreOutEdgePostNat2;
   private PreOutVrf _srcPreOutVrf;
 
-  private final BDD _tcpBdd = _pkt.getIpProtocol().value(IpProtocol.TCP);
+  private BDD _tcpBdd;
 
   @Before
   public void setup() throws IOException {
     _net = new TestNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
+
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
+    BDDReachabilityAnalysisFactory graphFactory =
+        new BDDReachabilityAnalysisFactory(
+            new BDDPacket(),
+            _net._configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
+
+    IpSpaceAssignment assignment =
+        IpSpaceAssignment.builder()
+            .assign(
+                new InterfaceLocation(_net._srcNode.getHostname(), _net._link1Src.getName()),
+                UniverseIpSpace.INSTANCE)
+            .build();
+    _graph = SerializationUtils.clone(graphFactory.bddReachabilityAnalysis(assignment));
+
+    _pkt = _graph.getBDDPacket();
 
     _link1DstIpBDD = dstIpBDD(LINK_1_NETWORK.getEndIp());
     _link1DstName = _net._link1Dst.getName();
@@ -156,24 +176,8 @@ public final class BDDReachabilityAnalysisTest {
     _link2SrcIpBDD = dstIpBDD(LINK_2_NETWORK.getStartIp());
     _link2SrcName = _net._link2Src.getName();
 
-    batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
-    _graphFactory =
-        new BDDReachabilityAnalysisFactory(
-            _pkt,
-            _net._configs,
-            dataPlane.getForwardingAnalysis(),
-            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
-            false,
-            false);
+    _tcpBdd = _pkt.getIpProtocol().value(IpProtocol.TCP);
 
-    IpSpaceAssignment assignment =
-        IpSpaceAssignment.builder()
-            .assign(
-                new InterfaceLocation(_net._srcNode.getHostname(), _net._link1Src.getName()),
-                UniverseIpSpace.INSTANCE)
-            .build();
-    _graph = _graphFactory.bddReachabilityAnalysis(assignment);
     _bddOps = new BDDOps(_pkt.getFactory());
     _dstIface1Ip = DST_PREFIX_1.getStartIp();
     _dstIface1IpBDD = dstIpBDD(_dstIface1Ip);
@@ -223,9 +227,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private List<Ip> bddIps(BDD bdd) {
-    BDDInteger bddInteger = _graphFactory.getIpSpaceToBDD().getBDDInteger();
-
-    return bddInteger.getValuesSatisfying(bdd, 10).stream()
+    return _pkt.getDstIp().getValuesSatisfying(bdd, 10).stream()
         .map(Ip::create)
         .collect(Collectors.toList());
   }
@@ -253,29 +255,6 @@ public final class BDDReachabilityAnalysisTest {
 
   private BDD or(BDD... bdds) {
     return _bddOps.or(bdds);
-  }
-
-  private Map<String, BDD> ifaceAcceptBDDs(String node) {
-    return _graphFactory.getIfaceAcceptBDDs().get(node).get(DEFAULT_VRF_NAME);
-  }
-
-  @Test
-  public void testIfaceAcceptBDDs() {
-    assertThat(
-        ifaceAcceptBDDs(_dstName),
-        equalTo(
-            ImmutableMap.of(
-                _link1DstName,
-                _link1DstIpBDD,
-                _link2DstName,
-                _link2DstIpBDD,
-                _dstIface1Name,
-                _dstIface1IpBDD,
-                _dstIface2Name,
-                _dstIface2IpBDD)));
-    assertThat(
-        ifaceAcceptBDDs(_srcName),
-        equalTo(ImmutableMap.of(_link1SrcName, _link1SrcIpBDD, _link2SrcName, _link2SrcIpBDD)));
   }
 
   @Test

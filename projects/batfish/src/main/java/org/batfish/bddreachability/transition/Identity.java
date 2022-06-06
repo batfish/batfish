@@ -27,4 +27,8 @@ public final class Identity implements Transition {
   public <T> T accept(TransitionVisitor<T> visitor) {
     return visitor.visitIdentity(this);
   }
+
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }
