@@ -28,6 +28,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
+import static org.batfish.question.routes.RoutesAnswerer.COL_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.COL_WEIGHT;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
@@ -353,6 +354,7 @@ public class RoutesAnswererTest {
             COL_ORIGINATOR_ID,
             COL_RECEIVED_FROM_IP,
             COL_CLUSTER_LIST,
+            COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
             COL_WEIGHT,
             COL_TAG);
 
@@ -386,6 +388,7 @@ public class RoutesAnswererTest {
             COL_ORIGIN_TYPE,
             COL_ORIGINATOR_ID,
             COL_CLUSTER_LIST,
+            COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
             COL_WEIGHT,
             COL_TAG);
 
@@ -481,6 +484,8 @@ public class RoutesAnswererTest {
         COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
         COL_BASE_PREFIX + COL_RECEIVED_FROM_IP,
         COL_DELTA_PREFIX + COL_RECEIVED_FROM_IP,
+        COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+        COL_DELTA_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
         COL_BASE_PREFIX + COL_WEIGHT,
         COL_DELTA_PREFIX + COL_WEIGHT,
         COL_BASE_PREFIX + COL_TAG,
@@ -514,6 +519,8 @@ public class RoutesAnswererTest {
         Schema.STRING,
         Schema.IP,
         Schema.IP,
+        Schema.STRING,
+        Schema.STRING,
         Schema.INTEGER,
         Schema.INTEGER,
         Schema.LONG,

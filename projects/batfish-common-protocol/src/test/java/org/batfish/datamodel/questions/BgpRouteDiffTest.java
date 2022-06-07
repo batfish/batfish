@@ -9,6 +9,7 @@ import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_WEIGHT;
 import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
 import org.junit.Rule;
@@ -118,6 +120,7 @@ public class BgpRouteDiffTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.EGP)
             .setTag(2)
+            .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("2.2.2.2")))
             .setWeight(2)
             .build();
     assertThat(
@@ -131,6 +134,10 @@ public class BgpRouteDiffTest {
             new BgpRouteDiff(PROP_ORIGINATOR_IP, "1.1.1.1", "2.2.2.2"),
             new BgpRouteDiff(PROP_ORIGIN_TYPE, "IGP", "EGP"),
             new BgpRouteDiff(PROP_TAG, "1", "2"),
+            new BgpRouteDiff(
+                PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                "null",
+                "Tunnel type: ipip, remote endpoint: 2.2.2.2"),
             new BgpRouteDiff(PROP_WEIGHT, "1", "2")));
   }
 
