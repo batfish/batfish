@@ -2,10 +2,12 @@ package org.batfish.question.lpmroutes;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -59,7 +61,7 @@ public class LpmRoutesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static <T extends AbstractRouteDecorator> List<Row> getRows(
+  static List<Row> getRows(
       Table<String, String, FinalMainRib> ribs,
       Ip ip,
       Set<String> nodes,
@@ -67,24 +69,20 @@ public class LpmRoutesAnswerer extends Answerer {
       Map<String, ColumnMetadata> columnMap) {
 
     ImmutableList.Builder<Row> builder = ImmutableList.builder();
-    for (Entry<String, Map<String, FinalMainRib>> nodeEntry : ribs.rowMap().entrySet()) {
-      if (!nodes.contains(nodeEntry.getKey())) {
-        continue;
-      }
-
-      for (Entry<String, FinalMainRib> vrfEntry : nodeEntry.getValue().entrySet()) {
-        if (!vrfRegex.matcher(vrfEntry.getKey()).matches()) {
+    Set<String> sortedNodes =
+        ImmutableSortedSet.copyOf(Ordering.natural(), Sets.intersection(nodes, ribs.rowKeySet()));
+    for (String node : sortedNodes) {
+      Set<String> nodeVrfs = ImmutableSortedSet.copyOf(ribs.row(node).keySet());
+      for (String vrf : nodeVrfs) {
+        if (!vrfRegex.matcher(vrf).matches()) {
           continue;
         }
 
+        FinalMainRib rib = ribs.get(node, vrf);
+        assert rib != null; // iterating over map's keys.
+
         // TODO: implement resolution restriction
-        toRow(
-                vrfEntry.getValue().longestPrefixMatch(ip),
-                nodeEntry.getKey(),
-                vrfEntry.getKey(),
-                ip,
-                columnMap)
-            .ifPresent(builder::add);
+        toRow(rib.longestPrefixMatch(ip), node, vrf, ip, columnMap).ifPresent(builder::add);
       }
     }
     return builder.build();
