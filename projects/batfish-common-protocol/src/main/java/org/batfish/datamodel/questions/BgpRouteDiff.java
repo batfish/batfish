@@ -12,6 +12,7 @@ import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_WEIGHT;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -47,6 +48,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
           PROP_ORIGINATOR_IP,
           PROP_ORIGIN_TYPE,
           PROP_TAG,
+          PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE,
           PROP_WEIGHT);
 
   private final String _fieldName;
@@ -125,6 +127,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             .setOriginatorIp(route2.getOriginatorIp())
             .setOriginType(route2.getOriginType())
             .setTag(route2.getTag())
+            .setTunnelEncapsulationAttribute(route2.getTunnelEncapsulationAttribute())
             .setWeight(route2.getWeight())
             .build()
             .equals(route2),
@@ -142,6 +145,11 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
             routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
             routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),
+            routeDiff(
+                route1,
+                route2,
+                PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                BgpRoute::getTunnelEncapsulationAttribute),
             routeDiff(route1, route2, PROP_WEIGHT, BgpRoute::getWeight))
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -152,9 +160,11 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
       BgpRoute route1, BgpRoute route2, String name, Function<BgpRoute, Object> getter) {
     Object o1 = getter.apply(route1);
     Object o2 = getter.apply(route2);
-    return o1.equals(o2)
+    return Objects.equals(o1, o2)
         ? Optional.empty()
-        : Optional.of(new BgpRouteDiff(name, o1.toString(), o2.toString()));
+        : Optional.of(
+            new BgpRouteDiff(
+                name, o1 == null ? "null" : o1.toString(), o2 == null ? "null" : o2.toString()));
   }
 
   @Override

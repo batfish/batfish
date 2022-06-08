@@ -22,6 +22,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
 
 /** A user facing representation for IPv4 BGP route */
@@ -39,6 +40,7 @@ public final class BgpRoute {
   public static final String PROP_PROTOCOL = "protocol";
   public static final String PROP_SRC_PROTOCOL = "srcProtocol";
   public static final String PROP_TAG = "tag";
+  public static final String PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE = "tunnelEncapsulationAttribute";
   public static final String PROP_WEIGHT = "weight";
   public static final String PROP_CLASS = "class";
 
@@ -54,6 +56,7 @@ public final class BgpRoute {
   @Nonnull private final RoutingProtocol _protocol;
   @Nullable private final RoutingProtocol _srcProtocol;
   private final long _tag;
+  @Nullable private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
   private final int _weight;
 
   private BgpRoute(
@@ -69,6 +72,7 @@ public final class BgpRoute {
       RoutingProtocol protocol,
       @Nullable RoutingProtocol srcProtocol,
       long tag,
+      @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       int weight) {
     _asPath = asPath;
     _communities = communities;
@@ -82,6 +86,7 @@ public final class BgpRoute {
     _protocol = protocol;
     _srcProtocol = srcProtocol;
     _tag = tag;
+    _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
     _weight = weight;
   }
 
@@ -99,6 +104,8 @@ public final class BgpRoute {
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
+      @Nullable @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
+          TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight,
       // For backwards compatibility, does nothing
       @Nullable @JsonProperty(PROP_CLASS) String clazz) {
@@ -119,6 +126,7 @@ public final class BgpRoute {
         protocol,
         srcProtocol,
         tag,
+        tunnelEncapsulationAttribute,
         weight);
   }
 
@@ -204,6 +212,12 @@ public final class BgpRoute {
     return _tag;
   }
 
+  @Nullable
+  @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
+  public TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
+    return _tunnelEncapsulationAttribute;
+  }
+
   @JsonProperty(PROP_WEIGHT)
   public int getWeight() {
     return _weight;
@@ -230,7 +244,8 @@ public final class BgpRoute {
         && _originMechanism == bgpRoute._originMechanism
         && _originType == bgpRoute._originType
         && _protocol == bgpRoute._protocol
-        && _srcProtocol == bgpRoute._srcProtocol;
+        && _srcProtocol == bgpRoute._srcProtocol
+        && Objects.equals(_tunnelEncapsulationAttribute, bgpRoute._tunnelEncapsulationAttribute);
   }
 
   @Override
@@ -248,6 +263,7 @@ public final class BgpRoute {
         _protocol.ordinal(),
         _srcProtocol != null ? _srcProtocol.ordinal() : null,
         _tag,
+        _tunnelEncapsulationAttribute,
         _weight);
   }
 
@@ -269,6 +285,7 @@ public final class BgpRoute {
         .setOriginType(_originType)
         .setSrcProtocol(_srcProtocol)
         .setTag(_tag)
+        .setTunnelEncapsulationAttribute(_tunnelEncapsulationAttribute)
         .setWeight(_weight);
   }
 
@@ -288,6 +305,7 @@ public final class BgpRoute {
     @Nullable private RoutingProtocol _protocol;
     @Nullable private RoutingProtocol _srcProtocol;
     private long _tag;
+    @Nullable private TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     private int _weight;
 
     public Builder() {
@@ -315,6 +333,7 @@ public final class BgpRoute {
           _protocol,
           _srcProtocol,
           _tag,
+          _tunnelEncapsulationAttribute,
           _weight);
     }
 
@@ -378,6 +397,12 @@ public final class BgpRoute {
       return this;
     }
 
+    public Builder setTunnelEncapsulationAttribute(
+        @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
+      _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
+      return this;
+    }
+
     public Builder setWeight(int weight) {
       _weight = weight;
       return this;
@@ -400,6 +425,7 @@ public final class BgpRoute {
         .add("protocol", _protocol)
         .add("srcProtocol", _srcProtocol)
         .add("tag", _tag)
+        .add("tunnelEncapsulationAttribute", _tunnelEncapsulationAttribute)
         .add("weight", _weight)
         .toString();
   }

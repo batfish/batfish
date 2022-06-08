@@ -28,6 +28,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
+import static org.batfish.question.routes.RoutesAnswerer.COL_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.COL_WEIGHT;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
@@ -68,6 +69,7 @@ import org.batfish.datamodel.FinalMainRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteStatus;
@@ -452,6 +454,11 @@ public class RoutesAnswererUtil {
             bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .put(COL_STATUS, statuses)
+        .put(
+            COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+            Optional.ofNullable(bgpv4Route.getTunnelEncapsulationAttribute())
+                .map(TunnelEncapsulationAttribute::toString)
+                .orElse(null))
         .put(COL_WEIGHT, bgpv4Route.getWeight())
         .build();
   }
@@ -490,6 +497,11 @@ public class RoutesAnswererUtil {
         .put(COL_TAG, evpnRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : evpnRoute.getTag())
         .put(COL_ROUTE_DISTINGUISHER, evpnRoute.getRouteDistinguisher())
         .put(COL_STATUS, statuses)
+        .put(
+            COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+            Optional.ofNullable(evpnRoute.getTunnelEncapsulationAttribute())
+                .map(TunnelEncapsulationAttribute::toString)
+                .orElse(null))
         .put(COL_WEIGHT, evpnRoute.getWeight())
         .build();
   }
@@ -636,6 +648,11 @@ public class RoutesAnswererUtil {
             prefix + COL_RECEIVED_FROM_IP,
             routeRowAttribute != null ? routeRowAttribute.getReceivedFromIp() : null)
         .put(prefix + COL_TAG, routeRowAttribute != null ? routeRowAttribute.getTag() : null)
+        .put(
+            prefix + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+            routeRowAttribute != null && routeRowAttribute.getTunnelEncapsulationAttribute() != null
+                ? routeRowAttribute.getTunnelEncapsulationAttribute().toString()
+                : null)
         .put(
             prefix + COL_STATUS,
             routeRowAttribute != null && routeRowAttribute.getStatus() != null
@@ -863,6 +880,8 @@ public class RoutesAnswererUtil {
                                                             route.getTag() == Route.UNSET_ROUTE_TAG
                                                                 ? null
                                                                 : route.getTag())
+                                                        .setTunnelEncapsulationAttribute(
+                                                            route.getTunnelEncapsulationAttribute())
                                                         .setStatus(status)
                                                         .build())))));
 
@@ -949,8 +968,7 @@ public class RoutesAnswererUtil {
           routesInRef.get(routeRowKey);
 
       if (baseAttrsForRowKey != null && refAttrsForRowKey != null) {
-        // this network is present in routesInBase and routesInRef and respective values are
-        // different
+        // this network is present in routesInBase and routesInRef. check if values are different
         if (!baseAttrsForRowKey.equals(refAttrsForRowKey)) {
           listDiffs.addAll(getDiffPerKey(routeRowKey, baseAttrsForRowKey, refAttrsForRowKey));
         }

@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
@@ -18,6 +19,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.questions.BgpRouteStatus;
 
 /**
@@ -49,6 +51,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Nullable private final Long _tag;
 
   @Nullable private final BgpRouteStatus _status;
+  @Nullable private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
 
   @Nullable private final Integer _weight;
 
@@ -65,6 +68,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Ip receivedFromIp,
       Long tag,
       BgpRouteStatus status,
+      @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       Integer weight) {
     _nextHopInterface = nextHopInterface;
     _adminDistance = adminDistance;
@@ -78,6 +82,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _receivedFromIp = receivedFromIp;
     _tag = tag;
     _status = status;
+    _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
     _weight = weight;
   }
 
@@ -141,6 +146,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nullable
+  public TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
+    return _tunnelEncapsulationAttribute;
+  }
+
+  @Nullable
   public Integer getWeight() {
     return _weight;
   }
@@ -164,6 +174,12 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           .thenComparing(RouteRowAttribute::getStatus, nullsLast(BgpRouteStatus::compareTo))
           .thenComparing(
               routeRowAttribute -> routeRowAttribute.getCommunities().toString(),
+              nullsLast(String::compareTo))
+          .thenComparing(
+              routeRowAttribute ->
+                  Optional.ofNullable(routeRowAttribute.getTunnelEncapsulationAttribute())
+                      .map(TunnelEncapsulationAttribute::toString)
+                      .orElse(null),
               nullsLast(String::compareTo))
           .thenComparing(RouteRowAttribute::getWeight, Comparator.nullsLast(Integer::compareTo));
 
@@ -193,6 +209,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         && Objects.equals(_receivedFromIp, that._receivedFromIp)
         && Objects.equals(_tag, that._tag)
         && Objects.equals(_status, that._status)
+        && Objects.equals(_tunnelEncapsulationAttribute, that._tunnelEncapsulationAttribute)
         && Objects.equals(_weight, that._weight);
   }
 
@@ -210,6 +227,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _receivedFromIp,
         _tag,
         _status == null ? 0 : _status.ordinal(),
+        _tunnelEncapsulationAttribute,
         _weight);
   }
 
@@ -227,6 +245,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     @Nullable private Ip _receivedFromIp;
     @Nullable private Long _tag;
     @Nullable private BgpRouteStatus _status;
+    @Nullable private TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     @Nullable private Integer _weight;
 
     public RouteRowAttribute build() {
@@ -246,6 +265,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _receivedFromIp,
           _tag,
           _status,
+          _tunnelEncapsulationAttribute,
           _weight);
     }
 
@@ -306,6 +326,12 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setStatus(BgpRouteStatus status) {
       _status = status;
+      return this;
+    }
+
+    public Builder setTunnelEncapsulationAttribute(
+        @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
+      _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
       return this;
     }
 
