@@ -649,6 +649,11 @@ public class RoutesAnswererUtil {
             routeRowAttribute != null ? routeRowAttribute.getReceivedFromIp() : null)
         .put(prefix + COL_TAG, routeRowAttribute != null ? routeRowAttribute.getTag() : null)
         .put(
+            prefix + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+            routeRowAttribute != null && routeRowAttribute.getTunnelEncapsulationAttribute() != null
+                ? routeRowAttribute.getTunnelEncapsulationAttribute().toString()
+                : null)
+        .put(
             prefix + COL_STATUS,
             routeRowAttribute != null && routeRowAttribute.getStatus() != null
                 ? ImmutableList.of(routeRowAttribute.getStatus())
@@ -875,6 +880,8 @@ public class RoutesAnswererUtil {
                                                             route.getTag() == Route.UNSET_ROUTE_TAG
                                                                 ? null
                                                                 : route.getTag())
+                                                        .setTunnelEncapsulationAttribute(
+                                                            route.getTunnelEncapsulationAttribute())
                                                         .setStatus(status)
                                                         .build())))));
 
@@ -961,8 +968,7 @@ public class RoutesAnswererUtil {
           routesInRef.get(routeRowKey);
 
       if (baseAttrsForRowKey != null && refAttrsForRowKey != null) {
-        // this network is present in routesInBase and routesInRef and respective values are
-        // different
+        // this network is present in routesInBase and routesInRef. check if values are different
         if (!baseAttrsForRowKey.equals(refAttrsForRowKey)) {
           listDiffs.addAll(getDiffPerKey(routeRowKey, baseAttrsForRowKey, refAttrsForRowKey));
         }
