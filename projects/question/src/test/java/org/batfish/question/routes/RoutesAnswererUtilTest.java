@@ -21,6 +21,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_RECEIVED_FROM_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
+import static org.batfish.question.routes.RoutesAnswerer.COL_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.COL_WEIGHT;
 import static org.batfish.question.routes.RoutesAnswererUtil.alignRouteRowAttributes;
@@ -273,6 +274,7 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
             hasColumn(COL_RECEIVED_FROM_IP, Ip.parse("3.3.3.3"), Schema.IP),
             hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)),
+            hasColumn(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, equalTo(null), Schema.STRING),
             hasColumn(COL_WEIGHT, equalTo(7), Schema.INTEGER));
 
     assertThat(
@@ -384,6 +386,7 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_LOCAL_PREF, 0L, Schema.LONG),
                 hasColumn(COL_COMMUNITIES, ImmutableList.of("1:1"), Schema.list(Schema.STRING)),
                 hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
+                hasColumn(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, equalTo(null), Schema.STRING),
                 hasColumn(COL_WEIGHT, 7, Schema.INTEGER),
                 hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
                 hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),

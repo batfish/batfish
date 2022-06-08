@@ -12,6 +12,7 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
 import org.junit.Test;
@@ -29,6 +30,7 @@ public class BgpRouteTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1")))
             .build();
     assertThat(BatfishObjectMapper.clone(br, BgpRoute.class), equalTo(br));
   }
@@ -55,7 +57,10 @@ public class BgpRouteTest {
         .addEqualityGroup(brb.setOriginType(OriginType.INCOMPLETE).build())
         .addEqualityGroup(brb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(brb.setSrcProtocol(RoutingProtocol.STATIC).build())
-        .addEqualityGroup(brb.setWeight(1).build())
+        .addEqualityGroup(
+            brb.setTunnelEncapsulationAttribute(
+                new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1"))))
+        .addEqualityGroup(brb.setWeight(1).build(), brb.build().toBuilder().build())
         .addEqualityGroup(new Object())
         .testEquals();
   }

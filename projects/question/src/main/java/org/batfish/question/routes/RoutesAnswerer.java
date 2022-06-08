@@ -78,6 +78,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGINATOR_ID = "Originator_Id";
   static final String COL_RECEIVED_FROM_IP = "Received_From_IP";
   static final String COL_STATUS = "Status";
+  static final String COL_TUNNEL_ENCAPSULATION_ATTRIBUTE = "Tunnel_Encapsulation_Attribute";
   static final String COL_WEIGHT = "Weight";
 
   // EVPN BGP only
@@ -336,6 +337,13 @@ public class RoutesAnswerer extends Answerer {
                     Boolean.TRUE))
             .add(
                 new ColumnMetadata(
+                    COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                    Schema.STRING,
+                    "Route's BGP Tunnel Encapsulation Attribute",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
                     COL_WEIGHT, Schema.INTEGER, "Route's BGP Weight", Boolean.FALSE, Boolean.TRUE));
         break;
       case BGP:
@@ -412,6 +420,13 @@ public class RoutesAnswerer extends Answerer {
                     COL_CLUSTER_LIST,
                     Schema.list(Schema.LONG),
                     "Route's Cluster List",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                    Schema.STRING,
+                    "Route's BGP Tunnel Encapsulation Attribute",
                     Boolean.FALSE,
                     Boolean.TRUE))
             .add(
@@ -638,6 +653,20 @@ public class RoutesAnswerer extends Answerer {
                 COL_DELTA_PREFIX + COL_RECEIVED_FROM_IP,
                 Schema.IP,
                 "Route's Received from IP",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                Schema.STRING,
+                "Route's BGP Tunnel Encapsulation Attribute",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                Schema.STRING,
+                "Route's BGP Tunnel Encapsulation Attribute",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(

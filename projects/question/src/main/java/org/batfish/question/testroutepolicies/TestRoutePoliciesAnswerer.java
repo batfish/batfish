@@ -195,6 +195,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setMetric(dataplaneBgpRoute.getMetric())
         .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
         .setTag(dataplaneBgpRoute.getTag())
+        .setTunnelEncapsulationAttribute(dataplaneBgpRoute.getTunnelEncapsulationAttribute())
         .setNetwork(dataplaneBgpRoute.getNetwork())
         .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
         .setAsPath(dataplaneBgpRoute.getAsPath())
