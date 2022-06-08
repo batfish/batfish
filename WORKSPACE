@@ -3,6 +3,22 @@ workspace(name = "batfish")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 
 ##########################################################
+# Bazel helpers                                          #
+##########################################################
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+    ],
+)
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
+
+##########################################################
 # External Java dependencies (from Maven)                #
 ##########################################################
 
@@ -35,6 +51,15 @@ load("@maven//:defs.bzl", "pinned_maven_install")
 
 pinned_maven_install()
 
+##########################################################
+## GPL'ed JOL tool
+load("//tools/jol:jol.bzl", "setup_jol_maven")
+
+setup_jol_maven()
+
+load("@jol_maven//:defs.bzl", jol_pinned_maven_install = "pinned_maven_install")
+
+jol_pinned_maven_install()
 
 ##########################################################
 ## Python setup
