@@ -498,101 +498,93 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int MAX_NODESIZE = Integer.MAX_VALUE / __node_size;
 
   private boolean HASREF(int node) {
-    boolean r = (bddnodes[node * __node_size + offset__refcou_and_level] & REF_MASK) != 0;
-    return r;
+    return bddnodes.hasRef(node);
   }
 
   private void SETMAXREF(int node) {
-    bddnodes[node * __node_size + offset__refcou_and_level] |= REF_MASK;
+    bddnodes.setMaxRef(node);
   }
 
   private void CLEARREF(int node) {
-    bddnodes[node * __node_size + offset__refcou_and_level] &= ~REF_MASK;
+    bddnodes.clearRef(node);
   }
 
   private void INCREF(int node) {
-    if ((bddnodes[node * __node_size + offset__refcou_and_level] & REF_MASK) != REF_MASK) {
-      bddnodes[node * __node_size + offset__refcou_and_level] += REF_INC;
-    }
+    bddnodes.incRef(node);
   }
 
   private void DECREF(int node) {
-    int rc = bddnodes[node * __node_size + offset__refcou_and_level] & REF_MASK;
-    if (rc != REF_MASK && rc != 0) {
-      bddnodes[node * __node_size + offset__refcou_and_level] -= REF_INC;
-    }
+    bddnodes.decRef(node);
   }
 
   private int GETREF(int node) {
-    return bddnodes[node * __node_size + offset__refcou_and_level] >>> 22;
+    return bddnodes.getRef(node);
   }
 
   private int LEVEL(int node) {
-    return bddnodes[node * __node_size + offset__refcou_and_level] & LEV_MASK;
+    return bddnodes.getLevel(node);
   }
 
   private int LEVELANDMARK(int node) {
-    return bddnodes[node * __node_size + offset__refcou_and_level] & (LEV_MASK | MARK_MASK);
+    return bddnodes.getLevelAndMark(node);
   }
 
   private void SETLEVEL(int node, int val) {
     if (VERIFY_ASSERTIONS) {
       _assert(val == (val & LEV_MASK));
     }
-    bddnodes[node * __node_size + offset__refcou_and_level] &= ~LEV_MASK;
-    bddnodes[node * __node_size + offset__refcou_and_level] |= val;
+    bddnodes.setLevel(node, val);
   }
 
   private void SETLEVELANDMARK(int node, int val) {
     if (VERIFY_ASSERTIONS) {
       _assert(val == (val & (LEV_MASK | MARK_MASK)));
     }
-    bddnodes[node * __node_size + offset__refcou_and_level] &= ~(LEV_MASK | MARK_MASK);
-    bddnodes[node * __node_size + offset__refcou_and_level] |= val;
+    bddnodes.setLevelAndMark(node, val);
   }
 
   private void SETMARK(int n) {
-    bddnodes[n * __node_size + offset__refcou_and_level] |= MARK_MASK;
+    bddnodes.setMark(n, true);
   }
 
   private void UNMARK(int n) {
-    bddnodes[n * __node_size + offset__refcou_and_level] &= ~MARK_MASK;
+    bddnodes.setMark(n, false);
   }
 
   private boolean MARKED(int n) {
-    return (bddnodes[n * __node_size + offset__refcou_and_level] & MARK_MASK) != 0;
+    return bddnodes.getMark(n);
   }
 
   private int LOW(int r) {
-    return bddnodes[r * __node_size + offset__low];
+    return bddnodes.getLow(r);
   }
 
   private void SETLOW(int r, int v) {
-    bddnodes[r * __node_size + offset__low] = v;
+    bddnodes.setLow(r, v);
   }
 
   private int HIGH(int r) {
-    return bddnodes[r * __node_size + offset__high];
+    return bddnodes.getHigh(r);
   }
 
   private void SETHIGH(int r, int v) {
-    bddnodes[r * __node_size + offset__high] = v;
+    bddnodes.setHigh(r, v);
   }
 
   private int HASH(int r) {
-    return bddnodes[r * __node_size + offset__hash];
+    return bddnodes.getHash(r);
   }
 
   private void SETHASH(int r, int v) {
-    bddnodes[r * __node_size + offset__hash] = v;
+    bddnodes.setHash(r, v);
   }
 
   private int NEXT(int r) {
-    return bddnodes[r * __node_size + offset__next];
+    return bddnodes.getNext(r);
   }
 
   private void SETNEXT(int r, int v) {
-    bddnodes[r * __node_size + offset__next] = v;
+    bddnodes.setNext(r, v);
   }
 
   private int VARr(int n) {
@@ -660,7 +652,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private boolean bddrunning; /* Flag - package initialized */
   private int bdderrorcond; /* Some error condition */
   private int bddnodesize; /* Number of allocated nodes */
-  private int[] bddnodes; /* All of the bdd nodes */
+  private NodeTable bddnodes = null;
   private int bddfreepos; /* First free node */
   private int bddfreenum; /* Number of free nodes */
   private int bddproduced; /* Number of new nodes ever produced */
@@ -4134,6 +4126,23 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     /* Build new node */
+    /*
+    1. claim bddfreepos for this node
+      a. free node should have low==INVALID. set to INITIALIZING to claim
+         if another thread sees low==INITIALIZING, have to wait for freepos to advance
+         freepos may become zero, meaning we have to do GC
+
+         while(true) {
+           res=bddfreepos;
+           if (bddnodes.compareAndSetLow(res, INVALID, INITIALIZING)) {
+             break;
+           }
+         }
+      b. update freepos. should never be any contention there, since only one thread
+         can claim the freepos.
+    2.
+    3. insert as the first item in the bucket
+     */
     res = bddfreepos;
     bddfreepos = NEXT(bddfreepos);
     bddfreenum--;
@@ -4144,7 +4153,7 @@ public class JFactory extends BDDFactory implements Serializable {
     SETLOW(res, low);
     SETHIGH(res, high);
 
-    /* Insert node */
+    /* Insert node as the first item in the bucket. */
     SETNEXT(res, HASH(hash2));
     SETHASH(hash2, res);
 
@@ -4191,7 +4200,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     long resizeStartTime = System.currentTimeMillis();
 
-    bddnodes = Arrays.copyOf(bddnodes, newsize * __node_size);
+    bddnodes.resize(newsize);
     bddnodesize = newsize;
 
     if (doRehash) {
@@ -4234,7 +4243,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     bddnodesize = bdd_prime_gte(initnodesize);
 
-    bddnodes = new int[bddnodesize * __node_size];
+    bddnodes = new NodeTable(bddnodesize);
 
     bddresized = false;
 
