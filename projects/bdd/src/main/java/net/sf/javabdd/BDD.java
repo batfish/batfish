@@ -55,7 +55,6 @@ import javax.annotation.Nullable;
  * <tt>BDDDomain.set()</tt>.
  *
  * @see net.sf.javabdd.BDDFactory
- * @see net.sf.javabdd.BDDDomain#set()
  * @author John Whaley
  * @version $Id: BDD.java,v 1.13 2005/06/03 20:20:16 joewhaley Exp $
  */
@@ -530,7 +529,6 @@ public abstract class BDD implements Serializable {
    * @param that the BDD to 'and' with
    * @param var the BDD to existentially quantify with
    * @return the result of the relational product
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD relprod(BDD that, BDD var);
 
@@ -580,7 +578,6 @@ public abstract class BDD implements Serializable {
    *
    * @param var BDD containing the variables to be existentially quantified
    * @return the result of the existential quantification
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public BDD exist(BDD var) {
     return exist(var, true);
@@ -612,7 +609,6 @@ public abstract class BDD implements Serializable {
    *
    * @param var BDD containing the variables to be projected onto
    * @return the result of the projection
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD project(BDD var);
 
@@ -624,7 +620,6 @@ public abstract class BDD implements Serializable {
    *
    * @param var BDD containing the variables to be universally quantified
    * @return the result of the universal quantification
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD forAll(BDD var);
 
@@ -636,7 +631,6 @@ public abstract class BDD implements Serializable {
    *
    * @param var BDD containing the variables to be uniquely quantified
    * @return the result of the unique quantification
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD unique(BDD var);
 
@@ -666,7 +660,6 @@ public abstract class BDD implements Serializable {
    * <p>Compare to bdd_restrict and bdd_delref.
    *
    * @param var BDD containing the variables to be restricted
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD restrictWith(BDD var);
 
@@ -725,7 +718,6 @@ public abstract class BDD implements Serializable {
    * @param opr the operator to apply
    * @param var BDD containing the variables to quantify
    * @return the result
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD applyAll(BDD that, BDDFactory.BDDOp opr, BDD var);
 
@@ -739,7 +731,6 @@ public abstract class BDD implements Serializable {
    * @param opr the operator to apply
    * @param var BDD containing the variables to quantify
    * @return the result
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD applyEx(BDD that, BDDFactory.BDDOp opr, BDD var);
 
@@ -771,7 +762,6 @@ public abstract class BDD implements Serializable {
    * @param opr the operator to apply
    * @param var BDD containing the variables to quantify
    * @return the result
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD applyUni(BDD that, BDDFactory.BDDOp opr, BDD var);
 
@@ -825,7 +815,6 @@ public abstract class BDD implements Serializable {
    * @param var BDD containing the set of variables that must be mentioned in the result
    * @param pol the polarity of the result
    * @return one satisfying variable assignment
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public abstract BDD satOne(BDD var, boolean pol);
 
@@ -983,175 +972,12 @@ public abstract class BDD implements Serializable {
   }
 
   /**
-   * Scans this BDD and copies the stored variables into a integer array of BDDDomain variable
-   * numbers. The numbers returned are guaranteed to be in ascending order.
-   *
-   * <p>Compare to fdd_scanset.
-   *
-   * @return int[]
-   */
-  public int[] scanSetDomains() {
-    int[] fv;
-    int[] varset;
-    int fn;
-    int num, n, m, i;
-
-    fv = scanSet();
-    if (fv == null) {
-      return null;
-    }
-    fn = fv.length;
-
-    BDDFactory factory = getFactory();
-
-    for (n = 0, num = 0; n < factory.numberOfDomains(); n++) {
-      BDDDomain dom = factory.getDomain(n);
-      int[] ivar = dom.vars();
-      boolean found = false;
-      for (m = 0; m < dom.varNum() && !found; m++) {
-        for (i = 0; i < fn && !found; i++) {
-          if (ivar[m] == fv[i]) {
-            num++;
-            found = true;
-          }
-        }
-      }
-    }
-
-    varset = new int[num];
-
-    for (n = 0, num = 0; n < factory.numberOfDomains(); n++) {
-      BDDDomain dom = factory.getDomain(n);
-      int[] ivar = dom.vars();
-      boolean found = false;
-      for (m = 0; m < dom.varNum() && !found; m++) {
-        for (i = 0; i < fn && !found; i++) {
-          if (ivar[m] == fv[i]) {
-            varset[num++] = n;
-            found = true;
-          }
-        }
-      }
-    }
-
-    return varset;
-  }
-
-  /**
-   * Finds one satisfying assignment of the domain <tt>d</tt> in this BDD and returns that value.
-   *
-   * <p>Compare to fdd_scanvar.
-   *
-   * @param d domain to scan
-   * @return one satisfying assignment for that domain
-   */
-  public BigInteger scanVar(BDDDomain d) {
-    if (isZero()) {
-      return BigInteger.valueOf(-1);
-    }
-    BigInteger[] allvar = scanAllVar();
-    BigInteger res = allvar[d.getIndex()];
-    return res;
-  }
-
-  /**
-   * Finds one satisfying assignment in this BDD of all the defined BDDDomain's. Each value is
-   * stored in an array which is returned. The size of this array is exactly the number of
-   * BDDDomain's defined.
-   *
-   * <p>Compare to fdd_scanallvar.
-   *
-   * @return array containing one satisfying assignment of all the defined domains
-   */
-  public BigInteger[] scanAllVar() {
-    int n;
-    boolean[] store;
-    BigInteger[] res;
-
-    if (isZero()) {
-      return null;
-    }
-
-    BDDFactory factory = getFactory();
-
-    int bddvarnum = factory.varNum();
-    store = new boolean[bddvarnum];
-
-    BDD p = id();
-    while (!p.isOne() && !p.isZero()) {
-      BDD lo = p.low();
-      if (!lo.isZero()) {
-        store[p.var()] = false;
-        BDD p2 = p.low();
-        p.free();
-        p = p2;
-      } else {
-        store[p.var()] = true;
-        BDD p2 = p.high();
-        p.free();
-        p = p2;
-      }
-      lo.free();
-    }
-
-    int fdvarnum = factory.numberOfDomains();
-    res = new BigInteger[fdvarnum];
-
-    for (n = 0; n < fdvarnum; n++) {
-      BDDDomain dom = factory.getDomain(n);
-      int[] ivar = dom.vars();
-
-      BigInteger val = BigInteger.ZERO;
-      for (int m = dom.varNum() - 1; m >= 0; m--) {
-        val = val.shiftLeft(1);
-        if (store[ivar[m]]) {
-          val = val.add(BigInteger.ONE);
-        }
-      }
-
-      res[n] = val;
-    }
-
-    return res;
-  }
-
-  /**
-   * Utility function to convert from a BDD varset to an array of levels.
-   *
-   * @param r BDD varset
-   * @return array of levels
-   */
-  private static int[] varset2levels(BDD r) {
-    int size = 0;
-    BDD p = r.id();
-    while (!p.isOne() && !p.isZero()) {
-      ++size;
-      BDD p2 = p.high();
-      p.free();
-      p = p2;
-    }
-    p.free();
-    int[] result = new int[size];
-    size = -1;
-    p = r.id();
-    while (!p.isOne() && !p.isZero()) {
-      result[++size] = p.level();
-      BDD p2 = p.high();
-      p.free();
-      p = p2;
-    }
-    p.free();
-    return result;
-  }
-
-  /**
    * Returns an iteration of the satisfying assignments of this BDD. Returns an iteration of
    * minterms. The <tt>var</tt> argument is the set of variables that will be mentioned in the
    * result.
    *
    * @param var set of variables to mention in result
    * @return an iteration of minterms
-   * @see net.sf.javabdd.BDDDomain#set()
    */
   public BDDIterator iterator(BDD var) {
     return new BDDIterator(this, var);
@@ -1270,90 +1096,6 @@ public abstract class BDD implements Serializable {
       return lastReturned;
     }
 
-    public BigInteger nextValue(BDDDomain dom) {
-      if (a == null) {
-        throw new NoSuchElementException();
-      }
-      lastReturned = null;
-      BigInteger val = BigInteger.ZERO;
-      int[] ivar = dom.vars();
-      for (int m = dom.varNum() - 1; m >= 0; m--) {
-        val = val.shiftLeft(1);
-        int level = f.var2Level(ivar[m]);
-        int k = Arrays.binarySearch(v, level);
-        if (k < 0) {
-          val = null;
-          break;
-        }
-        if (b[k]) {
-          val = val.add(BigInteger.ONE);
-        }
-      }
-      if (!gotoNextA()) {
-        gotoNext();
-      }
-      return val;
-    }
-
-    /**
-     * Return the next tuple of domain values in the iteration.
-     *
-     * @return the next tuple of domain values in the iteration.
-     */
-    public BigInteger[] nextTuple() {
-      if (a == null) {
-        throw new NoSuchElementException();
-      }
-      lastReturned = null;
-      BigInteger[] result = new BigInteger[f.numberOfDomains()];
-      for (int i = 0; i < result.length; ++i) {
-        BDDDomain dom = f.getDomain(i);
-        int[] ivar = dom.vars();
-        BigInteger val = BigInteger.ZERO;
-        for (int m = dom.varNum() - 1; m >= 0; m--) {
-          val = val.shiftLeft(1);
-          int level = f.var2Level(ivar[m]);
-          int k = Arrays.binarySearch(v, level);
-          if (k < 0) {
-            val = null;
-            break;
-          }
-          if (b[k]) {
-            val = val.add(BigInteger.ONE);
-          }
-        }
-        result[i] = val;
-      }
-      if (!gotoNextA()) {
-        gotoNext();
-      }
-      return result;
-    }
-
-    /**
-     * An alternate implementation of nextTuple(). This may be slightly faster than the default if
-     * there are many domains.
-     *
-     * @return the next tuple of domain values in the iteration.
-     */
-    public BigInteger[] nextTuple2() {
-      boolean[] store = nextSat();
-      BigInteger[] result = new BigInteger[f.numberOfDomains()];
-      for (int i = 0; i < result.length; ++i) {
-        BDDDomain dom = f.getDomain(i);
-        int[] ivar = dom.vars();
-        BigInteger val = BigInteger.ZERO;
-        for (int m = dom.varNum() - 1; m >= 0; m--) {
-          val = val.shiftLeft(1);
-          if (store[ivar[m]]) {
-            val = val.add(BigInteger.ONE);
-          }
-        }
-        result[i] = val;
-      }
-      return result;
-    }
-
     /**
      * Return the next single satisfying assignment in the iteration.
      *
@@ -1399,28 +1141,6 @@ public abstract class BDD implements Serializable {
     }
 
     /**
-     * Returns true if the BDD variables in the given BDD domain are all dont-care's.
-     *
-     * <p>
-     *
-     * @param d domain to check
-     * @return if the variables are all dont-cares
-     * @throws BDDException if d is not in the iteration set
-     */
-    public boolean isDontCare(BDDDomain d) {
-      if (a == null) {
-        return false;
-      }
-      int[] vars = d.vars();
-      for (int var : vars) {
-        if (!isDontCare(var)) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    /**
      * Fast-forward the iteration such that the given variable number is true.
      *
      * @param var number of variable
@@ -1445,19 +1165,6 @@ public abstract class BDD implements Serializable {
     public void fastForward(int[] vars) {
       for (int var : vars) {
         fastForward(var);
-      }
-    }
-
-    /**
-     * Assuming <tt>d</tt> is a dont-care, skip to the end of the iteration for <tt>d</tt>
-     *
-     * @param d BDD domain to fast-forward past
-     */
-    public void skipDontCare(BDDDomain d) {
-      int[] vars = d.vars();
-      fastForward(vars);
-      if (!gotoNextA()) {
-        gotoNext();
       }
     }
   }
@@ -1701,37 +1408,6 @@ public abstract class BDD implements Serializable {
     }
   }
 
-  /**
-   * Returns a string representation of this BDD using the defined domains.
-   *
-   * @return string representation of this BDD using the defined domains
-   */
-  public String toStringWithDomains() {
-    return toStringWithDomains(BDDToString.INSTANCE);
-  }
-
-  /**
-   * Returns a string representation of this BDD on the defined domains, using the given BDDToString
-   * converter.
-   *
-   * @see net.sf.javabdd.BDD.BDDToString
-   * @return string representation of this BDD using the given BDDToString converter
-   */
-  public String toStringWithDomains(BDDToString ts) {
-    if (isZero()) {
-      return "F";
-    }
-    if (isOne()) {
-      return "T";
-    }
-
-    BDDFactory bdd = getFactory();
-    StringBuffer sb = new StringBuffer();
-    int[] set = new int[bdd.varNum()];
-    fdd_printset_rec(bdd, sb, ts, this, set);
-    return sb.toString();
-  }
-
   private static class OutputBuffer {
     BDDToString ts;
     StringBuffer sb;
@@ -1794,89 +1470,6 @@ public abstract class BDD implements Serializable {
       fdd_printset_helper(sb, temp, i - 1, set, var, maxSkip);
     }
     fdd_printset_helper(sb, value, i - 1, set, var, maxSkip);
-  }
-
-  private static void fdd_printset_rec(
-      BDDFactory bdd, StringBuffer sb, BDDToString ts, BDD r, int[] set) {
-    int fdvarnum = bdd.numberOfDomains();
-
-    int n, m, i;
-    boolean used = false;
-    int[] var;
-    boolean first;
-
-    if (r.isZero()) {
-      return;
-    } else if (r.isOne()) {
-      sb.append('<');
-      first = true;
-
-      for (n = 0; n < fdvarnum; n++) {
-        used = false;
-
-        BDDDomain domain_n = bdd.getDomain(n);
-
-        int[] domain_n_ivar = domain_n.vars();
-        int domain_n_varnum = domain_n_ivar.length;
-        for (m = 0; m < domain_n_varnum; m++) {
-          if (set[domain_n_ivar[m]] != 0) {
-            used = true;
-          }
-        }
-
-        if (used) {
-          if (!first) {
-            sb.append(", ");
-          }
-          first = false;
-          sb.append(domain_n.getName());
-          sb.append(':');
-
-          var = domain_n_ivar;
-
-          BigInteger pos = BigInteger.ZERO;
-          int maxSkip = -1;
-          boolean hasDontCare = false;
-          for (i = 0; i < domain_n_varnum; ++i) {
-            int val = set[var[i]];
-            if (val == 0) {
-              hasDontCare = true;
-              if (maxSkip == i - 1) {
-                maxSkip = i;
-              }
-            }
-          }
-          for (i = domain_n_varnum - 1; i >= 0; --i) {
-            pos = pos.shiftLeft(1);
-            int val = set[var[i]];
-            if (val == 2) {
-              pos = pos.setBit(0);
-            }
-          }
-          if (!hasDontCare) {
-            sb.append(ts.elementName(n, pos));
-          } else {
-            OutputBuffer ob = new OutputBuffer(ts, sb, n);
-            fdd_printset_helper(ob, pos, domain_n_varnum - 1, set, var, maxSkip);
-            ob.finish();
-          }
-        }
-      }
-
-      sb.append('>');
-    } else {
-      set[r.var()] = 1;
-      BDD lo = r.low();
-      fdd_printset_rec(bdd, sb, ts, lo, set);
-      lo.free();
-
-      set[r.var()] = 2;
-      BDD hi = r.high();
-      fdd_printset_rec(bdd, sb, ts, hi, set);
-      hi.free();
-
-      set[r.var()] = 0;
-    }
   }
 
   /**

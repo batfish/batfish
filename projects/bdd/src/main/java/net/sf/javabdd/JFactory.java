@@ -5941,23 +5941,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   @Override
-  protected BDDDomain createDomain(int a, BigInteger b) {
-    return new bddDomain(a, b);
-  }
-
-  private class bddDomain extends BDDDomain {
-
-    bddDomain(int a, BigInteger b) {
-      super(a, b);
-    }
-
-    @Override
-    public BDDFactory getFactory() {
-      return JFactory.this;
-    }
-  }
-
-  @Override
   protected BDDBitVector createBitVector(int a) {
     return new bvec(a);
   }

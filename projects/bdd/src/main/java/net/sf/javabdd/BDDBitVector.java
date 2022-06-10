@@ -98,10 +98,6 @@ public abstract class BDDBitVector {
     }
   }
 
-  protected void initialize(BDDDomain d) {
-    initialize(d.vars());
-  }
-
   protected void initialize(int[] var) {
     BDDFactory bdd = getFactory();
     for (int n = 0; n < bitvec.length; n++) {

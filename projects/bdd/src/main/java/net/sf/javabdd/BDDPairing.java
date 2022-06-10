@@ -85,39 +85,6 @@ public abstract class BDDPairing {
   }
 
   /**
-   * Defines each variable in the finite domain block p1 to be paired with the corresponding
-   * variable in p2.
-   *
-   * <p>Compare to fdd_setpair.
-   */
-  public void set(BDDDomain p1, BDDDomain p2) {
-    int[] ivar1 = p1.vars();
-    int[] ivar2 = p2.vars();
-    set(ivar1, ivar2);
-  }
-
-  /**
-   * Like set(), but with a whole list of pairs.
-   *
-   * <p>Compare to fdd_setpairs.
-   */
-  public void set(BDDDomain[] p1, BDDDomain[] p2) {
-    if (p1.length != p2.length) {
-      throw new BDDException();
-    }
-
-    for (int n = 0; n < p1.length; n++) {
-      if (p1[n].varNum() != p2[n].varNum()) {
-        throw new BDDException();
-      }
-    }
-
-    for (int n = 0; n < p1.length; n++) {
-      set(p1[n], p2[n]);
-    }
-  }
-
-  /**
    * Resets this table of pairs by setting all substitutions to their default values (that is, no
    * change).
    *

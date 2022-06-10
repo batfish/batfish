@@ -855,66 +855,6 @@ public final class TracingFactory extends JFactory {
   }
 
   @Override
-  public BDDPairing makePair(BDDDomain oldvar, BDDDomain newvar) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDDomain extDomain(long domainSize) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDDomain extDomain(BigInteger domainSize) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDDomain[] extDomain(int[] dom) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDDomain[] extDomain(long[] dom) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDDomain[] extDomain(BigInteger[] domainSizes) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDDomain overlapDomain(BDDDomain d1, BDDDomain d2) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDD makeSet(BDDDomain[] v) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void clearAllDomains() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int numberOfDomains() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDDomain getDomain(int i) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int[] makeVarOrdering(boolean reverseLocal, String ordering) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public BDDBitVector buildVector(int bitnum, boolean b) {
     throw new UnsupportedOperationException();
   }
@@ -931,11 +871,6 @@ public final class TracingFactory extends JFactory {
 
   @Override
   public BDDBitVector buildVector(int bitnum, int offset, int step) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDBitVector buildVector(BDDDomain d) {
     throw new UnsupportedOperationException();
   }
 
