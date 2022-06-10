@@ -33,7 +33,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -854,67 +853,6 @@ public abstract class BDDFactory {
 
   // TODO: bdd_sizeprobe_hook
   // TODO: bdd_reorder_probe
-
-  protected int firstbddvar;
-
-  /** ** BIT VECTORS *** */
-
-  /**
-   * Implementors must implement this factory method to create BDDBitVector objects of the correct
-   * type.
-   */
-  protected abstract BDDBitVector createBitVector(int a);
-
-  /**
-   * Build a bit vector that is constant true or constant false.
-   *
-   * <p>Compare to bvec_true, bvec_false.
-   */
-  public BDDBitVector buildVector(int bitnum, boolean b) {
-    BDDBitVector v = createBitVector(bitnum);
-    v.initialize(b);
-    return v;
-  }
-
-  /**
-   * Build a bit vector that corresponds to a constant value.
-   *
-   * <p>Compare to bvec_con.
-   */
-  public BDDBitVector constantVector(int bitnum, long val) {
-    BDDBitVector v = createBitVector(bitnum);
-    v.initialize(val);
-    return v;
-  }
-
-  public BDDBitVector constantVector(int bitnum, BigInteger val) {
-    BDDBitVector v = createBitVector(bitnum);
-    v.initialize(val);
-    return v;
-  }
-
-  /**
-   * Build a bit vector using variables offset, offset+step, offset+2*step, ... ,
-   * offset+(bitnum-1)*step.
-   *
-   * <p>Compare to bvec_var.
-   */
-  public BDDBitVector buildVector(int bitnum, int offset, int step) {
-    BDDBitVector v = createBitVector(bitnum);
-    v.initialize(offset, step);
-    return v;
-  }
-
-  /**
-   * Build a bit vector using the given variables.
-   *
-   * <p>compare to bvec_varvec.
-   */
-  public BDDBitVector buildVector(int[] var) {
-    BDDBitVector v = createBitVector(var.length);
-    v.initialize(var);
-    return v;
-  }
 
   protected void gbc_handler(boolean pre, GCStats s) {
     bdd_default_gbchandler(pre, s);

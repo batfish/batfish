@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -851,31 +850,6 @@ public final class TracingFactory extends JFactory {
 
   @Override
   public BDDPairing makePair(int oldvar, BDD newvar) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDBitVector buildVector(int bitnum, boolean b) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDBitVector constantVector(int bitnum, long val) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDBitVector constantVector(int bitnum, BigInteger val) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDBitVector buildVector(int bitnum, int offset, int step) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public BDDBitVector buildVector(int[] var) {
     throw new UnsupportedOperationException();
   }
 }

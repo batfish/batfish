@@ -5940,23 +5940,6 @@ public class JFactory extends BDDFactory implements Serializable {
     out.print(s.toString());
   }
 
-  @Override
-  protected BDDBitVector createBitVector(int a) {
-    return new bvec(a);
-  }
-
-  private class bvec extends BDDBitVector {
-
-    bvec(int bitnum) {
-      super(bitnum);
-    }
-
-    @Override
-    public BDDFactory getFactory() {
-      return JFactory.this;
-    }
-  }
-
   //// Prime stuff below.
 
   private final Random rng = new Random();
