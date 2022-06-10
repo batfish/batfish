@@ -196,6 +196,8 @@ final class NodeTable implements Serializable {
   }
 
   int getNext(int node) {
+    // have to use getVolatile, because bdd_makenode may have just inserted this node in another
+    // thread
     int idx = node * NODE_SIZE + OFFSET__NEXT;
     return (int) AA.getVolatile(array, idx);
   }
@@ -203,5 +205,32 @@ final class NodeTable implements Serializable {
   void setNext(int node, int next) {
     int idx = node * NODE_SIZE + OFFSET__NEXT;
     AA.setVolatile(array, idx, next);
+  }
+
+  boolean trySetInitializing(int node) {
+    int idx = node * NODE_SIZE + OFFSET__LOW;
+    // LOW == -1 means it's free. set it to any other value to prevent
+    // another thread from claiming it
+    return AA.compareAndSet(array, idx, -1, 0);
+  }
+
+  /**
+   * Insert the input {@code node} with the input {@code hashcode} into the first position of it's
+   * hash bucket.
+   */
+  void insertNode(int node, int hashcode) {
+    int next_idx = node * NODE_SIZE + OFFSET__NEXT;
+    int bucket_idx = hashcode * NODE_SIZE + OFFSET__HASH;
+    while (true) {
+      int next = array[bucket_idx];
+      // set node's next pointer first, so that if the insert succeeds
+      // the chain is immediately correct
+      AA.setVolatile(array, next_idx, next);
+
+      // make sure no other thread has inserted a different node
+      if (AA.compareAndSet(array, bucket_idx, next, node)) {
+        break;
+      }
+    }
   }
 }

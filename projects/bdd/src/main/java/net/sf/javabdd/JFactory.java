@@ -46,6 +46,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -621,8 +622,8 @@ public class JFactory extends BDDFactory implements Serializable {
   private int bdderrorcond; /* Some error condition */
   private int bddnodesize; /* Number of allocated nodes */
   private NodeTable bddnodes = null;
-  private int bddfreepos; /* First free node */
-  private int bddfreenum; /* Number of free nodes */
+  private AtomicInteger bddfreepos = new AtomicInteger(-1); /* First free node */
+  private AtomicInteger bddfreenum = new AtomicInteger(-1); /* Number of free nodes */
   /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
   private transient IntStack bddrefstack; /* BDDs referenced during the current computation. */
@@ -3750,8 +3751,8 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private void bdd_gbc_rehash() {
-    bddfreepos = 0;
-    bddfreenum = 0;
+    int freepos = 0;
+    int freenum = 0;
 
     for (int n = bddnodesize - 1; n >= 2; n--) {
       if (LOW(n) != INVALID_BDD) {
@@ -3761,11 +3762,14 @@ public class JFactory extends BDDFactory implements Serializable {
         SETNEXT(n, HASH(hash2));
         SETHASH(hash2, n);
       } else {
-        SETNEXT(n, bddfreepos);
-        bddfreepos = n;
-        bddfreenum++;
+        SETNEXT(n, freepos);
+        freepos = n;
+        freenum++;
       }
     }
+
+    bddfreepos.set(freepos);
+    bddfreenum.set(freenum);
   }
 
   private void INITREF() {
@@ -3937,7 +3941,7 @@ public class JFactory extends BDDFactory implements Serializable {
     // if (gbc_handler != NULL)
     {
       gcstats.nodes = bddnodesize;
-      gcstats.freenodes = bddfreenum;
+      gcstats.freenodes = bddfreenum.get();
       gcstats.time = 0;
       gcstats.sumtime = gbcclock;
       gcstats.num = gbcollectnum;
@@ -3953,8 +3957,8 @@ public class JFactory extends BDDFactory implements Serializable {
       SETHASH(n, 0);
     }
 
-    bddfreepos = 0;
-    bddfreenum = 0;
+    int freepos = 0;
+    int freenum = 0;
 
     for (int n = bddnodesize - 1; n >= 2; n--) {
 
@@ -3967,13 +3971,16 @@ public class JFactory extends BDDFactory implements Serializable {
         SETHASH(hash2, n);
       } else {
         SETLOW(n, INVALID_BDD);
-        SETNEXT(n, bddfreepos);
-        bddfreepos = n;
-        bddfreenum++;
+        SETNEXT(n, freepos);
+        freepos = n;
+        freenum++;
       }
     }
 
-    if (bddfreenum > 0) {
+    bddfreepos.set(freepos);
+    bddfreenum.set(freenum);
+
+    if (freenum > 0) {
       // Don't reset or clean caches if we didn't free any nodes.
 
       if (FLUSH_CACHE_ON_GC) {
@@ -3990,7 +3997,7 @@ public class JFactory extends BDDFactory implements Serializable {
     // if (gbc_handler != NULL)
     {
       gcstats.nodes = bddnodesize;
-      gcstats.freenodes = bddfreenum;
+      gcstats.freenodes = freenum;
       gcstats.reusednodes = reusedBDDs;
       reusedBDDs = 0;
       gcstats.time = c2 - c1;
@@ -4130,48 +4137,42 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     /* Any free nodes to use ? */
-    if (bddfreepos == 0) {
-      if (bdderrorcond != 0) {
-        return 0;
+    while (true) {
+      int freepos = bddfreepos.get();
+      if (freepos == 0) {
+        if (bdderrorcond != 0) {
+          return 0;
+        }
+
+        /* Try to allocate more nodes */
+        bdd_gbc();
+
+        if ((bddfreenum.get() * 100) / bddnodesize <= minfreenodes) {
+          bdd_noderesize(true);
+          hash2 = NODEHASH(level, low, high);
+        }
+
+        /* Panic if that is not possible */
+        freepos = bddfreepos.get();
+        if (freepos == 0) {
+          throw new JavaBDDException(BDD_NODENUM);
+        }
       }
-
-      /* Try to allocate more nodes */
-      bdd_gbc();
-
-      if ((bddfreenum * 100L) / bddnodesize <= minfreenodes) {
-        bdd_noderesize(true);
-        hash2 = NODEHASH(level, low, high);
-      }
-
-      /* Panic if that is not possible */
-      if (bddfreepos == 0) {
-        bdd_error(BDD_NODENUM);
-        bdderrorcond = Math.abs(BDD_NODENUM);
-        return 0;
+      if (bddnodes.trySetInitializing(freepos)) {
+        res = freepos;
+        break;
       }
     }
 
-    /* Build new node */
-    /*
-    1. claim bddfreepos for this node
-      a. free node should have low==INVALID. set to INITIALIZING to claim
-         if another thread sees low==INITIALIZING, have to wait for freepos to advance
-         freepos may become zero, meaning we have to do GC
+    // invariant: res != 0
 
-         while(true) {
-           res=bddfreepos;
-           if (bddnodes.compareAndSetLow(res, INVALID, INITIALIZING)) {
-             break;
-           }
-         }
-      b. update freepos. should never be any contention there, since only one thread
-         can claim the freepos.
-    2.
-    3. insert as the first item in the bucket
-     */
-    res = bddfreepos;
-    bddfreepos = NEXT(bddfreepos);
-    bddfreenum--;
+    // any other threads trying to allocate a node will spin in the
+    // previous loop. this compareAndSet will unblock them.
+    if (!bddfreepos.compareAndSet(res, NEXT(res))) {
+      throw new IllegalStateException("the impossible has happened");
+    }
+
+    bddfreenum.decrementAndGet();
     newNodeIndex(res);
 
     SETLEVELANDMARK(res, level);
@@ -4179,9 +4180,7 @@ public class JFactory extends BDDFactory implements Serializable {
     SETHIGH(res, high);
 
     /* Insert node as the first item in the bucket. */
-    SETNEXT(res, HASH(hash2));
-    SETHASH(hash2, res);
-
+    bddnodes.insertNode(res, hash2);
     return res;
   }
 
@@ -4242,9 +4241,9 @@ public class JFactory extends BDDFactory implements Serializable {
               SETNEXT(n, n + 1);
             });
 
-    SETNEXT(bddnodesize - 1, bddfreepos);
-    bddfreepos = oldsize;
-    bddfreenum += bddnodesize - oldsize;
+    int prev_freepos = bddfreepos.getAndSet(oldsize);
+    SETNEXT(bddnodesize - 1, prev_freepos);
+    bddfreenum.addAndGet(bddnodesize - oldsize);
 
     if (doRehash) {
       bdd_gbc_rehash();
@@ -4290,8 +4289,8 @@ public class JFactory extends BDDFactory implements Serializable {
 
     bdd_operator_init();
 
-    bddfreepos = 2;
-    bddfreenum = bddnodesize - 2;
+    bddfreepos.set(2);
+    bddfreenum.set(bddnodesize - 2);
     bddrunning = true;
     bddvarnum = 0;
     gbcollectnum = 0;
@@ -4994,7 +4993,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int bdd_getnodenum() {
-    return bddnodesize - bddfreenum;
+    return bddnodesize - bddfreenum.get();
   }
 
   @Override
