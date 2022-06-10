@@ -1143,26 +1143,30 @@ public class JFactory extends BDDFactory implements Serializable {
       return g;
     } else if (ISZERO(f)) {
       return h;
-    } else if (HIGH(f) == BDDONE
-        && LOW(f) == BDDZERO
-        && LEVEL(f) < LEVEL(g)
-        && LEVEL(f) < LEVEL(h)) {
-      // f is a single variable BDD, and its level is lower than g's and h's.
-      // this is a common case: we're building a BDD bottom-up
-      // skip the operator cache
-      return bdd_makenode(LEVEL(f), h /* low/else */, g /* high/then */);
-    } else if (g == h) {
-      return g;
+    } else if (ISONE(g)) {
+      return or_rec(f, h);
     } else if (ISZERO(g)) {
       applyop = bddop_less;
       return apply_rec(f, h);
-    } else if (ISONE(g)) {
-      return or_rec(f, h);
-    } else if (ISZERO(h)) {
-      return and_rec(f, g);
     } else if (ISONE(h)) {
       applyop = bddop_imp;
       return apply_rec(f, g);
+    } else if (ISZERO(h)) {
+      return and_rec(f, g);
+    } else if (g == h) {
+      return g;
+    }
+
+    int high_f = HIGH(f);
+    int low_f = LOW(f);
+    int level_f = LEVEL(f);
+    int level_g = LEVEL(g);
+    int level_h = LEVEL(h);
+    if (high_f == BDDONE && low_f == BDDZERO && level_f < level_g && level_f < level_h) {
+      // f is a single variable BDD, and its level is lower than g's and h's.
+      // this is a common case: we're building a BDD bottom-up
+      // skip the operator cache
+      return bdd_makenode(level_f, h /* low/else */, g /* high/then */);
     }
 
     // ITE uses the multiop cache to be cleaned properly.
@@ -1179,47 +1183,47 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL(f) == LEVEL(g)) {
-      if (LEVEL(f) == LEVEL(h)) {
-        PUSHREF(ite_rec(LOW(f), LOW(g), LOW(h)));
-        PUSHREF(ite_rec(HIGH(f), HIGH(g), HIGH(h)));
-        res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
-      } else if (LEVEL(f) < LEVEL(h)) {
-        PUSHREF(ite_rec(LOW(f), LOW(g), h));
-        PUSHREF(ite_rec(HIGH(f), HIGH(g), h));
-        res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
+    if (level_f == level_g) {
+      if (level_f == level_h) {
+        PUSHREF(ite_rec(low_f, LOW(g), LOW(h)));
+        PUSHREF(ite_rec(high_f, HIGH(g), HIGH(h)));
+        res = bdd_makenode(level_f, READREF(2), READREF(1));
+      } else if (level_f < level_h) {
+        PUSHREF(ite_rec(low_f, LOW(g), h));
+        PUSHREF(ite_rec(high_f, HIGH(g), h));
+        res = bdd_makenode(level_f, READREF(2), READREF(1));
       } else /* f > h */ {
         PUSHREF(ite_rec(f, g, LOW(h)));
         PUSHREF(ite_rec(f, g, HIGH(h)));
-        res = bdd_makenode(LEVEL(h), READREF(2), READREF(1));
+        res = bdd_makenode(level_h, READREF(2), READREF(1));
       }
-    } else if (LEVEL(f) < LEVEL(g)) {
-      if (LEVEL(f) == LEVEL(h)) {
-        PUSHREF(ite_rec(LOW(f), g, LOW(h)));
-        PUSHREF(ite_rec(HIGH(f), g, HIGH(h)));
-        res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
-      } else if (LEVEL(f) < LEVEL(h)) {
-        PUSHREF(ite_rec(LOW(f), g, h));
-        PUSHREF(ite_rec(HIGH(f), g, h));
-        res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
+    } else if (level_f < level_g) {
+      if (level_f == level_h) {
+        PUSHREF(ite_rec(low_f, g, LOW(h)));
+        PUSHREF(ite_rec(high_f, g, HIGH(h)));
+        res = bdd_makenode(level_f, READREF(2), READREF(1));
+      } else if (level_f < level_h) {
+        PUSHREF(ite_rec(low_f, g, h));
+        PUSHREF(ite_rec(high_f, g, h));
+        res = bdd_makenode(level_f, READREF(2), READREF(1));
       } else /* f > h */ {
         PUSHREF(ite_rec(f, g, LOW(h)));
         PUSHREF(ite_rec(f, g, HIGH(h)));
-        res = bdd_makenode(LEVEL(h), READREF(2), READREF(1));
+        res = bdd_makenode(level_h, READREF(2), READREF(1));
       }
     } else /* f > g */ {
-      if (LEVEL(g) == LEVEL(h)) {
+      if (level_g == level_h) {
         PUSHREF(ite_rec(f, LOW(g), LOW(h)));
         PUSHREF(ite_rec(f, HIGH(g), HIGH(h)));
-        res = bdd_makenode(LEVEL(g), READREF(2), READREF(1));
-      } else if (LEVEL(g) < LEVEL(h)) {
+        res = bdd_makenode(level_g, READREF(2), READREF(1));
+      } else if (level_g < level_h) {
         PUSHREF(ite_rec(f, LOW(g), h));
         PUSHREF(ite_rec(f, HIGH(g), h));
-        res = bdd_makenode(LEVEL(g), READREF(2), READREF(1));
+        res = bdd_makenode(level_g, READREF(2), READREF(1));
       } else /* g > h */ {
         PUSHREF(ite_rec(f, g, LOW(h)));
         PUSHREF(ite_rec(f, g, HIGH(h)));
-        res = bdd_makenode(LEVEL(h), READREF(2), READREF(1));
+        res = bdd_makenode(level_h, READREF(2), READREF(1));
       }
     }
 
@@ -1257,7 +1261,11 @@ public class JFactory extends BDDFactory implements Serializable {
     BddCacheDataI entry;
     int res;
 
-    if (ISCONST(r) || LEVEL(r) > replacelast) {
+    if (ISCONST(r)) {
+      return r;
+    }
+    int level = LEVEL(r);
+    if (level > replacelast) {
       return r;
     }
 
@@ -1281,14 +1289,14 @@ public class JFactory extends BDDFactory implements Serializable {
      * on the new root at the correct level of the bdd.
      */
     {
-      int level = LEVEL(replacepair[LEVEL(r)]);
+      int new_level = LEVEL(replacepair[level]);
 
       /* bdd_correctify calls are cached separately from replace_rec calls. Set the cacheid for
        * the bdd_correctify calls and restore when it returns.
        */
       int tmp = replaceid;
-      replaceid = (level << 3) | CACHEID_CORRECTIFY;
-      res = bdd_correctify(level, READREF(2), READREF(1));
+      replaceid = (new_level << 3) | CACHEID_CORRECTIFY;
+      res = bdd_correctify(new_level, READREF(2), READREF(1));
       replaceid = tmp;
     }
     POPREF(2);
@@ -1318,11 +1326,13 @@ public class JFactory extends BDDFactory implements Serializable {
   private int bdd_correctify(int level, int l, int r) {
     int res;
 
-    if (level < LEVEL(l) && level < LEVEL(r)) {
+    int level_l = LEVEL(l);
+    int level_r = LEVEL(r);
+    if (level < level_l && level < level_r) {
       return bdd_makenode(level, l, r);
     }
 
-    if (level == LEVEL(l) || level == LEVEL(r)) {
+    if (level == level_l || level == level_r) {
       bdd_error(BDD_REPLACE);
       return 0;
     }
@@ -1339,18 +1349,18 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL(l) == LEVEL(r)) {
+    if (level_l == level_r) {
       PUSHREF(bdd_correctify(level, LOW(l), LOW(r)));
       PUSHREF(bdd_correctify(level, HIGH(l), HIGH(r)));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-    } else if (LEVEL(l) < LEVEL(r)) {
+      res = bdd_makenode(level_l, READREF(2), READREF(1));
+    } else if (level_l < level_r) {
       PUSHREF(bdd_correctify(level, LOW(l), r));
       PUSHREF(bdd_correctify(level, HIGH(l), r));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+      res = bdd_makenode(level_l, READREF(2), READREF(1));
     } else {
       PUSHREF(bdd_correctify(level, l, LOW(r)));
       PUSHREF(bdd_correctify(level, l, HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(level_r, READREF(2), READREF(1));
     }
     POPREF(2);
 
@@ -1560,18 +1570,20 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL(l) == LEVEL(r)) {
+    int level_l = LEVEL(l);
+    int level_r = LEVEL(r);
+    if (level_l == level_r) {
       PUSHREF(apply_rec(LOW(l), LOW(r)));
       PUSHREF(apply_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-    } else if (LEVEL(l) < LEVEL(r)) {
+      res = bdd_makenode(level_l, READREF(2), READREF(1));
+    } else if (level_l < level_r) {
       PUSHREF(apply_rec(LOW(l), r));
       PUSHREF(apply_rec(HIGH(l), r));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+      res = bdd_makenode(level_l, READREF(2), READREF(1));
     } else {
       PUSHREF(apply_rec(l, LOW(r)));
       PUSHREF(apply_rec(l, HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(level_r, READREF(2), READREF(1));
     }
 
     POPREF(2);
@@ -1619,18 +1631,20 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL(l) == LEVEL(r)) {
+    int level_l = LEVEL(l);
+    int level_r = LEVEL(r);
+    if (level_l == level_r) {
       PUSHREF(and_rec(LOW(l), LOW(r)));
       PUSHREF(and_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-    } else if (LEVEL(l) < LEVEL(r)) {
+      res = bdd_makenode(level_l, READREF(2), READREF(1));
+    } else if (level_l < level_r) {
       PUSHREF(and_rec(LOW(l), r));
       PUSHREF(and_rec(HIGH(l), r));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+      res = bdd_makenode(level_l, READREF(2), READREF(1));
     } else {
       PUSHREF(and_rec(l, LOW(r)));
       PUSHREF(and_rec(l, HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(level_r, READREF(2), READREF(1));
     }
 
     POPREF(2);
@@ -1671,9 +1685,11 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     boolean res;
-    if (LEVEL(l) == LEVEL(r)) {
+    int level_l = LEVEL(l);
+    int level_r = LEVEL(r);
+    if (level_l == level_r) {
       res = diffsat_rec(LOW(l), LOW(r)) || diffsat_rec(HIGH(l), HIGH(r));
-    } else if (LEVEL(l) < LEVEL(r)) {
+    } else if (level_l < level_r) {
       res = diffsat_rec(LOW(l), r) || diffsat_rec(HIGH(l), r);
     } else {
       res = diffsat_rec(l, LOW(r)) || diffsat_rec(l, HIGH(r));
@@ -1720,9 +1736,11 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     boolean res;
-    if (LEVEL(l) == LEVEL(r)) {
+    int level_l = LEVEL(l);
+    int level_r = LEVEL(r);
+    if (level_l == level_r) {
       res = andsat_rec(LOW(l), LOW(r)) || andsat_rec(HIGH(l), HIGH(r));
-    } else if (LEVEL(l) < LEVEL(r)) {
+    } else if (level_l < level_r) {
       res = andsat_rec(LOW(l), r) || andsat_rec(HIGH(l), r);
     } else {
       res = andsat_rec(l, LOW(r)) || andsat_rec(l, HIGH(r));
@@ -2091,18 +2109,20 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL(l) == LEVEL(r)) {
+    int level_l = LEVEL(l);
+    int level_r = LEVEL(r);
+    if (level_l == level_r) {
       PUSHREF(or_rec(LOW(l), LOW(r)));
       PUSHREF(or_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-    } else if (LEVEL(l) < LEVEL(r)) {
+      res = bdd_makenode(level_l, READREF(2), READREF(1));
+    } else if (level_l < level_r) {
       PUSHREF(or_rec(LOW(l), r));
       PUSHREF(or_rec(HIGH(l), r));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+      res = bdd_makenode(level_l, READREF(2), READREF(1));
     } else {
       PUSHREF(or_rec(l, LOW(r)));
       PUSHREF(or_rec(l, HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(level_r, READREF(2), READREF(1));
     }
 
     POPREF(2);
@@ -2268,8 +2288,13 @@ public class JFactory extends BDDFactory implements Serializable {
     if (ISZERO(l) || ISZERO(r)) {
       return BDDZERO;
     }
-    if (LEVEL(l) > replacelast && LEVEL(r) > replacelast) {
-      return and_rec(l, r);
+    int level_l = LEVEL(l);
+    int level_r = -1;
+    if (level_l > replacelast) {
+      level_r = LEVEL(r);
+      if (level_r > replacelast) {
+        return and_rec(l, r);
+      }
     }
     int hash = TRANSFORMHASH(replaceid, l, r);
     entry = BddCache_lookupI(replacecache, hash);
@@ -2283,17 +2308,21 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss--;
     }
 
+    if (level_r == -1) {
+      level_r = LEVEL(r);
+    }
+
     int level;
-    if (LEVEL(l) == LEVEL(r)) {
-      level = LEVEL(l);
+    if (level_l == level_r) {
+      level = level_l;
       PUSHREF(transform_rec(LOW(l), LOW(r)));
       PUSHREF(transform_rec(HIGH(l), HIGH(r)));
-    } else if (LEVEL(l) < LEVEL(r)) {
-      level = LEVEL(l);
+    } else if (level_l < level_r) {
+      level = level_l;
       PUSHREF(transform_rec(LOW(l), r));
       PUSHREF(transform_rec(HIGH(l), r));
     } else {
-      level = LEVEL(r);
+      level = level_r;
       PUSHREF(transform_rec(l, LOW(r)));
       PUSHREF(transform_rec(l, HIGH(r)));
     }
@@ -2347,11 +2376,12 @@ public class JFactory extends BDDFactory implements Serializable {
 
     quantlast = -1;
     for (int n = r; n > 1; n = HIGH(n)) {
-      quantvarset[LEVEL(n)] = quantvarsetID;
+      int level = LEVEL(n);
+      quantvarset[level] = quantvarsetID;
       if (VERIFY_ASSERTIONS) {
-        _assert(quantlast < LEVEL(n));
+        _assert(quantlast < level);
       }
-      quantlast = LEVEL(n);
+      quantlast = level;
     }
 
     return 0;
@@ -2375,17 +2405,18 @@ public class JFactory extends BDDFactory implements Serializable {
 
     quantlast = 0;
     for (int n = r; !ISCONST(n); ) {
+      int level = LEVEL(n);
       if (ISZERO(LOW(n))) {
-        quantvarset[LEVEL(n)] = quantvarsetID;
+        quantvarset[level] = quantvarsetID;
         n = HIGH(n);
       } else {
-        quantvarset[LEVEL(n)] = -quantvarsetID;
+        quantvarset[level] = -quantvarsetID;
         n = LOW(n);
       }
       if (VERIFY_ASSERTIONS) {
-        _assert(quantlast < LEVEL(n));
+        _assert(quantlast < level);
       }
-      quantlast = LEVEL(n);
+      quantlast = level;
     }
 
     return 0;
@@ -2433,8 +2464,12 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (ISCONST(l) && ISCONST(r)) {
-      res = oprres[appexop][(l << 1) | r];
-    } else if (LEVEL(l) > quantlast && LEVEL(r) > quantlast) {
+      return oprres[appexop][(l << 1) | r];
+    }
+
+    int level_l = LEVEL(l);
+    int level_r = LEVEL(r);
+    if (level_l > quantlast && level_r > quantlast) {
       int oldop = applyop;
       applyop = appexop;
       switch (applyop) {
@@ -2463,18 +2498,18 @@ public class JFactory extends BDDFactory implements Serializable {
       }
 
       int lev;
-      if (LEVEL(l) == LEVEL(r)) {
+      if (level_l == level_r) {
         PUSHREF(appquant_rec(LOW(l), LOW(r)));
         PUSHREF(appquant_rec(HIGH(l), HIGH(r)));
-        lev = LEVEL(l);
-      } else if (LEVEL(l) < LEVEL(r)) {
+        lev = level_l;
+      } else if (level_l < level_r) {
         PUSHREF(appquant_rec(LOW(l), r));
         PUSHREF(appquant_rec(HIGH(l), r));
-        lev = LEVEL(l);
+        lev = level_l;
       } else {
         PUSHREF(appquant_rec(l, LOW(r)));
         PUSHREF(appquant_rec(l, HIGH(r)));
-        lev = LEVEL(r);
+        lev = level_r;
       }
       if (INVARSET(lev)) {
         int r2 = READREF(2), r1 = READREF(1);
@@ -2510,18 +2545,17 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private int appuni_rec(int l, int r, int var) {
     BddCacheDataI entry;
-    int res;
 
-    int LEVEL_l, LEVEL_r, LEVEL_var;
-    LEVEL_l = LEVEL(l);
-    LEVEL_r = LEVEL(r);
-    LEVEL_var = LEVEL(var);
+    int level_l = LEVEL(l);
+    int level_r = LEVEL(r);
+    int level_var = LEVEL(var);
 
-    if (LEVEL_l > LEVEL_var && LEVEL_r > LEVEL_var) {
+    if (level_l > level_var && level_r > level_var) {
       // Skipped a quantified node, answer is zero.
       return BDDZERO;
     }
 
+    int res;
     if (ISCONST(l) && ISCONST(r)) {
       res = oprres[appexop][(l << 1) | r];
     } else if (ISCONST(var)) {
@@ -2553,31 +2587,31 @@ public class JFactory extends BDDFactory implements Serializable {
       }
 
       int lev;
-      if (LEVEL_l == LEVEL_r) {
-        if (LEVEL_l == LEVEL_var) {
+      if (level_l == level_r) {
+        if (level_l == level_var) {
           lev = -1;
           var = HIGH(var);
         } else {
-          lev = LEVEL_l;
+          lev = level_l;
         }
         PUSHREF(appuni_rec(LOW(l), LOW(r), var));
         PUSHREF(appuni_rec(HIGH(l), HIGH(r), var));
-        lev = LEVEL_l;
-      } else if (LEVEL_l < LEVEL_r) {
-        if (LEVEL_l == LEVEL_var) {
+        lev = level_l;
+      } else if (level_l < level_r) {
+        if (level_l == level_var) {
           lev = -1;
           var = HIGH(var);
         } else {
-          lev = LEVEL_l;
+          lev = level_l;
         }
         PUSHREF(appuni_rec(LOW(l), r, var));
         PUSHREF(appuni_rec(HIGH(l), r, var));
       } else {
-        if (LEVEL_r == LEVEL_var) {
+        if (level_r == level_var) {
           lev = -1;
           var = HIGH(var);
         } else {
-          lev = LEVEL_r;
+          lev = level_r;
         }
         PUSHREF(appuni_rec(l, LOW(r), var));
         PUSHREF(appuni_rec(l, HIGH(r), var));
@@ -2615,23 +2649,19 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int unique_rec(int r, int q) {
-    BddCacheDataI entry;
-    int res;
-    int LEVEL_r, LEVEL_q;
-
-    LEVEL_r = LEVEL(r);
-    LEVEL_q = LEVEL(q);
-    if (LEVEL_r > LEVEL_q) {
-      // Skipped a quantified node, answer is zero.
-      return BDDZERO;
-    }
-
     if (r < 2 || q < 2) {
       return r;
     }
 
+    int level_r = LEVEL(r);
+    int level_q = LEVEL(q);
+    if (level_r > level_q) {
+      // Skipped a quantified node, answer is zero.
+      return BDDZERO;
+    }
+
     int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
+    BddCacheDataI entry = BddCache_lookupI(quantcache, hash);
     if (entry.a == r && entry.c == quantid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2642,7 +2672,8 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL_r == LEVEL_q) {
+    int res;
+    if (level_r == level_q) {
       PUSHREF(unique_rec(LOW(r), HIGH(q)));
       PUSHREF(unique_rec(HIGH(r), HIGH(q)));
       res = apply_rec(READREF(2), READREF(1));
@@ -2670,7 +2701,11 @@ public class JFactory extends BDDFactory implements Serializable {
    * and using {@link #orAll_rec(int[])}.
    */
   private int exist_rec(int r) {
-    if (r < 2 || LEVEL(r) > quantlast) {
+    if (r < 2) {
+      return r;
+    }
+    int level = LEVEL(r);
+    if (level > quantlast) {
       return r;
     }
 
@@ -2688,7 +2723,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     int res = -1; // indicates that it has not been set.
 
-    if (INVARSET(LEVEL(r))) {
+    if (INVARSET(level)) {
       // The root node of this BDD is meant to be erased. Collect all its non-erased children
       // and combine them. We can short-circuit any time we find an erased child that is BDDONE.
       int pushedRefs = 0;
@@ -2748,7 +2783,7 @@ public class JFactory extends BDDFactory implements Serializable {
     } else {
       PUSHREF(exist_rec(LOW(r)));
       PUSHREF(exist_rec(HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(level, READREF(2), READREF(1));
       POPREF(2);
     }
 
@@ -2767,7 +2802,11 @@ public class JFactory extends BDDFactory implements Serializable {
     BddCacheDataI entry;
     int res;
 
-    if (r < 2 || LEVEL(r) > quantlast) {
+    if (r < 2) {
+      return r;
+    }
+    int level = LEVEL(r);
+    if (level > quantlast) {
       return r;
     }
 
@@ -2786,7 +2825,7 @@ public class JFactory extends BDDFactory implements Serializable {
     PUSHREF(quant_rec(LOW(r)));
     PUSHREF(quant_rec(HIGH(r)));
 
-    if (INVARSET(LEVEL(r))) {
+    if (INVARSET(level)) {
       int r2 = READREF(2), r1 = READREF(1);
       switch (applyop) {
         case bddop_and:
@@ -2800,7 +2839,7 @@ public class JFactory extends BDDFactory implements Serializable {
           break;
       }
     } else {
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(level, READREF(2), READREF(1));
     }
 
     POPREF(2);
@@ -2819,9 +2858,13 @@ public class JFactory extends BDDFactory implements Serializable {
   private boolean testsVars_rec(int r) {
     BddCacheDataI entry;
 
-    if (r < 2 || LEVEL(r) > quantlast) {
+    if (r < 2) {
       return false;
-    } else if (INVARSET(LEVEL(r))) {
+    }
+    int level = LEVEL(r);
+    if (level > quantlast) {
+      return false;
+    } else if (INVARSET(level)) {
       return true;
     }
 
@@ -2941,7 +2984,9 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL(f) == LEVEL(c)) {
+    int level_f = LEVEL(f);
+    int level_c = LEVEL(c);
+    if (level_f == level_c) {
       if (ISZERO(LOW(c))) {
         res = constrain_rec(HIGH(f), HIGH(c));
       } else if (ISZERO(HIGH(c))) {
@@ -2949,13 +2994,13 @@ public class JFactory extends BDDFactory implements Serializable {
       } else {
         PUSHREF(constrain_rec(LOW(f), LOW(c)));
         PUSHREF(constrain_rec(HIGH(f), HIGH(c)));
-        res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
+        res = bdd_makenode(level_f, READREF(2), READREF(1));
         POPREF(2);
       }
-    } else if (LEVEL(f) < LEVEL(c)) {
+    } else if (level_f < level_c) {
       PUSHREF(constrain_rec(LOW(f), c));
       PUSHREF(constrain_rec(HIGH(f), c));
-      res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
+      res = bdd_makenode(level_f, READREF(2), READREF(1));
       POPREF(2);
     } else {
       if (ISZERO(LOW(c))) {
@@ -2965,7 +3010,7 @@ public class JFactory extends BDDFactory implements Serializable {
       } else {
         PUSHREF(constrain_rec(f, LOW(c)));
         PUSHREF(constrain_rec(f, HIGH(c)));
-        res = bdd_makenode(LEVEL(c), READREF(2), READREF(1));
+        res = bdd_makenode(level_c, READREF(2), READREF(1));
         POPREF(2);
       }
     }
@@ -3011,7 +3056,8 @@ public class JFactory extends BDDFactory implements Serializable {
     BddCacheDataI entry;
     int res;
 
-    if (LEVEL(f) > composelevel) {
+    int level_f = LEVEL(f);
+    if (level_f > composelevel) {
       return f;
     }
 
@@ -3027,19 +3073,20 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL(f) < composelevel) {
-      if (LEVEL(f) == LEVEL(g)) {
+    if (level_f < composelevel) {
+      int level_g = LEVEL(g);
+      if (level_f == level_g) {
         PUSHREF(compose_rec(LOW(f), LOW(g)));
         PUSHREF(compose_rec(HIGH(f), HIGH(g)));
-        res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
-      } else if (LEVEL(f) < LEVEL(g)) {
+        res = bdd_makenode(level_f, READREF(2), READREF(1));
+      } else if (level_f < level_g) {
         PUSHREF(compose_rec(LOW(f), g));
         PUSHREF(compose_rec(HIGH(f), g));
-        res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
+        res = bdd_makenode(level_f, READREF(2), READREF(1));
       } else {
         PUSHREF(compose_rec(f, LOW(g)));
         PUSHREF(compose_rec(f, HIGH(g)));
-        res = bdd_makenode(LEVEL(g), READREF(2), READREF(1));
+        res = bdd_makenode(level_g, READREF(2), READREF(1));
       }
       POPREF(2);
     } else
@@ -3083,7 +3130,8 @@ public class JFactory extends BDDFactory implements Serializable {
     BddCacheDataI entry;
     int res;
 
-    if (LEVEL(f) > replacelast) {
+    int level = LEVEL(f);
+    if (level > replacelast) {
       return f;
     }
 
@@ -3101,7 +3149,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     PUSHREF(veccompose_rec(LOW(f)));
     PUSHREF(veccompose_rec(HIGH(f)));
-    res = ite_rec(replacepair[LEVEL(f)], READREF(1), READREF(2));
+    res = ite_rec(replacepair[level], READREF(1), READREF(2));
     POPREF(2);
 
     if (CACHESTATS && entry.a != -1) {
@@ -3268,7 +3316,12 @@ public class JFactory extends BDDFactory implements Serializable {
     BddCacheDataI entry;
     int res;
 
-    if (ISCONST(r) || LEVEL(r) > quantlast) {
+    if (ISCONST(r)) {
+      return r;
+    }
+
+    int level = LEVEL(r);
+    if (level > quantlast) {
       return r;
     }
 
@@ -3284,8 +3337,8 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (INSVARSET(LEVEL(r))) {
-      if (quantvarset[LEVEL(r)] > 0) {
+    if (INSVARSET(level)) {
+      if (quantvarset[level] > 0) {
         res = restrict_rec(HIGH(r));
       } else {
         res = restrict_rec(LOW(r));
@@ -3293,7 +3346,7 @@ public class JFactory extends BDDFactory implements Serializable {
     } else {
       PUSHREF(restrict_rec(LOW(r)));
       PUSHREF(restrict_rec(HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(level, READREF(2), READREF(1));
       POPREF(2);
     }
 
@@ -3349,7 +3402,9 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
-    if (LEVEL(f) == LEVEL(d)) {
+    int level_f = LEVEL(f);
+    int level_d = LEVEL(d);
+    if (level_f == level_d) {
       if (ISZERO(LOW(d))) {
         res = simplify_rec(HIGH(f), HIGH(d));
       } else if (ISZERO(HIGH(d))) {
@@ -3357,13 +3412,13 @@ public class JFactory extends BDDFactory implements Serializable {
       } else {
         PUSHREF(simplify_rec(LOW(f), LOW(d)));
         PUSHREF(simplify_rec(HIGH(f), HIGH(d)));
-        res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
+        res = bdd_makenode(level_f, READREF(2), READREF(1));
         POPREF(2);
       }
-    } else if (LEVEL(f) < LEVEL(d)) {
+    } else if (level_f < level_d) {
       PUSHREF(simplify_rec(LOW(f), d));
       PUSHREF(simplify_rec(HIGH(f), d));
-      res = bdd_makenode(LEVEL(f), READREF(2), READREF(1));
+      res = bdd_makenode(level_f, READREF(2), READREF(1));
       POPREF(2);
     } else /* LEVEL(d) < LEVEL(f) */ {
       PUSHREF(or_rec(LOW(d), HIGH(d))); /* Exist quant */
@@ -3441,10 +3496,11 @@ public class JFactory extends BDDFactory implements Serializable {
       return;
     }
 
-    support[LEVEL(r)] = supportID;
+    int level = LEVEL(r);
+    support[level] = supportID;
 
-    if (LEVEL(r) > supportMax) {
-      supportMax = LEVEL(r);
+    if (level > supportMax) {
+      supportMax = level;
     }
 
     SETMARK(r);
@@ -3577,18 +3633,18 @@ public class JFactory extends BDDFactory implements Serializable {
       return r;
     }
 
-    if (LEVEL(r) < LEVEL(var)) {
+    int level_r = LEVEL(r);
+    int level_var = LEVEL(var);
+    if (level_r < level_var) {
       int lo = LOW(r);
-      int hi = HIGH(r);
       boolean useHi = ISZERO(lo);
-      return bdd_makesatnode(LEVEL(r), satoneset_rec(useHi ? hi : lo, var), !useHi);
-    } else if (LEVEL(var) < LEVEL(r)) {
-      return bdd_makesatnode(LEVEL(var), satoneset_rec(r, HIGH(var)), satPolarity != BDDONE);
+      return bdd_makesatnode(level_r, satoneset_rec(useHi ? HIGH(r) : lo, var), !useHi);
+    } else if (level_var < level_r) {
+      return bdd_makesatnode(level_var, satoneset_rec(r, HIGH(var)), satPolarity != BDDONE);
     } else /* LEVEL(r) == LEVEL(var) */ {
       int lo = LOW(r);
-      int hi = HIGH(r);
       boolean useHi = ISZERO(lo);
-      return bdd_makesatnode(LEVEL(r), satoneset_rec(useHi ? hi : lo, HIGH(var)), !useHi);
+      return bdd_makesatnode(level_r, satoneset_rec(useHi ? HIGH(r) : lo, HIGH(var)), !useHi);
     }
   }
 
@@ -3616,14 +3672,15 @@ public class JFactory extends BDDFactory implements Serializable {
       return r;
     }
 
+    int level = LEVEL(r);
     int lo = LOW(r);
     int hi = HIGH(r);
     boolean useLo = lo != BDDZERO;
     int child = fullsatone_rec(useLo ? lo : hi);
-    for (int v = LEVEL(child) - 1; v > LEVEL(r); v--) {
+    for (int v = LEVEL(child) - 1; v > level; v--) {
       child = bdd_makesatnode(v, child, true);
     }
-    return bdd_makesatnode(LEVEL(r), child, useLo);
+    return bdd_makesatnode(level, child, useLo);
   }
 
   private BitSet bdd_minassignmentbits(int r) {
@@ -3887,12 +3944,13 @@ public class JFactory extends BDDFactory implements Serializable {
       cachestats.opMiss++;
     }
 
+    int level = LEVEL(root);
     int low = LOW(root);
     int high = HIGH(root);
     BigInteger size =
         satcount_rec(low)
-            .shiftLeft(LEVEL(low) - LEVEL(root) - 1)
-            .add(satcount_rec(high).shiftLeft(LEVEL(high) - LEVEL(root) - 1));
+            .shiftLeft(LEVEL(low) - level - 1)
+            .add(satcount_rec(high).shiftLeft(LEVEL(high) - level - 1));
 
     if (CACHESTATS && entry.a != -1) {
       cachestats.opOverwrite++;
