@@ -518,20 +518,6 @@ public abstract class BDDFactory {
   public abstract int var2Level(int var);
 
   /**
-   * This function sets the current variable order to be the one defined by neworder. The variable
-   * parameter neworder is interpreted as a sequence of variable indices and the new variable order
-   * is exactly this sequence. The array must contain all the variables defined so far. If, for
-   * instance the current number of variables is 3 and neworder contains [1; 0; 2] then the new
-   * variable order is v1<v0<v2.
-   *
-   * <p>Note that this operation must walk through the node table many times, and therefore it is
-   * much more efficient to call this when the node table is small.
-   *
-   * @param neworder new variable order
-   */
-  public abstract void setVarOrder(int[] neworder);
-
-  /**
    * Gets the current variable order.
    *
    * @return variable order

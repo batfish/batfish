@@ -34,12 +34,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.BitSet;
 import java.util.Random;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
@@ -187,100 +185,6 @@ public class BasicTest {
     x.free();
     y.free();
     z.free();
-  }
-
-  @Test
-  public void testVar() {
-    if (_factory.varNum() < 5) {
-      _factory.setVarNum(5);
-    }
-    _factory.setVarOrder(new int[] {0, 1, 2, 3, 4});
-    BDD a = _factory.ithVar(1);
-    BDD b = _factory.ithVar(2);
-    BDD c = _factory.ithVar(3);
-    BDD d = _factory.one();
-    BDD e = _factory.zero();
-    assertEquals(1, a.var());
-    assertEquals(2, b.var());
-    assertEquals(3, c.var());
-    try {
-      d.var();
-      fail();
-    } catch (BDDException x) {
-    }
-    try {
-      e.var();
-      fail();
-    } catch (BDDException x) {
-    }
-    BDD f = a.and(b);
-    assertEquals(1, f.var());
-    a.free();
-    b.free();
-    c.free();
-    d.free();
-    e.free();
-    f.free();
-  }
-
-  @Test
-  public void testVarOrder() {
-    if (_factory.varNum() < 5) {
-      _factory.setVarNum(5);
-    }
-    _factory.setVarOrder(new int[] {0, 1, 2, 3, 4});
-    BDD a = _factory.ithVar(0);
-    BDD b = _factory.ithVar(1);
-    BDD c = _factory.ithVar(2);
-    BDD d = _factory.ithVar(3);
-    BDD e = _factory.ithVar(4);
-    assertEquals(0, a.var());
-    assertEquals(1, b.var());
-    assertEquals(2, c.var());
-    assertEquals(3, d.var());
-    assertEquals(4, e.var());
-    _factory.setVarOrder(new int[] {2, 3, 4, 0, 1});
-    assertEquals(0, a.var());
-    assertEquals(1, b.var());
-    assertEquals(2, c.var());
-    assertEquals(3, d.var());
-    assertEquals(4, e.var());
-    assertEquals(3, a.level());
-    assertEquals(4, b.level());
-    assertEquals(0, c.level());
-    assertEquals(1, d.level());
-    assertEquals(2, e.level());
-    a.free();
-    b.free();
-    c.free();
-    d.free();
-    e.free();
-  }
-
-  @Test
-  public void testLowHigh() {
-    if (_factory.varNum() < 5) {
-      _factory.setVarNum(5);
-    }
-    _factory.setVarOrder(new int[] {0, 1, 2, 3, 4});
-    BDD a, b, c;
-    a = _factory.ithVar(0);
-    a.andWith(_factory.ithVar(1));
-    a.andWith(_factory.nithVar(2));
-    assertEquals(0, a.var());
-    b = a.low();
-    assertTrue(b.isZero());
-    b.free();
-    b = a.high();
-    assertEquals(1, b.var());
-    c = b.high();
-    b.free();
-    assertEquals(2, c.var());
-    b = c.low();
-    assertTrue(b.isOne());
-    a.free();
-    b.free();
-    c.free();
   }
 
   @Test

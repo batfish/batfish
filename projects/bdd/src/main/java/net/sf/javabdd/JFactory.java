@@ -4864,20 +4864,6 @@ public class JFactory extends BDDFactory implements Serializable {
     pairs = p;
   }
 
-  private void bdd_pairs_vardown(int level) {
-    for (bddPair p = pairs; p != null; p = p.next) {
-      int tmp;
-
-      tmp = p.result[level];
-      p.result[level] = p.result[level + 1];
-      p.result[level + 1] = tmp;
-
-      if (p.last == level) {
-        p.last++;
-      }
-    }
-  }
-
   private int bdd_pairs_resize(int oldsize, int newsize) {
     for (bddPair p = pairs; p != null; p = p.next) {
       p.result = Arrays.copyOf(p.result, newsize);
@@ -5090,11 +5076,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return bddvar2level[var];
   }
 
-  @Override
-  public void setVarOrder(int[] neworder) {
-    bdd_setvarorder(neworder);
-  }
-
   private transient int[] extroots;
   private transient int extrootsize;
 
@@ -5119,140 +5100,8 @@ public class JFactory extends BDDFactory implements Serializable {
     return bddnodesize - bddfreenum;
   }
 
-  private void bdd_setvarorder(int[] neworder) {
-    reorder_init();
-
-    for (int level = 0; level < bddvarnum; level++) {
-      int lowvar = neworder[level];
-
-      while (bddvar2level[lowvar] > level) {
-        reorder_varup(lowvar);
-      }
-    }
-
-    reorder_done();
-  }
-
-  private int reorder_varup(int var) {
-    if (var < 0 || var >= bddvarnum) {
-      return bdd_error(BDD_VAR);
-    }
-    if (bddvar2level[var] == 0) {
-      return 0;
-    }
-    return reorder_vardown(bddlevel2var[bddvar2level[var] - 1]);
-  }
-
-  private int reorder_vardown(int var) {
-    int n, level;
-
-    if (var < 0 || var >= bddvarnum) {
-      return bdd_error(BDD_VAR);
-    }
-    if ((level = bddvar2level[var]) >= bddvarnum - 1) {
-      return 0;
-    }
-
-    resizedInMakenode = false;
-
-    if (imatrixDepends(iactmtx, var, bddlevel2var[level + 1])) {
-      int toBeProcessed = reorder_downSimple(var);
-      levelData l = levels[var];
-
-      if (l.nodenum < l.size / 3 || l.nodenum >= (l.size * 3) / 2 && l.size < l.maxsize) {
-        reorder_swapResize(toBeProcessed, var);
-        reorder_localGbcResize(toBeProcessed, var);
-      } else {
-        reorder_swap(toBeProcessed, var);
-        reorder_localGbc(var);
-      }
-    }
-
-    /* Swap the var<->level tables */
-    n = bddlevel2var[level];
-    bddlevel2var[level] = bddlevel2var[level + 1];
-    bddlevel2var[level + 1] = n;
-
-    n = bddvar2level[var];
-    bddvar2level[var] = bddvar2level[bddlevel2var[level]];
-    bddvar2level[bddlevel2var[level]] = n;
-
-    /* Update all rename pairs */
-    bdd_pairs_vardown(level);
-
-    if (resizedInMakenode) {
-      reorder_rehashAll();
-    }
-
-    return 0;
-  }
-
   private static boolean imatrixDepends(imatrix mtx, int a, int b) {
     return (mtx.rows[a][b / 8] & (1 << (b % 8))) != 0;
-  }
-
-  private void reorder_setLevellookup() {
-    for (int n = 0; n < bddvarnum; n++) {
-      levels[n].maxsize = bddnodesize / bddvarnum;
-      levels[n].start = n * levels[n].maxsize;
-      levels[n].size = Math.min(levels[n].maxsize, (levels[n].nodenum * 5) / 4);
-
-      if (levels[n].size >= 4) {
-        levels[n].size = bdd_prime_lte(levels[n].size);
-      }
-    }
-  }
-
-  private void reorder_rehashAll() {
-    reorder_setLevellookup();
-    bddfreepos = 0;
-
-    for (int n = bddnodesize - 1; n >= 0; n--) {
-      SETHASH(n, 0);
-    }
-
-    for (int n = bddnodesize - 1; n >= 2; n--) {
-      if (HASREF(n)) {
-        int hash2 = NODEHASH2(VARr(n), LOW(n), HIGH(n));
-        SETNEXT(n, HASH(hash2));
-        SETHASH(hash2, n);
-      } else {
-        SETNEXT(n, bddfreepos);
-        bddfreepos = n;
-      }
-    }
-  }
-
-  private void reorder_localGbc(int var0) {
-    int var1 = bddlevel2var[bddvar2level[var0] + 1];
-    int vl1 = levels[var1].start;
-    int size1 = levels[var1].size;
-
-    for (int n = 0; n < size1; n++) {
-      int hash = n + vl1;
-      int r = HASH(hash);
-      SETHASH(hash, 0);
-
-      while (r != 0) {
-        int next = NEXT(r);
-
-        if (HASREF(r)) {
-          SETNEXT(r, HASH(hash));
-          SETHASH(hash, r);
-        } else {
-          DECREF(LOW(r));
-          DECREF(HIGH(r));
-
-          SETLOW(r, INVALID_BDD);
-          SETNEXT(r, bddfreepos);
-          bddfreepos = r;
-          levels[var1].nodenum--;
-          bddfreenum++;
-        }
-
-        r = next;
-      }
-    }
   }
 
   private int reorder_downSimple(int var0) {
@@ -5293,167 +5142,8 @@ public class JFactory extends BDDFactory implements Serializable {
     return toBeProcessed;
   }
 
-  private void reorder_swapResize(int toBeProcessed, int var0) {
-    int var1 = bddlevel2var[bddvar2level[var0] + 1];
-
-    while (toBeProcessed != 0) {
-      int next = NEXT(toBeProcessed);
-      int f0 = LOW(toBeProcessed);
-      int f1 = HIGH(toBeProcessed);
-      int f00, f01, f10, f11;
-
-      /* Find the cofactors for the new nodes */
-      if (VARr(f0) == var1) {
-        f00 = LOW(f0);
-        f01 = HIGH(f0);
-      } else {
-        f00 = f01 = f0;
-      }
-
-      if (VARr(f1) == var1) {
-        f10 = LOW(f1);
-        f11 = HIGH(f1);
-      } else {
-        f10 = f11 = f1;
-      }
-
-      /* Note: makenode does refcou. */
-      f0 = reorder_makenode(var0, f00, f10);
-      f1 = reorder_makenode(var0, f01, f11);
-      // node = bddnodes[toBeProcessed]; /* Might change in makenode */
-
-      /* We know that the refcou of the grandchilds of this node
-       * is greater than one (these are f00...f11), so there is
-       * no need to do a recursive refcou decrease. It is also
-       * possible for the node.low/high nodes to come alive again,
-       * so deref. of the childs is delayed until the local GBC. */
-
-      DECREF(LOW(toBeProcessed));
-      DECREF(HIGH(toBeProcessed));
-
-      /* Update in-place */
-      SETVARr(toBeProcessed, var1);
-      SETLOW(toBeProcessed, f0);
-      SETHIGH(toBeProcessed, f1);
-
-      levels[var1].nodenum++;
-
-      /* Do not rehash yet since we are going to resize the hash table */
-
-      toBeProcessed = next;
-    }
-  }
-
   private static int MIN(int a, int b) {
     return Math.min(a, b);
-  }
-
-  private void reorder_localGbcResize(int toBeProcessed, int var0) {
-    int var1 = bddlevel2var[bddvar2level[var0] + 1];
-    int vl1 = levels[var1].start;
-    int size1 = levels[var1].size;
-
-    for (int n = 0; n < size1; n++) {
-      int hash = n + vl1;
-      int r = HASH(hash);
-      SETHASH(hash, 0);
-
-      while (r != 0) {
-        int next = NEXT(r);
-
-        if (HASREF(r)) {
-          SETNEXT(r, toBeProcessed);
-          toBeProcessed = r;
-        } else {
-          DECREF(LOW(r));
-          DECREF(HIGH(r));
-
-          SETLOW(r, INVALID_BDD);
-          SETNEXT(r, bddfreepos);
-          bddfreepos = r;
-          levels[var1].nodenum--;
-          bddfreenum++;
-        }
-
-        r = next;
-      }
-    }
-
-    /* Resize */
-    if (levels[var1].nodenum < levels[var1].size) {
-      levels[var1].size = MIN(levels[var1].maxsize, levels[var1].size / 2);
-    } else {
-      levels[var1].size = MIN(levels[var1].maxsize, levels[var1].size * 2);
-    }
-
-    if (levels[var1].size >= 4) {
-      levels[var1].size = bdd_prime_lte(levels[var1].size);
-    }
-
-    /* Rehash the remaining live nodes */
-    while (toBeProcessed != 0) {
-      int next = NEXT(toBeProcessed);
-      int hash = NODEHASH2(VARr(toBeProcessed), LOW(toBeProcessed), HIGH(toBeProcessed));
-
-      SETNEXT(toBeProcessed, HASH(hash));
-      SETHASH(hash, toBeProcessed);
-
-      toBeProcessed = next;
-    }
-  }
-
-  private void reorder_swap(int toBeProcessed, int var0) {
-    int var1 = bddlevel2var[bddvar2level[var0] + 1];
-
-    while (toBeProcessed != 0) {
-      int next = NEXT(toBeProcessed);
-      int f0 = LOW(toBeProcessed);
-      int f1 = HIGH(toBeProcessed);
-      int f00, f01, f10, f11, hash;
-
-      /* Find the cofactors for the new nodes */
-      if (VARr(f0) == var1) {
-        f00 = LOW(f0);
-        f01 = HIGH(f0);
-      } else {
-        f00 = f01 = f0;
-      }
-
-      if (VARr(f1) == var1) {
-        f10 = LOW(f1);
-        f11 = HIGH(f1);
-      } else {
-        f10 = f11 = f1;
-      }
-
-      /* Note: makenode does refcou. */
-      f0 = reorder_makenode(var0, f00, f10);
-      f1 = reorder_makenode(var0, f01, f11);
-      // node = bddnodes[toBeProcessed]; /* Might change in makenode */
-
-      /* We know that the refcou of the grandchilds of this node
-       * is greater than one (these are f00...f11), so there is
-       * no need to do a recursive refcou decrease. It is also
-       * possible for the node.low/high nodes to come alive again,
-       * so deref. of the childs is delayed until the local GBC. */
-
-      DECREF(LOW(toBeProcessed));
-      DECREF(HIGH(toBeProcessed));
-
-      /* Update in-place */
-      SETVARr(toBeProcessed, var1);
-      SETLOW(toBeProcessed, f0);
-      SETHIGH(toBeProcessed, f1);
-
-      levels[var1].nodenum++;
-
-      /* Rehash the node since it got new childs */
-      hash = NODEHASH2(VARr(toBeProcessed), LOW(toBeProcessed), HIGH(toBeProcessed));
-      SETNEXT(toBeProcessed, HASH(hash));
-      SETHASH(hash, toBeProcessed);
-
-      toBeProcessed = next;
-    }
   }
 
   private int NODEHASH2(int var, int l, int h) {
@@ -5545,33 +5235,6 @@ public class JFactory extends BDDFactory implements Serializable {
     INCREF(HIGH(res));
 
     return res;
-  }
-
-  private int reorder_init() {
-    reorder_handler(true, reorderstats);
-
-    levels = new levelData[bddvarnum];
-
-    for (int n = 0; n < bddvarnum; n++) {
-      levels[n] = new levelData();
-      levels[n].start = -1;
-      levels[n].size = 0;
-      levels[n].nodenum = 0;
-    }
-
-    /* First mark and recursive refcou. all roots and childs. Also do some
-     * setup here for both setLevellookup and reorder_gbc */
-    if (mark_roots() < 0) {
-      return -1;
-    }
-
-    /* Initialize the hash tables */
-    reorder_setLevellookup();
-
-    /* Garbage collect and rehash to new scheme */
-    reorder_gbc();
-
-    return 0;
   }
 
   private void insert_level(int levToInsert) {
@@ -5780,30 +5443,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private static void imatrixSet(imatrix mtx, int a, int b) {
     mtx.rows[a][b / 8] |= 1 << (b % 8);
-  }
-
-  private void reorder_gbc() {
-    bddfreepos = 0;
-    bddfreenum = 0;
-
-    /* No need to zero all hash fields - this is done in mark_roots */
-
-    for (int n = bddnodesize - 1; n >= 2; n--) {
-
-      if (HASREF(n)) {
-        int hash;
-
-        hash = NODEHASH2(VARr(n), LOW(n), HIGH(n));
-        SETNEXT(n, HASH(hash));
-        SETHASH(hash, n);
-
-      } else {
-        SETLOW(n, INVALID_BDD);
-        SETNEXT(n, bddfreepos);
-        bddfreepos = n;
-        bddfreenum++;
-      }
-    }
   }
 
   private void reorder_done() {
