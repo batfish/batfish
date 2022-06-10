@@ -593,14 +593,6 @@ public abstract class BDDFactory {
     return pair;
   }
 
-  /**
-   * Duplicate a BDD variable.
-   *
-   * @param var var to duplicate
-   * @return index of new variable
-   */
-  public abstract int duplicateVar(int var);
-
   /** ** BDD STATS *** */
 
   /**
