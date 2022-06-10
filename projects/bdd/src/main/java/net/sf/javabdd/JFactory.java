@@ -477,19 +477,9 @@ public class JFactory extends BDDFactory implements Serializable {
     }
   }
 
-  private static final int REF_MASK = 0xFFC00000;
-  private static final int MARK_MASK = 0x00200000;
-  private static final int LEV_MASK = 0x001FFFFF;
-  private static final int MAXVAR = LEV_MASK;
+  private static final int MAXVAR = 0x001FFFFF;
   private static final int INVALID_BDD = -1;
 
-  private static final int REF_INC = 0x00400000;
-
-  private static final int offset__refcou_and_level = 0;
-  private static final int offset__low = 1;
-  private static final int offset__high = 2;
-  private static final int offset__hash = 3;
-  private static final int offset__next = 4;
   private static final int __node_size = 5;
   /**
    * The maximum number of BDD nodes that can {@link #bddnodesize} can ever be measured is the
@@ -525,14 +515,7 @@ public class JFactory extends BDDFactory implements Serializable {
     return bddnodes.getLevel(node);
   }
 
-  private int LEVELANDMARK(int node) {
-    return bddnodes.getLevelAndMark(node);
-  }
-
   private void SETLEVELANDMARK(int node, int val) {
-    if (VERIFY_ASSERTIONS) {
-      _assert(val == (val & (LEV_MASK | MARK_MASK)));
-    }
     bddnodes.setLevelAndMark(node, val);
   }
 
@@ -578,10 +561,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private void SETNEXT(int r, int v) {
     bddnodes.setNext(r, v);
-  }
-
-  private int VARr(int n) {
-    return LEVELANDMARK(n);
   }
 
   private static void _assert(boolean b) {
@@ -644,7 +623,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private NodeTable bddnodes = null;
   private int bddfreepos; /* First free node */
   private int bddfreenum; /* Number of free nodes */
-  private int bddproduced; /* Number of new nodes ever produced */
+  /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
   private transient IntStack bddrefstack; /* BDDs referenced during the current computation. */
   private int[] bddvar2level; /* Variable -> level table */
@@ -4193,7 +4172,6 @@ public class JFactory extends BDDFactory implements Serializable {
     res = bddfreepos;
     bddfreepos = NEXT(bddfreepos);
     bddfreenum--;
-    bddproduced++;
     newNodeIndex(res);
 
     SETLEVELANDMARK(res, level);

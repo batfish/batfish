@@ -116,12 +116,13 @@ final class NodeTable implements Serializable {
     }
   }
 
-  void setLevelAndMark(int node, int levelAndMark) {
+  void setLevelAndMark(int node, int val) {
+    assert val == (val & (LEV_MASK | MARK_MASK));
     int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
 
     while (true) {
       int prev = (int) AA.getVolatile(array, idx);
-      int next = (prev & ~(LEV_MASK | MARK_MASK)) | levelAndMark;
+      int next = (prev & ~(LEV_MASK | MARK_MASK)) | val;
       if (AA.weakCompareAndSet(array, idx, prev, next)) {
         // write succeeded
         return;
