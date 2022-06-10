@@ -3009,6 +3009,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
     target.getSyslogServerGroups().putAll(template.getSyslogServerGroups());
     target.getImportedInterfaces().addAll(template.getImportedInterfaces());
+    // Template variables exist as vsys objects in the VS model
+    applyVsysObjects(template, target);
 
     // Overwrite settings
     if (template.getDisplayName() != null) {
