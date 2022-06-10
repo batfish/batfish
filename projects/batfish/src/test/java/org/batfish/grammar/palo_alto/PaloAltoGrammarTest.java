@@ -83,6 +83,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLATE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
@@ -3611,6 +3612,78 @@ public final class PaloAltoGrammarTest {
     assertThat(zones.get("ZONE2").getInterfaceNames(), contains("ethernet1/2"));
     assertThat(shared, notNullValue());
     assertThat(shared.getSyslogServer("G1", "S1").getAddress(), equalTo("10.0.0.123"));
+  }
+
+  @Test
+  public void testTemplateVariableReferences() throws IOException {
+    String hostname = "template-variable-reference";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(filename, ADDRESS_OBJECT, "$UNDEFINED", LAYER3_INTERFACE_ADDRESS));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, "$prefix", 1));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, "$UNUSED", 0));
+  }
+
+  @Test
+  public void testTemplateVariableWarnings() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("template-variable-warn");
+
+    List<ParseWarning> parseWarnings = c.getWarnings().getParseWarnings();
+    assertThat(
+        parseWarnings,
+        containsInAnyOrder(
+            allOf(
+                ParseWarningMatchers.hasText(containsString("thisNameIsTooLong")),
+                hasComment("Illegal value for template variable name")),
+            hasComment("Invalid IP address range")));
+  }
+
+  @Test
+  public void testTemplateVariable() {
+    String hostname = "template-variable";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    Template t1 = c.getTemplate("T1");
+    Vsys vsys = t1.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    assertThat(
+        vsys.getAddressObjects().keySet(),
+        containsInAnyOrder("$range", "$prefix", "$ip", "$overwrite"));
+    AddressObject range = vsys.getAddressObjects().get("$range");
+    AddressObject prefix = vsys.getAddressObjects().get("$prefix");
+    AddressObject ip = vsys.getAddressObjects().get("$ip");
+    AddressObject overwrite = vsys.getAddressObjects().get("$overwrite");
+
+    assertThat(
+        range.getIpSpace(), equalTo(IpRange.range(Ip.parse("10.0.0.100"), Ip.parse("10.1.1.1"))));
+    assertThat(prefix.getIpPrefix().getIp(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(prefix.getIpPrefix().getPrefix(), equalTo(Prefix.parse("10.10.10.1/24")));
+    assertThat(ip.getIp(), equalTo(Ip.parse("10.10.10.10")));
+    assertThat(overwrite.getIp(), equalTo(Ip.parse("10.100.100.100")));
+  }
+
+  @Test
+  public void testTemplateVariableConversion() {
+    String panoramaHostname = "template-variable";
+    String firewallId = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId));
+    Configuration fw =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId)).findFirst().get();
+
+    // Variable reference is resolved
+    assertThat(fw.getActiveInterfaces().keySet(), contains("ethernet1/1"));
+    assertThat(
+        fw.getActiveInterfaces().get("ethernet1/1").getAddress(),
+        equalTo(ConcreteInterfaceAddress.create(Ip.parse("10.10.10.1"), 24)));
   }
 
   @Test

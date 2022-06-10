@@ -38,6 +38,8 @@ ip_address_or_slash32
     addr = interface_address
 ;
 
+ip_netmask: ip_address | ip_prefix;
+
 ip_prefix
 :
     IP_PREFIX

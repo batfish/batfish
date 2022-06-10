@@ -1,0 +1,5 @@
+set deviceconfig system hostname template-variable-reference
+set template T1 variable $prefix type ip-netmask 10.10.10.10/32
+set template T1 variable $UNUSED type ip-netmask 10.10.10.11/32
+set template T1 config network interface ethernet ethernet1/1 layer3 ip $prefix
+set template T1 config network interface ethernet ethernet1/2 layer3 ip $UNDEFINED
