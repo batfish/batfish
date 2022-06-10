@@ -275,6 +275,7 @@ import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
 import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.RuleEndpoint;
+import org.batfish.representation.palo_alto.Rulebase;
 import org.batfish.representation.palo_alto.SecurityRule;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
@@ -4556,5 +4557,24 @@ public final class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
     // Do not convert parents "tunnel" and "vlan", which are not real interfaces.
     assertThat(c.getAllInterfaces(), hasKeys("vlan.1", "tunnel.3"));
+  }
+
+  @Test
+  public void testPanoramaRulebaseCopy() {
+    String panoramaHostname = "panorama-rulebase-copy";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<PaloAltoConfiguration> managedDevices = c.getManagedConfigurations();
+
+    PaloAltoConfiguration fw = Iterables.getOnlyElement(managedDevices);
+    Rulebase pre = fw.getPanorama().getPreRulebase();
+    Rulebase post = fw.getPanorama().getPostRulebase();
+
+    // Panorama rules are copied to the managed device
+    assertThat(pre.getApplicationOverrideRules().keySet(), contains("PRE_APP"));
+    assertThat(pre.getNatRules().keySet(), contains("PRE_NAT"));
+    assertThat(pre.getSecurityRules().keySet(), contains("PRE_SEC"));
+    assertThat(post.getApplicationOverrideRules().keySet(), contains("POST_APP"));
+    assertThat(post.getNatRules().keySet(), contains("POST_NAT"));
+    assertThat(post.getSecurityRules().keySet(), contains("POST_SEC"));
   }
 }
