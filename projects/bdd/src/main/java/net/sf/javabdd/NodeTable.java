@@ -1,11 +1,12 @@
 package net.sf.javabdd;
 
+import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.Arrays;
 
 /** Node table for {@link JFactory}. */
-final class NodeTable {
+final class NodeTable implements Serializable {
   private static final int REF_MASK = 0xFFC00000;
   private static final int MARK_MASK = 0x00200000;
   private static final int LEV_MASK = 0x001FFFFF;
@@ -99,7 +100,7 @@ final class NodeTable {
   /** Return whether the input node is marked. */
   boolean getMark(int node) {
     int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
-    return (int) AA.getVolatile(array, idx) != 0;
+    return ((int) AA.getVolatile(array, idx) & MARK_MASK) != 0;
   }
 
   void setLevel(int node, int level) {
@@ -128,7 +129,18 @@ final class NodeTable {
     }
   }
 
+  /** Invariant: node is fully built. */
   int getLevel(int node) {
+    // We don't need to use getVolatile here, because the level cannot change during the node's
+    // lifetime.
+    // other bits of this index can change (e.g. refcount), but the level part is constant. Java's
+    // memory
+    // model guarantees no thin-air reads, so level will always be correct
+    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
+    return array[idx] & LEV_MASK;
+  }
+
+  int getLevelVolatile(int node) {
     int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
     return (int) AA.getVolatile(array, idx) & LEV_MASK;
   }
@@ -138,7 +150,14 @@ final class NodeTable {
     return (int) AA.getVolatile(array, idx) & (LEV_MASK | MARK_MASK);
   }
 
+  /** Precondition: node is fully built. */
   int getLow(int node) {
+    // Don't need to use getVolatile, because LOW is constant for fully built nodes.
+    int idx = node * NODE_SIZE + OFFSET__LOW;
+    return array[idx];
+  }
+
+  int getLowVolatile(int node) {
     int idx = node * NODE_SIZE + OFFSET__LOW;
     return (int) AA.getVolatile(array, idx);
   }
@@ -149,6 +168,11 @@ final class NodeTable {
   }
 
   int getHigh(int node) {
+    int idx = node * NODE_SIZE + OFFSET__HIGH;
+    return array[idx];
+  }
+
+  int getHighVolatile(int node) {
     int idx = node * NODE_SIZE + OFFSET__HIGH;
     return (int) AA.getVolatile(array, idx);
   }
@@ -165,6 +189,7 @@ final class NodeTable {
   }
 
   int getHash(int node) {
+    // have to use getVolatile, because bdd_makenode can set hash in another thread
     int idx = node * NODE_SIZE + OFFSET__HASH;
     return (int) AA.getVolatile(array, idx);
   }
