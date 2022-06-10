@@ -1,0 +1,14 @@
+set deviceconfig system hostname template-variable
+set template T1 variable $range type ip-range 10.0.0.100-10.1.1.1
+set template T1 variable $prefix type ip-netmask 10.10.10.1/24
+set template T1 variable $ip type ip-netmask 10.10.10.10
+set template T1 variable $overwrite type ip-range 10.0.0.100-10.1.1.1
+set template T1 variable $overwrite type ip-netmask 10.100.100.100
+
+# Apply a template variable
+set template T1 config network interface ethernet ethernet1/1 layer3 ip $prefix
+# Necessary configuration for the interface to be active on a firewall
+set template T1 config devices localhost.localdomain vsys vsys1 zone z1 network layer3 ethernet1/1
+set template T1 config network virtual-router default interface ethernet1/1
+set template-stack TS1 templates T1
+set template-stack TS1 devices 00000001
