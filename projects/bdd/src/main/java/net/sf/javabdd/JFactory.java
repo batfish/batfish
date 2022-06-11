@@ -641,6 +641,26 @@ public class JFactory extends BDDFactory implements Serializable {
       return JFactory.this.bdd_makenode(minLevel, low, high);
     }
 
+    private int bdd_andAll(int[] operands) {
+      if (operands.length == 0) {
+        return BDDONE;
+      } else if (ISZERO(operands[0])) {
+        return BDDZERO;
+      }
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      if (multiopcache == null) {
+        multiopcache = BddCacheMultiOp_init(cachesize);
+      }
+
+      INITREF();
+      int res = andAll_rec(operands);
+      checkresize();
+
+      return res;
+    }
+
     private int andAll_rec(int[] operands) {
       if (operands.length == 0) {
         return BDDONE;
@@ -1319,31 +1339,11 @@ public class JFactory extends BDDFactory implements Serializable {
             .distinct()
             .peek(this::CHECK)
             .toArray();
-    int ret = bdd_andAll(operands);
+    int ret = new Worker().bdd_andAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
     }
     return makeBDD(ret);
-  }
-
-  private int bdd_andAll(int[] operands) {
-    if (operands.length == 0) {
-      return BDDONE;
-    } else if (ISZERO(operands[0])) {
-      return BDDZERO;
-    }
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (multiopcache == null) {
-      multiopcache = BddCacheMultiOp_init(cachesize);
-    }
-
-    INITREF();
-    int res = new Worker().andAll_rec(operands);
-    checkresize();
-
-    return res;
   }
 
   @Override
