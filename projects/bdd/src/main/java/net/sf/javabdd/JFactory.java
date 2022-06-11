@@ -338,13 +338,13 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public BDD satOne() {
       int x = _index;
-      return makeBDD(bdd_satone(x));
+      return makeBDD(new Worker().bdd_satone(x));
     }
 
     @Override
     public BDD fullSatOne() {
       int x = _index;
-      return makeBDD(bdd_fullsatone(x));
+      return makeBDD(new Worker().bdd_fullsatone(x));
     }
 
     @Override
@@ -1678,6 +1678,67 @@ public class JFactory extends BDDFactory implements Serializable {
         boolean useHi = ISZERO(lo);
         return bdd_makesatnode(level_r, satoneset_rec(useHi ? HIGH(r) : lo, HIGH(var)), !useHi);
       }
+    }
+
+    private int bdd_satone(int r) {
+      int res;
+
+      CHECK(r);
+      if (r < 2) {
+        return r;
+      }
+
+      INITREF();
+      res = satone_rec(r);
+
+      checkresize();
+      return res;
+    }
+
+    private int satone_rec(int r) {
+      if (ISCONST(r)) {
+        return r;
+      }
+
+      int lo = LOW(r);
+      int hi = HIGH(r);
+      boolean useHi = ISZERO(lo);
+      return bdd_makesatnode(LEVEL(r), satone_rec(useHi ? hi : lo), !useHi);
+    }
+
+    private int bdd_fullsatone(int r) {
+      int res;
+
+      CHECK(r);
+      if (r == BDDZERO) {
+        return 0;
+      }
+
+      INITREF();
+      res = fullsatone_rec(r);
+
+      for (int v = LEVEL(r) - 1; v >= 0; v--) {
+        res = bdd_makesatnode(v, res, true);
+      }
+
+      checkresize();
+      return res;
+    }
+
+    private int fullsatone_rec(int r) {
+      if (r < 2) {
+        return r;
+      }
+
+      int level = LEVEL(r);
+      int lo = LOW(r);
+      int hi = HIGH(r);
+      boolean useLo = lo != BDDZERO;
+      int child = fullsatone_rec(useLo ? lo : hi);
+      for (int v = LEVEL(child) - 1; v > level; v--) {
+        child = bdd_makesatnode(v, child, true);
+      }
+      return bdd_makesatnode(level, child, useLo);
     }
   }
 
@@ -3230,67 +3291,6 @@ public class JFactory extends BDDFactory implements Serializable {
     checkresize();
 
     return res;
-  }
-
-  private int bdd_satone(int r) {
-    int res;
-
-    CHECK(r);
-    if (r < 2) {
-      return r;
-    }
-
-    INITREF();
-    res = satone_rec(r);
-
-    checkresize();
-    return res;
-  }
-
-  private int satone_rec(int r) {
-    if (ISCONST(r)) {
-      return r;
-    }
-
-    int lo = LOW(r);
-    int hi = HIGH(r);
-    boolean useHi = ISZERO(lo);
-    return bdd_makesatnode(LEVEL(r), satone_rec(useHi ? hi : lo), !useHi);
-  }
-
-  private int bdd_fullsatone(int r) {
-    int res;
-
-    CHECK(r);
-    if (r == BDDZERO) {
-      return 0;
-    }
-
-    INITREF();
-    res = fullsatone_rec(r);
-
-    for (int v = LEVEL(r) - 1; v >= 0; v--) {
-      res = bdd_makesatnode(v, res, true);
-    }
-
-    checkresize();
-    return res;
-  }
-
-  private int fullsatone_rec(int r) {
-    if (r < 2) {
-      return r;
-    }
-
-    int level = LEVEL(r);
-    int lo = LOW(r);
-    int hi = HIGH(r);
-    boolean useLo = lo != BDDZERO;
-    int child = fullsatone_rec(useLo ? lo : hi);
-    for (int v = LEVEL(child) - 1; v > level; v--) {
-      child = bdd_makesatnode(v, child, true);
-    }
-    return bdd_makesatnode(level, child, useLo);
   }
 
   private BitSet bdd_minassignmentbits(int r) {
