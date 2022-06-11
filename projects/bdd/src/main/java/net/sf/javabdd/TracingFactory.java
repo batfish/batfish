@@ -623,11 +623,6 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
-    public TracedBDDImpl applyUni(BDD that, BDDOp opr, BDD var) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public TracedBDDImpl satOne() {
       return trace(() -> _bdd.satOne(), Operation.SAT_ONE, _bdd);
     }

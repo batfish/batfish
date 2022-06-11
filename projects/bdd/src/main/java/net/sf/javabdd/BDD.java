@@ -653,19 +653,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD transform(BDD rel, BDDPairing pair);
 
   /**
-   * Applies the binary operator <tt>opr</tt> to two BDDs and then performs a unique quantification
-   * of the variables from the variable set <tt>var</tt>.
-   *
-   * <p>Compare to bdd_appuni.
-   *
-   * @param that the BDD to apply the operator on
-   * @param opr the operator to apply
-   * @param var BDD containing the variables to quantify
-   * @return the result
-   */
-  public abstract BDD applyUni(BDD that, BDDFactory.BDDOp opr, BDD var);
-
-  /**
    * Finds one satisfying variable assignment. Finds a BDD with at most one variable at each level.
    * The new BDD implies this BDD and is not false unless this BDD is false.
    *
