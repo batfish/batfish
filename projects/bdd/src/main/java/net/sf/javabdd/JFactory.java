@@ -3089,19 +3089,6 @@ public class JFactory extends BDDFactory implements Serializable {
     bddfreenum.set(freenum);
   }
 
-  private int PUSHREF(int a) {
-    bddrefstack.push(a);
-    return a;
-  }
-
-  private int READREF(int a) {
-    return bddrefstack.get(bddrefstack.elementsCount - a);
-  }
-
-  private void POPREF(int a) {
-    bddrefstack.discard(a);
-  }
-
   void bdd_gbc() {
     long c2, c1 = System.currentTimeMillis();
 
