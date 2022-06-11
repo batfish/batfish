@@ -48,6 +48,8 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -523,6 +525,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
   }
 
+  ReadWriteLock _readWriteLock = new ReentrantReadWriteLock();
+
   private class Worker {
     private final IntStack bddrefstack =
         new IntStack(); /* BDDs referenced during the current computation. */
@@ -545,8 +549,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     private int bdd_setvarnum(int num) {
-      // todo: needs to have the writer lock
-      int bdv;
       int oldbddvarnum = bddvarnum;
 
       if (num < 1 || num > MAXVAR) {
@@ -561,6 +563,13 @@ public class JFactory extends BDDFactory implements Serializable {
         return 0;
       }
 
+      // upgrade to writer
+      _readWriteLock.readLock().unlock();
+      _readWriteLock.writeLock().lock();
+      // must also be a reader since we're going to call bdd_makenode (which will unlock the
+      // readlock)
+      _readWriteLock.readLock().lock();
+
       if (bddvarset == null) {
         bddvarset = new int[num * 2];
         bddlevel2var = new int[num + 1];
@@ -571,7 +580,7 @@ public class JFactory extends BDDFactory implements Serializable {
         bddvar2level = Arrays.copyOf(bddvar2level, num + 1);
       }
 
-      for (bdv = bddvarnum; bddvarnum < num; bddvarnum++) {
+      for (; bddvarnum < num; bddvarnum++) {
         bddvarset[bddvarnum * 2] = PUSHREF(bdd_makenode(bddvarnum, BDDZERO, BDDONE));
         bddvarset[bddvarnum * 2 + 1] = bdd_makenode(bddvarnum, BDDONE, BDDZERO);
         POPREF(1);
@@ -597,6 +606,9 @@ public class JFactory extends BDDFactory implements Serializable {
 
       assert bddvarnum == LEVEL(BDDZERO);
       assert bddvarnum == LEVEL(BDDONE);
+
+      // downgrade to reader (readlock is still locked)
+      _readWriteLock.writeLock().unlock();
 
       return 0;
     }
@@ -3993,7 +4005,10 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public int setVarNum(int num) {
-    return new Worker().bdd_setvarnum(num);
+    _readWriteLock.readLock().lock();
+    int res = new Worker().bdd_setvarnum(num);
+    _readWriteLock.readLock().unlock();
+    return res;
   }
 
   @Override
