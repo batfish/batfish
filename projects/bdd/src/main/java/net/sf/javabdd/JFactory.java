@@ -268,7 +268,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      return eqOrNew(bdd_apply(x, y, z), makeNew);
+      return eqOrNew(new Worker().bdd_apply(x, y, z), makeNew);
     }
 
     @Override
@@ -276,7 +276,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      int a = bdd_apply(x, y, z);
+      int a = new Worker().bdd_apply(x, y, z);
       bdd_delref(x);
       if (this != that) {
         that.free();
@@ -732,6 +732,230 @@ public class JFactory extends BDDFactory implements Serializable {
       entry.b = res;
       entry.operands = operands;
       entry.hash = hash;
+      return res;
+    }
+
+    private int bdd_apply(int l, int r, int op) {
+      CHECK(l);
+      CHECK(r);
+
+      if (op < 0 || op > bddop_invimp) {
+        bdd_error(BDD_OP);
+        return BDDZERO;
+      }
+
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      applyop = op;
+
+      INITREF();
+      int res;
+      switch (op) {
+        case bddop_and:
+          res = and_rec(l, r);
+          break;
+        case bddop_or:
+          res = or_rec(l, r);
+          break;
+        default:
+          res = apply_rec(l, r);
+          break;
+      }
+      checkresize();
+
+      return res;
+    }
+
+    private int apply_rec(int l, int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (VERIFY_ASSERTIONS) {
+        _assert(applyop != bddop_and && applyop != bddop_or);
+      }
+
+      if (ISCONST(l) && ISCONST(r)) {
+        return oprres[applyop][l << 1 | r];
+      }
+
+      switch (applyop) {
+          // case bddop_and: is handled elsehwere
+        case bddop_xor:
+          if (l == r) {
+            return BDDZERO;
+          } else if (ISZERO(l)) {
+            return r;
+          } else if (ISZERO(r)) {
+            return l;
+          } else if (ISONE(l)) {
+            return not_rec(r);
+          } else if (ISONE(r)) {
+            return not_rec(l);
+          } else if (l > r) {
+            // Since XOR is symmetric, maximize caching by ensuring l < r (== handled above).
+            int t = l;
+            l = r;
+            r = t;
+          }
+          break;
+          // case bddop_or: is handled elsehwere
+        case bddop_nand:
+          if (l == r) {
+            return not_rec(l);
+          } else if (ISZERO(l) || ISZERO(r)) {
+            return BDDONE;
+          } else if (ISONE(l)) {
+            return not_rec(r);
+          } else if (ISONE(r)) {
+            return not_rec(l);
+          } else if (l > r) {
+            // Since NAND is symmetric, maximize caching by ensuring l < r (== handled above).
+            int t = l;
+            l = r;
+            r = t;
+          }
+          break;
+        case bddop_nor:
+          if (l == r) {
+            return not_rec(l);
+          } else if (ISONE(l) || ISONE(r)) {
+            return BDDZERO;
+          } else if (ISZERO(l)) {
+            return not_rec(r);
+          } else if (ISZERO(r)) {
+            return not_rec(l);
+          } else if (l > r) {
+            // Since NOR is symmetric, maximize caching by ensuring l < r (== handled above).
+            int t = l;
+            l = r;
+            r = t;
+          }
+          break;
+        case bddop_imp:
+          if (l == r) {
+            return BDDONE;
+          } else if (ISZERO(l)) {
+            return BDDONE;
+          } else if (ISONE(l)) {
+            return r;
+          } else if (ISZERO(r)) {
+            return not_rec(l);
+          } else if (ISONE(r)) {
+            return BDDONE;
+          }
+          break;
+        case bddop_biimp:
+          if (l == r) {
+            return BDDONE;
+          } else if (ISZERO(l)) {
+            return not_rec(r);
+          } else if (ISZERO(r)) {
+            return not_rec(l);
+          } else if (ISONE(l)) {
+            return r;
+          } else if (ISONE(r)) {
+            return l;
+          } else if (l > r) {
+            // Since BIIMP is symmetric, maximize caching by ensuring l < r (== handled above).
+            int t = l;
+            l = r;
+            r = t;
+          }
+          break;
+        case bddop_diff:
+          if (l == r) {
+            return BDDZERO;
+          } else if (ISZERO(l)) {
+            return BDDZERO;
+          } else if (ISONE(r)) {
+            return BDDZERO;
+          } else if (ISONE(l)) {
+            return not_rec(r);
+          } else if (ISZERO(r)) {
+            return l;
+          }
+          break;
+        case bddop_less:
+          if (l == r) {
+            return BDDZERO;
+          } else if (ISONE(l)) {
+            return BDDZERO;
+          } else if (ISZERO(r)) {
+            return BDDZERO;
+          } else if (ISZERO(l)) {
+            return r;
+          } else if (ISONE(r)) {
+            return not_rec(l);
+          } else {
+            // Rewrite as equivalent diff to improve caching.
+            applyop = bddop_diff;
+            int t = l;
+            l = r;
+            r = t;
+          }
+          break;
+        case bddop_invimp:
+          if (l == r) {
+            return BDDONE;
+          } else if (ISONE(l)) {
+            return BDDONE;
+          } else if (ISZERO(r)) {
+            return BDDONE;
+          } else if (ISONE(r)) {
+            return l;
+          } else if (ISZERO(l)) {
+            return not_rec(r);
+          } else {
+            // Rewrite as equivalent imp to improve caching.
+            applyop = bddop_imp;
+            int t = l;
+            l = r;
+            r = t;
+          }
+          break;
+      }
+
+      int hash = APPLYHASH(l, r, applyop);
+      entry = BddCache_lookupI(applycache, hash);
+
+      if (entry.a == l && entry.b == r && entry.c == applyop) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      int level_l = LEVEL(l);
+      int level_r = LEVEL(r);
+      if (level_l == level_r) {
+        PUSHREF(apply_rec(LOW(l), LOW(r)));
+        PUSHREF(apply_rec(HIGH(l), HIGH(r)));
+        res = bdd_makenode(level_l, READREF(2), READREF(1));
+      } else if (level_l < level_r) {
+        PUSHREF(apply_rec(LOW(l), r));
+        PUSHREF(apply_rec(HIGH(l), r));
+        res = bdd_makenode(level_l, READREF(2), READREF(1));
+      } else {
+        PUSHREF(apply_rec(l, LOW(r)));
+        PUSHREF(apply_rec(l, HIGH(r)));
+        res = bdd_makenode(level_r, READREF(2), READREF(1));
+      }
+
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = l;
+      entry.b = r;
+      entry.c = applyop;
+      entry.res = res;
+      entry.hash = hash;
+
       return res;
     }
 
@@ -2335,230 +2559,6 @@ public class JFactory extends BDDFactory implements Serializable {
     entry.a = l;
     entry.b = r;
     entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
-  private int bdd_apply(int l, int r, int op) {
-    CHECK(l);
-    CHECK(r);
-
-    if (op < 0 || op > bddop_invimp) {
-      bdd_error(BDD_OP);
-      return BDDZERO;
-    }
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    applyop = op;
-
-    INITREF();
-    int res;
-    switch (op) {
-      case bddop_and:
-        res = and_rec(l, r);
-        break;
-      case bddop_or:
-        res = or_rec(l, r);
-        break;
-      default:
-        res = apply_rec(l, r);
-        break;
-    }
-    checkresize();
-
-    return res;
-  }
-
-  private int apply_rec(int l, int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (VERIFY_ASSERTIONS) {
-      _assert(applyop != bddop_and && applyop != bddop_or);
-    }
-
-    if (ISCONST(l) && ISCONST(r)) {
-      return oprres[applyop][l << 1 | r];
-    }
-
-    switch (applyop) {
-        // case bddop_and: is handled elsehwere
-      case bddop_xor:
-        if (l == r) {
-          return BDDZERO;
-        } else if (ISZERO(l)) {
-          return r;
-        } else if (ISZERO(r)) {
-          return l;
-        } else if (ISONE(l)) {
-          return not_rec(r);
-        } else if (ISONE(r)) {
-          return not_rec(l);
-        } else if (l > r) {
-          // Since XOR is symmetric, maximize caching by ensuring l < r (== handled above).
-          int t = l;
-          l = r;
-          r = t;
-        }
-        break;
-        // case bddop_or: is handled elsehwere
-      case bddop_nand:
-        if (l == r) {
-          return not_rec(l);
-        } else if (ISZERO(l) || ISZERO(r)) {
-          return BDDONE;
-        } else if (ISONE(l)) {
-          return not_rec(r);
-        } else if (ISONE(r)) {
-          return not_rec(l);
-        } else if (l > r) {
-          // Since NAND is symmetric, maximize caching by ensuring l < r (== handled above).
-          int t = l;
-          l = r;
-          r = t;
-        }
-        break;
-      case bddop_nor:
-        if (l == r) {
-          return not_rec(l);
-        } else if (ISONE(l) || ISONE(r)) {
-          return BDDZERO;
-        } else if (ISZERO(l)) {
-          return not_rec(r);
-        } else if (ISZERO(r)) {
-          return not_rec(l);
-        } else if (l > r) {
-          // Since NOR is symmetric, maximize caching by ensuring l < r (== handled above).
-          int t = l;
-          l = r;
-          r = t;
-        }
-        break;
-      case bddop_imp:
-        if (l == r) {
-          return BDDONE;
-        } else if (ISZERO(l)) {
-          return BDDONE;
-        } else if (ISONE(l)) {
-          return r;
-        } else if (ISZERO(r)) {
-          return not_rec(l);
-        } else if (ISONE(r)) {
-          return BDDONE;
-        }
-        break;
-      case bddop_biimp:
-        if (l == r) {
-          return BDDONE;
-        } else if (ISZERO(l)) {
-          return not_rec(r);
-        } else if (ISZERO(r)) {
-          return not_rec(l);
-        } else if (ISONE(l)) {
-          return r;
-        } else if (ISONE(r)) {
-          return l;
-        } else if (l > r) {
-          // Since BIIMP is symmetric, maximize caching by ensuring l < r (== handled above).
-          int t = l;
-          l = r;
-          r = t;
-        }
-        break;
-      case bddop_diff:
-        if (l == r) {
-          return BDDZERO;
-        } else if (ISZERO(l)) {
-          return BDDZERO;
-        } else if (ISONE(r)) {
-          return BDDZERO;
-        } else if (ISONE(l)) {
-          return not_rec(r);
-        } else if (ISZERO(r)) {
-          return l;
-        }
-        break;
-      case bddop_less:
-        if (l == r) {
-          return BDDZERO;
-        } else if (ISONE(l)) {
-          return BDDZERO;
-        } else if (ISZERO(r)) {
-          return BDDZERO;
-        } else if (ISZERO(l)) {
-          return r;
-        } else if (ISONE(r)) {
-          return not_rec(l);
-        } else {
-          // Rewrite as equivalent diff to improve caching.
-          applyop = bddop_diff;
-          int t = l;
-          l = r;
-          r = t;
-        }
-        break;
-      case bddop_invimp:
-        if (l == r) {
-          return BDDONE;
-        } else if (ISONE(l)) {
-          return BDDONE;
-        } else if (ISZERO(r)) {
-          return BDDONE;
-        } else if (ISONE(r)) {
-          return l;
-        } else if (ISZERO(l)) {
-          return not_rec(r);
-        } else {
-          // Rewrite as equivalent imp to improve caching.
-          applyop = bddop_imp;
-          int t = l;
-          l = r;
-          r = t;
-        }
-        break;
-    }
-
-    int hash = APPLYHASH(l, r, applyop);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == l && entry.b == r && entry.c == applyop) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    int level_l = LEVEL(l);
-    int level_r = LEVEL(r);
-    if (level_l == level_r) {
-      PUSHREF(apply_rec(LOW(l), LOW(r)));
-      PUSHREF(apply_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(level_l, READREF(2), READREF(1));
-    } else if (level_l < level_r) {
-      PUSHREF(apply_rec(LOW(l), r));
-      PUSHREF(apply_rec(HIGH(l), r));
-      res = bdd_makenode(level_l, READREF(2), READREF(1));
-    } else {
-      PUSHREF(apply_rec(l, LOW(r)));
-      PUSHREF(apply_rec(l, HIGH(r)));
-      res = bdd_makenode(level_r, READREF(2), READREF(1));
-    }
-
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = applyop;
     entry.res = res;
     entry.hash = hash;
 
