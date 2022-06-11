@@ -201,7 +201,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = ((BDDImpl) var)._index;
-      return makeBDD(bdd_relprod(x, y, z));
+      return makeBDD(new Worker().bdd_relprod(x, y, z));
     }
 
     @Override
@@ -365,7 +365,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
       int a = ((BDDImpl) var)._index;
-      return makeBDD(bdd_appex(x, y, z, a));
+      return makeBDD(new Worker().bdd_appex(x, y, z, a));
     }
 
     @Override
@@ -841,6 +841,48 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = appquant_rec(l, r);
+      checkresize();
+
+      return res;
+    }
+
+    private int bdd_relprod(int a, int b, int var) {
+      return bdd_appex(a, b, bddop_and, var);
+    }
+
+    private int bdd_appex(int l, int r, int opr, int var) {
+      CHECK(l);
+      CHECK(r);
+      CHECK(var);
+
+      if (opr < 0 || opr > bddop_invimp) {
+        bdd_error(BDD_OP);
+        return BDDZERO;
+      }
+
+      if (var < 2) /* Empty set */ {
+        return bdd_apply(l, r, opr);
+      }
+      if (varset2vartable(var) < 0) {
+        return BDDZERO;
+      }
+
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      if (appexcache == null) {
+        appexcache = BddCacheI_init(cachesize);
+      }
+      if (quantcache == null) {
+        quantcache = BddCacheI_init(cachesize);
+      }
+      applyop = bddop_or;
+      appexop = opr;
+      appexid = (var << 5) | (appexop << 1); /* FIXME: range! */
+      quantid = (appexid << 3) | CACHEID_APPEX;
+
+      INITREF();
+      int res = opr == bddop_and ? relprod_rec(l, r) : appquant_rec(l, r);
       checkresize();
 
       return res;
@@ -2364,49 +2406,6 @@ public class JFactory extends BDDFactory implements Serializable {
     entry.c = bddop_or;
     entry.res = res;
     entry.hash = hash;
-
-    return res;
-  }
-
-  private int bdd_relprod(int a, int b, int var) {
-    return bdd_appex(a, b, bddop_and, var);
-  }
-
-  private int bdd_appex(int l, int r, int opr, int var) {
-    CHECK(l);
-    CHECK(r);
-    CHECK(var);
-
-    if (opr < 0 || opr > bddop_invimp) {
-      bdd_error(BDD_OP);
-      return BDDZERO;
-    }
-
-    if (var < 2) /* Empty set */ {
-      return bdd_apply(l, r, opr);
-    }
-    if (varset2vartable(var) < 0) {
-      return BDDZERO;
-    }
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (appexcache == null) {
-      appexcache = BddCacheI_init(cachesize);
-    }
-    if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
-    }
-    applyop = bddop_or;
-    appexop = opr;
-    appexid = (var << 5) | (appexop << 1); /* FIXME: range! */
-    quantid = (appexid << 3) | CACHEID_APPEX;
-
-    INITREF();
-    Worker worker = new Worker();
-    int res = opr == bddop_and ? worker.relprod_rec(l, r) : worker.appquant_rec(l, r);
-    checkresize();
 
     return res;
   }
