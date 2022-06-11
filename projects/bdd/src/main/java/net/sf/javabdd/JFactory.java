@@ -260,7 +260,7 @@ public class JFactory extends BDDFactory implements Serializable {
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }
-      return diffsat_rec(_index, ((BDDImpl) that)._index);
+      return new Worker().diffsat_rec(_index, ((BDDImpl) that)._index);
     }
 
     @Override
@@ -1084,6 +1084,52 @@ public class JFactory extends BDDFactory implements Serializable {
       entry.a = l;
       entry.b = r;
       entry.c = bddop_andsat;
+      entry.res = res ? BDDONE : BDDZERO;
+      entry.hash = hash;
+
+      return res;
+    }
+
+    private boolean diffsat_rec(int l, int r) {
+      if (ISZERO(l) || ISONE(r)) {
+        return false;
+      } else if (ISONE(l) || ISZERO(r)) {
+        return true;
+      } else if (l == r) {
+        return false;
+      }
+
+      // TODO: should we also check for diff? For now, don't since diff_sat should be real fast.
+      int hash = APPLYHASH(l, r, bddop_diffsat);
+      BddCacheDataI entry = BddCache_lookupI(applycache, hash);
+      if (entry.a == l && entry.b == r && entry.c == bddop_diffsat) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        // We set entry.res to BDDZERO for false and BDDONE for true.
+        return entry.res == BDDONE;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      boolean res;
+      int level_l = LEVEL(l);
+      int level_r = LEVEL(r);
+      if (level_l == level_r) {
+        res = diffsat_rec(LOW(l), LOW(r)) || diffsat_rec(HIGH(l), HIGH(r));
+      } else if (level_l < level_r) {
+        res = diffsat_rec(LOW(l), r) || diffsat_rec(HIGH(l), r);
+      } else {
+        res = diffsat_rec(l, LOW(r)) || diffsat_rec(l, HIGH(r));
+      }
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = l;
+      entry.b = r;
+      entry.c = bddop_diffsat;
       entry.res = res ? BDDONE : BDDZERO;
       entry.hash = hash;
 
@@ -2672,52 +2718,6 @@ public class JFactory extends BDDFactory implements Serializable {
     entry.b = r;
     entry.c = bddop_and;
     entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
-  private boolean diffsat_rec(int l, int r) {
-    if (ISZERO(l) || ISONE(r)) {
-      return false;
-    } else if (ISONE(l) || ISZERO(r)) {
-      return true;
-    } else if (l == r) {
-      return false;
-    }
-
-    // TODO: should we also check for diff? For now, don't since diff_sat should be real fast.
-    int hash = APPLYHASH(l, r, bddop_diffsat);
-    BddCacheDataI entry = BddCache_lookupI(applycache, hash);
-    if (entry.a == l && entry.b == r && entry.c == bddop_diffsat) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      // We set entry.res to BDDZERO for false and BDDONE for true.
-      return entry.res == BDDONE;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    boolean res;
-    int level_l = LEVEL(l);
-    int level_r = LEVEL(r);
-    if (level_l == level_r) {
-      res = diffsat_rec(LOW(l), LOW(r)) || diffsat_rec(HIGH(l), HIGH(r));
-    } else if (level_l < level_r) {
-      res = diffsat_rec(LOW(l), r) || diffsat_rec(HIGH(l), r);
-    } else {
-      res = diffsat_rec(l, LOW(r)) || diffsat_rec(l, HIGH(r));
-    }
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = bddop_diffsat;
-    entry.res = res ? BDDONE : BDDZERO;
     entry.hash = hash;
 
     return res;
