@@ -40,8 +40,10 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -88,14 +90,14 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final boolean VERIFY_ASSERTIONS = false;
 
   protected JFactory() {
-    bddrefstack = new IntStack();
+    bddrefstacks = Collections.synchronizedList(new LinkedList<>());
     _bddReuse = new LinkedList<>();
   }
 
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
-    bddrefstack = new IntStack();
+    bddrefstacks = Collections.synchronizedList(new LinkedList<>());
     _bddReuse = new LinkedList<>();
     quantvarset = new int[bddvarnum];
   }
@@ -599,13 +601,94 @@ public class JFactory extends BDDFactory implements Serializable {
       return 0;
     }
 
-    /**
-     * Temporary wrapper to copy over the bddrefstack. Later we'll move bdd_makenode into this class
-     * and remove the JFactory refstack.
-     */
-    private int bdd_makenode(int minLevel, int low, int high) {
-      JFactory.this.bddrefstack = this.bddrefstack;
-      return JFactory.this.bdd_makenode(minLevel, low, high);
+    private int bdd_makenode(int level, int low, int high) {
+      assert (ISCONST(low) || level < LEVEL(low)) && (ISCONST(high) || level < LEVEL(high));
+
+      /* check whether childs are equal */
+      if (low == high) {
+        if (CACHESTATS) {
+          cachestats.uniqueTrivial++;
+        }
+        return low;
+      }
+
+      if (CACHESTATS) {
+        cachestats.uniqueAccess++;
+      }
+
+      /* Try to find an existing node of this kind */
+      int hash2 = NODEHASH(level, low, high);
+      int res = HASH(hash2);
+
+      while (res != 0) {
+        if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
+          if (CACHESTATS) {
+            cachestats.uniqueHit++;
+          }
+          return res;
+        }
+
+        res = NEXT(res);
+        if (CACHESTATS) {
+          cachestats.uniqueChain++;
+        }
+      }
+
+      /* No existing node => build one */
+      if (CACHESTATS) {
+        cachestats.uniqueMiss++;
+      }
+
+      /* Any free nodes to use ? */
+      while (true) {
+        int freepos = bddfreepos.get();
+        if (freepos == 0) {
+          if (bdderrorcond != 0) {
+            return 0;
+          }
+
+          /* Try to allocate more nodes */
+          bddrefstacks.add(bddrefstack);
+          // TODO upgrade to writer
+          bdd_gbc();
+          // TODO downgrade to reader
+          bddrefstacks.remove(bddrefstack);
+
+          if ((bddfreenum.get() * 100) / bddnodesize <= minfreenodes) {
+            bdd_noderesize();
+            hash2 = NODEHASH(level, low, high);
+          }
+
+          /* Panic if that is not possible */
+          freepos = bddfreepos.get();
+          if (freepos == 0) {
+            throw new JavaBDDException(BDD_NODENUM);
+          }
+        }
+        if (bddnodes.trySetInitializing(freepos)) {
+          res = freepos;
+          break;
+        }
+      }
+
+      // invariant: res != 0
+
+      // any other threads trying to allocate a node will spin in the
+      // previous loop. this compareAndSet will unblock them.
+      if (!bddfreepos.compareAndSet(res, NEXT(res))) {
+        throw new IllegalStateException("the impossible has happened");
+      }
+
+      bddfreenum.decrementAndGet();
+      newNodeIndex(res);
+
+      SETLEVELANDMARK(res, level);
+      SETLOW(res, low);
+      SETHIGH(res, high);
+
+      /* Insert node as the first item in the bucket. */
+      bddnodes.insertNode(res, hash2);
+      return res;
     }
 
     private int bdd_andAll(int[] operands) {
@@ -2234,11 +2317,11 @@ public class JFactory extends BDDFactory implements Serializable {
       return res;
     }
     /**
-     * This is similar to {@link JFactory#bdd_makenode} -- it returns a BDD that branches at the
-     * input level with the input low and high nodes. The difference between this and bdd_makenode
-     * is that bdd_makenode requires level to be strictly less than LEVEL(l) and LEVEL(r), where
-     * this does not. The base case of bdd_correctify is when that is true -- then it simply
-     * delegates to bdd_makenode.
+     * This is similar to {@link JFactory.Worker#bdd_makenode} -- it returns a BDD that branches at
+     * the input level with the input low and high nodes. The difference between this and
+     * bdd_makenode is that bdd_makenode requires level to be strictly less than LEVEL(l) and
+     * LEVEL(r), where this does not. The base case of bdd_correctify is when that is true -- then
+     * it simply delegates to bdd_makenode.
      *
      * @param level The level to branch on.
      * @param l The low branch.
@@ -2686,7 +2769,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private final AtomicInteger bddfreenum = new AtomicInteger(-1); /* Number of free nodes */
   /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
-  private transient IntStack bddrefstack; /* BDDs referenced during the current computation. */
+  private transient List<IntStack> bddrefstacks;
   private int[] bddvar2level; /* Variable -> level table */
   private int[] bddlevel2var; /* Level -> variable table */
   private boolean bddresized; /* Flag indicating a resize of the nodetable */
@@ -3102,7 +3185,9 @@ public class JFactory extends BDDFactory implements Serializable {
       gbc_handler(true, gcstats);
     }
 
-    bddrefstack.forEach((IntProcedure) this::bdd_mark);
+    for (IntStack stack : bddrefstacks) {
+      stack.forEach((IntProcedure) this::bdd_mark);
+    }
 
     for (int n = 0; n < bddnodesize; n++) {
       if (HASREF(n)) {
@@ -3217,92 +3302,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
     bdd_mark(LOW(i));
     bdd_mark(HIGH(i));
-  }
-
-  private int bdd_makenode(int level, int low, int high) {
-    assert (ISCONST(low) || level < LEVEL(low)) && (ISCONST(high) || level < LEVEL(high));
-
-    /* check whether childs are equal */
-    if (low == high) {
-      if (CACHESTATS) {
-        cachestats.uniqueTrivial++;
-      }
-      return low;
-    }
-
-    if (CACHESTATS) {
-      cachestats.uniqueAccess++;
-    }
-
-    /* Try to find an existing node of this kind */
-    int hash2 = NODEHASH(level, low, high);
-    int res = HASH(hash2);
-
-    while (res != 0) {
-      if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
-        if (CACHESTATS) {
-          cachestats.uniqueHit++;
-        }
-        return res;
-      }
-
-      res = NEXT(res);
-      if (CACHESTATS) {
-        cachestats.uniqueChain++;
-      }
-    }
-
-    /* No existing node => build one */
-    if (CACHESTATS) {
-      cachestats.uniqueMiss++;
-    }
-
-    /* Any free nodes to use ? */
-    while (true) {
-      int freepos = bddfreepos.get();
-      if (freepos == 0) {
-        if (bdderrorcond != 0) {
-          return 0;
-        }
-
-        /* Try to allocate more nodes */
-        bdd_gbc();
-
-        if ((bddfreenum.get() * 100) / bddnodesize <= minfreenodes) {
-          bdd_noderesize();
-          hash2 = NODEHASH(level, low, high);
-        }
-
-        /* Panic if that is not possible */
-        freepos = bddfreepos.get();
-        if (freepos == 0) {
-          throw new JavaBDDException(BDD_NODENUM);
-        }
-      }
-      if (bddnodes.trySetInitializing(freepos)) {
-        res = freepos;
-        break;
-      }
-    }
-
-    // invariant: res != 0
-
-    // any other threads trying to allocate a node will spin in the
-    // previous loop. this compareAndSet will unblock them.
-    if (!bddfreepos.compareAndSet(res, NEXT(res))) {
-      throw new IllegalStateException("the impossible has happened");
-    }
-
-    bddfreenum.decrementAndGet();
-    newNodeIndex(res);
-
-    SETLEVELANDMARK(res, level);
-    SETLOW(res, low);
-    SETHIGH(res, high);
-
-    /* Insert node as the first item in the bucket. */
-    bddnodes.insertNode(res, hash2);
-    return res;
   }
 
   /** Called whenever a new BDD node is created, with the given (previously free) index. */
