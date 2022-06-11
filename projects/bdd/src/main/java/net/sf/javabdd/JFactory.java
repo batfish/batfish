@@ -240,7 +240,7 @@ public class JFactory extends BDDFactory implements Serializable {
     public boolean testsVars(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return bdd_testsVars(x, y);
+      return new Worker().bdd_testsVars(x, y);
     }
 
     @Override
@@ -1066,6 +1066,64 @@ public class JFactory extends BDDFactory implements Serializable {
         entry.res = res;
         entry.hash = hash;
       }
+
+      return res;
+    }
+
+    private boolean bdd_testsVars(int r, int var) {
+      CHECK(r);
+      CHECK(var);
+
+      if (var < 2) {
+        // bdd.exist(var) is equal to bdd if var is zero or one
+        return false;
+      }
+      if (varset2vartable(var) < 0) {
+        return false; // error converting var to vartable
+      }
+
+      if (quantcache == null) {
+        quantcache = BddCacheI_init(cachesize);
+      }
+      quantid = (var << 3) | CACHEID_TESTS_CONSTRAINT; /* FIXME: range */
+
+      return testsVars_rec(r);
+    }
+
+    private boolean testsVars_rec(int r) {
+      BddCacheDataI entry;
+
+      if (r < 2) {
+        return false;
+      }
+      int level = LEVEL(r);
+      if (level > quantlast) {
+        return false;
+      } else if (INVARSET(level)) {
+        return true;
+      }
+
+      int hash = QUANTHASH(r);
+      entry = BddCache_lookupI(quantcache, hash);
+      if (entry.a == r && entry.c == quantid) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res == BDDONE;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      boolean res = testsVars_rec(LOW(r)) || testsVars_rec(HIGH(r));
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = r;
+      entry.c = quantid;
+      entry.res = res ? BDDONE : BDDZERO;
+      entry.hash = hash;
 
       return res;
     }
@@ -2868,44 +2926,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
-  private boolean testsVars_rec(int r) {
-    BddCacheDataI entry;
-
-    if (r < 2) {
-      return false;
-    }
-    int level = LEVEL(r);
-    if (level > quantlast) {
-      return false;
-    } else if (INVARSET(level)) {
-      return true;
-    }
-
-    int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res == BDDONE;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    boolean res = testsVars_rec(LOW(r)) || testsVars_rec(HIGH(r));
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res ? BDDONE : BDDZERO;
-    entry.hash = hash;
-
-    return res;
-  }
-
   private int project_rec(int r) {
     BddCacheDataI entry;
     int res;
@@ -3065,26 +3085,6 @@ public class JFactory extends BDDFactory implements Serializable {
     checkresize();
 
     return res;
-  }
-
-  private boolean bdd_testsVars(int r, int var) {
-    CHECK(r);
-    CHECK(var);
-
-    if (var < 2) {
-      // bdd.exist(var) is equal to bdd if var is zero or one
-      return false;
-    }
-    if (varset2vartable(var) < 0) {
-      return false; // error converting var to vartable
-    }
-
-    if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
-    }
-    quantid = (var << 3) | CACHEID_TESTS_CONSTRAINT; /* FIXME: range */
-
-    return testsVars_rec(r);
   }
 
   private int bdd_project(int r, int var) {
