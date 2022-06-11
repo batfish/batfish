@@ -660,11 +660,6 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
-    public double pathCount() {
-      return _bdd.pathCount();
-    }
-
-    @Override
     public double satCount() {
       return _bdd.satCount();
     }

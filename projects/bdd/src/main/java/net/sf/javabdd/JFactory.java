@@ -359,11 +359,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public double pathCount() {
-      return bdd_pathcount(_index);
-    }
-
-    @Override
     public double satCount() {
       return bdd_satcount(_index).doubleValue();
     }
@@ -2591,10 +2586,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return PAIR(r, miscid);
   }
 
-  private static int PATHCOUHASH(int r, int miscid) {
-    return PAIR(r, miscid);
-  }
-
   private static int APPEXHASH(int l, int r, int op) {
     return PAIR(l, r);
   }
@@ -3025,50 +3016,6 @@ public class JFactory extends BDDFactory implements Serializable {
     bddrefstack.discard(a);
   }
 
-  private double bdd_pathcount(int r) {
-    CHECK(r);
-
-    miscid = CACHEID_PATHCOU;
-
-    if (countcache == null) {
-      countcache = BddCacheBigInteger_init(cachesize);
-    }
-
-    return bdd_pathcount_rec(r).doubleValue();
-  }
-
-  private BigInteger bdd_pathcount_rec(int r) {
-    if (ISZERO(r)) {
-      return BigInteger.ZERO;
-    } else if (ISONE(r)) {
-      return BigInteger.ONE;
-    }
-
-    int hash = PATHCOUHASH(r, miscid);
-    BigIntegerBddCacheData entry = BddCache_lookupBigInteger(countcache, hash);
-    if (entry.a == r && entry.c == miscid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.value;
-    }
-
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-    BigInteger size = bdd_pathcount_rec(LOW(r)).add(bdd_pathcount_rec(HIGH(r)));
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = miscid;
-    entry.value = size;
-    entry.hash = hash;
-
-    return size;
-  }
-
   private BigInteger bdd_satcount(int r) {
     CHECK(r);
 
@@ -3460,7 +3407,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int CACHEID_RESTRICT = 0x1;
   private static final int CACHEID_SATCOU = 0x2;
   private static final int CACHEID_SATCOULN = 0x3;
-  private static final int CACHEID_PATHCOU = 0x4;
 
   /* Hash value modifiers for replace/compose. Max 8 values */
   private static final int CACHEID_REPLACE = 0x0;

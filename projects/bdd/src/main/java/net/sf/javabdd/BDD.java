@@ -1078,15 +1078,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD replaceWith(BDDPairing pair);
 
   /**
-   * Counts the number of paths leading to the true terminal.
-   *
-   * <p>Compare to bdd_pathcount.
-   *
-   * @return the number of paths leading to the true terminal
-   */
-  public abstract double pathCount();
-
-  /**
    * Calculates the number of satisfying variable assignments.
    *
    * <p>Compare to bdd_satcount.
