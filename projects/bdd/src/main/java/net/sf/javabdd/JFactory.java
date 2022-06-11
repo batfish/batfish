@@ -265,27 +265,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public BDD restrict(BDD var) {
-      int x = _index;
-      int y = ((BDDImpl) var)._index;
-      return makeBDD(bdd_restrict(x, y));
-    }
-
-    @Override
-    public BDD restrictWith(BDD that) {
-      int x = _index;
-      int y = ((BDDImpl) that)._index;
-      int a = bdd_restrict(x, y);
-      bdd_delref(x);
-      if (this != that) {
-        that.free();
-      }
-      bdd_addref(a);
-      _index = a;
-      return this;
-    }
-
-    @Override
     public BDD simplify(BDD d) {
       int x = _index;
       int y = ((BDDImpl) d)._index;
@@ -1401,10 +1380,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return result;
   }
 
-  private static int RESTRHASH(int r, int var) {
-    return PAIR(r, var);
-  }
-
   private static int CONSTRAINHASH(int f, int c) {
     return PAIR(f, c);
   }
@@ -1439,10 +1414,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private boolean INVARSET(int a) {
     return quantvarset[a] == quantvarsetID; /* unsigned check */
-  }
-
-  private boolean INSVARSET(int a) {
-    return Math.abs(quantvarset[a]) == quantvarsetID; /* signed check */
   }
 
   private static final int bddop_and = 0;
@@ -2658,39 +2629,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private static final int INT_MAX = Integer.MAX_VALUE;
 
-  private int varset2svartable(int r) {
-    if (r < 2) {
-      return bdd_error(BDD_VARSET);
-    }
-
-    quantvarsetID++;
-
-    if (quantvarsetID == INT_MAX / 2) {
-      for (int i = 0; i < bddvarnum; ++i) {
-        quantvarset[i] = 0;
-      }
-      quantvarsetID = 1;
-    }
-
-    quantlast = 0;
-    for (int n = r; !ISCONST(n); ) {
-      int level = LEVEL(n);
-      if (ISZERO(LOW(n))) {
-        quantvarset[level] = quantvarsetID;
-        n = HIGH(n);
-      } else {
-        quantvarset[level] = -quantvarsetID;
-        n = LOW(n);
-      }
-      if (VERIFY_ASSERTIONS) {
-        _assert(quantlast < level);
-      }
-      quantlast = level;
-    }
-
-    return 0;
-  }
-
   private int appuni_rec(int l, int r, int var) {
     BddCacheDataI entry;
 
@@ -3162,78 +3100,6 @@ public class JFactory extends BDDFactory implements Serializable {
     INITREF();
     int res = unique_rec(r, var);
     checkresize();
-
-    return res;
-  }
-
-  private int bdd_restrict(int r, int var) {
-    CHECK(r);
-    CHECK(var);
-
-    if (var < 2) /* Empty set */ {
-      return r;
-    }
-    if (varset2svartable(var) < 0) {
-      return BDDZERO;
-    }
-
-    if (misccache == null) {
-      misccache = BddCacheI_init(cachesize);
-    }
-    miscid = (var << 3) | CACHEID_RESTRICT;
-
-    INITREF();
-    int res = restrict_rec(r);
-    checkresize();
-
-    return res;
-  }
-
-  private int restrict_rec(int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (ISCONST(r)) {
-      return r;
-    }
-
-    int level = LEVEL(r);
-    if (level > quantlast) {
-      return r;
-    }
-
-    int hash = RESTRHASH(r, miscid);
-    entry = BddCache_lookupI(misccache, hash);
-    if (entry.a == r && entry.c == miscid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    if (INSVARSET(level)) {
-      if (quantvarset[level] > 0) {
-        res = restrict_rec(HIGH(r));
-      } else {
-        res = restrict_rec(LOW(r));
-      }
-    } else {
-      PUSHREF(restrict_rec(LOW(r)));
-      PUSHREF(restrict_rec(HIGH(r)));
-      res = bdd_makenode(level, READREF(2), READREF(1));
-      POPREF(2);
-    }
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = miscid;
-    entry.res = res;
-    entry.hash = hash;
 
     return res;
   }

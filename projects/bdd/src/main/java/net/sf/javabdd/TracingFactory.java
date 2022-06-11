@@ -584,16 +584,6 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
-    public TracedBDDImpl restrict(BDD var) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TracedBDDImpl restrictWith(BDD that) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public TracedBDDImpl simplify(BDD d) {
       throw new UnsupportedOperationException();
     }

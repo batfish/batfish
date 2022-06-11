@@ -608,35 +608,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD unique(BDD var);
 
   /**
-   * Restrict a set of variables to constant values. Restricts the variables in this BDD to constant
-   * true if they are included in their positive form in var, and constant false if they are
-   * included in their negative form.
-   *
-   * <p><i>Note that this is quite different than Coudert and Madre's restrict function.</i>
-   *
-   * <p>Compare to bdd_restrict.
-   *
-   * @param var BDD containing the variables to be restricted
-   * @return the result of the restrict operation
-   * @see net.sf.javabdd.BDD#simplify(BDD)
-   */
-  public abstract BDD restrict(BDD var);
-
-  /**
-   * Mutates this BDD to restrict a set of variables to constant values. Restricts the variables in
-   * this BDD to constant true if they are included in their positive form in var, and constant
-   * false if they are included in their negative form. The "that" BDD is consumed, and can no
-   * longer be used.
-   *
-   * <p><i>Note that this is quite different than Coudert and Madre's restrict function.</i>
-   *
-   * <p>Compare to bdd_restrict and bdd_delref.
-   *
-   * @param var BDD containing the variables to be restricted
-   */
-  public abstract BDD restrictWith(BDD var);
-
-  /**
    * Coudert and Madre's restrict function. Tries to simplify the BDD f by restricting it to the
    * domain covered by d. No checks are done to see if the result is actually smaller than the
    * input. This can be done by the user with a call to nodeCount().
