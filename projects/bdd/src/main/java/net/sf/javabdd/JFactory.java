@@ -205,12 +205,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public BDD veccompose(BDDPairing pair) {
-      int x = _index;
-      return makeBDD(bdd_veccompose(x, (bddPair) pair));
-    }
-
-    @Override
     public BDD constrain(BDD that) {
       int x = _index;
       int y = ((BDDImpl) that)._index;
@@ -1294,10 +1288,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private static int CORRECTIFYHASH(int level, int l, int r) {
     return TRIPLE(level, l, r);
-  }
-
-  private static int VECCOMPOSEHASH(int cacheid, int f) {
-    return PAIR(cacheid, f);
   }
 
   private static int SATCOUHASH(int r, int miscid) {
@@ -3050,63 +3040,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
-  private int bdd_veccompose(int f, bddPair pair) {
-    CHECK(f);
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (replacecache == null) {
-      replacecache = BddCacheI_init(cachesize);
-    }
-    replacepair = pair.result;
-    replaceid = (pair.id << 3) | CACHEID_VECCOMPOSE;
-    replacelast = pair.last;
-
-    INITREF();
-    int res = veccompose_rec(f);
-    checkresize();
-
-    return res;
-  }
-
-  private int veccompose_rec(int f) {
-    BddCacheDataI entry;
-    int res;
-
-    int level = LEVEL(f);
-    if (level > replacelast) {
-      return f;
-    }
-
-    int hash = VECCOMPOSEHASH(replaceid, f);
-    entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == f && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    PUSHREF(veccompose_rec(LOW(f)));
-    PUSHREF(veccompose_rec(HIGH(f)));
-    res = ite_rec(replacepair[level], READREF(1), READREF(2));
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = f;
-    entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
   private int bdd_exist(int r, int var) {
     CHECK(r);
     CHECK(var);
@@ -4251,7 +4184,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   /* Hash value modifiers for replace/compose. Max 8 values */
   private static final int CACHEID_REPLACE = 0x0;
-  private static final int CACHEID_VECCOMPOSE = 0x2;
   private static final int CACHEID_CORRECTIFY = 0x3;
   private static final int CACHEID_TRANSFORM = 0x4; // TODO renumber to free up a bit
 

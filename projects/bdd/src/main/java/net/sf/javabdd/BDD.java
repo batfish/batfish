@@ -533,21 +533,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD relprod(BDD that, BDD var);
 
   /**
-   * Simultaneous functional composition. Uses the pairs of variables and BDDs in pair to make the
-   * simultaneous substitution: f [g1/V1, ... gn/Vn]. In this way one or more BDDs may be
-   * substituted in one step. The BDDs in pair may depend on the variables they are substituting.
-   * BDD.compose() may be used instead of BDD.replace() but is not as efficient when gi is a single
-   * variable, the same applies to BDD.restrict(). Note that simultaneous substitution is not
-   * necessarily the same as repeated substitution.
-   *
-   * <p>Compare to bdd_veccompose.
-   *
-   * @param pair the pairing of variables to functions
-   * @return BDD the result of the simultaneous functional composition
-   */
-  public abstract BDD veccompose(BDDPairing pair);
-
-  /**
    * Generalized cofactor. Computes the generalized cofactor of this BDD with respect to the given
    * BDD.
    *
