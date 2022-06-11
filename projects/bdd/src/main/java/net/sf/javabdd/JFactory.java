@@ -2111,6 +2111,69 @@ public class JFactory extends BDDFactory implements Serializable {
 
       return res;
     }
+    /**
+     * This is similar to {@link JFactory#bdd_makenode} -- it returns a BDD that branches at the
+     * input level with the input low and high nodes. The difference between this and bdd_makenode
+     * is that bdd_makenode requires level to be strictly less than LEVEL(l) and LEVEL(r), where
+     * this does not. The base case of bdd_correctify is when that is true -- then it simply
+     * delegates to bdd_makenode.
+     *
+     * @param level The level to branch on.
+     * @param l The low branch.
+     * @param r The high branch.
+     */
+    private int bdd_correctify(int level, int l, int r) {
+      int res;
+
+      int level_l = LEVEL(l);
+      int level_r = LEVEL(r);
+      if (level < level_l && level < level_r) {
+        return bdd_makenode(level, l, r);
+      }
+
+      if (level == level_l || level == level_r) {
+        bdd_error(BDD_REPLACE);
+        return 0;
+      }
+
+      int hash = CORRECTIFYHASH(replaceid, l, r);
+      BddCacheDataI entry = BddCache_lookupI(replacecache, hash);
+      if (entry.a == l && entry.b == r && entry.c == replaceid) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      if (level_l == level_r) {
+        PUSHREF(bdd_correctify(level, LOW(l), LOW(r)));
+        PUSHREF(bdd_correctify(level, HIGH(l), HIGH(r)));
+        res = bdd_makenode(level_l, READREF(2), READREF(1));
+      } else if (level_l < level_r) {
+        PUSHREF(bdd_correctify(level, LOW(l), r));
+        PUSHREF(bdd_correctify(level, HIGH(l), r));
+        res = bdd_makenode(level_l, READREF(2), READREF(1));
+      } else {
+        PUSHREF(bdd_correctify(level, l, LOW(r)));
+        PUSHREF(bdd_correctify(level, l, HIGH(r)));
+        res = bdd_makenode(level_r, READREF(2), READREF(1));
+      }
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = l;
+      entry.b = r;
+      entry.c = replaceid;
+      entry.res = res;
+      entry.hash = hash;
+
+      return res;
+    }
 
     private int bdd_replace(int r, bddPair pair) {
       CHECK(r);
@@ -2825,70 +2888,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     return false;
-  }
-
-  /**
-   * This is similar to {@link JFactory#bdd_makenode} -- it returns a BDD that branches at the input
-   * level with the input low and high nodes. The difference between this and bdd_makenode is that
-   * bdd_makenode requires level to be strictly less than LEVEL(l) and LEVEL(r), where this does
-   * not. The base case of bdd_correctify is when that is true -- then it simply delegates to
-   * bdd_makenode.
-   *
-   * @param level The level to branch on.
-   * @param l The low branch.
-   * @param r The high branch.
-   */
-  private int bdd_correctify(int level, int l, int r) {
-    int res;
-
-    int level_l = LEVEL(l);
-    int level_r = LEVEL(r);
-    if (level < level_l && level < level_r) {
-      return bdd_makenode(level, l, r);
-    }
-
-    if (level == level_l || level == level_r) {
-      bdd_error(BDD_REPLACE);
-      return 0;
-    }
-
-    int hash = CORRECTIFYHASH(replaceid, l, r);
-    BddCacheDataI entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == l && entry.b == r && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    if (level_l == level_r) {
-      PUSHREF(bdd_correctify(level, LOW(l), LOW(r)));
-      PUSHREF(bdd_correctify(level, HIGH(l), HIGH(r)));
-      res = bdd_makenode(level_l, READREF(2), READREF(1));
-    } else if (level_l < level_r) {
-      PUSHREF(bdd_correctify(level, LOW(l), r));
-      PUSHREF(bdd_correctify(level, HIGH(l), r));
-      res = bdd_makenode(level_l, READREF(2), READREF(1));
-    } else {
-      PUSHREF(bdd_correctify(level, l, LOW(r)));
-      PUSHREF(bdd_correctify(level, l, HIGH(r)));
-      res = bdd_makenode(level_r, READREF(2), READREF(1));
-    }
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
   }
 
   private int and_rec(int l, int r) {
