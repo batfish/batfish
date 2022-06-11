@@ -326,7 +326,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     @Override
     public BitSet minAssignmentBits() {
-      return bdd_minassignmentbits(_index);
+      return new Worker().bdd_minassignmentbits(_index);
     }
 
     @Override
@@ -1822,6 +1822,29 @@ public class JFactory extends BDDFactory implements Serializable {
 
       return res;
     }
+
+    private BitSet bdd_minassignmentbits(int r) {
+      CHECK(r);
+      BitSet set = new BitSet(bddvarnum);
+      minassignmentbits_rec(set, r);
+      return set;
+    }
+
+    private void minassignmentbits_rec(BitSet set, int r) {
+      if (r < 2) {
+        return;
+      }
+
+      int lo = LOW(r);
+      int hi = HIGH(r);
+      boolean useHi = lo == BDDZERO;
+      if (useHi) {
+        set.set(LEVEL(r));
+        minassignmentbits_rec(set, hi);
+      } else {
+        minassignmentbits_rec(set, lo);
+      }
+    }
   }
 
   private static final int BDDONE = 1;
@@ -2962,29 +2985,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private static final int INT_MAX = Integer.MAX_VALUE;
-
-  private BitSet bdd_minassignmentbits(int r) {
-    CHECK(r);
-    BitSet set = new BitSet(bddvarnum);
-    minassignmentbits_rec(set, r);
-    return set;
-  }
-
-  private void minassignmentbits_rec(BitSet set, int r) {
-    if (r < 2) {
-      return;
-    }
-
-    int lo = LOW(r);
-    int hi = HIGH(r);
-    boolean useHi = lo == BDDZERO;
-    if (useHi) {
-      set.set(LEVEL(r));
-      minassignmentbits_rec(set, hi);
-    } else {
-      minassignmentbits_rec(set, lo);
-    }
-  }
 
   // Makes a node for the purposes of a satisfying assignment. The resulting node tests the given
   // variable, has the given child at the branch indicated by {@code useLow}, and has the other
