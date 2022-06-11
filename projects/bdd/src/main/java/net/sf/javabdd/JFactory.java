@@ -182,7 +182,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     @Override
     public BDD not() {
-      return makeBDD(bdd_not(_index));
+      return makeBDD(new Worker().bdd_not(_index));
     }
 
     @Override
@@ -953,6 +953,59 @@ public class JFactory extends BDDFactory implements Serializable {
       entry.a = l;
       entry.b = r;
       entry.c = applyop;
+      entry.res = res;
+      entry.hash = hash;
+
+      return res;
+    }
+
+    private int bdd_not(int r) {
+      CHECK(r);
+
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+
+      INITREF();
+      int res = not_rec(r);
+      checkresize();
+
+      return res;
+    }
+
+    private int not_rec(int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (ISZERO(r)) {
+        return BDDONE;
+      } else if (ISONE(r)) {
+        return BDDZERO;
+      }
+
+      int hash = NOTHASH(r);
+      entry = BddCache_lookupI(applycache, hash);
+
+      if (entry.a == r && entry.c == bddop_not) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      PUSHREF(not_rec(LOW(r)));
+      PUSHREF(not_rec(HIGH(r)));
+      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = r;
+      entry.c = bddop_not;
       entry.res = res;
       entry.hash = hash;
 
@@ -2543,59 +2596,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     return false;
-  }
-
-  private int bdd_not(int r) {
-    CHECK(r);
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-
-    INITREF();
-    int res = not_rec(r);
-    checkresize();
-
-    return res;
-  }
-
-  private int not_rec(int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (ISZERO(r)) {
-      return BDDONE;
-    } else if (ISONE(r)) {
-      return BDDZERO;
-    }
-
-    int hash = NOTHASH(r);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == r && entry.c == bddop_not) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    PUSHREF(not_rec(LOW(r)));
-    PUSHREF(not_rec(HIGH(r)));
-    res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = bddop_not;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
   }
 
   /**
