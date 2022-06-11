@@ -258,13 +258,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public BDD unique(BDD var) {
-      int x = _index;
-      int y = ((BDDImpl) var)._index;
-      return makeBDD(bdd_unique(x, y));
-    }
-
-    @Override
     public BDD simplify(BDD d) {
       int x = _index;
       int y = ((BDDImpl) d)._index;
@@ -2734,54 +2727,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
-  private int unique_rec(int r, int q) {
-    if (r < 2 || q < 2) {
-      return r;
-    }
-
-    int level_r = LEVEL(r);
-    int level_q = LEVEL(q);
-    if (level_r > level_q) {
-      // Skipped a quantified node, answer is zero.
-      return BDDZERO;
-    }
-
-    int hash = QUANTHASH(r);
-    BddCacheDataI entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    int res;
-    if (level_r == level_q) {
-      PUSHREF(unique_rec(LOW(r), HIGH(q)));
-      PUSHREF(unique_rec(HIGH(r), HIGH(q)));
-      res = apply_rec(READREF(2), READREF(1));
-    } else {
-      PUSHREF(unique_rec(LOW(r), q));
-      PUSHREF(unique_rec(HIGH(r), q));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
-    }
-
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
   /**
    * Variant of {@link #quant_rec(int)} specialized for when {@link #applyop} is {@link #bddop_or},
    * and using {@link #orAll_rec(int[])}.
@@ -3075,30 +3020,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
     INITREF();
     int res = quant_rec(r);
-    checkresize();
-
-    return res;
-  }
-
-  private int bdd_unique(int r, int var) {
-    CHECK(r);
-    CHECK(var);
-
-    if (var < 2) /* Empty set */ {
-      return r;
-    }
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
-    }
-    quantid = (var << 3) | CACHEID_UNIQUE;
-    applyop = bddop_xor;
-
-    INITREF();
-    int res = unique_rec(r, var);
     checkresize();
 
     return res;
@@ -4056,7 +3977,6 @@ public class JFactory extends BDDFactory implements Serializable {
   /* Hash value modifiers for quantification. Max 8 values */
   private static final int CACHEID_EXIST = 0x0;
   private static final int CACHEID_FORALL = 0x1;
-  private static final int CACHEID_UNIQUE = 0x2;
   private static final int CACHEID_APPEX = 0x3;
   private static final int CACHEID_APPAL = 0x4;
   private static final int CACHEID_APPUN = 0x5;

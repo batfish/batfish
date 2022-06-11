@@ -597,17 +597,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD forAll(BDD var);
 
   /**
-   * Unique quantification of variables. This type of quantification uses a XOR operator instead of
-   * an OR operator as in the existential quantification.
-   *
-   * <p>Compare to bdd_unique.
-   *
-   * @param var BDD containing the variables to be uniquely quantified
-   * @return the result of the unique quantification
-   */
-  public abstract BDD unique(BDD var);
-
-  /**
    * Coudert and Madre's restrict function. Tries to simplify the BDD f by restricting it to the
    * domain covered by d. No checks are done to see if the result is actually smaller than the
    * input. This can be done by the user with a call to nodeCount().
