@@ -247,7 +247,7 @@ public class JFactory extends BDDFactory implements Serializable {
     public BDD project(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return makeBDD(bdd_project(x, y));
+      return makeBDD(new Worker().bdd_project(x, y));
     }
 
     @Override
@@ -1066,6 +1066,83 @@ public class JFactory extends BDDFactory implements Serializable {
         entry.res = res;
         entry.hash = hash;
       }
+
+      return res;
+    }
+
+    private int bdd_project(int r, int var) {
+      CHECK(r);
+      CHECK(var);
+
+      if (var < 2) /* Empty set */ {
+        // projecting onto an empty set of variables means existentially
+        // quantifying all variables.
+        return r == BDDZERO ? BDDZERO : BDDONE;
+      }
+      if (varset2vartable(var) < 0) {
+        return BDDZERO;
+      }
+
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      if (quantcache == null) {
+        quantcache = BddCacheI_init(cachesize);
+      }
+      quantid = (var << 3) | CACHEID_PROJECT;
+
+      INITREF();
+      int res = project_rec(r);
+      checkresize();
+
+      return res;
+    }
+
+    private int project_rec(int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (r < 2) {
+        return r;
+      }
+
+      int level = LEVEL(r);
+      if (level > quantlast) {
+        // existentially quantify all remaining variables
+        return BDDONE;
+      }
+
+      int hash = QUANTHASH(r);
+      entry = BddCache_lookupI(quantcache, hash);
+      if (entry.a == r && entry.c == quantid) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      int low = PUSHREF(project_rec(LOW(r)));
+      int high = PUSHREF(project_rec(HIGH(r)));
+
+      if (INVARSET(level)) {
+        res = bdd_makenode(level, low, high);
+      } else {
+        // existentially quantify
+        res = or_rec(low, high);
+      }
+
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = r;
+      entry.c = quantid;
+      entry.res = res;
+      entry.hash = hash;
 
       return res;
     }
@@ -2926,55 +3003,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
-  private int project_rec(int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (r < 2) {
-      return r;
-    }
-
-    int level = LEVEL(r);
-    if (level > quantlast) {
-      // existentially quantify all remaining variables
-      return BDDONE;
-    }
-
-    int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    int low = PUSHREF(project_rec(LOW(r)));
-    int high = PUSHREF(project_rec(HIGH(r)));
-
-    if (INVARSET(level)) {
-      res = bdd_makenode(level, low, high);
-    } else {
-      // existentially quantify
-      res = or_rec(low, high);
-    }
-
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
   private int bdd_constrain(int f, int c) {
     CHECK(f);
     CHECK(c);
@@ -3082,34 +3110,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
     INITREF();
     int res = exist_rec(r);
-    checkresize();
-
-    return res;
-  }
-
-  private int bdd_project(int r, int var) {
-    CHECK(r);
-    CHECK(var);
-
-    if (var < 2) /* Empty set */ {
-      // projecting onto an empty set of variables means existentially
-      // quantifying all variables.
-      return r == BDDZERO ? BDDZERO : BDDONE;
-    }
-    if (varset2vartable(var) < 0) {
-      return BDDZERO;
-    }
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
-    }
-    quantid = (var << 3) | CACHEID_PROJECT;
-
-    INITREF();
-    int res = project_rec(r);
     checkresize();
 
     return res;
