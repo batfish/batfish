@@ -65,9 +65,6 @@ public final class EraseAndSet implements Transition {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(EraseAndSet.class)
-        .add("eraseVars", _eraseVars)
-        .add("valueVars", _setValue.support())
-        .toString();
+    return MoreObjects.toStringHelper(EraseAndSet.class).add("eraseVars", _eraseVars).toString();
   }
 }

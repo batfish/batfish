@@ -609,16 +609,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD simplify(BDD d);
 
   /**
-   * Returns the variable support of this BDD. The support is all the variables that this BDD
-   * depends on.
-   *
-   * <p>Compare to bdd_support.
-   *
-   * @return the variable support of this BDD
-   */
-  public abstract BDD support();
-
-  /**
    * Returns the result of applying the binary operator <tt>opr</tt> to the two BDDs.
    *
    * @param that the BDD to apply the operator on

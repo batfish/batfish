@@ -172,8 +172,6 @@ public final class TracingFactory extends JFactory {
     SAT_ONE,
     /** {@link BDDFactory#setVarNum(int)}. */
     SET_VAR_NUM,
-    /** {@link BDD#support()}. */
-    SUPPORT,
     /** {@link BDD#testsVars(BDD)}. */
     TESTS_VARS,
     /** {@link BDDFactory#zero}. */
@@ -438,10 +436,6 @@ public final class TracingFactory extends JFactory {
           assert operation._intArg != null;
           _factory.setVarNum(operation._intArg);
           break;
-        case SUPPORT:
-          assert operation._resultSeq != null;
-          recordSequence(operation._resultSeq, replayBdd(operation._argSeqs[0]).support());
-          break;
         case TESTS_VARS:
           assert operation._resultSeq == null;
           assert operation._intArg == null;
@@ -581,11 +575,6 @@ public final class TracingFactory extends JFactory {
     @Override
     public TracedBDDImpl simplify(BDD d) {
       throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TracedBDDImpl support() {
-      return trace(() -> _bdd.support(), Operation.SUPPORT, _bdd);
     }
 
     @Override

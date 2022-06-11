@@ -52,7 +52,6 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,7 +89,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final boolean VERIFY_ASSERTIONS = false;
 
   protected JFactory() {
-    supportSet = new int[0];
     bddrefstack = new IntStack();
     _bddReuse = new LinkedList<>();
   }
@@ -98,7 +96,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
-    supportSet = new int[0];
     bddrefstack = new IntStack();
     _bddReuse = new LinkedList<>();
     quantvarset = new int[bddvarnum];
@@ -262,12 +259,6 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) d)._index;
       return makeBDD(bdd_simplify(x, y));
-    }
-
-    @Override
-    public BDD support() {
-      int x = _index;
-      return makeBDD(bdd_support(x));
     }
 
     @Override
@@ -3102,77 +3093,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
-  private int bdd_support(int r) {
-    int res = 1;
-
-    CHECK(r);
-
-    if (r < 2) {
-      return BDDONE;
-    }
-
-    /* On-demand allocation of support set */
-    if (supportSet.length < bddvarnum) {
-      supportSet = new int[bddvarnum];
-      supportID = 0;
-    }
-
-    /* Update global variables used to speed up bdd_support()
-     * - instead of always memsetting support to zero, we use
-     *   a change counter.
-     * - and instead of reading the whole array afterwards, we just
-     *   look from 'min' to 'max' used BDD variables.
-     */
-    if (supportID == 0x0FFFFFFF) {
-      /* We probably don't get here -- but let's just be sure */
-      for (int i = 0; i < bddvarnum; ++i) {
-        supportSet[i] = 0;
-      }
-      supportID = 0;
-    }
-    ++supportID;
-    supportMin = LEVEL(r);
-    supportMax = supportMin;
-
-    support_rec(r, supportSet);
-    bdd_unmark(r);
-
-    for (int n = supportMax; n >= supportMin; --n) {
-      if (supportSet[n] == supportID) {
-        int tmp;
-        bdd_addref(res);
-        tmp = bdd_makenode(n, BDDZERO, res);
-        bdd_delref(res);
-        res = tmp;
-      }
-    }
-
-    return res;
-  }
-
-  private void support_rec(int r, int[] support) {
-
-    if (r < 2) {
-      return;
-    }
-
-    if (MARKED(r) || LOW(r) == INVALID_BDD) {
-      return;
-    }
-
-    int level = LEVEL(r);
-    support[level] = supportID;
-
-    if (level > supportMax) {
-      supportMax = level;
-    }
-
-    SETMARK(r);
-
-    support_rec(LOW(r), support);
-    support_rec(HIGH(r), support);
-  }
-
   private int bdd_appuni(int l, int r, int opr, int var) {
     CHECK(l);
     CHECK(r);
@@ -4013,10 +3933,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient int replacelast; /* Current last var. level to replace */
   private transient int composelevel; /* Current variable used for compose */
   private transient int miscid; /* Current cache id for other results */
-  private transient int supportID; /* Current ID (true value) for support */
-  private transient int supportMin; /* Min. used level in support calc. */
-  private transient int supportMax; /* Max. used level in support calc. */
-  @Nonnull private transient int[] supportSet; /* The found support set */
   private transient BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
   private transient BddCache quantcache; /* Cache for exist/forall results */
   private transient BddCache appexcache; /* Cache for appex/appall results */
@@ -4034,7 +3950,6 @@ public class JFactory extends BDDFactory implements Serializable {
     quantvarsetID = 0;
     quantvarset = null;
     cacheratio = 0;
-    supportSet = new int[0];
   }
 
   private void bdd_operator_reset() {
