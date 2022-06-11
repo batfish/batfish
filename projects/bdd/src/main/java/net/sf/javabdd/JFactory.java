@@ -775,6 +775,67 @@ public class JFactory extends BDDFactory implements Serializable {
       return res;
     }
 
+    private int and_rec(int l, int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (l == r) {
+        return l;
+      } else if (ISZERO(l) || ISZERO(r)) {
+        return BDDZERO;
+      } else if (ISONE(l)) {
+        return r;
+      } else if (ISONE(r)) {
+        return l;
+      } else if (l > r) {
+        // Since AND is symmetric, maximize caching by ensuring l < r (== handled above).
+        int t = l;
+        l = r;
+        r = t;
+      }
+      int hash = APPLYHASH(l, r, bddop_and);
+      entry = BddCache_lookupI(applycache, hash);
+
+      if (entry.a == l && entry.b == r && entry.c == bddop_and) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      int level_l = LEVEL(l);
+      int level_r = LEVEL(r);
+      if (level_l == level_r) {
+        PUSHREF(and_rec(LOW(l), LOW(r)));
+        PUSHREF(and_rec(HIGH(l), HIGH(r)));
+        res = bdd_makenode(level_l, READREF(2), READREF(1));
+      } else if (level_l < level_r) {
+        PUSHREF(and_rec(LOW(l), r));
+        PUSHREF(and_rec(HIGH(l), r));
+        res = bdd_makenode(level_l, READREF(2), READREF(1));
+      } else {
+        PUSHREF(and_rec(l, LOW(r)));
+        PUSHREF(and_rec(l, HIGH(r)));
+        res = bdd_makenode(level_r, READREF(2), READREF(1));
+      }
+
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = l;
+      entry.b = r;
+      entry.c = bddop_and;
+      entry.res = res;
+      entry.hash = hash;
+
+      return res;
+    }
+
     private int bdd_orAll(int[] operands) {
       if (operands.length == 0) {
         return BDDZERO;
@@ -2888,67 +2949,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     return false;
-  }
-
-  private int and_rec(int l, int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (l == r) {
-      return l;
-    } else if (ISZERO(l) || ISZERO(r)) {
-      return BDDZERO;
-    } else if (ISONE(l)) {
-      return r;
-    } else if (ISONE(r)) {
-      return l;
-    } else if (l > r) {
-      // Since AND is symmetric, maximize caching by ensuring l < r (== handled above).
-      int t = l;
-      l = r;
-      r = t;
-    }
-    int hash = APPLYHASH(l, r, bddop_and);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == l && entry.b == r && entry.c == bddop_and) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    int level_l = LEVEL(l);
-    int level_r = LEVEL(r);
-    if (level_l == level_r) {
-      PUSHREF(and_rec(LOW(l), LOW(r)));
-      PUSHREF(and_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(level_l, READREF(2), READREF(1));
-    } else if (level_l < level_r) {
-      PUSHREF(and_rec(LOW(l), r));
-      PUSHREF(and_rec(HIGH(l), r));
-      res = bdd_makenode(level_l, READREF(2), READREF(1));
-    } else {
-      PUSHREF(and_rec(l, LOW(r)));
-      PUSHREF(and_rec(l, HIGH(r)));
-      res = bdd_makenode(level_r, READREF(2), READREF(1));
-    }
-
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = bddop_and;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
   }
 
   /**
