@@ -540,11 +540,6 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
-    public TracedBDDImpl constrain(BDD that) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     TracedBDDImpl exist(BDD var, boolean makeNew) {
       TracedBDDImpl tracedVar = (TracedBDDImpl) var;
       return trace(

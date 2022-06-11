@@ -201,13 +201,6 @@ public class JFactory extends BDDFactory implements Serializable {
       return makeBDD(new Worker().bdd_relprod(x, y, z));
     }
 
-    @Override
-    public BDD constrain(BDD that) {
-      int x = _index;
-      int y = ((BDDImpl) that)._index;
-      return makeBDD(bdd_constrain(x, y));
-    }
-
     /**
      * Given the index of the result of an operation, either changes {@code this} {@link BDD} (when
      * {@code makeNew} is false) or creates a new BDD ({@code makeNew} is true).
@@ -1937,10 +1930,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return result;
   }
 
-  private static int CONSTRAINHASH(int f, int c) {
-    return PAIR(f, c);
-  }
-
   private static int QUANTHASH(int r) {
     return r;
   }
@@ -3096,91 +3085,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
-  private int bdd_constrain(int f, int c) {
-    CHECK(f);
-    CHECK(c);
-
-    if (misccache == null) {
-      misccache = BddCacheI_init(cachesize);
-    }
-    miscid = CACHEID_CONSTRAIN;
-
-    INITREF();
-    int res = constrain_rec(f, c);
-    checkresize();
-
-    return res;
-  }
-
-  private int constrain_rec(int f, int c) {
-    BddCacheDataI entry;
-    int res;
-
-    if (ISONE(c)) {
-      return f;
-    } else if (ISCONST(f)) {
-      return f;
-    } else if (c == f) {
-      return BDDONE;
-    } else if (ISZERO(c)) {
-      return BDDZERO;
-    }
-
-    int hash = CONSTRAINHASH(f, c);
-    entry = BddCache_lookupI(misccache, hash);
-    if (entry.a == f && entry.b == c && entry.c == miscid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    int level_f = LEVEL(f);
-    int level_c = LEVEL(c);
-    if (level_f == level_c) {
-      if (ISZERO(LOW(c))) {
-        res = constrain_rec(HIGH(f), HIGH(c));
-      } else if (ISZERO(HIGH(c))) {
-        res = constrain_rec(LOW(f), LOW(c));
-      } else {
-        PUSHREF(constrain_rec(LOW(f), LOW(c)));
-        PUSHREF(constrain_rec(HIGH(f), HIGH(c)));
-        res = bdd_makenode(level_f, READREF(2), READREF(1));
-        POPREF(2);
-      }
-    } else if (level_f < level_c) {
-      PUSHREF(constrain_rec(LOW(f), c));
-      PUSHREF(constrain_rec(HIGH(f), c));
-      res = bdd_makenode(level_f, READREF(2), READREF(1));
-      POPREF(2);
-    } else {
-      if (ISZERO(LOW(c))) {
-        res = constrain_rec(f, HIGH(c));
-      } else if (ISZERO(HIGH(c))) {
-        res = constrain_rec(f, LOW(c));
-      } else {
-        PUSHREF(constrain_rec(f, LOW(c)));
-        PUSHREF(constrain_rec(f, HIGH(c)));
-        res = bdd_makenode(level_c, READREF(2), READREF(1));
-        POPREF(2);
-      }
-    }
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = f;
-    entry.b = c;
-    entry.c = miscid;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
   private int bdd_simplify(int f, int d) {
     CHECK(f);
     CHECK(d);
@@ -3883,8 +3787,6 @@ public class JFactory extends BDDFactory implements Serializable {
     bdd_pairs_init();
   }
 
-  /* Hash value modifiers to distinguish between entries in misccache */
-  private static final int CACHEID_CONSTRAIN = 0x0;
   private static final int CACHEID_RESTRICT = 0x1;
   private static final int CACHEID_SATCOU = 0x2;
   private static final int CACHEID_SATCOULN = 0x3;

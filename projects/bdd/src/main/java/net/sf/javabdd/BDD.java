@@ -533,17 +533,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD relprod(BDD that, BDD var);
 
   /**
-   * Generalized cofactor. Computes the generalized cofactor of this BDD with respect to the given
-   * BDD.
-   *
-   * <p>Compare to bdd_constrain.
-   *
-   * @param that the BDD with which to compute the generalized cofactor
-   * @return the result of the generalized cofactor
-   */
-  public abstract BDD constrain(BDD that);
-
-  /**
    * Existential quantification of variables. Removes all occurrences of this BDD in variables in
    * the set var by existential quantification.
    *
