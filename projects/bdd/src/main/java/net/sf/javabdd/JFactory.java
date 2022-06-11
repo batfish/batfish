@@ -205,13 +205,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public BDD compose(BDD g, int var) {
-      int x = _index;
-      int y = ((BDDImpl) g)._index;
-      return makeBDD(bdd_compose(x, y, var));
-    }
-
-    @Override
     public BDD veccompose(BDDPairing pair) {
       int x = _index;
       return makeBDD(bdd_veccompose(x, (bddPair) pair));
@@ -1305,10 +1298,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private static int VECCOMPOSEHASH(int cacheid, int f) {
     return PAIR(cacheid, f);
-  }
-
-  private static int COMPOSEHASH(int cacheid, int f, int g) {
-    return TRIPLE(cacheid, f, g);
   }
 
   private static int SATCOUHASH(int r, int miscid) {
@@ -3061,85 +3050,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
-  private int bdd_compose(int f, int g, int var) {
-    CHECK(f);
-    CHECK(g);
-    if (var < 0 || var >= bddvarnum) {
-      bdd_error(BDD_VAR);
-      return BDDZERO;
-    }
-
-    if (replacecache == null) {
-      // compose_rec uses replacecache
-      replacecache = BddCacheI_init(cachesize);
-    }
-    if (applycache == null) {
-      // compose_rec can call ite_rec, which uses applycache
-      applycache = BddCacheI_init(cachesize);
-    }
-    composelevel = bddvar2level[var];
-    replaceid = (composelevel << 3) | CACHEID_COMPOSE;
-
-    INITREF();
-    int res = compose_rec(f, g);
-    checkresize();
-    return res;
-  }
-
-  private int compose_rec(int f, int g) {
-    BddCacheDataI entry;
-    int res;
-
-    int level_f = LEVEL(f);
-    if (level_f > composelevel) {
-      return f;
-    }
-
-    int hash = COMPOSEHASH(replaceid, f, g);
-    entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == f && entry.b == g && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    if (level_f < composelevel) {
-      int level_g = LEVEL(g);
-      if (level_f == level_g) {
-        PUSHREF(compose_rec(LOW(f), LOW(g)));
-        PUSHREF(compose_rec(HIGH(f), HIGH(g)));
-        res = bdd_makenode(level_f, READREF(2), READREF(1));
-      } else if (level_f < level_g) {
-        PUSHREF(compose_rec(LOW(f), g));
-        PUSHREF(compose_rec(HIGH(f), g));
-        res = bdd_makenode(level_f, READREF(2), READREF(1));
-      } else {
-        PUSHREF(compose_rec(f, LOW(g)));
-        PUSHREF(compose_rec(f, HIGH(g)));
-        res = bdd_makenode(level_g, READREF(2), READREF(1));
-      }
-      POPREF(2);
-    } else
-    /*if (LEVEL(f) == composelevel) changed 2-nov-98 */ {
-      res = ite_rec(g, HIGH(f), LOW(f));
-    }
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = f;
-    entry.b = g;
-    entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
   private int bdd_veccompose(int f, bddPair pair) {
     CHECK(f);
 
@@ -4341,10 +4251,9 @@ public class JFactory extends BDDFactory implements Serializable {
 
   /* Hash value modifiers for replace/compose. Max 8 values */
   private static final int CACHEID_REPLACE = 0x0;
-  private static final int CACHEID_COMPOSE = 0x1;
   private static final int CACHEID_VECCOMPOSE = 0x2;
   private static final int CACHEID_CORRECTIFY = 0x3;
-  private static final int CACHEID_TRANSFORM = 0x4;
+  private static final int CACHEID_TRANSFORM = 0x4; // TODO renumber to free up a bit
 
   /* Hash value modifiers for quantification. Max 8 values */
   private static final int CACHEID_EXIST = 0x0;

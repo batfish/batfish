@@ -533,18 +533,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD relprod(BDD that, BDD var);
 
   /**
-   * Functional composition. Substitutes the variable var with the BDD that in this BDD: result =
-   * f[g/var].
-   *
-   * <p>Compare to bdd_compose.
-   *
-   * @param g the function to use to replace
-   * @param var the variable number to replace
-   * @return the result of the functional composition
-   */
-  public abstract BDD compose(BDD g, int var);
-
-  /**
    * Simultaneous functional composition. Uses the pairs of variables and BDDs in pair to make the
    * simultaneous substitution: f [g1/V1, ... gn/Vn]. In this way one or more BDDs may be
    * substituted in one step. The BDDs in pair may depend on the variables they are substituting.

@@ -36,7 +36,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.BitSet;
-import java.util.Random;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -605,35 +604,4 @@ public class BasicTest {
     p2.reset();
     p3.reset();
   }
-
-  @Test
-  public void testCompose() {
-    if (_factory.varNum() < 4) {
-      _factory.setVarNum(4);
-    }
-    BDD a = _factory.ithVar(0);
-    BDD b = _factory.ithVar(1);
-    BDD c = _factory.ithVar(2);
-    BDD d = _factory.ithVar(3);
-
-    BDD xorCD = c.xor(d);
-
-    // b doesn't occur in a
-    BDD res = a.compose(xorCD, b.var());
-    assert res.equals(a);
-
-    res = b.compose(xorCD, b.var());
-    assert res.equals(xorCD);
-
-    res = b.not().compose(xorCD, b.var());
-    assert res.equals(xorCD.not());
-
-    res = a.and(b).compose(xorCD, b.var());
-    assert res.equals(a.and(xorCD));
-
-    res = a.diff(b).compose(xorCD, b.var());
-    assert res.equals(a.diff(xorCD));
-  }
-
-  private static Random random = new Random(System.currentTimeMillis());
 }

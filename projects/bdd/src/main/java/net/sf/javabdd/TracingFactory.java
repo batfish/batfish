@@ -546,11 +546,6 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
-    public TracedBDDImpl compose(BDD g, int var) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public TracedBDDImpl veccompose(BDDPairing pair) {
       throw new UnsupportedOperationException();
     }
