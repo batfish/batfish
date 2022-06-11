@@ -3226,7 +3226,7 @@ public class JFactory extends BDDFactory implements Serializable {
         bdd_gbc();
 
         if ((bddfreenum.get() * 100) / bddnodesize <= minfreenodes) {
-          bdd_noderesize(true);
+          bdd_noderesize();
           hash2 = NODEHASH(level, low, high);
         }
 
@@ -3265,7 +3265,7 @@ public class JFactory extends BDDFactory implements Serializable {
   /** Called whenever a new BDD node is created, with the given (previously free) index. */
   protected void newNodeIndex(int index) {}
 
-  private void bdd_noderesize(boolean doRehash) {
+  private void bdd_noderesize() {
     int oldsize = bddnodesize;
     int newsize = bddnodesize;
 
@@ -3284,17 +3284,17 @@ public class JFactory extends BDDFactory implements Serializable {
       return;
     }
 
-    doResize(doRehash, oldsize, newsize);
+    doResize(oldsize, newsize);
   }
 
   @Override
   public int setNodeTableSize(int size) {
     int old = bddnodesize;
-    doResize(true, old, size);
+    doResize(old, size);
     return old;
   }
 
-  private void doResize(boolean doRehash, int oldsize, int newsize) {
+  private void doResize(int oldsize, int newsize) {
     newsize = bdd_prime_lte(newsize);
     if (newsize <= oldsize) {
       return;
@@ -3305,10 +3305,8 @@ public class JFactory extends BDDFactory implements Serializable {
     bddnodes.resize(newsize);
     bddnodesize = newsize;
 
-    if (doRehash) {
-      // Clear the hash of all the existing nodes.
-      IntStream.range(0, oldsize).parallel().forEach(i -> SETHASH(i, 0));
-    }
+    // Clear the hash of all the existing nodes.
+    IntStream.range(0, oldsize).parallel().forEach(i -> SETHASH(i, 0));
 
     // Initialize the new nodes in parallel
     IntStream.range(oldsize, newsize)
@@ -3323,9 +3321,7 @@ public class JFactory extends BDDFactory implements Serializable {
     SETNEXT(bddnodesize - 1, prev_freepos);
     bddfreenum.addAndGet(bddnodesize - oldsize);
 
-    if (doRehash) {
-      bdd_gbc_rehash();
-    }
+    bdd_gbc_rehash();
     bddresized = true;
     long resizeTime = System.currentTimeMillis() - resizeStartTime;
     sumResizeTime += resizeTime;
