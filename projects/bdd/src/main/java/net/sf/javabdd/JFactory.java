@@ -406,10 +406,6 @@ public class JFactory extends BDDFactory implements Serializable {
     bddnodes.setMaxRef(node);
   }
 
-  private void CLEARREF(int node) {
-    bddnodes.clearRef(node);
-  }
-
   private void INCREF(int node) {
     bddnodes.incRef(node);
   }
@@ -526,7 +522,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private class Worker {
-    private IntStack bddrefstack =
+    private final IntStack bddrefstack =
         new IntStack(); /* BDDs referenced during the current computation. */
 
     private int PUSHREF(int a) {
@@ -1791,39 +1787,39 @@ public class JFactory extends BDDFactory implements Serializable {
             res = BDDONE;
             break;
           }
-          if (left == BDDZERO) {
-            // do nothing
-          } else if (INVARSET(LEVEL(left))) {
-            if (processed.add(left)) {
-              // No need to push a ref, since bdd is referenced.
-              toProcess.push(left);
+          if (left != BDDZERO) {
+            if (INVARSET(LEVEL(left))) {
+              if (processed.add(left)) {
+                // No need to push a ref, since bdd is referenced.
+                toProcess.push(left);
+              }
+            } else {
+              int quantLeft = exist_rec(left);
+              if (quantLeft == BDDONE) {
+                res = BDDONE;
+                break;
+              }
+              PUSHREF(quantLeft);
+              toOr.add(quantLeft);
+              ++pushedRefs;
             }
-          } else {
-            int quantLeft = exist_rec(left);
-            if (quantLeft == BDDONE) {
-              res = BDDONE;
-              break;
-            }
-            PUSHREF(quantLeft);
-            toOr.add(quantLeft);
-            ++pushedRefs;
           }
-          if (right == BDDZERO) {
-            // do nothing
-          } else if (INVARSET(LEVEL(right))) {
-            if (processed.add(right)) {
-              // No need to push a ref, since bdd is referenced.
-              toProcess.push(right);
+          if (right != BDDZERO) {
+            if (INVARSET(LEVEL(right))) {
+              if (processed.add(right)) {
+                // No need to push a ref, since bdd is referenced.
+                toProcess.push(right);
+              }
+            } else {
+              int quantRight = exist_rec(right);
+              if (quantRight == BDDONE) {
+                res = BDDONE;
+                break;
+              }
+              PUSHREF(quantRight);
+              toOr.add(quantRight);
+              ++pushedRefs;
             }
-          } else {
-            int quantRight = exist_rec(right);
-            if (quantRight == BDDONE) {
-              res = BDDONE;
-              break;
-            }
-            PUSHREF(quantRight);
-            toOr.add(quantRight);
-            ++pushedRefs;
           }
         }
         if (res == -1) {
@@ -2428,8 +2424,8 @@ public class JFactory extends BDDFactory implements Serializable {
   private int bdderrorcond; /* Some error condition */
   private int bddnodesize; /* Number of allocated nodes */
   private NodeTable bddnodes = null;
-  private AtomicInteger bddfreepos = new AtomicInteger(-1); /* First free node */
-  private AtomicInteger bddfreenum = new AtomicInteger(-1); /* Number of free nodes */
+  private final AtomicInteger bddfreepos = new AtomicInteger(-1); /* First free node */
+  private final AtomicInteger bddfreenum = new AtomicInteger(-1); /* Number of free nodes */
   /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
   private transient IntStack bddrefstack; /* BDDs referenced during the current computation. */
@@ -2448,25 +2444,16 @@ public class JFactory extends BDDFactory implements Serializable {
   /** Total millis used in resizing */
   private long sumResizeTime;
 
-  private static final int BDD_MEMORY = -1; /* Out of memory */
   private static final int BDD_VAR = -2; /* Unknown variable */
   private static final int BDD_RANGE = -3;
-  /* Variable value out of range (not in domain) */
-  private static final int BDD_DEREF = -4;
   /* Removing external reference to unknown node */
   private static final int BDD_RUNNING = -5;
-  /* Called bdd_init() twice whithout bdd_done() */
-  private static final int BDD_FILE = -6; /* Some file operation failed */
-  private static final int BDD_FORMAT = -7; /* Incorrect file format */
-  private static final int BDD_ORDER = -8;
   /* Vars. not in order for vector based functions */
   private static final int BDD_BREAK = -9; /* User called break */
-  private static final int BDD_VARNUM = -10;
   /* Tried to set max. number of nodes to be fewer */
   /* than there already has been allocated */
   private static final int BDD_OP = -12; /* Unknown operator */
   private static final int BDD_VARSET = -13; /* Illegal variable set */
-  private static final int BDD_VARBLK = -14; /* Bad variable block operation */
   private static final int BDD_DECVNUM = -15;
   /* Trying to decrease the number of variables */
   private static final int BDD_REPLACE = -16;
@@ -2474,13 +2461,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int BDD_NODENUM = -17;
   /* Number of nodes reached user defined maximum */
   private static final int BDD_ILLBDD = -18; /* Illegal bdd argument */
-
-  private static final int BVEC_SIZE = -20; /* Mismatch in bitvector size */
-  private static final int BVEC_SHIFT = -21;
-  /* Illegal shift-left/right parameter */
-  private static final int BVEC_DIVZERO = -22; /* Division by zero */
-
-  private static final int BDD_ERRNUM = 24;
 
   /* Strings for all error mesages */
   private static final String[] errorstrings = {
@@ -2637,7 +2617,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private static int APPEXHASH(int l, int r, int op) {
-    return PAIR(l, r);
+    return TRIPLE(l, r, op);
   }
 
   private boolean INVARSET(int a) {
