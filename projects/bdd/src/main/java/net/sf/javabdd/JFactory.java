@@ -360,7 +360,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     @Override
     public double satCount() {
-      return bdd_satcount(_index).doubleValue();
+      return new Worker().bdd_satcount(_index).doubleValue();
     }
 
     @Override
@@ -1609,6 +1609,56 @@ public class JFactory extends BDDFactory implements Serializable {
       entry.hash = hash;
 
       return res;
+    }
+
+    private BigInteger bdd_satcount(int r) {
+      CHECK(r);
+
+      if (countcache == null) {
+        countcache = BddCacheBigInteger_init(cachesize);
+      }
+
+      miscid = CACHEID_SATCOU;
+      return satcount_rec(r).shiftLeft(LEVEL(r));
+    }
+
+    private BigInteger satcount_rec(int root) {
+      if (ISZERO(root)) {
+        return BigInteger.ZERO;
+      } else if (ISONE(root)) {
+        return BigInteger.ONE;
+      }
+
+      int hash = SATCOUHASH(root, miscid);
+      BigIntegerBddCacheData entry = BddCache_lookupBigInteger(countcache, hash);
+      if (entry.a == root && entry.c == miscid) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.value;
+      }
+
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      int level = LEVEL(root);
+      int low = LOW(root);
+      int high = HIGH(root);
+      BigInteger size =
+          satcount_rec(low)
+              .shiftLeft(LEVEL(low) - level - 1)
+              .add(satcount_rec(high).shiftLeft(LEVEL(high) - level - 1));
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = root;
+      entry.c = miscid;
+      entry.value = size;
+      entry.hash = hash;
+
+      return size;
     }
 
     private boolean bdd_testsVars(int r, int var) {
@@ -3014,56 +3064,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private void POPREF(int a) {
     bddrefstack.discard(a);
-  }
-
-  private BigInteger bdd_satcount(int r) {
-    CHECK(r);
-
-    if (countcache == null) {
-      countcache = BddCacheBigInteger_init(cachesize);
-    }
-
-    miscid = CACHEID_SATCOU;
-    return satcount_rec(r).shiftLeft(LEVEL(r));
-  }
-
-  private BigInteger satcount_rec(int root) {
-    if (ISZERO(root)) {
-      return BigInteger.ZERO;
-    } else if (ISONE(root)) {
-      return BigInteger.ONE;
-    }
-
-    int hash = SATCOUHASH(root, miscid);
-    BigIntegerBddCacheData entry = BddCache_lookupBigInteger(countcache, hash);
-    if (entry.a == root && entry.c == miscid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.value;
-    }
-
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    int level = LEVEL(root);
-    int low = LOW(root);
-    int high = HIGH(root);
-    BigInteger size =
-        satcount_rec(low)
-            .shiftLeft(LEVEL(low) - level - 1)
-            .add(satcount_rec(high).shiftLeft(LEVEL(high) - level - 1));
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = root;
-    entry.c = miscid;
-    entry.value = size;
-    entry.hash = hash;
-
-    return size;
   }
 
   void bdd_gbc() {
