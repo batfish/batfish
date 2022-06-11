@@ -190,7 +190,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) thenBDD)._index;
       int z = ((BDDImpl) elseBDD)._index;
-      return makeBDD(bdd_ite(x, y, z));
+      return makeBDD(new Worker().bdd_ite(x, y, z));
     }
 
     @Override
@@ -1380,6 +1380,129 @@ public class JFactory extends BDDFactory implements Serializable {
 
       return res;
     }
+
+    private int bdd_ite(int f, int g, int h) {
+      CHECK(f);
+      CHECK(g);
+      CHECK(h);
+
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      if (multiopcache == null) {
+        multiopcache = BddCacheMultiOp_init(cachesize);
+      }
+
+      INITREF();
+      int res = ite_rec(f, g, h);
+      checkresize();
+
+      return res;
+    }
+
+    private int ite_rec(int f, int g, int h) {
+      int res;
+
+      if (ISONE(f)) {
+        return g;
+      } else if (ISZERO(f)) {
+        return h;
+      } else if (ISONE(g)) {
+        return or_rec(f, h);
+      } else if (ISZERO(g)) {
+        applyop = bddop_less;
+        return apply_rec(f, h);
+      } else if (ISONE(h)) {
+        applyop = bddop_imp;
+        return apply_rec(f, g);
+      } else if (ISZERO(h)) {
+        return and_rec(f, g);
+      } else if (g == h) {
+        return g;
+      }
+
+      int high_f = HIGH(f);
+      int low_f = LOW(f);
+      int level_f = LEVEL(f);
+      int level_g = LEVEL(g);
+      int level_h = LEVEL(h);
+      if (high_f == BDDONE && low_f == BDDZERO && level_f < level_g && level_f < level_h) {
+        // f is a single variable BDD, and its level is lower than g's and h's.
+        // this is a common case: we're building a BDD bottom-up
+        // skip the operator cache
+        return bdd_makenode(level_f, h /* low/else */, g /* high/then */);
+      }
+
+      // ITE uses the multiop cache to be cleaned properly.
+      int[] operands = new int[] {f, g, h};
+      int hash = MULTIOPHASH(operands, bddop_ite);
+      MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
+      if (entry.a == bddop_ite && Arrays.equals(operands, entry.operands)) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.b;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      if (level_f == level_g) {
+        if (level_f == level_h) {
+          PUSHREF(ite_rec(low_f, LOW(g), LOW(h)));
+          PUSHREF(ite_rec(high_f, HIGH(g), HIGH(h)));
+          res = bdd_makenode(level_f, READREF(2), READREF(1));
+        } else if (level_f < level_h) {
+          PUSHREF(ite_rec(low_f, LOW(g), h));
+          PUSHREF(ite_rec(high_f, HIGH(g), h));
+          res = bdd_makenode(level_f, READREF(2), READREF(1));
+        } else /* f > h */ {
+          PUSHREF(ite_rec(f, g, LOW(h)));
+          PUSHREF(ite_rec(f, g, HIGH(h)));
+          res = bdd_makenode(level_h, READREF(2), READREF(1));
+        }
+      } else if (level_f < level_g) {
+        if (level_f == level_h) {
+          PUSHREF(ite_rec(low_f, g, LOW(h)));
+          PUSHREF(ite_rec(high_f, g, HIGH(h)));
+          res = bdd_makenode(level_f, READREF(2), READREF(1));
+        } else if (level_f < level_h) {
+          PUSHREF(ite_rec(low_f, g, h));
+          PUSHREF(ite_rec(high_f, g, h));
+          res = bdd_makenode(level_f, READREF(2), READREF(1));
+        } else /* f > h */ {
+          PUSHREF(ite_rec(f, g, LOW(h)));
+          PUSHREF(ite_rec(f, g, HIGH(h)));
+          res = bdd_makenode(level_h, READREF(2), READREF(1));
+        }
+      } else /* f > g */ {
+        if (level_g == level_h) {
+          PUSHREF(ite_rec(f, LOW(g), LOW(h)));
+          PUSHREF(ite_rec(f, HIGH(g), HIGH(h)));
+          res = bdd_makenode(level_g, READREF(2), READREF(1));
+        } else if (level_g < level_h) {
+          PUSHREF(ite_rec(f, LOW(g), h));
+          PUSHREF(ite_rec(f, HIGH(g), h));
+          res = bdd_makenode(level_g, READREF(2), READREF(1));
+        } else /* g > h */ {
+          PUSHREF(ite_rec(f, g, LOW(h)));
+          PUSHREF(ite_rec(f, g, HIGH(h)));
+          res = bdd_makenode(level_h, READREF(2), READREF(1));
+        }
+      }
+
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.operands = operands;
+      entry.a = bddop_ite;
+      entry.b = res;
+      entry.hash = hash;
+
+      return res;
+    }
   }
 
   private static final int BDDONE = 1;
@@ -1812,129 +1935,6 @@ public class JFactory extends BDDFactory implements Serializable {
     entry.a = r;
     entry.c = bddop_not;
     entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
-  private int bdd_ite(int f, int g, int h) {
-    CHECK(f);
-    CHECK(g);
-    CHECK(h);
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (multiopcache == null) {
-      multiopcache = BddCacheMultiOp_init(cachesize);
-    }
-
-    INITREF();
-    int res = ite_rec(f, g, h);
-    checkresize();
-
-    return res;
-  }
-
-  private int ite_rec(int f, int g, int h) {
-    int res;
-
-    if (ISONE(f)) {
-      return g;
-    } else if (ISZERO(f)) {
-      return h;
-    } else if (ISONE(g)) {
-      return or_rec(f, h);
-    } else if (ISZERO(g)) {
-      applyop = bddop_less;
-      return apply_rec(f, h);
-    } else if (ISONE(h)) {
-      applyop = bddop_imp;
-      return apply_rec(f, g);
-    } else if (ISZERO(h)) {
-      return and_rec(f, g);
-    } else if (g == h) {
-      return g;
-    }
-
-    int high_f = HIGH(f);
-    int low_f = LOW(f);
-    int level_f = LEVEL(f);
-    int level_g = LEVEL(g);
-    int level_h = LEVEL(h);
-    if (high_f == BDDONE && low_f == BDDZERO && level_f < level_g && level_f < level_h) {
-      // f is a single variable BDD, and its level is lower than g's and h's.
-      // this is a common case: we're building a BDD bottom-up
-      // skip the operator cache
-      return bdd_makenode(level_f, h /* low/else */, g /* high/then */);
-    }
-
-    // ITE uses the multiop cache to be cleaned properly.
-    int[] operands = new int[] {f, g, h};
-    int hash = MULTIOPHASH(operands, bddop_ite);
-    MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
-    if (entry.a == bddop_ite && Arrays.equals(operands, entry.operands)) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.b;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    if (level_f == level_g) {
-      if (level_f == level_h) {
-        PUSHREF(ite_rec(low_f, LOW(g), LOW(h)));
-        PUSHREF(ite_rec(high_f, HIGH(g), HIGH(h)));
-        res = bdd_makenode(level_f, READREF(2), READREF(1));
-      } else if (level_f < level_h) {
-        PUSHREF(ite_rec(low_f, LOW(g), h));
-        PUSHREF(ite_rec(high_f, HIGH(g), h));
-        res = bdd_makenode(level_f, READREF(2), READREF(1));
-      } else /* f > h */ {
-        PUSHREF(ite_rec(f, g, LOW(h)));
-        PUSHREF(ite_rec(f, g, HIGH(h)));
-        res = bdd_makenode(level_h, READREF(2), READREF(1));
-      }
-    } else if (level_f < level_g) {
-      if (level_f == level_h) {
-        PUSHREF(ite_rec(low_f, g, LOW(h)));
-        PUSHREF(ite_rec(high_f, g, HIGH(h)));
-        res = bdd_makenode(level_f, READREF(2), READREF(1));
-      } else if (level_f < level_h) {
-        PUSHREF(ite_rec(low_f, g, h));
-        PUSHREF(ite_rec(high_f, g, h));
-        res = bdd_makenode(level_f, READREF(2), READREF(1));
-      } else /* f > h */ {
-        PUSHREF(ite_rec(f, g, LOW(h)));
-        PUSHREF(ite_rec(f, g, HIGH(h)));
-        res = bdd_makenode(level_h, READREF(2), READREF(1));
-      }
-    } else /* f > g */ {
-      if (level_g == level_h) {
-        PUSHREF(ite_rec(f, LOW(g), LOW(h)));
-        PUSHREF(ite_rec(f, HIGH(g), HIGH(h)));
-        res = bdd_makenode(level_g, READREF(2), READREF(1));
-      } else if (level_g < level_h) {
-        PUSHREF(ite_rec(f, LOW(g), h));
-        PUSHREF(ite_rec(f, HIGH(g), h));
-        res = bdd_makenode(level_g, READREF(2), READREF(1));
-      } else /* g > h */ {
-        PUSHREF(ite_rec(f, g, LOW(h)));
-        PUSHREF(ite_rec(f, g, HIGH(h)));
-        res = bdd_makenode(level_h, READREF(2), READREF(1));
-      }
-    }
-
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.operands = operands;
-    entry.a = bddop_ite;
-    entry.b = res;
     entry.hash = hash;
 
     return res;
