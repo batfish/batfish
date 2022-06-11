@@ -1003,6 +1003,67 @@ public class JFactory extends BDDFactory implements Serializable {
       return res;
     }
 
+    private int or_rec(int l, int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (l == r) {
+        return l;
+      } else if (ISONE(l) || ISONE(r)) {
+        return BDDONE;
+      } else if (ISZERO(l)) {
+        return r;
+      } else if (ISZERO(r)) {
+        return l;
+      } else if (l > r) {
+        // Since OR is symmetric, maximize caching by ensuring l < r (== handled above).
+        int t = l;
+        l = r;
+        r = t;
+      }
+      int hash = APPLYHASH(l, r, bddop_or);
+      entry = BddCache_lookupI(applycache, hash);
+
+      if (entry.a == l && entry.b == r && entry.c == bddop_or) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      int level_l = LEVEL(l);
+      int level_r = LEVEL(r);
+      if (level_l == level_r) {
+        PUSHREF(or_rec(LOW(l), LOW(r)));
+        PUSHREF(or_rec(HIGH(l), HIGH(r)));
+        res = bdd_makenode(level_l, READREF(2), READREF(1));
+      } else if (level_l < level_r) {
+        PUSHREF(or_rec(LOW(l), r));
+        PUSHREF(or_rec(HIGH(l), r));
+        res = bdd_makenode(level_l, READREF(2), READREF(1));
+      } else {
+        PUSHREF(or_rec(l, LOW(r)));
+        PUSHREF(or_rec(l, HIGH(r)));
+        res = bdd_makenode(level_r, READREF(2), READREF(1));
+      }
+
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = l;
+      entry.b = r;
+      entry.c = bddop_or;
+      entry.res = res;
+      entry.hash = hash;
+
+      return res;
+    }
+
     private int bdd_apply(int l, int r, int op) {
       CHECK(l);
       CHECK(r);
@@ -2975,67 +3036,6 @@ public class JFactory extends BDDFactory implements Serializable {
     } else {
       return values;
     }
-  }
-
-  private int or_rec(int l, int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (l == r) {
-      return l;
-    } else if (ISONE(l) || ISONE(r)) {
-      return BDDONE;
-    } else if (ISZERO(l)) {
-      return r;
-    } else if (ISZERO(r)) {
-      return l;
-    } else if (l > r) {
-      // Since OR is symmetric, maximize caching by ensuring l < r (== handled above).
-      int t = l;
-      l = r;
-      r = t;
-    }
-    int hash = APPLYHASH(l, r, bddop_or);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == l && entry.b == r && entry.c == bddop_or) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    int level_l = LEVEL(l);
-    int level_r = LEVEL(r);
-    if (level_l == level_r) {
-      PUSHREF(or_rec(LOW(l), LOW(r)));
-      PUSHREF(or_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(level_l, READREF(2), READREF(1));
-    } else if (level_l < level_r) {
-      PUSHREF(or_rec(LOW(l), r));
-      PUSHREF(or_rec(HIGH(l), r));
-      res = bdd_makenode(level_l, READREF(2), READREF(1));
-    } else {
-      PUSHREF(or_rec(l, LOW(r)));
-      PUSHREF(or_rec(l, HIGH(r)));
-      res = bdd_makenode(level_r, READREF(2), READREF(1));
-    }
-
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = bddop_or;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
   }
 
   private int varset2vartable(int r) {
