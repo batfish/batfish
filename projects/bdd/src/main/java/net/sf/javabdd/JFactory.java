@@ -363,7 +363,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) var)._index;
       int z = pol ? 1 : 0;
-      return makeBDD(bdd_satoneset(x, y, z));
+      return makeBDD(new Worker().bdd_satoneset(x, y, z));
     }
 
     @Override
@@ -1638,6 +1638,46 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       int next = randomfullsatone_rec(useLo ? lo : hi, level + 1, newSeed);
       return bdd_makesatnode(level, next, useLo);
+    }
+
+    private int bdd_satoneset(int r, int var, int pol) {
+      int res;
+
+      CHECK(r);
+      if (ISZERO(r)) {
+        return r;
+      }
+      if (!ISCONST(pol)) {
+        bdd_error(BDD_ILLBDD);
+        return BDDZERO;
+      }
+
+      INITREF();
+      satPolarity = pol;
+      res = satoneset_rec(r, var);
+
+      checkresize();
+      return res;
+    }
+
+    private int satoneset_rec(int r, int var) {
+      if (ISCONST(r) && ISCONST(var)) {
+        return r;
+      }
+
+      int level_r = LEVEL(r);
+      int level_var = LEVEL(var);
+      if (level_r < level_var) {
+        int lo = LOW(r);
+        boolean useHi = ISZERO(lo);
+        return bdd_makesatnode(level_r, satoneset_rec(useHi ? HIGH(r) : lo, var), !useHi);
+      } else if (level_var < level_r) {
+        return bdd_makesatnode(level_var, satoneset_rec(r, HIGH(var)), satPolarity != BDDONE);
+      } else /* LEVEL(r) == LEVEL(var) */ {
+        int lo = LOW(r);
+        boolean useHi = ISZERO(lo);
+        return bdd_makesatnode(level_r, satoneset_rec(useHi ? HIGH(r) : lo, HIGH(var)), !useHi);
+      }
     }
   }
 
@@ -3216,46 +3256,6 @@ public class JFactory extends BDDFactory implements Serializable {
     int hi = HIGH(r);
     boolean useHi = ISZERO(lo);
     return bdd_makesatnode(LEVEL(r), satone_rec(useHi ? hi : lo), !useHi);
-  }
-
-  private int bdd_satoneset(int r, int var, int pol) {
-    int res;
-
-    CHECK(r);
-    if (ISZERO(r)) {
-      return r;
-    }
-    if (!ISCONST(pol)) {
-      bdd_error(BDD_ILLBDD);
-      return BDDZERO;
-    }
-
-    INITREF();
-    satPolarity = pol;
-    res = satoneset_rec(r, var);
-
-    checkresize();
-    return res;
-  }
-
-  private int satoneset_rec(int r, int var) {
-    if (ISCONST(r) && ISCONST(var)) {
-      return r;
-    }
-
-    int level_r = LEVEL(r);
-    int level_var = LEVEL(var);
-    if (level_r < level_var) {
-      int lo = LOW(r);
-      boolean useHi = ISZERO(lo);
-      return bdd_makesatnode(level_r, satoneset_rec(useHi ? HIGH(r) : lo, var), !useHi);
-    } else if (level_var < level_r) {
-      return bdd_makesatnode(level_var, satoneset_rec(r, HIGH(var)), satPolarity != BDDONE);
-    } else /* LEVEL(r) == LEVEL(var) */ {
-      int lo = LOW(r);
-      boolean useHi = ISZERO(lo);
-      return bdd_makesatnode(level_r, satoneset_rec(useHi ? HIGH(r) : lo, HIGH(var)), !useHi);
-    }
   }
 
   private int bdd_fullsatone(int r) {
