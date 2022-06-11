@@ -2184,6 +2184,18 @@ public class JFactory extends BDDFactory implements Serializable {
       return res;
     }
 
+    // Makes a node for the purposes of a satisfying assignment. The resulting node tests the given
+    // variable, has the given child at the branch indicated by {@code useLow}, and has the other
+    // branch false.
+    private int bdd_makesatnode(int variable, int child, boolean useLow) {
+      assert LEVEL(child) > variable; // or the BDD is out of order.
+
+      PUSHREF(child);
+      int ret = bdd_makenode(variable, useLow ? child : BDDZERO, useLow ? BDDZERO : child);
+      POPREF(1);
+      return ret;
+    }
+
     private int bdd_randomfullsatone(int r, int seed) {
       int res;
 
@@ -3055,18 +3067,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private static final int INT_MAX = Integer.MAX_VALUE;
-
-  // Makes a node for the purposes of a satisfying assignment. The resulting node tests the given
-  // variable, has the given child at the branch indicated by {@code useLow}, and has the other
-  // branch false.
-  private int bdd_makesatnode(int variable, int child, boolean useLow) {
-    assert LEVEL(child) > variable; // or the BDD is out of order.
-
-    PUSHREF(child);
-    int ret = bdd_makenode(variable, useLow ? child : BDDZERO, useLow ? BDDZERO : child);
-    POPREF(1);
-    return ret;
-  }
 
   private void bdd_gbc_rehash() {
     int freepos = 0;
