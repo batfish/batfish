@@ -525,6 +525,10 @@ public class JFactory extends BDDFactory implements Serializable {
     private final IntStack bddrefstack =
         new IntStack(); /* BDDs referenced during the current computation. */
 
+    private void INITREF() {
+      bddrefstack.clear();
+    }
+
     private int PUSHREF(int a) {
       bddrefstack.push(a);
       return a;
@@ -3029,10 +3033,6 @@ public class JFactory extends BDDFactory implements Serializable {
     bddfreenum.set(freenum);
   }
 
-  private void INITREF() {
-    bddrefstack.clear();
-  }
-
   private int PUSHREF(int a) {
     bddrefstack.push(a);
     return a;
@@ -3138,18 +3138,18 @@ public class JFactory extends BDDFactory implements Serializable {
     return root;
   }
 
-  private int bdd_delref(int root) {
+  private void bdd_delref(int root) {
     if (root == INVALID_BDD) {
       bdd_error(BDD_BREAK); /* distinctive */
     }
     if (root < 2 || !bddrunning) {
-      return root;
+      return;
     }
     if (root >= bddnodesize) {
-      return bdd_error(BDD_ILLBDD);
+      bdd_error(BDD_ILLBDD);
     }
     if (LOW(root) == INVALID_BDD) {
-      return bdd_error(BDD_ILLBDD);
+      bdd_error(BDD_ILLBDD);
     }
 
     /* if the following line is present, fails there much earlier */
@@ -3158,7 +3158,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     DECREF(root);
-    return root;
   }
 
   private void bdd_mark(int i) {
@@ -3384,9 +3383,7 @@ public class JFactory extends BDDFactory implements Serializable {
     bdd_pairs_init();
   }
 
-  private static final int CACHEID_RESTRICT = 0x1;
   private static final int CACHEID_SATCOU = 0x2;
-  private static final int CACHEID_SATCOULN = 0x3;
 
   /* Hash value modifiers for replace/compose. Max 8 values */
   private static final int CACHEID_REPLACE = 0x0;
@@ -3398,12 +3395,8 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int CACHEID_FORALL = 0x1;
   private static final int CACHEID_APPEX = 0x3;
   private static final int CACHEID_APPAL = 0x4;
-  private static final int CACHEID_APPUN = 0x5;
   private static final int CACHEID_PROJECT = 0x6;
   private static final int CACHEID_TESTS_CONSTRAINT = 0x7;
-
-  /* Number of boolean operators */
-  static final int OPERATOR_NUM = 11;
 
   /* Operator results - entry = left<<1 | right  (left,right in {0,1}) */
   private static final int[][] oprres = {
@@ -3430,13 +3423,11 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient int replaceid; /* Current cache id for replace */
   private transient int[] replacepair; /* Current replace pair */
   private transient int replacelast; /* Current last var. level to replace */
-  private transient int composelevel; /* Current variable used for compose */
   private transient int miscid; /* Current cache id for other results */
   private transient BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
   private transient BddCache quantcache; /* Cache for exist/forall results */
   private transient BddCache appexcache; /* Cache for appex/appall results */
   private transient BddCache replacecache; /* Cache for replace results */
-  private transient BddCache misccache; /* Cache for other results */
   private transient BddCache multiopcache; /* Cache for varargs operators */
   private transient BddCache countcache; /* Cache for count results */
   private int cacheratio;
@@ -3456,7 +3447,6 @@ public class JFactory extends BDDFactory implements Serializable {
     BddCache_reset(quantcache);
     BddCache_reset(appexcache);
     BddCache_reset(replacecache);
-    BddCache_reset(misccache);
     BddCache_reset(multiopcache);
     BddCache_reset(countcache);
   }
@@ -3467,7 +3457,6 @@ public class JFactory extends BDDFactory implements Serializable {
             () -> BddCache_clean_a(quantcache),
             () -> BddCache_clean_ab(appexcache),
             () -> BddCache_clean_ab(replacecache),
-            () -> BddCache_clean_ab(misccache),
             () -> BddCache_clean_multiop(multiopcache),
             () -> BddCache_clean_d(countcache))
         .parallel()
@@ -3490,7 +3479,6 @@ public class JFactory extends BDDFactory implements Serializable {
     BddCache_resize(quantcache, newcachesize);
     BddCache_resize(appexcache, newcachesize);
     BddCache_resize(replacecache, newcachesize);
-    BddCache_resize(misccache, newcachesize);
     BddCache_resize(multiopcache, newcachesize);
     BddCache_resize(countcache, newcachesize);
     return old;
@@ -3504,7 +3492,6 @@ public class JFactory extends BDDFactory implements Serializable {
       BddCache_resize(quantcache, newcachesize);
       BddCache_resize(appexcache, newcachesize);
       BddCache_resize(replacecache, newcachesize);
-      BddCache_resize(misccache, newcachesize);
       BddCache_resize(multiopcache, newcachesize);
       BddCache_resize(countcache, newcachesize);
 
@@ -3566,8 +3553,6 @@ public class JFactory extends BDDFactory implements Serializable {
       return "appex";
     } else if (cache == countcache) {
       return "count";
-    } else if (cache == misccache) {
-      return "misc";
     } else if (cache == multiopcache) {
       return "multiop";
     } else if (cache == quantcache) {
