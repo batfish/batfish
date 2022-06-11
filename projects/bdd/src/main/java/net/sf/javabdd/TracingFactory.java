@@ -670,11 +670,6 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
-    public int[] varProfile() {
-      return _bdd.varProfile();
-    }
-
-    @Override
     public boolean equals(@Nullable Object o) {
       if (!(o instanceof TracedBDDImpl)) {
         return false;

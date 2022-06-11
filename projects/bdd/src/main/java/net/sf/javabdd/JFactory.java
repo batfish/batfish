@@ -369,12 +369,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public int[] varProfile() {
-      int x = _index;
-      return bdd_varprofile(x);
-    }
-
-    @Override
     public boolean equals(@Nullable Object o) {
       if (!(o instanceof BDDImpl)) {
         return false;
@@ -3031,33 +3025,6 @@ public class JFactory extends BDDFactory implements Serializable {
     bddrefstack.discard(a);
   }
 
-  private int[] bdd_varprofile(int r) {
-    CHECK(r);
-
-    int[] varprofile = new int[bddvarnum];
-
-    varprofile_rec(r, varprofile);
-    bdd_unmark(r);
-    return varprofile;
-  }
-
-  private void varprofile_rec(int r, int[] varprofile) {
-
-    if (r < 2) {
-      return;
-    }
-
-    if (MARKED(r)) {
-      return;
-    }
-
-    varprofile[bddlevel2var[LEVEL(r)]]++;
-    SETMARK(r);
-
-    varprofile_rec(LOW(r), varprofile);
-    varprofile_rec(HIGH(r), varprofile);
-  }
-
   private double bdd_pathcount(int r) {
     CHECK(r);
 
@@ -3281,38 +3248,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
     bdd_mark(LOW(i));
     bdd_mark(HIGH(i));
-  }
-
-  private void bdd_markcount(int i, int[] cou) {
-
-    if (i < 2) {
-      return;
-    }
-
-    if (MARKED(i) || LOW(i) == INVALID_BDD) {
-      return;
-    }
-
-    SETMARK(i);
-    cou[0] += 1;
-
-    bdd_markcount(LOW(i), cou);
-    bdd_markcount(HIGH(i), cou);
-  }
-
-  private void bdd_unmark(int i) {
-
-    if (i < 2) {
-      return;
-    }
-
-    if (!MARKED(i) || LOW(i) == INVALID_BDD) {
-      return;
-    }
-    UNMARK(i);
-
-    bdd_unmark(LOW(i));
-    bdd_unmark(HIGH(i));
   }
 
   private int bdd_makenode(int level, int low, int high) {

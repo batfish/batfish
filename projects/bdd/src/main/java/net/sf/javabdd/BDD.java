@@ -1149,15 +1149,6 @@ public abstract class BDD implements Serializable {
     return Math.log(satCount(varset));
   }
 
-  /**
-   * Counts the number of times each variable occurs in this BDD. The result is stored and returned
-   * in an integer array where the i'th position stores the number of times the i'th printing
-   * variable occurred in the BDD.
-   *
-   * <p>Compare to bdd_varprofile.
-   */
-  public abstract int[] varProfile();
-
   // override so implementations are forced to implement
   @Override
   public abstract boolean equals(@Nullable Object o);
