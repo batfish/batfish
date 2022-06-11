@@ -369,13 +369,13 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public BDD replace(BDDPairing pair) {
       int x = _index;
-      return makeBDD(bdd_replace(x, (bddPair) pair));
+      return makeBDD(new Worker().bdd_replace(x, (bddPair) pair));
     }
 
     @Override
     public BDD replaceWith(BDDPairing pair) {
       int x = _index;
-      int y = bdd_replace(x, (bddPair) pair);
+      int y = new Worker().bdd_replace(x, (bddPair) pair);
       bdd_delref(x);
       bdd_addref(y);
       _index = y;
@@ -1503,6 +1503,78 @@ public class JFactory extends BDDFactory implements Serializable {
 
       return res;
     }
+
+    private int bdd_replace(int r, bddPair pair) {
+      CHECK(r);
+
+      if (replacecache == null) {
+        replacecache = BddCacheI_init(cachesize);
+      }
+      replacepair = pair.result;
+      replacelast = pair.last;
+      replaceid = (pair.id << 3) | CACHEID_REPLACE;
+
+      INITREF();
+      int res = replace_rec(r);
+      checkresize();
+
+      return res;
+    }
+
+    private int replace_rec(int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (ISCONST(r)) {
+        return r;
+      }
+      int level = LEVEL(r);
+      if (level > replacelast) {
+        return r;
+      }
+
+      int hash = REPLACEHASH(replaceid, r);
+      entry = BddCache_lookupI(replacecache, hash);
+      if (entry.a == r && entry.c == replaceid) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      PUSHREF(replace_rec(LOW(r)));
+      PUSHREF(replace_rec(HIGH(r)));
+
+      /* Replace the root variable with the new one. Replacements at the root or in the subbdds can
+       * cause the new root to be out of order. bdd_correctify builds the bdd correctly by branching
+       * on the new root at the correct level of the bdd.
+       */
+      {
+        int new_level = LEVEL(replacepair[level]);
+
+        /* bdd_correctify calls are cached separately from replace_rec calls. Set the cacheid for
+         * the bdd_correctify calls and restore when it returns.
+         */
+        int tmp = replaceid;
+        replaceid = (new_level << 3) | CACHEID_CORRECTIFY;
+        res = bdd_correctify(new_level, READREF(2), READREF(1));
+        replaceid = tmp;
+      }
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = r;
+      entry.c = replaceid;
+      entry.res = res;
+      entry.hash = hash;
+
+      return res;
+    }
   }
 
   private static final int BDDONE = 1;
@@ -1934,78 +2006,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
     entry.a = r;
     entry.c = bddop_not;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
-  private int bdd_replace(int r, bddPair pair) {
-    CHECK(r);
-
-    if (replacecache == null) {
-      replacecache = BddCacheI_init(cachesize);
-    }
-    replacepair = pair.result;
-    replacelast = pair.last;
-    replaceid = (pair.id << 3) | CACHEID_REPLACE;
-
-    INITREF();
-    int res = replace_rec(r);
-    checkresize();
-
-    return res;
-  }
-
-  private int replace_rec(int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (ISCONST(r)) {
-      return r;
-    }
-    int level = LEVEL(r);
-    if (level > replacelast) {
-      return r;
-    }
-
-    int hash = REPLACEHASH(replaceid, r);
-    entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == r && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    PUSHREF(replace_rec(LOW(r)));
-    PUSHREF(replace_rec(HIGH(r)));
-
-    /* Replace the root variable with the new one. Replacements at the root or in the subbdds can
-     * cause the new root to be out of order. bdd_correctify builds the bdd correctly by branching
-     * on the new root at the correct level of the bdd.
-     */
-    {
-      int new_level = LEVEL(replacepair[level]);
-
-      /* bdd_correctify calls are cached separately from replace_rec calls. Set the cacheid for
-       * the bdd_correctify calls and restore when it returns.
-       */
-      int tmp = replaceid;
-      replaceid = (new_level << 3) | CACHEID_CORRECTIFY;
-      res = bdd_correctify(new_level, READREF(2), READREF(1));
-      replaceid = tmp;
-    }
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = replaceid;
     entry.res = res;
     entry.hash = hash;
 
