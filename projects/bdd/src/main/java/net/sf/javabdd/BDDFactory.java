@@ -35,7 +35,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessControlException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -594,14 +593,6 @@ public abstract class BDDFactory {
   }
 
   /** ** BDD STATS *** */
-
-  /**
-   * Counts the number of shared nodes in a collection of BDDs. Counts all distinct nodes that are
-   * used in the BDDs -- if a node is used in more than one BDD then it only counts once.
-   *
-   * <p>Compare to bdd_anodecount.
-   */
-  public abstract int nodeCount(Collection<BDD> r);
 
   /**
    * Get the number of allocated nodes. This includes both dead and active nodes.

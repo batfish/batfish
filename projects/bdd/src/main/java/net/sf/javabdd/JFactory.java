@@ -40,7 +40,6 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -357,11 +356,6 @@ public class JFactory extends BDDFactory implements Serializable {
       bdd_addref(y);
       _index = y;
       return this;
-    }
-
-    @Override
-    public int nodeCount() {
-      return bdd_nodecount(_index);
     }
 
     @Override
@@ -3037,31 +3031,6 @@ public class JFactory extends BDDFactory implements Serializable {
     bddrefstack.discard(a);
   }
 
-  private int bdd_nodecount(int r) {
-    int[] num = new int[1];
-
-    CHECK(r);
-
-    bdd_markcount(r, num);
-    bdd_unmark(r);
-
-    return num[0];
-  }
-
-  private int bdd_anodecount(int[] r) {
-    int[] cou = new int[1];
-
-    for (int i : r) {
-      bdd_markcount(i, cou);
-    }
-
-    for (int i : r) {
-      bdd_unmark(i);
-    }
-
-    return cou[0];
-  }
-
   private int[] bdd_varprofile(int r) {
     CHECK(r);
 
@@ -4232,17 +4201,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private int bdd_getnodenum() {
     return bddnodesize - bddfreenum.get();
-  }
-
-  @Override
-  public int nodeCount(Collection<BDD> r) {
-    int[] a = new int[r.size()];
-    int j = 0;
-    for (Object o : r) {
-      BDDImpl b = (BDDImpl) o;
-      a[j++] = b._index;
-    }
-    return bdd_anodecount(a);
   }
 
   @Override
