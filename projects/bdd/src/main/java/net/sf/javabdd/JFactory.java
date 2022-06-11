@@ -252,7 +252,7 @@ public class JFactory extends BDDFactory implements Serializable {
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }
-      return andsat_rec(_index, ((BDDImpl) that)._index);
+      return new Worker().andsat_rec(_index, ((BDDImpl) that)._index);
     }
 
     @Override
@@ -1035,6 +1035,57 @@ public class JFactory extends BDDFactory implements Serializable {
       INITREF();
       int res = opr == bddop_and ? relprod_rec(l, r) : appquant_rec(l, r);
       checkresize();
+
+      return res;
+    }
+
+    private boolean andsat_rec(int l, int r) {
+      if (ISZERO(l) || ISZERO(r)) {
+        return false;
+      } else if (ISONE(l) || ISONE(r)) {
+        return true;
+      } else if (l == r) {
+        return true;
+      } else if (l > r) {
+        // Since AND is symmetric, maximize caching by ensuring l < r (== handled above).
+        int t = l;
+        l = r;
+        r = t;
+      }
+
+      // TODO: should we also check for and? For now, don't since and_sat should be real fast.
+      int hash = APPLYHASH(l, r, bddop_andsat);
+      BddCacheDataI entry = BddCache_lookupI(applycache, hash);
+      if (entry.a == l && entry.b == r && entry.c == bddop_andsat) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        // We set entry.res to BDDZERO for false and BDDONE for true.
+        return entry.res == BDDONE;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      boolean res;
+      int level_l = LEVEL(l);
+      int level_r = LEVEL(r);
+      if (level_l == level_r) {
+        res = andsat_rec(LOW(l), LOW(r)) || andsat_rec(HIGH(l), HIGH(r));
+      } else if (level_l < level_r) {
+        res = andsat_rec(LOW(l), r) || andsat_rec(HIGH(l), r);
+      } else {
+        res = andsat_rec(l, LOW(r)) || andsat_rec(l, HIGH(r));
+      }
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = l;
+      entry.b = r;
+      entry.c = bddop_andsat;
+      entry.res = res ? BDDONE : BDDZERO;
+      entry.hash = hash;
 
       return res;
     }
@@ -2666,57 +2717,6 @@ public class JFactory extends BDDFactory implements Serializable {
     entry.a = l;
     entry.b = r;
     entry.c = bddop_diffsat;
-    entry.res = res ? BDDONE : BDDZERO;
-    entry.hash = hash;
-
-    return res;
-  }
-
-  private boolean andsat_rec(int l, int r) {
-    if (ISZERO(l) || ISZERO(r)) {
-      return false;
-    } else if (ISONE(l) || ISONE(r)) {
-      return true;
-    } else if (l == r) {
-      return true;
-    } else if (l > r) {
-      // Since AND is symmetric, maximize caching by ensuring l < r (== handled above).
-      int t = l;
-      l = r;
-      r = t;
-    }
-
-    // TODO: should we also check for and? For now, don't since and_sat should be real fast.
-    int hash = APPLYHASH(l, r, bddop_andsat);
-    BddCacheDataI entry = BddCache_lookupI(applycache, hash);
-    if (entry.a == l && entry.b == r && entry.c == bddop_andsat) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      // We set entry.res to BDDZERO for false and BDDONE for true.
-      return entry.res == BDDONE;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    boolean res;
-    int level_l = LEVEL(l);
-    int level_r = LEVEL(r);
-    if (level_l == level_r) {
-      res = andsat_rec(LOW(l), LOW(r)) || andsat_rec(HIGH(l), HIGH(r));
-    } else if (level_l < level_r) {
-      res = andsat_rec(LOW(l), r) || andsat_rec(HIGH(l), r);
-    } else {
-      res = andsat_rec(l, LOW(r)) || andsat_rec(l, HIGH(r));
-    }
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = bddop_andsat;
     entry.res = res ? BDDONE : BDDZERO;
     entry.hash = hash;
 
