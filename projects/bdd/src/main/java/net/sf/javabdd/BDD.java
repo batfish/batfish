@@ -586,18 +586,6 @@ public abstract class BDD implements Serializable {
   public abstract BDD forAll(BDD var);
 
   /**
-   * Coudert and Madre's restrict function. Tries to simplify the BDD f by restricting it to the
-   * domain covered by d. No checks are done to see if the result is actually smaller than the
-   * input. This can be done by the user with a call to nodeCount().
-   *
-   * <p>Compare to bdd_simplify.
-   *
-   * @param d BDD containing the variables in the domain
-   * @return the result of the simplify operation
-   */
-  public abstract BDD simplify(BDD d);
-
-  /**
    * Returns the result of applying the binary operator <tt>opr</tt> to the two BDDs.
    *
    * @param that the BDD to apply the operator on

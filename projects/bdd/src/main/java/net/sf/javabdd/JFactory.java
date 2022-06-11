@@ -248,13 +248,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public BDD simplify(BDD d) {
-      int x = _index;
-      int y = ((BDDImpl) d)._index;
-      return makeBDD(bdd_simplify(x, y));
-    }
-
-    @Override
     public boolean andSat(BDD that) {
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
@@ -1975,7 +1968,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
   /* Should *not* be used in bdd_apply calls !!! */
   private static final int bddop_not = 10;
-  private static final int bddop_simplify = 11;
   private static final int bddop_andsat = 12;
   private static final int bddop_diffsat = 13;
   private static final int bddop_ite = 14;
@@ -3081,83 +3073,6 @@ public class JFactory extends BDDFactory implements Serializable {
       entry.res = res;
       entry.hash = hash;
     }
-
-    return res;
-  }
-
-  private int bdd_simplify(int f, int d) {
-    CHECK(f);
-    CHECK(d);
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    applyop = bddop_or;
-
-    INITREF();
-    int res = simplify_rec(f, d);
-    checkresize();
-
-    return res;
-  }
-
-  private int simplify_rec(int f, int d) {
-    BddCacheDataI entry;
-    int res;
-
-    if (ISONE(d) || ISCONST(f)) {
-      return f;
-    } else if (d == f) {
-      return BDDONE;
-    } else if (ISZERO(d)) {
-      return BDDZERO;
-    }
-
-    int hash = APPLYHASH(f, d, bddop_simplify);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == f && entry.b == d && entry.c == bddop_simplify) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    int level_f = LEVEL(f);
-    int level_d = LEVEL(d);
-    if (level_f == level_d) {
-      if (ISZERO(LOW(d))) {
-        res = simplify_rec(HIGH(f), HIGH(d));
-      } else if (ISZERO(HIGH(d))) {
-        res = simplify_rec(LOW(f), LOW(d));
-      } else {
-        PUSHREF(simplify_rec(LOW(f), LOW(d)));
-        PUSHREF(simplify_rec(HIGH(f), HIGH(d)));
-        res = bdd_makenode(level_f, READREF(2), READREF(1));
-        POPREF(2);
-      }
-    } else if (level_f < level_d) {
-      PUSHREF(simplify_rec(LOW(f), d));
-      PUSHREF(simplify_rec(HIGH(f), d));
-      res = bdd_makenode(level_f, READREF(2), READREF(1));
-      POPREF(2);
-    } else /* LEVEL(d) < LEVEL(f) */ {
-      PUSHREF(or_rec(LOW(d), HIGH(d))); /* Exist quant */
-      res = simplify_rec(f, READREF(1));
-      POPREF(1);
-    }
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = f;
-    entry.b = d;
-    entry.c = bddop_simplify;
-    entry.res = res;
-    entry.hash = hash;
 
     return res;
   }

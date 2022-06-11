@@ -568,11 +568,6 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
-    public TracedBDDImpl simplify(BDD d) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean andSat(BDD that) {
       TracedBDDImpl tThat = (TracedBDDImpl) that;
       traceNoResult(Operation.AND_SAT, _bdd, tThat._bdd);
