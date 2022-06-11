@@ -788,6 +788,127 @@ public class JFactory extends BDDFactory implements Serializable {
       return res;
     }
 
+    private int appquant_rec(int l, int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (VERIFY_ASSERTIONS) {
+        _assert(appexop != bddop_and);
+      }
+
+      switch (appexop) {
+        case bddop_or:
+          if (l == BDDONE || r == BDDONE) {
+            return BDDONE;
+          } else if (l == r) {
+            return exist_rec(l);
+          } else if (l == BDDZERO) {
+            return exist_rec(r);
+          } else if (r == BDDZERO) {
+            return exist_rec(l);
+          }
+          break;
+        case bddop_xor:
+          if (l == r) {
+            return BDDZERO;
+          } else if (l == BDDZERO) {
+            return quant_rec(r);
+          } else if (r == BDDZERO) {
+            return quant_rec(l);
+          }
+          break;
+        case bddop_nand:
+          if (l == BDDZERO || r == BDDZERO) {
+            return BDDONE;
+          }
+          break;
+        case bddop_nor:
+          if (l == BDDONE || r == BDDONE) {
+            return BDDZERO;
+          }
+          break;
+      }
+
+      if (ISCONST(l) && ISCONST(r)) {
+        return oprres[appexop][(l << 1) | r];
+      }
+
+      int level_l = LEVEL(l);
+      int level_r = LEVEL(r);
+      if (level_l > quantlast && level_r > quantlast) {
+        int oldop = applyop;
+        applyop = appexop;
+        switch (applyop) {
+          case bddop_and:
+            res = and_rec(l, r);
+            break;
+          case bddop_or:
+            res = or_rec(l, r);
+            break;
+          default:
+            res = apply_rec(l, r);
+            break;
+        }
+        applyop = oldop;
+      } else {
+        int hash = APPEXHASH(l, r, appexop);
+        entry = BddCache_lookupI(appexcache, hash);
+        if (entry.a == l && entry.b == r && entry.c == appexid) {
+          if (CACHESTATS) {
+            cachestats.opHit++;
+          }
+          return entry.res;
+        }
+        if (CACHESTATS) {
+          cachestats.opMiss++;
+        }
+
+        int lev;
+        if (level_l == level_r) {
+          PUSHREF(appquant_rec(LOW(l), LOW(r)));
+          PUSHREF(appquant_rec(HIGH(l), HIGH(r)));
+          lev = level_l;
+        } else if (level_l < level_r) {
+          PUSHREF(appquant_rec(LOW(l), r));
+          PUSHREF(appquant_rec(HIGH(l), r));
+          lev = level_l;
+        } else {
+          PUSHREF(appquant_rec(l, LOW(r)));
+          PUSHREF(appquant_rec(l, HIGH(r)));
+          lev = level_r;
+        }
+        if (INVARSET(lev)) {
+          int r2 = READREF(2), r1 = READREF(1);
+          switch (applyop) {
+            case bddop_and:
+              res = and_rec(r2, r1);
+              break;
+            case bddop_or:
+              res = or_rec(r2, r1);
+              break;
+            default:
+              res = apply_rec(r2, r1);
+              break;
+          }
+        } else {
+          res = bdd_makenode(lev, READREF(2), READREF(1));
+        }
+
+        POPREF(2);
+
+        if (CACHESTATS && entry.a != -1) {
+          cachestats.opOverwrite++;
+        }
+        entry.a = l;
+        entry.b = r;
+        entry.c = appexid;
+        entry.res = res;
+        entry.hash = hash;
+      }
+
+      return res;
+    }
+
     private int relprod_rec(int l, int r) {
       BddCacheDataI entry;
       int res;
@@ -2245,7 +2366,8 @@ public class JFactory extends BDDFactory implements Serializable {
     quantid = (appexid << 3) | CACHEID_APPEX;
 
     INITREF();
-    int res = opr == bddop_and ? new Worker().relprod_rec(l, r) : appquant_rec(l, r);
+    Worker worker = new Worker();
+    int res = opr == bddop_and ? worker.relprod_rec(l, r) : worker.appquant_rec(l, r);
     checkresize();
 
     return res;
@@ -2416,127 +2538,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     return 0;
-  }
-
-  private int appquant_rec(int l, int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (VERIFY_ASSERTIONS) {
-      _assert(appexop != bddop_and);
-    }
-
-    switch (appexop) {
-      case bddop_or:
-        if (l == BDDONE || r == BDDONE) {
-          return BDDONE;
-        } else if (l == r) {
-          return exist_rec(l);
-        } else if (l == BDDZERO) {
-          return exist_rec(r);
-        } else if (r == BDDZERO) {
-          return exist_rec(l);
-        }
-        break;
-      case bddop_xor:
-        if (l == r) {
-          return BDDZERO;
-        } else if (l == BDDZERO) {
-          return quant_rec(r);
-        } else if (r == BDDZERO) {
-          return quant_rec(l);
-        }
-        break;
-      case bddop_nand:
-        if (l == BDDZERO || r == BDDZERO) {
-          return BDDONE;
-        }
-        break;
-      case bddop_nor:
-        if (l == BDDONE || r == BDDONE) {
-          return BDDZERO;
-        }
-        break;
-    }
-
-    if (ISCONST(l) && ISCONST(r)) {
-      return oprres[appexop][(l << 1) | r];
-    }
-
-    int level_l = LEVEL(l);
-    int level_r = LEVEL(r);
-    if (level_l > quantlast && level_r > quantlast) {
-      int oldop = applyop;
-      applyop = appexop;
-      switch (applyop) {
-        case bddop_and:
-          res = and_rec(l, r);
-          break;
-        case bddop_or:
-          res = or_rec(l, r);
-          break;
-        default:
-          res = apply_rec(l, r);
-          break;
-      }
-      applyop = oldop;
-    } else {
-      int hash = APPEXHASH(l, r, appexop);
-      entry = BddCache_lookupI(appexcache, hash);
-      if (entry.a == l && entry.b == r && entry.c == appexid) {
-        if (CACHESTATS) {
-          cachestats.opHit++;
-        }
-        return entry.res;
-      }
-      if (CACHESTATS) {
-        cachestats.opMiss++;
-      }
-
-      int lev;
-      if (level_l == level_r) {
-        PUSHREF(appquant_rec(LOW(l), LOW(r)));
-        PUSHREF(appquant_rec(HIGH(l), HIGH(r)));
-        lev = level_l;
-      } else if (level_l < level_r) {
-        PUSHREF(appquant_rec(LOW(l), r));
-        PUSHREF(appquant_rec(HIGH(l), r));
-        lev = level_l;
-      } else {
-        PUSHREF(appquant_rec(l, LOW(r)));
-        PUSHREF(appquant_rec(l, HIGH(r)));
-        lev = level_r;
-      }
-      if (INVARSET(lev)) {
-        int r2 = READREF(2), r1 = READREF(1);
-        switch (applyop) {
-          case bddop_and:
-            res = and_rec(r2, r1);
-            break;
-          case bddop_or:
-            res = or_rec(r2, r1);
-            break;
-          default:
-            res = apply_rec(r2, r1);
-            break;
-        }
-      } else {
-        res = bdd_makenode(lev, READREF(2), READREF(1));
-      }
-
-      POPREF(2);
-
-      if (CACHESTATS && entry.a != -1) {
-        cachestats.opOverwrite++;
-      }
-      entry.a = l;
-      entry.b = r;
-      entry.c = appexid;
-      entry.res = res;
-      entry.hash = hash;
-    }
-
-    return res;
   }
 
   private int appuni_rec(int l, int r, int var) {
@@ -3537,7 +3538,7 @@ public class JFactory extends BDDFactory implements Serializable {
     quantid = (appexid << 3) | CACHEID_APPAL;
 
     INITREF();
-    int res = appquant_rec(l, r);
+    int res = new Worker().appquant_rec(l, r);
     checkresize();
 
     return res;
