@@ -309,7 +309,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) rel)._index;
 
-      return makeBDD(bdd_transform(x, y, (bddPair) pair));
+      return makeBDD(new Worker().bdd_transform(x, y, (bddPair) pair));
     }
 
     @Override
@@ -1717,6 +1717,111 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       return bdd_makesatnode(level, child, useLo);
     }
+
+    private int bdd_transform(int l, int r, bddPair pair) {
+      CHECK(l);
+      CHECK(r);
+
+      if (!_validPairIdsForTransform.contains(pair.id)) {
+        checkArgument(pair.isValidForTransform(), "Input BDDPairing is not valid for transform");
+        _validPairIdsForTransform.add(pair.id);
+      }
+
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      if (replacecache == null) {
+        replacecache = BddCacheI_init(cachesize);
+      }
+      replacepair = pair.result;
+      replacelast = pair.last;
+      replaceid = (pair.id << 3) | CACHEID_TRANSFORM;
+
+      INITREF();
+      int res = transform_rec(l, r);
+      checkresize();
+
+      return res;
+    }
+
+    private int transform_rec(int l, int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (ISZERO(l) || ISZERO(r)) {
+        return BDDZERO;
+      }
+      int level_l = LEVEL(l);
+      int level_r = -1;
+      if (level_l > replacelast) {
+        level_r = LEVEL(r);
+        if (level_r > replacelast) {
+          return and_rec(l, r);
+        }
+      }
+      int hash = TRANSFORMHASH(replaceid, l, r);
+      entry = BddCache_lookupI(replacecache, hash);
+      if (entry.a == l && entry.b == r && entry.c == replaceid) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss--;
+      }
+
+      if (level_r == -1) {
+        level_r = LEVEL(r);
+      }
+
+      int level;
+      if (level_l == level_r) {
+        level = level_l;
+        PUSHREF(transform_rec(LOW(l), LOW(r)));
+        PUSHREF(transform_rec(HIGH(l), HIGH(r)));
+      } else if (level_l < level_r) {
+        level = level_l;
+        PUSHREF(transform_rec(LOW(l), r));
+        PUSHREF(transform_rec(HIGH(l), r));
+      } else {
+        level = level_r;
+        PUSHREF(transform_rec(l, LOW(r)));
+        PUSHREF(transform_rec(l, HIGH(r)));
+      }
+
+      int lo = READREF(2);
+      int hi = READREF(1);
+
+      assert LEVEL(lo) >= level && LEVEL(hi) >= level : "Cannot transform up more than one level";
+
+      // check if this level is replaced, i.e. if it's in the codomain of the replacepair. If it is,
+      // it must be mapped from the next level.
+      int nextLevel = level + 1;
+      if (nextLevel < replacepair.length && LEVEL(replacepair[nextLevel]) == level) {
+        // this level has been replaced, i.e. existentially quantified. OR hi and lo
+        res = or_rec(lo, hi);
+      } else {
+        // two cases: replace at this level or keep the level. If replaced, it must be mapped to the
+        // previous level.
+        int codomLevel = LEVEL(replacepair[level]);
+        assert codomLevel == level || codomLevel == level - 1
+            : "Transform can only replace variables to the previous level";
+        res = bdd_makenode(codomLevel, lo, hi);
+      }
+      POPREF(2);
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = l;
+      entry.b = r;
+      entry.c = replaceid;
+      entry.res = res;
+      entry.hash = hash;
+
+      return res;
+    }
   }
 
   private static final int BDDONE = 1;
@@ -2823,111 +2928,6 @@ public class JFactory extends BDDFactory implements Serializable {
     entry.a = l;
     entry.b = r;
     entry.c = bddop_or;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
-  private int bdd_transform(int l, int r, bddPair pair) {
-    CHECK(l);
-    CHECK(r);
-
-    if (!_validPairIdsForTransform.contains(pair.id)) {
-      checkArgument(pair.isValidForTransform(), "Input BDDPairing is not valid for transform");
-      _validPairIdsForTransform.add(pair.id);
-    }
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (replacecache == null) {
-      replacecache = BddCacheI_init(cachesize);
-    }
-    replacepair = pair.result;
-    replacelast = pair.last;
-    replaceid = (pair.id << 3) | CACHEID_TRANSFORM;
-
-    INITREF();
-    int res = transform_rec(l, r);
-    checkresize();
-
-    return res;
-  }
-
-  private int transform_rec(int l, int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (ISZERO(l) || ISZERO(r)) {
-      return BDDZERO;
-    }
-    int level_l = LEVEL(l);
-    int level_r = -1;
-    if (level_l > replacelast) {
-      level_r = LEVEL(r);
-      if (level_r > replacelast) {
-        return and_rec(l, r);
-      }
-    }
-    int hash = TRANSFORMHASH(replaceid, l, r);
-    entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == l && entry.b == r && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss--;
-    }
-
-    if (level_r == -1) {
-      level_r = LEVEL(r);
-    }
-
-    int level;
-    if (level_l == level_r) {
-      level = level_l;
-      PUSHREF(transform_rec(LOW(l), LOW(r)));
-      PUSHREF(transform_rec(HIGH(l), HIGH(r)));
-    } else if (level_l < level_r) {
-      level = level_l;
-      PUSHREF(transform_rec(LOW(l), r));
-      PUSHREF(transform_rec(HIGH(l), r));
-    } else {
-      level = level_r;
-      PUSHREF(transform_rec(l, LOW(r)));
-      PUSHREF(transform_rec(l, HIGH(r)));
-    }
-
-    int lo = READREF(2);
-    int hi = READREF(1);
-
-    assert LEVEL(lo) >= level && LEVEL(hi) >= level : "Cannot transform up more than one level";
-
-    // check if this level is replaced, i.e. if it's in the codomain of the replacepair. If it is,
-    // it must be mapped from the next level.
-    int nextLevel = level + 1;
-    if (nextLevel < replacepair.length && LEVEL(replacepair[nextLevel]) == level) {
-      // this level has been replaced, i.e. existentially quantified. OR hi and lo
-      res = or_rec(lo, hi);
-    } else {
-      // two cases: replace at this level or keep the level. If replaced, it must be mapped to the
-      // previous level.
-      int codomLevel = LEVEL(replacepair[level]);
-      assert codomLevel == level || codomLevel == level - 1
-          : "Transform can only replace variables to the previous level";
-      res = bdd_makenode(codomLevel, lo, hi);
-    }
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = replaceid;
     entry.res = res;
     entry.hash = hash;
 
