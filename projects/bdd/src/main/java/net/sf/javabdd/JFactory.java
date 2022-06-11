@@ -251,7 +251,7 @@ public class JFactory extends BDDFactory implements Serializable {
     public BDD forAll(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return makeBDD(bdd_forall(x, y));
+      return makeBDD(new Worker().bdd_forall(x, y));
     }
 
     @Override
@@ -1285,6 +1285,90 @@ public class JFactory extends BDDFactory implements Serializable {
         res = bdd_makenode(level, READREF(2), READREF(1));
         POPREF(2);
       }
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = r;
+      entry.c = quantid;
+      entry.res = res;
+      entry.hash = hash;
+
+      return res;
+    }
+
+    private int bdd_forall(int r, int var) {
+      CHECK(r);
+      CHECK(var);
+
+      if (var < 2) /* Empty set */ {
+        return r;
+      }
+      if (varset2vartable(var) < 0) {
+        return BDDZERO;
+      }
+
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      if (quantcache == null) {
+        quantcache = BddCacheI_init(cachesize);
+      }
+      quantid = (var << 3) | CACHEID_FORALL;
+      applyop = bddop_and;
+
+      INITREF();
+      int res = quant_rec(r);
+      checkresize();
+
+      return res;
+    }
+
+    private int quant_rec(int r) {
+      BddCacheDataI entry;
+      int res;
+
+      if (r < 2) {
+        return r;
+      }
+      int level = LEVEL(r);
+      if (level > quantlast) {
+        return r;
+      }
+
+      int hash = QUANTHASH(r);
+      entry = BddCache_lookupI(quantcache, hash);
+      if (entry.a == r && entry.c == quantid) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.res;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      PUSHREF(quant_rec(LOW(r)));
+      PUSHREF(quant_rec(HIGH(r)));
+
+      if (INVARSET(level)) {
+        int r2 = READREF(2), r1 = READREF(1);
+        switch (applyop) {
+          case bddop_and:
+            res = and_rec(r2, r1);
+            break;
+          case bddop_or:
+            res = or_rec(r2, r1);
+            break;
+          default:
+            res = apply_rec(r2, r1);
+            break;
+        }
+      } else {
+        res = bdd_makenode(level, READREF(2), READREF(1));
+      }
+
+      POPREF(2);
 
       if (CACHESTATS && entry.a != -1) {
         cachestats.opOverwrite++;
@@ -2847,63 +2931,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
-  private int quant_rec(int r) {
-    BddCacheDataI entry;
-    int res;
-
-    if (r < 2) {
-      return r;
-    }
-    int level = LEVEL(r);
-    if (level > quantlast) {
-      return r;
-    }
-
-    int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    PUSHREF(quant_rec(LOW(r)));
-    PUSHREF(quant_rec(HIGH(r)));
-
-    if (INVARSET(level)) {
-      int r2 = READREF(2), r1 = READREF(1);
-      switch (applyop) {
-        case bddop_and:
-          res = and_rec(r2, r1);
-          break;
-        case bddop_or:
-          res = or_rec(r2, r1);
-          break;
-        default:
-          res = apply_rec(r2, r1);
-          break;
-      }
-    } else {
-      res = bdd_makenode(level, READREF(2), READREF(1));
-    }
-
-    POPREF(2);
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res;
-    entry.hash = hash;
-
-    return res;
-  }
-
   private int bdd_constrain(int f, int c) {
     CHECK(f);
     CHECK(c);
@@ -2985,33 +3012,6 @@ public class JFactory extends BDDFactory implements Serializable {
     entry.c = miscid;
     entry.res = res;
     entry.hash = hash;
-
-    return res;
-  }
-
-  private int bdd_forall(int r, int var) {
-    CHECK(r);
-    CHECK(var);
-
-    if (var < 2) /* Empty set */ {
-      return r;
-    }
-    if (varset2vartable(var) < 0) {
-      return BDDZERO;
-    }
-
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
-    }
-    quantid = (var << 3) | CACHEID_FORALL;
-    applyop = bddop_and;
-
-    INITREF();
-    int res = quant_rec(r);
-    checkresize();
 
     return res;
   }
