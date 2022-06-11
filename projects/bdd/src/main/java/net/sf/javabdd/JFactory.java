@@ -542,6 +542,63 @@ public class JFactory extends BDDFactory implements Serializable {
       bddrefstack.discard(a);
     }
 
+    private int bdd_setvarnum(int num) {
+      // todo: needs to have the writer lock
+      int bdv;
+      int oldbddvarnum = bddvarnum;
+
+      if (num < 1 || num > MAXVAR) {
+        bdd_error(BDD_RANGE);
+        return BDDZERO;
+      }
+
+      if (num < bddvarnum) {
+        return bdd_error(BDD_DECVNUM);
+      }
+      if (num == bddvarnum) {
+        return 0;
+      }
+
+      if (bddvarset == null) {
+        bddvarset = new int[num * 2];
+        bddlevel2var = new int[num + 1];
+        bddvar2level = new int[num + 1];
+      } else {
+        bddvarset = Arrays.copyOf(bddvarset, num * 2);
+        bddlevel2var = Arrays.copyOf(bddlevel2var, num + 1);
+        bddvar2level = Arrays.copyOf(bddvar2level, num + 1);
+      }
+
+      for (bdv = bddvarnum; bddvarnum < num; bddvarnum++) {
+        bddvarset[bddvarnum * 2] = PUSHREF(bdd_makenode(bddvarnum, BDDZERO, BDDONE));
+        bddvarset[bddvarnum * 2 + 1] = bdd_makenode(bddvarnum, BDDONE, BDDZERO);
+        POPREF(1);
+
+        if (bdderrorcond != 0) {
+          bddvarnum = bdv;
+          return -bdderrorcond;
+        }
+
+        SETMAXREF(bddvarset[bddvarnum * 2]);
+        SETMAXREF(bddvarset[bddvarnum * 2 + 1]);
+        bddlevel2var[bddvarnum] = bddvarnum;
+        bddvar2level[bddvarnum] = bddvarnum;
+      }
+
+      SETLEVELANDMARK(0, num);
+      SETLEVELANDMARK(1, num);
+      bddvar2level[num] = num;
+      bddlevel2var[num] = num;
+
+      bdd_pairs_resize(oldbddvarnum, bddvarnum);
+      bdd_operator_varresize();
+
+      assert bddvarnum == LEVEL(BDDZERO);
+      assert bddvarnum == LEVEL(BDDONE);
+
+      return 0;
+    }
+
     /**
      * Temporary wrapper to copy over the bddrefstack. Later we'll move bdd_makenode into this class
      * and remove the JFactory refstack.
@@ -3951,63 +4008,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public int setVarNum(int num) {
-    return bdd_setvarnum(num);
-  }
-
-  private int bdd_setvarnum(int num) {
-    int bdv;
-    int oldbddvarnum = bddvarnum;
-
-    if (num < 1 || num > MAXVAR) {
-      bdd_error(BDD_RANGE);
-      return BDDZERO;
-    }
-
-    if (num < bddvarnum) {
-      return bdd_error(BDD_DECVNUM);
-    }
-    if (num == bddvarnum) {
-      return 0;
-    }
-
-    if (bddvarset == null) {
-      bddvarset = new int[num * 2];
-      bddlevel2var = new int[num + 1];
-      bddvar2level = new int[num + 1];
-    } else {
-      bddvarset = Arrays.copyOf(bddvarset, num * 2);
-      bddlevel2var = Arrays.copyOf(bddlevel2var, num + 1);
-      bddvar2level = Arrays.copyOf(bddvar2level, num + 1);
-    }
-
-    for (bdv = bddvarnum; bddvarnum < num; bddvarnum++) {
-      bddvarset[bddvarnum * 2] = PUSHREF(bdd_makenode(bddvarnum, BDDZERO, BDDONE));
-      bddvarset[bddvarnum * 2 + 1] = bdd_makenode(bddvarnum, BDDONE, BDDZERO);
-      POPREF(1);
-
-      if (bdderrorcond != 0) {
-        bddvarnum = bdv;
-        return -bdderrorcond;
-      }
-
-      SETMAXREF(bddvarset[bddvarnum * 2]);
-      SETMAXREF(bddvarset[bddvarnum * 2 + 1]);
-      bddlevel2var[bddvarnum] = bddvarnum;
-      bddvar2level[bddvarnum] = bddvarnum;
-    }
-
-    SETLEVELANDMARK(0, num);
-    SETLEVELANDMARK(1, num);
-    bddvar2level[num] = num;
-    bddlevel2var[num] = num;
-
-    bdd_pairs_resize(oldbddvarnum, bddvarnum);
-    bdd_operator_varresize();
-
-    assert bddvarnum == LEVEL(BDDZERO);
-    assert bddvarnum == LEVEL(BDDONE);
-
-    return 0;
+    return new Worker().bdd_setvarnum(num);
   }
 
   @Override
