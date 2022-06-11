@@ -735,6 +735,173 @@ public class JFactory extends BDDFactory implements Serializable {
       return res;
     }
 
+    private int bdd_orAll(int[] operands) {
+      if (operands.length == 0) {
+        return BDDZERO;
+      } else if (ISONE(operands[0])) {
+        return BDDONE;
+      }
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      if (multiopcache == null) {
+        multiopcache = BddCacheMultiOp_init(cachesize);
+      }
+
+      INITREF();
+      int res = orAll_rec(operands);
+      checkresize();
+
+      return res;
+    }
+
+    private int orAll_rec(int[] operands) {
+      if (operands.length == 0) {
+        return BDDZERO;
+      } else if (operands.length == 1) {
+        return operands[0];
+      } else if (operands.length == 2) {
+        return or_rec(operands[0], operands[1]);
+      }
+
+      // sort and dedup the operands to optimize caching
+      Arrays.sort(operands);
+      operands = dedupSorted(operands);
+
+      int hash = MULTIOPHASH(operands, bddop_or);
+      MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
+      if (entry.a == bddop_or && Arrays.equals(operands, entry.operands)) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.b;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+      }
+
+      /* Compute the result in a way that generalizes or_rec. Identify the variable to branch on, and
+       * make two recursive calls (for when that variable is high or low).
+       *
+       * In a single pass over operands:
+       * 1. Find the level of the variable the result BDD should branch on. This is the minimum level
+       *    branched on at the roots of the current operand BDDs.
+       * 2. Compute the size needed for the operand arrays of the two recursive calls. This is equal
+       *    to the number of operands whose root level are greater than the minimum, plus the number
+       *    of operands whose root level is equal to the minimum and whose child (low or high,
+       *    corresponding to if the recursive call is computing the low or high child of the result)
+       *    is not the zero BDD.
+       * 3. Whether either recursive call can be short-circuited because one of the operands is the
+       *    one BDD. This can only happen when the one is a child a BDD whose root level is the
+       *    minimum.
+       */
+
+      int minLevel = LEVEL(operands[0]);
+      int nodesWithMinLevel = 0;
+      int nodesWithMinLevelLowNonZero = 0;
+      int nodesWithMinLevelHighNonZero = 0;
+      boolean nodeWithMinLevelHasLowOne = false;
+      boolean nodeWithMinLevelHasHighOne = false;
+      for (int n : operands) {
+        int level = LEVEL(n);
+        if (level < minLevel) {
+          minLevel = level;
+          nodesWithMinLevel = 0;
+          nodesWithMinLevelHighNonZero = 0;
+          nodesWithMinLevelLowNonZero = 0;
+          nodeWithMinLevelHasHighOne = false;
+          nodeWithMinLevelHasLowOne = false;
+        } else if (level > minLevel) {
+          continue;
+        }
+
+        // level == minLevel
+        nodesWithMinLevel++;
+
+        int high = HIGH(n);
+        nodeWithMinLevelHasHighOne |= ISONE(high);
+        nodesWithMinLevelHighNonZero += ISZERO(high) ? 0 : 1;
+
+        int low = LOW(n);
+        nodeWithMinLevelHasLowOne |= ISONE(low);
+        nodesWithMinLevelLowNonZero += ISZERO(low) ? 0 : 1;
+      }
+
+      int nodesWithoutMinLevel = operands.length - nodesWithMinLevel;
+
+      int low;
+      if (!nodeWithMinLevelHasLowOne) {
+        /* Make the recursive call for the low branch. None of the operands are 1, so we can't
+         * short-circuit to 1. Allocate and build the array of operands, then make the call and push
+         * the result onto the stack.
+         */
+        int[] lowOperands = new int[nodesWithMinLevelLowNonZero + nodesWithoutMinLevel];
+        int i = 0;
+        for (int operand : operands) {
+          if (LEVEL(operand) == minLevel) {
+            int l = LOW(operand);
+            if (!ISZERO(l)) {
+              assert !ISCONST(l);
+              lowOperands[i++] = l;
+            }
+          } else {
+            assert !ISCONST(operand);
+            lowOperands[i++] = operand;
+          }
+        }
+        assert i == lowOperands.length;
+        low = orAll_rec(lowOperands);
+        PUSHREF(low); // make sure low isn't garbage collected.
+      } else {
+        low = BDDONE;
+      }
+
+      int high;
+      if (!nodeWithMinLevelHasHighOne) {
+        /* Make the recursive call for the high branch. None of the operands are 1, so we can't
+         * short-circuit to 1. Allocate and build the array of operands, then make the call and push
+         * the result onto the stack.
+         */
+        int[] highOperands = new int[nodesWithMinLevelHighNonZero + nodesWithoutMinLevel];
+        int i = 0;
+        for (int operand : operands) {
+          if (LEVEL(operand) == minLevel) {
+            int h = HIGH(operand);
+            if (!ISZERO(h)) {
+              assert !ISCONST(h);
+              highOperands[i++] = h;
+            }
+          } else {
+            assert !ISCONST(operand);
+            highOperands[i++] = operand;
+          }
+        }
+        assert i == highOperands.length;
+        high = orAll_rec(highOperands);
+        PUSHREF(high); // make sure high isn't garbage collected.
+      } else {
+        high = BDDONE;
+      }
+
+      int res = bdd_makenode(minLevel, low, high);
+
+      if (!nodeWithMinLevelHasHighOne) {
+        POPREF(1);
+      }
+      if (!nodeWithMinLevelHasLowOne) {
+        POPREF(1);
+      }
+
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = bddop_or;
+      entry.b = res;
+      entry.operands = operands;
+      entry.hash = hash;
+      return res;
+    }
+
     private int bdd_apply(int l, int r, int op) {
       CHECK(l);
       CHECK(r);
@@ -2552,31 +2719,11 @@ public class JFactory extends BDDFactory implements Serializable {
             .distinct()
             .peek(this::CHECK)
             .toArray();
-    int ret = bdd_orAll(operands);
+    int ret = new Worker().bdd_orAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
     }
     return makeBDD(ret);
-  }
-
-  private int bdd_orAll(int[] operands) {
-    if (operands.length == 0) {
-      return BDDZERO;
-    } else if (ISONE(operands[0])) {
-      return BDDONE;
-    }
-    if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
-    }
-    if (multiopcache == null) {
-      multiopcache = BddCacheMultiOp_init(cachesize);
-    }
-
-    INITREF();
-    int res = orAll_rec(operands);
-    checkresize();
-
-    return res;
   }
 
   private boolean bdd_isAssignment(int r) {
@@ -2747,153 +2894,6 @@ public class JFactory extends BDDFactory implements Serializable {
     } else {
       return values;
     }
-  }
-
-  private int orAll_rec(int[] operands) {
-    if (operands.length == 0) {
-      return BDDZERO;
-    } else if (operands.length == 1) {
-      return operands[0];
-    } else if (operands.length == 2) {
-      return or_rec(operands[0], operands[1]);
-    }
-
-    // sort and dedup the operands to optimize caching
-    Arrays.sort(operands);
-    operands = dedupSorted(operands);
-
-    int hash = MULTIOPHASH(operands, bddop_or);
-    MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
-    if (entry.a == bddop_or && Arrays.equals(operands, entry.operands)) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.b;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
-
-    /* Compute the result in a way that generalizes or_rec. Identify the variable to branch on, and
-     * make two recursive calls (for when that variable is high or low).
-     *
-     * In a single pass over operands:
-     * 1. Find the level of the variable the result BDD should branch on. This is the minimum level
-     *    branched on at the roots of the current operand BDDs.
-     * 2. Compute the size needed for the operand arrays of the two recursive calls. This is equal
-     *    to the number of operands whose root level are greater than the minimum, plus the number
-     *    of operands whose root level is equal to the minimum and whose child (low or high,
-     *    corresponding to if the recursive call is computing the low or high child of the result)
-     *    is not the zero BDD.
-     * 3. Whether either recursive call can be short-circuited because one of the operands is the
-     *    one BDD. This can only happen when the one is a child a BDD whose root level is the
-     *    minimum.
-     */
-
-    int minLevel = LEVEL(operands[0]);
-    int nodesWithMinLevel = 0;
-    int nodesWithMinLevelLowNonZero = 0;
-    int nodesWithMinLevelHighNonZero = 0;
-    boolean nodeWithMinLevelHasLowOne = false;
-    boolean nodeWithMinLevelHasHighOne = false;
-    for (int n : operands) {
-      int level = LEVEL(n);
-      if (level < minLevel) {
-        minLevel = level;
-        nodesWithMinLevel = 0;
-        nodesWithMinLevelHighNonZero = 0;
-        nodesWithMinLevelLowNonZero = 0;
-        nodeWithMinLevelHasHighOne = false;
-        nodeWithMinLevelHasLowOne = false;
-      } else if (level > minLevel) {
-        continue;
-      }
-
-      // level == minLevel
-      nodesWithMinLevel++;
-
-      int high = HIGH(n);
-      nodeWithMinLevelHasHighOne |= ISONE(high);
-      nodesWithMinLevelHighNonZero += ISZERO(high) ? 0 : 1;
-
-      int low = LOW(n);
-      nodeWithMinLevelHasLowOne |= ISONE(low);
-      nodesWithMinLevelLowNonZero += ISZERO(low) ? 0 : 1;
-    }
-
-    int nodesWithoutMinLevel = operands.length - nodesWithMinLevel;
-
-    int low;
-    if (!nodeWithMinLevelHasLowOne) {
-      /* Make the recursive call for the low branch. None of the operands are 1, so we can't
-       * short-circuit to 1. Allocate and build the array of operands, then make the call and push
-       * the result onto the stack.
-       */
-      int[] lowOperands = new int[nodesWithMinLevelLowNonZero + nodesWithoutMinLevel];
-      int i = 0;
-      for (int operand : operands) {
-        if (LEVEL(operand) == minLevel) {
-          int l = LOW(operand);
-          if (!ISZERO(l)) {
-            assert !ISCONST(l);
-            lowOperands[i++] = l;
-          }
-        } else {
-          assert !ISCONST(operand);
-          lowOperands[i++] = operand;
-        }
-      }
-      assert i == lowOperands.length;
-      low = orAll_rec(lowOperands);
-      PUSHREF(low); // make sure low isn't garbage collected.
-    } else {
-      low = BDDONE;
-    }
-
-    int high;
-    if (!nodeWithMinLevelHasHighOne) {
-      /* Make the recursive call for the high branch. None of the operands are 1, so we can't
-       * short-circuit to 1. Allocate and build the array of operands, then make the call and push
-       * the result onto the stack.
-       */
-      int[] highOperands = new int[nodesWithMinLevelHighNonZero + nodesWithoutMinLevel];
-      int i = 0;
-      for (int operand : operands) {
-        if (LEVEL(operand) == minLevel) {
-          int h = HIGH(operand);
-          if (!ISZERO(h)) {
-            assert !ISCONST(h);
-            highOperands[i++] = h;
-          }
-        } else {
-          assert !ISCONST(operand);
-          highOperands[i++] = operand;
-        }
-      }
-      assert i == highOperands.length;
-      high = orAll_rec(highOperands);
-      PUSHREF(high); // make sure high isn't garbage collected.
-    } else {
-      high = BDDONE;
-    }
-
-    int res = bdd_makenode(minLevel, low, high);
-
-    if (!nodeWithMinLevelHasHighOne) {
-      POPREF(1);
-    }
-    if (!nodeWithMinLevelHasLowOne) {
-      POPREF(1);
-    }
-
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = bddop_or;
-    entry.b = res;
-    entry.operands = operands;
-    entry.hash = hash;
-    return res;
   }
 
   private int or_rec(int l, int r) {
