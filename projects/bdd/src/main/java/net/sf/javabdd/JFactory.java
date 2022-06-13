@@ -93,6 +93,7 @@ public class JFactory extends BDDFactory implements Serializable {
     bddrefstacks = Collections.synchronizedList(new LinkedList<>());
     applycache = BddCacheI_init(cachesize);
     quantcache = BddCacheI_init(cachesize);
+    appexcache = BddCacheI_init(cachesize);
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -1499,9 +1500,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (appexcache == null) {
-        appexcache = BddCacheI_init(cachesize);
-      }
       applyop = bddop_and;
       appexop = opr;
       appexid = (var << 5) | (appexop << 1) | 1; /* FIXME: range! */
@@ -1559,9 +1557,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (appexcache == null) {
-        appexcache = BddCacheI_init(cachesize);
-      }
       applyop = bddop_or;
       appexop = opr;
       appexid = (var << 5) | (appexop << 1); /* FIXME: range! */
@@ -3442,6 +3437,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     applycache = BddCacheI_init(cachesize);
     quantcache = BddCacheI_init(cachesize);
+    appexcache = BddCacheI_init(cachesize);
     _readWriteLock.writeLock().unlock();
   }
 
