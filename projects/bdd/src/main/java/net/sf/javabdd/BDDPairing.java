@@ -37,6 +37,12 @@ package net.sf.javabdd;
 public abstract class BDDPairing {
 
   /**
+   * Finializes this {@link BDDPairing} and installs it so it can be used in {@link BDD} operations.
+   * After this is called, it can no longer be mutated via the {@link BDDPairing#set} methods.
+   */
+  public abstract void freezeAndInstall();
+
+  /**
    * Adds the pair (oldvar, newvar) to this table of pairs. This results in oldvar being substituted
    * with newvar in a call to BDD.replace().
    *

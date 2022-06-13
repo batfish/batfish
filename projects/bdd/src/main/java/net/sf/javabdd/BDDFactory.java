@@ -35,10 +35,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessControlException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -563,7 +563,7 @@ public abstract class BDDFactory {
     return p;
   }
 
-  private Map<ImmutableSet<BDDVarPair>, BDDPairing> _pairCache = null; // lazy init
+  private Map<ImmutableSet<BDDVarPair>, BDDPairing> _pairCache = new ConcurrentHashMap<>();
 
   /**
    * Compute a {@link BDDPairing} mapping {@code oldvars} to {@code newvars}. The returned pairing
@@ -576,9 +576,6 @@ public abstract class BDDFactory {
    */
   public BDDPairing getPair(Set<BDDVarPair> varPairs) {
     checkArgument(!varPairs.isEmpty(), "getPair: need at least one pair");
-    if (_pairCache == null) {
-      _pairCache = new HashMap<>();
-    }
     ImmutableSet<BDDVarPair> key = ImmutableSet.copyOf(varPairs);
     @Nullable BDDPairing pair = _pairCache.get(key);
     if (pair != null) {
@@ -588,6 +585,7 @@ public abstract class BDDFactory {
     for (BDDVarPair varPair : varPairs) {
       pair.set(varPair.getOldVar(), varPair.getNewVar());
     }
+    pair.freezeAndInstall();
     _pairCache.put(key, pair);
     return pair;
   }

@@ -29,6 +29,7 @@
 package net.sf.javabdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
@@ -41,13 +42,14 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.IntFunction;
@@ -3813,19 +3815,37 @@ public class JFactory extends BDDFactory implements Serializable {
     }
   }
 
+  /**
+   * Note: mutatating methods (set and freeAndInstall) are not thread-safe (i.e. don't mutate a
+   * single bddPair object concurrently in two threads.
+   */
   class bddPair extends BDDPairing implements Serializable {
     int[] result;
     int last;
-    int id;
-    bddPair next;
+    int id = -1;
+    bddPair next = null;
+
+    @Override
+    public void freezeAndInstall() {
+      checkState(!isFrozenAndInstalled());
+
+      id = update_pairsid();
+      bdd_register_pair(this);
+    }
+
+    private boolean isFrozenAndInstalled() {
+      return id != -1 && next != null;
+    }
 
     @Override
     public void set(int oldvar, int newvar) {
+      checkState(!isFrozenAndInstalled());
       bdd_setpair(this, oldvar, newvar);
     }
 
     @Override
     public void set(int oldvar, BDD newvar) {
+      checkState(!isFrozenAndInstalled());
       bdd_setbddpair(this, oldvar, ((BDDImpl) newvar)._index);
     }
 
@@ -3866,8 +3886,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
   }
 
-  private bddPair pairs; /* List of all replacement pairs in use */
-  private int pairsid; /* Pair identifier */
+  private AtomicReference<bddPair> pairs; /* List of all replacement pairs in use */
+  private AtomicInteger pairsid; /* Pair identifier */
   private Set<Integer> _validPairIdsForTransform; /* Set of pairs that can be used with transform */
 
   /**
@@ -3875,42 +3895,34 @@ public class JFactory extends BDDFactory implements Serializable {
    * ***********************************************************************
    */
   private void bdd_pairs_init() {
-    pairsid = 0;
-    pairs = null;
-    _validPairIdsForTransform = Collections.synchronizedSet(new HashSet<>());
+    pairsid = new AtomicInteger(0);
+    pairs = new AtomicReference<>(null);
+    _validPairIdsForTransform = new ConcurrentHashMap<Integer, Object>().keySet("");
   }
 
   private int update_pairsid() {
-    pairsid++;
+    int id = pairsid.incrementAndGet();
 
     int numIds = INT_MAX >> 3;
 
-    if (pairsid == numIds) {
-      // we use more pair IDs than there are pair objects -- each time we mutate a pair we give it a
-      // new ID. so if we run out, search for an unused one. have to clear the cache too
-      pairsid = 0;
-      for (bddPair p = pairs; p != null; p = p.next) {
-        p.id = pairsid++;
-      }
-      // bdd_operator_reset();
-      BddCache_reset(replacecache);
-      _validPairIdsForTransform.clear();
-    }
-
-    if (pairsid >= numIds) {
+    if (id >= numIds) {
       throw new IllegalStateException("too many pairings");
     }
 
-    return pairsid;
+    return id;
   }
 
   private void bdd_register_pair(bddPair p) {
-    p.next = pairs;
-    pairs = p;
+    while (true) {
+      p.next = pairs.get();
+      if (pairs.compareAndSet(p.next, p)) {
+        break;
+      }
+    }
   }
 
   private int bdd_pairs_resize(int oldsize, int newsize) {
-    for (bddPair p = pairs; p != null; p = p.next) {
+    for (bddPair p = pairs.get(); p != null; p = p.next) {
       p.result = Arrays.copyOf(p.result, newsize);
 
       for (int n = oldsize; n < newsize; n++) {
@@ -4053,11 +4065,6 @@ public class JFactory extends BDDFactory implements Serializable {
     for (int n = 0; n < bddvarnum; n++) {
       p.result[n] = bdd_ithvar(bddlevel2var[n]);
     }
-
-    p.id = update_pairsid();
-    p.last = -1;
-
-    bdd_register_pair(p);
     return p;
   }
 
