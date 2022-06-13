@@ -2919,6 +2919,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getPreRulebase().getNatRules().putAll(source.getPreRulebase().getNatRules());
     // Security pre
     target.getPreRulebase().getSecurityRules().putAll(source.getPreRulebase().getSecurityRules());
+    // App-override pre
+    target
+        .getPreRulebase()
+        .getApplicationOverrideRules()
+        .putAll(source.getPreRulebase().getApplicationOverrideRules());
 
     // NAT post
     // Note: using LinkedHashMaps to preserve insertion order
@@ -2936,6 +2941,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     postRulebaseSecurity.putAll(targetPostSecurity);
     targetPostSecurity.clear();
     targetPostSecurity.putAll(postRulebaseSecurity);
+    // App-override post
+    // Note: using InsertOrderedMap to preserve insertion order
+    Map<String, ApplicationOverrideRule> postRulebaseApp =
+        new InsertOrderedMap<>(source.getPostRulebase().getApplicationOverrideRules());
+    Map<String, ApplicationOverrideRule> targetPostApp =
+        target.getPostRulebase().getApplicationOverrideRules();
+    postRulebaseApp.putAll(targetPostApp);
+    targetPostApp.clear();
+    targetPostApp.putAll(postRulebaseApp);
   }
 
   /**
