@@ -96,6 +96,7 @@ public class JFactory extends BDDFactory implements Serializable {
     appexcache = BddCacheI_init(cachesize);
     replacecache = BddCacheI_init(cachesize);
     multiopcache = BddCacheMultiOp_init(cachesize);
+    countcache = BddCacheBigInteger_init(cachesize);
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -1931,10 +1932,6 @@ public class JFactory extends BDDFactory implements Serializable {
     private BigInteger bdd_satcount(int r) {
       CHECK(r);
 
-      if (countcache == null) {
-        countcache = BddCacheBigInteger_init(cachesize);
-      }
-
       miscid = CACHEID_SATCOU;
       return satcount_rec(r).shiftLeft(LEVEL(r));
     }
@@ -3426,6 +3423,7 @@ public class JFactory extends BDDFactory implements Serializable {
     appexcache = BddCacheI_init(cachesize);
     replacecache = BddCacheI_init(cachesize);
     multiopcache = BddCacheMultiOp_init(cachesize);
+    countcache = BddCacheBigInteger_init(cachesize);
     _readWriteLock.writeLock().unlock();
   }
 
