@@ -65738,8 +65738,9 @@
             "                  VARIABLE:'rfc1918_10')",
             "                (sa_ip_netmask",
             "                  IP_NETMASK:'ip-netmask'",
-            "                  (ip_prefix*",
-            "                    IP_PREFIX:'10.0.0.1/8'))))))))",
+            "                  (ip_netmask*",
+            "                    (ip_prefix*",
+            "                      IP_PREFIX:'10.0.0.1/8')))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
