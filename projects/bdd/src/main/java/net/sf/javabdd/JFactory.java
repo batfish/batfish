@@ -3350,6 +3350,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   protected void initialize(int initnodesize, int cs) {
+    _readWriteLock.writeLock().lock();
     if (bddrunning) {
       bdd_error(BDD_RUNNING);
     }
@@ -3376,7 +3377,7 @@ public class JFactory extends BDDFactory implements Serializable {
     SETLOW(1, 1);
     SETHIGH(1, 1);
 
-    bdd_operator_init();
+    cacheratio = 0;
 
     bddfreepos.set(2);
     bddfreenum.set(bddnodesize - 2);
@@ -3390,6 +3391,7 @@ public class JFactory extends BDDFactory implements Serializable {
     // bdd_error_hook(bdd_default_errhandler);
     // bdd_resize_hook(NULL);
     bdd_pairs_init();
+    _readWriteLock.writeLock().unlock();
   }
 
   private static final int CACHEID_SATCOU = 0x2;
@@ -3432,10 +3434,6 @@ public class JFactory extends BDDFactory implements Serializable {
   /* Used instead of local variable in order
   to avoid compiler warning about 'first'
   being clobbered by setjmp */
-
-  private void bdd_operator_init() {
-    cacheratio = 0;
-  }
 
   private void bdd_operator_reset() {
     BddCache_reset(applycache);
@@ -3922,6 +3920,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int bdd_setcacheratio(int r) {
+    _readWriteLock.writeLock().lock();
     int old = cacheratio;
 
     if (r <= 0) {
@@ -3933,6 +3932,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     cacheratio = r;
     bdd_operator_noderesize();
+    _readWriteLock.writeLock().unlock();
     return old;
   }
 
