@@ -4010,17 +4010,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   @Override
-  public void printAll() {
-    bdd_fprintall(System.out);
-  }
-
-  @Override
-  public void printTable(BDD b) {
-    int x = ((BDDImpl) b)._index;
-    bdd_fprinttable(System.out, x);
-  }
-
-  @Override
   public int level2Var(int level) {
     return bddlevel2var[level];
   }
@@ -4066,56 +4055,6 @@ public class JFactory extends BDDFactory implements Serializable {
       p.result[n] = bdd_ithvar(bddlevel2var[n]);
     }
     return p;
-  }
-
-  private void bdd_fprintall(PrintStream out) {
-    for (int n = 0; n < bddnodesize; n++) {
-      if (LOW(n) != INVALID_BDD) {
-        out.print("[" + right(n, 5) + " - " + right(GETREF(n), 2) + "] ");
-        // TODO: labelling of vars
-        out.print(right(bddlevel2var[LEVEL(n)], 3));
-
-        out.print(": " + right(LOW(n), 3));
-        out.println(" " + right(HIGH(n), 3));
-      }
-    }
-  }
-
-  private void bdd_fprinttable(PrintStream out, int r) {
-    out.println("ROOT: " + r);
-    if (r < 2) {
-      return;
-    }
-
-    bdd_mark(r);
-
-    for (int n = 0; n < bddnodesize; n++) {
-      if (MARKED(n)) {
-        UNMARK(n);
-
-        out.print("[" + right(n, 5) + "] ");
-        // TODO: labelling of vars
-        out.print(right(bddlevel2var[LEVEL(n)], 3));
-
-        out.print(": " + right(LOW(n), 3));
-        out.println(" " + right(HIGH(n), 3));
-      }
-    }
-  }
-
-  private static String right(int x, int w) {
-    return right(Integer.toString(x), w);
-  }
-
-  private static String right(String s, int w) {
-    int n = s.length();
-    // if (w < n) return s.substring(n - w);
-    StringBuilder b = new StringBuilder(w);
-    for (int i = n; i < w; ++i) {
-      b.append(' ');
-    }
-    b.append(s);
-    return b.toString();
   }
 
   private void bdd_fprintstat(PrintStream out) {

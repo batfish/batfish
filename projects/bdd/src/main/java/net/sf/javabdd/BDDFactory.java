@@ -484,22 +484,6 @@ public abstract class BDDFactory {
    */
   public abstract BDD nithVar(int var);
 
-  /** ** INPUT / OUTPUT *** */
-
-  /**
-   * Prints all used entries in the node table.
-   *
-   * <p>Compare to bdd_printall.
-   */
-  public abstract void printAll();
-
-  /**
-   * Prints the node table entries used by a BDD.
-   *
-   * <p>Compare to bdd_printtable.
-   */
-  public abstract void printTable(BDD b);
-
   /** ** REORDERING *** */
 
   /**
