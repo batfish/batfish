@@ -4577,4 +4577,30 @@ public final class PaloAltoGrammarTest {
     assertThat(post.getNatRules().keySet(), contains("POST_NAT"));
     assertThat(post.getSecurityRules().keySet(), contains("POST_SEC"));
   }
+
+  @Test
+  public void testPanoramaRulebaseReferences() throws IOException {
+    String hostname = "panorama-rulebase-references";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String addrSrcName = computeObjectName(SHARED_VSYS_NAME, "SHARED_SRC");
+    String addrDstName = computeObjectName(SHARED_VSYS_NAME, "SHARED_DST");
+    String addrIpSrcName = computeObjectName(SHARED_VSYS_NAME, "11.11.11.11");
+    String addrIpDstName = computeObjectName(SHARED_VSYS_NAME, "12.12.12.12");
+    String serviceName = computeObjectName(SHARED_VSYS_NAME, "SHARED_SERVICE");
+    String appGroupName = computeObjectName(SHARED_VSYS_NAME, "SHARED_APP_GRP");
+
+    // Confirm structure references are tracked
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrSrcName, 3));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrDstName, 3));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrIpSrcName, 3));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrIpDstName, 3));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrDstName, 3));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, serviceName, 1));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION_GROUP, appGroupName, 1));
+  }
 }
