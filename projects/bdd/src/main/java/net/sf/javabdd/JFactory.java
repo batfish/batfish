@@ -92,6 +92,7 @@ public class JFactory extends BDDFactory implements Serializable {
     stream.defaultReadObject();
     bddrefstacks = Collections.synchronizedList(new LinkedList<>());
     applycache = BddCacheI_init(cachesize);
+    quantcache = BddCacheI_init(cachesize);
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -1501,9 +1502,6 @@ public class JFactory extends BDDFactory implements Serializable {
       if (appexcache == null) {
         appexcache = BddCacheI_init(cachesize);
       }
-      if (quantcache == null) {
-        quantcache = BddCacheI_init(cachesize);
-      }
       applyop = bddop_and;
       appexop = opr;
       appexid = (var << 5) | (appexop << 1) | 1; /* FIXME: range! */
@@ -1563,9 +1561,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       if (appexcache == null) {
         appexcache = BddCacheI_init(cachesize);
-      }
-      if (quantcache == null) {
-        quantcache = BddCacheI_init(cachesize);
       }
       applyop = bddop_or;
       appexop = opr;
@@ -1884,9 +1879,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (quantcache == null) {
-        quantcache = BddCacheI_init(cachesize);
-      }
       quantid = (var << 3) | CACHEID_PROJECT;
 
       INITREF();
@@ -2007,9 +1999,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return false; // error converting var to vartable
       }
 
-      if (quantcache == null) {
-        quantcache = BddCacheI_init(cachesize);
-      }
       quantid = (var << 3) | CACHEID_TESTS_CONSTRAINT; /* FIXME: range */
 
       return testsVars_rec(r);
@@ -2064,9 +2053,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (quantcache == null) {
-        quantcache = BddCacheI_init(cachesize);
-      }
       applyop = bddop_or;
       quantid = (var << 3) | CACHEID_EXIST; /* FIXME: range */
 
@@ -2190,9 +2176,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (quantcache == null) {
-        quantcache = BddCacheI_init(cachesize);
-      }
       quantid = (var << 3) | CACHEID_FORALL;
       applyop = bddop_and;
 
@@ -3458,6 +3441,7 @@ public class JFactory extends BDDFactory implements Serializable {
     bdd_pairs_init();
 
     applycache = BddCacheI_init(cachesize);
+    quantcache = BddCacheI_init(cachesize);
     _readWriteLock.writeLock().unlock();
   }
 
