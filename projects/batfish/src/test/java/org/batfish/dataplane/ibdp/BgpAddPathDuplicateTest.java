@@ -62,7 +62,6 @@ public final class BgpAddPathDuplicateTest {
   @Test
   public void testBgpRib() {
     Table<String, String, Set<Bgpv4Route>> bgpRoutes = _dp.getBgpRoutes();
-    Table<String, String, Set<Bgpv4Route>> backupRoutes = _dp.getBgpBackupRoutes();
 
     // as2border
     assertThat(bgpRoutes.get("as2border", DEFAULT_VRF_NAME), hasSize(2));
