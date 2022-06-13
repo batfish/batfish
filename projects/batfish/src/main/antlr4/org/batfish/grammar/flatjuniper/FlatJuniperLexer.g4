@@ -150,7 +150,7 @@ ALIAS: 'alias';
 ALIASES: 'aliases';
 
 ALL: 'all';
-
+ALL_PATHS: 'all-paths';
 ALLOW: 'allow';
 
 ALLOW_DUPLICATES: 'allow-duplicates';
@@ -610,7 +610,7 @@ ENCRYPTION_ALGORITHM: 'encryption-algorithm';
 ENFORCE_FIRST_AS: 'enforce-first-as';
 
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
-
+EQUAL_COST_PATHS: 'equal-cost-paths';
 ESP: 'esp';
 
 ESP_HEADER: 'ESP-header';
@@ -2020,7 +2020,7 @@ PATH: 'path' -> pushMode(M_AsPathExpr);
 PATH_COUNT: 'path-count';
 
 PATH_SELECTION: 'path-selection';
-
+PATH_SELECTION_MODE: 'path-selection-mode';
 PAYLOAD_PROTOCOL: 'payload-protocol';
 
 PEER_ADDRESS: 'peer-address';

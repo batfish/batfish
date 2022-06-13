@@ -44,6 +44,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_P
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ADD_PATH_SEND_PREFIX_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
@@ -248,8 +249,15 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_routing_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_vlan_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_add_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_rib_groupContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiua_receiveContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiua_sendContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_multipathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_path_countContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_path_selection_modeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_prefix_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_aliasContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
@@ -635,6 +643,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_ipsec_policyCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_destinationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_sourceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_staticContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Send_path_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_default_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_from_zoneContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_globalContext;
@@ -852,6 +861,7 @@ import org.batfish.representation.juniper.OspfArea;
 import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.representation.juniper.PatPool;
+import org.batfish.representation.juniper.PathSelectionMode;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
@@ -957,6 +967,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
 
   private static final IntegerSpace FRAGMENT_OFFSET_RANGE = IntegerSpace.of(new SubRange(0, 8191));
+
+  private static final IntegerSpace ADD_PATH_SEND_PATH_COUNT_RANGE =
+      IntegerSpace.of(new SubRange(2, 64));
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
@@ -7082,6 +7095,58 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       vlanId = BridgeDomainVlanIdNumber.of(maybeNum.get());
     }
     _currentBridgeDomain.setVlanId(vlanId);
+  }
+
+  @Override
+  public void enterBfiu_add_path(Bfiu_add_pathContext ctx) {
+    todo(ctx);
+    _currentBgpGroup.getOrInitAddPath();
+  }
+
+  @Override
+  public void exitBfiua_receive(Bfiua_receiveContext ctx) {
+    _currentBgpGroup.getOrInitAddPath().setReceive(true);
+  }
+
+  @Override
+  public void enterBfiua_send(Bfiua_sendContext ctx) {
+    _currentBgpGroup.getAddPath().getOrInitSend();
+  }
+
+  @Override
+  public void exitBfiuas_multipath(Bfiuas_multipathContext ctx) {
+    _currentBgpGroup.getAddPath().getSend().setMultipath(true);
+  }
+
+  @Override
+  public void exitBfiuas_path_count(Bfiuas_path_countContext ctx) {
+    toInteger(ctx, ctx.count).ifPresent(_currentBgpGroup.getAddPath().getSend()::setPathCount);
+  }
+
+  @Override
+  public void exitBfiuas_path_selection_mode(Bfiuas_path_selection_modeContext ctx) {
+    PathSelectionMode mode;
+    if (ctx.ALL_PATHS() != null) {
+      mode = PathSelectionMode.ALL_PATHS;
+    } else {
+      assert ctx.EQUAL_COST_PATHS() != null;
+      mode = PathSelectionMode.EQUAL_COST_PATHS;
+    }
+    _currentBgpGroup.getAddPath().getSend().setPathSelectionMode(mode);
+  }
+
+  @Override
+  public void exitBfiuas_prefix_policy(Bfiuas_prefix_policyContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.policy);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, ctx.getStart().getLine());
+    _currentBgpGroup.getAddPath().getSend().setPrefixPolicy(name);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Send_path_countContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, ADD_PATH_SEND_PATH_COUNT_RANGE, "path-count");
   }
 
   private @Nonnull Optional<Integer> toInteger(
