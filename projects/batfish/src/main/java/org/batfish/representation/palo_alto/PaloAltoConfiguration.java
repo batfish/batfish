@@ -3382,6 +3382,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         true,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
         PaloAltoStructureUsage.SECURITY_RULE_SOURCE,
+        PaloAltoStructureUsage.NAT_RULE_DESTINATION,
+        PaloAltoStructureUsage.NAT_RULE_SOURCE,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_DESTINATION,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SOURCE);
     // Handle ambiguous interface addresses (e.g. address object names can look like IP addresses)
@@ -3402,6 +3404,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
         PaloAltoStructureUsage.SECURITY_RULE_SOURCE,
+        PaloAltoStructureUsage.NAT_RULE_DESTINATION,
+        PaloAltoStructureUsage.NAT_RULE_SOURCE,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_DESTINATION,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SOURCE);
 

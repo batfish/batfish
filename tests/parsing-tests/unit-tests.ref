@@ -85205,6 +85205,39 @@
         "configs/palo_alto/applications" : { },
         "configs/palo_alto/interfaces" : { },
         "configs/palo_alto/nat" : {
+          "address-like" : {
+            "DST_1" : {
+              "rulebase nat rules destination" : [
+                48
+              ]
+            },
+            "DST_2" : {
+              "rulebase nat rules destination" : [
+                48
+              ]
+            },
+            "DST_NAME" : {
+              "rulebase nat rules destination" : [
+                37
+              ]
+            },
+            "SRC_1" : {
+              "rulebase nat rules source" : [
+                47
+              ]
+            },
+            "SRC_2" : {
+              "rulebase nat rules source" : [
+                47
+              ]
+            },
+            "SRC_NAME" : {
+              "rulebase nat rules source" : [
+                36,
+                61
+              ]
+            }
+          },
           "zone" : {
             "FROM_1~panorama" : {
               "rulebase nat rules from" : [
