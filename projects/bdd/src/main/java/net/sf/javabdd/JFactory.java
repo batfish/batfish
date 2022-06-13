@@ -91,6 +91,7 @@ public class JFactory extends BDDFactory implements Serializable {
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     bddrefstacks = Collections.synchronizedList(new LinkedList<>());
+    applycache = BddCacheI_init(cachesize);
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -262,9 +263,6 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public boolean andSat(BDD that) {
       _readWriteLock.readLock().lock();
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       boolean ret = new Worker().andsat_rec(_index, ((BDDImpl) that)._index);
       _readWriteLock.readLock().unlock();
       return ret;
@@ -273,9 +271,6 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public boolean diffSat(BDD that) {
       _readWriteLock.readLock().lock();
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       boolean ret = new Worker().diffsat_rec(_index, ((BDDImpl) that)._index);
       _readWriteLock.readLock().unlock();
       return ret;
@@ -772,9 +767,6 @@ public class JFactory extends BDDFactory implements Serializable {
       } else if (ISZERO(operands[0])) {
         return BDDZERO;
       }
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       if (multiopcache == null) {
         multiopcache = BddCacheMultiOp_init(cachesize);
       }
@@ -999,9 +991,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       } else if (ISONE(operands[0])) {
         return BDDONE;
-      }
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
       }
       if (multiopcache == null) {
         multiopcache = BddCacheMultiOp_init(cachesize);
@@ -1231,9 +1220,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       applyop = op;
 
       INITREF();
@@ -1449,10 +1435,6 @@ public class JFactory extends BDDFactory implements Serializable {
     private int bdd_not(int r) {
       CHECK(r);
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
-
       INITREF();
       int res = not_rec(r);
       checkresize();
@@ -1516,9 +1498,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       if (appexcache == null) {
         appexcache = BddCacheI_init(cachesize);
       }
@@ -1582,9 +1561,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       if (appexcache == null) {
         appexcache = BddCacheI_init(cachesize);
       }
@@ -1908,9 +1884,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       if (quantcache == null) {
         quantcache = BddCacheI_init(cachesize);
       }
@@ -2091,9 +2064,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       if (quantcache == null) {
         quantcache = BddCacheI_init(cachesize);
       }
@@ -2220,9 +2190,6 @@ public class JFactory extends BDDFactory implements Serializable {
         return BDDZERO;
       }
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       if (quantcache == null) {
         quantcache = BddCacheI_init(cachesize);
       }
@@ -2298,9 +2265,6 @@ public class JFactory extends BDDFactory implements Serializable {
       CHECK(g);
       CHECK(h);
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       if (multiopcache == null) {
         multiopcache = BddCacheMultiOp_init(cachesize);
       }
@@ -2737,9 +2701,6 @@ public class JFactory extends BDDFactory implements Serializable {
         _validPairIdsForTransform.add(pair.id);
       }
 
-      if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
-      }
       if (replacecache == null) {
         replacecache = BddCacheI_init(cachesize);
       }
@@ -3495,6 +3456,8 @@ public class JFactory extends BDDFactory implements Serializable {
     // bdd_error_hook(bdd_default_errhandler);
     // bdd_resize_hook(NULL);
     bdd_pairs_init();
+
+    applycache = BddCacheI_init(cachesize);
     _readWriteLock.writeLock().unlock();
   }
 
