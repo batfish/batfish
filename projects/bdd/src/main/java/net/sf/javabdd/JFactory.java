@@ -585,11 +585,6 @@ public class JFactory extends BDDFactory implements Serializable {
         bddvarset[bddvarnum * 2 + 1] = bdd_makenode(bddvarnum, BDDONE, BDDZERO);
         POPREF(1);
 
-        if (bdderrorcond != 0) {
-          bddvarnum = bdv;
-          return -bdderrorcond;
-        }
-
         SETMAXREF(bddvarset[bddvarnum * 2]);
         SETMAXREF(bddvarset[bddvarnum * 2 + 1]);
         bddlevel2var[bddvarnum] = bddvarnum;
@@ -655,10 +650,6 @@ public class JFactory extends BDDFactory implements Serializable {
       while (true) {
         int freepos = bddfreepos.get();
         if (freepos == 0) {
-          if (bdderrorcond != 0) {
-            return 0;
-          }
-
           /* Try to allocate more nodes */
           bddrefstacks.add(bddrefstack);
           // TODO upgrade to writer
@@ -2774,7 +2765,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int BDDZERO = 0;
 
   private boolean bddrunning; /* Flag - package initialized */
-  private int bdderrorcond; /* Some error condition */
   private int bddnodesize; /* Number of allocated nodes */
   private NodeTable bddnodes = null;
   private final AtomicInteger bddfreepos = new AtomicInteger(-1); /* First free node */
@@ -3424,8 +3414,6 @@ public class JFactory extends BDDFactory implements Serializable {
     gbcollectnum = 0;
     gbcclock = 0;
     cachesize = cs;
-
-    bdderrorcond = 0;
 
     // bdd_gbc_hook(bdd_default_gbchandler);
     // bdd_error_hook(bdd_default_errhandler);
