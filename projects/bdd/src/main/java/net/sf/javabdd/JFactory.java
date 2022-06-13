@@ -133,32 +133,50 @@ public class JFactory extends BDDFactory implements Serializable {
 
     @Override
     public boolean isAssignment() {
-      return bdd_isAssignment(_index);
+      _readWriteLock.readLock().lock();
+      boolean ret = bdd_isAssignment(_index);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public int var() {
-      return bdd_var(_index);
+      _readWriteLock.readLock().lock();
+      int ret = bdd_var(_index);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD high() {
-      return makeBDD(HIGH(_index));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(HIGH(_index));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD low() {
-      return makeBDD(LOW(_index));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(LOW(_index));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD id() {
-      return makeBDD(_index);
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(_index);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD not() {
-      return makeBDD(new Worker().bdd_not(_index));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_not(_index));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
@@ -166,7 +184,10 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) thenBDD)._index;
       int z = ((BDDImpl) elseBDD)._index;
-      return makeBDD(new Worker().bdd_ite(x, y, z));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_ite(x, y, z));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
@@ -174,7 +195,10 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = ((BDDImpl) var)._index;
-      return makeBDD(new Worker().bdd_relprod(x, y, z));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_relprod(x, y, z));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     /**
@@ -199,44 +223,62 @@ public class JFactory extends BDDFactory implements Serializable {
     BDD exist(BDD var, boolean makeNew) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return eqOrNew(new Worker().bdd_exist(x, y), makeNew);
+      _readWriteLock.readLock().lock();
+      BDD ret = eqOrNew(new Worker().bdd_exist(x, y), makeNew);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public boolean testsVars(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return new Worker().bdd_testsVars(x, y);
+      _readWriteLock.readLock().lock();
+      boolean ret = new Worker().bdd_testsVars(x, y);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD project(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return makeBDD(new Worker().bdd_project(x, y));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_project(x, y));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD forAll(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return makeBDD(new Worker().bdd_forall(x, y));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_forall(x, y));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public boolean andSat(BDD that) {
+      _readWriteLock.readLock().lock();
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }
-      return new Worker().andsat_rec(_index, ((BDDImpl) that)._index);
+      boolean ret = new Worker().andsat_rec(_index, ((BDDImpl) that)._index);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public boolean diffSat(BDD that) {
+      _readWriteLock.readLock().lock();
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }
-      return new Worker().diffsat_rec(_index, ((BDDImpl) that)._index);
+      boolean ret = new Worker().diffsat_rec(_index, ((BDDImpl) that)._index);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
@@ -244,7 +286,10 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      return eqOrNew(new Worker().bdd_apply(x, y, z), makeNew);
+      _readWriteLock.readLock().lock();
+      BDD ret = eqOrNew(new Worker().bdd_apply(x, y, z), makeNew);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
@@ -252,6 +297,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
+      _readWriteLock.readLock().lock();
       int a = new Worker().bdd_apply(x, y, z);
       bdd_delref(x);
       if (this != that) {
@@ -259,6 +305,7 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       bdd_addref(a);
       _index = a;
+      _readWriteLock.readLock().unlock();
       return this;
     }
 
@@ -268,7 +315,10 @@ public class JFactory extends BDDFactory implements Serializable {
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
       int a = ((BDDImpl) var)._index;
-      return makeBDD(new Worker().bdd_appall(x, y, z, a));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_appall(x, y, z, a));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
@@ -277,7 +327,10 @@ public class JFactory extends BDDFactory implements Serializable {
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
       int a = ((BDDImpl) var)._index;
-      return makeBDD(new Worker().bdd_appex(x, y, z, a));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_appex(x, y, z, a));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
@@ -285,30 +338,45 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) rel)._index;
 
-      return makeBDD(new Worker().bdd_transform(x, y, (bddPair) pair));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_transform(x, y, (bddPair) pair));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD satOne() {
       int x = _index;
-      return makeBDD(new Worker().bdd_satone(x));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_satone(x));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD fullSatOne() {
       int x = _index;
-      return makeBDD(new Worker().bdd_fullsatone(x));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_fullsatone(x));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BitSet minAssignmentBits() {
-      return new Worker().bdd_minassignmentbits(_index);
+      _readWriteLock.readLock().lock();
+      BitSet ret = new Worker().bdd_minassignmentbits(_index);
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD randomFullSatOne(int seed) {
       int x = _index;
-      return makeBDD(new Worker().bdd_randomfullsatone(x, seed));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_randomfullsatone(x, seed));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
@@ -316,28 +384,39 @@ public class JFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) var)._index;
       int z = pol ? 1 : 0;
-      return makeBDD(new Worker().bdd_satoneset(x, y, z));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_satoneset(x, y, z));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD replace(BDDPairing pair) {
       int x = _index;
-      return makeBDD(new Worker().bdd_replace(x, (bddPair) pair));
+      _readWriteLock.readLock().lock();
+      BDDImpl ret = makeBDD(new Worker().bdd_replace(x, (bddPair) pair));
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
     public BDD replaceWith(BDDPairing pair) {
       int x = _index;
+      _readWriteLock.readLock().lock();
       int y = new Worker().bdd_replace(x, (bddPair) pair);
       bdd_delref(x);
       bdd_addref(y);
       _index = y;
+      _readWriteLock.readLock().unlock();
       return this;
     }
 
     @Override
     public double satCount() {
-      return new Worker().bdd_satcount(_index).doubleValue();
+      _readWriteLock.readLock().lock();
+      double ret = new Worker().bdd_satcount(_index).doubleValue();
+      _readWriteLock.readLock().unlock();
+      return ret;
     }
 
     @Override
@@ -356,7 +435,9 @@ public class JFactory extends BDDFactory implements Serializable {
 
     @Override
     public void free() {
+      _readWriteLock.readLock().lock();
       bdd_delref(_index);
+      _readWriteLock.readLock().unlock();
       _index = INVALID_BDD;
     }
   }
@@ -634,7 +715,7 @@ public class JFactory extends BDDFactory implements Serializable {
           bddrefstacks.add(bddrefstack);
 
           // upgrade to writer
-          // _readWriteLock.readLock().unlock();
+          _readWriteLock.readLock().unlock();
           _readWriteLock.writeLock().lock();
           freepos = bddfreepos.get();
           if (freepos == 0) {
@@ -655,7 +736,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
           // downgrade to reader
           _readWriteLock.writeLock().unlock();
-          // _readWriteLock.readLock().lock();
+          _readWriteLock.readLock().lock();
           bddrefstacks.remove(bddrefstack);
         }
         if (bddnodes.trySetInitializing(freepos)) {
@@ -2865,12 +2946,18 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public BDD zero() {
-    return makeBDD(BDDZERO);
+    _readWriteLock.readLock().lock();
+    BDDImpl ret = makeBDD(BDDZERO);
+    _readWriteLock.readLock().unlock();
+    return ret;
   }
 
   @Override
   public BDD one() {
-    return makeBDD(BDDONE);
+    _readWriteLock.readLock().lock();
+    BDDImpl ret = makeBDD(BDDONE);
+    _readWriteLock.readLock().unlock();
+    return ret;
   }
 
   private int bdd_ithvar(int var) {
@@ -3057,6 +3144,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
+    _readWriteLock.readLock().lock();
     int[] operands =
         StreamSupport.stream(bddOperands.spliterator(), false)
             .mapToInt(bdd -> ((BDDImpl) bdd)._index)
@@ -3069,11 +3157,14 @@ public class JFactory extends BDDFactory implements Serializable {
     if (free) {
       bddOperands.forEach(BDD::free);
     }
-    return makeBDD(ret);
+    BDDImpl bdd = makeBDD(ret);
+    _readWriteLock.readLock().unlock();
+    return bdd;
   }
 
   @Override
   protected BDD orAll(Iterable<BDD> bddOperands, boolean free) {
+    _readWriteLock.readLock().lock();
     int[] operands =
         StreamSupport.stream(bddOperands.spliterator(), false)
             .mapToInt(bdd -> ((BDDImpl) bdd)._index)
@@ -3086,7 +3177,9 @@ public class JFactory extends BDDFactory implements Serializable {
     if (free) {
       bddOperands.forEach(BDD::free);
     }
-    return makeBDD(ret);
+    BDDImpl bdd = makeBDD(ret);
+    _readWriteLock.readLock().unlock();
+    return bdd;
   }
 
   private boolean bdd_isAssignment(int r) {
@@ -3962,22 +4055,34 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public BDD ithVar(int var) {
-    return makeBDD(bdd_ithvar(var));
+    _readWriteLock.readLock().lock();
+    BDDImpl ret = makeBDD(bdd_ithvar(var));
+    _readWriteLock.readLock().unlock();
+    return ret;
   }
 
   @Override
   public BDD nithVar(int var) {
-    return makeBDD(bdd_nithvar(var));
+    _readWriteLock.readLock().lock();
+    BDDImpl ret = makeBDD(bdd_nithvar(var));
+    _readWriteLock.readLock().unlock();
+    return ret;
   }
 
   @Override
   public int level2Var(int level) {
-    return bddlevel2var[level];
+    _readWriteLock.readLock().lock();
+    int ret = bddlevel2var[level];
+    _readWriteLock.readLock().unlock();
+    return ret;
   }
 
   @Override
   public int var2Level(int var) {
-    return bddvar2level[var];
+    _readWriteLock.readLock().lock();
+    int ret = bddvar2level[var];
+    _readWriteLock.readLock().unlock();
+    return ret;
   }
 
   private int bdd_getnodenum() {
@@ -4010,11 +4115,13 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public BDDPairing makePair() {
+    _readWriteLock.readLock().lock();
     bddPair p = new bddPair();
     p.result = new int[bddvarnum];
     for (int n = 0; n < bddvarnum; n++) {
       p.result[n] = bdd_ithvar(bddlevel2var[n]);
     }
+    _readWriteLock.readLock().unlock();
     return p;
   }
 
