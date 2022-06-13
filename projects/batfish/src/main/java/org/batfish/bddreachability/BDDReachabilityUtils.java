@@ -123,11 +123,7 @@ public final class BDDReachabilityUtils {
       // Forward the learned BDDs along each outgoing edge.
       dirtyStateEdges.forEach(
           (neighbor, edge) -> {
-            long priorBDDs = factory.numOutstandingBDDs();
             BDD result = traverse.apply(edge, learned);
-            long newBDDs = factory.numOutstandingBDDs();
-            assert newBDDs - priorBDDs == 1
-                : "Leak of size " + (newBDDs - priorBDDs - 1) + ": " + edge;
             if (!result.isZero()) {
               // this is a new result. add it to neighbor's inputs. if neighbor isn't already in
               // the dirtyStates queue, add it.

@@ -112,19 +112,8 @@ public class JFactory extends BDDFactory implements Serializable {
     return f;
   }
 
-  /** The total number of BDDs ever created. */
-  private long madeBDDs;
-  /** The total number of BDDs ever freed. */
-  private long freedBDDs;
-
-  @Override
-  public long numOutstandingBDDs() {
-    return madeBDDs - freedBDDs;
-  }
-
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
-    madeBDDs++;
     BDDImpl ret = _bddReuse.poll();
     if (ret == null) {
       ret = new BDDImpl(id);
@@ -387,7 +376,6 @@ public class JFactory extends BDDFactory implements Serializable {
     public void free() {
       bdd_delref(_index);
       _index = INVALID_BDD;
-      ++freedBDDs;
       if (_bddReuse.size() < BDD_REUSE_LIMIT) {
         _bddReuse.offer(this);
       }

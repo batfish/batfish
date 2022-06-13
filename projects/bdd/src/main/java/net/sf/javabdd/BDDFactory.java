@@ -116,12 +116,6 @@ public abstract class BDDFactory {
     return JFactory.init(nodenum, cachesize);
   }
 
-  /**
-   * Returns the total number of {@link BDD BDDs} allocated from this {@link BDDFactory factory}
-   * that were never {@link BDD#free() freed}.
-   */
-  public abstract long numOutstandingBDDs();
-
   /** Logical 'and'. */
   public static final BDDOp and = new BDDOp(0, "and");
 
