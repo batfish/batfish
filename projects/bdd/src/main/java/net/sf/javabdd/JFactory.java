@@ -632,26 +632,37 @@ public class JFactory extends BDDFactory implements Serializable {
         if (freepos == 0) {
           /* Try to allocate more nodes */
           bddrefstacks.add(bddrefstack);
-          // TODO upgrade to writer
-          bdd_gbc();
-          // TODO downgrade to reader
-          bddrefstacks.remove(bddrefstack);
 
-          if ((bddfreenum.get() * 100) / bddnodesize <= minfreenodes) {
-            bdd_noderesize();
-            hash2 = NODEHASH(level, low, high);
-          }
-
-          /* Panic if that is not possible */
+          // upgrade to writer
+          // _readWriteLock.readLock().unlock();
+          _readWriteLock.writeLock().lock();
           freepos = bddfreepos.get();
           if (freepos == 0) {
-            throw new JavaBDDException(BDD_NODENUM);
+            // still need to garbage collect (another thread didn't do it already)
+            bdd_gbc();
+
+            if ((bddfreenum.get() * 100) / bddnodesize <= minfreenodes) {
+              bdd_noderesize();
+              hash2 = NODEHASH(level, low, high);
+            }
+
+            /* Panic if that is not possible */
+            freepos = bddfreepos.get();
+            if (freepos == 0) {
+              throw new JavaBDDException(BDD_NODENUM);
+            }
           }
+
+          // downgrade to reader
+          _readWriteLock.writeLock().unlock();
+          // _readWriteLock.readLock().lock();
+          bddrefstacks.remove(bddrefstack);
         }
         if (bddnodes.trySetInitializing(freepos)) {
           res = freepos;
           break;
         }
+        // if we reach here, another thread won freepos. try again
       }
 
       // invariant: res != 0
