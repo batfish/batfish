@@ -107,6 +107,9 @@ public class JFactory extends BDDFactory implements Serializable {
 
   /** Wrapper for the BDD index number used internally in the representation. */
   protected class BDDImpl extends BDD {
+    // We could make this an AtomicInteger, which would add some safety in case we have
+    // use-after-free bugs. Choosing not to do that because we don't want that overhead and we
+    // shouldn't have use-after-free bugs anyway.
     int _index;
 
     BDDImpl(int index) {
