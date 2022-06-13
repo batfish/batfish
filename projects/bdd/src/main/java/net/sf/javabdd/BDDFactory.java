@@ -572,7 +572,7 @@ public abstract class BDDFactory {
    * IDs, and the cache will not share their work.
    *
    * <p>The returned {@link BDDPairing} must not be mutated -- it is unsafe to call {@link
-   * BDDPairing#set} or {@link BDDPairing#reset()}.
+   * BDDPairing#set}.
    */
   public BDDPairing getPair(Set<BDDVarPair> varPairs) {
     checkArgument(!varPairs.isEmpty(), "getPair: need at least one pair");

@@ -3813,13 +3813,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
   }
 
-  private void bdd_resetpair(bddPair p) {
-    for (int n = 0; n < bddvarnum; n++) {
-      p.result[n] = bdd_ithvar(bddlevel2var[n]);
-    }
-    p.last = 0;
-  }
-
   class bddPair extends BDDPairing implements Serializable {
     int[] result;
     int last;
@@ -3834,11 +3827,6 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public void set(int oldvar, BDD newvar) {
       bdd_setbddpair(this, oldvar, ((BDDImpl) newvar)._index);
-    }
-
-    @Override
-    public void reset() {
-      bdd_resetpair(this);
     }
 
     @Override
@@ -3889,7 +3877,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private void bdd_pairs_init() {
     pairsid = 0;
     pairs = null;
-    _validPairIdsForTransform = new HashSet<>();
+    _validPairIdsForTransform = Collections.synchronizedSet(new HashSet<>());
   }
 
   private int update_pairsid() {

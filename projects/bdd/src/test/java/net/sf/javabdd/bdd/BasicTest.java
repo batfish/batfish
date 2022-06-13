@@ -600,8 +600,5 @@ public class BasicTest {
     d.free();
     e.free();
     f.free();
-    p1.reset();
-    p2.reset();
-    p3.reset();
   }
 }

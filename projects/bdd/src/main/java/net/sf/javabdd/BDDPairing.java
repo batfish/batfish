@@ -83,12 +83,4 @@ public abstract class BDDPairing {
       set(oldvar[n], newvar[n]);
     }
   }
-
-  /**
-   * Resets this table of pairs by setting all substitutions to their default values (that is, no
-   * change).
-   *
-   * <p>Compare to bdd_resetpair.
-   */
-  public abstract void reset();
 }
