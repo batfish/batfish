@@ -501,6 +501,15 @@ public class JFactory extends BDDFactory implements Serializable {
         new IntStack(); /* BDDs referenced during the current computation. */
     private final IntHashSet quantvarset = new IntHashSet(); /* Current variable set for quant. */
     private int quantlast; /* Current last variable to be quant. */
+    private int applyop; /* Current operator for apply */
+    private int appexop; /* Current operator for appex */
+    private int appexid; /* Current cache id for appex */
+    private int quantid; /* Current cache id for quantifications */
+    private int replaceid; /* Current cache id for replace */
+    private int[] replacepair; /* Current replace pair */
+    private int replacelast; /* Current last var. level to replace */
+    private int miscid; /* Current cache id for other results */
+    private int satPolarity;
 
     private void INITREF() {
       bddrefstack.clear();
@@ -3413,14 +3422,6 @@ public class JFactory extends BDDFactory implements Serializable {
     {1, 1, 0, 0}, /* not                       ( ! )         */
   };
 
-  private transient int applyop; /* Current operator for apply */
-  private transient int appexop; /* Current operator for appex */
-  private transient int appexid; /* Current cache id for appex */
-  private transient int quantid; /* Current cache id for quantifications */
-  private transient int replaceid; /* Current cache id for replace */
-  private transient int[] replacepair; /* Current replace pair */
-  private transient int replacelast; /* Current last var. level to replace */
-  private transient int miscid; /* Current cache id for other results */
   private transient BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
   private transient BddCache quantcache; /* Cache for exist/forall results */
   private transient BddCache appexcache; /* Cache for appex/appall results */
@@ -3428,7 +3429,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient BddCache multiopcache; /* Cache for varargs operators */
   private transient BddCache countcache; /* Cache for count results */
   private int cacheratio;
-  private transient int satPolarity;
   /* Used instead of local variable in order
   to avoid compiler warning about 'first'
   being clobbered by setjmp */
