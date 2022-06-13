@@ -91,7 +91,6 @@ public class JFactory extends BDDFactory implements Serializable {
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     bddrefstacks = Collections.synchronizedList(new LinkedList<>());
-    quantvarset = new int[bddvarnum];
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -500,6 +499,8 @@ public class JFactory extends BDDFactory implements Serializable {
   private class Worker {
     private final IntStack bddrefstack =
         new IntStack(); /* BDDs referenced during the current computation. */
+    private final IntHashSet quantvarset = new IntHashSet(); /* Current variable set for quant. */
+    private int quantlast; /* Current last variable to be quant. */
 
     private void INITREF() {
       bddrefstack.clear();
@@ -1433,6 +1434,30 @@ public class JFactory extends BDDFactory implements Serializable {
       checkresize();
 
       return res;
+    }
+
+    private boolean INVARSET(int a) {
+      return quantvarset.contains(a);
+    }
+
+    private int varset2vartable(int r) {
+      if (r < 2) {
+        return bdd_error(BDD_VARSET);
+      }
+
+      quantvarset.clear();
+
+      quantlast = -1;
+      for (int n = r; n > 1; n = HIGH(n)) {
+        int level = LEVEL(n);
+        quantvarset.add(level);
+        if (VERIFY_ASSERTIONS) {
+          _assert(quantlast < level);
+        }
+        quantlast = level;
+      }
+
+      return 0;
     }
 
     private int bdd_relprod(int a, int b, int var) {
@@ -2933,10 +2958,6 @@ public class JFactory extends BDDFactory implements Serializable {
     return TRIPLE(l, r, op);
   }
 
-  private boolean INVARSET(int a) {
-    return quantvarset[a] == quantvarsetID; /* unsigned check */
-  }
-
   private static final int bddop_and = 0;
   private static final int bddop_xor = 1;
   private static final int bddop_or = 2;
@@ -3091,33 +3112,6 @@ public class JFactory extends BDDFactory implements Serializable {
     } else {
       return values;
     }
-  }
-
-  private int varset2vartable(int r) {
-    if (r < 2) {
-      return bdd_error(BDD_VARSET);
-    }
-
-    quantvarsetID++;
-
-    if (quantvarsetID == INT_MAX) {
-      for (int i = 0; i < bddvarnum; ++i) {
-        quantvarset[i] = 0;
-      }
-      quantvarsetID = 1;
-    }
-
-    quantlast = -1;
-    for (int n = r; n > 1; n = HIGH(n)) {
-      int level = LEVEL(n);
-      quantvarset[level] = quantvarsetID;
-      if (VERIFY_ASSERTIONS) {
-        _assert(quantlast < level);
-      }
-      quantlast = level;
-    }
-
-    return 0;
   }
 
   private static final int INT_MAX = Integer.MAX_VALUE;
@@ -3423,9 +3417,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient int appexop; /* Current operator for appex */
   private transient int appexid; /* Current cache id for appex */
   private transient int quantid; /* Current cache id for quantifications */
-  private transient int[] quantvarset; /* Current variable set for quant. */
-  private transient int quantvarsetID; /* Current id used in quantvarset */
-  private transient int quantlast; /* Current last variable to be quant. */
   private transient int replaceid; /* Current cache id for replace */
   private transient int[] replacepair; /* Current replace pair */
   private transient int replacelast; /* Current last var. level to replace */
@@ -3443,8 +3434,6 @@ public class JFactory extends BDDFactory implements Serializable {
   being clobbered by setjmp */
 
   private void bdd_operator_init() {
-    quantvarsetID = 0;
-    quantvarset = null;
     cacheratio = 0;
   }
 
@@ -3470,11 +3459,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private void bdd_operator_varresize() {
-    quantvarset = new int[bddvarnum];
-
-    // memset(quantvarset, 0, sizeof(int)*bddvarnum);
-    quantvarsetID = 0;
-
     BddCache_reset(countcache);
   }
 
