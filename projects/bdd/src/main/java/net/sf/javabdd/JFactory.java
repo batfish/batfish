@@ -94,6 +94,7 @@ public class JFactory extends BDDFactory implements Serializable {
     applycache = BddCacheI_init(cachesize);
     quantcache = BddCacheI_init(cachesize);
     appexcache = BddCacheI_init(cachesize);
+    replacecache = BddCacheI_init(cachesize);
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
@@ -2424,9 +2425,6 @@ public class JFactory extends BDDFactory implements Serializable {
     private int bdd_replace(int r, bddPair pair) {
       CHECK(r);
 
-      if (replacecache == null) {
-        replacecache = BddCacheI_init(cachesize);
-      }
       replacepair = pair.result;
       replacelast = pair.last;
       replaceid = (pair.id << 3) | CACHEID_REPLACE;
@@ -2679,9 +2677,6 @@ public class JFactory extends BDDFactory implements Serializable {
         _validPairIdsForTransform.add(pair.id);
       }
 
-      if (replacecache == null) {
-        replacecache = BddCacheI_init(cachesize);
-      }
       replacepair = pair.result;
       replacelast = pair.last;
       replaceid = (pair.id << 3) | CACHEID_TRANSFORM;
@@ -3438,6 +3433,7 @@ public class JFactory extends BDDFactory implements Serializable {
     applycache = BddCacheI_init(cachesize);
     quantcache = BddCacheI_init(cachesize);
     appexcache = BddCacheI_init(cachesize);
+    replacecache = BddCacheI_init(cachesize);
     _readWriteLock.writeLock().unlock();
   }
 
