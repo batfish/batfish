@@ -44,7 +44,6 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,15 +71,6 @@ public class JFactory extends BDDFactory implements Serializable {
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
   private static final boolean CACHESTATS = false;
 
-  /** A cache of BDDImpls that have been freed and may now be reused. */
-  private transient Queue<BDDImpl> _bddReuse;
-
-  /** The limit on the size of {@link #_bddReuse}. */
-  private static final int BDD_REUSE_LIMIT = 1024;
-
-  /** The number of BDDImpl objects reused since the last garbage collection. */
-  private transient long reusedBDDs;
-
   /**
    * Whether to flush (clear completely) the cache when live BDD nodes are garbage collected. If
    * {@code false}, the cache will be attempted to be cleaned and maintain existing valid cache
@@ -95,14 +85,12 @@ public class JFactory extends BDDFactory implements Serializable {
 
   protected JFactory() {
     bddrefstacks = Collections.synchronizedList(new LinkedList<>());
-    _bddReuse = new LinkedList<>();
   }
 
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     bddrefstacks = Collections.synchronizedList(new LinkedList<>());
-    _bddReuse = new LinkedList<>();
     quantvarset = new int[bddvarnum];
   }
 
@@ -114,15 +102,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
-    BDDImpl ret = _bddReuse.poll();
-    if (ret == null) {
-      ret = new BDDImpl(id);
-    } else {
-      reusedBDDs++;
-      ret._index = id;
-      bdd_addref(id);
-    }
-    return ret;
+    return new BDDImpl(id);
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
@@ -376,9 +356,6 @@ public class JFactory extends BDDFactory implements Serializable {
     public void free() {
       bdd_delref(_index);
       _index = INVALID_BDD;
-      if (_bddReuse.size() < BDD_REUSE_LIMIT) {
-        _bddReuse.offer(this);
-      }
     }
   }
 
@@ -3229,8 +3206,6 @@ public class JFactory extends BDDFactory implements Serializable {
     {
       gcstats.nodes = bddnodesize;
       gcstats.freenodes = freenum;
-      gcstats.reusednodes = reusedBDDs;
-      reusedBDDs = 0;
       gcstats.time = c2 - c1;
       gcstats.sumtime = gbcclock;
       gcstats.num = gbcollectnum;
