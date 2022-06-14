@@ -423,16 +423,39 @@ bfiua_receive
 
 bfiua_send
 :
-   SEND
-   (
-      bfiuas_path_count
-      | bfiuas_prefix_policy
-   )
+  SEND
+  (
+    apply
+    | bfiuas_multipath
+    | bfiuas_path_count
+    | bfiuas_path_selection_mode
+    | bfiuas_prefix_policy
+  )
+;
+
+bfiuas_multipath
+:
+  MULTIPATH
 ;
 
 bfiuas_path_count
 :
-   PATH_COUNT count = dec
+   PATH_COUNT count = send_path_count
+;
+
+send_path_count
+:
+  // 2-64
+  uint8
+;
+
+bfiuas_path_selection_mode
+:
+  PATH_SELECTION_MODE
+  (
+    ALL_PATHS
+    | EQUAL_COST_PATHS
+  )
 ;
 
 bfiuas_prefix_policy
