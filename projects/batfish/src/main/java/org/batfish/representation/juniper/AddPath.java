@@ -5,8 +5,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Juniper BGP add-path settings for a particular address-family and bgp hierarchy. Unset settings
- * for the same family are inherited from more general hierarchy levels.
+ * Juniper BGP add-path settings for a particular address-family and bgp hierarchy. All settings at
+ * a more general BGP configuration level are ignored in the presence of any add-path setting at a
+ * more specific BGP configuration level (process -> group -> neighbor).
  */
 public final class AddPath implements Serializable {
 

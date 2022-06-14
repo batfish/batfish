@@ -58,6 +58,9 @@ public class BgpGroup implements Serializable {
     _inherited = true;
     if (_parent != null) {
       _parent.cascadeInheritance();
+      if (_addPath == null) {
+        _addPath = _parent._addPath;
+      }
       if (_advertiseExternal == null) {
         _advertiseExternal = _parent._advertiseExternal;
       }
