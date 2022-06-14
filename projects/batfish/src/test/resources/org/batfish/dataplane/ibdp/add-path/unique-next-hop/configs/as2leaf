@@ -1,0 +1,33 @@
+!RANCID-CONTENT-TYPE: cisco
+
+hostname as2leaf
+
+interface Loopback0
+  ip address 10.0.2.4 255.255.255.255
+
+interface GigabitEthernet0/0
+  description as2rr:GigabitEthernet0/2
+  ip address 10.2.34.4 255.255.255.0
+  no shutdown
+!
+
+! as2border1 loopback
+ip route 10.0.2.1 255.255.255.255 10.2.34.3
+! as2border2 loopback
+ip route 10.0.2.2 255.255.255.255 10.2.34.3
+! as2rr loopback
+ip route 10.0.2.3 255.255.255.255 10.2.34.3
+
+router bgp 2
+  bgp router-id 10.0.2.4
+  neighbor 10.0.2.3 remote-as 2
+  neighbor 10.0.2.3 update-source Loopback0
+  address-family ipv4 unicast
+    bgp additional-paths send receive
+    bgp additional-paths select all
+    bgp additional-paths install
+    maximum-paths eibgp 32
+    neighbor 10.0.2.3 activate
+    neighbor 10.0.2.3 advertise additional-paths all
+    neighbor 10.0.2.3 additional-paths send receive
+!

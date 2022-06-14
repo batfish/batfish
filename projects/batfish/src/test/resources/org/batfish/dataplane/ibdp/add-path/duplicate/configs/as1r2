@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: cisco
+
+hostname as1r2
+
+interface Loopback0
+  ip address 10.0.0.0 255.255.255.255
+
+interface GigabitEthernet0/0
+  description as2border1:GigabitEthernet0/1
+  ip address 10.12.2.1 255.255.255.0
+  no shutdown
+!
+
+router bgp 1
+  bgp router-id 10.12.2.1
+  network 10.0.0.0 mask 255.255.255.255
+  neighbor 10.12.2.2 remote-as 2
+  address-family ipv4 unicast
+    neighbor 10.12.2.2 activate
+!
