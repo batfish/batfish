@@ -1044,7 +1044,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       EigrpVrfConfiguration vrfConfig, String policyName) {
     Set<NxosRoutingProtocol> supportedProtocols =
         ImmutableSet.of(
-            NxosRoutingProtocol.BGP, NxosRoutingProtocol.EIGRP, NxosRoutingProtocol.DIRECT, NxosRoutingProtocol.STATIC);
+            NxosRoutingProtocol.BGP,
+            NxosRoutingProtocol.EIGRP,
+            NxosRoutingProtocol.DIRECT,
+            NxosRoutingProtocol.STATIC);
     List<RedistributionPolicy> redistPolicies =
         Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
             .filter(Objects::nonNull)
@@ -1097,7 +1100,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   Statement setTag = new SetTag(new LiteralLong(asn));
                   return new If(matchBgp, ImmutableList.of(setTag, call(policy.getRouteMap())));
                 case EIGRP:
-                  MatchProtocol matchEigrp = 
+                  MatchProtocol matchEigrp =
                       new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
                   String mapName = policy.getRouteMap();
                   List<BooleanExpr> matchConjuncts =
@@ -1108,7 +1111,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                           .filter(Objects::nonNull)
                           .collect(ImmutableList.toImmutableList());
                   Conjunction redistExpr = new Conjunction(matchConjuncts);
-                  return new If(redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
+                  return new If(
+                      redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
                 case DIRECT:
                   return new If(
                       new MatchProtocol(RoutingProtocol.CONNECTED),
