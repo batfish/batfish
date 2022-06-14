@@ -1,0 +1,64 @@
+!RANCID-CONTENT-TYPE: cisco
+
+hostname as2rr
+
+interface Loopback0
+  ip address 10.0.2.3 255.255.255.255
+
+interface GigabitEthernet0/0
+  description as2border1:GigabitEthernet0/2
+  ip address 10.2.13.3 255.255.255.0
+  no shutdown
+!
+
+interface GigabitEthernet0/1
+  description as2border2:GigabitEthernet0/1
+  ip address 10.2.23.3 255.255.255.0
+  no shutdown
+!
+
+interface GigabitEthernet0/2
+  description as2leaf:GigabitEthernet0/0
+  ip address 10.2.34.3 255.255.255.0
+  no shutdown
+!
+
+! as2border1 loopback
+ip route 10.0.2.1 255.255.255.255 10.2.13.1
+! as2border2 loopback
+ip route 10.0.2.2 255.255.255.255 10.2.23.2
+! as2leaf loopback
+ip route 10.0.2.4 255.255.255.255 10.2.34.4
+
+route-map drop deny 100
+!
+
+router bgp 2
+  bgp router-id 10.0.2.3
+  neighbor 10.0.2.1 remote-as 2
+  neighbor 10.0.2.1 update-source Loopback0
+  neighbor 10.0.2.2 remote-as 2
+  neighbor 10.0.2.2 update-source Loopback0
+  neighbor 10.0.2.4 remote-as 2
+  neighbor 10.0.2.4 update-source Loopback0
+  address-family ipv4 unicast
+    bgp additional-paths send receive
+    bgp additional-paths select all
+    bgp additional-paths install
+    maximum-paths eibgp 32
+    neighbor 10.0.2.1 activate
+    neighbor 10.0.2.1 route-reflector-client
+    neighbor 10.0.2.1 advertise additional-paths all
+    neighbor 10.0.2.1 additional-paths send receive
+    neighbor 10.0.2.1 route-map drop out
+    neighbor 10.0.2.2 activate
+    neighbor 10.0.2.2 route-reflector-client
+    neighbor 10.0.2.2 advertise additional-paths all
+    neighbor 10.0.2.2 additional-paths send receive
+    neighbor 10.0.2.2 route-map drop out
+    neighbor 10.0.2.4 activate
+    neighbor 10.0.2.4 route-reflector-client
+    neighbor 10.0.2.4 advertise additional-paths all
+    neighbor 10.0.2.4 additional-paths send receive
+    neighbor 10.0.2.4 send-community both
+!
