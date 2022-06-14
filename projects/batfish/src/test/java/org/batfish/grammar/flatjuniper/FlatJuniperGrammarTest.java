@@ -1257,6 +1257,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(master.getAddPath().getSend().getPathCount(), equalTo(2));
     assertNull(master.getAddPath().getSend().getPathSelectionMode());
 
+    assertFalse(g1.getAddPath().getReceive());
     assertTrue(g1.getAddPath().getSend().getMultipath());
     assertThat(g1.getAddPath().getSend().getPathCount(), equalTo(64));
 
@@ -1264,11 +1265,13 @@ public final class FlatJuniperGrammarTest {
 
     assertNull(g2.getAddPath());
 
+    assertFalse(n2.getAddPath().getReceive());
     assertThat(
         n2.getAddPath().getSend().getPathSelectionMode(), equalTo(PathSelectionMode.ALL_PATHS));
 
     assertNull(g3.getAddPath());
 
+    assertFalse(n3.getAddPath().getReceive());
     assertThat(
         n3.getAddPath().getSend().getPathSelectionMode(),
         equalTo(PathSelectionMode.EQUAL_COST_PATHS));

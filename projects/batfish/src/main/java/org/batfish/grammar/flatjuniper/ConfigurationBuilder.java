@@ -7137,7 +7137,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitBfiuas_prefix_policy(Bfiuas_prefix_policyContext ctx) {
-    todo(ctx);
     String name = toString(ctx.policy);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, ctx.getStart().getLine());
