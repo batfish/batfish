@@ -78,8 +78,8 @@ public final class TraceElement implements Serializable {
 
   /** A {@link Fragment} that is linked to a vendor structure. */
   public static final class LinkFragment implements Fragment {
-    private final String _text;
-    private final VendorStructureId _vendorStructureId;
+    @Nonnull private final String _text;
+    @Nonnull private final VendorStructureId _vendorStructureId;
 
     LinkFragment(String text, VendorStructureId vendorStructureId) {
       checkArgument(!text.isEmpty(), "%s cannot be empty", PROP_TEXT);
@@ -98,11 +98,13 @@ public final class TraceElement implements Serializable {
 
     @Override
     @JsonProperty(PROP_TEXT)
+    @Nonnull
     public String getText() {
       return _text;
     }
 
     @JsonProperty(PROP_VENDOR_STRUCTURE_ID)
+    @Nonnull
     public VendorStructureId getVendorStructureId() {
       return _vendorStructureId;
     }
@@ -144,6 +146,11 @@ public final class TraceElement implements Serializable {
 
     public Builder add(String text, VendorStructureId vendorStructureId) {
       _fragments.add(new LinkFragment(text, vendorStructureId));
+      return this;
+    }
+
+    public Builder add(Fragment fragment) {
+      _fragments.add(fragment);
       return this;
     }
 

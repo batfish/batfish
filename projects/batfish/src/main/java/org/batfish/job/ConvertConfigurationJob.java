@@ -23,9 +23,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -40,6 +42,7 @@ import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -100,6 +103,7 @@ import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
@@ -417,6 +421,63 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   }
 
   /**
+   * Remove invalid {@link VendorStructureId}s from the {@link Configuration}. {@link
+   * VendorStructureId}s are considered invalid if they do not point to a defined structure in the
+   * specified {@link VendorConfiguration}.
+   *
+   * <p>Currently only handles {@link VendorStructureId}s in {@link IpAccessList}s and their {@link
+   * org.batfish.datamodel.TraceElement}s.
+   */
+  @VisibleForTesting
+  static void removeInvalidVendorStructureIds(Configuration c, VendorConfiguration vc, Warnings w) {
+    if (vc.getAnswerElement() == null) {
+      return;
+    }
+    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+        definedStructures = vc.getAnswerElement().getDefinedStructures();
+    InvalidVendorStructureIdEraser vsidEraser =
+        new InvalidVendorStructureIdEraser(definedStructures);
+    c.setIpAccessLists(
+        c.getIpAccessLists().entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    Entry::getKey,
+                    e ->
+                        e.getValue().toBuilder()
+                            .setLines(
+                                e.getValue().getLines().stream()
+                                    .map(vsidEraser::visit)
+                                    .collect(Collectors.toList()))
+                            .build())));
+  }
+
+  /**
+   * Asserts that {@link VendorStructureId}s in the specified {@link Configuration} are valid.
+   *
+   * <p>Currently only checks {@link VendorStructureId}s in {@link IpAccessList}s and their {@link
+   * org.batfish.datamodel.TraceElement}s.
+   */
+  @VisibleForTesting
+  static void assertVendorStructureIdsValid(Configuration c, VendorConfiguration vc, Warnings w) {
+    if (vc.getAnswerElement() == null) {
+      // Tests should fail
+      assert vc.getAnswerElement() != null;
+      return;
+    }
+    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+        definedStructures = vc.getAnswerElement().getDefinedStructures();
+    InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
+    // Erase invalid VSIDs and confirm no changes occur
+    for (IpAccessList acl : c.getIpAccessLists().values()) {
+      acl.getLines()
+          .forEach(
+              line -> {
+                assert line.equals(eraser.visit(line));
+              });
+    }
+  }
+
+  /**
    * Applies sanity checks and finishing touches to the given {@link Configuration}.
    *
    * <p>Sanity checks such as asserting that required properties hold.
@@ -426,7 +487,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    * <p>Finishing touches such as converting structures to their immutable forms.
    */
   @VisibleForTesting
-  static void finalizeConfiguration(Configuration c, Warnings w) {
+  static void finalizeConfiguration(Configuration c, VendorConfiguration vc, Warnings w) {
     String hostname = c.getHostname();
     if (c.getDefaultCrossZoneAction() == null) {
       throw new BatfishException(
@@ -444,6 +505,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyVrrpGroups(c, w);
     removeInvalidStaticRoutes(c, w);
     removeUndefinedTrackReferences(c, w);
+    // Make tests fail if they have invalid VSIDs
+    assertVendorStructureIdsValid(c, vc, w);
+    removeInvalidVendorStructureIds(c, vc, w);
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
@@ -984,7 +1048,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           iptablesConfig.applyAsOverlay(configuration, warnings);
         }
 
-        finalizeConfiguration(configuration, warnings);
+        finalizeConfiguration(configuration, vendorConfiguration, warnings);
 
         String hostname = configuration.getHostname();
         configurations.put(hostname, configuration);
