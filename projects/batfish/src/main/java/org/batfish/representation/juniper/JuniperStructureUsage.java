@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.vendor.StructureUsage;
 
 public enum JuniperStructureUsage implements StructureUsage {
+  ADD_PATH_SEND_PREFIX_POLICY("add-path send prefix-policy"),
   ADDRESS_BOOK_ATTACH_ZONE("address-book attach zone"),
   AGGREGATE_ROUTE_POLICY("aggregate route policy"),
   APPLICATION_SET_MEMBER_APPLICATION("application-set member application"),

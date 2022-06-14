@@ -70,6 +70,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -376,6 +377,7 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.BaseApplication;
+import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.BridgeDomain;
 import org.batfish.representation.juniper.BridgeDomainVlanIdAll;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
@@ -407,6 +409,7 @@ import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
@@ -428,6 +431,7 @@ import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.PatPool;
+import org.batfish.representation.juniper.PathSelectionMode;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCondition;
@@ -1234,6 +1238,59 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
     assertThat(
         c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("1.1.1.1"), hasRemoteAs(1L)))));
+  }
+
+  @Test
+  public void testBgpAddPathExtraction() {
+    String hostname = "juniper-bgp-add-path";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    RoutingInstance ri = vc.getMasterLogicalSystem().getDefaultRoutingInstance();
+    BgpGroup master = ri.getMasterBgpGroup();
+    BgpGroup g1 = ri.getNamedBgpGroups().get("g1");
+    BgpGroup n1 = ri.getIpBgpGroups().get(Prefix.strict("10.0.0.1/32"));
+    BgpGroup g2 = ri.getNamedBgpGroups().get("g2");
+    BgpGroup n2 = ri.getIpBgpGroups().get(Prefix.strict("10.0.0.2/32"));
+    BgpGroup g3 = ri.getNamedBgpGroups().get("g3");
+    BgpGroup n3 = ri.getIpBgpGroups().get(Prefix.strict("10.0.0.3/32"));
+
+    assertTrue(master.getAddPath().getReceive());
+    assertThat(master.getAddPath().getSend().getPathCount(), equalTo(2));
+    assertNull(master.getAddPath().getSend().getPathSelectionMode());
+
+    assertFalse(g1.getAddPath().getReceive());
+    assertTrue(g1.getAddPath().getSend().getMultipath());
+    assertThat(g1.getAddPath().getSend().getPathCount(), equalTo(64));
+
+    assertNull(n1.getAddPath());
+
+    assertNull(g2.getAddPath());
+
+    assertFalse(n2.getAddPath().getReceive());
+    assertThat(
+        n2.getAddPath().getSend().getPathSelectionMode(), equalTo(PathSelectionMode.ALL_PATHS));
+
+    assertNull(g3.getAddPath());
+
+    assertFalse(n3.getAddPath().getReceive());
+    assertThat(
+        n3.getAddPath().getSend().getPathSelectionMode(),
+        equalTo(PathSelectionMode.EQUAL_COST_PATHS));
+    assertThat(n3.getAddPath().getSend().getPrefixPolicy(), equalTo("appp"));
+  }
+
+  @Test
+  public void testBgpAddPathReferences() throws IOException {
+    String hostname = "juniper-bgp-add-path";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ae,
+        hasReferencedStructure(
+            "configs/" + hostname,
+            POLICY_STATEMENT,
+            "appp",
+            JuniperStructureUsage.ADD_PATH_SEND_PREFIX_POLICY));
   }
 
   @Test
