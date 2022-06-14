@@ -427,7 +427,7 @@ public final class BDDReachabilityAnalysisFactory {
   private Map<String, Map<String, Transition>> computeBDDIncomingTransformations() {
     long start = System.currentTimeMillis();
     Map<String, Map<String, Transition>> result =
-        toImmutableMap(
+        toImmutableMapParallel(
             _configs,
             Entry::getKey, /* node */
             nodeEntry -> {
@@ -512,7 +512,7 @@ public final class BDDReachabilityAnalysisFactory {
       Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
       Function<InterfaceForwardingBehavior, IpSpace> dispositionIpSpaceGetter,
       IpSpaceToBDD ipSpaceToBDD) {
-    return toImmutableMap(
+    return toImmutableMapParallel(
         vrfForwardingBehavior,
         Entry::getKey,
         nodeEntry ->
@@ -828,7 +828,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   @VisibleForTesting
   Stream<Edge> generateRules_PreInInterface_PacketPolicy() {
-    return _configs.values().stream()
+    return _configs.values().parallelStream()
         .flatMap(
             config -> {
               String nodeName = config.getHostname();
@@ -1086,7 +1086,7 @@ public final class BDDReachabilityAnalysisFactory {
       return Stream.of();
     }
 
-    return _configs.entrySet().stream()
+    return _configs.entrySet().parallelStream()
         .flatMap(
             nodeEntry -> {
               String node = nodeEntry.getKey();

@@ -1,7 +1,7 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMapParallel;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.activeAclSources;
 
@@ -138,12 +138,11 @@ public final class BDDSourceManager implements Serializable {
   public static Map<String, BDDSourceManager> forNetwork(
       BDDPacket pkt, Map<String, Configuration> configs, boolean initializeSessions) {
     Map<String, Set<String>> activeSources =
-        toImmutableMap(
-            configs.entrySet(), Entry::getKey, entry -> activeAclSources(entry.getValue()));
+        toImmutableMapParallel(configs, Entry::getKey, entry -> activeAclSources(entry.getValue()));
 
     Map<String, Set<String>> activeAndReferenced =
-        toImmutableMap(
-            configs.entrySet(),
+        toImmutableMapParallel(
+            configs,
             Entry::getKey,
             entry -> {
               Configuration config = entry.getValue();
@@ -161,7 +160,7 @@ public final class BDDSourceManager implements Serializable {
             });
 
     Map<String, Set<String>> activeButNotReferenced =
-        toImmutableMap(
+        toImmutableMapParallel(
             activeSources,
             Entry::getKey,
             activeEntry ->
@@ -169,7 +168,7 @@ public final class BDDSourceManager implements Serializable {
                     activeEntry.getValue(), activeAndReferenced.get(activeEntry.getKey())));
 
     Map<String, Set<String>> valuesToTrack =
-        toImmutableMap(
+        toImmutableMapParallel(
             activeAndReferenced,
             Entry::getKey,
             entry -> {
@@ -182,7 +181,7 @@ public final class BDDSourceManager implements Serializable {
     Map<String, BDDFiniteDomain<String>> finiteDomains =
         BDDFiniteDomain.domainsWithSharedVariable(pkt, VAR_NAME, valuesToTrack, true);
 
-    return toImmutableMap(
+    return toImmutableMapParallel(
         finiteDomains,
         Entry::getKey,
         entry ->
