@@ -1484,6 +1484,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterS_address_definition(S_address_definitionContext ctx) {
+
     String name = getText(ctx.name);
     if (_currentVsys.getAddressGroups().get(name) != null) {
       warn(
