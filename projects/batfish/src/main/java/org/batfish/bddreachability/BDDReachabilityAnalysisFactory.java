@@ -17,6 +17,7 @@ import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.bddreachability.transition.Transitions.removeNodeSpecificConstraints;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMapParallel;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.TransformationUtil.visitTransformationSteps;
@@ -362,7 +363,7 @@ public final class BDDReachabilityAnalysisFactory {
    * its interfaces' accept BDDs.
    */
   private Map<String, Map<String, BDD>> computeVrfAcceptBDDs() {
-    return toImmutableMap(
+    return toImmutableMapParallel(
         _ifaceAcceptBDDs,
         Entry::getKey, // node name
         nodeEntry ->
@@ -471,7 +472,7 @@ public final class BDDReachabilityAnalysisFactory {
       Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
       Function<VrfForwardingBehavior, IpSpace> ipSpaceGetter,
       IpSpaceToBDD toBDD) {
-    return toImmutableMap(
+    return toImmutableMapParallel(
         vrfForwardingBehavior,
         Entry::getKey, // node
         nodeEntry ->
@@ -493,7 +494,7 @@ public final class BDDReachabilityAnalysisFactory {
       computeArpTrueEdgeBDDs(
           Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
           IpSpaceToBDD ipSpaceToBDD) {
-    return toImmutableMap(
+    return toImmutableMapParallel(
         vrfForwardingBehavior,
         Entry::getKey, // node
         nodeEntry ->

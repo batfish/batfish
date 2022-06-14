@@ -68,7 +68,6 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
       CacheBuilder.newBuilder()
           .maximumSize(1_000_000)
           .weakKeys() // this makes equality check for keys be identity, not deep.
-          .concurrencyLevel(1) // super::visit is not threadsafe, don't allocate multiple locks
           .build(CacheLoader.from(ipSpace -> ipSpace.accept(this)));
 
   private final @Nullable IpSpaceToBDD _nonRefIpSpaceToBDD;

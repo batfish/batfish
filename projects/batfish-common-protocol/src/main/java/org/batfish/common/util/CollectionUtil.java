@@ -49,6 +49,14 @@ public final class CollectionUtil {
     return map.entrySet().stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
   }
 
+  public static <K1, K2, V1, V2> Map<K2, V2> toImmutableMapParallel(
+      Map<K1, V1> map,
+      Function<Entry<K1, V1>, K2> keyFunction,
+      Function<Entry<K1, V1>, V2> valueFunction) {
+    return map.entrySet().parallelStream()
+        .collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
+  }
+
   public static <K1, K2, V> Map<K2, V> toMap(
       Set<K1> set, Function<K1, K2> keyFunction, Function<K1, V> valueFunction) {
     return set.stream().collect(Collectors.toMap(keyFunction, valueFunction));
