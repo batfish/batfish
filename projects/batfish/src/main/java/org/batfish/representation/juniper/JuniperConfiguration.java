@@ -588,6 +588,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       boolean allowLocalAsIn = loops > 0;
       AddressFamilyCapabilities.Builder ipv4AfSettingsBuilder = AddressFamilyCapabilities.builder();
+
+      // add-path
+      AddPath addPath = ig.getAddPath();
+      if (addPath != null) {
+        ipv4AfSettingsBuilder.setAdditionalPathsReceive(addPath.getReceive());
+        AddPathSend send = addPath.getSend();
+        if (send != null && send.getPathCount() != null) {
+          // path count must be set for add-path send to be enabled on Juniper
+          ipv4AfSettingsBuilder.setAdditionalPathsSend(true);
+          // TODO: Datamodel property additionalPathsSelectAll needs to be split into at least:
+          //       1. select all paths
+          //       - use if Juniper path-selection-mode is ALL_PATHS, or neither path-selection-mode
+          //         nor multipath is set
+          //       2. select all ECMP-best paths
+          //       - use if Juniper path-selection-mode is EQUAL_COST_PATHS, or multipath is set
+          ipv4AfSettingsBuilder.setAdditionalPathsSelectAll(true);
+          // TODO: implement max additional-paths to send in datamodel and populate here
+        }
+      }
       ipv4AfSettingsBuilder.setAllowLocalAsIn(allowLocalAsIn);
       Boolean advertisePeerAs = ig.getAdvertisePeerAs();
       if (advertisePeerAs == null) {

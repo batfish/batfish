@@ -324,6 +324,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -1291,6 +1292,54 @@ public final class FlatJuniperGrammarTest {
             POLICY_STATEMENT,
             "appp",
             JuniperStructureUsage.ADD_PATH_SEND_PREFIX_POLICY));
+  }
+
+  @Test
+  public void testBgpAddPathConversion() {
+    String hostname = "juniper-bgp-add-path";
+    Configuration c = parseConfig(hostname);
+    Map<Ip, BgpActivePeerConfig> activeNeighbors =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    {
+      AddressFamilyCapabilities afc =
+          activeNeighbors
+              .get(Ip.parse("10.0.0.1"))
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities();
+      assertFalse(afc.getAdditionalPathsReceive());
+      assertTrue(afc.getAdditionalPathsSend());
+      assertTrue(afc.getAdditionalPathsSelectAll());
+    }
+    {
+      AddressFamilyCapabilities afc =
+          activeNeighbors
+              .get(Ip.parse("10.0.0.2"))
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities();
+      assertFalse(afc.getAdditionalPathsReceive());
+      assertFalse(afc.getAdditionalPathsSend());
+      assertFalse(afc.getAdditionalPathsSelectAll());
+    }
+    {
+      AddressFamilyCapabilities afc =
+          activeNeighbors
+              .get(Ip.parse("10.0.0.3"))
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities();
+      assertFalse(afc.getAdditionalPathsReceive());
+      assertFalse(afc.getAdditionalPathsSend());
+      assertFalse(afc.getAdditionalPathsSelectAll());
+    }
+    {
+      AddressFamilyCapabilities afc =
+          activeNeighbors
+              .get(Ip.parse("10.0.0.4"))
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities();
+      assertTrue(afc.getAdditionalPathsReceive());
+      assertTrue(afc.getAdditionalPathsSend());
+      assertTrue(afc.getAdditionalPathsSelectAll());
+    }
   }
 
   @Test
