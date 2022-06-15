@@ -91,6 +91,7 @@ public class JFactory extends BDDFactory implements Serializable {
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     bddrefstacks = Collections.synchronizedList(new LinkedList<>());
+    _threadLocalBddFreePos = new ThreadLocal<>();
     applycache = BddCacheI_init(cachesize);
     quantcache = BddCacheI_init(cachesize);
     appexcache = BddCacheI_init(cachesize);
@@ -591,6 +592,19 @@ public class JFactory extends BDDFactory implements Serializable {
     private int replacelast; /* Current last var. level to replace */
     private int miscid; /* Current cache id for other results */
     private int satPolarity;
+    private AtomicInteger bddfreepos;
+
+    Worker() {
+      bddfreepos = _threadLocalBddFreePos.get();
+      if (bddfreepos == null) {
+        getNewBddFreePos();
+      }
+    }
+
+    private void getNewBddFreePos() {
+      bddfreepos = _bddFreePosManager.get();
+      _threadLocalBddFreePos.set(bddfreepos);
+    }
 
     private void INITREF() {
       bddrefstack.clear();
@@ -711,12 +725,21 @@ public class JFactory extends BDDFactory implements Serializable {
       while (true) {
         int freepos = bddfreepos.get();
         if (freepos == 0) {
+          // update bddfreepos and try again
+          getNewBddFreePos();
+          freepos = bddfreepos.get();
+        }
+        if (freepos == 0) {
           /* Try to allocate more nodes */
           bddrefstacks.add(bddrefstack);
+
+          // stop other threads from creating new nodes (i.e. speed up upgrade to writer)
+          _bddFreePosManager.clear();
 
           // upgrade to writer
           _readWriteLock.readLock().unlock();
           _readWriteLock.writeLock().lock();
+          getNewBddFreePos();
           freepos = bddfreepos.get();
           if (freepos == 0) {
             // still need to garbage collect (another thread didn't do it already)
@@ -728,6 +751,7 @@ public class JFactory extends BDDFactory implements Serializable {
             }
 
             /* Panic if that is not possible */
+            getNewBddFreePos();
             freepos = bddfreepos.get();
             if (freepos == 0) {
               throw new JavaBDDException(BDD_NODENUM);
@@ -750,9 +774,10 @@ public class JFactory extends BDDFactory implements Serializable {
 
       // any other threads trying to allocate a node will spin in the
       // previous loop. this compareAndSet will unblock them.
-      if (!bddfreepos.compareAndSet(res, NEXT(res))) {
-        throw new IllegalStateException("the impossible has happened");
-      }
+      // this compareAndSet will fail if another thread starts GC (the value will have changed to
+      // zero).
+      // if that happens, fine -- we can continue. but we will block on the next bdd_makenode.
+      bddfreepos.compareAndSet(res, NEXT(res));
 
       newNodeIndex(res);
 
@@ -2854,13 +2879,47 @@ public class JFactory extends BDDFactory implements Serializable {
     }
   }
 
+  private static class BDDFreePosManager implements Serializable {
+    AtomicInteger[] _freepos = null;
+    AtomicInteger _nextIdx = new AtomicInteger(0);
+
+    void clear() {
+      for (int i = 0; i < _freepos.length; i++) {
+        _freepos[i].set(0);
+      }
+    }
+
+    AtomicInteger get() {
+      int i = _nextIdx.getAndIncrement();
+      if (i < _freepos.length) {
+        return _freepos[i];
+      }
+      return new AtomicInteger(0);
+    }
+
+    void set(int[] freepos) {
+      if (_freepos == null || _freepos.length != freepos.length) {
+        _freepos = new AtomicInteger[freepos.length];
+        for (int i = 0; i < freepos.length; i++) {
+          _freepos[i] = new AtomicInteger(freepos[i]);
+        }
+      } else {
+        for (int i = 0; i < freepos.length; i++) {
+          _freepos[i].set(freepos[i]);
+        }
+      }
+      _nextIdx.set(0);
+    }
+  }
+
   private static final int BDDONE = 1;
   private static final int BDDZERO = 0;
 
   private boolean bddrunning; /* Flag - package initialized */
   private int bddnodesize; /* Number of allocated nodes */
   private NodeTable bddnodes = null;
-  private final AtomicInteger bddfreepos = new AtomicInteger(-1); /* First free node */
+  private transient ThreadLocal<AtomicInteger> _threadLocalBddFreePos = new ThreadLocal<>();
+  private final BDDFreePosManager _bddFreePosManager = new BDDFreePosManager();
   /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
   private transient List<IntStack> bddrefstacks;
@@ -3224,24 +3283,26 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private static final int INT_MAX = Integer.MAX_VALUE;
+  private static final int NUM_FREEPOS = 32;
 
   private void bdd_gbc_rehash() {
-    int freepos = 0;
+    int[] freepos = new int[NUM_FREEPOS];
+    int idx = 0;
 
     for (int n = bddnodesize - 1; n >= 2; n--) {
       if (LOW(n) != INVALID_BDD) {
         int hash2;
-
         hash2 = NODEHASH(LEVEL(n), LOW(n), HIGH(n));
         SETNEXT(n, HASH(hash2));
         SETHASH(hash2, n);
       } else {
-        SETNEXT(n, freepos);
-        freepos = n;
+        SETNEXT(n, freepos[idx]);
+        freepos[idx] = n;
+        idx = (idx + 1) % freepos.length;
       }
     }
 
-    bddfreepos.set(freepos);
+    _bddFreePosManager.set(freepos);
   }
 
   int bdd_gbc() {
@@ -3268,27 +3329,27 @@ public class JFactory extends BDDFactory implements Serializable {
       SETHASH(n, 0);
     }
 
-    int freepos = 0;
     int freenum = 0;
 
+    int[] freepos = new int[NUM_FREEPOS];
+    int idx = 0;
     for (int n = bddnodesize - 1; n >= 2; n--) {
-
       if (MARKED(n) && LOW(n) != INVALID_BDD) {
         int hash2;
-
         UNMARK(n);
         hash2 = NODEHASH(LEVEL(n), LOW(n), HIGH(n));
         SETNEXT(n, HASH(hash2));
         SETHASH(hash2, n);
       } else {
         SETLOW(n, INVALID_BDD);
-        SETNEXT(n, freepos);
-        freepos = n;
+        SETNEXT(n, freepos[idx]);
+        freepos[idx] = n;
+        idx = (idx + 1) % freepos.length;
         freenum++;
       }
     }
 
-    bddfreepos.set(freepos);
+    _bddFreePosManager.set(freepos);
 
     if (freenum > 0) {
       // Don't reset or clean caches if we didn't free any nodes.
@@ -3421,16 +3482,7 @@ public class JFactory extends BDDFactory implements Serializable {
     IntStream.range(0, oldsize).parallel().forEach(i -> SETHASH(i, 0));
 
     // Initialize the new nodes in parallel
-    IntStream.range(oldsize, newsize)
-        .parallel()
-        .forEach(
-            n -> {
-              SETLOW(n, INVALID_BDD);
-              SETNEXT(n, n + 1);
-            });
-
-    int prev_freepos = bddfreepos.getAndSet(oldsize);
-    SETNEXT(bddnodesize - 1, prev_freepos);
+    IntStream.range(oldsize, newsize).parallel().forEach(n -> SETLOW(n, INVALID_BDD));
 
     bdd_gbc_rehash();
     bddresized = true;
@@ -3457,12 +3509,13 @@ public class JFactory extends BDDFactory implements Serializable {
 
     bddresized = false;
 
-    for (int n = 0; n < bddnodesize; n++) {
+    int[] freepos = new int[NUM_FREEPOS];
+    int idx = 0;
+    for (int n = bddnodesize - 1; n >= 2; n--) {
       SETLOW(n, INVALID_BDD);
-      // SETREFCOU(n, 0);
-      // SETHASH(n, 0);
-      // SETLEVEL(n, 0);
-      SETNEXT(n, n + 1);
+      SETNEXT(n, freepos[idx]);
+      freepos[idx] = n;
+      idx = (idx + 1) % freepos.length;
     }
     SETNEXT(bddnodesize - 1, 0);
 
@@ -3470,12 +3523,14 @@ public class JFactory extends BDDFactory implements Serializable {
     SETMAXREF(1);
     SETLOW(0, 0);
     SETHIGH(0, 0);
+    SETNEXT(0, 1);
     SETLOW(1, 1);
     SETHIGH(1, 1);
+    SETNEXT(1, 2);
 
     cacheratio = 0;
 
-    bddfreepos.set(2);
+    _bddFreePosManager.set(freepos);
     bddrunning = true;
     bddvarnum = 0;
     gbcollectnum = 0;
