@@ -578,14 +578,6 @@ public abstract class BDDFactory {
   public abstract int getNodeTableSize();
 
   /**
-   * Get the number of active nodes in use. Note that dead nodes that have not been reclaimed yet by
-   * a garbage collection are counted as active.
-   *
-   * <p>Compare to bdd_getnodenum.
-   */
-  public abstract int getNodeNum();
-
-  /**
    * Get the current size of the cache, in entries.
    *
    * @return size of cache
@@ -806,25 +798,6 @@ public abstract class BDDFactory {
   protected static void bdd_default_gbchandler(boolean pre, GCStats s) {
     if (!pre) {
       LOGGER.info(s);
-    }
-  }
-
-  void reorder_handler(boolean b, ReorderStats s) {
-    if (b) {
-      s.usednum_before = getNodeNum();
-      s.time = System.currentTimeMillis();
-    } else {
-      s.time = System.currentTimeMillis() - s.time;
-      s.usednum_after = getNodeNum();
-    }
-    bdd_default_reohandler(b, s);
-  }
-
-  protected void bdd_default_reohandler(boolean prestate, ReorderStats s) {
-    if (prestate) {
-      LOGGER.info("Start reordering");
-    } else {
-      LOGGER.info("End reordering. {}", s);
     }
   }
 }
