@@ -781,7 +781,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       newNodeIndex(res);
 
-      SETLEVELANDMARK(res, level);
+      bddnodes.setRefcountLevelAndMark(res, level); // refcount and mark initially 0
       SETLOW(res, low);
       SETHIGH(res, high);
 

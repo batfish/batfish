@@ -130,6 +130,11 @@ final class NodeTable implements Serializable {
     }
   }
 
+  void setRefcountLevelAndMark(int node, int val) {
+    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
+    AA.setVolatile(array, idx, val);
+  }
+
   /** Invariant: node is fully built. */
   int getLevel(int node) {
     // We don't need to use getVolatile here, because the level cannot change during the node's
