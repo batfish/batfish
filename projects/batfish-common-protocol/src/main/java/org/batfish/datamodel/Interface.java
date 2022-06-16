@@ -67,7 +67,7 @@ public final class Interface extends ComparableStructure<String> {
     private String _hsrpVersion;
     private @Nullable String _humanName;
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
-    private IpAccessList _incomingFilter;
+    @Nullable private IpAccessList _incomingFilter;
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
     private @Nullable Boolean _lineUp;
@@ -77,14 +77,14 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Supplier<String> _nameGenerator;
     private @Nullable Integer _nativeVlan;
     private OspfInterfaceSettings _ospfSettings;
-    private IpAccessList _outgoingFilter;
+    @Nullable private IpAccessList _outgoingFilter;
     @Nullable private IpAccessList _outgoingOriginalFlowFilter;
     private Transformation _outgoingTransformation;
     private Configuration _owner;
     private String _packetPolicy;
-    private IpAccessList _postTransformationIncomingFilter;
+    @Nullable private IpAccessList _postTransformationIncomingFilter;
     private boolean _proxyArp;
-    private IpAccessList _preTransformationOutgoingFilter;
+    @Nullable private IpAccessList _preTransformationOutgoingFilter;
     private Set<? extends InterfaceAddress> _secondaryAddresses;
     private @Nullable Double _speed;
     private @Nullable Boolean _switchport;
@@ -116,6 +116,9 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : _nameGenerator.get();
       Interface iface =
           _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
+      if (_owner != null) {
+        _owner.getAllInterfaces().put(name, iface);
+      }
 
       if (_accessVlan != null) {
         iface.setAccessVlan(_accessVlan);
@@ -162,10 +165,6 @@ public final class Interface extends ComparableStructure<String> {
       iface.setOutgoingFilter(_outgoingFilter);
       iface.setOutgoingOriginalFlowFilter(_outgoingOriginalFlowFilter);
       iface.setOutgoingTransformation(_outgoingTransformation);
-      iface.setOwner(_owner);
-      if (_owner != null) {
-        _owner.getAllInterfaces().put(name, iface);
-      }
       iface.setPostTransformationIncomingFilter(_postTransformationIncomingFilter);
       iface.setPreTransformationOutgoingFilter(_preTransformationOutgoingFilter);
       iface.setProxyArp(_proxyArp);
@@ -953,10 +952,8 @@ public final class Interface extends ComparableStructure<String> {
   private Map<Integer, HsrpGroup> _hsrpGroups;
   private @Nullable String _humanName;
   private @Nullable InactiveReason _inactiveReason;
-  private IpAccessList _inboundFilter;
-  private transient String _inboundFilterName;
-  private IpAccessList _incomingFilter;
-  private transient String _incomingFilterName;
+  @Nullable private String _inboundFilterName;
+  @Nullable private String _incomingFilterName;
   private Transformation _incomingTransformation;
   private InterfaceType _interfaceType;
   private IsisInterfaceSettings _isis;
@@ -965,18 +962,14 @@ public final class Interface extends ComparableStructure<String> {
   private int _mtu;
   @Nullable private Integer _nativeVlan;
   @Nullable private OspfInterfaceSettings _ospfSettings;
-  private IpAccessList _outgoingFilter;
-  private transient String _outgoingFilterName;
-  @Nullable private IpAccessList _outgoingOriginalFlowFilter;
-  @Nullable private transient String _outgoingOriginalFlowFilterName;
+  @Nullable private String _outgoingFilterName;
+  @Nullable private String _outgoingOriginalFlowFilterName;
   private Transformation _outgoingTransformation;
   private Configuration _owner;
   private InterfaceAddress _address;
-  private IpAccessList _postTransformationIncomingFilter;
-  private transient String _postTransformationIncomingFilterName;
+  @Nullable private String _postTransformationIncomingFilterName;
   private boolean _proxyArp;
-  private IpAccessList _preTransformationOutgoingFilter;
-  private transient String _preTransformationOutgoingFilterName;
+  @Nullable private String _preTransformationOutgoingFilterName;
   private boolean _ripEnabled;
   private boolean _ripPassive;
   private String _packetPolicyName;
@@ -1083,10 +1076,10 @@ public final class Interface extends ComparableStructure<String> {
     }
     // we check ACLs for name match only -- full ACL diff can be done
     // elsewhere.
-    if (!IpAccessList.bothNullOrSameName(getInboundFilter(), other.getInboundFilter())) {
+    if (!Objects.equals(_inboundFilterName, other._inboundFilterName)) {
       return false;
     }
-    if (!IpAccessList.bothNullOrSameName(getIncomingFilter(), other.getIncomingFilter())) {
+    if (!Objects.equals(_incomingFilterName, other._incomingFilterName)) {
       return false;
     }
     if (_interfaceType != other._interfaceType) {
@@ -1115,11 +1108,10 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     // TODO: check OSPF settings for equality.
-    if (!IpAccessList.bothNullOrSameName(_outgoingFilter, other._outgoingFilter)) {
+    if (!Objects.equals(_outgoingFilterName, other._outgoingFilterName)) {
       return false;
     }
-    if (!IpAccessList.bothNullOrSameName(
-        _outgoingOriginalFlowFilter, other._outgoingOriginalFlowFilter)) {
+    if (!Objects.equals(_outgoingOriginalFlowFilterName, other._outgoingOriginalFlowFilterName)) {
       return false;
     }
     if (!_proxyArp == other._proxyArp) {
@@ -1137,12 +1129,12 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_zoneName, other._zoneName)) {
       return false;
     }
-    if (!IpAccessList.bothNullOrSameName(
-        _postTransformationIncomingFilter, other._postTransformationIncomingFilter)) {
+    if (!Objects.equals(
+        _postTransformationIncomingFilterName, other._postTransformationIncomingFilterName)) {
       return false;
     }
-    if (!IpAccessList.bothNullOrSameName(
-        _preTransformationOutgoingFilter, other._preTransformationOutgoingFilter)) {
+    if (!Objects.equals(
+        _preTransformationOutgoingFilterName, other._preTransformationOutgoingFilterName)) {
       return false;
     }
     return _hmm == other._hmm;
@@ -1334,33 +1326,26 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
+  @Nullable
   public IpAccessList getInboundFilter() {
-    return _inboundFilter;
+    return getIpAccessList(_inboundFilterName);
   }
 
   /** The IPV4 access-list used to filter traffic destined for this device on this interface. */
   @JsonProperty(PROP_INBOUND_FILTER)
   private String getInboundFilterName() {
-    if (_inboundFilter != null) {
-      return _inboundFilter.getName();
-    } else {
-      return _inboundFilterName;
-    }
+    return _inboundFilterName;
   }
 
   @JsonIgnore
   public IpAccessList getIncomingFilter() {
-    return _incomingFilter;
+    return getIpAccessList(_incomingFilterName);
   }
 
   /** The IPV4 access-list used to filter traffic that arrives on this interface. */
   @JsonProperty(PROP_INCOMING_FILTER)
   private String getIncomingFilterName() {
-    if (_incomingFilter != null) {
-      return _incomingFilter.getName();
-    } else {
-      return _incomingFilterName;
-    }
+    return _incomingFilterName;
   }
 
   @JsonProperty(PROP_INCOMING_TRANSFORMATION)
@@ -1458,24 +1443,22 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
+  @Nullable
   public IpAccessList getOutgoingFilter() {
-    return _outgoingFilter;
+    return getIpAccessList(_outgoingFilterName);
   }
 
   @Nullable
   @JsonIgnore
   public IpAccessList getOutgoingOriginalFlowFilter() {
-    return _outgoingOriginalFlowFilter;
+    return getIpAccessList(_outgoingOriginalFlowFilterName);
   }
 
   /** The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id. */
   @JsonProperty(PROP_OUTGOING_FILTER)
+  @Nullable
   private String getOutgoingFilterName() {
-    if (_outgoingFilter != null) {
-      return _outgoingFilter.getName();
-    } else {
-      return _outgoingFilterName;
-    }
+    return _outgoingFilterName;
   }
 
   /**
@@ -1483,10 +1466,9 @@ public final class Interface extends ComparableStructure<String> {
    * flow that entered the node (before any transformations).
    */
   @JsonProperty(PROP_OUTGOING_ORIGINAL_FLOW_FILTER)
+  @Nullable
   private String getOutgoingOriginalFlowFilterName() {
-    return _outgoingOriginalFlowFilter != null
-        ? _outgoingOriginalFlowFilter.getName()
-        : _outgoingOriginalFlowFilterName;
+    return _outgoingOriginalFlowFilterName;
   }
 
   @JsonProperty(PROP_OUTGOING_TRANSFORMATION)
@@ -1521,33 +1503,29 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
+  @Nullable
   public IpAccessList getPostTransformationIncomingFilter() {
-    return _postTransformationIncomingFilter;
+    return getIpAccessList(_postTransformationIncomingFilterName);
   }
 
   /** The IPV4 access-list used to filter incoming traffic after applying destination NAT. */
   @JsonProperty(PROP_POST_TRANSFORMATION_INCOMING_FILTER)
+  @Nullable
   private String getPostTransformationIncomingFilterName() {
-    if (_postTransformationIncomingFilter != null) {
-      return _postTransformationIncomingFilter.getName();
-    } else {
-      return _postTransformationIncomingFilterName;
-    }
+    return _postTransformationIncomingFilterName;
   }
 
   @JsonIgnore
+  @Nullable
   public IpAccessList getPreTransformationOutgoingFilter() {
-    return _preTransformationOutgoingFilter;
+    return getIpAccessList(_preTransformationOutgoingFilterName);
   }
 
   /** The IPV4 access-list used to filter outgoing traffic before applying source NAT. */
   @JsonProperty(PROP_PRE_TRANSFORMATION_OUTGOING_FILTER)
+  @Nullable
   private String getPreTransformationOutgoingFilterName() {
-    if (_preTransformationOutgoingFilter != null) {
-      return _preTransformationOutgoingFilter.getName();
-    } else {
-      return _preTransformationOutgoingFilterName;
-    }
+    return _preTransformationOutgoingFilterName;
   }
 
   @JsonIgnore
@@ -1798,18 +1776,18 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  public void setInboundFilter(IpAccessList inboundFilter) {
-    _inboundFilter = inboundFilter;
+  public void setInboundFilter(@Nullable IpAccessList inboundFilter) {
+    _inboundFilterName = inboundFilter == null ? null : inboundFilter.getName();
   }
 
   @JsonProperty(PROP_INBOUND_FILTER)
-  private void setInboundFilterName(String inboundFilterName) {
+  private void setInboundFilterName(@Nullable String inboundFilterName) {
     _inboundFilterName = inboundFilterName;
   }
 
   @JsonIgnore
-  public void setIncomingFilter(IpAccessList incomingFilter) {
-    _incomingFilter = incomingFilter;
+  public void setIncomingFilter(@Nullable IpAccessList incomingFilter) {
+    _incomingFilterName = incomingFilter == null ? null : incomingFilter.getName();
   }
 
   @JsonProperty(PROP_INCOMING_TRANSFORMATION)
@@ -1818,7 +1796,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_INCOMING_FILTER)
-  private void setIncomingFilterName(String incomingFilterName) {
+  public void setIncomingFilterName(@Nullable String incomingFilterName) {
     _incomingFilterName = incomingFilterName;
   }
 
@@ -1858,22 +1836,23 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  public void setOutgoingFilter(IpAccessList outgoingFilter) {
-    _outgoingFilter = outgoingFilter;
+  public void setOutgoingFilter(@Nullable IpAccessList outgoingFilter) {
+    _outgoingFilterName = outgoingFilter == null ? null : outgoingFilter.getName();
   }
 
   @JsonProperty(PROP_OUTGOING_FILTER)
-  private void setOutgoingFilter(String outgoingFilterName) {
+  public void setOutgoingFilterName(@Nullable String outgoingFilterName) {
     _outgoingFilterName = outgoingFilterName;
   }
 
   @JsonIgnore
   public void setOutgoingOriginalFlowFilter(@Nullable IpAccessList outgoingOriginalFlowFilter) {
-    _outgoingOriginalFlowFilter = outgoingOriginalFlowFilter;
+    _outgoingOriginalFlowFilterName =
+        outgoingOriginalFlowFilter == null ? null : outgoingOriginalFlowFilter.getName();
   }
 
   @JsonProperty(PROP_OUTGOING_ORIGINAL_FLOW_FILTER)
-  private void setOutgoingOriginalFlowFilter(String outgoingOriginalFlowFilterName) {
+  private void setOutgoingOriginalFlowFilter(@Nullable String outgoingOriginalFlowFilterName) {
     _outgoingOriginalFlowFilterName = outgoingOriginalFlowFilterName;
   }
 
@@ -1896,8 +1875,12 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  public void setPostTransformationIncomingFilter(IpAccessList postTransformationIncomingFilter) {
-    _postTransformationIncomingFilter = postTransformationIncomingFilter;
+  public void setPostTransformationIncomingFilter(
+      @Nullable IpAccessList postTransformationIncomingFilter) {
+    _postTransformationIncomingFilterName =
+        postTransformationIncomingFilter == null
+            ? null
+            : postTransformationIncomingFilter.getName();
   }
 
   @JsonProperty(PROP_POST_TRANSFORMATION_INCOMING_FILTER)
@@ -1906,8 +1889,10 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  public void setPreTransformationOutgoingFilter(IpAccessList preTransformationOutgoingFilter) {
-    _preTransformationOutgoingFilter = preTransformationOutgoingFilter;
+  public void setPreTransformationOutgoingFilter(
+      @Nullable IpAccessList preTransformationOutgoingFilter) {
+    _preTransformationOutgoingFilterName =
+        preTransformationOutgoingFilter == null ? null : preTransformationOutgoingFilter.getName();
   }
 
   @JsonProperty(PROP_PRE_TRANSFORMATION_OUTGOING_FILTER)
@@ -2231,5 +2216,11 @@ public final class Interface extends ComparableStructure<String> {
       _lineUp = true;
       _blacklisted = false;
     }
+  }
+
+  /** Helper to get an IpAccessList object given its name. */
+  @Nullable
+  private IpAccessList getIpAccessList(@Nullable String name) {
+    return _owner == null || name == null ? null : _owner.getIpAccessLists().get(name);
   }
 }

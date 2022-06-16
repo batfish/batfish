@@ -433,6 +433,8 @@ public class SonicConversions {
   /**
    * Attaches the {@code ipAccessList} derived from {@code aclTable} to the appropriate interfaces
    * in {@code c}.
+   *
+   * <p>The {@link IpAccessList} should already exist in the specified configuration.
    */
   @VisibleForTesting
   static void attachAcl(

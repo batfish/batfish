@@ -476,7 +476,7 @@ public class SonicConversionsTest {
     Interface.builder().setOwner(c).setName(ifaceName).setType(InterfaceType.PHYSICAL).build();
 
     String aclName = "testAcl";
-    IpAccessList ipAccessList = IpAccessList.builder().setName(aclName).build();
+    IpAccessList ipAccessList = IpAccessList.builder().setOwner(c).setName(aclName).build();
 
     {
       // non-L3 ACLs are not attached to interfaces
