@@ -208,6 +208,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
@@ -1080,7 +1081,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 // Default bandwidth and delay found here, and resulting metric verified in GNS3:
                 // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/eigrp/default-metric-eigrp.html
                 () -> EigrpMetricValues.builder().setBandwidth(100000).setDelay(1E9).build());
-    statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
     redistPolicies.stream()
         .filter(policy -> getRouteMaps().containsKey(policy.getRouteMap()))
         .map(
@@ -1089,6 +1089,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   // If adding support for a new protocol, also add it to supportedProtocols above
                 case BGP:
                   assert policy.getInstance().getTag() != null;
+                  statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
                   long asn = Long.parseLong(policy.getInstance().getTag());
                   if (_bgpGlobalConfiguration.getLocalAs() != asn) {
                     // NXOS won't let you configure multiple BGP processes, but it will let you
@@ -1100,11 +1101,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   Statement setTag = new SetTag(new LiteralLong(asn));
                   return new If(matchBgp, ImmutableList.of(setTag, call(policy.getRouteMap())));
                 case EIGRP:
+                  assert policy.getInstance().getTag() != null;
+                  long eigrpAsn = Long.parseLong(policy.getInstance().getTag());
                   MatchProtocol matchEigrp =
                       new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
                   String mapName = policy.getRouteMap();
                   List<BooleanExpr> matchConjuncts =
                       Stream.of(
+                              new MatchProcessAsn(eigrpAsn),
                               matchEigrp,
                               new Not(matchDefaultRoute()),
                               mapName == null ? null : new CallExpr(mapName))
@@ -1114,10 +1118,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   return new If(
                       redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
                 case DIRECT:
+                  statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
                   return new If(
                       new MatchProtocol(RoutingProtocol.CONNECTED),
                       ImmutableList.of(call(policy.getRouteMap())));
                 case STATIC:
+                  statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
                   return new If(
                       new MatchProtocol(RoutingProtocol.STATIC),
                       ImmutableList.of(call(policy.getRouteMap())));
