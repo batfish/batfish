@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
 import static org.batfish.datamodel.InactiveReason.BLACKLISTED;
@@ -2221,6 +2222,8 @@ public final class Interface extends ComparableStructure<String> {
   /** Helper to get an IpAccessList object given its name. */
   @Nullable
   private IpAccessList getIpAccessList(@Nullable String name) {
-    return _owner == null || name == null ? null : _owner.getIpAccessLists().get(name);
+    return _owner == null || name == null
+        ? null
+        : checkNotNull(_owner.getIpAccessLists().get(name));
   }
 }

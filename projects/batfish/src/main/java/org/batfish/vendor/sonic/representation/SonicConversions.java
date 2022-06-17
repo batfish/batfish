@@ -426,7 +426,7 @@ public class SonicConversions {
               Optional.ofNullable(aclNameToRules.get(aclName)).orElse(ImmutableSortedSet.of()),
               w);
       AclTable aclTable = aclTables.get(aclName);
-      attachAcl(c, aclName, ipAccessList, aclTable, w);
+      attachAcl(c, ipAccessList, aclTable, w);
     }
   }
 
@@ -437,8 +437,7 @@ public class SonicConversions {
    * <p>The {@link IpAccessList} should already exist in the specified configuration.
    */
   @VisibleForTesting
-  static void attachAcl(
-      Configuration c, String aclName, IpAccessList ipAccessList, AclTable aclTable, Warnings w) {
+  static void attachAcl(Configuration c, IpAccessList ipAccessList, AclTable aclTable, Warnings w) {
     if (aclTable.getType().orElse(null) != Type.L3) {
       // All ACLs are added to the configuration, but only type L3 ones are attached to interfaces
       return;
@@ -454,7 +453,8 @@ public class SonicConversions {
         if (!aclTable.isControlPlanePort(port)) {
           w.redFlag(
               String.format(
-                  "Port '%s' referenced in ACL_TABLE '%s' does not exist.", port, aclName));
+                  "Port '%s' referenced in ACL_TABLE '%s' does not exist.",
+                  port, ipAccessList.getName()));
         }
         continue;
       }

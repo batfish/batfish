@@ -488,7 +488,7 @@ public class SonicConversionsTest {
               .build();
 
       Warnings warnings = new Warnings(true, true, true);
-      attachAcl(c, aclName, ipAccessList, aclTable, warnings);
+      attachAcl(c, ipAccessList, aclTable, warnings);
 
       assertTrue(warnings.getRedFlagWarnings().isEmpty());
       assertNull(c.getAllInterfaces().get(ifaceName).getIncomingFilter());
@@ -499,7 +499,7 @@ public class SonicConversionsTest {
           AclTable.builder().setPorts(ImmutableList.of(ifaceName)).setType(Type.L3).build();
 
       Warnings warnings = new Warnings(true, true, true);
-      attachAcl(c, aclName, ipAccessList, aclTable, warnings);
+      attachAcl(c, ipAccessList, aclTable, warnings);
 
       assertThat(warnings.getRedFlagWarnings(), contains(hasText("Unimplemented ACL stage: null")));
       assertNull(c.getAllInterfaces().get(ifaceName).getIncomingFilter());
@@ -514,7 +514,7 @@ public class SonicConversionsTest {
               .build();
 
       Warnings warnings = new Warnings(true, true, true);
-      attachAcl(c, aclName, ipAccessList, aclTable, warnings);
+      attachAcl(c, ipAccessList, aclTable, warnings);
 
       // warn about 'other', not about 'ctrlplane'
       assertThat(
