@@ -17,8 +17,10 @@ bracketed_clause
 
 juniper_configuration
 :
-  statement+ MULTILINE_COMMENT? EOF
+  (statement | extra_close_brace)+ MULTILINE_COMMENT? EOF
 ;
+
+extra_close_brace: CLOSE_BRACE;
 
 statement
 :
