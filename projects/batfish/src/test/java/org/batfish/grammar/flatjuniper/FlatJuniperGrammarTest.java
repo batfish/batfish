@@ -1140,11 +1140,11 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         ccae,
-        hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(5)));
+        hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(4)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, BGP_NEIGHBOR, "1.2.3.4/32", containsInAnyOrder(5)));
+            filename, BGP_NEIGHBOR, "1.2.3.4/32", containsInAnyOrder(4)));
 
     assertThat(ccae, hasNumReferrers(filename, BGP_GROUP, "G", 1));
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.4/32", 1));
