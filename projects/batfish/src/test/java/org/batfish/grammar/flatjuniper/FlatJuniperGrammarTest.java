@@ -1082,6 +1082,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testMisbraced() throws IOException {
+    // don't crash, do produce a config
+    Batfish batfish = getBatfishForConfigurationNames("misbraced");
+    batfish.getSettings().setDisableUnrecognized(false);
+    assertThat(batfish.loadConfigurations(batfish.getSnapshot()), aMapWithSize(1));
+  }
+
+  @Test
   public void testBgpConfederation() {
     JuniperConfiguration c = parseJuniperConfig("bgp-confederation");
     RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
