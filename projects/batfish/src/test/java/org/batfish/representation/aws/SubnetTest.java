@@ -878,9 +878,6 @@ public class SubnetTest {
     String nlbHostname = LoadBalancer.getNodeId(lbDnsName, subnet.getAvailabilityZone());
     String instanceHostname = Instance.instanceHostname(instanceId);
 
-    IpAccessList ingressAcl = IpAccessList.builder().setName("ingress").build();
-    IpAccessList egressAcl = IpAccessList.builder().setName("egress").build();
-
     // Subnet has an NLB, no instance targets: Should create VRFs on subnet and VPC, connect subnet
     // to NLB and VPC
     Map<String, Configuration> configs =
@@ -901,6 +898,10 @@ public class SubnetTest {
         Region.builder("region")
             .setSubnets(ImmutableMap.of(subnet.getId(), subnet, otherSubnetId, otherSubnet))
             .build();
+
+    IpAccessList ingressAcl = IpAccessList.builder().setOwner(subnetCfg).setName("ingress").build();
+    IpAccessList egressAcl = IpAccessList.builder().setOwner(subnetCfg).setName("egress").build();
+
     subnet.addNlbInstanceTargetInterfaces(
         awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
@@ -1007,9 +1008,6 @@ public class SubnetTest {
     String nlbHostname = LoadBalancer.getNodeId(lbDnsName, subnet.getAvailabilityZone());
     String instanceHostname = Instance.instanceHostname(instanceId);
 
-    IpAccessList ingressAcl = IpAccessList.builder().setName("ingress").build();
-    IpAccessList egressAcl = IpAccessList.builder().setName("egress").build();
-
     // Subnet has an instance target, no NLBs: Should create VRFs on subnet and VPC, connect subnet
     // to VPC and instance target
     Map<String, Configuration> configs =
@@ -1028,6 +1026,10 @@ public class SubnetTest {
             ImmutableMultimap.of(lbArn, instanceInSubnet)); // NLBs to targets
     Region region =
         Region.builder("region").setSubnets(ImmutableMap.of(subnet.getId(), subnet)).build();
+
+    IpAccessList ingressAcl = IpAccessList.builder().setOwner(subnetCfg).setName("ingress").build();
+    IpAccessList egressAcl = IpAccessList.builder().setOwner(subnetCfg).setName("egress").build();
+
     subnet.addNlbInstanceTargetInterfaces(
         awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
@@ -1136,9 +1138,6 @@ public class SubnetTest {
     String nlbHostname = LoadBalancer.getNodeId(lbDnsName, subnet.getAvailabilityZone());
     String instanceHostname = Instance.instanceHostname(instanceId);
 
-    IpAccessList ingressAcl = IpAccessList.builder().setName("ingress").build();
-    IpAccessList egressAcl = IpAccessList.builder().setName("egress").build();
-
     // Subnet has an instance target and its NLB: Should create VRFs on subnet and VPC, connect
     // subnet to instance target, NLB, and VPC
     Map<String, Configuration> configs =
@@ -1157,6 +1156,10 @@ public class SubnetTest {
             ImmutableMultimap.of(lbArn, instanceInSubnet)); // NLBs to targets
     Region region =
         Region.builder("region").setSubnets(ImmutableMap.of(subnet.getId(), subnet)).build();
+
+    IpAccessList ingressAcl = IpAccessList.builder().setOwner(subnetCfg).setName("ingress").build();
+    IpAccessList egressAcl = IpAccessList.builder().setOwner(subnetCfg).setName("egress").build();
+
     subnet.addNlbInstanceTargetInterfaces(
         awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 

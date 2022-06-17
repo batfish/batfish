@@ -48,6 +48,15 @@ public class TunnelTopologyTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.2");
     int subnetMask = 24;
+    IpAccessList.Builder acl =
+        withBlockingAcl
+            ? IpAccessList.builder().setOwner(c1).setName("REJECT_ALL").setLines(REJECT_ALL)
+            : IpAccessList.builder()
+                .setName("ALLOW_GRE_REJECT_REST")
+                .setLines(
+                    ExprAclLine.acceptingHeaderSpace(
+                        HeaderSpace.builder().setIpProtocols(IpProtocol.GRE).build()),
+                    REJECT_ALL);
 
     Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
     ib.setOwner(c1)
@@ -64,20 +73,7 @@ public class TunnelTopologyTest {
     ib.setOwner(c1)
         .setAddress(ConcreteInterfaceAddress.create(underlayIp1, subnetMask))
         .setType(InterfaceType.PHYSICAL)
-        .setIncomingFilter(
-            withBlockingAcl
-                ? IpAccessList.builder()
-                    .setName("REJECT_ALL")
-                    .setLines(REJECT_ALL)
-                    .setOwner(c1)
-                    .build()
-                : IpAccessList.builder()
-                    .setName("ALLOW_GRE_REJECT_REST")
-                    .setLines(
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder().setIpProtocols(IpProtocol.GRE).build()),
-                        REJECT_ALL)
-                    .build())
+        .setIncomingFilter(acl.setOwner(c1).build())
         .setName("u1")
         .setVrf(vrf1)
         .build();
@@ -85,6 +81,7 @@ public class TunnelTopologyTest {
     ib.setOwner(c2)
         .setAddress(ConcreteInterfaceAddress.create(ip2, subnetMask))
         .setType(InterfaceType.TUNNEL)
+        .setIncomingFilter(acl.setOwner(c2).build())
         .setTunnelConfig(
             TunnelConfiguration.builder()
                 .setSourceAddress(underlayIp2)
