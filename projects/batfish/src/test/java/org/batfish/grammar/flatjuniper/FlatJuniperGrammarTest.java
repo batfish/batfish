@@ -165,6 +165,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
@@ -1134,6 +1136,26 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         parseConfig("bgp-multipath-none").getDefaultVrf(),
         hasBgpProcess(allOf(hasMultipathEbgp(false), hasMultipathIbgp(false))));
+  }
+
+  @Test
+  public void testBgpNeighborExtraction() throws IOException {
+    String hostname = "bgp-neighbor";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(4)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, "1.2.3.4/32", containsInAnyOrder(4)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_GROUP, "G", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.4/32", 1));
   }
 
   @Test

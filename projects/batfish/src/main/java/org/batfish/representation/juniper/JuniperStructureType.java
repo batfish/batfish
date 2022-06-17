@@ -12,6 +12,7 @@ public enum JuniperStructureType implements StructureType {
   AS_PATH_GROUP_AS_PATH("as-path-group as-path"),
   AUTHENTICATION_KEY_CHAIN("authentication-key-chain"),
   BGP_GROUP("bgp group"),
+  BGP_NEIGHBOR("bgp neighbor"),
   BRIDGE_DOMAIN("bridge-domain"),
   CLASS_OF_SERVICE_CODE_POINT_ALIAS("class-of-service code-point-alias"),
   COMMUNITY("community"),

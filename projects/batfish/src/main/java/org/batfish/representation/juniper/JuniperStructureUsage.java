@@ -14,6 +14,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   BGP_EXPORT_POLICY("bgp export policy-statement"),
   BGP_IMPORT_POLICY("bgp import policy-statement"),
   BGP_NEIGHBOR("bgp group neighbor"),
+  BGP_NEIGHBOR_SELF_REFERENCE("bgp neighbor self ref"),
   BGP_FAMILY_INET_UNICAST_RIB_GROUP("bgp family inet unicast rib-group"),
   BRIDGE_DOMAIN_SELF_REF("bridge-domain self reference"),
   BRIDGE_DOMAINS_ROUTING_INTERFACE("bridge-domains routing-interface"),
