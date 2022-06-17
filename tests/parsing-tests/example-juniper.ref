@@ -12639,22 +12639,22 @@
           },
           "bgp neighbor" : {
             "1.10.1.1/32" : {
-              "bgp neighbor" : [
+              "bgp neighbor self ref" : [
                 14
               ]
             },
             "10.12.11.2/32" : {
-              "bgp neighbor" : [
+              "bgp neighbor self ref" : [
                 19
               ]
             },
             "3.2.2.2/32" : {
-              "bgp neighbor" : [
+              "bgp neighbor self ref" : [
                 27
               ]
             },
             "5.6.7.8/32" : {
-              "bgp neighbor" : [
+              "bgp neighbor self ref" : [
                 23
               ]
             }
@@ -12816,17 +12816,17 @@
           },
           "bgp neighbor" : {
             "1.10.1.1/32" : {
-              "bgp neighbor" : [
+              "bgp neighbor self ref" : [
                 15
               ]
             },
             "10.13.22.3/32" : {
-              "bgp neighbor" : [
+              "bgp neighbor self ref" : [
                 20
               ]
             },
             "10.14.22.4/32" : {
-              "bgp neighbor" : [
+              "bgp neighbor self ref" : [
                 25
               ]
             }
