@@ -1800,12 +1800,10 @@ public final class FlowTracerTest {
         nf.interfaceBuilder()
             .setOwner(n1)
             .setOutgoingFilter(
-                IpAccessList.builder().setName("Deny-from-i1").setLines(lines).build())
+                IpAccessList.builder().setOwner(n1).setName("Deny-from-i1").setLines(lines).build())
             .setVrf(v1)
             .setAddress(ConcreteInterfaceAddress.parse("2.0.0.0/31"))
             .build();
-    // Make sure that n1 knows that this filter is applied.
-    n1.setIpAccessLists(ImmutableMap.of(i2.getOutgoingFilter().getName(), i2.getOutgoingFilter()));
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.testBuilder()
@@ -2012,6 +2010,7 @@ public final class FlowTracerTest {
     // Filter denies src IP blockedSrcIp, permits everything else
     IpAccessList filter =
         nf.aclBuilder()
+            .setOwner(c)
             .setLines(
                 ExprAclLine.rejecting(AclLineMatchExprs.matchSrc(blockedSrcIp)),
                 ExprAclLine.ACCEPT_ALL)
