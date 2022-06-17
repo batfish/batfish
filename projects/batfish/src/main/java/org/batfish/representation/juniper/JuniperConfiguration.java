@@ -3825,6 +3825,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.BGP_GROUP,
         JuniperStructureUsage.BGP_ALLOW,
         JuniperStructureUsage.BGP_NEIGHBOR);
+    markConcreteStructure(JuniperStructureType.BGP_NEIGHBOR);
     markConcreteStructure(JuniperStructureType.BRIDGE_DOMAIN);
     markConcreteStructure(
         JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS,

@@ -6235,6 +6235,16 @@
               "numReferrers" : 2
             }
           },
+          "bgp neighbor" : {
+            "10.12.0.2/32" : {
+              "definitionLines" : "113",
+              "numReferrers" : 1
+            },
+            "10.13.0.3/32" : {
+              "definitionLines" : "114",
+              "numReferrers" : 1
+            }
+          },
           "ike gateway" : {
             "gateway-2" : {
               "definitionLines" : "28-30",
@@ -6391,6 +6401,16 @@
               "numReferrers" : 2
             }
           },
+          "bgp neighbor" : {
+            "10.12.0.1/32" : {
+              "definitionLines" : "92",
+              "numReferrers" : 1
+            },
+            "10.23.0.3/32" : {
+              "definitionLines" : "93",
+              "numReferrers" : 1
+            }
+          },
           "ike gateway" : {
             "gateway-1" : {
               "definitionLines" : "25-27",
@@ -6497,6 +6517,16 @@
             "physical" : {
               "definitionLines" : "85-87",
               "numReferrers" : 2
+            }
+          },
+          "bgp neighbor" : {
+            "10.13.0.1/32" : {
+              "definitionLines" : "86",
+              "numReferrers" : 1
+            },
+            "10.23.0.2/32" : {
+              "definitionLines" : "87",
+              "numReferrers" : 1
             }
           },
           "ike gateway" : {
@@ -6618,6 +6648,18 @@
             "physical" : {
               "bgp group neighbor" : [
                 113,
+                114
+              ]
+            }
+          },
+          "bgp neighbor" : {
+            "10.12.0.2/32" : {
+              "bgp neighbor self ref" : [
+                113
+              ]
+            },
+            "10.13.0.3/32" : {
+              "bgp neighbor self ref" : [
                 114
               ]
             }
@@ -6890,6 +6932,18 @@
               ]
             }
           },
+          "bgp neighbor" : {
+            "10.12.0.1/32" : {
+              "bgp neighbor self ref" : [
+                92
+              ]
+            },
+            "10.23.0.3/32" : {
+              "bgp neighbor self ref" : [
+                93
+              ]
+            }
+          },
           "ike gateway" : {
             "gateway-1" : {
               "ipsec vpn ike gateway" : [
@@ -7057,6 +7111,18 @@
             "physical" : {
               "bgp group neighbor" : [
                 86,
+                87
+              ]
+            }
+          },
+          "bgp neighbor" : {
+            "10.13.0.1/32" : {
+              "bgp neighbor self ref" : [
+                86
+              ]
+            },
+            "10.23.0.2/32" : {
+              "bgp neighbor self ref" : [
                 87
               ]
             }
