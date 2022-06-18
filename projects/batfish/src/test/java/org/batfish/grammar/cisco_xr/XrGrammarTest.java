@@ -19,6 +19,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasTrackingGroups;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
@@ -56,6 +57,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCo
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generatedVrrpOrHsrpTrackInterfaceDownName;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
@@ -546,6 +548,35 @@ public final class XrGrammarTest {
   public void testBgpNeighborCrash() {
     // Don't crash.
     parseConfig("bgp-neighbor-crash");
+  }
+
+  @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "bgp-neighbor-refs";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, "1.2.3.4", contains(5)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, "2001:db8:85a3:0:0:8a2e:370:7334", contains(6)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, "1.2.3.0/24", contains(8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, "2001:db8:0:0:0:0:0:0/32", contains(9)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.4", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "2001:db8:85a3:0:0:8a2e:370:7334", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.0/24", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "2001:db8:0:0:0:0:0:0/32", 1));
   }
 
   /**

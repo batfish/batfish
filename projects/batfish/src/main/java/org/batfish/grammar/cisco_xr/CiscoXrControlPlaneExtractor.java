@@ -9,6 +9,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.INTERFACE
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_AF_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_SESSION_GROUP;
@@ -55,6 +56,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_LIST
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NETWORK_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY;
@@ -2253,6 +2255,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       pushPeer(pg);
       _currentDynamicIpv6PeerGroup = pg;
     }
+    _configuration.defineStructure(BGP_NEIGHBOR, _currentPeerGroup.getName(), ctx);
+    _configuration.referenceStructure(
+        BGP_NEIGHBOR, _currentPeerGroup.getName(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
     if (ctx.bgp_asn() != null) {
       long remoteAs = toAsNum(ctx.bgp_asn());
       _currentPeerGroup.setRemoteAs(remoteAs);

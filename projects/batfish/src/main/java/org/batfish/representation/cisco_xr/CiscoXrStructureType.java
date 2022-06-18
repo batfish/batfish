@@ -12,6 +12,7 @@ public enum CiscoXrStructureType implements StructureType {
   AS_PATH_SET("as-path-set"),
   BFD_TEMPLATE("bfd-template"),
   BGP_AF_GROUP("bgp af-group"),
+  BGP_NEIGHBOR("bgp neighbor"),
   BGP_NEIGHBOR_GROUP("bgp neighbor-group"),
   BGP_PEER_GROUP("bgp peer-group"),
   BGP_SESSION_GROUP("bgp session-group"),
