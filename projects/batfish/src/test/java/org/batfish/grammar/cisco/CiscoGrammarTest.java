@@ -64,6 +64,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -191,6 +192,8 @@ import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GRO
 import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR6;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD;
@@ -3905,6 +3908,27 @@ public final class CiscoGrammarTest {
     org.batfish.representation.cisco.BgpProcess vrfBgp = c.getVrfs().get("a").getBgpProcess();
     assertThat(vrfBgp.getMasterBgpPeerGroup().getLocalAs(), equalTo(5L));
     assertThat(vrfBgp.getRouterId(), equalTo(Ip.parse("1.2.3.5")));
+  }
+
+  @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "ios-bgp-neighbor";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, "1.2.3.4", contains(5)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR6, "2001:db8:85a3:0:0:8a2e:370:7334", contains(6)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.4", 1));
+    assertThat(
+        ccae, hasNumReferrers(filename, BGP_NEIGHBOR6, "2001:db8:85a3:0:0:8a2e:370:7334", 1));
   }
 
   @Test

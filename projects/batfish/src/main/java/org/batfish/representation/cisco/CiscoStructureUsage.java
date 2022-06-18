@@ -28,6 +28,8 @@ public enum CiscoStructureUsage implements StructureUsage {
       "bgp neighbor distribute-list ipv6 access-list out"),
   BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST("bgp neighbor filter-list access-list"),
   BGP_NEIGHBOR_PEER_GROUP("bgp neighbor peer-group"),
+  BGP_NEIGHBOR_SELF_REF("bgp neighbor self ref"),
+  BGP_NEIGHBOR6_SELF_REF("bgp ipv6 neighbor self ref"),
   BGP_NEIGHBOR_STATEMENT("bgp neighbor statement"),
   BGP_NEIGHBOR_WITHOUT_REMOTE_AS("bgp neighbor without remote-as"),
   BGP_NETWORK_ORIGINATION_ROUTE_MAP("bgp ipv4 network statement route-map"),

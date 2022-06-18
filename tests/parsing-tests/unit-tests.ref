@@ -70995,7 +70995,14 @@
           }
         },
         "configs/access_list" : { },
-        "configs/address_family" : { },
+        "configs/address_family" : {
+          "bgp neighbor" : {
+            "1.2.3.4" : {
+              "definitionLines" : "7",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/arista-event-handler" : { },
         "configs/arista-logging" : { },
         "configs/arista_acl" : {
@@ -71243,6 +71250,16 @@
         },
         "configs/asa_ssh" : { },
         "configs/bgp_address_family" : {
+          "bgp neighbor" : {
+            "1.10.1.1" : {
+              "definitionLines" : "14,30",
+              "numReferrers" : 2
+            },
+            "10.12.11.2" : {
+              "definitionLines" : "31",
+              "numReferrers" : 1
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "definitionLines" : "7",
@@ -71597,6 +71614,12 @@
             "30" : {
               "definitionLines" : "7",
               "numReferrers" : 0
+            }
+          },
+          "bgp neighbor" : {
+            "10.0.1.2" : {
+              "definitionLines" : "48",
+              "numReferrers" : 1
             }
           },
           "bgp template peer-policy" : {
@@ -73336,7 +73359,14 @@
             }
           }
         },
-        "configs/ios_bgp" : { },
+        "configs/ios_bgp" : {
+          "bgp ipv6 neighbor" : {
+            "1:0:0:0:0:0:0:1" : {
+              "definitionLines" : "6",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/ios_bgp_aggregate_address" : {
           "ipv4 prefix-list" : {
             "ScienceDMZ-networks" : {
@@ -73429,6 +73459,12 @@
           }
         },
         "configs/ios_xe_bgp" : {
+          "bgp neighbor" : {
+            "1.1.1.1" : {
+              "definitionLines" : "12-13",
+              "numReferrers" : 2
+            }
+          },
           "bgp template peer-policy" : {
             "FOO-BAR:BAZ" : {
               "definitionLines" : "5-8",
@@ -74647,7 +74683,14 @@
         "configs/network6" : { },
         "configs/nexus" : { },
         "configs/no_aaa_group_server" : { },
-        "configs/non_nexus_neighbor_af" : { },
+        "configs/non_nexus_neighbor_af" : {
+          "bgp neighbor" : {
+            "10.0.0.0" : {
+              "definitionLines" : "6,9-10",
+              "numReferrers" : 3
+            }
+          }
+        },
         "configs/nxos/nxos_bgp" : {
           "bgp template peer" : {
             "PEER_BLLF" : {
@@ -76398,6 +76441,15 @@
         ]
       },
       "referencedStructures" : {
+        "configs/address_family" : {
+          "bgp neighbor" : {
+            "1.2.3.4" : {
+              "bgp neighbor self ref" : [
+                7
+              ]
+            }
+          }
+        },
         "configs/arista_acl" : {
           "extended ipv4 access-list line" : {
             "abcd: 10 deny tcp any 102.66.49.113/24 neq www https syn" : {
@@ -76734,6 +76786,19 @@
           }
         },
         "configs/bgp_address_family" : {
+          "bgp neighbor" : {
+            "1.10.1.1" : {
+              "bgp neighbor self ref" : [
+                14,
+                30
+              ]
+            },
+            "10.12.11.2" : {
+              "bgp neighbor self ref" : [
+                31
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "bgp neighbor peer-group" : [
@@ -77199,6 +77264,13 @@
             "40" : {
               "bgp neighbor filter-list access-list" : [
                 18
+              ]
+            }
+          },
+          "bgp neighbor" : {
+            "10.0.1.2" : {
+              "bgp neighbor self ref" : [
+                48
               ]
             }
           },
@@ -79889,6 +79961,13 @@
           }
         },
         "configs/ios_bgp" : {
+          "bgp ipv6 neighbor" : {
+            "1:0:0:0:0:0:0:1" : {
+              "bgp ipv6 neighbor self ref" : [
+                6
+              ]
+            }
+          },
           "ipv6 prefix-list" : {
             "VPNV6_PL" : {
               "bgp inbound ipv6 prefix-list" : [
@@ -80024,6 +80103,14 @@
           }
         },
         "configs/ios_xe_bgp" : {
+          "bgp neighbor" : {
+            "1.1.1.1" : {
+              "bgp neighbor self ref" : [
+                12,
+                13
+              ]
+            }
+          },
           "bgp template peer-policy" : {
             "FOO-BAR_BAZ:QUX" : {
               "inherited BGP peer-policy" : [
@@ -81791,6 +81878,17 @@
             "foo 1" : {
               "route-map clause" : [
                 4
+              ]
+            }
+          }
+        },
+        "configs/non_nexus_neighbor_af" : {
+          "bgp neighbor" : {
+            "10.0.0.0" : {
+              "bgp neighbor self ref" : [
+                6,
+                9,
+                10
               ]
             }
           }
