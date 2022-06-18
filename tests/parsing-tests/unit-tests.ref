@@ -73366,7 +73366,7 @@
           }
         },
         "configs/ios_bgp" : {
-          "bgp ipv6 neighbor" : {
+          "bgp neighbor" : {
             "1:0:0:0:0:0:0:1" : {
               "definitionLines" : "6",
               "numReferrers" : 1
@@ -79974,9 +79974,9 @@
           }
         },
         "configs/ios_bgp" : {
-          "bgp ipv6 neighbor" : {
+          "bgp neighbor" : {
             "1:0:0:0:0:0:0:1" : {
-              "bgp ipv6 neighbor self ref" : [
+              "bgp neighbor self ref" : [
                 6
               ]
             }
