@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_neighbors_refs
+!
+router bgp 1
+  neighbor 1.1.1.1 remote-as 35
+  bgp listen range 4.4.4.0/24 peer-group DYNAMIC remote-as 4000
+!
