@@ -71271,7 +71271,14 @@
           }
         },
         "configs/bgp_nsr" : { },
-        "configs/bgp_route_policy" : { },
+        "configs/bgp_route_policy" : {
+          "bgp neighbor" : {
+            "64.57.21.1" : {
+              "definitionLines" : "18-26",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/cisco_aaa" : {
           "aaa server group radius" : {
             "fguiwrego" : {
@@ -73652,6 +73659,20 @@
             "blappety" : {
               "definitionLines" : "6-9",
               "numReferrers" : 0
+            }
+          },
+          "bgp neighbor" : {
+            "1.2.1.1" : {
+              "definitionLines" : "78-81",
+              "numReferrers" : 1
+            },
+            "1.2.1.2" : {
+              "definitionLines" : "83-85",
+              "numReferrers" : 1
+            },
+            "1.2.1.3" : {
+              "definitionLines" : "87-91",
+              "numReferrers" : 1
             }
           },
           "bgp neighbor-group" : {
@@ -76803,6 +76824,13 @@
           }
         },
         "configs/bgp_route_policy" : {
+          "bgp neighbor" : {
+            "64.57.21.1" : {
+              "bgp neighbor self ref" : [
+                18
+              ]
+            }
+          },
           "bgp neighbor-group" : {
             "EBGP-PEER-SVL-PNI" : {
               "bgp use neighbor-group" : [
@@ -80295,6 +80323,23 @@
           }
         },
         "configs/ios_xr_bgp_neighbor_group" : {
+          "bgp neighbor" : {
+            "1.2.1.1" : {
+              "bgp neighbor self ref" : [
+                78
+              ]
+            },
+            "1.2.1.2" : {
+              "bgp neighbor self ref" : [
+                83
+              ]
+            },
+            "1.2.1.3" : {
+              "bgp neighbor self ref" : [
+                87
+              ]
+            }
+          },
           "bgp neighbor-group" : {
             "BGPMonitor" : {
               "bgp use neighbor-group" : [
