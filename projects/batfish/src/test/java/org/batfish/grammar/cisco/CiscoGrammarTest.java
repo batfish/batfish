@@ -193,9 +193,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GRO
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_LISTEN_RANGE;
-import static org.batfish.representation.cisco.CiscoStructureType.BGP_LISTEN_RANGE6;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR;
-import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR6;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD;
@@ -3926,7 +3924,7 @@ public final class CiscoGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, BGP_NEIGHBOR6, "2001:db8:85a3:0:0:8a2e:370:7334", contains(6)));
+            filename, BGP_NEIGHBOR, "2001:db8:85a3:0:0:8a2e:370:7334", contains(6)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
@@ -3934,13 +3932,12 @@ public final class CiscoGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, BGP_LISTEN_RANGE6, "2001:db8:0:0:0:0:0:0/32", contains(9)));
+            filename, BGP_LISTEN_RANGE, "2001:db8:0:0:0:0:0:0/32", contains(9)));
 
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.4", 1));
-    assertThat(
-        ccae, hasNumReferrers(filename, BGP_NEIGHBOR6, "2001:db8:85a3:0:0:8a2e:370:7334", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "2001:db8:85a3:0:0:8a2e:370:7334", 1));
     assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE, "1.2.3.0/24", 1));
-    assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE6, "2001:db8:0:0:0:0:0:0/32", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE, "2001:db8:0:0:0:0:0:0/32", 1));
   }
 
   @Test
