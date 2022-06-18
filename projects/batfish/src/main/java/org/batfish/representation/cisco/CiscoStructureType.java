@@ -11,6 +11,8 @@ public enum CiscoStructureType implements StructureType {
   AS_PATH_ACCESS_LIST("as-path access-list"),
   BFD_TEMPLATE("bfd-template"),
   BGP_AF_GROUP("bgp af-group"),
+  BGP_LISTEN_RANGE("bgp listen range"),
+  BGP_LISTEN_RANGE6("bgp ipv6 listen range"),
   BGP_NEIGHBOR("bgp neighbor"),
   BGP_NEIGHBOR6("bgp ipv6 neighbor"),
   BGP_NEIGHBOR_GROUP("bgp neighbor-group"),

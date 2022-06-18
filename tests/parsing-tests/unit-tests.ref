@@ -71990,6 +71990,12 @@
           }
         },
         "configs/cisco_ios_neighbor" : {
+          "bgp listen range" : {
+            "10.10.20.0/24" : {
+              "definitionLines" : "8",
+              "numReferrers" : 1
+            }
+          },
           "bgp peer-group" : {
             "8075-CORE" : {
               "definitionLines" : "6",
@@ -77943,6 +77949,13 @@
           }
         },
         "configs/cisco_ios_neighbor" : {
+          "bgp listen range" : {
+            "10.10.20.0/24" : {
+              "bgp listen range self ref" : [
+                8
+              ]
+            }
+          },
           "bgp peer-group" : {
             "LEAF" : {
               "bgp listen range peer-group" : [
