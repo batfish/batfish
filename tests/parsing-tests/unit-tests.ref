@@ -74649,6 +74649,12 @@
         "configs/no_aaa_group_server" : { },
         "configs/non_nexus_neighbor_af" : { },
         "configs/nxos/nxos_bgp" : {
+          "bgp neighbor" : {
+            "1.1.1.1" : {
+              "definitionLines" : "37-39",
+              "numReferrers" : 1
+            }
+          },
           "bgp template peer" : {
             "PEER_BLLF" : {
               "definitionLines" : "25-36",
@@ -81796,6 +81802,13 @@
           }
         },
         "configs/nxos/nxos_bgp" : {
+          "bgp neighbor" : {
+            "1.1.1.1" : {
+              "bgp neighbor self ref" : [
+                37
+              ]
+            }
+          },
           "bgp template peer" : {
             "PEER_BLLF" : {
               "bgp neighbor inherit peer" : [

@@ -54,6 +54,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
@@ -125,6 +126,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrp
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpRedistributionPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getAclLineName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.Conversions.generatedAttributeMapName;
 import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
@@ -779,6 +781,35 @@ public final class CiscoNxosGrammarTest {
       assertThat(l2vpn, notNullValue());
       assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ALL));
     }
+  }
+
+  @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "nxos_bgp_neighbor";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, "1.2.3.4", contains(7)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, "2001:db8:85a3:0:0:8a2e:370:7334", contains(8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, "1.2.3.0/24", contains(10)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, "2001:db8:0:0:0:0:0:0/32", contains(11)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.4", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "2001:db8:85a3:0:0:8a2e:370:7334", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.0/24", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "2001:db8:0:0:0:0:0:0/32", 1));
   }
 
   @Test
