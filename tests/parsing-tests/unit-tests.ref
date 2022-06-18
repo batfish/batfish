@@ -73124,31 +73124,31 @@
             }
           },
           "bgp neighbor" : {
-            "172.16.3.2 (VRF default)" : {
+            "172.16.3.2/32" : {
               "definitionLines" : "126-128",
               "numReferrers" : 1
             },
-            "172.16.5.2 (VRF default)" : {
+            "172.16.5.2/32" : {
               "definitionLines" : "129-131",
               "numReferrers" : 1
             },
-            "172.16.7.2 (VRF default)" : {
+            "172.16.7.2/32" : {
               "definitionLines" : "132-134",
               "numReferrers" : 1
             },
-            "192.168.1.1 (VRF default)" : {
+            "192.168.1.1/32" : {
               "definitionLines" : "152",
               "numReferrers" : 1
             },
-            "192.168.1.3 (VRF default)" : {
+            "192.168.1.3/32" : {
               "definitionLines" : "149",
               "numReferrers" : 1
             },
-            "192.168.1.44 (VRF default)" : {
+            "192.168.1.44/32" : {
               "definitionLines" : "150",
               "numReferrers" : 1
             },
-            "192.168.1.5 (VRF default)" : {
+            "192.168.1.5/32" : {
               "definitionLines" : "151",
               "numReferrers" : 1
             }
@@ -73942,23 +73942,23 @@
             }
           },
           "bgp neighbor" : {
-            "1.2.3.5 (VRF default)" : {
+            "1.2.3.5/32" : {
               "definitionLines" : "33-34",
               "numReferrers" : 2
             },
-            "3.4.5.6 (VRF default)" : {
+            "3.4.5.6/32" : {
               "definitionLines" : "15",
               "numReferrers" : 1
             },
-            "3.4.5.7 (VRF default)" : {
+            "3.4.5.7/32" : {
               "definitionLines" : "16-17",
               "numReferrers" : 2
             },
-            "beef:dead:0:0:0:0:0:2 (VRF default)" : {
+            "beef:dead:0:0:0:0:0:2" : {
               "definitionLines" : "42",
               "numReferrers" : 1
             },
-            "dead:beef:0:0:0:0:0:1 (VRF default)" : {
+            "dead:beef:0:0:0:0:0:1" : {
               "definitionLines" : "25",
               "numReferrers" : 1
             }
@@ -73990,11 +73990,11 @@
             }
           },
           "bgp neighbor" : {
-            "172.16.2.1 (VRF default)" : {
+            "172.16.2.1/32" : {
               "definitionLines" : "8",
               "numReferrers" : 1
             },
-            "172.16.2.2 (VRF default)" : {
+            "172.16.2.2/32" : {
               "definitionLines" : "22",
               "numReferrers" : 1
             }
@@ -74016,7 +74016,7 @@
             }
           },
           "bgp neighbor" : {
-            "1.1.1.1 (VRF default)" : {
+            "1.1.1.1/32" : {
               "definitionLines" : "7",
               "numReferrers" : 1
             }
@@ -74394,13 +74394,9 @@
             }
           },
           "bgp neighbor" : {
-            "1.1.1.1 (VRF ROUTING_INSTANCE_NAME)" : {
-              "definitionLines" : "22,25",
-              "numReferrers" : 2
-            },
-            "1.1.1.1 (VRF default)" : {
-              "definitionLines" : "16,19",
-              "numReferrers" : 2
+            "1.1.1.1/32" : {
+              "definitionLines" : "16,19,22,25",
+              "numReferrers" : 4
             }
           },
           "logical-system" : {
@@ -79632,37 +79628,37 @@
             }
           },
           "bgp neighbor" : {
-            "172.16.3.2 (VRF default)" : {
+            "172.16.3.2/32" : {
               "bgp neighbor self ref" : [
                 126
               ]
             },
-            "172.16.5.2 (VRF default)" : {
+            "172.16.5.2/32" : {
               "bgp neighbor self ref" : [
                 129
               ]
             },
-            "172.16.7.2 (VRF default)" : {
+            "172.16.7.2/32" : {
               "bgp neighbor self ref" : [
                 132
               ]
             },
-            "192.168.1.1 (VRF default)" : {
+            "192.168.1.1/32" : {
               "bgp neighbor self ref" : [
                 152
               ]
             },
-            "192.168.1.3 (VRF default)" : {
+            "192.168.1.3/32" : {
               "bgp neighbor self ref" : [
                 149
               ]
             },
-            "192.168.1.44 (VRF default)" : {
+            "192.168.1.44/32" : {
               "bgp neighbor self ref" : [
                 150
               ]
             },
-            "192.168.1.5 (VRF default)" : {
+            "192.168.1.5/32" : {
               "bgp neighbor self ref" : [
                 151
               ]
@@ -80787,29 +80783,29 @@
             }
           },
           "bgp neighbor" : {
-            "1.2.3.5 (VRF default)" : {
+            "1.2.3.5/32" : {
               "bgp neighbor self ref" : [
                 33,
                 34
               ]
             },
-            "3.4.5.6 (VRF default)" : {
+            "3.4.5.6/32" : {
               "bgp neighbor self ref" : [
                 15
               ]
             },
-            "3.4.5.7 (VRF default)" : {
+            "3.4.5.7/32" : {
               "bgp neighbor self ref" : [
                 16,
                 17
               ]
             },
-            "beef:dead:0:0:0:0:0:2 (VRF default)" : {
+            "beef:dead:0:0:0:0:0:2" : {
               "bgp neighbor self ref" : [
                 42
               ]
             },
-            "dead:beef:0:0:0:0:0:1 (VRF default)" : {
+            "dead:beef:0:0:0:0:0:1" : {
               "bgp neighbor self ref" : [
                 25
               ]
@@ -80869,12 +80865,12 @@
             }
           },
           "bgp neighbor" : {
-            "172.16.2.1 (VRF default)" : {
+            "172.16.2.1/32" : {
               "bgp neighbor self ref" : [
                 8
               ]
             },
-            "172.16.2.2 (VRF default)" : {
+            "172.16.2.2/32" : {
               "bgp neighbor self ref" : [
                 22
               ]
@@ -80890,7 +80886,7 @@
             }
           },
           "bgp neighbor" : {
-            "1.1.1.1 (VRF default)" : {
+            "1.1.1.1/32" : {
               "bgp neighbor self ref" : [
                 7
               ]
@@ -81440,16 +81436,12 @@
             }
           },
           "bgp neighbor" : {
-            "1.1.1.1 (VRF ROUTING_INSTANCE_NAME)" : {
-              "bgp neighbor self ref" : [
-                22,
-                25
-              ]
-            },
-            "1.1.1.1 (VRF default)" : {
+            "1.1.1.1/32" : {
               "bgp neighbor self ref" : [
                 16,
-                19
+                19,
+                22,
+                25
               ]
             }
           },

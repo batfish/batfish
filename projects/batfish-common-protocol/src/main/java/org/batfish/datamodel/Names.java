@@ -92,10 +92,6 @@ public final class Names {
         type.getExplanation());
   }
 
-  public static String bgpNeighborStructureName(String neighborName, String vrfName) {
-    return String.format("%s (VRF %s)", neighborName, vrfName);
-  }
-
   public static String generatedNegatedTrackMethodId(String trackMethodId) {
     return String.format("~!%s~", trackMethodId);
   }

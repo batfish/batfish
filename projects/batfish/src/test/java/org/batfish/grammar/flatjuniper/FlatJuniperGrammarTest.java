@@ -299,7 +299,6 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -1147,24 +1146,16 @@ public final class FlatJuniperGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    String bgpNeighborStructureName = Names.bgpNeighborStructureName("1.2.3.4", "default");
-    String bgpNeighborStructureName6 =
-        Names.bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
     assertThat(
         ccae,
-        hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(4, 5)));
+        hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(4)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, BGP_NEIGHBOR, bgpNeighborStructureName, contains(4)));
-    assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(
-            filename, BGP_NEIGHBOR, bgpNeighborStructureName6, contains(5)));
+            filename, BGP_NEIGHBOR, "1.2.3.4/32", containsInAnyOrder(4)));
 
-    assertThat(ccae, hasNumReferrers(filename, BGP_GROUP, "G", 2));
-    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, bgpNeighborStructureName, 1));
-    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, bgpNeighborStructureName6, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_GROUP, "G", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.4/32", 1));
   }
 
   @Test
