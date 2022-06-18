@@ -3258,6 +3258,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     markConcreteStructure(CiscoStructureType.BGP_NEIGHBOR);
     markConcreteStructure(CiscoStructureType.BGP_NEIGHBOR6);
+    markConcreteStructure(CiscoStructureType.BGP_LISTEN_RANGE);
+    markConcreteStructure(CiscoStructureType.BGP_LISTEN_RANGE6);
     // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
     markConcreteStructure(CiscoStructureType.BGP_AF_GROUP, CiscoStructureUsage.BGP_USE_AF_GROUP);
     markConcreteStructure(

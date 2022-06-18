@@ -19,6 +19,8 @@ import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_AF_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_LISTEN_RANGE;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_LISTEN_RANGE6;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR6;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR_GROUP;
@@ -99,7 +101,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_R
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_LISTEN_RANGE6_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_LISTEN_RANGE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR6_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT;
@@ -4189,6 +4193,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
       }
+      _configuration.defineStructure(BGP_LISTEN_RANGE, prefix.toString(), ctx);
+      _configuration.referenceStructure(
+          BGP_LISTEN_RANGE, prefix.toString(), BGP_LISTEN_RANGE_SELF_REF, ctx.getStart().getLine());
     } else if (ctx.IPV6_PREFIX() != null) {
       Prefix6 prefix6 = Prefix6.parse(ctx.IPV6_PREFIX().getText());
       DynamicIpv6BgpPeerGroup pg = proc.addDynamicIpv6PeerGroup(prefix6);
@@ -4197,6 +4204,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
       }
+      _configuration.defineStructure(BGP_LISTEN_RANGE6, prefix6.toString(), ctx);
+      _configuration.referenceStructure(
+          BGP_LISTEN_RANGE6,
+          prefix6.toString(),
+          BGP_LISTEN_RANGE6_SELF_REF,
+          ctx.getStart().getLine());
     }
   }
 

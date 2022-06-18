@@ -21,6 +21,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   BGP_INHERITED_PEER_POLICY("inherited BGP peer-policy"),
   BGP_INHERITED_SESSION("inherited BGP peer-session"),
   BGP_LISTEN_RANGE_PEER_GROUP("bgp listen range peer-group"),
+  BGP_LISTEN_RANGE_SELF_REF("bgp listen range self ref"),
+  BGP_LISTEN_RANGE6_SELF_REF("bgp ipv6 listen range self ref"),
   BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN("bgp neighbor distribute-list access-list in"),
   BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT("bgp neighbor distribute-list access-list out"),
   BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN("bgp neighbor distribute-list ipv6 access-list in"),
