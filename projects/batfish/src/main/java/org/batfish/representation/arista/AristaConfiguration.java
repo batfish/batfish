@@ -2730,6 +2730,8 @@ public final class AristaConfiguration extends VendorConfiguration {
     markConcreteStructure(AristaStructureType.NAT_POOL);
     markConcreteStructure(AristaStructureType.AS_PATH_ACCESS_LIST);
 
+    markConcreteStructure(AristaStructureType.BGP_LISTEN_RANGE);
+    markConcreteStructure(AristaStructureType.BGP_NEIGHBOR);
     markConcreteStructure(AristaStructureType.BGP_PEER_GROUP);
 
     return ImmutableList.of(c);

@@ -11,6 +11,8 @@ import static org.batfish.representation.arista.AristaConfiguration.computeRoute
 import static org.batfish.representation.arista.AristaStructureType.ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.arista.AristaStructureType.BGP_LISTEN_RANGE;
+import static org.batfish.representation.arista.AristaStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.arista.AristaStructureType.BGP_PEER_GROUP;
 import static org.batfish.representation.arista.AristaStructureType.CLASS_MAP;
 import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LIST;
@@ -52,7 +54,9 @@ import static org.batfish.representation.arista.AristaStructureUsage.BGP_DEFAULT
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_LISTEN_RANGE_PEER_FILTER;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_LISTEN_RANGE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
@@ -2735,6 +2739,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _configuration.referenceStructure(
           PEER_FILTER, peerFilterName, BGP_LISTEN_RANGE_PEER_FILTER, ctx.getStart().getLine());
     }
+    _configuration.defineStructure(BGP_LISTEN_RANGE, prefix.toString(), ctx);
+    _configuration.referenceStructure(
+        BGP_LISTEN_RANGE, prefix.toString(), BGP_LISTEN_RANGE_SELF_REF, ctx.prefix.getLine());
   }
 
   @Override
@@ -2811,6 +2818,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentAristaBgpNeighbor =
         _currentAristaBgpVrf.getV4neighbors().computeIfAbsent(ip, AristaBgpV4Neighbor::new);
     _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
+    _configuration.defineStructure(BGP_NEIGHBOR, ip.toString(), ctx);
+    _configuration.referenceStructure(
+        BGP_NEIGHBOR, ip.toString(), BGP_NEIGHBOR_SELF_REF, ctx.name.getLine());
   }
 
   @Override

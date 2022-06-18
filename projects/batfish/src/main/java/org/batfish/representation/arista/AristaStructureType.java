@@ -6,6 +6,8 @@ public enum AristaStructureType implements StructureType {
   ACCESS_LIST("acl"),
   AS_PATH_ACCESS_LIST("as-path access-list"),
   BFD_TEMPLATE("bfd-template"),
+  BGP_LISTEN_RANGE("bgp listen range"),
+  BGP_NEIGHBOR("bgp neighbor"),
   BGP_PEER_GROUP("bgp peer-group"),
   CLASS_MAP("class-map"),
   COMMUNITY_LIST("community-list"),
