@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureType;
 
 public enum CiscoNxosStructureType implements StructureType {
+  BGP_NEIGHBOR("bgp neighbor"),
   BGP_TEMPLATE_PEER("bgp template peer"),
   BGP_TEMPLATE_PEER_POLICY("bgp template peer-policy"),
   BGP_TEMPLATE_PEER_SESSION("bgp template peer-session"),

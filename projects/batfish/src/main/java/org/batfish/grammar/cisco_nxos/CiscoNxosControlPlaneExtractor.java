@@ -10,6 +10,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAG
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRouteMapEntryName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getAclLineName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_SESSION;
@@ -79,6 +80,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NETWORK6_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NETWORK_ROUTE_MAP;
@@ -4076,15 +4078,27 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.ip != null) {
       Ip ip = toIp(ctx.ip);
       _currentBgpVrfNeighbor = _currentBgpVrfConfiguration.getOrCreateNeighbor(ip);
+      _c.defineStructure(BGP_NEIGHBOR, ip.toString(), ctx);
+      _c.referenceStructure(
+          BGP_NEIGHBOR, ip.toString(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
     } else if (ctx.prefix != null) {
       Prefix prefix = toPrefix(ctx.prefix);
       _currentBgpVrfNeighbor = _currentBgpVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
+      _c.defineStructure(BGP_NEIGHBOR, prefix.toString(), ctx);
+      _c.referenceStructure(
+          BGP_NEIGHBOR, prefix.toString(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
     } else if (ctx.ip6 != null) {
       Ip6 ip = toIp6(ctx.ip6);
       _currentBgpVrfNeighbor = _currentBgpVrfConfiguration.getOrCreateNeighbor(ip);
+      _c.defineStructure(BGP_NEIGHBOR, ip.toString(), ctx);
+      _c.referenceStructure(
+          BGP_NEIGHBOR, ip.toString(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
     } else if (ctx.prefix6 != null) {
       Prefix6 prefix = toPrefix6(ctx.prefix6);
       _currentBgpVrfNeighbor = _currentBgpVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
+      _c.defineStructure(BGP_NEIGHBOR, prefix.toString(), ctx);
+      _c.referenceStructure(
+          BGP_NEIGHBOR, prefix.toString(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
     } else {
       throw new BatfishException(
           "BGP neighbor IP definition not supported in line " + ctx.getText());
