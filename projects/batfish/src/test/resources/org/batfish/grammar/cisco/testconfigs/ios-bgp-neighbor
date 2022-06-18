@@ -1,0 +1,16 @@
+!
+hostname ios-bgp-neighbor
+!
+router bgp 3
+  neighbor 1.2.3.4 remote-as 2
+  neighbor 2001:db8:85a3:0:0:8a2e:370:7334 remote-as 2
+
+   neighbor FW peer-group
+   neighbor 10.10.10.37 remote-as 65201
+   neighbor 10.10.10.37 peer-group FW
+   !
+   address-family ipv4
+    network 10.10.0.0 mask 255.255.0.0
+    neighbor 10.10.10.37 activate
+    neighbor 10.10.10.37 route-map SET_LOCAL_PREF in
+!
