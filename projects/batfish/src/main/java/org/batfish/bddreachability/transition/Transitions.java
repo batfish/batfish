@@ -214,6 +214,8 @@ public final class Transitions {
       } else if (t2 instanceof RemoveSourceConstraint) {
         BDD constraintBdd = ((Constraint) t1).getConstraint();
         BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
+        // Note: this optimization is a no-op in reverse direction, but adds explicit checking
+        // of validity in the forward direction. (See RemoveSourceConstraint#transitForward).
         return compose(
             constraint(constraintBdd.and(mgr.isValidValue())),
             eraseAndSet(mgr.getFiniteDomain().getVar(), constraintBdd.getFactory().one()));

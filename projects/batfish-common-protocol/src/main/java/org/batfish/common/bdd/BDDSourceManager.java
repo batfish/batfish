@@ -300,7 +300,10 @@ public final class BDDSourceManager implements Serializable {
    * stronger one that implies it).
    */
   public boolean hasIsValidConstraint(BDD bdd) {
-    return bdd.and(_finiteDomain.getIsValidConstraint()).equals(bdd);
+    BDD onlyValid = bdd.and(_finiteDomain.getIsValidConstraint());
+    boolean ret = onlyValid.equals(bdd);
+    onlyValid.free();
+    return ret;
   }
 
   /** Test if a {@link BDD} includes a constraint on the source variable. */
