@@ -70995,7 +70995,14 @@
           }
         },
         "configs/access_list" : { },
-        "configs/address_family" : { },
+        "configs/address_family" : {
+          "bgp neighbor" : {
+            "1.2.3.4 (VRF default)" : {
+              "definitionLines" : "7",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/arista-event-handler" : { },
         "configs/arista-logging" : { },
         "configs/arista_acl" : {
@@ -71243,6 +71250,16 @@
         },
         "configs/asa_ssh" : { },
         "configs/bgp_address_family" : {
+          "bgp neighbor" : {
+            "1.10.1.1 (VRF default)" : {
+              "definitionLines" : "14,30",
+              "numReferrers" : 2
+            },
+            "10.12.11.2 (VRF default)" : {
+              "definitionLines" : "31",
+              "numReferrers" : 1
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "definitionLines" : "7",
@@ -71271,7 +71288,14 @@
           }
         },
         "configs/bgp_nsr" : { },
-        "configs/bgp_route_policy" : { },
+        "configs/bgp_route_policy" : {
+          "bgp neighbor" : {
+            "64.57.21.1 (VRF default)" : {
+              "definitionLines" : "18-26",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/cisco_aaa" : {
           "aaa server group radius" : {
             "fguiwrego" : {
@@ -71597,6 +71621,12 @@
             "30" : {
               "definitionLines" : "7",
               "numReferrers" : 0
+            }
+          },
+          "bgp neighbor" : {
+            "10.0.1.2 (VRF aVrfWithInnerStatements)" : {
+              "definitionLines" : "48",
+              "numReferrers" : 1
             }
           },
           "bgp template peer-policy" : {
@@ -71967,6 +71997,12 @@
           }
         },
         "configs/cisco_ios_neighbor" : {
+          "bgp listen range" : {
+            "10.10.20.0/24 (VRF default)" : {
+              "definitionLines" : "8",
+              "numReferrers" : 1
+            }
+          },
           "bgp peer-group" : {
             "8075-CORE" : {
               "definitionLines" : "6",
@@ -73123,6 +73159,36 @@
               "numReferrers" : 3
             }
           },
+          "bgp neighbor" : {
+            "172.16.3.2 (VRF default)" : {
+              "definitionLines" : "126-128",
+              "numReferrers" : 1
+            },
+            "172.16.5.2 (VRF default)" : {
+              "definitionLines" : "129-131",
+              "numReferrers" : 1
+            },
+            "172.16.7.2 (VRF default)" : {
+              "definitionLines" : "132-134",
+              "numReferrers" : 1
+            },
+            "192.168.1.1 (VRF default)" : {
+              "definitionLines" : "152",
+              "numReferrers" : 1
+            },
+            "192.168.1.3 (VRF default)" : {
+              "definitionLines" : "149",
+              "numReferrers" : 1
+            },
+            "192.168.1.44 (VRF default)" : {
+              "definitionLines" : "150",
+              "numReferrers" : 1
+            },
+            "192.168.1.5 (VRF default)" : {
+              "definitionLines" : "151",
+              "numReferrers" : 1
+            }
+          },
           "bridge-domain" : {
             "bd_100" : {
               "definitionLines" : "221-228,236",
@@ -73306,7 +73372,14 @@
             }
           }
         },
-        "configs/ios_bgp" : { },
+        "configs/ios_bgp" : {
+          "bgp neighbor" : {
+            "1:0:0:0:0:0:0:1 (VRF default)" : {
+              "definitionLines" : "6",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/ios_bgp_aggregate_address" : {
           "ipv4 prefix-list" : {
             "ScienceDMZ-networks" : {
@@ -73399,6 +73472,12 @@
           }
         },
         "configs/ios_xe_bgp" : {
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF default)" : {
+              "definitionLines" : "12-13",
+              "numReferrers" : 2
+            }
+          },
           "bgp template peer-policy" : {
             "FOO-BAR:BAZ" : {
               "definitionLines" : "5-8",
@@ -73622,6 +73701,20 @@
             "blappety" : {
               "definitionLines" : "6-9",
               "numReferrers" : 0
+            }
+          },
+          "bgp neighbor" : {
+            "1.2.1.1 (VRF default)" : {
+              "definitionLines" : "78-81",
+              "numReferrers" : 1
+            },
+            "1.2.1.2 (VRF default)" : {
+              "definitionLines" : "83-85",
+              "numReferrers" : 1
+            },
+            "1.2.1.3 (VRF default)" : {
+              "definitionLines" : "87-91",
+              "numReferrers" : 1
             }
           },
           "bgp neighbor-group" : {
@@ -73910,6 +74003,28 @@
               "definitionLines" : "21-27",
               "numReferrers" : 1
             }
+          },
+          "bgp neighbor" : {
+            "1.2.3.5 (VRF default)" : {
+              "definitionLines" : "33-34",
+              "numReferrers" : 2
+            },
+            "3.4.5.6 (VRF default)" : {
+              "definitionLines" : "15",
+              "numReferrers" : 1
+            },
+            "3.4.5.7 (VRF default)" : {
+              "definitionLines" : "16-17",
+              "numReferrers" : 2
+            },
+            "beef:dead:0:0:0:0:0:2 (VRF default)" : {
+              "definitionLines" : "42",
+              "numReferrers" : 1
+            },
+            "dead:beef:0:0:0:0:0:1 (VRF default)" : {
+              "definitionLines" : "25",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_bgp_allow" : {
@@ -73936,6 +74051,16 @@
               "definitionLines" : "20-23",
               "numReferrers" : 1
             }
+          },
+          "bgp neighbor" : {
+            "172.16.2.1 (VRF default)" : {
+              "definitionLines" : "8",
+              "numReferrers" : 1
+            },
+            "172.16.2.2 (VRF default)" : {
+              "definitionLines" : "22",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_bgp_disable" : {
@@ -73950,6 +74075,12 @@
           "bgp group" : {
             "MYGROUP" : {
               "definitionLines" : "5-8",
+              "numReferrers" : 1
+            }
+          },
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF default)" : {
+              "definitionLines" : "7",
               "numReferrers" : 1
             }
           }
@@ -74325,6 +74456,16 @@
               "numReferrers" : 4
             }
           },
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF ROUTING_INSTANCE_NAME)" : {
+              "definitionLines" : "22,25",
+              "numReferrers" : 2
+            },
+            "1.1.1.1 (VRF default)" : {
+              "definitionLines" : "16,19",
+              "numReferrers" : 2
+            }
+          },
           "logical-system" : {
             "LOGICALSYSTEM" : {
               "definitionLines" : "17-22",
@@ -74569,8 +74710,21 @@
         "configs/network6" : { },
         "configs/nexus" : { },
         "configs/no_aaa_group_server" : { },
-        "configs/non_nexus_neighbor_af" : { },
+        "configs/non_nexus_neighbor_af" : {
+          "bgp neighbor" : {
+            "10.0.0.0 (VRF default)" : {
+              "definitionLines" : "6,9-10",
+              "numReferrers" : 3
+            }
+          }
+        },
         "configs/nxos/nxos_bgp" : {
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF default)" : {
+              "definitionLines" : "37-39",
+              "numReferrers" : 1
+            }
+          },
           "bgp template peer" : {
             "PEER_BLLF" : {
               "definitionLines" : "25-36",
@@ -76320,6 +76474,15 @@
         ]
       },
       "referencedStructures" : {
+        "configs/address_family" : {
+          "bgp neighbor" : {
+            "1.2.3.4 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                7
+              ]
+            }
+          }
+        },
         "configs/arista_acl" : {
           "extended ipv4 access-list line" : {
             "abcd: 10 deny tcp any 102.66.49.113/24 neq www https syn" : {
@@ -76656,6 +76819,19 @@
           }
         },
         "configs/bgp_address_family" : {
+          "bgp neighbor" : {
+            "1.10.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                14,
+                30
+              ]
+            },
+            "10.12.11.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                31
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "bgp neighbor peer-group" : [
@@ -76698,7 +76874,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "13.16.3.16" : {
+            "13.16.3.16 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 17
               ]
@@ -76725,6 +76901,13 @@
           }
         },
         "configs/bgp_route_policy" : {
+          "bgp neighbor" : {
+            "64.57.21.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                18
+              ]
+            }
+          },
           "bgp neighbor-group" : {
             "EBGP-PEER-SVL-PNI" : {
               "bgp use neighbor-group" : [
@@ -77048,7 +77231,7 @@
         },
         "configs/cisco_additional_paths" : {
           "undeclared bgp peer" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 8,
                 9
@@ -77121,6 +77304,13 @@
             "40" : {
               "bgp neighbor filter-list access-list" : [
                 18
+              ]
+            }
+          },
+          "bgp neighbor" : {
+            "10.0.1.2 (VRF aVrfWithInnerStatements)" : {
+              "bgp neighbor self ref" : [
+                48
               ]
             }
           },
@@ -77213,7 +77403,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "10.0.0.1" : {
+            "10.0.0.1 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 39,
                 40,
@@ -77221,17 +77411,17 @@
                 42
               ]
             },
-            "10.20.2.2" : {
+            "10.20.2.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 10
               ]
             },
-            "192.168.3.2" : {
+            "192.168.3.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 14
               ]
             },
-            "192.168.4.2" : {
+            "192.168.4.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 18
               ]
@@ -77793,6 +77983,13 @@
           }
         },
         "configs/cisco_ios_neighbor" : {
+          "bgp listen range" : {
+            "10.10.20.0/24 (VRF default)" : {
+              "bgp listen range self ref" : [
+                8
+              ]
+            }
+          },
           "bgp peer-group" : {
             "LEAF" : {
               "bgp listen range peer-group" : [
@@ -79553,6 +79750,43 @@
               ]
             }
           },
+          "bgp neighbor" : {
+            "172.16.3.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                126
+              ]
+            },
+            "172.16.5.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                129
+              ]
+            },
+            "172.16.7.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                132
+              ]
+            },
+            "192.168.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                152
+              ]
+            },
+            "192.168.1.3 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                149
+              ]
+            },
+            "192.168.1.44 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                150
+              ]
+            },
+            "192.168.1.5 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                151
+              ]
+            }
+          },
           "bridge-domain" : {
             "bd_100" : {
               "bridge-domain self reference" : [
@@ -79774,6 +80008,13 @@
           }
         },
         "configs/ios_bgp" : {
+          "bgp neighbor" : {
+            "1:0:0:0:0:0:0:1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                6
+              ]
+            }
+          },
           "ipv6 prefix-list" : {
             "VPNV6_PL" : {
               "bgp inbound ipv6 prefix-list" : [
@@ -79794,7 +80035,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 5
               ]
@@ -79909,6 +80150,14 @@
           }
         },
         "configs/ios_xe_bgp" : {
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                12,
+                13
+              ]
+            }
+          },
           "bgp template peer-policy" : {
             "FOO-BAR_BAZ:QUX" : {
               "inherited BGP peer-policy" : [
@@ -80180,6 +80429,23 @@
           }
         },
         "configs/ios_xr_bgp_neighbor_group" : {
+          "bgp neighbor" : {
+            "1.2.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                78
+              ]
+            },
+            "1.2.1.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                83
+              ]
+            },
+            "1.2.1.3 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                87
+              ]
+            }
+          },
           "bgp neighbor-group" : {
             "BGPMonitor" : {
               "bgp use neighbor-group" : [
@@ -80671,6 +80937,35 @@
               ]
             }
           },
+          "bgp neighbor" : {
+            "1.2.3.5 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                33,
+                34
+              ]
+            },
+            "3.4.5.6 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                15
+              ]
+            },
+            "3.4.5.7 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                16,
+                17
+              ]
+            },
+            "beef:dead:0:0:0:0:0:2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                42
+              ]
+            },
+            "dead:beef:0:0:0:0:0:1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                25
+              ]
+            }
+          },
           "policy-statement" : {
             "someexportpolicy" : {
               "bgp export policy-statement" : [
@@ -80723,12 +81018,31 @@
                 22
               ]
             }
+          },
+          "bgp neighbor" : {
+            "172.16.2.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                8
+              ]
+            },
+            "172.16.2.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                22
+              ]
+            }
           }
         },
         "configs/juniper_bgp_enforce_fist_as" : {
           "bgp group" : {
             "MYGROUP" : {
               "bgp group neighbor" : [
+                7
+              ]
+            }
+          },
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
                 7
               ]
             }
@@ -81276,6 +81590,20 @@
               ]
             }
           },
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF ROUTING_INSTANCE_NAME)" : {
+              "bgp neighbor self ref" : [
+                22,
+                25
+              ]
+            },
+            "1.1.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                16,
+                19
+              ]
+            }
+          },
           "policy-statement" : {
             "RIB_IN" : {
               "routing-options rib-groups import-policy" : [
@@ -81618,7 +81946,25 @@
             }
           }
         },
+        "configs/non_nexus_neighbor_af" : {
+          "bgp neighbor" : {
+            "10.0.0.0 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                6,
+                9,
+                10
+              ]
+            }
+          }
+        },
         "configs/nxos/nxos_bgp" : {
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                37
+              ]
+            }
+          },
           "bgp template peer" : {
             "PEER_BLLF" : {
               "bgp neighbor inherit peer" : [
@@ -82910,7 +83256,7 @@
         },
         "configs/vlan_access_map2" : {
           "undeclared bgp peer" : {
-            "10.10.212.233" : {
+            "10.10.212.233 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 19
               ]
@@ -83114,7 +83460,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "13.16.3.16" : {
+            "13.16.3.16 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 17
               ]
@@ -83192,7 +83538,7 @@
         "configs/cisco_acl" : { },
         "configs/cisco_additional_paths" : {
           "undeclared bgp peer" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 8,
                 9
@@ -83240,7 +83586,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "10.0.0.1" : {
+            "10.0.0.1 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 39,
                 40,
@@ -83248,17 +83594,17 @@
                 42
               ]
             },
-            "10.20.2.2" : {
+            "10.20.2.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 10
               ]
             },
-            "192.168.3.2" : {
+            "192.168.3.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 14
               ]
             },
-            "192.168.4.2" : {
+            "192.168.4.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 18
               ]
@@ -84384,7 +84730,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 5
               ]
@@ -85426,7 +85772,7 @@
         },
         "configs/vlan_access_map2" : {
           "undeclared bgp peer" : {
-            "10.10.212.233" : {
+            "10.10.212.233 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 19
               ]

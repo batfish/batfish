@@ -165,6 +165,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
@@ -297,6 +299,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -1134,6 +1137,34 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         parseConfig("bgp-multipath-none").getDefaultVrf(),
         hasBgpProcess(allOf(hasMultipathEbgp(false), hasMultipathIbgp(false))));
+  }
+
+  @Test
+  public void testBgpNeighborExtraction() throws IOException {
+    String hostname = "bgp-neighbor";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String bgpNeighborStructureName = Names.bgpNeighborStructureName("1.2.3.4", "default");
+    String bgpNeighborStructureName6 =
+        Names.bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(4, 5)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, bgpNeighborStructureName, contains(4)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, bgpNeighborStructureName6, contains(5)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_GROUP, "G", 2));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, bgpNeighborStructureName, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, bgpNeighborStructureName6, 1));
   }
 
   @Test

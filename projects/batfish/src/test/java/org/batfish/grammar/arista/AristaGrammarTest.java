@@ -7,6 +7,7 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.Ip.ZERO;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
@@ -35,6 +36,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
@@ -77,6 +79,8 @@ import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
+import static org.batfish.representation.arista.AristaStructureType.BGP_LISTEN_RANGE;
+import static org.batfish.representation.arista.AristaStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
@@ -2015,6 +2019,31 @@ public class AristaGrammarTest {
   public void testCommunityListExtraction() {
     testCommunityListExtraction("arista_community_list_421");
     testCommunityListExtraction("arista_community_list_423");
+  }
+
+  @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "arista_bgp_neighbor_refs";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String neighborNameIp = bgpNeighborStructureName("1.1.1.1", "default");
+    String neighborNamePrefix = bgpNeighborStructureName("4.4.4.0/24", "default");
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborNameIp, contains(6)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_LISTEN_RANGE, neighborNamePrefix, contains(7)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborNameIp, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE, neighborNamePrefix, 1));
   }
 
   @Test

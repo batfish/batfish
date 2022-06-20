@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
@@ -55,6 +56,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPOR
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_FAMILY_INET_UNICAST_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAINS_ROUTING_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAIN_SELF_REF;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
@@ -2474,18 +2476,38 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           getLine(ctx.NEIGHBOR().getSymbol()));
     }
     if (ctx.ip_address() != null) {
-      Prefix remoteAddress = toIp(ctx.ip_address()).toPrefix();
+      Ip remoteIp = toIp(ctx.ip_address());
+      Prefix remotePrefix = remoteIp.toPrefix();
       Map<Prefix, IpBgpGroup> ipBgpGroups = _currentRoutingInstance.getIpBgpGroups();
-      IpBgpGroup ipBgpGroup = ipBgpGroups.get(remoteAddress);
+      IpBgpGroup ipBgpGroup = ipBgpGroups.get(remotePrefix);
       if (ipBgpGroup == null) {
-        ipBgpGroup = new IpBgpGroup(remoteAddress);
+        ipBgpGroup = new IpBgpGroup(remotePrefix);
         ipBgpGroup.setParent(_currentBgpGroup);
-        ipBgpGroups.put(remoteAddress, ipBgpGroup);
+        ipBgpGroups.put(remotePrefix, ipBgpGroup);
       }
       _currentBgpGroup = ipBgpGroup;
+      String bgpNeighborStructureName =
+          bgpNeighborStructureName(remoteIp.toString(), _currentRoutingInstance.getName());
+      _configuration.defineFlattenedStructure(
+          JuniperStructureType.BGP_NEIGHBOR, bgpNeighborStructureName, ctx, _parser);
+      _configuration.referenceStructure(
+          JuniperStructureType.BGP_NEIGHBOR,
+          bgpNeighborStructureName,
+          BGP_NEIGHBOR_SELF_REFERENCE,
+          getLine(ctx.start));
     } else if (ctx.ipv6_address() != null) {
       _currentBgpGroup.setIpv6(true);
       _currentBgpGroup = DUMMY_BGP_GROUP;
+      String bgpNeighborStructureName =
+          bgpNeighborStructureName(
+              toIp6(ctx.ipv6_address()).toString(), _currentRoutingInstance.getName());
+      _configuration.defineFlattenedStructure(
+          JuniperStructureType.BGP_NEIGHBOR, bgpNeighborStructureName, ctx, _parser);
+      _configuration.referenceStructure(
+          JuniperStructureType.BGP_NEIGHBOR,
+          bgpNeighborStructureName,
+          BGP_NEIGHBOR_SELF_REFERENCE,
+          getLine(ctx.start));
     }
   }
 

@@ -950,6 +950,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
   }
 
+  /**
+   * Generates and returns all BGP advertisements this process should send over the given edge this
+   * iteration. These advertisements come from BGP routes, non-BGP routes (if this process does not
+   * {@link #_exportFromBgpRib}), and the exporting peer's {@link BgpPeerConfig#getGeneratedRoutes()
+   * generated routes}.
+   *
+   * <p>The advertisements returned by this function have already been subjected to all export
+   * transformations/policies and are ready to go on the wire.
+   *
+   * @param edge The {@link EdgeId} representing the session for which to generate advertisements.
+   *     The {@link EdgeId#head() head} is the remote {@link BgpPeerConfigId} and the {@link
+   *     EdgeId#tail() tail} is our {@link BgpPeerConfigId}.
+   */
   private Stream<RouteAdvertisement<Bgpv4Route>> getOutgoingRoutesForEdge(
       EdgeId edge,
       Map<String, Node> allNodes,
@@ -1105,43 +1118,41 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             .map(Optional::get)
             .map(RouteAdvertisement::new);
 
-    RibDelta<AnnotatedRoute<Bgpv4Route>> bgpRoutesToExport = bgpRibExports.build();
+    // Transform and apply export policy to exportable BGP RIB routes
+    Stream<RouteAdvertisement<Bgpv4Route>> bgpRibRoutesToExport =
+        bgpRibExports
+            .build()
+            .getActions()
+            .map(
+                adv -> {
+                  Optional<Bgpv4Route> transformedRoute =
+                      transformBgpRouteOnExport(
+                          adv.getRoute().getRoute(),
+                          ourConfigId,
+                          remoteConfigId,
+                          ourConfig,
+                          remoteConfig,
+                          remoteBgpRoutingProcess,
+                          ourSession,
+                          Type.IPV4_UNICAST);
+                  // REPLACE does not make sense across routers, update with WITHDRAW
+                  return transformedRoute
+                      .map(
+                          bgpv4Route ->
+                              RouteAdvertisement.<Bgpv4Route>builder()
+                                  .setReason(
+                                      adv.getReason() == Reason.REPLACE
+                                          ? Reason.WITHDRAW
+                                          : adv.getReason())
+                                  .setRoute(bgpv4Route)
+                                  .build())
+                      .orElse(null);
+                })
+            .filter(Objects::nonNull)
+            .distinct();
 
-    // Compute a set of advertisements that can be queued on remote VR
-    Stream<RouteAdvertisement<Bgpv4Route>> advertisementStream =
-        Stream.concat(
-            bgpRoutesToExport
-                .getActions()
-                .map(
-                    adv -> {
-                      Optional<Bgpv4Route> transformedRoute =
-                          transformBgpRouteOnExport(
-                              adv.getRoute().getRoute(),
-                              ourConfigId,
-                              remoteConfigId,
-                              ourConfig,
-                              remoteConfig,
-                              remoteBgpRoutingProcess,
-                              ourSession,
-                              Type.IPV4_UNICAST);
-                      // REPLACE does not make sense across routers, update with WITHDRAW
-                      return transformedRoute
-                          .map(
-                              bgpv4Route ->
-                                  RouteAdvertisement.<Bgpv4Route>builder()
-                                      .setReason(
-                                          adv.getReason() == Reason.REPLACE
-                                              ? Reason.WITHDRAW
-                                              : adv.getReason())
-                                      .setRoute(bgpv4Route)
-                                      .build())
-                          .orElse(null);
-                    })
-                .filter(Objects::nonNull)
-                .distinct(),
-            mainRibExports);
-
-    return Stream.concat(advertisementStream, neighborGeneratedRoutes);
+    // Return all advertisements to queue on the remote VR's BGP process
+    return Streams.concat(bgpRibRoutesToExport, mainRibExports, neighborGeneratedRoutes);
   }
 
   private static boolean isReflectable(
