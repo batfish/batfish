@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.INTERFACE_PREFIX_PATTERN;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
@@ -2255,9 +2256,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       pushPeer(pg);
       _currentDynamicIpv6PeerGroup = pg;
     }
-    _configuration.defineStructure(BGP_NEIGHBOR, _currentPeerGroup.getName(), ctx);
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(_currentPeerGroup.getName(), currentVrf().getName());
+    _configuration.defineStructure(BGP_NEIGHBOR, bgpNeighborStructName, ctx);
     _configuration.referenceStructure(
-        BGP_NEIGHBOR, _currentPeerGroup.getName(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
+        BGP_NEIGHBOR, bgpNeighborStructName, BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
     if (ctx.bgp_asn() != null) {
       long remoteAs = toAsNum(ctx.bgp_asn());
       _currentPeerGroup.setRemoteAs(remoteAs);
