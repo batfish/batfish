@@ -20,7 +20,6 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
-import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDPairingFactory;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.ImmutableBDDInteger;
@@ -215,10 +214,9 @@ public final class Transitions {
       } else if (t2 instanceof RemoveSourceConstraint) {
         BDD constraintBdd = ((Constraint) t1).getConstraint();
         BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
-        BDDFiniteDomain<String> finiteDomain = mgr.getFiniteDomain();
         return compose(
-            constraint(constraintBdd.and(finiteDomain.getIsValidConstraint())),
-            eraseAndSet(finiteDomain.getVar(), constraintBdd.getFactory().one()));
+            constraint(constraintBdd.and(mgr.isValidValue())),
+            eraseAndSet(mgr.getFiniteDomain().getVar(), constraintBdd.getFactory().one()));
       } else if (t2 instanceof Transform) {
         BDD constraintBdd = ((Constraint) t1).getConstraint();
         Transform transform = (Transform) t2;
