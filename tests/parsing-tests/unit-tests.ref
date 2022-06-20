@@ -74650,7 +74650,7 @@
         "configs/non_nexus_neighbor_af" : { },
         "configs/nxos/nxos_bgp" : {
           "bgp neighbor" : {
-            "1.1.1.1" : {
+            "1.1.1.1 (VRF default)" : {
               "definitionLines" : "37-39",
               "numReferrers" : 1
             }
@@ -81803,7 +81803,7 @@
         },
         "configs/nxos/nxos_bgp" : {
           "bgp neighbor" : {
-            "1.1.1.1" : {
+            "1.1.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 37
               ]

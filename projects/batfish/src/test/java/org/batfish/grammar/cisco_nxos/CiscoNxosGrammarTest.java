@@ -17,6 +17,7 @@ import static org.batfish.datamodel.InactiveReason.VRF_DOWN;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
@@ -791,25 +792,30 @@ public final class CiscoNxosGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, "1.2.3.4", contains(7)));
-    assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(
-            filename, BGP_NEIGHBOR, "2001:db8:85a3:0:0:8a2e:370:7334", contains(8)));
-    assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, "1.2.3.0/24", contains(10)));
-    assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(
-            filename, BGP_NEIGHBOR, "2001:db8:0:0:0:0:0:0/32", contains(11)));
+    String neighborIp = bgpNeighborStructureName("1.2.3.4", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:0:0:0:0:0:0/32", "default");
 
-    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.4", 1));
-    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "2001:db8:85a3:0:0:8a2e:370:7334", 1));
-    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.2.3.0/24", 1));
-    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "2001:db8:0:0:0:0:0:0/32", 1));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp, contains(7)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp6, contains(8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborPrefix, contains(10)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborPrefix6, contains(11)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp6, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix6, 1));
   }
 
   @Test

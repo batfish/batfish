@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco_nxos;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_CLASS_MAP_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_POLICY_MAP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_POLICY_MAP_OUT;
@@ -4075,34 +4076,32 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterRb_neighbor(Rb_neighborContext ctx) {
+    String neighborName;
     if (ctx.ip != null) {
       Ip ip = toIp(ctx.ip);
       _currentBgpVrfNeighbor = _currentBgpVrfConfiguration.getOrCreateNeighbor(ip);
-      _c.defineStructure(BGP_NEIGHBOR, ip.toString(), ctx);
-      _c.referenceStructure(
-          BGP_NEIGHBOR, ip.toString(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
+      neighborName = ip.toString();
     } else if (ctx.prefix != null) {
       Prefix prefix = toPrefix(ctx.prefix);
       _currentBgpVrfNeighbor = _currentBgpVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
-      _c.defineStructure(BGP_NEIGHBOR, prefix.toString(), ctx);
-      _c.referenceStructure(
-          BGP_NEIGHBOR, prefix.toString(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
+      neighborName = prefix.toString();
     } else if (ctx.ip6 != null) {
       Ip6 ip = toIp6(ctx.ip6);
       _currentBgpVrfNeighbor = _currentBgpVrfConfiguration.getOrCreateNeighbor(ip);
-      _c.defineStructure(BGP_NEIGHBOR, ip.toString(), ctx);
-      _c.referenceStructure(
-          BGP_NEIGHBOR, ip.toString(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
+      neighborName = ip.toString();
     } else if (ctx.prefix6 != null) {
       Prefix6 prefix = toPrefix6(ctx.prefix6);
       _currentBgpVrfNeighbor = _currentBgpVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
-      _c.defineStructure(BGP_NEIGHBOR, prefix.toString(), ctx);
-      _c.referenceStructure(
-          BGP_NEIGHBOR, prefix.toString(), BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
+      neighborName = prefix.toString();
     } else {
       throw new BatfishException(
           "BGP neighbor IP definition not supported in line " + ctx.getText());
     }
+
+    String neighborStructName = bgpNeighborStructureName(neighborName, _currentBgpVrfName);
+    _c.defineStructure(BGP_NEIGHBOR, neighborStructName, ctx);
+    _c.referenceStructure(
+        BGP_NEIGHBOR, neighborStructName, BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
 
     if (ctx.REMOTE_AS() != null && ctx.bgp_asn() != null) {
       long asn = toLong(ctx.bgp_asn());
