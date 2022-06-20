@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
 import static org.batfish.representation.arista.AristaConfiguration.computeRouteMapEntryName;
@@ -2739,9 +2740,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _configuration.referenceStructure(
           PEER_FILTER, peerFilterName, BGP_LISTEN_RANGE_PEER_FILTER, ctx.getStart().getLine());
     }
-    _configuration.defineStructure(BGP_LISTEN_RANGE, prefix.toString(), ctx);
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(prefix.toString(), _currentAristaBgpVrf.getName());
+    _configuration.defineStructure(BGP_LISTEN_RANGE, bgpNeighborStructName, ctx);
     _configuration.referenceStructure(
-        BGP_LISTEN_RANGE, prefix.toString(), BGP_LISTEN_RANGE_SELF_REF, ctx.prefix.getLine());
+        BGP_LISTEN_RANGE, bgpNeighborStructName, BGP_LISTEN_RANGE_SELF_REF, ctx.prefix.getLine());
   }
 
   @Override
@@ -2818,9 +2821,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentAristaBgpNeighbor =
         _currentAristaBgpVrf.getV4neighbors().computeIfAbsent(ip, AristaBgpV4Neighbor::new);
     _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
-    _configuration.defineStructure(BGP_NEIGHBOR, ip.toString(), ctx);
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(ip.toString(), _currentAristaBgpVrf.getName());
+    _configuration.defineStructure(BGP_NEIGHBOR, bgpNeighborStructName, ctx);
     _configuration.referenceStructure(
-        BGP_NEIGHBOR, ip.toString(), BGP_NEIGHBOR_SELF_REF, ctx.name.getLine());
+        BGP_NEIGHBOR, bgpNeighborStructName, BGP_NEIGHBOR_SELF_REF, ctx.name.getLine());
   }
 
   @Override

@@ -7,6 +7,7 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.Ip.ZERO;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
@@ -2029,16 +2030,20 @@ public class AristaGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, "1.1.1.1", contains(6)));
+    String neighborNameIp = bgpNeighborStructureName("1.1.1.1", "default");
+    String neighborNamePrefix = bgpNeighborStructureName("4.4.4.0/24", "default");
+
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, BGP_LISTEN_RANGE, "4.4.4.0/24", contains(7)));
+            filename, BGP_NEIGHBOR, neighborNameIp, contains(6)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_LISTEN_RANGE, neighborNamePrefix, contains(7)));
 
-    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, "1.1.1.1", 1));
-    assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE, "4.4.4.0/24", 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborNameIp, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE, neighborNamePrefix, 1));
   }
 
   @Test
