@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname bgp-neighbor-refs
+!
+router bgp 65000
+  neighbor 1.2.3.4 remote-as 2
+  neighbor 2001:db8:85a3:0:0:8a2e:370:7334 remote-as 2
+
+  neighbor 1.2.3.0/24 remote-as 2
+  neighbor 2001:db8::/32 remote-as 2
