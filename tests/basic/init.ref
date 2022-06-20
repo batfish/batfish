@@ -117,19 +117,19 @@
       "definedStructures" : {
         "configs/as1border1.cfg" : {
           "bgp neighbor" : {
-            "1.10.1.1" : {
+            "1.10.1.1 (VRF default)" : {
               "definitionLines" : "90,109",
               "numReferrers" : 2
             },
-            "10.12.11.2" : {
+            "10.12.11.2 (VRF default)" : {
               "definitionLines" : "112",
               "numReferrers" : 1
             },
-            "3.2.2.2" : {
+            "3.2.2.2 (VRF default)" : {
               "definitionLines" : "110",
               "numReferrers" : 1
             },
-            "5.6.7.8" : {
+            "5.6.7.8 (VRF default)" : {
               "definitionLines" : "111",
               "numReferrers" : 1
             }
@@ -289,15 +289,15 @@
         },
         "configs/as1border2.cfg" : {
           "bgp neighbor" : {
-            "1.10.1.1" : {
+            "1.10.1.1 (VRF default)" : {
               "definitionLines" : "94,114",
               "numReferrers" : 2
             },
-            "10.13.22.3" : {
+            "10.13.22.3 (VRF default)" : {
               "definitionLines" : "115",
               "numReferrers" : 1
             },
-            "10.14.22.4" : {
+            "10.14.22.4 (VRF default)" : {
               "definitionLines" : "116",
               "numReferrers" : 1
             }
@@ -469,11 +469,11 @@
         },
         "configs/as1core1.cfg" : {
           "bgp neighbor" : {
-            "1.1.1.1" : {
+            "1.1.1.1 (VRF default)" : {
               "definitionLines" : "83,94",
               "numReferrers" : 2
             },
-            "1.2.2.2" : {
+            "1.2.2.2 (VRF default)" : {
               "definitionLines" : "85,95",
               "numReferrers" : 2
             }
@@ -505,15 +505,15 @@
         },
         "configs/as2border1.cfg" : {
           "bgp neighbor" : {
-            "10.12.11.1" : {
+            "10.12.11.1 (VRF default)" : {
               "definitionLines" : "116",
               "numReferrers" : 1
             },
-            "2.1.2.1" : {
+            "2.1.2.1 (VRF default)" : {
               "definitionLines" : "96,114",
               "numReferrers" : 2
             },
-            "2.1.2.2" : {
+            "2.1.2.2 (VRF default)" : {
               "definitionLines" : "98,115",
               "numReferrers" : 2
             }
@@ -685,15 +685,15 @@
         },
         "configs/as2border2.cfg" : {
           "bgp neighbor" : {
-            "10.23.21.3" : {
+            "10.23.21.3 (VRF default)" : {
               "definitionLines" : "113",
               "numReferrers" : 1
             },
-            "2.1.2.1" : {
+            "2.1.2.1 (VRF default)" : {
               "definitionLines" : "93,111",
               "numReferrers" : 2
             },
-            "2.1.2.2" : {
+            "2.1.2.2 (VRF default)" : {
               "definitionLines" : "95,112",
               "numReferrers" : 2
             }
@@ -861,19 +861,19 @@
         },
         "configs/as2core1.cfg" : {
           "bgp neighbor" : {
-            "2.1.1.1" : {
+            "2.1.1.1 (VRF default)" : {
               "definitionLines" : "93,108",
               "numReferrers" : 2
             },
-            "2.1.1.2" : {
+            "2.1.1.2 (VRF default)" : {
               "definitionLines" : "95,109",
               "numReferrers" : 2
             },
-            "2.1.3.1" : {
+            "2.1.3.1 (VRF default)" : {
               "definitionLines" : "97,110",
               "numReferrers" : 2
             },
-            "2.1.3.2" : {
+            "2.1.3.2 (VRF default)" : {
               "definitionLines" : "99,111",
               "numReferrers" : 2
             }
@@ -929,19 +929,19 @@
         },
         "configs/as2core2.cfg" : {
           "bgp neighbor" : {
-            "2.1.1.1" : {
+            "2.1.1.1 (VRF default)" : {
               "definitionLines" : "94,111",
               "numReferrers" : 2
             },
-            "2.1.1.2" : {
+            "2.1.1.2 (VRF default)" : {
               "definitionLines" : "96,112",
               "numReferrers" : 2
             },
-            "2.1.3.1" : {
+            "2.1.3.1 (VRF default)" : {
               "definitionLines" : "98,113",
               "numReferrers" : 2
             },
-            "2.1.3.2" : {
+            "2.1.3.2 (VRF default)" : {
               "definitionLines" : "100,114",
               "numReferrers" : 2
             }
@@ -985,11 +985,11 @@
         },
         "configs/as2dept1.cfg" : {
           "bgp neighbor" : {
-            "2.34.101.3" : {
+            "2.34.101.3 (VRF default)" : {
               "definitionLines" : "97",
               "numReferrers" : 1
             },
-            "2.34.201.3" : {
+            "2.34.201.3 (VRF default)" : {
               "definitionLines" : "98",
               "numReferrers" : 1
             }
@@ -1123,15 +1123,15 @@
         },
         "configs/as2dist1.cfg" : {
           "bgp neighbor" : {
-            "2.1.2.1" : {
+            "2.1.2.1 (VRF default)" : {
               "definitionLines" : "88,102",
               "numReferrers" : 2
             },
-            "2.1.2.2" : {
+            "2.1.2.2 (VRF default)" : {
               "definitionLines" : "90,103",
               "numReferrers" : 2
             },
-            "2.34.101.4" : {
+            "2.34.101.4 (VRF default)" : {
               "definitionLines" : "104",
               "numReferrers" : 1
             }
@@ -1229,15 +1229,15 @@
         },
         "configs/as2dist2.cfg" : {
           "bgp neighbor" : {
-            "2.1.2.1" : {
+            "2.1.2.1 (VRF default)" : {
               "definitionLines" : "88,102",
               "numReferrers" : 2
             },
-            "2.1.2.2" : {
+            "2.1.2.2 (VRF default)" : {
               "definitionLines" : "90,103",
               "numReferrers" : 2
             },
-            "2.34.201.4" : {
+            "2.34.201.4 (VRF default)" : {
               "definitionLines" : "104",
               "numReferrers" : 1
             }
@@ -1335,11 +1335,11 @@
         },
         "configs/as3border1.cfg" : {
           "bgp neighbor" : {
-            "10.23.21.2" : {
+            "10.23.21.2 (VRF default)" : {
               "definitionLines" : "106",
               "numReferrers" : 1
             },
-            "3.10.1.1" : {
+            "3.10.1.1 (VRF default)" : {
               "definitionLines" : "88,105",
               "numReferrers" : 2
             }
@@ -1491,11 +1491,11 @@
         },
         "configs/as3border2.cfg" : {
           "bgp neighbor" : {
-            "10.13.22.1" : {
+            "10.13.22.1 (VRF default)" : {
               "definitionLines" : "106",
               "numReferrers" : 1
             },
-            "3.10.1.1" : {
+            "3.10.1.1 (VRF default)" : {
               "definitionLines" : "88,105",
               "numReferrers" : 2
             }
@@ -1639,11 +1639,11 @@
         },
         "configs/as3core1.cfg" : {
           "bgp neighbor" : {
-            "3.1.1.1" : {
+            "3.1.1.1 (VRF default)" : {
               "definitionLines" : "90,103",
               "numReferrers" : 2
             },
-            "3.2.2.2" : {
+            "3.2.2.2 (VRF default)" : {
               "definitionLines" : "92,104",
               "numReferrers" : 2
             }
@@ -1734,23 +1734,23 @@
       "referencedStructures" : {
         "configs/as1border1.cfg" : {
           "bgp neighbor" : {
-            "1.10.1.1" : {
+            "1.10.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 90,
                 109
               ]
             },
-            "10.12.11.2" : {
+            "10.12.11.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 112
               ]
             },
-            "3.2.2.2" : {
+            "3.2.2.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 110
               ]
             },
-            "5.6.7.8" : {
+            "5.6.7.8 (VRF default)" : {
               "bgp neighbor self ref" : [
                 111
               ]
@@ -1934,18 +1934,18 @@
         },
         "configs/as1border2.cfg" : {
           "bgp neighbor" : {
-            "1.10.1.1" : {
+            "1.10.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 94,
                 114
               ]
             },
-            "10.13.22.3" : {
+            "10.13.22.3 (VRF default)" : {
               "bgp neighbor self ref" : [
                 115
               ]
             },
-            "10.14.22.4" : {
+            "10.14.22.4 (VRF default)" : {
               "bgp neighbor self ref" : [
                 116
               ]
@@ -2144,13 +2144,13 @@
         },
         "configs/as1core1.cfg" : {
           "bgp neighbor" : {
-            "1.1.1.1" : {
+            "1.1.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 83,
                 94
               ]
             },
-            "1.2.2.2" : {
+            "1.2.2.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 85,
                 95
@@ -2194,18 +2194,18 @@
         },
         "configs/as2border1.cfg" : {
           "bgp neighbor" : {
-            "10.12.11.1" : {
+            "10.12.11.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 116
               ]
             },
-            "2.1.2.1" : {
+            "2.1.2.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 96,
                 114
               ]
             },
-            "2.1.2.2" : {
+            "2.1.2.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 98,
                 115
@@ -2407,18 +2407,18 @@
         },
         "configs/as2border2.cfg" : {
           "bgp neighbor" : {
-            "10.23.21.3" : {
+            "10.23.21.3 (VRF default)" : {
               "bgp neighbor self ref" : [
                 113
               ]
             },
-            "2.1.2.1" : {
+            "2.1.2.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 93,
                 111
               ]
             },
-            "2.1.2.2" : {
+            "2.1.2.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 95,
                 112
@@ -2615,25 +2615,25 @@
         },
         "configs/as2core1.cfg" : {
           "bgp neighbor" : {
-            "2.1.1.1" : {
+            "2.1.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 93,
                 108
               ]
             },
-            "2.1.1.2" : {
+            "2.1.1.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 95,
                 109
               ]
             },
-            "2.1.3.1" : {
+            "2.1.3.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 97,
                 110
               ]
             },
-            "2.1.3.2" : {
+            "2.1.3.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 99,
                 111
@@ -2711,25 +2711,25 @@
         },
         "configs/as2core2.cfg" : {
           "bgp neighbor" : {
-            "2.1.1.1" : {
+            "2.1.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 94,
                 111
               ]
             },
-            "2.1.1.2" : {
+            "2.1.1.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 96,
                 112
               ]
             },
-            "2.1.3.1" : {
+            "2.1.3.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 98,
                 113
               ]
             },
-            "2.1.3.2" : {
+            "2.1.3.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 100,
                 114
@@ -2794,12 +2794,12 @@
         },
         "configs/as2dept1.cfg" : {
           "bgp neighbor" : {
-            "2.34.101.3" : {
+            "2.34.101.3 (VRF default)" : {
               "bgp neighbor self ref" : [
                 97
               ]
             },
-            "2.34.201.3" : {
+            "2.34.201.3 (VRF default)" : {
               "bgp neighbor self ref" : [
                 98
               ]
@@ -2954,19 +2954,19 @@
         },
         "configs/as2dist1.cfg" : {
           "bgp neighbor" : {
-            "2.1.2.1" : {
+            "2.1.2.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 88,
                 102
               ]
             },
-            "2.1.2.2" : {
+            "2.1.2.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 90,
                 103
               ]
             },
-            "2.34.101.4" : {
+            "2.34.101.4 (VRF default)" : {
               "bgp neighbor self ref" : [
                 104
               ]
@@ -3084,19 +3084,19 @@
         },
         "configs/as2dist2.cfg" : {
           "bgp neighbor" : {
-            "2.1.2.1" : {
+            "2.1.2.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 88,
                 102
               ]
             },
-            "2.1.2.2" : {
+            "2.1.2.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 90,
                 103
               ]
             },
-            "2.34.201.4" : {
+            "2.34.201.4 (VRF default)" : {
               "bgp neighbor self ref" : [
                 104
               ]
@@ -3214,12 +3214,12 @@
         },
         "configs/as3border1.cfg" : {
           "bgp neighbor" : {
-            "10.23.21.2" : {
+            "10.23.21.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 106
               ]
             },
-            "3.10.1.1" : {
+            "3.10.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 88,
                 105
@@ -3394,12 +3394,12 @@
         },
         "configs/as3border2.cfg" : {
           "bgp neighbor" : {
-            "10.13.22.1" : {
+            "10.13.22.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 106
               ]
             },
-            "3.10.1.1" : {
+            "3.10.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 88,
                 105
@@ -3562,13 +3562,13 @@
         },
         "configs/as3core1.cfg" : {
           "bgp neighbor" : {
-            "3.1.1.1" : {
+            "3.1.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 90,
                 103
               ]
             },
-            "3.2.2.2" : {
+            "3.2.2.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 92,
                 104

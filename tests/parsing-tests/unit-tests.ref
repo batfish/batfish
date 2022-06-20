@@ -70997,7 +70997,7 @@
         "configs/access_list" : { },
         "configs/address_family" : {
           "bgp neighbor" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "definitionLines" : "7",
               "numReferrers" : 1
             }
@@ -71251,11 +71251,11 @@
         "configs/asa_ssh" : { },
         "configs/bgp_address_family" : {
           "bgp neighbor" : {
-            "1.10.1.1" : {
+            "1.10.1.1 (VRF default)" : {
               "definitionLines" : "14,30",
               "numReferrers" : 2
             },
-            "10.12.11.2" : {
+            "10.12.11.2 (VRF default)" : {
               "definitionLines" : "31",
               "numReferrers" : 1
             }
@@ -71617,7 +71617,7 @@
             }
           },
           "bgp neighbor" : {
-            "10.0.1.2" : {
+            "10.0.1.2 (VRF aVrfWithInnerStatements)" : {
               "definitionLines" : "48",
               "numReferrers" : 1
             }
@@ -71991,7 +71991,7 @@
         },
         "configs/cisco_ios_neighbor" : {
           "bgp listen range" : {
-            "10.10.20.0/24" : {
+            "10.10.20.0/24 (VRF default)" : {
               "definitionLines" : "8",
               "numReferrers" : 1
             }
@@ -73466,7 +73466,7 @@
         },
         "configs/ios_xe_bgp" : {
           "bgp neighbor" : {
-            "1.1.1.1" : {
+            "1.1.1.1 (VRF default)" : {
               "definitionLines" : "12-13",
               "numReferrers" : 2
             }
@@ -74691,7 +74691,7 @@
         "configs/no_aaa_group_server" : { },
         "configs/non_nexus_neighbor_af" : {
           "bgp neighbor" : {
-            "10.0.0.0" : {
+            "10.0.0.0 (VRF default)" : {
               "definitionLines" : "6,9-10",
               "numReferrers" : 3
             }
@@ -76449,7 +76449,7 @@
       "referencedStructures" : {
         "configs/address_family" : {
           "bgp neighbor" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor self ref" : [
                 7
               ]
@@ -76793,13 +76793,13 @@
         },
         "configs/bgp_address_family" : {
           "bgp neighbor" : {
-            "1.10.1.1" : {
+            "1.10.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 14,
                 30
               ]
             },
-            "10.12.11.2" : {
+            "10.12.11.2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 31
               ]
@@ -77274,7 +77274,7 @@
             }
           },
           "bgp neighbor" : {
-            "10.0.1.2" : {
+            "10.0.1.2 (VRF aVrfWithInnerStatements)" : {
               "bgp neighbor self ref" : [
                 48
               ]
@@ -77950,7 +77950,7 @@
         },
         "configs/cisco_ios_neighbor" : {
           "bgp listen range" : {
-            "10.10.20.0/24" : {
+            "10.10.20.0/24 (VRF default)" : {
               "bgp listen range self ref" : [
                 8
               ]
@@ -80117,7 +80117,7 @@
         },
         "configs/ios_xe_bgp" : {
           "bgp neighbor" : {
-            "1.1.1.1" : {
+            "1.1.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 12,
                 13
@@ -81897,7 +81897,7 @@
         },
         "configs/non_nexus_neighbor_af" : {
           "bgp neighbor" : {
-            "10.0.0.0" : {
+            "10.0.0.0 (VRF default)" : {
               "bgp neighbor self ref" : [
                 6,
                 9,

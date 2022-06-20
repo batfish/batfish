@@ -53,27 +53,27 @@
       "aws_configs" : { },
       "configs/lhr-border-02.cfg" : {
         "bgp neighbor" : {
-          "10.10.10.37" : {
+          "10.10.10.37 (VRF default)" : {
             "definitionLines" : "199,213-214",
             "numReferrers" : 3
           },
-          "10.10.10.45" : {
+          "10.10.10.45 (VRF default)" : {
             "definitionLines" : "201,215",
             "numReferrers" : 2
           },
-          "10.10.255.7" : {
+          "10.10.255.7 (VRF default)" : {
             "definitionLines" : "204-205,218-219",
             "numReferrers" : 4
           },
-          "10.10.30.2" : {
+          "10.10.30.2 (VRF default)" : {
             "definitionLines" : "203,216-217",
             "numReferrers" : 3
           },
-          "169.254.13.237" : {
+          "169.254.13.237 (VRF default)" : {
             "definitionLines" : "206-207,220-223",
             "numReferrers" : 6
           },
-          "169.254.15.193" : {
+          "169.254.15.193 (VRF default)" : {
             "definitionLines" : "208-209,224-227",
             "numReferrers" : 6
           }
@@ -296,20 +296,20 @@
     "referencedStructures" : {
       "configs/lhr-border-02.cfg" : {
         "bgp neighbor" : {
-          "10.10.10.37" : {
+          "10.10.10.37 (VRF default)" : {
             "bgp neighbor self ref" : [
               199,
               213,
               214
             ]
           },
-          "10.10.10.45" : {
+          "10.10.10.45 (VRF default)" : {
             "bgp neighbor self ref" : [
               201,
               215
             ]
           },
-          "10.10.255.7" : {
+          "10.10.255.7 (VRF default)" : {
             "bgp neighbor self ref" : [
               204,
               205,
@@ -317,14 +317,14 @@
               219
             ]
           },
-          "10.10.30.2" : {
+          "10.10.30.2 (VRF default)" : {
             "bgp neighbor self ref" : [
               203,
               216,
               217
             ]
           },
-          "169.254.13.237" : {
+          "169.254.13.237 (VRF default)" : {
             "bgp neighbor self ref" : [
               206,
               207,
@@ -334,7 +334,7 @@
               223
             ]
           },
-          "169.254.15.193" : {
+          "169.254.15.193 (VRF default)" : {
             "bgp neighbor self ref" : [
               208,
               209,
