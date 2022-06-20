@@ -73367,7 +73367,7 @@
         },
         "configs/ios_bgp" : {
           "bgp neighbor" : {
-            "1:0:0:0:0:0:0:1" : {
+            "1:0:0:0:0:0:0:1 (VRF default)" : {
               "definitionLines" : "6",
               "numReferrers" : 1
             }
@@ -76847,7 +76847,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "13.16.3.16" : {
+            "13.16.3.16 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 17
               ]
@@ -77197,7 +77197,7 @@
         },
         "configs/cisco_additional_paths" : {
           "undeclared bgp peer" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 8,
                 9
@@ -77369,7 +77369,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "10.0.0.1" : {
+            "10.0.0.1 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 39,
                 40,
@@ -77377,17 +77377,17 @@
                 42
               ]
             },
-            "10.20.2.2" : {
+            "10.20.2.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 10
               ]
             },
-            "192.168.3.2" : {
+            "192.168.3.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 14
               ]
             },
-            "192.168.4.2" : {
+            "192.168.4.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 18
               ]
@@ -79975,7 +79975,7 @@
         },
         "configs/ios_bgp" : {
           "bgp neighbor" : {
-            "1:0:0:0:0:0:0:1" : {
+            "1:0:0:0:0:0:0:1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 6
               ]
@@ -80001,7 +80001,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 5
               ]
@@ -83198,7 +83198,7 @@
         },
         "configs/vlan_access_map2" : {
           "undeclared bgp peer" : {
-            "10.10.212.233" : {
+            "10.10.212.233 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 19
               ]
@@ -83402,7 +83402,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "13.16.3.16" : {
+            "13.16.3.16 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 17
               ]
@@ -83480,7 +83480,7 @@
         "configs/cisco_acl" : { },
         "configs/cisco_additional_paths" : {
           "undeclared bgp peer" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 8,
                 9
@@ -83528,7 +83528,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "10.0.0.1" : {
+            "10.0.0.1 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 39,
                 40,
@@ -83536,17 +83536,17 @@
                 42
               ]
             },
-            "10.20.2.2" : {
+            "10.20.2.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 10
               ]
             },
-            "192.168.3.2" : {
+            "192.168.3.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 14
               ]
             },
-            "192.168.4.2" : {
+            "192.168.4.2 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 18
               ]
@@ -84672,7 +84672,7 @@
             }
           },
           "undeclared bgp peer" : {
-            "1.2.3.4" : {
+            "1.2.3.4 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 5
               ]
@@ -85714,7 +85714,7 @@
         },
         "configs/vlan_access_map2" : {
           "undeclared bgp peer" : {
-            "10.10.212.233" : {
+            "10.10.212.233 (VRF default)" : {
               "bgp neighbor without remote-as" : [
                 19
               ]
