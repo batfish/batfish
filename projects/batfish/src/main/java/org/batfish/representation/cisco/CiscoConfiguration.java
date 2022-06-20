@@ -3256,6 +3256,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
         CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
 
+    markConcreteStructure(CiscoStructureType.BGP_NEIGHBOR);
+    markConcreteStructure(CiscoStructureType.BGP_LISTEN_RANGE);
     // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
     markConcreteStructure(CiscoStructureType.BGP_AF_GROUP, CiscoStructureUsage.BGP_USE_AF_GROUP);
     markConcreteStructure(
