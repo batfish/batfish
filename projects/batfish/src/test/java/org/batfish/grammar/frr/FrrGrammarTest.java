@@ -1181,8 +1181,8 @@ public class FrrGrammarTest {
         "    neighbor 2001:100:1:31::2 route-map rm-out out",
         "    neighbor 2001:100:1:31::2 route-map rm-in in");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
-    assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
-    BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
+    assertThat(neighbors.keySet(), contains("2001:100:1:31:0:0:0:2"));
+    BgpNeighbor foo = neighbors.get("2001:100:1:31:0:0:0:2");
     assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2)));
     assertThat(_warnings.getParseWarnings(), empty());
   }
