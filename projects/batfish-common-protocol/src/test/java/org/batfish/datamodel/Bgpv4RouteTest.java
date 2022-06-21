@@ -26,6 +26,7 @@ public class Bgpv4RouteTest {
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
             .build();
     assertThat(SerializationUtils.clone(br), equalTo(br));
@@ -39,6 +40,7 @@ public class Bgpv4RouteTest {
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
             .build();
     assertThat(BatfishObjectMapper.clone(br, Bgpv4Route.class), equalTo(br));
@@ -52,6 +54,7 @@ public class Bgpv4RouteTest {
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
             .setTag(3L)
             .build();
@@ -81,6 +84,7 @@ public class Bgpv4RouteTest {
         .addEqualityGroup(brb.setNextHopIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(brb.setOriginatorIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(brb.setOriginType(OriginType.INCOMPLETE).build())
+        .addEqualityGroup(brb.setPathId(5).build())
         .addEqualityGroup(brb.setReceivedFromIp(Ip.parse("1.1.1.1")).build())
         .addEqualityGroup(brb.setReceivedFromRouteReflectorClient(true).build())
         .addEqualityGroup(brb.setProtocol(RoutingProtocol.IBGP).build())

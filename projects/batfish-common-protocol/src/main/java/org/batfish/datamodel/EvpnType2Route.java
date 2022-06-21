@@ -73,6 +73,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
           _macAddress,
           _routeDistinguisher,
           _vni,
+          _pathId,
           getTag());
     }
 
@@ -126,6 +127,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @Nullable @JsonProperty(PROP_PATH_ID) Integer pathId,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
       @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
@@ -169,6 +171,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         macAddress,
         routeDistinguisher,
         vni,
+        pathId,
         tag);
   }
 
@@ -180,8 +183,9 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       @Nullable MacAddress macAddress,
       RouteDistinguisher routeDistinguisher,
       int vni,
+      @Nullable Integer pathId,
       long tag) {
-    super(ip.toPrefix(), nextHop, attributes, receivedFromIp, tag, routeDistinguisher, vni);
+    super(ip.toPrefix(), nextHop, attributes, receivedFromIp, tag, routeDistinguisher, vni, pathId);
     _ip = ip;
     _macAddress = macAddress;
   }
@@ -221,6 +225,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         .setOriginatorIp(_attributes._originatorIp)
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
+        .setPathId(_pathId)
         .setProtocol(_attributes.getProtocol())
         .setReceivedFromIp(_receivedFromIp)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
@@ -248,6 +253,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         && Objects.equals(_receivedFromIp, other._receivedFromIp)
         && Objects.equals(_macAddress, other._macAddress)
         && Objects.equals(_nextHop, other._nextHop)
+        && Objects.equals(_pathId, other._pathId)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
         && _tag == other._tag;
@@ -263,6 +269,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       h = h * 31 + Objects.hashCode(_macAddress);
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
+      h = h * 31 + Objects.hashCode(_pathId);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
       h = h * 31 + Long.hashCode(_tag);
