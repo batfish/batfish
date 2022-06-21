@@ -1126,6 +1126,7 @@ public class FrrGrammarTest {
     String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
     String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
     String neighborPrefix6 = bgpNeighborStructureName("2001:db8:85a3:0:0:0:0:0/32", "default");
+    String neighborInterface = bgpNeighborStructureName("swp1", "default");
 
     assertThat(
         getDefinedStructureInfo(BGP_NEIGHBOR, neighborIp).getDefinitionLines().enumerate(),
@@ -1134,7 +1135,9 @@ public class FrrGrammarTest {
         getDefinedStructureInfo(BGP_NEIGHBOR, neighborIp6).getDefinitionLines().enumerate(),
         contains(3));
     assertThat(
-        getDefinedStructureInfo(BGP_NEIGHBOR_INTERFACE, "swp1").getDefinitionLines().enumerate(),
+        getDefinedStructureInfo(BGP_NEIGHBOR_INTERFACE, neighborInterface)
+            .getDefinitionLines()
+            .enumerate(),
         contains(4));
     assertThat(
         getDefinedStructureInfo(BGP_LISTEN_RANGE, neighborPrefix).getDefinitionLines().enumerate(),
@@ -1148,7 +1151,8 @@ public class FrrGrammarTest {
     assertThat(
         getStructureReferences(BGP_NEIGHBOR, neighborIp6, BGP_NEIGHBOR_SELF_REF), contains(3));
     assertThat(
-        getStructureReferences(BGP_NEIGHBOR_INTERFACE, "swp1", BGP_NEIGHBOR_INTERFACE_SELF_REF),
+        getStructureReferences(
+            BGP_NEIGHBOR_INTERFACE, neighborInterface, BGP_NEIGHBOR_INTERFACE_SELF_REF),
         contains(4));
     assertThat(
         getStructureReferences(BGP_LISTEN_RANGE, neighborPrefix, BGP_LISTEN_RANGE_SELF_REF),

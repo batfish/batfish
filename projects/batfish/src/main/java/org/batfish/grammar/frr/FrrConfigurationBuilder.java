@@ -1345,10 +1345,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       checkState(
           _currentBgpVrf.getNeighbors().put(ifaceName, _currentBgpNeighbor) == null,
           "neighbor should not already exist since _currentBgpNeighbor was null");
-      _vc.defineStructure(BGP_NEIGHBOR_INTERFACE, ifaceName, ctx);
+      String bgpNeighborStructName =
+          bgpNeighborStructureName(ifaceName, _currentBgpVrf.getVrfName());
+      _vc.defineStructure(BGP_NEIGHBOR_INTERFACE, bgpNeighborStructName, ctx);
       _vc.referenceStructure(
           BGP_NEIGHBOR_INTERFACE,
-          ifaceName,
+          bgpNeighborStructName,
           BGP_NEIGHBOR_INTERFACE_SELF_REF,
           ctx.getStart().getLine());
     }
