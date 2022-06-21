@@ -781,6 +781,9 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     markConcreteStructure(CumulusStructureType.BOND);
     markConcreteStructure(CumulusStructureType.INTERFACE);
     markConcreteStructure(CumulusStructureType.BGP_AS_PATH_ACCESS_LIST);
+    markConcreteStructure(CumulusStructureType.BGP_LISTEN_RANGE);
+    markConcreteStructure(CumulusStructureType.BGP_NEIGHBOR);
+    markConcreteStructure(CumulusStructureType.BGP_NEIGHBOR_INTERFACE);
     markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
     markConcreteStructure(CumulusStructureType.LOOPBACK);
     markConcreteStructure(CumulusStructureType.ROUTE_MAP);
