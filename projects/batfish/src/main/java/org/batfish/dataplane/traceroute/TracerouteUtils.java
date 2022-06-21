@@ -216,17 +216,19 @@ public final class TracerouteUtils {
    * flow from the forward TCP flags and copying rest of the flags unmodified.
    */
   @VisibleForTesting
-  static TcpFlags getTcpFlagsForReverse(TcpFlags tcpFlags) {
-    return TcpFlags.builder()
-        .setAck(tcpFlags.getSyn() || tcpFlags.getAck())
-        .setSyn(tcpFlags.getSyn() && !tcpFlags.getAck())
-        .setRst(tcpFlags.getRst())
-        .setFin(tcpFlags.getFin())
-        .setUrg(tcpFlags.getUrg())
-        .setEce(tcpFlags.getEce())
-        .setPsh(tcpFlags.getPsh())
-        .setCwr(tcpFlags.getCwr())
-        .build();
+  static @Nullable TcpFlags getTcpFlagsForReverse(@Nullable TcpFlags tcpFlags) {
+    return tcpFlags == null
+        ? null
+        : TcpFlags.builder()
+            .setAck(tcpFlags.getSyn() || tcpFlags.getAck())
+            .setSyn(tcpFlags.getSyn() && !tcpFlags.getAck())
+            .setRst(tcpFlags.getRst())
+            .setFin(tcpFlags.getFin())
+            .setUrg(tcpFlags.getUrg())
+            .setEce(tcpFlags.getEce())
+            .setPsh(tcpFlags.getPsh())
+            .setCwr(tcpFlags.getCwr())
+            .build();
   }
 
   static Multimap<NodeInterfacePair, FirewallSessionTraceInfo> buildSessionsByIngressInterface(

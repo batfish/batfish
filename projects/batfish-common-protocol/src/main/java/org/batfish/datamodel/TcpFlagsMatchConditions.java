@@ -260,14 +260,15 @@ public final class TcpFlagsMatchConditions
    * <p>Note this function will return {@code true} if no bits are used.
    */
   public boolean match(Flow flow) {
-    return !(_useAck && _tcpFlags.getAck() ^ flow.getTcpFlags().getAck())
-        && !(_useCwr && _tcpFlags.getCwr() ^ flow.getTcpFlags().getCwr())
-        && !(_useEce && _tcpFlags.getEce() ^ flow.getTcpFlags().getEce())
-        && !(_useFin && _tcpFlags.getFin() ^ flow.getTcpFlags().getFin())
-        && !(_usePsh && _tcpFlags.getPsh() ^ flow.getTcpFlags().getPsh())
-        && !(_useRst && _tcpFlags.getRst() ^ flow.getTcpFlags().getRst())
-        && !(_useSyn && _tcpFlags.getSyn() ^ flow.getTcpFlags().getSyn())
-        && !(_useUrg && _tcpFlags.getUrg() ^ flow.getTcpFlags().getUrg());
+    TcpFlags flags = firstNonNull(flow.getTcpFlags(), TcpFlags.FALSE);
+    return !(_useAck && _tcpFlags.getAck() ^ flags.getAck())
+        && !(_useCwr && _tcpFlags.getCwr() ^ flags.getCwr())
+        && !(_useEce && _tcpFlags.getEce() ^ flags.getEce())
+        && !(_useFin && _tcpFlags.getFin() ^ flags.getFin())
+        && !(_usePsh && _tcpFlags.getPsh() ^ flags.getPsh())
+        && !(_useRst && _tcpFlags.getRst() ^ flags.getRst())
+        && !(_useSyn && _tcpFlags.getSyn() ^ flags.getSyn())
+        && !(_useUrg && _tcpFlags.getUrg() ^ flags.getUrg());
   }
 
   /**

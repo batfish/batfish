@@ -131,9 +131,7 @@ public class BDDPacketTest {
     assertThat(flow, hasIcmpType(icmpType));
     assertThat(flow.getDstPort(), nullValue());
     assertThat(flow.getSrcPort(), nullValue());
-    assertThat(
-        flow.getTcpFlags(),
-        equalTo(new TcpFlags(false, false, false, false, false, false, false, false)));
+    assertThat(flow.getTcpFlags(), nullValue());
   }
 
   @Test
@@ -211,9 +209,7 @@ public class BDDPacketTest {
     assertThat(flow, hasSrcPort(srcPort));
     assertThat(flow.getIcmpType(), nullValue());
     assertThat(flow.getIcmpCode(), nullValue());
-    assertThat(
-        flow.getTcpFlags(),
-        equalTo(new TcpFlags(false, false, false, false, false, false, false, false)));
+    assertThat(flow.getTcpFlags(), nullValue());
   }
 
   @Test
@@ -372,9 +368,6 @@ public class BDDPacketTest {
     assertThat(flow.getSrcPort(), nullValue());
     assertThat(flow.getIcmpType(), nullValue());
     assertThat(flow.getIcmpCode(), nullValue());
-    // TODO: why is this required?
-    assertThat(
-        flow.getTcpFlags(),
-        equalTo(new TcpFlags(false, false, false, false, false, false, false, false)));
+    assertThat(flow.getTcpFlags(), nullValue());
   }
 }
