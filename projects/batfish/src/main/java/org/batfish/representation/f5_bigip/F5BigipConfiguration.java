@@ -219,6 +219,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return Optional.of(
         HeaderSpace.builder()
             .setDstIps(address.toIpSpace())
+            .setIpProtocols(IpProtocol.ICMP)
             .setIcmpTypes(ImmutableList.of(SubRange.singleton(IcmpType.ECHO_REQUEST)))
             .setIcmpCodes(ImmutableList.of(SubRange.singleton(0)))
             .build());
