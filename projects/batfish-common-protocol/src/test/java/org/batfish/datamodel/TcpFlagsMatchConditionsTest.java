@@ -32,23 +32,32 @@ public class TcpFlagsMatchConditionsTest {
     TcpFlags flags = TcpFlags.builder().setUrg(true).setRst(true).build();
     TcpFlagsMatchConditions conditions =
         TcpFlagsMatchConditions.builder().setTcpFlags(flags).setUseUrg(true).build();
+    Flow testFlow =
+        Flow.builder()
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(5)
+            .setDstPort(6)
+            .setIngressNode("n")
+            .build();
+    assertThat(conditions.match(testFlow.toBuilder().setTcpFlagsUrg(true).build()), equalTo(true));
     assertThat(
-        conditions.match(Flow.builder().setTcpFlagsUrg(true).setIngressNode("n").build()),
-        equalTo(true));
-    assertThat(
-        conditions.match(Flow.builder().setTcpFlagsUrg(false).setIngressNode("n").build()),
-        equalTo(false));
+        conditions.match(testFlow.toBuilder().setTcpFlagsUrg(false).build()), equalTo(false));
   }
 
   @Test
   public void testMatchFlowIgnoreFields() {
     TcpFlags flags = TcpFlags.builder().setUrg(true).setRst(true).build();
+    Flow testFlow =
+        Flow.builder()
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(5)
+            .setDstPort(6)
+            .setIngressNode("n")
+            .build();
     // All fields ignored by default
     TcpFlagsMatchConditions conditions =
         TcpFlagsMatchConditions.builder().setTcpFlags(flags).build();
-    assertThat(
-        conditions.match(Flow.builder().setTcpFlagsUrg(true).setIngressNode("n").build()),
-        equalTo(true));
+    assertThat(conditions.match(testFlow.toBuilder().setTcpFlagsUrg(true).build()), equalTo(true));
     // Fields that do not match, but are ignored do not break match
     conditions =
         TcpFlagsMatchConditions.builder()
@@ -57,8 +66,7 @@ public class TcpFlagsMatchConditionsTest {
             .setUseRst(true)
             .build();
     assertThat(
-        conditions.match(
-            Flow.builder().setTcpFlagsUrg(false).setTcpFlagsRst(true).setIngressNode("n").build()),
+        conditions.match(testFlow.toBuilder().setTcpFlagsUrg(false).setTcpFlagsRst(true).build()),
         equalTo(true));
   }
 
