@@ -10,6 +10,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
@@ -207,6 +208,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             _staticRoutes.values().stream()
                 .flatMap(staticRoute -> convertStaticRoute(staticRoute, _interfaces))
                 .collect(ImmutableSet.toImmutableSet()));
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(_c);
 
     return ImmutableList.of(_c);
   }

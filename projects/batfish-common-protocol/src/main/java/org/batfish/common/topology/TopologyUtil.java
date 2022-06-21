@@ -256,7 +256,9 @@ public final class TopologyUtil {
     Map<Integer, Layer2Vni> vniSettingsByVlan =
         config.getVrfs().values().stream()
             .flatMap(vrf -> vrf.getLayer2Vnis().values().stream())
-            .collect(ImmutableMap.toImmutableMap(Layer2Vni::getVlan, Function.identity()));
+            .filter(l2vni -> l2vni.getVlan().isPresent())
+            .collect(
+                ImmutableMap.toImmutableMap(l2vni -> l2vni.getVlan().get(), Function.identity()));
     config.getAllInterfaces().values().stream()
         .filter(Interface::getActive)
         .filter(i -> i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() != null)

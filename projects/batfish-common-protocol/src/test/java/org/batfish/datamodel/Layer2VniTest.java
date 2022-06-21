@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
+import java.util.Optional;
 import java.util.SortedSet;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -35,7 +36,7 @@ public class Layer2VniTest {
     assertThat(vs.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
     assertThat(vs.getSourceAddress(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(vs.getUdpPort(), equalTo(2345));
-    assertThat(vs.getVlan(), equalTo(7));
+    assertThat(vs.getVlan(), equalTo(Optional.of(7)));
     assertThat(vs.getVni(), equalTo(10007));
   }
 

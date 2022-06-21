@@ -234,8 +234,11 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       IntegerSpace vlans,
       ImmutableMap.Builder<Integer, Integer> vlanVnisBuilder,
       Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces) {
-    if (vlans.contains(vniSettings.getVlan())) {
-      int vlan = vniSettings.getVlan();
+    if (!vniSettings.getVlan().isPresent()) {
+      return;
+    }
+    int vlan = vniSettings.getVlan().get();
+    if (vlans.contains(vlan)) {
       vlanVnisBuilder.put(vlan, vniSettings.getVni());
       switchedVlanInterfaces.computeIfAbsent(vlan, v -> ImmutableSet.builder());
     }

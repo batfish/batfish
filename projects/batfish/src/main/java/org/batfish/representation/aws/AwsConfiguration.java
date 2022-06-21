@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.aws.LoadBalancer.getActiveTargets;
 import static org.batfish.representation.aws.LoadBalancer.getTargetIp;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
@@ -168,7 +169,13 @@ public class AwsConfiguration extends VendorConfiguration {
     if (_convertedConfiguration == null) {
       convertConfigurations();
     }
-    return ImmutableList.copyOf(_convertedConfiguration.getAllNodes());
+    List<Configuration> nodes = ImmutableList.copyOf(_convertedConfiguration.getAllNodes());
+
+    for (Configuration c : nodes) {
+      // TODO: instead, populate directly in conversion
+      legacyPopulateInterfaceTopologies(c);
+    }
+    return nodes;
   }
 
   @VisibleForTesting

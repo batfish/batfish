@@ -3,6 +3,7 @@ package org.batfish.representation.host;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.immutableEntry;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.batfish.specifier.LocationInfoUtils.configuredIps;
@@ -300,6 +301,9 @@ public class HostConfiguration extends VendorConfiguration {
                         immutableEntry(
                             interfaceLinkLocation(iface), HOST_INTERFACE_LINK_LOCATION_INFO)))
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(_c);
 
     return ImmutableList.of(_c);
   }

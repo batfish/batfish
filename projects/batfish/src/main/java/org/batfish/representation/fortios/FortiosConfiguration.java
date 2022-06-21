@@ -1,5 +1,6 @@
 package org.batfish.representation.fortios;
 
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.fortios.FortiosBgpConversions.convertBgp;
 import static org.batfish.representation.fortios.FortiosBgpConversions.convertRouteMap;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
@@ -243,6 +244,10 @@ public class FortiosConfiguration extends VendorConfiguration {
     markConcreteStructure(FortiosStructureType.ZONE);
     markConcreteStructure(FortiosStructureType.ACCESS_LIST);
     markConcreteStructure(FortiosStructureType.POLICY);
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(c);
+
     return c;
   }
 

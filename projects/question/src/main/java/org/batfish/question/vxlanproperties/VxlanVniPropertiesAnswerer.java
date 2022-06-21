@@ -143,7 +143,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
                       new VxlanVniPropertiesRow(
                           nodeName,
                           vni,
-                          l2Vni.getVlan(),
+                          l2Vni.getVlan().orElse(null),
                           l2Vni.getSourceAddress(),
                           unicast
                               ? null

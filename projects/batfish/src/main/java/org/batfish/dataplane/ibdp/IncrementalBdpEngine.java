@@ -43,6 +43,7 @@ import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TunnelTopology;
+import org.batfish.common.topology.bridge_domain.BridgeDomainL3Adjacencies;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -190,20 +191,33 @@ final class IncrementalBdpEngine {
         .collect(ImmutableSet.toImmutableSet())
         .equals(newVxlanTopology.getLayer2VniEdges().collect(ImmutableSet.toImmutableSet()))) {
       LOGGER.info("Updating Layer 3 adjacencies");
-      if (L3Adjacencies.USE_NEW_METHOD) {
-        newAdjacencies =
-            BroadcastL3Adjacencies.create(
-                initialTopologyContext.getLayer1Topologies(), newVxlanTopology, configurations);
-      } else {
-        Layer1Topologies topologies = initialTopologyContext.getLayer1Topologies();
-        if (topologies.getCombinedL1().isEmpty()) {
-          newAdjacencies = GlobalBroadcastNoPointToPoint.instance();
-        } else {
-          Layer2Topology l2 =
-              computeLayer2Topology(
-                  topologies.getActiveLogicalL1(), newVxlanTopology, configurations);
-          newAdjacencies = HybridL3Adjacencies.create(topologies, l2, configurations);
-        }
+      switch (L3Adjacencies.METHOD) {
+        case NEW_BROADCAST:
+          newAdjacencies =
+              BroadcastL3Adjacencies.create(
+                  initialTopologyContext.getLayer1Topologies(), newVxlanTopology, configurations);
+          break;
+        case NEW_NEW_BRIDGE_DOMAIN:
+          newAdjacencies =
+              BridgeDomainL3Adjacencies.create(
+                  initialTopologyContext.getLayer1Topologies(), newVxlanTopology, configurations);
+          break;
+        case OLD:
+          {
+            Layer1Topologies topologies = initialTopologyContext.getLayer1Topologies();
+            if (topologies.getCombinedL1().isEmpty()) {
+              newAdjacencies = GlobalBroadcastNoPointToPoint.instance();
+            } else {
+              Layer2Topology l2 =
+                  computeLayer2Topology(
+                      topologies.getActiveLogicalL1(), newVxlanTopology, configurations);
+              newAdjacencies = HybridL3Adjacencies.create(topologies, l2, configurations);
+            }
+            break;
+          }
+        default:
+          throw new IllegalStateException(
+              String.format("Unhandled L3Adjacencies method: %s", L3Adjacencies.METHOD));
       }
     } else {
       newAdjacencies = currentTopologyContext.getL3Adjacencies();

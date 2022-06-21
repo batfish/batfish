@@ -23,6 +23,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
+import org.batfish.common.topology.bridge_domain.BridgeDomainL3Adjacencies;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -222,17 +223,29 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   private @Nonnull L3Adjacencies computeInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
     Layer1Topologies l1 = getLayer1Topologies(networkSnapshot);
-    if (L3Adjacencies.USE_NEW_METHOD) {
-      return BroadcastL3Adjacencies.create(
-          l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot));
-    }
-    if (l1.getCombinedL1().isEmpty()) {
-      return GlobalBroadcastNoPointToPoint.instance();
-    }
+    switch (L3Adjacencies.METHOD) {
+      case NEW_BROADCAST:
+        return BroadcastL3Adjacencies.create(
+            l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot));
+      case NEW_NEW_BRIDGE_DOMAIN:
+        return BridgeDomainL3Adjacencies.create(
+            l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot));
+      case OLD:
+        {
+          if (l1.getCombinedL1().isEmpty()) {
+            return GlobalBroadcastNoPointToPoint.instance();
+          }
 
-    Map<String, Configuration> configs = getConfigurations(networkSnapshot);
-    return HybridL3Adjacencies.create(
-        l1, computeLayer2Topology(l1.getActiveLogicalL1(), VxlanTopology.EMPTY, configs), configs);
+          Map<String, Configuration> configs = getConfigurations(networkSnapshot);
+          return HybridL3Adjacencies.create(
+              l1,
+              computeLayer2Topology(l1.getActiveLogicalL1(), VxlanTopology.EMPTY, configs),
+              configs);
+        }
+      default:
+        throw new IllegalStateException(
+            String.format("Unhandled L3Adjacencies method: %s", L3Adjacencies.METHOD));
+    }
   }
 
   private @Nonnull Optional<Layer1Topology> computeRawLayer1PhysicalTopology(

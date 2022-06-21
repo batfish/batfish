@@ -10,6 +10,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
 import static org.batfish.datamodel.tracking.TrackMethods.reachability;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
@@ -392,6 +393,9 @@ public final class A10Configuration extends VendorConfiguration {
 
     generateReferenceBook();
     generateNatPoolIpSpaces();
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(_c);
 
     return ImmutableList.of(_c);
   }

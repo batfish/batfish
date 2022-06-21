@@ -3,15 +3,19 @@ package org.batfish.datamodel.matchers;
 import java.util.Collection;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
+import org.hamcrest.Description;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 
-public class VniMatchersImpl {
+@ParametersAreNonnullByDefault
+public final class VniMatchersImpl {
 
   private VniMatchersImpl() {}
 
@@ -70,14 +74,31 @@ public class VniMatchersImpl {
     }
   }
 
-  static final class HasVlan extends FeatureMatcher<Layer2Vni, Integer> {
-    HasVlan(@Nonnull Matcher<? super Integer> subMatcher) {
-      super(subMatcher, "Layer2Vni with VLAN number:", "vlan");
+  static final class HasVlan extends TypeSafeDiagnosingMatcher<Layer2Vni> {
+
+    private final @Nonnull Matcher<? super Integer> _subMatcher;
+
+    HasVlan(Matcher<? super Integer> subMatcher) {
+      _subMatcher = subMatcher;
     }
 
     @Override
-    protected Integer featureValueOf(Layer2Vni actual) {
-      return actual.getVlan();
+    protected boolean matchesSafely(Layer2Vni item, Description mismatchDescription) {
+      if (!item.getVlan().isPresent()) {
+        mismatchDescription.appendText(String.format("is a non-vlan-aware Layer-2 VNI"));
+        return false;
+      }
+      int vlan = item.getVlan().get();
+      boolean matches = _subMatcher.matches(vlan);
+      if (!matches) {
+        _subMatcher.describeMismatch(vlan, mismatchDescription);
+      }
+      return matches;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendDescriptionOf(_subMatcher);
     }
   }
 

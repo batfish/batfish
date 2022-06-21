@@ -444,8 +444,8 @@ public class EdgesAnswerer extends Answerer {
         .put(COL_REMOTE_NODE, new Node(remoteNode.getHostname()))
         .put(COL_VTEP_ADDRESS, node1Settings.getSourceAddress())
         .put(COL_REMOTE_VTEP_ADDRESS, node2Settings.getSourceAddress())
-        .put(COL_VLAN, node1Settings.getVlan())
-        .put(COL_REMOTE_VLAN, node2Settings.getVlan())
+        .put(COL_VLAN, node1Settings.getVlan().orElse(null))
+        .put(COL_REMOTE_VLAN, node2Settings.getVlan().orElse(null))
         .put(COL_UDP_PORT, node1Settings.getUdpPort())
         .put(COL_MULTICAST_GROUP, node1Settings.getMulticastGroup());
     return row.build();

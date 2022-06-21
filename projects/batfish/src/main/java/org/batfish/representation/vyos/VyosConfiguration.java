@@ -1,6 +1,7 @@
 package org.batfish.representation.vyos;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -367,6 +368,9 @@ public class VyosConfiguration extends VendorConfiguration {
     convertVpns();
 
     // TODO: convert routing processes
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(_c);
 
     return ImmutableList.of(_c);
   }

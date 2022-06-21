@@ -4,8 +4,11 @@ import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTrack;
+import static org.batfish.datamodel.topology.InterfaceTopology.l13NoEncapsulation;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.computeLegacyInterfaceTopology;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.job.ConvertConfigurationJob.finalizeConfiguration;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -19,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.util.SortedMap;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
@@ -28,6 +32,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -175,6 +180,7 @@ public final class ConvertConfigurationJobTest {
       Interface.builder()
           .setOwner(c)
           .setName("exists")
+          .setTopology(l13NoEncapsulation("exists"))
           .setVrrpGroups(
               ImmutableSortedMap.of(
                   1,
@@ -209,8 +215,17 @@ public final class ConvertConfigurationJobTest {
                   .addVirtualAddress("exists", Ip.parse("1.1.1.1"))
                   .addVirtualAddress("alsoExists", Ip.parse("2.2.2.2"))
                   .build());
-      Interface.builder().setOwner(c).setName("exists").setVrrpGroups(vrrpGroups).build();
-      Interface.builder().setOwner(c).setName("alsoExists").build();
+      Interface.builder()
+          .setOwner(c)
+          .setName("exists")
+          .setTopology(l13NoEncapsulation("exists"))
+          .setVrrpGroups(vrrpGroups)
+          .build();
+      Interface.builder()
+          .setOwner(c)
+          .setName("alsoExists")
+          .setTopology(l13NoEncapsulation("alsoExists"))
+          .build();
       Warnings w = new Warnings(false, true, false);
       finalizeConfiguration(c, w);
 
@@ -229,7 +244,12 @@ public final class ConvertConfigurationJobTest {
             .setDefaultInboundAction(LineAction.PERMIT)
             .build();
     Vrf v = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
-    Interface.builder().setName("i1").setVrf(v).setOwner(c).build();
+    Interface.builder()
+        .setName("i1")
+        .setVrf(v)
+        .setOwner(c)
+        .setTopology(l13NoEncapsulation("i1"))
+        .build();
 
     StaticRoute intMissing =
         StaticRoute.builder()
@@ -321,6 +341,7 @@ public final class ConvertConfigurationJobTest {
         .setVrf(v)
         .setOwner(c)
         .setHsrpGroups(ImmutableMap.of(1, hsrpGroup))
+        .setTopology(l13NoEncapsulation("i1"))
         .build();
     v.setStaticRoutes(ImmutableSortedSet.of(srMissing, srPresent));
     c.getTrackingGroups().put("present", alwaysTrue());
@@ -355,13 +376,15 @@ public final class ConvertConfigurationJobTest {
             .build();
     Vrf v = Vrf.builder().setName("v").setOwner(c).build();
     // good
-    Interface.builder()
-        .setName("switchportOnModeAccess")
-        .setSwitchport(true)
-        .setSwitchportMode(SwitchportMode.ACCESS)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
+    Interface switchportOnModeAccess =
+        Interface.builder()
+            .setName("switchportOnModeAccess")
+            .setSwitchport(true)
+            .setSwitchportMode(SwitchportMode.ACCESS)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    switchportOnModeAccess.setTopology(computeLegacyInterfaceTopology(switchportOnModeAccess));
     // bad
     Interface.builder()
         .setName("switchportOnModeNone")
@@ -395,13 +418,15 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // good
-    Interface.builder()
-        .setName("vlanWithVlan")
-        .setType(InterfaceType.VLAN)
-        .setVlan(5)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
+    Interface vlanWithVlan =
+        Interface.builder()
+            .setName("vlanWithVlan")
+            .setType(InterfaceType.VLAN)
+            .setVlan(5)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    vlanWithVlan.setTopology(computeLegacyInterfaceTopology(vlanWithVlan));
     // bad
     Interface.builder()
         .setName("channelGroupAndL3")
@@ -412,20 +437,24 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // good
-    Interface.builder()
-        .setName("aggregated")
-        .setType(InterfaceType.AGGREGATED)
-        .setVrf(v)
-        .setOwner(c)
-        .build();
+    Interface aggregated =
+        Interface.builder()
+            .setName("aggregated")
+            .setType(InterfaceType.AGGREGATED)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    aggregated.setTopology(computeLegacyInterfaceTopology(aggregated));
     // good
-    Interface.builder()
-        .setName("channelGroup")
-        .setType(InterfaceType.PHYSICAL)
-        .setChannelGroup("aggregated")
-        .setVrf(v)
-        .setOwner(c)
-        .build();
+    Interface channelGroup =
+        Interface.builder()
+            .setName("channelGroup")
+            .setType(InterfaceType.PHYSICAL)
+            .setChannelGroup("aggregated")
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    channelGroup.setTopology(computeLegacyInterfaceTopology(channelGroup));
     // bad
     Interface.builder()
         .setName("l3AndParentChannelGroup")
@@ -452,6 +481,7 @@ public final class ConvertConfigurationJobTest {
             .setVrf(v)
             .setOwner(c)
             .build();
+    missingAggregateDep.setTopology(computeLegacyInterfaceTopology(missingAggregateDep));
 
     Warnings w = new Warnings(false, true, false);
     finalizeConfiguration(c, w);
@@ -488,6 +518,245 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
+  public void testVerifyInterfacesOverlappingTagsL2L2() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setName("v").setOwner(c).build();
+    // bad: overlapping tags on subinterfaces
+    Interface overlappingTags =
+        Interface.builder()
+            .setName("overlappingTags")
+            .setType(InterfaceType.PHYSICAL)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTags.setTopology(computeLegacyInterfaceTopology(overlappingTags));
+    // good in isolation, but removed because of overlapping allowed tags with overlappingTagsSub2
+    Interface overlappingTagsSub1 =
+        Interface.builder()
+            .setName("overlappingTagsSub1")
+            .setType(InterfaceType.LOGICAL)
+            .setDependencies(
+                ImmutableSet.of(new Dependency("overlappingTags", DependencyType.BIND)))
+            .setSwitchport(true)
+            .setSwitchportMode(SwitchportMode.TRUNK)
+            .setNativeVlan(6) // untagged
+            .setAllowedVlans(IntegerSpace.of(Range.closed(1, 1000)))
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTagsSub1.setTopology(computeLegacyInterfaceTopology(overlappingTagsSub1));
+    // good in isolation, but removed because of overlapping allowed tags with overlappingTagsSub1
+    Interface overlappingTagsSub2 =
+        Interface.builder()
+            .setName("overlappingTagsSub2")
+            .setType(InterfaceType.LOGICAL)
+            .setDependencies(
+                ImmutableSet.of(new Dependency("overlappingTags", DependencyType.BIND)))
+            .setSwitchport(true)
+            .setSwitchportMode(SwitchportMode.ACCESS)
+            .setAccessVlan(6) // allows untagged
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTagsSub2.setTopology(computeLegacyInterfaceTopology(overlappingTagsSub2));
+
+    Warnings w = new Warnings(false, true, false);
+    finalizeConfiguration(c, w);
+
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText(
+                "L1 Interface overlappingTags has overlapping tags on edges to L2 and L3"
+                    + " interfaces")));
+    assertThat(c.getAllInterfaces(), anEmptyMap());
+  }
+
+  @Test
+  public void testVerifyInterfacesOverlappingTagsL2L3() {
+    InterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
+
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setName("v").setOwner(c).build();
+    // bad: overlapping tags on subinterfaces
+    Interface overlappingTags =
+        Interface.builder()
+            .setName("overlappingTags")
+            .setType(InterfaceType.PHYSICAL)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTags.setTopology(computeLegacyInterfaceTopology(overlappingTags));
+    // good in isolation, but removed because of overlapping allowed tags with overlappingTagsSub2
+    Interface overlappingTagsSub1 =
+        Interface.builder()
+            .setName("overlappingTagsSub1")
+            .setType(InterfaceType.LOGICAL)
+            .setDependencies(
+                ImmutableSet.of(new Dependency("overlappingTags", DependencyType.BIND)))
+            .setAddress(address)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTagsSub1.setTopology(computeLegacyInterfaceTopology(overlappingTagsSub1));
+    // good in isolation, but removed because of overlapping allowed tags with overlappingTagsSub1
+    Interface overlappingTagsSub2 =
+        Interface.builder()
+            .setName("overlappingTagsSub2")
+            .setType(InterfaceType.LOGICAL)
+            .setDependencies(
+                ImmutableSet.of(new Dependency("overlappingTags", DependencyType.BIND)))
+            .setSwitchport(true)
+            .setSwitchportMode(SwitchportMode.ACCESS)
+            .setAccessVlan(6) // allows untagged
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTagsSub2.setTopology(computeLegacyInterfaceTopology(overlappingTagsSub2));
+
+    Warnings w = new Warnings(false, true, false);
+    finalizeConfiguration(c, w);
+
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText(
+                "L1 Interface overlappingTags has overlapping tags on edges to L2 and L3"
+                    + " interfaces")));
+    assertThat(c.getAllInterfaces(), anEmptyMap());
+  }
+
+  @Test
+  public void testVerifyInterfacesOverlappingTagsL3L3() {
+    InterfaceAddress address1 = ConcreteInterfaceAddress.parse("1.1.1.1/24");
+    InterfaceAddress address2 = ConcreteInterfaceAddress.parse("2.2.2.2/24");
+
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setName("v").setOwner(c).build();
+    // bad: overlapping tags on subinterfaces
+    Interface overlappingTags =
+        Interface.builder()
+            .setName("overlappingTags")
+            .setType(InterfaceType.PHYSICAL)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTags.setTopology(computeLegacyInterfaceTopology(overlappingTags));
+    // good in isolation, but removed because of overlapping allowed tags with overlappingTagsSub2
+    Interface overlappingTagsSub1 =
+        Interface.builder()
+            .setName("overlappingTagsSub1")
+            .setType(InterfaceType.LOGICAL)
+            .setDependencies(
+                ImmutableSet.of(new Dependency("overlappingTags", DependencyType.BIND)))
+            .setAddress(address1)
+            .setEncapsulationVlan(10)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTagsSub1.setTopology(computeLegacyInterfaceTopology(overlappingTagsSub1));
+    // good in isolation, but removed because of overlapping allowed tags with overlappingTagsSub1
+    Interface overlappingTagsSub2 =
+        Interface.builder()
+            .setName("overlappingTagsSub2")
+            .setType(InterfaceType.LOGICAL)
+            .setDependencies(
+                ImmutableSet.of(new Dependency("overlappingTags", DependencyType.BIND)))
+            .setAddress(address2)
+            .setEncapsulationVlan(10)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTagsSub2.setTopology(computeLegacyInterfaceTopology(overlappingTagsSub2));
+
+    Warnings w = new Warnings(false, true, false);
+    finalizeConfiguration(c, w);
+
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText(
+                "L1 Interface overlappingTags has overlapping tags on edges to L2 and L3"
+                    + " interfaces")));
+    assertThat(c.getAllInterfaces(), anEmptyMap());
+  }
+
+  @Test
+  public void testVerifyInterfacesOverlappingTagsNonOverlappingL3L3() {
+    InterfaceAddress address1 = ConcreteInterfaceAddress.parse("1.1.1.1/24");
+    InterfaceAddress address2 = ConcreteInterfaceAddress.parse("2.2.2.2/24");
+
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setName("v").setOwner(c).build();
+    // bad: overlapping tags on subinterfaces
+    Interface overlappingTags =
+        Interface.builder()
+            .setName("overlappingTags")
+            .setType(InterfaceType.PHYSICAL)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTags.setTopology(computeLegacyInterfaceTopology(overlappingTags));
+    // good in isolation, but removed because of overlapping allowed tags with overlappingTagsSub2
+    Interface overlappingTagsSub1 =
+        Interface.builder()
+            .setName("overlappingTagsSub1")
+            .setType(InterfaceType.LOGICAL)
+            .setDependencies(
+                ImmutableSet.of(new Dependency("overlappingTags", DependencyType.BIND)))
+            .setAddress(address1)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTagsSub1.setTopology(computeLegacyInterfaceTopology(overlappingTagsSub1));
+    // good in isolation, but removed because of overlapping allowed tags with overlappingTagsSub1
+    Interface overlappingTagsSub2 =
+        Interface.builder()
+            .setName("overlappingTagsSub2")
+            .setType(InterfaceType.LOGICAL)
+            .setDependencies(
+                ImmutableSet.of(new Dependency("overlappingTags", DependencyType.BIND)))
+            .setAddress(address2)
+            .setEncapsulationVlan(10)
+            .setVrf(v)
+            .setOwner(c)
+            .build();
+    overlappingTagsSub2.setTopology(computeLegacyInterfaceTopology(overlappingTagsSub2));
+
+    Warnings w = new Warnings(false, true, false);
+    finalizeConfiguration(c, w);
+
+    assertThat(w.getRedFlagWarnings(), empty());
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys("overlappingTags", "overlappingTagsSub1", "overlappingTagsSub2"));
+  }
+
+  @Test
   public void testVerifyOspfAreas() {
     Configuration c =
         Configuration.builder()
@@ -510,7 +779,8 @@ public final class ConvertConfigurationJobTest {
             .setRouterId(Ip.ZERO)
             .build();
     v.setOspfProcesses(ImmutableSortedMap.of(proc.getProcessId(), proc));
-    Interface.builder().setName("defined").setOwner(c).setVrf(v).build();
+    Interface defined = Interface.builder().setName("defined").setOwner(c).setVrf(v).build();
+    defined.setTopology(computeLegacyInterfaceTopology(defined));
 
     Warnings w = new Warnings(false, true, false);
     finalizeConfiguration(c, w);

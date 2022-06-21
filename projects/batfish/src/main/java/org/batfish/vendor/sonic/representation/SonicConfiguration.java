@@ -2,6 +2,7 @@ package org.batfish.vendor.sonic.representation;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.topology.LegacyInterfaceTopologyUtils.legacyPopulateInterfaceTopologies;
 import static org.batfish.representation.frr.FrrConversions.convertFrr;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertAcls;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertLoopbacks;
@@ -132,6 +133,9 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     convertFrr(c, this);
 
     markStructures();
+
+    // TODO: instead, populate directly in conversion
+    legacyPopulateInterfaceTopologies(c);
 
     return ImmutableList.of(c);
   }
