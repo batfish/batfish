@@ -25,7 +25,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -486,7 +485,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setZones(toImmutableMap(c.getZones()));
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
-    removeInvalidAcls(c, w);
   }
 
   private static void verifyOspfAreas(Configuration c, Warnings w) {
@@ -884,63 +882,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       }
     }
     return true;
-  }
-
-  private static void clearInvalidFilterAndWarn(
-      Map<String, IpAccessList> acls,
-      @Nonnull Supplier<IpAccessList> getter,
-      @Nonnull Consumer<IpAccessList> setter,
-      @Nonnull String purpose,
-      Warnings w) {
-    @Nullable IpAccessList acl = getter.get();
-    if (acl == null) {
-      return;
-    }
-    @Nullable IpAccessList inMap = acls.get(acl.getName());
-    // Deliberate == comparison.
-    if (inMap == acl) {
-      return;
-    }
-    if (inMap == null) {
-      w.redFlag(
-          String.format("The device ACL map does not contain %s %s.", purpose, acl.getName()));
-    } else {
-      w.redFlag(
-          String.format(
-              "The device ACL map has a different version of %s %s.", purpose, acl.getName()));
-    }
-    setter.accept(null);
-  }
-
-  /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */
-  private static void removeInvalidAcls(Configuration c, Warnings w) {
-    for (Interface iface : c.getAllInterfaces().values()) {
-      Map<String, IpAccessList> acls = c.getIpAccessLists();
-      clearInvalidFilterAndWarn(
-          acls, iface::getInboundFilter, iface::setInboundFilter, "inbound filter", w);
-      clearInvalidFilterAndWarn(
-          acls, iface::getIncomingFilter, iface::setIncomingFilter, "incoming filter", w);
-      clearInvalidFilterAndWarn(
-          acls, iface::getOutgoingFilter, iface::setOutgoingFilter, "outgoing filter", w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getOutgoingOriginalFlowFilter,
-          iface::setOutgoingOriginalFlowFilter,
-          "outgoing filter on original flow",
-          w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getPostTransformationIncomingFilter,
-          iface::setPostTransformationIncomingFilter,
-          "post transformation incoming filter",
-          w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getPreTransformationOutgoingFilter,
-          iface::setPreTransformationOutgoingFilter,
-          "pre transformation outgoing filter",
-          w);
-    }
   }
 
   @Override
