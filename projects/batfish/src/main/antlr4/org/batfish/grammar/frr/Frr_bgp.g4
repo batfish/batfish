@@ -300,12 +300,12 @@ rb_always_compare_med
 
 rbn_ip
 :
-  ip = IP_ADDRESS rbn_property
+  ip = ip_address rbn_property
 ;
 
 rbn_ip6
 :
-   ip6 = IPV6_ADDRESS rbn_property
+   ip6 = ipv6_address rbn_property
 ;
 
 rbn_name
