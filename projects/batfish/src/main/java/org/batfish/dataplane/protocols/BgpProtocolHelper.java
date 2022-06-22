@@ -30,6 +30,10 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.ReceivedFrom;
+import org.batfish.datamodel.ReceivedFromInterface;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -246,9 +250,13 @@ public final class BgpProtocolHelper {
           .setAdmin(toProcess.getAdminCost(targetProtocol))
           .setNextHop(NextHop.legacyConverter(peerInterface, route.getNextHopIp()));
     }
+    ReceivedFrom receivedFrom =
+        peerInterface != null
+            ? ReceivedFromInterface.of(peerInterface, peerIp)
+            : ReceivedFromIp.of(peerIp);
     return importBuilder
         .setProtocol(targetProtocol)
-        .setReceivedFromIp(peerIp)
+        .setReceivedFrom(receivedFrom)
         .setSrcProtocol(targetProtocol)
         .setOriginMechanism(LEARNED);
   }
@@ -309,7 +317,7 @@ public final class BgpProtocolHelper {
         .setOriginatorIp(routerId)
         .setOriginMechanism(GENERATED)
         .setOriginType(generatedRoute.getOriginType())
-        .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
+        .setReceivedFrom(/* Originated locally. */ ReceivedFromSelf.instance())
         .setNonRouting(nonRouting);
   }
 
@@ -333,7 +341,7 @@ public final class BgpProtocolHelper {
             .setOriginMechanism(GENERATED)
             // TODO: confirm default is IGP for all devices initializing aggregates from BGP RIB
             .setOriginType(OriginType.IGP)
-            .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
+            .setReceivedFrom(/* Originated locally. */ ReceivedFromSelf.instance())
             .setWeight(DEFAULT_LOCAL_WEIGHT);
     if (attributePolicy == null) {
       return builder.build();
@@ -374,7 +382,7 @@ public final class BgpProtocolHelper {
         .setOriginType(OriginType.INCOMPLETE)
         // TODO: support customization of route preference
         .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-        .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
+        .setReceivedFrom(/* Originated locally. */ ReceivedFromSelf.instance())
         .setNextHopIp(nextHopIp)
         .setMetric(route.getMetric())
         .setTag(routeDecorator.getAbstractRoute().getTag());

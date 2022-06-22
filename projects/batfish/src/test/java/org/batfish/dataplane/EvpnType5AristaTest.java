@@ -28,6 +28,7 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
@@ -104,7 +105,7 @@ public class EvpnType5AristaTest {
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
             .setSrcProtocol(RoutingProtocol.CONNECTED)
-            .setReceivedFromIp(Ip.ZERO)
+            .setReceivedFrom(ReceivedFromSelf.instance())
             .setOriginatorIp(originatorIp)
             .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -128,7 +129,7 @@ public class EvpnType5AristaTest {
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
             .setSrcProtocol(RoutingProtocol.CONNECTED)
-            .setReceivedFromIp(Ip.ZERO)
+            .setReceivedFrom(ReceivedFromSelf.instance())
             .setOriginatorIp(originatorIp)
             .setVni(15004)
             .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT)

@@ -24,6 +24,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
@@ -485,14 +486,14 @@ public class AbstractRibTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(originator1)
             .setProtocol(RoutingProtocol.IBGP)
-            .setReceivedFromIp(originator1);
+            .setReceivedFrom(ReceivedFromIp.of(originator1));
 
     Bgpv4Route route1 = routeBuilder.build();
     Bgpv4Route route2 =
         routeBuilder
             .setLocalPreference(2000)
             .setOriginatorIp(originator2)
-            .setReceivedFromIp(originator2)
+            .setReceivedFrom(ReceivedFromIp.of(originator2))
             .build();
     Bgpv4Route route3 = routeBuilder.setLocalPreference(1).build();
 

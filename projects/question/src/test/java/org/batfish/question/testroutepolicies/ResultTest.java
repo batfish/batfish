@@ -10,6 +10,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.route.nh.NextHop;
@@ -23,6 +24,7 @@ public class ResultTest {
     Bgpv4Route route =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
@@ -32,6 +34,7 @@ public class ResultTest {
     Bgpv4Route routeOther =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2")))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)

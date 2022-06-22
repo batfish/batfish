@@ -46,6 +46,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
           "Local routes must have a source protocol");
       checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "Missing %s", PROP_PROTOCOL);
+      checkArgument(_receivedFrom != null, "Missing %s", PROP_RECEIVED_FROM);
       checkArgument(_routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
       checkArgument(_vni != null, "Missing %s", PROP_VNI);
       checkArgument(_nextHop != null, "Missing next hop");
@@ -64,7 +65,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
               _srcProtocol,
               _tunnelEncapsulationAttribute,
               _weight),
-          _receivedFromIp,
+          _receivedFrom,
           getNetwork(),
           _nextHop,
           _routeDistinguisher,
@@ -97,7 +98,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
+      @Nullable @JsonProperty(PROP_RECEIVED_FROM) ReceivedFrom receivedFrom,
       @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
           boolean receivedFromRouteReflectorClient,
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher routeDistinguisher,
@@ -133,7 +134,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
             srcProtocol,
             tunnelEncapsulationAttribute,
             weight),
-        receivedFromIp,
+        receivedFrom,
         network,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         routeDistinguisher,
@@ -143,13 +144,13 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
 
   private EvpnType5Route(
       BgpRouteAttributes attributes,
-      @Nullable Ip receivedFromIp,
+      ReceivedFrom receivedFrom,
       Prefix network,
       NextHop nextHop,
       RouteDistinguisher routeDistinguisher,
       int vni,
       long tag) {
-    super(network, nextHop, attributes, receivedFromIp, tag, routeDistinguisher, vni);
+    super(network, nextHop, attributes, receivedFrom, tag, routeDistinguisher, vni);
   }
 
   public static Builder builder() {
@@ -172,7 +173,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
         .setProtocol(_attributes.getProtocol())
-        .setReceivedFromIp(_receivedFromIp)
+        .setReceivedFrom(_receivedFrom)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_attributes.getSrcProtocol())
@@ -194,7 +195,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
         && _attributes.equals(other._attributes)
-        && Objects.equals(_receivedFromIp, other._receivedFromIp)
+        && _receivedFrom.equals(other._receivedFrom)
         && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
@@ -206,7 +207,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
     int h = _hashCode;
     if (h == 0) {
       h = _attributes.hashCode();
-      h = h * 31 + (_receivedFromIp == null ? 0 : _receivedFromIp.hashCode());
+      h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
       h = h * 31 + _routeDistinguisher.hashCode();
@@ -235,7 +236,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         .add(PROP_ORIGIN_MECHANISM, _attributes._originMechanism)
         .add(PROP_ORIGIN_TYPE, _attributes._originType)
         .add(PROP_PROTOCOL, _attributes._protocol)
-        .add(PROP_RECEIVED_FROM_IP, _receivedFromIp)
+        .add(PROP_RECEIVED_FROM, _receivedFrom)
         .add(
             PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT,
             _attributes._receivedFromRouteReflectorClient)

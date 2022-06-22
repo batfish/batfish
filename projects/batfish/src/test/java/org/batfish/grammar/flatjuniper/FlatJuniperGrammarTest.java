@@ -308,6 +308,7 @@ import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -7580,6 +7581,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(LEARNED)
             .setOriginType(OriginType.IGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("192.0.2.1")))
             .setNetwork(Prefix.ZERO)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())

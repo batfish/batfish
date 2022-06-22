@@ -42,6 +42,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
@@ -78,7 +80,7 @@ public class Bgpv4RibTest {
         .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(5L), StandardCommunity.of(6L)))
         .setOriginatorIp(Ip.parse("1.1.1.1"))
         .setOriginType(OriginType.IGP)
-        .setReceivedFromIp(Ip.parse("1.1.1.1"))
+        .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
         .setSrcProtocol(CONNECTED)
         .setWeight(0);
 
@@ -488,8 +490,8 @@ public class Bgpv4RibTest {
   @Test
   public void testMultipathDiffNeighbor() {
     Bgpv4Route bestPath = _rb.build();
-    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.2")).build());
-    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.3")).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2"))).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3"))).build());
     _multiPathRib.mergeRoute(bestPath);
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
@@ -510,8 +512,8 @@ public class Bgpv4RibTest {
   @Test
   public void testMultipathEviction() {
     _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("4.4.4.4")).build());
-    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.2")).build());
-    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.3")).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2"))).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3"))).build());
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), hasSize(1));
@@ -535,8 +537,8 @@ public class Bgpv4RibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route bestPath = _rb.build();
-    bestPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.2")).build());
-    bestPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.3")).build());
+    bestPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2"))).build());
+    bestPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3"))).build());
     bestPathRib.mergeRoute(bestPath);
 
     assertThat(bestPathRib.getRoutes(), contains(bestPath));
@@ -583,7 +585,7 @@ public class Bgpv4RibTest {
   public void testBestPathSelectionTieBreakReceivedFrom() {
     _bestPathRib.mergeRoute(_rb.build());
     // Lower IP is better
-    Bgpv4Route bestPath = _rb.setReceivedFromIp(Ip.parse("1.1.0.1")).build();
+    Bgpv4Route bestPath = _rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.0.1"))).build();
     _bestPathRib.mergeRoute(bestPath);
 
     assertThat(_bestPathRib.getRoutes(), contains(bestPath));
@@ -791,7 +793,7 @@ public class Bgpv4RibTest {
         b.setAsPath(bestAsPath)
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setReceivedFromIp(Ip.parse("1.1.1.1."))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1.")))
             .build();
 
     /*
@@ -801,31 +803,31 @@ public class Bgpv4RibTest {
         b.setAsPath(asPath2)
             .setNextHopIp(nextHop2)
             .setOriginatorIp(nextHop2)
-            .setReceivedFromIp(nextHop2)
+            .setReceivedFrom(ReceivedFromIp.of(nextHop2))
             .build();
     Bgpv4Route route3a =
         b.setAsPath(asPath3a)
             .setNextHopIp(nextHop3a)
             .setOriginatorIp(nextHop3a)
-            .setReceivedFromIp(nextHop3a)
+            .setReceivedFrom(ReceivedFromIp.of(nextHop3a))
             .build();
     Bgpv4Route route3b =
         b.setAsPath(asPath3b)
             .setNextHopIp(nextHop3b)
             .setOriginatorIp(nextHop3b)
-            .setReceivedFromIp(nextHop3b)
+            .setReceivedFrom(ReceivedFromIp.of(nextHop3b))
             .build();
     Bgpv4Route route3c =
         b.setAsPath(asPath3c)
             .setNextHopIp(nextHop3c)
             .setOriginatorIp(nextHop3c)
-            .setReceivedFromIp(nextHop3c)
+            .setReceivedFrom(ReceivedFromIp.of(nextHop3c))
             .build();
     Bgpv4Route route3d =
         b.setAsPath(asPath3d)
             .setNextHopIp(nextHop3d)
             .setOriginatorIp(nextHop3d)
-            .setReceivedFromIp(nextHop3d)
+            .setReceivedFrom(ReceivedFromIp.of(nextHop3d))
             .build();
 
     Bgpv4Rib bmr =
@@ -928,9 +930,15 @@ public class Bgpv4RibTest {
       List<Bgpv4Route> routes =
           routesByOriginType.computeIfAbsent(originType, o -> new ArrayList<>());
       routes.add(
-          b.setOriginatorIp(Ip.ZERO).setReceivedFromIp(Ip.ZERO).setOriginType(originType).build());
+          b.setOriginatorIp(Ip.ZERO)
+              .setReceivedFrom(ReceivedFromIp.of(Ip.parse("192.0.2.1")))
+              .setOriginType(originType)
+              .build());
       routes.add(
-          b.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.MAX).setOriginType(originType).build());
+          b.setOriginatorIp(Ip.MAX)
+              .setReceivedFrom(ReceivedFromIp.of(Ip.parse("192.0.2.2")))
+              .setOriginType(originType)
+              .build());
     }
 
     /*
@@ -986,14 +994,14 @@ public class Bgpv4RibTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO);
+            .setReceivedFrom(ReceivedFromSelf.instance());
     Bgpv4Route.Builder b2 =
         Bgpv4Route.testBuilder()
             .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.MAX)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO);
+            .setReceivedFrom(ReceivedFromSelf.instance());
 
     /*
      * Toss a bunch of different routes in each RIB. In the best-path rib, only lower originatorIp
@@ -1068,11 +1076,17 @@ public class Bgpv4RibTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO);
+            .setReceivedFrom(ReceivedFromSelf.instance());
     Bgpv4Route ebgpOlderHigherOriginator =
-        ebgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.parse("1.1.1.1")).build();
+        ebgpBuilder
+            .setOriginatorIp(Ip.MAX)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
+            .build();
     Bgpv4Route ebgpNewerHigherOriginator =
-        ebgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.parse("1.1.1.2")).build();
+        ebgpBuilder
+            .setOriginatorIp(Ip.MAX)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
+            .build();
     Bgpv4Route ebgpLowerOriginator = ebgpBuilder.setOriginatorIp(Ip.ZERO).build();
     // ibgp
     Bgpv4Rib ibgpBpr =
@@ -1091,11 +1105,17 @@ public class Bgpv4RibTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
             .setProtocol(RoutingProtocol.IBGP)
-            .setReceivedFromIp(Ip.ZERO);
+            .setReceivedFrom(ReceivedFromSelf.instance());
     Bgpv4Route ibgpOlderHigherOriginator =
-        ibgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.parse("1.1.1.1")).build();
+        ibgpBuilder
+            .setOriginatorIp(Ip.MAX)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
+            .build();
     Bgpv4Route ibgpNewerHigherOriginator =
-        ibgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.parse("1.1.1.2")).build();
+        ibgpBuilder
+            .setOriginatorIp(Ip.MAX)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
+            .build();
     Bgpv4Route ibgpLowerOriginator = ibgpBuilder.setOriginatorIp(Ip.ZERO).build();
 
     ebgpBpr.mergeRoute(ebgpOlderHigherOriginator);

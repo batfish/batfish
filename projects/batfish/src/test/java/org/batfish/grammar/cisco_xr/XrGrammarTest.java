@@ -214,6 +214,7 @@ import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
@@ -2780,7 +2781,7 @@ public final class XrGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -3008,7 +3009,7 @@ public final class XrGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -3026,7 +3027,7 @@ public final class XrGrammarTest {
             .setOriginMechanism(OriginMechanism.GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
             .build();
@@ -3101,7 +3102,7 @@ public final class XrGrammarTest {
               .setOriginMechanism(OriginMechanism.GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
-              .setReceivedFromIp(Ip.ZERO) // indicates local origination
+              .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
               .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
               .build();

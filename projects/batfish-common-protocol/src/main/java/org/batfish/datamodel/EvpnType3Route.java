@@ -48,6 +48,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
 
       checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "Missing %s", PROP_PROTOCOL);
+      checkArgument(_receivedFrom != null, "Missing %s", PROP_RECEIVED_FROM);
       checkArgument(_routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
       checkArgument(_vni != null, "Missing %s", PROP_VNI);
       checkArgument(_nextHop != null, "Missing next hop");
@@ -66,7 +67,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
               _srcProtocol,
               _tunnelEncapsulationAttribute,
               _weight),
-          _receivedFromIp,
+          _receivedFrom,
           _nextHop,
           _routeDistinguisher,
           _vni,
@@ -112,7 +113,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
+      @Nullable @JsonProperty(PROP_RECEIVED_FROM) ReceivedFrom receivedFrom,
       @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
           boolean receivedFromRouteReflectorClient,
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher routeDistinguisher,
@@ -149,7 +150,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
             srcProtocol,
             tunnelEncapsulationAttribute,
             weight),
-        receivedFromIp,
+        receivedFrom,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         routeDistinguisher,
         vni,
@@ -159,13 +160,13 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
 
   private EvpnType3Route(
       BgpRouteAttributes attributes,
-      @Nullable Ip receivedFromIp,
+      ReceivedFrom receivedFrom,
       NextHop nextHop,
       RouteDistinguisher routeDistinguisher,
       int vni,
       long tag,
       Ip vniIp) {
-    super(vniIp.toPrefix(), nextHop, attributes, receivedFromIp, tag, routeDistinguisher, vni);
+    super(vniIp.toPrefix(), nextHop, attributes, receivedFrom, tag, routeDistinguisher, vni);
     _vniIp = vniIp;
   }
 
@@ -198,7 +199,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
         .setProtocol(_attributes.getProtocol())
-        .setReceivedFromIp(_receivedFromIp)
+        .setReceivedFrom(_receivedFrom)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_attributes.getSrcProtocol())
@@ -221,7 +222,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
         && _attributes.equals(other._attributes)
-        && Objects.equals(_receivedFromIp, other._receivedFromIp)
+        && _receivedFrom.equals(other._receivedFrom)
         && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
@@ -234,7 +235,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     int h = _hashCode;
     if (h == 0) {
       h = _attributes.hashCode();
-      h = h * 31 + (_receivedFromIp == null ? 0 : _receivedFromIp.hashCode());
+      h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
       h = h * 31 + _routeDistinguisher.hashCode();

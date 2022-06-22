@@ -81,7 +81,7 @@ public class Bgpv4RouteTest {
         .addEqualityGroup(brb.setNextHopIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(brb.setOriginatorIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(brb.setOriginType(OriginType.INCOMPLETE).build())
-        .addEqualityGroup(brb.setReceivedFromIp(Ip.parse("1.1.1.1")).build())
+        .addEqualityGroup(brb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1"))).build())
         .addEqualityGroup(brb.setReceivedFromRouteReflectorClient(true).build())
         .addEqualityGroup(brb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(brb.setSrcProtocol(RoutingProtocol.STATIC).build())

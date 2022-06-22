@@ -91,6 +91,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute.Builder;
@@ -735,7 +736,7 @@ public class FrrGrammarTest {
                 Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopIp(Ip.parse("10.1.1.1"))
-                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.1.1.1")))
                     .setOriginatorIp(Ip.parse("1.1.1.1"))
                     .setOriginType(OriginType.INCOMPLETE)
                     .setProtocol(RoutingProtocol.BGP)
@@ -753,7 +754,7 @@ public class FrrGrammarTest {
                 Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopIp(Ip.parse("20.1.1.2"))
-                    .setReceivedFromIp(Ip.parse("20.1.1.2"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("20.1.1.2")))
                     .setOriginatorIp(Ip.parse("2.2.2.2"))
                     .setOriginType(OriginType.INCOMPLETE)
                     .setProtocol(RoutingProtocol.BGP)
@@ -771,7 +772,7 @@ public class FrrGrammarTest {
                 Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopIp(Ip.parse("30.1.1.3"))
-                    .setReceivedFromIp(Ip.parse("30.1.1.3"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("30.1.1.3")))
                     .setOriginatorIp(Ip.parse("3.3.3.3"))
                     .setOriginType(OriginType.INCOMPLETE)
                     .setProtocol(RoutingProtocol.BGP)
@@ -817,7 +818,7 @@ public class FrrGrammarTest {
                 Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopIp(Ip.parse("10.1.1.2"))
-                    .setReceivedFromIp(Ip.parse("10.1.1.2"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.1.1.2")))
                     .setOriginatorIp(Ip.parse("2.2.2.2"))
                     .setOriginType(OriginType.INCOMPLETE)
                     .setProtocol(RoutingProtocol.BGP)
@@ -834,7 +835,7 @@ public class FrrGrammarTest {
                 Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopIp(Ip.parse("10.1.1.2"))
-                    .setReceivedFromIp(Ip.parse("10.1.1.2"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.1.1.2")))
                     .setOriginatorIp(Ip.parse("2.2.2.2"))
                     .setOriginType(OriginType.INCOMPLETE)
                     .setProtocol(RoutingProtocol.BGP)
@@ -2844,7 +2845,7 @@ public class FrrGrammarTest {
                 Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.parse("10.2.2.2/32"))
                     .setNextHopIp(Ip.parse("10.1.1.1"))
-                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.1.1.1")))
                     .setOriginatorIp(Ip.parse("1.1.1.1"))
                     .setOriginType(OriginType.IGP)
                     .setProtocol(RoutingProtocol.BGP)
@@ -2890,7 +2891,7 @@ public class FrrGrammarTest {
                 Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.parse("2.2.2.2/32"))
                     .setNextHopIp(Ip.parse("10.1.1.1"))
-                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.1.1.1")))
                     .setOriginatorIp(Ip.parse("1.1.1.1"))
                     .setOriginType(OriginType.INCOMPLETE)
                     .setProtocol(RoutingProtocol.BGP)

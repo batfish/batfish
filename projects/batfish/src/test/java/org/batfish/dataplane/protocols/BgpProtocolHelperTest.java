@@ -32,6 +32,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
@@ -61,7 +62,7 @@ public class BgpProtocolHelperTest {
             .setNetwork(DEST_NETWORK)
             .setNextHopIp(DEST_IP)
             .setProtocol(RoutingProtocol.IBGP)
-            .setReceivedFromIp(Ip.ZERO);
+            .setReceivedFrom(ReceivedFromSelf.instance());
   }
 
   @Test
@@ -89,7 +90,7 @@ public class BgpProtocolHelperTest {
             true,
             true,
             _process,
-            Ip.ZERO,
+            Ip.parse("192.0.2.1"),
             null),
         notNullValue());
   }
@@ -104,7 +105,7 @@ public class BgpProtocolHelperTest {
                 false,
                 true,
                 _process,
-                Ip.ZERO,
+                Ip.parse("192.0.2.1"),
                 null)
             .getProtocol(),
         equalTo(RoutingProtocol.BGP));
@@ -123,7 +124,7 @@ public class BgpProtocolHelperTest {
                 false,
                 true,
                 _process,
-                Ip.ZERO,
+                Ip.parse("192.0.2.1"),
                 null)
             .getNextHopInterface(),
         equalTo(UNSET_NEXT_HOP_INTERFACE));
@@ -142,7 +143,7 @@ public class BgpProtocolHelperTest {
                 false,
                 true,
                 _process,
-                Ip.ZERO,
+                Ip.parse("169.254.0.1"),
                 "baz")
             .getNextHopInterface(),
         equalTo("baz"));
@@ -153,7 +154,13 @@ public class BgpProtocolHelperTest {
     assertThat(
         "No AS path loop, iBGP",
         transformBgpRouteOnImport(
-                _baseBgpRouteBuilder.build(), 1L, false, false, _process, Ip.ZERO, null)
+                _baseBgpRouteBuilder.build(),
+                1L,
+                false,
+                false,
+                _process,
+                Ip.parse("192.0.2.1"),
+                null)
             .getProtocol(),
         equalTo(RoutingProtocol.IBGP));
   }
@@ -177,7 +184,7 @@ public class BgpProtocolHelperTest {
             false,
             true,
             _process,
-            Ip.ZERO,
+            Ip.parse("169.254.0.1"),
             "eth0");
     assertThat("PeerInterface is set", builder.getNextHopInterface(), equalTo("eth0"));
     assertThat(

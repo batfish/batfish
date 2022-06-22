@@ -83,6 +83,7 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -240,7 +241,7 @@ public class RoutesAnswererUtilTest {
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
-            .setReceivedFromIp(Ip.parse("3.3.3.3"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3")))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setWeight(7);
     Bgpv4Route standardRoute = rb.setNextHopIp(ip).build();
@@ -320,7 +321,7 @@ public class RoutesAnswererUtilTest {
                 .setOriginType(OriginType.IGP)
                 .setOriginatorIp(ip)
                 .setNextHop(NextHopIp.of(ip))
-                .setReceivedFromIp(ip)
+                .setReceivedFrom(ReceivedFromIp.of(ip))
                 .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
                 .setProtocol(RoutingProtocol.BGP)
                 .build()));
@@ -352,6 +353,7 @@ public class RoutesAnswererUtilTest {
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setVni(1)
             .setWeight(7);
@@ -651,6 +653,7 @@ public class RoutesAnswererUtilTest {
                     .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
                     .setOriginType(OriginType.IGP)
                     .setStatus(BEST)
+                    .setReceivedFromIp(Ip.ZERO) /* default legacy value from testBuilder() */
                     .build()));
     // matching the secondary key
     assertThat(innerGroup, equalTo(expectedInnerMap));
@@ -718,6 +721,7 @@ public class RoutesAnswererUtilTest {
                     .setLocalPreference(1L)
                     .setOriginType(OriginType.IGP)
                     .setStatus(BEST)
+                    .setReceivedFromIp(Ip.ZERO) /* default legacy value from testBuilder() */
                     .build()),
             new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.3")), "bgp"),
             ImmutableSortedSet.of(
@@ -728,6 +732,7 @@ public class RoutesAnswererUtilTest {
                     .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
                     .setOriginType(OriginType.IGP)
                     .setStatus(BEST)
+                    .setReceivedFromIp(Ip.ZERO) /* default legacy value from testBuilder() */
                     .build()));
     // matching the secondary key
     assertThat(innerGroup, equalTo(expectedInnerMap));
@@ -779,6 +784,7 @@ public class RoutesAnswererUtilTest {
                     .setMetric(30L)
                     .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
                     .setLocalPreference(1L)
+                    .setReceivedFromIp(Ip.ZERO) /* default legacy value from testBuilder() */
                     .setOriginType(OriginType.IGP)
                     .setStatus(BACKUP)
                     .build()));
