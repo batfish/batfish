@@ -1295,6 +1295,23 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpAddPathWarnings() throws IOException {
+    String hostname = "juniper-bgp-add-path";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae.getWarnings().get(hostname).getRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                "add-path send disabled because add-path send path-count not configured for"
+                    + " neighbor 10.0.0.2/32"),
+            WarningMatchers.hasText(
+                "add-path send disabled because add-path send path-count not configured for"
+                    + " neighbor 10.0.0.3/32")));
+  }
+
+  @Test
   public void testBgpAddPathConversion() {
     String hostname = "juniper-bgp-add-path";
     Configuration c = parseConfig(hostname);

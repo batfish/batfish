@@ -594,17 +594,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (addPath != null) {
         ipv4AfSettingsBuilder.setAdditionalPathsReceive(addPath.getReceive());
         AddPathSend send = addPath.getSend();
-        if (send != null && send.getPathCount() != null) {
-          // path count must be set for add-path send to be enabled on Juniper
-          ipv4AfSettingsBuilder.setAdditionalPathsSend(true);
-          // TODO: Datamodel property additionalPathsSelectAll needs to be split into at least:
-          //       1. select all paths
-          //       - use if Juniper path-selection-mode is ALL_PATHS, or neither path-selection-mode
-          //         nor multipath is set
-          //       2. select all ECMP-best paths
-          //       - use if Juniper path-selection-mode is EQUAL_COST_PATHS, or multipath is set
-          ipv4AfSettingsBuilder.setAdditionalPathsSelectAll(true);
-          // TODO: implement max additional-paths to send in datamodel and populate here
+        if (send != null) {
+          if (send.getPathCount() != null) {
+            // path count must be set for add-path send to be enabled on Juniper
+            ipv4AfSettingsBuilder.setAdditionalPathsSend(true);
+            // TODO: Datamodel property additionalPathsSelectAll needs to be split into at least:
+            //       1. select all paths
+            //       - use if Juniper path-selection-mode is ALL_PATHS, or neither
+            // path-selection-mode
+            //         nor multipath is set
+            //       2. select all ECMP-best paths
+            //       - use if Juniper path-selection-mode is EQUAL_COST_PATHS, or multipath is set
+            ipv4AfSettingsBuilder.setAdditionalPathsSelectAll(true);
+            // TODO: implement max additional-paths to send in datamodel and populate here
+          } else {
+            _w.redFlag(
+                String.format(
+                    "add-path send disabled because add-path send path-count not configured for"
+                        + " neighbor %s",
+                    prefix));
+          }
         }
       }
       ipv4AfSettingsBuilder.setAllowLocalAsIn(allowLocalAsIn);
