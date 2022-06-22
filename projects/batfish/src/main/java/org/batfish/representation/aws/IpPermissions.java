@@ -98,7 +98,7 @@ public final class IpPermissions implements Serializable {
       return new IpRange(description, prefix);
     }
 
-    public IpRange(String description, Prefix prefix) {
+    public IpRange(@Nullable String description, Prefix prefix) {
       _description = description;
       _prefix = prefix;
     }
@@ -519,7 +519,6 @@ public final class IpPermissions implements Serializable {
     return Objects.equals(_fromPort, that._fromPort)
         && Objects.equals(_toPort, that._toPort)
         && Objects.equals(_ipProtocol, that._ipProtocol)
-        && Objects.equals(_ipRanges, that._ipRanges)
         && Objects.equals(_ipRanges, that._ipRanges)
         && Objects.equals(_prefixList, that._prefixList)
         && Objects.equals(_userIdGroupPairs, that._userIdGroupPairs);
