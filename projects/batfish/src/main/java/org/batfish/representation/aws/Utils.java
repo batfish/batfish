@@ -209,7 +209,8 @@ public final class Utils {
       case "icmp":
         return IpProtocol.ICMP;
       case "icmpv6":
-        return IpProtocol.IPV6_ICMP;
+        throw new IllegalStateException(
+            "icmpv6 protocol should have been handled before calling this function.");
       case "-1":
         return null;
       default:
