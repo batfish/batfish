@@ -28,4 +28,9 @@ set protocols bgp group g3 neighbor 10.0.0.3 family inet unicast add-path send p
 set protocols bgp group g3 neighbor 10.0.0.3 family inet unicast add-path send prefix-policy appp
 set protocols bgp group g3 type internal
 set protocols bgp group g3 peer-as 65500
+
+# BGP group g4
+set protocols bgp group g4 neighbor 10.0.0.4
+set protocols bgp group g4 type internal
+set protocols bgp group g4 peer-as 65500
 #
