@@ -244,9 +244,14 @@ public class UtilsTest {
     assertThat(Utils.toIpProtocol("tcp"), equalTo(IpProtocol.TCP));
     assertThat(Utils.toIpProtocol("udp"), equalTo(IpProtocol.UDP));
     assertThat(Utils.toIpProtocol("icmp"), equalTo(IpProtocol.ICMP));
-    assertThat(Utils.toIpProtocol("icmpv6"), equalTo(IpProtocol.IPV6_ICMP));
     // Should convert custom protocols from protocol numbers
     assertThat(Utils.toIpProtocol("132"), equalTo(IpProtocol.SCTP));
+  }
+
+  @Test
+  public void testToIpProtocolError() {
+    _thrown.expectMessage("icmpv6 protocol should have been handled before calling this function");
+    Utils.toIpProtocol("icmpv6");
   }
 
   @Test(expected = BatfishException.class)
