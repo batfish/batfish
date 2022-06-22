@@ -35,6 +35,9 @@ import org.batfish.vendor.VendorStructureId;
  */
 public final class InvalidVendorStructureIdEraser
     implements GenericAclLineVisitor<AclLine>, GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
+
+  // TODO visit IpSpaceMetadata as well
+
   public InvalidVendorStructureIdEraser(
       SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
           definedStructures) {
