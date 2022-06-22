@@ -3,6 +3,7 @@ package org.batfish.grammar.frr;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
@@ -15,10 +16,16 @@ import static org.batfish.representation.frr.FrrRoutingProtocol.OSPF;
 import static org.batfish.representation.frr.FrrRoutingProtocol.STATIC;
 import static org.batfish.representation.frr.FrrStructureType.BGP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST;
+import static org.batfish.representation.frr.FrrStructureType.BGP_LISTEN_RANGE;
+import static org.batfish.representation.frr.FrrStructureType.BGP_NEIGHBOR;
+import static org.batfish.representation.frr.FrrStructureType.BGP_NEIGHBOR_INTERFACE;
 import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP;
 import static org.batfish.representation.frr.FrrStructureType.VRF;
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_LISTEN_RANGE_SELF_REF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_NEIGHBOR_INTERFACE_SELF_REF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.hamcrest.Matchers.aMapWithSize;
@@ -1106,6 +1113,56 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testBgpNeighbor_refs() {
+    parseLines(
+        "router bgp 1",
+        "neighbor 1.1.1.1 description ip-neighbor",
+        "neighbor 2001:db8:85a3:0:0:8a2e:0370:7334 description ipv6-neighbor",
+        "neighbor swp1 interface description interface-neighbor",
+        "bgp listen range 1.2.3.0/24 peer-group PG",
+        "bgp listen range 2001:db8:85a3::/32 peer-group PG");
+
+    String neighborIp = bgpNeighborStructureName("1.1.1.1", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:85a3:0:0:0:0:0/32", "default");
+    String neighborInterface = bgpNeighborStructureName("swp1", "default");
+
+    assertThat(
+        getDefinedStructureInfo(BGP_NEIGHBOR, neighborIp).getDefinitionLines().enumerate(),
+        contains(2));
+    assertThat(
+        getDefinedStructureInfo(BGP_NEIGHBOR, neighborIp6).getDefinitionLines().enumerate(),
+        contains(3));
+    assertThat(
+        getDefinedStructureInfo(BGP_NEIGHBOR_INTERFACE, neighborInterface)
+            .getDefinitionLines()
+            .enumerate(),
+        contains(4));
+    assertThat(
+        getDefinedStructureInfo(BGP_LISTEN_RANGE, neighborPrefix).getDefinitionLines().enumerate(),
+        contains(5));
+    assertThat(
+        getDefinedStructureInfo(BGP_LISTEN_RANGE, neighborPrefix6).getDefinitionLines().enumerate(),
+        contains(6));
+
+    assertThat(
+        getStructureReferences(BGP_NEIGHBOR, neighborIp, BGP_NEIGHBOR_SELF_REF), contains(2));
+    assertThat(
+        getStructureReferences(BGP_NEIGHBOR, neighborIp6, BGP_NEIGHBOR_SELF_REF), contains(3));
+    assertThat(
+        getStructureReferences(
+            BGP_NEIGHBOR_INTERFACE, neighborInterface, BGP_NEIGHBOR_INTERFACE_SELF_REF),
+        contains(4));
+    assertThat(
+        getStructureReferences(BGP_LISTEN_RANGE, neighborPrefix, BGP_LISTEN_RANGE_SELF_REF),
+        contains(5));
+    assertThat(
+        getStructureReferences(BGP_LISTEN_RANGE, neighborPrefix6, BGP_LISTEN_RANGE_SELF_REF),
+        contains(6));
+  }
+
+  @Test
   public void testBgp_Ipv6() {
     parseLines(
         "router bgp 1",
@@ -1128,8 +1185,8 @@ public class FrrGrammarTest {
         "    neighbor 2001:100:1:31::2 route-map rm-out out",
         "    neighbor 2001:100:1:31::2 route-map rm-in in");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
-    assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
-    BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
+    assertThat(neighbors.keySet(), contains("2001:100:1:31:0:0:0:2"));
+    BgpNeighbor foo = neighbors.get("2001:100:1:31:0:0:0:2");
     assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2)));
     assertThat(_warnings.getParseWarnings(), empty());
   }
