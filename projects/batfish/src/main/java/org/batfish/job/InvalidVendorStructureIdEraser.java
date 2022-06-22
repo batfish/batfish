@@ -4,12 +4,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -43,9 +45,20 @@ public final class InvalidVendorStructureIdEraser
    * Returns a boolean indicating if the specified {@link VendorStructureId} points to a defined
    * structure.
    */
+  private boolean isVendorStructureIdValid(VendorStructureId vendorStructureId) {
+    return isVendorStructureIdValid(vendorStructureId, _definedStructures);
+  }
+
+  /**
+   * Returns a boolean indicating if the specified {@link VendorStructureId} points to a defined
+   * structure.
+   */
   @VisibleForTesting
-  boolean isVendorStructureIdValid(VendorStructureId vendorStructureId) {
-    return _definedStructures
+  static boolean isVendorStructureIdValid(
+      VendorStructureId vendorStructureId,
+      SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+          definedStructures) {
+    return definedStructures
         .getOrDefault(vendorStructureId.getFilename(), ImmutableSortedMap.of())
         .getOrDefault(vendorStructureId.getStructureType(), ImmutableSortedMap.of())
         .containsKey(vendorStructureId.getStructureName());
@@ -71,24 +84,31 @@ public final class InvalidVendorStructureIdEraser
   @VisibleForTesting
   TraceElement eraseInvalid(TraceElement traceElement) {
     TraceElement.Builder builder = TraceElement.builder();
-    traceElement
-        .getFragments()
-        .forEach(
-            f -> {
-              if (f instanceof TraceElement.TextFragment) {
-                builder.add(f.getText());
-                return;
-              }
-              assert f instanceof TraceElement.LinkFragment;
-              TraceElement.LinkFragment lf = (TraceElement.LinkFragment) f;
-              if (isVendorStructureIdValid(lf.getVendorStructureId())) {
-                builder.add(lf);
-              } else {
-                // Convert invalid link fragment to text fragment, to preserve useful text
-                builder.add(lf.getText());
-              }
-            });
+    for (TraceElement.Fragment f : traceElement.getFragments()) {
+      if (f instanceof TraceElement.TextFragment) {
+        builder.add(f.getText());
+        continue;
+      }
+      assert f instanceof TraceElement.LinkFragment;
+      TraceElement.LinkFragment lf = (TraceElement.LinkFragment) f;
+      if (isVendorStructureIdValid(lf.getVendorStructureId())) {
+        builder.add(lf);
+      } else {
+        // Convert invalid link fragment to text fragment, to preserve useful text
+        builder.add(lf.getText());
+      }
+    }
     return builder.build();
+  }
+
+  /**
+   * Return a modified version of the provided {@link IpAccessList}, with each constituent {@link
+   * AclLine} visited.
+   */
+  public IpAccessList visit(IpAccessList acl) {
+    return acl.toBuilder()
+        .setLines(acl.getLines().stream().map(this::visit).collect(Collectors.toList()))
+        .build();
   }
 
   @Override
@@ -143,7 +163,6 @@ public final class InvalidVendorStructureIdEraser
 
   @Override
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-    // TODO erase within IpSpaces if/when we add TraceElements to them
     TraceElement te =
         matchHeaderSpace.getTraceElement() == null
             ? null

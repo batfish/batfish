@@ -1,5 +1,8 @@
 package org.batfish.job;
 
+import static org.batfish.job.InvalidVendorStructureIdEraser.isVendorStructureIdValid;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -8,10 +11,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.function.Function;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -30,208 +35,163 @@ import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 public class InvalidVendorStructureIdEraserTest {
+  private final SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+      _definedStructures =
+          ImmutableSortedMap.of(
+              "filename",
+              ImmutableSortedMap.of(
+                  "structureType",
+                  ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
+  private final VendorStructureId _validVsid =
+      new VendorStructureId("filename", "structureType", "structureName");
+  private final VendorStructureId _invalidVsid =
+      new VendorStructureId("filename", "structureType", "otherStructureName");
+
+  private final TraceElement _validTe = TraceElement.builder().add("valid", _validVsid).build();
+  private final TraceElement _invalidTe =
+      TraceElement.builder().add("invalid", _invalidVsid).build();
+  // Same as above trace element, but with VSID removed
+  private final TraceElement _erasedVsid = TraceElement.builder().add("invalid").build();
+
+  private final InvalidVendorStructureIdEraser _eraser =
+      new InvalidVendorStructureIdEraser(_definedStructures);
+
+  private void assertExprHandled(Function<TraceElement, AclLineMatchExpr> creator) {
+    // Valid VSID is left alone
+    assertThat(_eraser.visit(creator.apply(_validTe)), equalTo(creator.apply(_validTe)));
+    // Invalid VSID is removed
+    assertThat(_eraser.visit(creator.apply(_invalidTe)), equalTo(creator.apply(_erasedVsid)));
+  }
 
   @Test
-  public void testAclLineMatchExprs() {
-    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-        definedStructures =
-            ImmutableSortedMap.of(
-                "filename",
-                ImmutableSortedMap.of(
-                    "structureType",
-                    ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
-    InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
-    VendorStructureId validVsid =
-        new VendorStructureId("filename", "structureType", "structureName");
-    VendorStructureId invalidVsid =
-        new VendorStructureId("filename", "structureType", "otherStructureName");
+  public void testAclLineMatchExprsTrueExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction = TrueExpr::new;
+    assertExprHandled(traceElementTFunction);
+  }
 
-    TraceElement validTe = TraceElement.builder().add("valid", validVsid).build();
-    TraceElement invalidTe = TraceElement.builder().add("invalid", invalidVsid).build();
-    // Same as above trace element, but with VSID removed
-    TraceElement erasedVsid = TraceElement.builder().add("invalid").build();
+  @Test
+  public void testAclLineMatchExprsFalseExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction = FalseExpr::new;
+    assertExprHandled(traceElementTFunction);
+  }
 
-    {
-      TrueExpr exprValid = new TrueExpr(validTe);
-      TrueExpr exprInvalid = new TrueExpr(invalidTe);
-      TrueExpr exprInvalidErased = new TrueExpr(erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+  @Test
+  public void testAclLineMatchExprsOriginatingFromDevice() {
+    assertEquals(OriginatingFromDevice.INSTANCE, _eraser.visit(OriginatingFromDevice.INSTANCE));
+  }
 
-    {
-      FalseExpr exprValid = new FalseExpr(validTe);
-      FalseExpr exprInvalid = new FalseExpr(invalidTe);
-      FalseExpr exprInvalidErased = new FalseExpr(erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+  @Test
+  public void testAclLineMatchExprsPermittedByAcl() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new PermittedByAcl("acl", te);
+    assertExprHandled(traceElementTFunction);
+  }
 
-    {
-      assertEquals(OriginatingFromDevice.INSTANCE, eraser.visit(OriginatingFromDevice.INSTANCE));
-    }
+  @Test
+  public void testAclLineMatchExprsDeniedByAcl() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new DeniedByAcl("acl", te);
+    assertExprHandled(traceElementTFunction);
+  }
 
-    {
-      PermittedByAcl exprValid = new PermittedByAcl("acl", validTe);
-      PermittedByAcl exprInvalid = new PermittedByAcl("acl", invalidTe);
-      PermittedByAcl exprInvalidErased = new PermittedByAcl("acl", erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+  @Test
+  public void testAclLineMatchExprsNotMatchExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new NotMatchExpr(TrueExpr.INSTANCE, te);
+    assertExprHandled(traceElementTFunction);
+  }
 
-    {
-      DeniedByAcl exprValid = new DeniedByAcl("acl", validTe);
-      DeniedByAcl exprInvalid = new DeniedByAcl("acl", invalidTe);
-      DeniedByAcl exprInvalidErased = new DeniedByAcl("acl", erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+  @Test
+  public void testAclLineMatchExprsMatchSrcInterface() {
+    List<String> ifaces = ImmutableList.of("i");
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new MatchSrcInterface(ifaces, te);
+    assertExprHandled(traceElementTFunction);
+  }
 
-    {
-      NotMatchExpr exprValid = new NotMatchExpr(TrueExpr.INSTANCE, validTe);
-      NotMatchExpr exprInvalid = new NotMatchExpr(TrueExpr.INSTANCE, invalidTe);
-      NotMatchExpr exprInvalidErased = new NotMatchExpr(TrueExpr.INSTANCE, erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+  @Test
+  public void testAclLineMatchExprsAndMatchExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new AndMatchExpr(ImmutableList.of(new TrueExpr(te)), te);
+    assertExprHandled(traceElementTFunction);
+  }
 
-    {
-      List<String> ifaces = ImmutableList.of("i");
-      MatchSrcInterface exprValid = new MatchSrcInterface(ifaces, validTe);
-      MatchSrcInterface exprInvalid = new MatchSrcInterface(ifaces, invalidTe);
-      MatchSrcInterface exprInvalidErased = new MatchSrcInterface(ifaces, erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+  @Test
+  public void testAclLineMatchExprsOrMatchExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new OrMatchExpr(ImmutableList.of(new TrueExpr(te)), te);
+    assertExprHandled(traceElementTFunction);
+  }
 
-    {
-      List<AclLineMatchExpr> validInners = ImmutableList.of(new TrueExpr(validTe));
-      List<AclLineMatchExpr> invalidInners = ImmutableList.of(new TrueExpr(invalidTe));
-      List<AclLineMatchExpr> erasedInners = ImmutableList.of(new TrueExpr(erasedVsid));
-      AndMatchExpr exprValid = new AndMatchExpr(validInners, validTe);
-      AndMatchExpr exprInvalid = new AndMatchExpr(invalidInners, invalidTe);
-      AndMatchExpr exprInvalidErased = new AndMatchExpr(erasedInners, erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+  @Test
+  public void testAclLineMatchExprsMatchHeaderSpace() {
+    HeaderSpace headerSpace = HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build();
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new MatchHeaderSpace(headerSpace, te);
+    assertExprHandled(traceElementTFunction);
+  }
 
-    {
-      List<AclLineMatchExpr> validInners = ImmutableList.of(new TrueExpr(validTe));
-      List<AclLineMatchExpr> invalidInners = ImmutableList.of(new TrueExpr(invalidTe));
-      List<AclLineMatchExpr> erasedInners = ImmutableList.of(new TrueExpr(erasedVsid));
-      OrMatchExpr exprValid = new OrMatchExpr(validInners, validTe);
-      OrMatchExpr exprInvalid = new OrMatchExpr(invalidInners, invalidTe);
-      OrMatchExpr exprInvalidErased = new OrMatchExpr(erasedInners, erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+  @Test
+  public void testAcl() {
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName("acl")
+            .setLines(
+                new AclAclLine("name1", "acl1", _validTe, _validVsid),
+                new AclAclLine("name2", "acl2", _invalidTe, _invalidVsid))
+            .build();
+    IpAccessList aclErased =
+        IpAccessList.builder()
+            .setName("acl")
+            .setLines(
+                new AclAclLine("name1", "acl1", _validTe, _validVsid),
+                new AclAclLine("name2", "acl2", _erasedVsid, null))
+            .build();
 
-    {
-      HeaderSpace headerSpace = HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build();
-      MatchHeaderSpace exprValid = new MatchHeaderSpace(headerSpace, validTe);
-      MatchHeaderSpace exprInvalid = new MatchHeaderSpace(headerSpace, invalidTe);
-      MatchHeaderSpace exprInvalidErased = new MatchHeaderSpace(headerSpace, erasedVsid);
-      // Valid VSID is left alone
-      assertEquals(exprValid, eraser.visit(exprValid));
-      // Invalid VSID is removed
-      assertEquals(exprInvalidErased, eraser.visit(exprInvalid));
-    }
+    assertEquals(_eraser.visit(acl), aclErased);
   }
 
   @Test
   public void testTraceElement() {
-    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-        definedStructures =
-            ImmutableSortedMap.of(
-                "filename",
-                ImmutableSortedMap.of(
-                    "structureType",
-                    ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
-    InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
-    VendorStructureId validVsid =
-        new VendorStructureId("filename", "structureType", "structureName");
-    VendorStructureId invalidVsid =
-        new VendorStructureId("filename", "structureType", "otherStructureName");
-
     // Valid and flat-text trace elements are left unchanged
     assertEquals(
-        TraceElement.builder().add("flatText").add("valid", validVsid).build(),
-        eraser.eraseInvalid(
-            TraceElement.builder().add("flatText").add("valid", validVsid).build()));
+        TraceElement.builder().add("flatText").add("valid", _validVsid).build(),
+        _eraser.eraseInvalid(
+            TraceElement.builder().add("flatText").add("valid", _validVsid).build()));
     // Link fragment with invalid VSID should be flattened to a text fragment
     assertEquals(
         TraceElement.builder().add("invalid").build(),
-        eraser.eraseInvalid(TraceElement.builder().add("invalid", invalidVsid).build()));
+        _eraser.eraseInvalid(TraceElement.builder().add("invalid", _invalidVsid).build()));
   }
 
   @Test
   public void testAclLines() {
-    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-        definedStructures =
-            ImmutableSortedMap.of(
-                "filename",
-                ImmutableSortedMap.of(
-                    "structureType",
-                    ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
-    InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
-    VendorStructureId validVsid =
-        new VendorStructureId("filename", "structureType", "structureName");
-    VendorStructureId invalidVsid =
-        new VendorStructureId("filename", "structureType", "otherStructureName");
-    TraceElement validTraceElement =
-        TraceElement.builder().add("valid link text", validVsid).build();
-    TraceElement invalidTraceElement =
-        TraceElement.builder().add("invalid link text", invalidVsid).build();
-    TraceElement erasedTraceElement = TraceElement.builder().add("invalid link text").build();
-
     // Valid VSIDs are left alone
     assertEquals(
-        new AclAclLine("name", "acl", validTraceElement, validVsid),
-        eraser.visit(new AclAclLine("name", "acl", validTraceElement, validVsid)));
+        new AclAclLine("name", "acl", _validTe, _validVsid),
+        _eraser.visit(new AclAclLine("name", "acl", _validTe, _validVsid)));
     assertEquals(
-        new ExprAclLine(
-            LineAction.PERMIT,
-            new TrueExpr(validTraceElement),
-            "name",
-            validTraceElement,
-            validVsid),
-        eraser.visit(
+        new ExprAclLine(LineAction.PERMIT, new TrueExpr(_validTe), "name", _validTe, _validVsid),
+        _eraser.visit(
             ExprAclLine.accepting()
                 .setName("name")
-                .setTraceElement(validTraceElement)
-                .setMatchCondition(new TrueExpr(validTraceElement))
-                .setVendorStructureId(validVsid)
+                .setTraceElement(_validTe)
+                .setMatchCondition(new TrueExpr(_validTe))
+                .setVendorStructureId(_validVsid)
                 .build()));
 
     // Invalid VSIDs are erased (even if present inside traceElement)
     assertEquals(
-        new AclAclLine("name", "acl", erasedTraceElement, null),
-        eraser.visit(new AclAclLine("name", "acl", invalidTraceElement, invalidVsid)));
+        new AclAclLine("name", "acl", _erasedVsid, null),
+        _eraser.visit(new AclAclLine("name", "acl", _invalidTe, _invalidVsid)));
     assertEquals(
-        new ExprAclLine(
-            LineAction.PERMIT, new TrueExpr(erasedTraceElement), "name", erasedTraceElement, null),
-        eraser.visit(
+        new ExprAclLine(LineAction.PERMIT, new TrueExpr(_erasedVsid), "name", _erasedVsid, null),
+        _eraser.visit(
             ExprAclLine.accepting()
                 .setName("name")
-                .setTraceElement(invalidTraceElement)
-                .setMatchCondition(new TrueExpr(invalidTraceElement))
-                .setVendorStructureId(invalidVsid)
+                .setTraceElement(_invalidTe)
+                .setMatchCondition(new TrueExpr(_invalidTe))
+                .setVendorStructureId(_invalidVsid)
                 .build()));
   }
 
@@ -244,19 +204,22 @@ public class InvalidVendorStructureIdEraserTest {
                 ImmutableSortedMap.of(
                     "structureType",
                     ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
-    InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
 
     assertTrue(
-        eraser.isVendorStructureIdValid(
-            new VendorStructureId("filename", "structureType", "structureName")));
+        isVendorStructureIdValid(
+            new VendorStructureId("filename", "structureType", "structureName"),
+            definedStructures));
     assertFalse(
-        eraser.isVendorStructureIdValid(
-            new VendorStructureId("otherFilename", "structureType", "structureName")));
+        isVendorStructureIdValid(
+            new VendorStructureId("otherFilename", "structureType", "structureName"),
+            definedStructures));
     assertFalse(
-        eraser.isVendorStructureIdValid(
-            new VendorStructureId("filename", "otherStructureType", "structureName")));
+        isVendorStructureIdValid(
+            new VendorStructureId("filename", "otherStructureType", "structureName"),
+            definedStructures));
     assertFalse(
-        eraser.isVendorStructureIdValid(
-            new VendorStructureId("filename", "structureType", "otherStructureName")));
+        isVendorStructureIdValid(
+            new VendorStructureId("filename", "structureType", "otherStructureName"),
+            definedStructures));
   }
 }

@@ -98,14 +98,12 @@ public final class TraceElement implements Serializable {
 
     @Override
     @JsonProperty(PROP_TEXT)
-    @Nonnull
-    public String getText() {
+    public @Nonnull String getText() {
       return _text;
     }
 
     @JsonProperty(PROP_VENDOR_STRUCTURE_ID)
-    @Nonnull
-    public VendorStructureId getVendorStructureId() {
+    public @Nonnull VendorStructureId getVendorStructureId() {
       return _vendorStructureId;
     }
 

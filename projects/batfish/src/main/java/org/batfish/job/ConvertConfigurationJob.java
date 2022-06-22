@@ -429,25 +429,14 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    */
   @VisibleForTesting
   static void removeInvalidVendorStructureIds(Configuration c, VendorConfiguration vc, Warnings w) {
-    if (vc.getAnswerElement() == null) {
-      return;
-    }
+    assert vc.getAnswerElement() != null;
     SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
         definedStructures = vc.getAnswerElement().getDefinedStructures();
     InvalidVendorStructureIdEraser vsidEraser =
         new InvalidVendorStructureIdEraser(definedStructures);
     c.setIpAccessLists(
         c.getIpAccessLists().entrySet().stream()
-            .collect(
-                Collectors.toMap(
-                    Entry::getKey,
-                    e ->
-                        e.getValue().toBuilder()
-                            .setLines(
-                                e.getValue().getLines().stream()
-                                    .map(vsidEraser::visit)
-                                    .collect(Collectors.toList()))
-                            .build())));
+            .collect(Collectors.toMap(Entry::getKey, e -> vsidEraser.visit(e.getValue()))));
   }
 
   /**
@@ -468,11 +457,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
     // Erase invalid VSIDs and confirm no changes occur
     for (IpAccessList acl : c.getIpAccessLists().values()) {
-      acl.getLines()
-          .forEach(
-              line -> {
-                assert line.equals(eraser.visit(line));
-              });
+      for (AclLine line : acl.getLines()) {
+        assert line.equals(eraser.visit(line));
+      }
     }
   }
 
