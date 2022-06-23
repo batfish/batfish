@@ -8,7 +8,10 @@ package(
 junit_tests(
     name = "tests",
     srcs = glob(["*Test.java"]),
-    resources = ["//projects/allinone/src/test/resources/org/batfish/e2e/bgp/withdrawals"],
+    resources = [
+        "//projects/allinone/src/test/resources/org/batfish/e2e/bgp/withdrawals_cisco",
+        "//projects/allinone/src/test/resources/org/batfish/e2e/bgp/withdrawals_juniper",
+        ],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",

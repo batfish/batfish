@@ -31,6 +31,7 @@ import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +43,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -134,6 +136,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * (Arista-like behavior) or in the BGP RIB (Cisco-like behavior).
    */
   private final boolean _generateAggregatesFromMainRib;
+
+  /** Source for assigning path IDs to routes upon export, if any peers send additional paths. */
+  @Nonnull private final AtomicInteger _pathIdGenerator;
+  /**
+   * Map indicating what path ID this process uses when exporting a given route. Keys can be:
+   *
+   * <ul>
+   *   <li>Routes in our BGP RIB (pre-export)
+   *   <li>Non-BGP routes in our main RIB (pre-export), if we do not {@link #_exportFromBgpRib}
+   *   <li>BGP routes resulting from applying {@link #processNeighborSpecificGeneratedRoute} to
+   *       {@link BgpPeerConfig#getGeneratedRoutes() neighbor-specific generated routes}
+   * </ul>
+   */
+  @Nonnull private final Map<AbstractRouteDecorator, Integer> _routesToPathIds;
 
   @Nonnull private final PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
@@ -298,6 +314,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     _exportFromBgpRib = configuration.getExportBgpFromBgpRib();
     _generateAggregatesFromMainRib = configuration.getGenerateBgpAggregatesFromMainRib();
+
+    _pathIdGenerator = new AtomicInteger();
+    _routesToPathIds = new HashMap<>();
 
     // Message queues start out empty
     _bgpv4Edges = ImmutableSortedSet.of();
@@ -1677,10 +1696,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
+        exportCandidate,
         transformedOutgoingRouteBuilder,
         ourSessionProperties,
         addressFamily,
-        exportCandidate.getNextHopIp());
+        exportCandidate.getNextHopIp(),
+        _pathIdGenerator,
+        _routesToPathIds);
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
 
@@ -1769,10 +1791,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
+        exportCandidate,
         transformedOutgoingRouteBuilder,
         ourSessionProperties,
         v4Family,
-        Route.UNSET_ROUTE_NEXT_HOP_IP);
+        Route.UNSET_ROUTE_NEXT_HOP_IP,
+        _pathIdGenerator,
+        _routesToPathIds);
 
     // Successfully exported route
     Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
