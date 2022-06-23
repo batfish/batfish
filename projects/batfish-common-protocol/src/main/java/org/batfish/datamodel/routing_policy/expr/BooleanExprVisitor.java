@@ -23,8 +23,6 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitHasRoute(HasRoute hasRoute, U arg);
 
-  T visitHasRoute6(HasRoute6 hasRoute6, U arg);
-
   T visitMatchAsPath(MatchAsPath matchAsPath, U arg);
 
   T visitMatchBgpSessionType(MatchBgpSessionType matchBgpSessionType, U arg);
@@ -37,11 +35,7 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitMatchInterface(MatchInterface matchInterface, U arg);
 
-  T visitMatchIp6AccessList(MatchIp6AccessList matchIp6AccessList, U arg);
-
   T visitMatchIpv4(MatchIpv4 matchIpv4, U arg);
-
-  T visitMatchIpv6(MatchIpv6 matchIpv6, U arg);
 
   T visitMatchLocalPreference(MatchLocalPreference matchLocalPreference, U arg);
 
@@ -49,8 +43,6 @@ public interface BooleanExprVisitor<T, U> {
       MatchLocalRouteSourcePrefixLength matchLocalRouteSourcePrefixLength, U arg);
 
   T visitMatchMetric(MatchMetric matchMetric, U arg);
-
-  T visitMatchPrefix6Set(MatchPrefix6Set matchPrefix6Set, U arg);
 
   T visitMatchPrefixSet(MatchPrefixSet matchPrefixSet, U arg);
 

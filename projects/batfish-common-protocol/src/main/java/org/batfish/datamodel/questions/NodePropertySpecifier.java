@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.List;
@@ -191,9 +192,9 @@ public class NodePropertySpecifier extends PropertySpecifier {
           .put(
               IP_6_ACCESS_LISTS,
               new PropertyDescriptor<>(
-                  Configuration::getIp6AccessLists,
+                  c -> ImmutableSet.of(),
                   Schema.set(Schema.STRING),
-                  "Names of IPv6 filters (ACLs, firewall rule sets)"))
+                  "(Deprecated) Names of IPv6 filters (ACLs, firewall rule sets)"))
           .put(
               IPSEC_PEER_CONFIGS,
               new PropertyDescriptor<>(
@@ -251,9 +252,9 @@ public class NodePropertySpecifier extends PropertySpecifier {
           .put(
               ROUTE_6_FILTER_LISTS,
               new PropertyDescriptor<>(
-                  Configuration::getRoute6FilterLists,
+                  c -> ImmutableSet.of(),
                   Schema.set(Schema.STRING),
-                  "Names of structures that filter IPv6 routes (e.g., prefix lists)"))
+                  "(Deprecated) Names of structures that filter IPv6 routes (e.g., prefix lists)"))
           .put(
               ROUTING_POLICIES,
               new PropertyDescriptor<>(

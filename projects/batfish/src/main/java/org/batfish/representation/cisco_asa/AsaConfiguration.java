@@ -99,7 +99,6 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -109,7 +108,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpWildcard;
@@ -123,11 +121,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.Route6FilterLine;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -171,13 +165,10 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
@@ -351,10 +342,8 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
-  public static String computeBgpDefaultRouteExportPolicyName(
-      boolean ipv4, String vrf, String peer) {
-    return String.format(
-        "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
+  public static String computeBgpDefaultRouteExportPolicyName(String vrf, String peer) {
+    return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:%s:%s~", vrf, peer);
   }
 
   public static String computeBgpPeerImportPolicyName(String vrf, String peer) {
@@ -894,39 +883,33 @@ public final class AsaConfiguration extends VendorConfiguration {
   }
 
   private Ip getUpdateSource(
-      Configuration c,
-      String vrfName,
-      LeafBgpPeerGroup lpg,
-      String updateSourceInterface,
-      boolean ipv4) {
+      Configuration c, String vrfName, LeafBgpPeerGroup lpg, String updateSourceInterface) {
     Ip updateSource = null;
-    if (ipv4) {
-      if (updateSourceInterface != null) {
-        org.batfish.datamodel.Interface sourceInterface =
-            c.getAllInterfaces(vrfName).get(updateSourceInterface);
-        if (sourceInterface != null) {
-          ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
-          if (address != null) {
-            Ip sourceIp = address.getIp();
-            updateSource = sourceIp;
-          } else {
-            _w.redFlag(
-                "bgp update source interface: '"
-                    + updateSourceInterface
-                    + "' not assigned an ip address");
-          }
-        }
-      } else {
-        if (lpg instanceof DynamicIpBgpPeerGroup) {
-          updateSource = Ip.AUTO;
+    if (updateSourceInterface != null) {
+      org.batfish.datamodel.Interface sourceInterface =
+          c.getAllInterfaces(vrfName).get(updateSourceInterface);
+      if (sourceInterface != null) {
+        ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
+        if (address != null) {
+          Ip sourceIp = address.getIp();
+          updateSource = sourceIp;
         } else {
-          Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
-          for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
-            for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
-              if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
-                Ip ifaceAddress = interfaceAddress.getIp();
-                updateSource = ifaceAddress;
-              }
+          _w.redFlag(
+              "bgp update source interface: '"
+                  + updateSourceInterface
+                  + "' not assigned an ip address");
+        }
+      }
+    } else {
+      if (lpg instanceof DynamicIpBgpPeerGroup) {
+        updateSource = Ip.AUTO;
+      } else {
+        Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
+        for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
+          for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
+            if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
+              Ip ifaceAddress = interfaceAddress.getIp();
+              updateSource = ifaceAddress;
             }
           }
         }
@@ -1332,48 +1315,6 @@ public final class AsaConfiguration extends VendorConfiguration {
                           new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
                           Statements.ExitAccept.toStaticStatement())));
             });
-    if (!proc.getIpv6Networks().isEmpty()) {
-      String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
-      Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
-      proc.getIpv6Networks()
-          .forEach(
-              (prefix6, bgpNetwork6) -> {
-                int prefixLen = prefix6.getPrefixLength();
-                Route6FilterLine line =
-                    new Route6FilterLine(LineAction.PERMIT, prefix6, SubRange.singleton(prefixLen));
-                localFilter6.addLine(line);
-                String mapName = bgpNetwork6.getRouteMapName();
-                if (mapName != null) {
-                  if (_routeMaps.containsKey(mapName)) {
-                    // TODO Is IPv6 network export really contingent on a route-map existing?
-                    Conjunction exportNetwork6Conditions = new Conjunction();
-                    Prefix6Space space6 = new Prefix6Space();
-                    space6.addPrefix6(prefix6);
-                    exportNetwork6Conditions
-                        .getConjuncts()
-                        .add(
-                            new MatchPrefix6Set(
-                                new DestinationNetwork6(), new ExplicitPrefix6Set(space6)));
-                    exportNetwork6Conditions
-                        .getConjuncts()
-                        .add(
-                            new Not(
-                                new MatchProtocol(
-                                    RoutingProtocol.BGP,
-                                    RoutingProtocol.IBGP,
-                                    RoutingProtocol.AGGREGATE)));
-                    exportNetwork6Conditions.getConjuncts().add(new CallExpr(mapName));
-                    redistributionPolicy.addStatement(
-                        new If(
-                            exportNetwork6Conditions,
-                            ImmutableList.of(
-                                new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                                Statements.ExitAccept.toStaticStatement())));
-                  }
-                }
-              });
-      c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
-    }
 
     // Finalize redistribution policy and attach to process
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
@@ -1387,14 +1328,16 @@ public final class AsaConfiguration extends VendorConfiguration {
         _w.redFlag("No remote-as set for peer: " + lpg.getName());
         continue;
       }
-      if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
+      if (lpg instanceof Ipv6BgpPeerGroup
+          || lpg instanceof DynamicIpv6BgpPeerGroup
+          || lpg.getNeighborPrefix6() != null) {
         // TODO: implement ipv6 bgp neighbors
         continue;
       }
       // update source
       String updateSourceInterface = lpg.getUpdateSource();
-      boolean ipv4 = lpg.getNeighborPrefix() != null;
-      Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
+      assert lpg.getNeighborPrefix() != null;
+      Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface);
 
       // Get default-originate generation policy
       String defaultOriginateGenerationMap = null;
@@ -1404,27 +1347,19 @@ public final class AsaConfiguration extends VendorConfiguration {
 
       // Generate import and export policies
       String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
-      generateBgpExportPolicy(lpg, vrfName, ipv4, c, _w);
+      generateBgpExportPolicy(lpg, vrfName, c, _w);
 
       // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;
-      GeneratedRoute6.Builder defaultRoute6;
       if (lpg.getDefaultOriginate()) {
         defaultRoute = GeneratedRoute.builder();
         defaultRoute.setNetwork(Prefix.ZERO);
         defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
-        defaultRoute6 = new GeneratedRoute6.Builder();
-        defaultRoute6.setNetwork(Prefix6.ZERO);
-        defaultRoute6.setAdmin(MAX_ADMINISTRATIVE_COST);
 
         if (defaultOriginateGenerationMap != null
             && c.getRoutingPolicies().containsKey(defaultOriginateGenerationMap)) {
           // originate contingent on generation policy
-          if (ipv4) {
-            defaultRoute.setGenerationPolicy(defaultOriginateGenerationMap);
-          } else {
-            defaultRoute6.setGenerationPolicy(defaultOriginateGenerationMap);
-          }
+          defaultRoute.setGenerationPolicy(defaultOriginateGenerationMap);
         }
       }
 
@@ -2765,12 +2700,6 @@ public final class AsaConfiguration extends VendorConfiguration {
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
-    // convert ipv6 prefix lists to route6 filter lists
-    for (Prefix6List prefixList : _prefix6Lists.values()) {
-      Route6FilterList newRouteFilterList = AsaConversions.toRoute6FilterList(prefixList);
-      c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
-    }
-
     // convert standard/extended access lists to access lists or route filter
     // lists
     for (StandardAccessList saList : _standardAccessLists.values()) {
@@ -2871,26 +2800,6 @@ public final class AsaConfiguration extends VendorConfiguration {
                 .put(
                     computeServiceObjectAclName(name),
                     toIpAccessList(serviceObject, _serviceObjects, _serviceObjectGroups)));
-
-    // convert standard/extended ipv6 access lists to ipv6 access lists or
-    // route6 filter
-    // lists
-    for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
-      if (isAclUsedForRoutingv6(saList.getName())) {
-        Route6FilterList rfList = AsaConversions.toRoute6FilterList(saList);
-        c.getRoute6FilterLists().put(rfList.getName(), rfList);
-      }
-      c.getIp6AccessLists()
-          .put(saList.getName(), AsaConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
-    }
-    for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
-      if (isAclUsedForRoutingv6(eaList.getName())) {
-        Route6FilterList rfList = AsaConversions.toRoute6FilterList(eaList);
-        c.getRoute6FilterLists().put(rfList.getName(), rfList);
-      }
-      Ip6AccessList ipaList = AsaConversions.toIp6AccessList(eaList);
-      c.getIp6AccessLists().put(ipaList.getName(), ipaList);
-    }
 
     // TODO: convert route maps that are used for PBR to PacketPolicies
 

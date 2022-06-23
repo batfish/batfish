@@ -35,7 +35,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,8 +62,6 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
-import org.batfish.datamodel.Ip6AccessListLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -77,13 +73,10 @@ import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route6FilterLine;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -884,7 +877,7 @@ public class CiscoXrConversions {
    * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
    */
   static void generateBgpExportPolicy(
-      LeafBgpPeerGroup lpg, long localAs, String vrfName, boolean ipv4, Configuration c) {
+      LeafBgpPeerGroup lpg, long localAs, String vrfName, Configuration c) {
     RoutingPolicy.Builder exportPolicy =
         RoutingPolicy.builder()
             .setOwner(c)
@@ -901,11 +894,11 @@ public class CiscoXrConversions {
     // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
     // TODO Verify that default route can be originated even if no export filter is configured.
     if (lpg.getDefaultOriginate()) {
-      initBgpDefaultRouteExportPolicy(ipv4, c);
+      initBgpDefaultRouteExportPolicy(c);
       exportPolicy.addStatement(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(generatedBgpDefaultRouteExportPolicyName(ipv4)),
+              new CallExpr(generatedBgpDefaultRouteExportPolicyName()),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
     }
@@ -933,14 +926,11 @@ public class CiscoXrConversions {
   }
 
   /**
-   * Initializes export policy for IPv4 or IPv6 default routes if it doesn't already exist. This
-   * policy is the same across BGP processes, so at most two are created for each configuration, for
-   * IPv4 and IPv6.
-   *
-   * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
+   * Initializes export policy for IPv4 default routes if it doesn't already exist. This policy is
+   * the same across BGP processes.
    */
-  static void initBgpDefaultRouteExportPolicy(boolean ipv4, Configuration c) {
-    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName(ipv4);
+  static void initBgpDefaultRouteExportPolicy(Configuration c) {
+    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName();
     if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
       SetOrigin setOrigin = new SetOrigin(new LiteralOrigin(OriginType.IGP, null));
       List<Statement> defaultRouteExportStatements =
@@ -952,7 +942,7 @@ public class CiscoXrConversions {
               new If(
                   new Conjunction(
                       ImmutableList.of(
-                          ipv4 ? Common.matchDefaultRoute() : Common.matchDefaultRouteV6(),
+                          Common.matchDefaultRoute(),
                           new MatchProtocol(RoutingProtocol.AGGREGATE))),
                   defaultRouteExportStatements))
           .addStatement(Statements.ReturnFalse.toStaticStatement())
@@ -1175,36 +1165,6 @@ public class CiscoXrConversions {
     ikePhase1Proposal.setLifetimeSeconds(isakmpPolicy.getLifetimeSeconds());
     ikePhase1Proposal.setHashingAlgorithm(isakmpPolicy.getHashAlgorithm());
     return ikePhase1Proposal;
-  }
-
-  static Ip6AccessList toIp6AccessList(Ipv6AccessList eaList) {
-    String name = eaList.getName();
-    List<Ip6AccessListLine> lines = new ArrayList<>();
-    for (Ipv6AccessListLine fromLine : eaList.getLines()) {
-      Ip6AccessListLine newLine = new Ip6AccessListLine();
-      newLine.setName(fromLine.getName());
-      newLine.setAction(fromLine.getAction());
-      newLine.getSrcIps().add(fromLine.getSourceIpWildcard());
-      newLine.getDstIps().add(fromLine.getDestinationIpWildcard());
-      // TODO: src/dst address group
-      fromLine.getProtocol().ifPresent(p -> newLine.getIpProtocols().add(p));
-      newLine.getDstPorts().addAll(fromLine.getDstPorts());
-      newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
-      Integer icmpType = fromLine.getIcmpType();
-      if (icmpType != null) {
-        newLine.setIcmpTypes(new TreeSet<>(Collections.singleton(new SubRange(icmpType))));
-      }
-      Integer icmpCode = fromLine.getIcmpCode();
-      if (icmpCode != null) {
-        newLine.setIcmpCodes(new TreeSet<>(Collections.singleton(new SubRange(icmpCode))));
-      }
-      List<TcpFlagsMatchConditions> tcpFlags = fromLine.getTcpFlags();
-      newLine.getTcpFlags().addAll(tcpFlags);
-      Set<Integer> dscps = fromLine.getDscps();
-      newLine.getDscps().addAll(dscps);
-      lines.add(newLine);
-    }
-    return new Ip6AccessList(name, lines);
   }
 
   public static String aclLineName(String aclName, String lineName) {
@@ -1741,14 +1701,6 @@ public class CiscoXrConversions {
         throw new BatfishException("Unhandled IS-IS level.");
     }
     return newProcess.build();
-  }
-
-  static Route6FilterList toRoute6FilterList(Prefix6List list) {
-    List<Route6FilterLine> lines =
-        list.getLines().stream()
-            .map(pl -> new Route6FilterLine(pl.getAction(), pl.getPrefix(), pl.getLengthRange()))
-            .collect(ImmutableList.toImmutableList());
-    return new Route6FilterList(list.getName(), lines);
   }
 
   static RouteFilterList toRouteFilterList(Ipv4AccessList eaList, String vendorConfigFilename) {

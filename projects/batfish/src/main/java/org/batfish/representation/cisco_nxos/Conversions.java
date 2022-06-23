@@ -961,7 +961,7 @@ public final class Conversions {
       statementsBuilder.add(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(generatedBgpDefaultRouteExportPolicyName(true)),
+              new CallExpr(generatedBgpDefaultRouteExportPolicyName()),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
 
@@ -1014,7 +1014,7 @@ public final class Conversions {
    * same across BGP processes, so only one is created for each configuration.
    */
   static void initBgpDefaultRouteExportPolicy(Configuration c) {
-    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName(true);
+    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName();
     if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
       RoutingPolicy.builder()
           .setOwner(c)

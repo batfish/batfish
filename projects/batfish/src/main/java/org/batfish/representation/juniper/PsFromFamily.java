@@ -5,8 +5,8 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 
 /** Represents a "from family" line in a {@link PsTerm} */
 public class PsFromFamily extends PsFrom {
@@ -23,7 +23,7 @@ public class PsFromFamily extends PsFrom {
       case IPV4:
         return MatchIpv4.instance();
       case IPV6:
-        return MatchIpv6.instance();
+        return BooleanExprs.FALSE;
       default:
         throw new VendorConversionException("Unsupported address family: \"" + _family + "\"");
     }
