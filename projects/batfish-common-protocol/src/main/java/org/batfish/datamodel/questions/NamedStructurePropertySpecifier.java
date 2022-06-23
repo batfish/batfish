@@ -78,9 +78,9 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
           .put(
               IP_6_ACCESS_LIST,
               new PropertyDescriptor<>(
-                  Configuration::getIp6AccessLists,
+                  c -> ImmutableMap.of(),
                   Schema.OBJECT,
-                  "IPv6 filter (ACL, firewall ruleset)"))
+                  "(Deprecated) IPv6 filter (ACL, firewall ruleset)"))
           .put(
               IPSEC_PEER_CONFIGS,
               new PropertyDescriptor<>(
@@ -108,9 +108,10 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
           .put(
               ROUTE_6_FILTER_LIST,
               new PropertyDescriptor<>(
-                  Configuration::getRoute6FilterLists,
+                  c -> ImmutableMap.of(),
                   Schema.OBJECT,
-                  "IPv6 route filter list (prefix list, ACL etc. used to filter routes)"))
+                  "(Deprecated) IPv6 route filter list (prefix list, ACL etc. used to filter"
+                      + " routes)"))
           .put(
               ROUTING_POLICY,
               new PropertyDescriptor<>(

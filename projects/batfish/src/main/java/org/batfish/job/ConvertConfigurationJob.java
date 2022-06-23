@@ -50,7 +50,6 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
@@ -59,7 +58,6 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.PrefixIpSpace;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
@@ -513,7 +511,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setInterfaces(
         verifyAndToImmutableMap(
             c.getAllInterfaces(), Interface::getName, w, InterfaceNameComparator.instance()));
-    c.setIp6AccessLists(verifyAndToImmutableMap(c.getIp6AccessLists(), Ip6AccessList::getName, w));
     c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
     c.setIpsecPeerConfigs(toImmutableMap(c.getIpsecPeerConfigs()));
     c.setIpsecPhase2Policies(toImmutableMap(c.getIpsecPhase2Policies()));
@@ -526,8 +523,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setPacketPolicies(verifyAndToImmutableMap(c.getPacketPolicies(), PacketPolicy::getName, w));
     c.setRouteFilterLists(
         verifyAndToImmutableMap(c.getRouteFilterLists(), RouteFilterList::getName, w));
-    c.setRoute6FilterLists(
-        verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
     c.setRoutingPolicies(
         verifyAndToImmutableMap(c.getRoutingPolicies(), RoutingPolicy::getName, w));
     c.setSnmpTrapServers(toImmutableSet(c.getSnmpTrapServers()));

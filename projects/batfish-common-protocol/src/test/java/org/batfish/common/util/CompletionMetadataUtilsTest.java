@@ -50,7 +50,6 @@ import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
@@ -58,7 +57,6 @@ import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -492,12 +490,10 @@ public final class CompletionMetadataUtilsTest {
     String ikePhase1PolicyName = "ikePhase1Policy";
     String ikePhase1ProposalName = "ikePhase1Proposal";
     String ipAccessListName = "ipAccessList";
-    String ip6AccessListName = "ip6AccessList";
     String ipsecPhase2PolicyName = "ipsecPhase2Policy";
     String ipsecPhase2ProposalName = "ipsecPhase2Proposal";
     String ipsecPeerConfigName = "ipsecPeerConfig";
     String routeFilterListName = "routeFilterList";
-    String route6FilterListName = "route6FilterList";
     String routingPolicyName = "routingPolicyName";
     String vrfName = "vrf";
     String zoneName = "zone";
@@ -522,8 +518,6 @@ public final class CompletionMetadataUtilsTest {
     config.setIpAccessLists(
         ImmutableSortedMap.of(
             ipAccessListName, IpAccessList.builder().setName(ipAccessListName).build()));
-    config.setIp6AccessLists(
-        ImmutableSortedMap.of(ip6AccessListName, new Ip6AccessList(ip6AccessListName)));
     config.setIpsecPhase2Policies(
         ImmutableSortedMap.of(ipsecPhase2PolicyName, new IpsecPhase2Policy()));
     config.setIpsecPhase2Proposals(
@@ -533,8 +527,6 @@ public final class CompletionMetadataUtilsTest {
             ipsecPeerConfigName, IpsecStaticPeerConfig.builder().setLocalAddress(Ip.ZERO).build()));
     config.setRouteFilterLists(
         ImmutableSortedMap.of(routeFilterListName, new RouteFilterList(routeFilterListName)));
-    config.setRoute6FilterLists(
-        ImmutableSortedMap.of(route6FilterListName, new Route6FilterList(route6FilterListName)));
     config.setRoutingPolicies(
         ImmutableSortedMap.of(routingPolicyName, new RoutingPolicy(routingPolicyName, null)));
     config.setVrfs(ImmutableSortedMap.of(vrfName, new Vrf(vrfName)));
@@ -553,12 +545,10 @@ public final class CompletionMetadataUtilsTest {
                 ikePhase1PolicyName,
                 ikePhase1ProposalName,
                 ipAccessListName,
-                ip6AccessListName,
                 ipsecPhase2PolicyName,
                 ipsecPhase2ProposalName,
                 ipsecPeerConfigName,
                 routeFilterListName,
-                route6FilterListName,
                 routingPolicyName,
                 vrfName,
                 zoneName)));
