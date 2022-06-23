@@ -74,7 +74,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -1535,24 +1534,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .build();
   }
 
-  /**
-   * Converts {@code prefixList} to {@link Route6FilterList}. If {@code prefixList} contains IPv4
-   * information, returns {@code null}.
-   */
-  private @Nullable Route6FilterList toRoute6FilterList(PrefixList prefixList) {
-    Collection<PrefixListEntry> entries = prefixList.getEntries().values();
-    if (entries.stream().map(PrefixListEntry::getPrefix).anyMatch(Objects::nonNull)) {
-      return null;
-    }
-    String name = prefixList.getName();
-    Route6FilterList output = new Route6FilterList(name);
-    entries.stream()
-        .map(entry -> entry.toRoute6FilterLine(_w, name))
-        .filter(Objects::nonNull)
-        .forEach(output::addLine);
-    return output;
-  }
-
   private static @Nonnull RouteFilterLine toRouteFilterLine(AccessListLine line) {
     Prefix prefix = line.getPrefix();
     return new RouteFilterLine(
@@ -1882,15 +1863,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
           RouteFilterList converted = toRouteFilterList(prefixList, _w, _filename);
           if (converted != null) {
             _c.getRouteFilterLists().put(name, converted);
-          }
-        });
-
-    // Convert valid IPv6 prefix-lists to Route6FilterLists
-    _prefixLists.forEach(
-        (name, prefixList) -> {
-          Route6FilterList converted = toRoute6FilterList(prefixList);
-          if (converted != null) {
-            _c.getRoute6FilterLists().put(name, converted);
           }
         });
 

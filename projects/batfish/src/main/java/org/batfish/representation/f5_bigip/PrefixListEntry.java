@@ -7,7 +7,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.SubRange;
 
@@ -37,20 +36,6 @@ public final class PrefixListEntry implements Serializable {
       w.redFlag(
           String.format(
               "Invalid IPv4 prefix-len-range '%d:%d' in prefix-list '%s' entry '%d'",
-              _lengthRange.getStart(), _lengthRange.getEnd(), listName, _num));
-      return false;
-    }
-    return true;
-  }
-
-  private boolean checkValidIpv6LengthRange(Warnings w, String listName) {
-    if (_lengthRange == null) {
-      return false;
-    }
-    if (_lengthRange.getStart() < 0 || _lengthRange.getEnd() > Prefix6.MAX_PREFIX_LENGTH) {
-      w.redFlag(
-          String.format(
-              "Invalid IPv6 prefix-len-range '%d:%d' in prefix-list '%s' entry '%d'",
               _lengthRange.getStart(), _lengthRange.getEnd(), listName, _num));
       return false;
     }
@@ -91,27 +76,6 @@ public final class PrefixListEntry implements Serializable {
 
   public void setPrefix6(@Nullable Prefix6 prefix6) {
     _prefix6 = prefix6;
-  }
-
-  /**
-   * Convert to a {@link Route6FilterLine}. If action or prefix6 is missing, return {@code null}.
-   */
-  public @Nullable Route6FilterLine toRoute6FilterLine(Warnings w, String listName) {
-    if (_action == null) {
-      w.redFlag(String.format("Missing action in prefix-list '%s' entry '%d'", listName, _num));
-      return null;
-    }
-    if (_prefix6 == null) {
-      w.redFlag(
-          String.format("Missing IPv6 prefix in prefix-list '%s' entry '%d'", listName, _num));
-      return null;
-    }
-    return new Route6FilterLine(
-        _action,
-        _prefix6,
-        checkValidIpv6LengthRange(w, listName)
-            ? _lengthRange
-            : new SubRange(_prefix6.getPrefixLength(), Prefix6.MAX_PREFIX_LENGTH));
   }
 
   /** Convert to a {@link RouteFilterLine}. If action or prefix is missing, return {@code null}. */

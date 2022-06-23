@@ -20,9 +20,6 @@
       "IkePhase1Proposal" : {
         "structureClassName" : "IkePhase1Proposal"
       },
-      "Ip6AccessList" : {
-        "structureClassName" : "Ip6AccessList"
-      },
       "IpAccessList" : {
         "structureClassName" : "IpAccessList",
         "sameNamedStructures" : {
@@ -218,9 +215,6 @@
       },
       "IpsecPhase2Proposal" : {
         "structureClassName" : "IpsecPhase2Proposal"
-      },
-      "Route6FilterList" : {
-        "structureClassName" : "Route6FilterList"
       },
       "RouteFilterList" : {
         "structureClassName" : "RouteFilterList",

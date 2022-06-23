@@ -271,23 +271,6 @@ public final class TcpFlagsMatchConditions
         && !(_useUrg && _tcpFlags.getUrg() ^ flags.getUrg());
   }
 
-  /**
-   * Returns {@code true} iff the TCP flags used for which matching is enabled match the TCP flags
-   * in the given {@link Flow6}.
-   *
-   * <p>Note this function will return {@code true} if no bits are used.
-   */
-  public boolean match(Flow6 flow6) {
-    return !(_useAck && _tcpFlags.getAck() ^ (flow6.getTcpFlagsAck() == 1))
-        && !(_useCwr && _tcpFlags.getCwr() ^ (flow6.getTcpFlagsCwr() == 1))
-        && !(_useEce && _tcpFlags.getEce() ^ (flow6.getTcpFlagsEce() == 1))
-        && !(_useFin && _tcpFlags.getFin() ^ (flow6.getTcpFlagsFin() == 1))
-        && !(_usePsh && _tcpFlags.getPsh() ^ (flow6.getTcpFlagsPsh() == 1))
-        && !(_useRst && _tcpFlags.getRst() ^ (flow6.getTcpFlagsRst() == 1))
-        && !(_useSyn && _tcpFlags.getSyn() ^ (flow6.getTcpFlagsSyn() == 1))
-        && !(_useUrg && _tcpFlags.getUrg() ^ (flow6.getTcpFlagsUrg() == 1));
-  }
-
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)

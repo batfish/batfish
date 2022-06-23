@@ -25,7 +25,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
@@ -205,7 +204,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.OriginMechanism;
@@ -213,7 +211,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -497,11 +494,6 @@ public final class XrGrammarTest {
                   aclLineName(acl.getName(), line.getName()))),
           line.getVendorStructureId());
     }
-
-    assertThat(c.getIp6AccessLists(), hasKeys("aclv6"));
-    Ip6AccessList aclv6 = c.getIp6AccessLists().get("aclv6");
-    // TODO: get the remark line in there too.
-    assertThat(aclv6.getLines(), hasSize(4));
   }
 
   @Test
@@ -1710,21 +1702,15 @@ public final class XrGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     Prefix permittedPrefix = Prefix.parse("1.2.3.4/30");
-    Prefix6 permittedPrefix6 = Prefix6.parse("2001::ffff:0/124");
     Prefix rejectedPrefix = Prefix.parse("1.2.4.4/30");
-    Prefix6 rejectedPrefix6 = Prefix6.parse("2001::fffe:0/124");
 
     /*
      * Confirm the generated route filter lists permit correct prefixes and do not permit others
      */
     assertThat(c, hasRouteFilterList("pre_ipv4", permits(permittedPrefix)));
     assertThat(c, hasRouteFilterList("pre_ipv4", not(permits(rejectedPrefix))));
-    assertThat(c, hasRoute6FilterList("pre_ipv6", permits(permittedPrefix6)));
-    assertThat(c, hasRoute6FilterList("pre_ipv6", not(permits(rejectedPrefix6))));
     assertThat(c, hasRouteFilterList("pre_combo", permits(permittedPrefix)));
     assertThat(c, hasRouteFilterList("pre_combo", not(permits(rejectedPrefix))));
-    assertThat(c, hasRoute6FilterList("pre_combo", permits(permittedPrefix6)));
-    assertThat(c, hasRoute6FilterList("pre_combo", not(permits(rejectedPrefix6))));
 
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());

@@ -11,19 +11,13 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Prefix6Range;
-import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -133,10 +127,6 @@ public final class Common {
     return MATCH_DEFAULT_ROUTE;
   }
 
-  public static MatchPrefix6Set matchDefaultRouteV6() {
-    return MATCH_DEFAULT_ROUTE_V6;
-  }
-
   @VisibleForTesting
   public static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
 
@@ -147,7 +137,6 @@ public final class Common {
   private Common() {} // prevent instantiation of utility class
 
   private static final MatchPrefixSet MATCH_DEFAULT_ROUTE = makeMatchDefaultRouteV4();
-  private static final MatchPrefix6Set MATCH_DEFAULT_ROUTE_V6 = makeMatchDefaultRouteV6();
 
   private static MatchPrefixSet makeMatchDefaultRouteV4() {
     MatchPrefixSet ret =
@@ -155,16 +144,6 @@ public final class Common {
             DestinationNetwork.instance(),
             new ExplicitPrefixSet(
                 new PrefixSpace(new PrefixRange(Prefix.ZERO, SubRange.singleton(0)))));
-    ret.setComment("match default route");
-    return ret;
-  }
-
-  private static MatchPrefix6Set makeMatchDefaultRouteV6() {
-    MatchPrefix6Set ret =
-        new MatchPrefix6Set(
-            new DestinationNetwork6(),
-            new ExplicitPrefix6Set(
-                new Prefix6Space(new Prefix6Range(Prefix6.ZERO, SubRange.singleton(0)))));
     ret.setComment("match default route");
     return ret;
   }

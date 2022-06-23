@@ -275,7 +275,6 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -309,7 +308,6 @@ import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -4510,10 +4508,6 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy familyPolicy = c.getRoutingPolicies().get("FAMILY_POLICY");
     result = familyPolicy.call(envWithRoute(c, new ConnectedRoute(testPrefix, "nextHop")));
     assertThat(result.getBooleanValue(), equalTo(false));
-    result =
-        familyPolicy.call(
-            Environment.builder(c).setOriginalRoute6(new GeneratedRoute6(Prefix6.ZERO)).build());
-    assertThat(result.getBooleanValue(), equalTo(true));
 
     /*
     INTERFACE_POLICY should accept routes from either set interface, but not from other networks
