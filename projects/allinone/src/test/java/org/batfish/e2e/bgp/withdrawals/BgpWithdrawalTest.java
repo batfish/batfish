@@ -58,7 +58,7 @@ public class BgpWithdrawalTest {
    */
   @Test
   public void testWithdrawals() throws IOException {
-    String prefix = "org/batfish/e2e/bgp/withdrawals_cisco";
+    String prefix = "org/batfish/e2e/bgp/withdrawals";
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -122,7 +122,7 @@ public class BgpWithdrawalTest {
    */
   @Test
   public void testWithdrawalsWithAddPath() throws IOException {
-    String prefix = "org/batfish/e2e/bgp/withdrawals_juniper";
+    String prefix = "org/batfish/e2e/bgp/withdrawals_add_path";
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()

@@ -4,7 +4,7 @@ package(
 )
 
 filegroup(
-    name = "withdrawals_cisco",
+    name = "withdrawals_add_path",
     srcs = glob(
         ["**"],
         exclude = ["BUILD"],

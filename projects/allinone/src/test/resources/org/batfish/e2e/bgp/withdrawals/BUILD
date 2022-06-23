@@ -4,7 +4,7 @@ package(
 )
 
 filegroup(
-    name = "withdrawals_juniper",
+    name = "withdrawals",
     srcs = glob(
         ["**"],
         exclude = ["BUILD"],
