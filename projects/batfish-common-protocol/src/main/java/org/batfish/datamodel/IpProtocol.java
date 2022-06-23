@@ -73,9 +73,7 @@ public enum IpProtocol {
   IPV6(41),
   IPV6_FRAG(44),
   IPV6_ICMP(58),
-  IPV6_NO_NXT(59),
   IPV6_OPTS(60),
-  IPV6_ROUTE(43),
   IPX_IN_IP(111),
   IRTP(28),
   ISIS(124),
@@ -145,6 +143,10 @@ public enum IpProtocol {
   TTP(84),
   UDP(17),
   UDP_LITE(136),
+  /** Is allocated by IANA as Routing Header for IPv6, but this is an IPv4 enum. */
+  UNNAMED_43(43),
+  /** Is allocated by IANA as No Next Header for IPv6, but this is an IPv4 enum. */
+  UNNAMED_59(59),
   UNNAMED_143(143),
   UNNAMED_144(144),
   UNNAMED_145(145),
