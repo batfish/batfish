@@ -83,7 +83,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
@@ -635,26 +634,6 @@ public class TransferBDDTest {
 
     // currently we assume announcements are IPv4
     assertTrue(acceptedAnnouncements.isOne());
-    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
-  }
-
-  @Test
-  public void testMatchIpv6() {
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(
-                new If(
-                    MatchIpv6.instance(),
-                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
-            .build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
-
-    assertTrue(acceptedAnnouncements.isZero());
     assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 

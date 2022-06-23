@@ -33,12 +33,10 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
@@ -143,12 +141,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       add(IkePhase1Policy.class, Configuration::getIkePhase1Policies);
       add(IkePhase1Proposal.class, Configuration::getIkePhase1Proposals);
       add(Interface.class, Configuration::getAllInterfaces);
-      add(Ip6AccessList.class, Configuration::getIp6AccessLists);
       add(IpAccessList.class, Configuration::getIpAccessLists);
       add(IpsecPhase2Policy.class, Configuration::getIpsecPhase2Policies);
       add(IpsecPhase2Proposal.class, Configuration::getIpsecPhase2Proposals);
       add(IpsecPeerConfig.class, Configuration::getIpsecPeerConfigs);
-      add(Route6FilterList.class, Configuration::getRoute6FilterLists);
       add(
           RouteFilterList.class,
           Configuration::getRouteFilterLists,

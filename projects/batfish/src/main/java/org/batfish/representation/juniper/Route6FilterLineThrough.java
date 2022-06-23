@@ -1,10 +1,6 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.datamodel.Ip6;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route6FilterList;
-import org.batfish.datamodel.SubRange;
 
 public final class Route6FilterLineThrough extends Route6FilterLine {
 
@@ -13,20 +9,6 @@ public final class Route6FilterLineThrough extends Route6FilterLine {
   public Route6FilterLineThrough(Prefix6 prefix6, Prefix6 throughPrefix6) {
     super(prefix6);
     _throughPrefix6 = throughPrefix6;
-  }
-
-  @Override
-  public void applyTo(Route6FilterList rfl) {
-    int low = _prefix6.getPrefixLength();
-    int high = _throughPrefix6.getPrefixLength();
-    for (int i = low; i <= high; i++) {
-      Ip6 currentNetworkAddress = _throughPrefix6.getAddress().getNetworkAddress(i);
-      Prefix6 currentPrefix6 = new Prefix6(currentNetworkAddress, i);
-      org.batfish.datamodel.Route6FilterLine line =
-          new org.batfish.datamodel.Route6FilterLine(
-              LineAction.PERMIT, currentPrefix6, SubRange.singleton(i));
-      rfl.addLine(line);
-    }
   }
 
   @Override

@@ -174,7 +174,7 @@ public class CiscoConversionsBgpPoliciesTest {
     // Create a BGP export policy from a peer group with no constraints on outgoing routes.
     // Resulting export policy should accept any BGP routes.
     _peerGroup.setDefaultOriginate(false);
-    generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, true, _c, _w);
+    generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, _c, _w);
     RoutingPolicy bgpExportPolicy =
         _c.getRoutingPolicies()
             .get(generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
@@ -212,7 +212,7 @@ public class CiscoConversionsBgpPoliciesTest {
     // routes. Resulting export policy should match prefix-list.
     _peerGroup.setDefaultOriginate(false);
     _peerGroup.setOutboundPrefixList(PREFIX_LIST_NAME);
-    generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, true, _c, _w);
+    generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, _c, _w);
 
     RoutingPolicy bgpExportPolicy =
         _c.getRoutingPolicies()
@@ -245,7 +245,7 @@ public class CiscoConversionsBgpPoliciesTest {
     // routes. Resulting export policy should match the route-map.
     _peerGroup.setOutboundRouteMap(ROUTE_MAP_NAME);
     _peerGroup.setDefaultOriginate(false);
-    generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, true, _c, _w);
+    generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, _c, _w);
 
     RoutingPolicy bgpExportPolicy =
         _c.getRoutingPolicies()
@@ -290,7 +290,7 @@ public class CiscoConversionsBgpPoliciesTest {
     _peerGroup.setOutboundPrefixList(PREFIX_LIST_NAME);
     _peerGroup.setOutboundRouteMap(ROUTE_MAP_NAME);
     _peerGroup.setDefaultOriginate(false);
-    generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, true, _c, _w);
+    generateBgpExportPolicy(_peerGroup, DEFAULT_VRF_NAME, _c, _w);
 
     RoutingPolicy bgpExportPolicy =
         _c.getRoutingPolicies()

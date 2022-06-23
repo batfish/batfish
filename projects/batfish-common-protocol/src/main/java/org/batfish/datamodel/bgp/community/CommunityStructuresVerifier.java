@@ -63,19 +63,15 @@ import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
-import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
-import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -191,11 +187,6 @@ public final class CommunityStructuresVerifier {
     }
 
     @Override
-    public Void visitHasRoute6(HasRoute6 hasRoute6, CommunityStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
     public Void visitMatchAsPath(MatchAsPath matchAsPath, CommunityStructuresVerifierContext arg) {
       return null;
     }
@@ -232,18 +223,7 @@ public final class CommunityStructuresVerifier {
     }
 
     @Override
-    public Void visitMatchIp6AccessList(
-        MatchIp6AccessList matchIp6AccessList, CommunityStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
     public Void visitMatchIpv4(MatchIpv4 matchIpv4, CommunityStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
-    public Void visitMatchIpv6(MatchIpv6 matchIpv6, CommunityStructuresVerifierContext arg) {
       return null;
     }
 
@@ -262,12 +242,6 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitMatchMetric(MatchMetric matchMetric, CommunityStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
-    public Void visitMatchPrefix6Set(
-        MatchPrefix6Set matchPrefix6Set, CommunityStructuresVerifierContext arg) {
       return null;
     }
 

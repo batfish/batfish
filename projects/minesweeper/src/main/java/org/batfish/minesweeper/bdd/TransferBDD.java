@@ -56,8 +56,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
@@ -213,10 +211,6 @@ public class TransferBDD {
       p.debug("MatchIpv4 Result: true");
       return result.setReturnValueBDD(_factory.one());
 
-    } else if (expr instanceof MatchIpv6) {
-      p.debug("MatchIpv6 Result: false");
-      return result.setReturnValueBDD(_factory.zero());
-
     } else if (expr instanceof Conjunction) {
       p.debug("Conjunction");
       Conjunction c = (Conjunction) expr;
@@ -324,11 +318,6 @@ public class TransferBDD {
       // next-hop IP) from the original route, so we do the same here
       BDD prefixSet = matchPrefixSet(p.indent(), _conf, m, _originalRoute);
       return result.setReturnValueBDD(prefixSet);
-
-      // TODO: implement me
-    } else if (expr instanceof MatchPrefix6Set) {
-      p.debug("MatchPrefix6Set");
-      return result.setReturnValueBDD(_factory.zero());
 
     } else if (expr instanceof CallExpr) {
       p.debug("CallExpr");
