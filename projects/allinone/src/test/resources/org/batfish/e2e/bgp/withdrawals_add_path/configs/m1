@@ -1,9 +1,9 @@
 set system host-name M1
 #
-set interfaces ge0/0/0 unit 0 family inet address 2.1.1.1/31
-set interfaces ge0/0/0 unit 0 description to-M2
-set interfaces ge0/0/1 unit 0 family inet address 2.1.1.2/31
-set interfaces ge0/0/1 unit 0 description to-S
+set interfaces ge-0/0/0 unit 0 family inet address 2.1.1.1/31
+set interfaces ge-0/0/0 unit 0 description to-M2
+set interfaces ge-0/0/1 unit 0 family inet address 2.1.1.2/31
+set interfaces ge-0/0/1 unit 0 description to-S
 #
 set protocols bgp local-as 4
 set protocols bgp group M2 peer-as 5

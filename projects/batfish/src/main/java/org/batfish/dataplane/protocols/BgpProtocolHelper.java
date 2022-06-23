@@ -32,6 +32,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -392,20 +393,21 @@ public final class BgpProtocolHelper {
    *
    * <p>Sets path ID if our session supports sending additional paths, otherwise clears it.
    *
-   * @param exportRoute Original route being exported. Will be used as a key in routesToPathIds if a
-   *     path ID is warranted
+   * @param originalRoute Original route being exported. Will be used as a key in routesToPathIds if
+   *     a path ID is warranted
    * @param routeBuilder Builder for the output (exported) route
    * @param ourSessionProperties properties for the sender's session
    * @param af sender's address family configuration
-   * @param originalRouteNhip Next hop IP of the original route
+   * @param originalRouteNhip BGP next hop IP of the original route, or {@link
+   *     Route#UNSET_ROUTE_NEXT_HOP_IP} if original route is not BGP
    * @param pathIdGenerator Used for generating a path ID for the outgoing advertisement if needed
    * @param routesToPathIds Routes we have already exported, mapped to the path IDs with which we
-   *     exported them. If the outgoing route needs a path ID, we will look up {@code exportRoute}
+   *     exported them. If the outgoing route needs a path ID, we will look up {@code originalRoute}
    *     in this map to find the correct path ID, and add a new entry if it isn't already there.
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       void transformBgpRoutePostExport(
-          AbstractRouteDecorator exportRoute,
+          AbstractRouteDecorator originalRoute,
           B routeBuilder,
           BgpSessionProperties ourSessionProperties,
           AddressFamily af,
@@ -415,8 +417,8 @@ public final class BgpProtocolHelper {
     // Determine path ID to export, if any.
     Integer pathId = null;
     if (ourSessionProperties.getAdditionalPaths()) {
-      // TODO Are there any routes whose path ID should not be set even if the session has add-path?
-      pathId = routesToPathIds.computeIfAbsent(exportRoute, k -> pathIdGenerator.incrementAndGet());
+      pathId =
+          routesToPathIds.computeIfAbsent(originalRoute, k -> pathIdGenerator.incrementAndGet());
     }
     transformBgpRoutePostExport(
         routeBuilder,

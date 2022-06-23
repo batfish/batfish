@@ -1,6 +1,6 @@
 set system host-name A
 #
-set interfaces ge0/0/0 unit 0 family inet address 1.2.3.4/31
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.4/31
 #
 set routing-options static route 5.5.5.5/32 discard
 #

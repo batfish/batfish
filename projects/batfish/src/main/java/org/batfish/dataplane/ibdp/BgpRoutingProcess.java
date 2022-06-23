@@ -138,7 +138,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   private final boolean _generateAggregatesFromMainRib;
 
-  /** Source for assigning path IDs to routes upon export, if any peers send additional paths. */
+  /** Source for assigning path IDs to routes upon export when sending additional paths. */
   @Nonnull private final AtomicInteger _pathIdGenerator;
   /**
    * Map indicating what path ID this process uses when exporting a given route. Keys can be:

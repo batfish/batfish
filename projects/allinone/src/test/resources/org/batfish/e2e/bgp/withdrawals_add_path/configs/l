@@ -1,7 +1,7 @@
 set system host-name L
 #
-set interfaces ge0/0/0 unit 0 family inet address 3.0.0.0/31
-set interfaces ge0/0/0 unit 0 description to-S
+set interfaces ge-0/0/0 unit 0 family inet address 3.0.0.0/31
+set interfaces ge-0/0/0 unit 0 description to-S
 #
 set routing-options static route 0.0.0.0/0 discard
 #

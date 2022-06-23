@@ -108,7 +108,8 @@ public class BgpWithdrawalTest {
   }
 
   /**
-   * Same as above test, with adjustments made to test withdrawal of a route with a path ID:
+   * Same as {@link #testWithdrawals()}, with adjustments made to test withdrawal of a route with a
+   * path ID:
    *
    * <ul>
    *   <li>S and L have an IBGP session rather than EBGP (only IBGP sessions can do add-path)
