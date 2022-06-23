@@ -5,6 +5,8 @@ import static org.batfish.datamodel.Prefix.MULTICAST;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,7 +28,10 @@ public final class ReceivedFromIp implements ReceivedFrom {
   public static @Nonnull ReceivedFromIp of(Ip ip) {
     checkArgument(
         !ip.equals(Ip.ZERO) && !MULTICAST.containsIp(ip), "%s is not a valid unicast IP", ip);
-    return new ReceivedFromIp(ip);
+    // Intern
+    ReceivedFromIp ret = CACHE.get(new ReceivedFromIp(ip));
+    assert ret != null;
+    return ret;
   }
 
   @JsonProperty(PROP_IP)
@@ -66,5 +71,12 @@ public final class ReceivedFromIp implements ReceivedFrom {
   }
 
   private static final String PROP_IP = "ip";
+
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (8 bytes seems smallest possible entry (long), would be 8 MiB total).
+  private static final LoadingCache<ReceivedFromIp, ReceivedFromIp> CACHE =
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(r -> r);
+
   private final @Nonnull Ip _ip;
 }

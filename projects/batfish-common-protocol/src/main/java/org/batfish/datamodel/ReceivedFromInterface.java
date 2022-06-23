@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,7 +26,9 @@ public final class ReceivedFromInterface implements ReceivedFrom {
 
   public static @Nonnull ReceivedFromInterface of(String iface, Ip linkLocalIp) {
     checkArgument(LINK_LOCAL_IPS.containsIp(linkLocalIp), "%s is not a link-local IP", linkLocalIp);
-    return new ReceivedFromInterface(iface, linkLocalIp);
+    ReceivedFromInterface ret = CACHE.get(new ReceivedFromInterface(iface, linkLocalIp));
+    assert ret != null;
+    return ret;
   }
 
   @JsonProperty(PROP_INTERFACE)
@@ -79,6 +83,12 @@ public final class ReceivedFromInterface implements ReceivedFrom {
 
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_LINK_LOCAL_IP = "linkLocalIp";
+
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (16 bytes for int+ip (excluding interned string space), would be 16 MiB total).
+  private static final LoadingCache<ReceivedFromInterface, ReceivedFromInterface> CACHE =
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(r -> r);
 
   private final @Nonnull String _interface;
   private final @Nonnull Ip _linkLocalIp;
