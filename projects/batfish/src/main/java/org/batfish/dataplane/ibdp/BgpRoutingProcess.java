@@ -31,7 +31,6 @@ import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +41,9 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -149,7 +150,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    *       {@link BgpPeerConfig#getGeneratedRoutes() neighbor-specific generated routes}
    * </ul>
    */
-  @Nonnull private final Map<AbstractRouteDecorator, Integer> _routesToPathIds;
+  @Nonnull private final ConcurrentMap<AbstractRouteDecorator, Integer> _routesToPathIds;
 
   @Nonnull private final PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
@@ -316,7 +317,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _generateAggregatesFromMainRib = configuration.getGenerateBgpAggregatesFromMainRib();
 
     _pathIdGenerator = new AtomicInteger();
-    _routesToPathIds = new HashMap<>();
+    _routesToPathIds = new ConcurrentHashMap<>();
 
     // Message queues start out empty
     _bgpv4Edges = ImmutableSortedSet.of();
