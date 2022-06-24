@@ -1,0 +1,225 @@
+package org.batfish.job;
+
+import static org.batfish.job.InvalidVendorStructureIdEraser.isVendorStructureIdValid;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.function.Function;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
+import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
+import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.vendor.VendorStructureId;
+import org.junit.Test;
+
+public class InvalidVendorStructureIdEraserTest {
+  private final SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+      _definedStructures =
+          ImmutableSortedMap.of(
+              "filename",
+              ImmutableSortedMap.of(
+                  "structureType",
+                  ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
+  private final VendorStructureId _validVsid =
+      new VendorStructureId("filename", "structureType", "structureName");
+  private final VendorStructureId _invalidVsid =
+      new VendorStructureId("filename", "structureType", "otherStructureName");
+
+  private final TraceElement _validTe = TraceElement.builder().add("valid", _validVsid).build();
+  private final TraceElement _invalidTe =
+      TraceElement.builder().add("invalid", _invalidVsid).build();
+  // Same as above trace element, but with VSID removed
+  private final TraceElement _erasedVsid = TraceElement.builder().add("invalid").build();
+
+  private final InvalidVendorStructureIdEraser _eraser =
+      new InvalidVendorStructureIdEraser(_definedStructures);
+
+  private void assertExprHandled(Function<TraceElement, AclLineMatchExpr> creator) {
+    // Valid VSID is left alone
+    assertThat(_eraser.visit(creator.apply(_validTe)), equalTo(creator.apply(_validTe)));
+    // Invalid VSID is removed
+    assertThat(_eraser.visit(creator.apply(_invalidTe)), equalTo(creator.apply(_erasedVsid)));
+  }
+
+  @Test
+  public void testAclLineMatchExprsTrueExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction = TrueExpr::new;
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAclLineMatchExprsFalseExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction = FalseExpr::new;
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAclLineMatchExprsOriginatingFromDevice() {
+    assertEquals(OriginatingFromDevice.INSTANCE, _eraser.visit(OriginatingFromDevice.INSTANCE));
+  }
+
+  @Test
+  public void testAclLineMatchExprsPermittedByAcl() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new PermittedByAcl("acl", te);
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAclLineMatchExprsDeniedByAcl() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new DeniedByAcl("acl", te);
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAclLineMatchExprsNotMatchExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new NotMatchExpr(TrueExpr.INSTANCE, te);
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAclLineMatchExprsMatchSrcInterface() {
+    List<String> ifaces = ImmutableList.of("i");
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new MatchSrcInterface(ifaces, te);
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAclLineMatchExprsAndMatchExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new AndMatchExpr(ImmutableList.of(new TrueExpr(te)), te);
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAclLineMatchExprsOrMatchExpr() {
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new OrMatchExpr(ImmutableList.of(new TrueExpr(te)), te);
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAclLineMatchExprsMatchHeaderSpace() {
+    HeaderSpace headerSpace = HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build();
+    Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
+        te -> new MatchHeaderSpace(headerSpace, te);
+    assertExprHandled(traceElementTFunction);
+  }
+
+  @Test
+  public void testAcl() {
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName("acl")
+            .setLines(
+                new AclAclLine("name1", "acl1", _validTe, _validVsid),
+                new AclAclLine("name2", "acl2", _invalidTe, _invalidVsid))
+            .build();
+    IpAccessList aclErased =
+        IpAccessList.builder()
+            .setName("acl")
+            .setLines(
+                new AclAclLine("name1", "acl1", _validTe, _validVsid),
+                new AclAclLine("name2", "acl2", _erasedVsid, null))
+            .build();
+
+    assertEquals(_eraser.visit(acl), aclErased);
+  }
+
+  @Test
+  public void testTraceElement() {
+    // Valid and flat-text trace elements are left unchanged
+    assertEquals(
+        TraceElement.builder().add("flatText").add("valid", _validVsid).build(),
+        _eraser.eraseInvalid(
+            TraceElement.builder().add("flatText").add("valid", _validVsid).build()));
+    // Link fragment with invalid VSID should be flattened to a text fragment
+    assertEquals(
+        TraceElement.builder().add("invalid").build(),
+        _eraser.eraseInvalid(TraceElement.builder().add("invalid", _invalidVsid).build()));
+  }
+
+  @Test
+  public void testAclLines() {
+    // Valid VSIDs are left alone
+    assertEquals(
+        new AclAclLine("name", "acl", _validTe, _validVsid),
+        _eraser.visit(new AclAclLine("name", "acl", _validTe, _validVsid)));
+    assertEquals(
+        new ExprAclLine(LineAction.PERMIT, new TrueExpr(_validTe), "name", _validTe, _validVsid),
+        _eraser.visit(
+            ExprAclLine.accepting()
+                .setName("name")
+                .setTraceElement(_validTe)
+                .setMatchCondition(new TrueExpr(_validTe))
+                .setVendorStructureId(_validVsid)
+                .build()));
+
+    // Invalid VSIDs are erased (even if present inside traceElement)
+    assertEquals(
+        new AclAclLine("name", "acl", _erasedVsid, null),
+        _eraser.visit(new AclAclLine("name", "acl", _invalidTe, _invalidVsid)));
+    assertEquals(
+        new ExprAclLine(LineAction.PERMIT, new TrueExpr(_erasedVsid), "name", _erasedVsid, null),
+        _eraser.visit(
+            ExprAclLine.accepting()
+                .setName("name")
+                .setTraceElement(_invalidTe)
+                .setMatchCondition(new TrueExpr(_invalidTe))
+                .setVendorStructureId(_invalidVsid)
+                .build()));
+  }
+
+  @Test
+  public void testIsVendorStructureIdValid() {
+    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+        definedStructures =
+            ImmutableSortedMap.of(
+                "filename",
+                ImmutableSortedMap.of(
+                    "structureType",
+                    ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
+
+    assertTrue(
+        isVendorStructureIdValid(
+            new VendorStructureId("filename", "structureType", "structureName"),
+            definedStructures));
+    assertFalse(
+        isVendorStructureIdValid(
+            new VendorStructureId("otherFilename", "structureType", "structureName"),
+            definedStructures));
+    assertFalse(
+        isVendorStructureIdValid(
+            new VendorStructureId("filename", "otherStructureType", "structureName"),
+            definedStructures));
+    assertFalse(
+        isVendorStructureIdValid(
+            new VendorStructureId("filename", "structureType", "otherStructureName"),
+            definedStructures));
+  }
+}

@@ -212,18 +212,13 @@ ip_protocol
 :
   AH
   | dec
-  | DSTOPTS
   | EGP
   | ESP
-  | FRAGMENT
   | GRE
   | HOP_BY_HOP
   | ICMP
-  | ICMP6
-  | ICMPV6
   | IGMP
   | IPIP
-  | IPV6
   | OSPF
   | PIM
   | RSVP

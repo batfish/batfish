@@ -3010,15 +3010,17 @@ public class AristaGrammarTest {
     // Tests that the ACLs parse and their lines have correct VSIDs
     String standardAclName = "SOME_ACL";
     assertThat(c, hasIpAccessList(standardAclName, hasLines(hasSize(1))));
-    AclLine standard = c.getIpAccessLists().get(standardAclName).getLines().get(0);
-    assertThat(
-        standard.getVendorStructureId(),
-        equalTo(
-            Optional.of(
-                new VendorStructureId(
-                    filename,
-                    AristaStructureType.IP_ACCESS_LIST_STANDARD_LINE.getDescription(),
-                    aclLineStructureName(standardAclName, standard.getName())))));
+    // TODO: re-add once VSID is valid
+    // VSID is currently invalid, so it is pruned during configuration finalization
+    //    AclLine standard = c.getIpAccessLists().get(standardAclName).getLines().get(0);
+    //    assertThat(
+    //        standard.getVendorStructureId(),
+    //        equalTo(
+    //            Optional.of(
+    //                new VendorStructureId(
+    //                    filename,
+    //                    AristaStructureType.IP_ACCESS_LIST_STANDARD_LINE.getDescription(),
+    //                    aclLineStructureName(standardAclName, standard.getName())))));
 
     String extendedAclName = "SOME_EXT_ACL";
     assertThat(c, hasIpAccessList(extendedAclName, hasLines(hasSize(1))));
