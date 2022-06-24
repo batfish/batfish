@@ -1,11 +1,13 @@
 package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
@@ -72,6 +74,14 @@ public final class BgpRouteMatchers {
   public static @Nonnull Matcher<HasReadableOriginType> hasOriginType(
       OriginType expectedOriginType) {
     return new HasOriginType(equalTo(expectedOriginType));
+  }
+
+  public static @Nonnull Matcher<BgpRoute<?, ?>> hasPathId(Matcher<? super Integer> subMatcher) {
+    return new BgpRouteMatchersImpl.HasPathId(subMatcher);
+  }
+
+  public static @Nonnull Matcher<BgpRoute<?, ?>> hasNoPathId() {
+    return hasPathId(nullValue());
   }
 
   /**

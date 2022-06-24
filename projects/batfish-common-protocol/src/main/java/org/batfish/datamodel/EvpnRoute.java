@@ -88,8 +88,9 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       @Nullable Ip receivedFromIp,
       long tag,
       RouteDistinguisher routeDistinguisher,
-      int vni) {
-    super(network, nextHop, EVPN_ADMIN, attributes, receivedFromIp, tag, true, true);
+      int vni,
+      @Nullable Integer pathId) {
+    super(network, nextHop, pathId, EVPN_ADMIN, attributes, receivedFromIp, tag, true, true);
     _routeDistinguisher = routeDistinguisher;
     _vni = vni;
   }
