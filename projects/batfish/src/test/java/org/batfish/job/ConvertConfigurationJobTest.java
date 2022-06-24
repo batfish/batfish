@@ -5,27 +5,35 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTrack;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
+import static org.batfish.job.ConvertConfigurationJob.assertVendorStructureIdsValid;
 import static org.batfish.job.ConvertConfigurationJob.finalizeConfiguration;
+import static org.batfish.job.ConvertConfigurationJob.removeInvalidVendorStructureIds;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.util.SortedMap;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -46,6 +54,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -57,6 +66,9 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprRefere
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.job.ConvertConfigurationJob.CollectIpSpaceReferences;
+import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -65,6 +77,13 @@ import org.junit.rules.ExpectedException;
 public final class ConvertConfigurationJobTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private VendorConfiguration baseVendorConfig() {
+    VendorConfiguration vc = new CiscoConfiguration();
+    vc.setFilename("filename");
+    vc.setAnswerElement(new ConvertConfigurationAnswerElement());
+    return vc;
+  }
 
   @Test
   public void testCollectIpSpaceReferences() {
@@ -154,6 +173,7 @@ public final class ConvertConfigurationJobTest {
   @Test
   public void testFinalizeConfigurationVerifyCommunityStructures() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
+    VendorConfiguration vc = baseVendorConfig();
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setCommunityMatchExprs(
@@ -161,7 +181,7 @@ public final class ConvertConfigurationJobTest {
 
     _thrown.expect(VendorConversionException.class);
     _thrown.expectMessage(containsString("Undefined reference"));
-    finalizeConfiguration(c, new Warnings());
+    finalizeConfiguration(c, vc, new Warnings());
   }
 
   @Test
@@ -169,6 +189,7 @@ public final class ConvertConfigurationJobTest {
     {
       // Test that undefined interface is removed from VrrpGroup, and warning is added.
       Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
+      VendorConfiguration vc = baseVendorConfig();
       c.setDefaultCrossZoneAction(LineAction.PERMIT);
       c.setDefaultInboundAction(LineAction.PERMIT);
 
@@ -184,7 +205,7 @@ public final class ConvertConfigurationJobTest {
                       .build()))
           .build();
       Warnings w = new Warnings(false, true, false);
-      finalizeConfiguration(c, w);
+      finalizeConfiguration(c, vc, w);
 
       assertThat(
           c.getAllInterfaces().get("exists").getVrrpGroups().get(1).getVirtualAddresses(),
@@ -199,6 +220,7 @@ public final class ConvertConfigurationJobTest {
     {
       // Test that there are no warnings when all VrrpGroup referenced interfaces exist.
       Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
+      VendorConfiguration vc = baseVendorConfig();
       c.setDefaultCrossZoneAction(LineAction.PERMIT);
       c.setDefaultInboundAction(LineAction.PERMIT);
 
@@ -212,7 +234,7 @@ public final class ConvertConfigurationJobTest {
       Interface.builder().setOwner(c).setName("exists").setVrrpGroups(vrrpGroups).build();
       Interface.builder().setOwner(c).setName("alsoExists").build();
       Warnings w = new Warnings(false, true, false);
-      finalizeConfiguration(c, w);
+      finalizeConfiguration(c, vc, w);
 
       assertThat(c.getAllInterfaces().get("exists").getVrrpGroups(), equalTo(vrrpGroups));
       assertThat(w.getRedFlagWarnings(), empty());
@@ -228,6 +250,7 @@ public final class ConvertConfigurationJobTest {
             .setDefaultCrossZoneAction(LineAction.PERMIT)
             .setDefaultInboundAction(LineAction.PERMIT)
             .build();
+    VendorConfiguration vc = baseVendorConfig();
     Vrf v = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
     Interface.builder().setName("i1").setVrf(v).setOwner(c).build();
 
@@ -272,7 +295,7 @@ public final class ConvertConfigurationJobTest {
         ImmutableSortedSet.of(intMissing, intPresent, vrfPresent, vrfMissing, ip, discard));
 
     Warnings w = new Warnings(false, true, false);
-    finalizeConfiguration(c, w);
+    finalizeConfiguration(c, vc, w);
 
     assertThat(v.getStaticRoutes(), containsInAnyOrder(intPresent, vrfPresent, ip, discard));
     assertThat(
@@ -295,6 +318,7 @@ public final class ConvertConfigurationJobTest {
             .setDefaultCrossZoneAction(LineAction.PERMIT)
             .setDefaultInboundAction(LineAction.PERMIT)
             .build();
+    VendorConfiguration vc = baseVendorConfig();
     Vrf v = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
     StaticRoute srMissing =
         StaticRoute.builder()
@@ -326,7 +350,7 @@ public final class ConvertConfigurationJobTest {
     c.getTrackingGroups().put("present", alwaysTrue());
 
     Warnings w = new Warnings(false, true, false);
-    finalizeConfiguration(c, w);
+    finalizeConfiguration(c, vc, w);
 
     assertThat(
         c.getAllInterfaces().get("i1").getHsrpGroups().get(1).getTrackActions(),
@@ -353,6 +377,7 @@ public final class ConvertConfigurationJobTest {
             .setDefaultCrossZoneAction(LineAction.PERMIT)
             .setDefaultInboundAction(LineAction.PERMIT)
             .build();
+    VendorConfiguration vc = baseVendorConfig();
     Vrf v = Vrf.builder().setName("v").setOwner(c).build();
     // good
     Interface.builder()
@@ -454,7 +479,7 @@ public final class ConvertConfigurationJobTest {
             .build();
 
     Warnings w = new Warnings(false, true, false);
-    finalizeConfiguration(c, w);
+    finalizeConfiguration(c, vc, w);
 
     assertThat(
         w.getRedFlagWarnings(),
@@ -496,6 +521,7 @@ public final class ConvertConfigurationJobTest {
             .setDefaultCrossZoneAction(LineAction.PERMIT)
             .setDefaultInboundAction(LineAction.PERMIT)
             .build();
+    VendorConfiguration vc = baseVendorConfig();
     Vrf v = Vrf.builder().setName("v").setOwner(c).build();
     OspfArea area =
         OspfArea.builder()
@@ -513,7 +539,7 @@ public final class ConvertConfigurationJobTest {
     Interface.builder().setName("defined").setOwner(c).setVrf(v).build();
 
     Warnings w = new Warnings(false, true, false);
-    finalizeConfiguration(c, w);
+    finalizeConfiguration(c, vc, w);
 
     assertThat(
         w.getRedFlagWarnings(),
@@ -524,5 +550,158 @@ public final class ConvertConfigurationJobTest {
     assertThat(
         proc.getAreas().get(area.getAreaNumber()).getInterfaces(),
         equalTo(ImmutableSet.of("defined")));
+  }
+
+  @Test
+  public void testRemoveInvalidVendorStructureIds() {
+    String filename = "configs/config";
+    String structureType = "structureType";
+    String validStructureName = "validStructureName";
+    String invalidStructureName = "invalidStructureName";
+    Warnings w = new Warnings(false, true, false);
+
+    // VI configuration with a valid and invalid Vendor Structure ID
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    AclLine lineValidVsid =
+        new AclAclLine(
+            "nameValid",
+            "aclNameValid",
+            null,
+            new VendorStructureId(filename, structureType, validStructureName));
+    AclLine lineInvalidVsid =
+        new AclAclLine(
+            "nameInvalid",
+            "aclNameInvalid",
+            null,
+            new VendorStructureId(filename, structureType, invalidStructureName));
+    IpAccessList.builder()
+        .setName("acl")
+        .setOwner(c)
+        .setLines(lineValidVsid, lineInvalidVsid)
+        .build();
+
+    // VS configuration with a structure definition for only the valid Vendor Structure ID
+    VendorConfiguration vc = new CiscoConfiguration();
+    vc.setFilename(filename);
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    vc.setAnswerElement(ccae);
+    ccae.setDefinedStructures(
+        ImmutableSortedMap.of(
+            filename,
+            ImmutableSortedMap.of(
+                structureType,
+                ImmutableSortedMap.of(validStructureName, new DefinedStructureInfo()))));
+
+    removeInvalidVendorStructureIds(c, vc, w);
+    IpAccessList acl = Iterables.getOnlyElement(c.getIpAccessLists().values());
+    assertThat(acl.getLines(), iterableWithSize(2));
+    AclLine line0 = acl.getLines().get(0);
+    AclLine line1 = acl.getLines().get(1);
+
+    // Valid VSID persists and invalid one is removed
+    assertTrue(line0.getVendorStructureId().isPresent());
+    assertFalse(line1.getVendorStructureId().isPresent());
+  }
+
+  @Test
+  public void testAssertVendorStructureIdsValidNoAnswerElement() {
+    String filename = "configs/config";
+    String structureType = "structureType";
+    String validStructureName = "validStructureName";
+    Warnings w = new Warnings(false, true, false);
+
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    AclLine lineValidVsid =
+        new AclAclLine(
+            "lineName",
+            "aclName",
+            null,
+            new VendorStructureId(filename, structureType, validStructureName));
+    IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
+    VendorConfiguration vc = new CiscoConfiguration();
+    vc.setFilename(filename);
+
+    // No answer element, should fail assertion
+    _thrown.expect(AssertionError.class);
+    assertVendorStructureIdsValid(c, vc, w);
+  }
+
+  @Test
+  public void testAssertVendorStructureIdsValidInvalid() {
+    String filename = "configs/config";
+    String structureType = "structureType";
+    String validStructureName = "validStructureName";
+    Warnings w = new Warnings(false, true, false);
+
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    AclLine lineValidVsid =
+        new AclAclLine(
+            "lineName",
+            "aclName",
+            null,
+            new VendorStructureId(filename, structureType, validStructureName));
+    IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
+    VendorConfiguration vc = new CiscoConfiguration();
+    vc.setFilename(filename);
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    vc.setAnswerElement(ccae);
+
+    // No matching defined structure, should fail assertion
+    _thrown.expect(AssertionError.class);
+    assertVendorStructureIdsValid(c, vc, w);
+  }
+
+  @Test
+  public void testAssertVendorStructureIdsValidValid() {
+    String filename = "configs/config";
+    String structureType = "structureType";
+    String validStructureName = "validStructureName";
+    Warnings w = new Warnings(false, true, false);
+
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    AclLine lineValidVsid =
+        new AclAclLine(
+            "lineName",
+            "aclName",
+            null,
+            new VendorStructureId(filename, structureType, validStructureName));
+    IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
+    VendorConfiguration vc = new CiscoConfiguration();
+    vc.setFilename(filename);
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    vc.setAnswerElement(ccae);
+    ccae.setDefinedStructures(
+        ImmutableSortedMap.of(
+            filename,
+            ImmutableSortedMap.of(
+                structureType,
+                ImmutableSortedMap.of(validStructureName, new DefinedStructureInfo()))));
+
+    // Matching defined structure, should not fail assertion
+    assertVendorStructureIdsValid(c, vc, w);
   }
 }
