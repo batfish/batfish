@@ -66,6 +66,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           _receivedFromIp,
           getNetwork(),
           _nextHop,
+          _pathId,
           getAdmin(),
           getTag(),
           getNonForwarding(),
@@ -100,6 +101,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           boolean receivedFromRouteReflectorClient,
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @Nullable @JsonProperty(PROP_PATH_ID) Integer pathId,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
@@ -132,6 +134,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         receivedFromIp,
         network,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
+        pathId,
         admin,
         tag,
         false,
@@ -143,11 +146,21 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nullable Ip receivedFromIp,
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
+      @Nullable Integer pathId,
       int admin,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, nextHop, admin, attributes, receivedFromIp, tag, nonForwarding, nonRouting);
+    super(
+        network,
+        nextHop,
+        pathId,
+        admin,
+        attributes,
+        receivedFromIp,
+        tag,
+        nonForwarding,
+        nonRouting);
   }
 
   public static Builder builder() {
@@ -184,6 +197,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setOriginatorIp(_attributes._originatorIp)
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
+        .setPathId(_pathId)
         .setProtocol(_attributes.getProtocol())
         .setReceivedFromIp(_receivedFromIp)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
@@ -205,6 +219,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
         && _nextHop.equals(other._nextHop)
+        && Objects.equals(_pathId, other._pathId)
         && _attributes.equals(other._attributes)
         && Objects.equals(_receivedFromIp, other._receivedFromIp)
         // Things above this line are more likely to cause false earlier.
@@ -223,6 +238,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + (_receivedFromIp == null ? 0 : _receivedFromIp.hashCode());
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
+      h = h * 31 + Objects.hashCode(_pathId);
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
       h = h * 31 + Long.hashCode(_tag);
@@ -248,6 +264,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .add("_originatorIp", _attributes._originatorIp)
         .add("_originMechanism", _attributes._originMechanism)
         .add("_originType", _attributes._originType)
+        .add("_pathId", _pathId)
         .add("_protocol", _attributes._protocol)
         .add("_receivedFromIp", _receivedFromIp)
         .add("_receivedFromRouteReflectorClient", _attributes._receivedFromRouteReflectorClient)

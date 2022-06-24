@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
@@ -60,6 +61,17 @@ final class BgpRouteMatchersImpl {
     @Override
     protected OriginType featureValueOf(HasReadableOriginType actual) {
       return actual.getOriginType();
+    }
+  }
+
+  static final class HasPathId extends FeatureMatcher<BgpRoute<?, ?>, Integer> {
+    HasPathId(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "A BgpRoute with pathId:", "pathId");
+    }
+
+    @Override
+    protected Integer featureValueOf(BgpRoute<?, ?> actual) {
+      return actual.getPathId();
     }
   }
 

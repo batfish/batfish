@@ -1,0 +1,14 @@
+set system host-name M2
+#
+set interfaces ge-0/0/0 unit 0 family inet address 2.1.1.0/31
+set interfaces ge-0/0/0 unit 0 description to-M1
+set interfaces ge-0/0/1 unit 0 family inet address 2.1.1.11/31
+set interfaces ge-0/0/1 unit 0 description to-B
+#
+set protocols bgp local-as 5
+set protocols bgp group B peer-as 3
+set protocols bgp group B neighbor 2.1.1.10
+set protocols bgp group B local-address 2.1.1.11
+set protocols bgp group M1 peer-as 4
+set protocols bgp group M1 neighbor 2.1.1.1
+set protocols bgp group M1 local-address 2.1.1.0

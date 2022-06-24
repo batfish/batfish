@@ -1,0 +1,14 @@
+set system host-name B
+#
+set interfaces ge-0/0/0 unit 0 family inet address 2.1.1.10/31
+#
+set routing-options static route 5.5.5.5/32 discard
+#
+set policy-options policy-statement export5555 from route-filter 5.5.5.5/32 exact
+set policy-options policy-statement export5555 then accept
+#
+set protocols bgp local-as 3
+set protocols bgp local-address 2.1.1.10
+set protocols bgp group M2 peer-as 5
+set protocols bgp group M2 neighbor 2.1.1.11
+set protocols bgp group M2 export export5555

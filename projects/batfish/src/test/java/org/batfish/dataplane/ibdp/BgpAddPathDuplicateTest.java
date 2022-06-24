@@ -67,8 +67,6 @@ public final class BgpAddPathDuplicateTest {
     assertThat(bgpRoutes.get("as2border", DEFAULT_VRF_NAME), hasSize(2));
 
     // as2leaf
-    // TODO: support distinct routes identical modulo rx path-id in BGP RIB
-    _thrown.expect(AssertionError.class);
     assertThat(bgpRoutes.get("as2leaf", DEFAULT_VRF_NAME), hasSize(2));
   }
 
@@ -80,6 +78,9 @@ public final class BgpAddPathDuplicateTest {
     assertThat(ribs.get("as2border", DEFAULT_VRF_NAME).getRoutes(PREFIX), hasSize(2));
 
     // as2leaf
+    // TODO Even with multipath on, as2leaf should only put one of the received routes in its main
+    //  RIB, because they have the same prefix and next-hop.
+    _thrown.expect(AssertionError.class);
     assertThat(ribs.get("as2leaf", DEFAULT_VRF_NAME).getRoutes(PREFIX), hasSize(1));
   }
 }
