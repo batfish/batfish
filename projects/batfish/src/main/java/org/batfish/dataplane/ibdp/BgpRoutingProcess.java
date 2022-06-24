@@ -8,6 +8,7 @@ import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.OriginMechanism.GENERATED;
+import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.OriginMechanism.NETWORK;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
@@ -1805,7 +1806,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // Since the route is received, it is from a post-import-chain view of the route.
       // Copy its attributes directly where possible then directly import it into the RIB.
       Bgpv4Route route =
-          Bgpv4Route.testBuilder()
+          Bgpv4Route.builder()
               .setAdmin(admin)
               .setAsPath(advert.getAsPath())
               .setClusterList(advert.getClusterList())
@@ -1815,6 +1816,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setNetwork(advert.getNetwork())
               .setNextHopIp(advert.getNextHopIp())
               .setOriginatorIp(advert.getOriginatorIp())
+              .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())
               .setProtocol(targetProtocol)
               .setReceivedFromIp(advert.getSrcIp())
@@ -1836,7 +1838,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         localPreference = advert.getLocalPreference();
       }
       Bgpv4Route transformedOutgoingRoute =
-          Bgpv4Route.testBuilder()
+          Bgpv4Route.builder()
               .setAsPath(advert.getAsPath())
               .setClusterList(advert.getClusterList())
               .setCommunities(advert.getCommunities())
@@ -1845,6 +1847,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setNetwork(advert.getNetwork())
               .setNextHopIp(advert.getNextHopIp())
               .setOriginatorIp(advert.getOriginatorIp())
+              // Don't know the origin mechanism on the sender, but for us it will be LEARNED
+              .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())
               .setProtocol(targetProtocol)
               .setReceivedFromIp(advert.getSrcIp())
@@ -1852,20 +1856,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setSrcProtocol(advert.getSrcProtocol())
               .build();
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
-          Bgpv4Route.testBuilder()
+          transformedOutgoingRoute.toBuilder()
               .setAdmin(admin)
-              .setAsPath(transformedOutgoingRoute.getAsPath())
-              .setClusterList(transformedOutgoingRoute.getClusterList())
-              .setCommunities(transformedOutgoingRoute.getCommunities())
-              .setLocalPreference(transformedOutgoingRoute.getLocalPreference())
-              .setMetric(transformedOutgoingRoute.getMetric())
-              .setNetwork(transformedOutgoingRoute.getNetwork())
-              .setNextHopIp(transformedOutgoingRoute.getNextHopIp())
-              .setOriginType(transformedOutgoingRoute.getOriginType())
-              .setOriginatorIp(transformedOutgoingRoute.getOriginatorIp())
-              .setReceivedFromIp(transformedOutgoingRoute.getReceivedFromIp())
-              .setReceivedFromRouteReflectorClient(
-                  transformedOutgoingRoute.getReceivedFromRouteReflectorClient())
               .setProtocol(targetProtocol)
               .setSrcProtocol(targetProtocol);
       String ipv4ImportPolicyName = neighbor.getIpv4UnicastAddressFamily().getImportPolicy();
