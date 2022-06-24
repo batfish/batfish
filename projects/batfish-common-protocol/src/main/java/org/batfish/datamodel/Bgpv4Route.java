@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -232,7 +233,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
-      h = h * 31 + Objects.hashCode(_pathId);
+      h = h * 31 + (_pathId != null ? _pathId : 0);
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
       h = h * 31 + Long.hashCode(_tag);
