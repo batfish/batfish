@@ -71,6 +71,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
           _nextHop,
           _routeDistinguisher,
           _vni,
+          _pathId,
           getTag(),
           _vniIp);
     }
@@ -112,6 +113,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @Nullable @JsonProperty(PROP_PATH_ID) Integer pathId,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_RECEIVED_FROM) ReceivedFrom receivedFrom,
       @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
@@ -154,6 +156,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         routeDistinguisher,
         vni,
+        pathId,
         tag,
         vniIp);
   }
@@ -164,9 +167,11 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       NextHop nextHop,
       RouteDistinguisher routeDistinguisher,
       int vni,
+      @Nullable Integer pathId,
       long tag,
       Ip vniIp) {
-    super(vniIp.toPrefix(), nextHop, attributes, receivedFrom, tag, routeDistinguisher, vni);
+    super(
+        vniIp.toPrefix(), nextHop, attributes, receivedFrom, tag, routeDistinguisher, vni, pathId);
     _vniIp = vniIp;
   }
 
@@ -198,6 +203,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         .setOriginatorIp(_attributes._originatorIp)
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
+        .setPathId(_pathId)
         .setProtocol(_attributes.getProtocol())
         .setReceivedFrom(_receivedFrom)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
@@ -224,6 +230,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         && _attributes.equals(other._attributes)
         && _receivedFrom.equals(other._receivedFrom)
         && Objects.equals(_nextHop, other._nextHop)
+        && Objects.equals(_pathId, other._pathId)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
         && _tag == other._tag
@@ -238,6 +245,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
+      h = h * 31 + Objects.hashCode(_pathId);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
       h = h * 31 + Long.hashCode(_tag);

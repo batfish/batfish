@@ -199,7 +199,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         ConfedSessionType.NO_CONFED,
         _fromNeighbor.getLocalAs(),
         Ip.parse("1.1.1.1"),
-        Ip.parse("1.1.1.1"));
+        Ip.parse("1.1.1.1"),
+        null);
   }
 
   /**
@@ -519,7 +520,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         ConfedSessionType.NO_CONFED,
         1,
         Ip.parse("1.1.1.1"),
-        Ip.ZERO);
+        Ip.ZERO,
+        null);
     assertThat(
         "Protocol overriden to BGP", routeBuilder.getProtocol(), equalTo(RoutingProtocol.BGP));
   }

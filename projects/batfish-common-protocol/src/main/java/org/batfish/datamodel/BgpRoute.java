@@ -239,6 +239,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nullable protected Ip _originatorIp;
     @Nullable protected OriginMechanism _originMechanism;
     @Nullable protected OriginType _originType;
+    @Nullable protected Integer _pathId;
     @Nullable protected RoutingProtocol _protocol;
     @Nullable protected ReceivedFrom _receivedFrom;
 
@@ -315,6 +316,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Override
     public OriginType getOriginType() {
       return _originType;
+    }
+
+    @Nullable
+    public Integer getPathId() {
+      return _pathId;
     }
 
     @Nullable
@@ -424,6 +430,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    public B setPathId(@Nullable Integer pathId) {
+      _pathId = pathId;
+      return getThis();
+    }
+
     public B setProtocol(RoutingProtocol protocol) {
       _protocol = protocol;
       return getThis();
@@ -472,6 +483,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_ORIGIN_MECHANISM = "originMechanism";
   static final String PROP_ORIGIN_TYPE = "originType";
   static final String PROP_ORIGINATOR_IP = "originatorIp";
+  static final String PROP_PATH_ID = "pathId";
   static final String PROP_RECEIVED_FROM = "receivedFrom";
   static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
       "receivedFromRouteReflectorClient";
@@ -480,12 +492,14 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_WEIGHT = "weight";
 
   protected final @Nonnull BgpRouteAttributes _attributes;
+  protected final @Nullable Integer _pathId;
 
   protected final @Nonnull ReceivedFrom _receivedFrom;
 
   protected BgpRoute(
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
+      @Nullable Integer pathId,
       int admin,
       BgpRouteAttributes attributes,
       ReceivedFrom receivedFrom,
@@ -495,6 +509,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     super(network, admin, tag, nonRouting, nonForwarding);
     _attributes = attributes;
     _nextHop = nextHop;
+    _pathId = pathId;
     _receivedFrom = receivedFrom;
   }
 
@@ -567,6 +582,16 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Override
   public OriginType getOriginType() {
     return _attributes.getOriginType();
+  }
+
+  /**
+   * Path ID specified in the BGP advertisement that resulted in this route. Null if the
+   * advertisement specified no path ID or if the route is local.
+   */
+  @Nullable
+  @JsonProperty(PROP_PATH_ID)
+  public Integer getPathId() {
+    return _pathId;
   }
 
   @Nonnull

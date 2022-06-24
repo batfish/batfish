@@ -10,7 +10,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -34,6 +36,7 @@ import org.batfish.datamodel.ReceivedFrom;
 import org.batfish.datamodel.ReceivedFromInterface;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
@@ -396,17 +399,35 @@ public final class BgpProtocolHelper {
    * <p>Sets next hop - if not already set by export policy - for non-EVPN-type-5 routes only. EVPN
    * type 5 routes' next hops should be set by {@link #setEvpnType5NhPostExport}.
    *
+   * <p>Sets path ID if our session supports sending additional paths, otherwise clears it.
+   *
+   * @param originalRoute Original route being exported. Will be used as a key in routesToPathIds if
+   *     a path ID is warranted
    * @param routeBuilder Builder for the output (exported) route
    * @param ourSessionProperties properties for the sender's session
    * @param af sender's address family configuration
-   * @param originalRouteNhip Next hop IP of the original route
+   * @param originalRouteNhip BGP next hop IP of the original route, or {@link
+   *     Route#UNSET_ROUTE_NEXT_HOP_IP} if original route is not BGP
+   * @param pathIdGenerator Used for generating a path ID for the outgoing advertisement if needed
+   * @param routesToPathIds Routes we have already exported, mapped to the path IDs with which we
+   *     exported them. If the outgoing route needs a path ID, we will look up {@code originalRoute}
+   *     in this map to find the correct path ID, and add a new entry if it isn't already there.
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       void transformBgpRoutePostExport(
+          AbstractRouteDecorator originalRoute,
           B routeBuilder,
           BgpSessionProperties ourSessionProperties,
           AddressFamily af,
-          Ip originalRouteNhip) {
+          Ip originalRouteNhip,
+          AtomicInteger pathIdGenerator,
+          Map<AbstractRouteDecorator, Integer> routesToPathIds) {
+    // Determine path ID to export, if any.
+    Integer pathId = null;
+    if (ourSessionProperties.getAdditionalPaths()) {
+      pathId =
+          routesToPathIds.computeIfAbsent(originalRoute, k -> pathIdGenerator.incrementAndGet());
+    }
     transformBgpRoutePostExport(
         routeBuilder,
         ourSessionProperties.isEbgp(),
@@ -415,7 +436,8 @@ public final class BgpProtocolHelper {
         ourSessionProperties.getConfedSessionType(),
         ourSessionProperties.getLocalAs(),
         ourSessionProperties.getLocalIp(),
-        originalRouteNhip);
+        originalRouteNhip,
+        pathId);
   }
 
   /**
@@ -445,7 +467,8 @@ public final class BgpProtocolHelper {
           ConfedSessionType confedSessionType,
           long localAs,
           Ip localIp,
-          Ip originalRouteNhip) {
+          Ip originalRouteNhip,
+          @Nullable Integer pathId) {
     // if eBGP, prepend as-path sender's as-path number
     if (isEbgp) {
       AsSet asSetToPrepend =
@@ -501,6 +524,8 @@ public final class BgpProtocolHelper {
             originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP) ? localIp : originalRouteNhip);
       }
     }
+
+    routeBuilder.setPathId(pathId);
 
     /*
     Routes can be aggregate only when generated locally. When transiting across nodes they must be BGP or
