@@ -14,6 +14,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
@@ -184,9 +185,9 @@ public class BgpRibTest {
     Create routes to compare. With non-ARRIVAL_ORDER tiebreaker, preference should be:
     1. Lowest originator IP
     2. Shortest cluster list
-    3. Lowest receivedFromIp, nulls first (first two properties are nonnull)
+    3. Lowest receivedFromIp
     */
-    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.ZERO);
+    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.0"));
     List<Set<Long>> decreasingLengthClusterLists =
         ImmutableList.of(ImmutableSet.of(1L), ImmutableSet.of());
     List<Bgpv4Route> ordered = new ArrayList<>();
@@ -194,9 +195,9 @@ public class BgpRibTest {
       rb.setOriginatorIp(originatorIp);
       for (Set<Long> clusterList : decreasingLengthClusterLists) {
         rb.setClusterList(clusterList);
-        ordered.add(rb.setReceivedFromIp(null).build());
         for (Ip receivedFromIp : decreasingIps) {
-          ordered.add(rb.setReceivedFromIp(receivedFromIp).build());
+          // TODO: fix comparator and test other ReceivedFrom subtypes
+          ordered.add(rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp)).build());
         }
       }
     }
@@ -233,9 +234,9 @@ public class BgpRibTest {
     Create routes to compare. With non-ARRIVAL_ORDER tiebreaker, preference should be:
         1. Shortest Cluster List
         2. Lowest originator IP
-        3. Lowest receivedFromIp, nulls first (first two properties are nonnull)
+        3. Lowest receivedFromIp
     */
-    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.ZERO);
+    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.0"));
     List<Set<Long>> decreasingLengthClusterLists =
         ImmutableList.of(ImmutableSet.of(1L, 2L), ImmutableSet.of(1L), ImmutableSet.of());
     List<Bgpv4Route> ordered = new ArrayList<>();
@@ -243,9 +244,9 @@ public class BgpRibTest {
       rb.setClusterList(clusterList);
       for (Ip originatorIp : decreasingIps) {
         rb.setOriginatorIp(originatorIp);
-        ordered.add(rb.setReceivedFromIp(null).build());
+        // TODO: fix comparator and test other ReceivedFrom subtypes
         for (Ip receivedFromIp : decreasingIps) {
-          ordered.add(rb.setReceivedFromIp(receivedFromIp).build());
+          ordered.add(rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp)).build());
         }
       }
     }
@@ -282,9 +283,9 @@ public class BgpRibTest {
     Create routes to compare. With non-ARRIVAL_ORDER tiebreaker, preference should be:
         1. Lowest originator IP
         2. Shortest Cluster List
-        3. Lowest receivedFromIp, nulls first (first two properties are nonnull)
+        3. Lowest receivedFromIp
     */
-    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.ZERO);
+    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.0"));
     List<Set<Long>> decreasingLengthClusterLists =
         ImmutableList.of(ImmutableSet.of(1L, 2L), ImmutableSet.of(1L), ImmutableSet.of());
     List<Bgpv4Route> ordered = new ArrayList<>();
@@ -293,9 +294,9 @@ public class BgpRibTest {
       rb.setOriginatorIp(originatorIp);
       for (Set<Long> clusterList : decreasingLengthClusterLists) {
         rb.setClusterList(clusterList);
-        ordered.add(rb.setReceivedFromIp(null).build());
         for (Ip receivedFromIp : decreasingIps) {
-          ordered.add(rb.setReceivedFromIp(receivedFromIp).build());
+          // TODO: fix comparator and test other ReceivedFrom subtypes
+          ordered.add(rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp)).build());
         }
       }
     }

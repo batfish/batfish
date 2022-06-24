@@ -251,6 +251,8 @@ import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -994,7 +996,7 @@ public final class CiscoNxosGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setTag(0L)
             .setWeight(BGP_LOCAL_WEIGHT)
@@ -1058,7 +1060,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1091,7 +1093,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1135,7 +1137,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1796,6 +1798,7 @@ public final class CiscoNxosGrammarTest {
               .setOriginMechanism(OriginMechanism.LEARNED)
               .setOriginType(OriginType.IGP)
               .setOriginatorIp(Ip.parse("5.6.7.8"))
+              .setReceivedFrom(ReceivedFromIp.of(Ip.parse("5.6.7.8")))
               .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition));
       EvpnType5Route permittedRouteSingleRouteTarget =
           rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(1, 3333))).build();

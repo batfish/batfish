@@ -7,7 +7,6 @@ import static org.batfish.datamodel.AuthenticationMethod.GROUP_USER_DEFINED;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_WEIGHT;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -171,6 +170,7 @@ import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -1033,7 +1033,7 @@ public final class CiscoAsaGrammarTest {
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .build();
     Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, DEFAULT_VRF_NAME);
@@ -1289,7 +1289,7 @@ public final class CiscoAsaGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .build();
     Bgpv4Route localRoute2 = localRoute1.toBuilder().setNetwork(staticPrefix2).build();
@@ -1306,7 +1306,7 @@ public final class CiscoAsaGrammarTest {
             .setOriginMechanism(OriginMechanism.GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setWeight(DEFAULT_LOCAL_WEIGHT)
             .build();
@@ -1381,7 +1381,7 @@ public final class CiscoAsaGrammarTest {
               .setOriginMechanism(OriginMechanism.GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
-              .setReceivedFromIp(Ip.ZERO) // indicates local origination
+              .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
               .setWeight(DEFAULT_LOCAL_WEIGHT)
               .build();

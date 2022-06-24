@@ -82,6 +82,8 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
@@ -795,6 +797,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         // TODO Allow customization of origin type per vendor
         .setOriginType(OriginType.IGP)
         .setProtocol(RoutingProtocol.BGP)
+        .setReceivedFrom(ReceivedFromSelf.instance())
         .setRouteDistinguisher(routeDistinguisher)
         .setVni(vni.getVni())
         .setVniIp(vni.getSourceAddress())
@@ -1845,7 +1848,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())
               .setProtocol(targetProtocol)
-              .setReceivedFromIp(advert.getSrcIp())
+              // TODO: support external unnumbered session, i.e. ReceivedFromInterface
+              .setReceivedFrom(ReceivedFromIp.of(advert.getSrcIp()))
               // TODO: support external route reflector clients
               .setReceivedFromRouteReflectorClient(false)
               .setSrcProtocol(advert.getSrcProtocol())
@@ -1877,7 +1881,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())
               .setProtocol(targetProtocol)
-              .setReceivedFromIp(advert.getSrcIp())
+              // TODO: support external unnumbered session, i.e. ReceivedFromInterface
+              .setReceivedFrom(ReceivedFromIp.of(advert.getSrcIp()))
               // TODO .setReceivedFromRouteReflectorClient(...)
               .setSrcProtocol(advert.getSrcProtocol())
               .build();
@@ -2225,7 +2230,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())
         .setProtocol(route.getProtocol())
-        .setReceivedFromIp(route.getReceivedFromIp())
+        .setReceivedFrom(route.getReceivedFrom())
         .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
         .setRouteDistinguisher(rd)
         .setSrcProtocol(route.getSrcProtocol())
@@ -2317,7 +2322,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())
         .setProtocol(route.getProtocol())
-        .setReceivedFromIp(route.getReceivedFromIp())
+        .setReceivedFrom(route.getReceivedFrom())
         .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
         .setSrcProtocol(route.getSrcProtocol())
         .setTag(route.getTag())

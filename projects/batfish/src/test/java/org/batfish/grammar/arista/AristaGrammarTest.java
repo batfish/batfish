@@ -6,7 +6,6 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
-import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
@@ -185,6 +184,8 @@ import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
@@ -623,7 +624,7 @@ public class AristaGrammarTest {
               .setCommunities(
                   ImmutableSet.of(StandardCommunity.of(111, 222), StandardCommunity.of(333, 444)))
               .setNextHopIp(peerIp)
-              .setReceivedFromIp(peerIp)
+              .setReceivedFrom(ReceivedFromIp.of(peerIp))
               .build();
       assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
     }
@@ -635,7 +636,7 @@ public class AristaGrammarTest {
           defaultOriginateRoute.toBuilder()
               .setAsPath(AsPath.ofSingletonAsSets(1L, 1234L))
               .setNextHopIp(peerIp)
-              .setReceivedFromIp(peerIp)
+              .setReceivedFrom(ReceivedFromIp.of(peerIp))
               .build();
       assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
     }
@@ -644,7 +645,10 @@ public class AristaGrammarTest {
       Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener", "VRF3").getRoutes();
       Ip peerIp = Ip.parse("10.3.3.1"); // local IP of originating peer
       Bgpv4Route expectedRoute =
-          defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
+          defaultOriginateRoute.toBuilder()
+              .setNextHopIp(peerIp)
+              .setReceivedFrom(ReceivedFromIp.of(peerIp))
+              .build();
       assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
     }
     {
@@ -652,7 +656,10 @@ public class AristaGrammarTest {
       Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener", "VRF4").getRoutes();
       Ip peerIp = Ip.parse("10.4.4.1"); // local IP of originating peer
       Bgpv4Route expectedRoute =
-          defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
+          defaultOriginateRoute.toBuilder()
+              .setNextHopIp(peerIp)
+              .setReceivedFrom(ReceivedFromIp.of(peerIp))
+              .build();
       assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
     }
   }
@@ -779,7 +786,7 @@ public class AristaGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginatorIp(Ip.parse("10.10.10.3"))
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -1505,7 +1512,7 @@ public class AristaGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .setTag(0) // TODO: should redistribute static preserve tag?
@@ -1524,7 +1531,7 @@ public class AristaGrammarTest {
             .setOriginMechanism(OriginMechanism.GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -1599,7 +1606,7 @@ public class AristaGrammarTest {
               .setOriginMechanism(OriginMechanism.GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
-              .setReceivedFromIp(Ip.ZERO) // indicates local origination
+              .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
               .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
               .build();
