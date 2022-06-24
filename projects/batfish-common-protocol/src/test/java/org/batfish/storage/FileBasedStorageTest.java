@@ -79,6 +79,7 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -954,6 +955,7 @@ public final class FileBasedStorageTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
             .setVni(1)
             .build();

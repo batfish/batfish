@@ -346,6 +346,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -1799,14 +1801,17 @@ public final class CiscoGrammarTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(originatorIp)
+            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
             .build();
     assertThat(l1Routes, hasItem(expected));
 
     // Listener 2
     originatorIp = Ip.parse("10.2.2.1");
     expected =
-        expected.toBuilder().setNextHopIp(originatorIp).setReceivedFromIp(originatorIp).build();
+        expected.toBuilder()
+            .setNextHopIp(originatorIp)
+            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
+            .build();
     assertThat(l2Routes, hasItem(expected));
 
     // Listener 3
@@ -1867,7 +1872,7 @@ public final class CiscoGrammarTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.STATIC)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
 
@@ -1882,7 +1887,7 @@ public final class CiscoGrammarTest {
             .setAsPath(AsPath.of(AsSet.of(originatorAs)))
             .setNextHop(NextHopIp.of(originatorIp))
             .setNonRouting(false)
-            .setReceivedFromIp(originatorIp)
+            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
             .setSrcProtocol(RoutingProtocol.BGP)
             .setWeight(0)
             .setOriginMechanism(LEARNED)
@@ -3755,7 +3760,7 @@ public final class CiscoGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -3788,7 +3793,7 @@ public final class CiscoGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -3832,7 +3837,7 @@ public final class CiscoGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
                   .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -6599,7 +6604,7 @@ public final class CiscoGrammarTest {
             .setOriginMechanism(REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -6617,7 +6622,7 @@ public final class CiscoGrammarTest {
             .setOriginMechanism(GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
             .build();
@@ -6691,7 +6696,7 @@ public final class CiscoGrammarTest {
               .setOriginMechanism(GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
-              .setReceivedFromIp(Ip.ZERO) // indicates local origination
+              .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
               .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
               .build();
@@ -6920,6 +6925,7 @@ public final class CiscoGrammarTest {
             .setNetwork(Prefix.ZERO)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("192.0.2.1")))
             .build();
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("replace-any");

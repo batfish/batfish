@@ -39,6 +39,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.community.Community;
@@ -240,9 +241,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD fullModel, ConfigAtomicPredicates configAPs) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP);
+            .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
+            .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
+            .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */
+            .setOriginType(OriginType.IGP) /* dummy value until supported */;
 
     BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 

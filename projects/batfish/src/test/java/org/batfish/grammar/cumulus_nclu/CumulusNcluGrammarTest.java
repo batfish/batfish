@@ -114,6 +114,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -368,7 +369,7 @@ public final class CumulusNcluGrammarTest {
               .setOriginType(OriginType.INCOMPLETE)
               .setOriginatorIp(defaultVrfRouterId)
               .setProtocol(RoutingProtocol.BGP)
-              .setReceivedFromIp(Ip.ZERO)
+              .setReceivedFrom(ReceivedFromSelf.instance())
               .setSrcProtocol(RoutingProtocol.CONNECTED)
               .build();
       // Static route 192.0.2.1/32 is redistributed via "network 192.0.2.1/32"
