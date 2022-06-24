@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
+import java.io.ObjectStreamException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -39,4 +40,9 @@ public final class ReceivedFromSelf implements ReceivedFrom {
   private ReceivedFromSelf() {}
 
   private static final ReceivedFromSelf INSTANCE = new ReceivedFromSelf();
+
+  /** Deserialize to singleton instance. */
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
+  }
 }

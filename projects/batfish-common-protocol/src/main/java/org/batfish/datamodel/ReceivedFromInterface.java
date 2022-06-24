@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
+import java.io.ObjectStreamException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -92,4 +93,9 @@ public final class ReceivedFromInterface implements ReceivedFrom {
 
   private final @Nonnull String _interface;
   private final @Nonnull Ip _linkLocalIp;
+
+  /** Cache after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.get(this);
+  }
 }

@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
@@ -14,13 +14,13 @@ public final class ReceivedFromInterfaceTest {
   @Test
   public void testJacksonSerialiation() {
     ReceivedFrom obj = ReceivedFromInterface.of("foo", Ip.parse("169.254.0.1"));
-    assertThat(BatfishObjectMapper.clone(obj, ReceivedFrom.class), equalTo(obj));
+    assertThat(BatfishObjectMapper.clone(obj, ReceivedFrom.class), sameInstance(obj));
   }
 
   @Test
   public void testJavaSerialization() {
     ReceivedFrom obj = ReceivedFromInterface.of("foo", Ip.parse("169.254.0.1"));
-    assertThat(SerializationUtils.clone(obj), equalTo(obj));
+    assertThat(SerializationUtils.clone(obj), sameInstance(obj));
   }
 
   @Test
