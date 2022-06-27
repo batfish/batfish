@@ -3373,10 +3373,10 @@ public class JFactory extends BDDFactory implements Serializable {
       if (LOW(n) != INVALID_BDD) {
         int hash2;
         hash2 = NODEHASH(LEVEL(n), LOW(n), HIGH(n));
-        SETNEXT(n, HASH(hash2));
-        SETHASH(hash2, n);
+        bddnodes.setNextNonVolatile(n, bddnodes.getHashNonVolatile(hash2));
+        bddnodes.setHashNonVolatile(hash2, n);
       } else {
-        SETNEXT(n, freepos[idx]);
+        bddnodes.setNextNonVolatile(n, freepos[idx]);
         freepos[idx] = n;
         idx = (idx + 1) % freepos.length;
       }
@@ -3559,10 +3559,12 @@ public class JFactory extends BDDFactory implements Serializable {
     bddnodesize = newsize;
 
     // Clear the hash of all the existing nodes.
-    IntStream.range(0, oldsize).parallel().forEach(i -> SETHASH(i, 0));
+    IntStream.range(0, oldsize).parallel().forEach(i -> bddnodes.setHashNonVolatile(i, 0));
 
     // Initialize the new nodes in parallel
-    IntStream.range(oldsize, newsize).parallel().forEach(n -> SETLOW(n, INVALID_BDD));
+    IntStream.range(oldsize, newsize)
+        .parallel()
+        .forEach(n -> bddnodes.setLowNonVolatile(n, INVALID_BDD));
 
     bdd_gbc_rehash();
     bddresized = true;
