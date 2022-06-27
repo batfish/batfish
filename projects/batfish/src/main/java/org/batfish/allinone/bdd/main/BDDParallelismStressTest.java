@@ -11,7 +11,7 @@ import org.batfish.common.bdd.BDDPacket;
 
 /** Replays a BDD trace. */
 public final class BDDParallelismStressTest {
-  private static long bench(int numThreads) throws InterruptedException {
+  private static long bench(int numThreads, boolean gcTime) throws InterruptedException {
     int total_iters = 100;
     System.gc();
     BDDPacket pkt = new BDDPacket();
@@ -40,7 +40,18 @@ public final class BDDParallelismStressTest {
     }
 
     t = System.currentTimeMillis() - t;
-    return t;
+
+    return gcTime ? pkt.getFactory().getGCStats().time : t;
+  }
+
+  private static boolean parseBoolean(String s) {
+    if ("true".equalsIgnoreCase(s)) {
+      return true;
+    }
+    if ("false".equalsIgnoreCase(s)) {
+      return false;
+    }
+    throw new IllegalArgumentException("not a boolean: " + s);
   }
 
   public static void main(String[] args)
@@ -48,10 +59,11 @@ public final class BDDParallelismStressTest {
     int minNumThreads = Integer.parseInt(args[0]);
     int maxNumThreads = Integer.parseInt(args[1]);
     int iters = Integer.parseInt(args[2]);
+    boolean gcTime = parseBoolean(args[3]);
     BDDParallelismStressTest test = new BDDParallelismStressTest();
     // warm up
     for (int i = 0; i < 4; i++) {
-      test.bench(1);
+      test.bench(1, gcTime);
     }
     List<String> log = new ArrayList<>();
     for (int numThreads = minNumThreads; numThreads <= maxNumThreads; numThreads++) {
@@ -61,7 +73,7 @@ public final class BDDParallelismStressTest {
               .mapToObj(
                   i -> {
                     try {
-                      return String.valueOf(test.bench(numThreadsFinal));
+                      return String.valueOf(test.bench(numThreadsFinal, gcTime));
                     } catch (InterruptedException e) {
                       throw new RuntimeException(e);
                     }
