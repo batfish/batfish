@@ -98,6 +98,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationObjectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationOverrideRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
@@ -4420,10 +4421,7 @@ public final class PaloAltoGrammarTest {
                             // TODO: fix ssh trace element
                             // ssh VSID is currently invalid, so it's pruned during config
                             // finalization
-                            TraceElement.builder()
-                                .add("Matched application object ")
-                                .add("ssh")
-                                .build(),
+                            matchBuiltInApplicationTraceElement("ssh"),
                             isTraceTree(
                                 matchApplicationOverrideRuleTraceElement(
                                     "OVERRIDE_APP_RULE2", vsysName, filename),
@@ -4482,7 +4480,8 @@ public final class PaloAltoGrammarTest {
         rule.getPort(),
         equalTo(IntegerSpace.unionOf(Range.closed(8642, 8643), Range.closed(8765, 8888))));
     assertThat(rule.getProtocol(), equalTo(ApplicationOverrideRule.Protocol.UDP));
-    assertThat(rule.getApplication(), equalTo("APP_UNDEF"));
+    assertThat(
+        rule.getApplication(), equalTo(new ApplicationOrApplicationGroupReference("APP_UNDEF")));
     assertThat(rule.getDescription(), equalTo("longish description"));
     assertThat(rule.getTags(), contains("TAG1", "TAG2"));
     assertTrue(rule.getDisabled());
