@@ -25,10 +25,19 @@ public final class BDDParallelismStressTest {
           () -> {
             for (int j = iFinal; j < total_iters; j += numThreads) {
               BDD bdd = pkt.getFactory().zero();
+              BDD bddNot = pkt.getFactory().one();
               for (int n = 0; n < 10000; n++) {
-                bdd.orWith(pkt.getDstIp().value(Math.abs(rng.nextInt())));
+                BDD randBdd = pkt.getDstIp().value(Math.abs(rng.nextInt()));
+                bdd.orEq(randBdd);
+                bddNot.diffWith(randBdd);
               }
+              BDD bddNot2 = bdd.not();
               bdd.free();
+              if (!bddNot2.equals(bddNot)) {
+                throw new RuntimeException("yikes!");
+              }
+              bddNot.free();
+              bddNot2.free();
             }
           };
       threads[i] = new Thread(job);
