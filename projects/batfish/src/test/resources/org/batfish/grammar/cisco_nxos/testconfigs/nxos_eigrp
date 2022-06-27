@@ -13,6 +13,9 @@ interface loopback99
   ip authentication key-chain eigrp EIGRP1234 KEYCHAIN
   ip address 99.99.99.99/32
 !
+route-map RM permit 10
+route-map RMV permit 10
+!
 vrf context VRF
   ! defined so it will be converted
 !
