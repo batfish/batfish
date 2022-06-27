@@ -28,6 +28,9 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFrom;
+import org.batfish.datamodel.ReceivedFromInterface;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -36,6 +39,8 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
+import org.batfish.datamodel.visitors.LegacyReceivedFromToIpConverter;
+import org.batfish.datamodel.visitors.ReceivedFromVisitor;
 
 /**
  * A generic BGP RIB containing the common properties among the RIBs for different types of BGP
@@ -349,9 +354,47 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     Comparator.comparing(R::getOriginatorIp, Comparator.reverseOrder())
         // Prefer lower cluster list length. Only applicable to iBGP
         .thenComparing(r -> r.getClusterList().size(), Comparator.reverseOrder())
-        // Prefer lower neighbor IP
-        .thenComparing(R::getReceivedFromIp, Comparator.nullsFirst(Comparator.reverseOrder()))
+        .thenComparing(R::getReceivedFrom, BgpRib::compareReceivedFrom)
         .compare(lhs, rhs);
+  }
+
+  @VisibleForTesting
+  static int compareReceivedFrom(ReceivedFrom lhs, ReceivedFrom rhs) {
+    // Prefer lower neighbor IP, then break tie on ReceivedFrom subtype, then on
+    // ReceivedFromInterface interface if applicable, else yield a tie.
+    return Comparator.comparing(LegacyReceivedFromToIpConverter::convert, Comparator.reverseOrder())
+        .thenComparing(RECEIVED_FROM_TYPE_PREFERENCE::visit)
+        .thenComparing(BgpRib::compareReceivedFromInterface)
+        .compare(lhs, rhs);
+  }
+
+  private static final ReceivedFromVisitor<Integer> RECEIVED_FROM_TYPE_PREFERENCE =
+      new ReceivedFromVisitor<Integer>() {
+        @Override
+        public Integer visitReceivedFromIp(ReceivedFromIp receivedFromIp) {
+          return 1;
+        }
+
+        @Override
+        public Integer visitReceivedFromInterface(ReceivedFromInterface receivedFromInterface) {
+          return 0;
+        }
+
+        @Override
+        public Integer visitReceivedFromSelf() {
+          return 2;
+        }
+      };
+
+  private static int compareReceivedFromInterface(ReceivedFrom lhs, ReceivedFrom rhs) {
+    // lhs and rhs should have same type if previously compared via type preference
+    assert lhs.getClass().equals(rhs.getClass());
+    if (!(lhs instanceof ReceivedFromInterface)) {
+      return 0;
+    }
+    ReceivedFromInterface ilhs = (ReceivedFromInterface) lhs;
+    ReceivedFromInterface irhs = (ReceivedFromInterface) rhs;
+    return ilhs.getInterface().compareTo(irhs.getInterface());
   }
 
   /** Returns {@code true} iff this RIB is configured to be a BGP multipath RIB. */
