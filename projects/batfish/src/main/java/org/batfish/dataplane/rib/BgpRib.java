@@ -351,6 +351,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         .thenComparing(r -> r.getClusterList().size(), Comparator.reverseOrder())
         // Prefer lower neighbor IP
         .thenComparing(R::getReceivedFromIp, Comparator.nullsFirst(Comparator.reverseOrder()))
+        // Prefer no path ID, then lower path ID
+        .thenComparing(R::getPathId, Comparator.nullsLast(Comparator.reverseOrder()))
         .compare(lhs, rhs);
   }
 
