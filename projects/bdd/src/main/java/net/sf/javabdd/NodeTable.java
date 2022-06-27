@@ -97,10 +97,26 @@ final class NodeTable implements Serializable {
     return (prev & MARK_MASK) != 0;
   }
 
+  /** Mark the input node and return the previous value. */
+  void setMarkNonVolatile(int node, boolean value) {
+    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
+    if (value) {
+      array[idx] |= MARK_MASK;
+    } else {
+      array[idx] &= ~MARK_MASK;
+    }
+  }
+
   /** Return whether the input node is marked. */
   boolean getMark(int node) {
     int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
     return ((int) AA.getVolatile(array, idx) & MARK_MASK) != 0;
+  }
+
+  /** Return whether the input node is marked. */
+  boolean getMarkNonVolatile(int node) {
+    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
+    return (array[idx] & MARK_MASK) != 0;
   }
 
   void setLevel(int node, int level) {
@@ -157,7 +173,7 @@ final class NodeTable implements Serializable {
   }
 
   /** Precondition: node is fully built. */
-  int getLow(int node) {
+  int getLowNonVolatile(int node) {
     // Don't need to use getVolatile, because LOW is constant for fully built nodes.
     int idx = node * NODE_SIZE + OFFSET__LOW;
     return array[idx];
@@ -171,6 +187,11 @@ final class NodeTable implements Serializable {
   void setLow(int node, int low) {
     int idx = node * NODE_SIZE + OFFSET__LOW;
     AA.setVolatile(array, idx, low);
+  }
+
+  void setLowNonVolatile(int node, int low) {
+    int idx = node * NODE_SIZE + OFFSET__LOW;
+    array[idx] = low;
   }
 
   int getHigh(int node) {
@@ -194,10 +215,21 @@ final class NodeTable implements Serializable {
     AA.setVolatile(array, idx, value);
   }
 
+  void setHashNonVolatile(int node, int value) {
+    int idx = node * NODE_SIZE + OFFSET__HASH;
+    array[idx] = value;
+  }
+
   int getHash(int node) {
     // have to use getVolatile, because bdd_makenode can set hash in another thread
     int idx = node * NODE_SIZE + OFFSET__HASH;
     return (int) AA.getVolatile(array, idx);
+  }
+
+  int getHashNonVolatile(int node) {
+    // have to use getVolatile, because bdd_makenode can set hash in another thread
+    int idx = node * NODE_SIZE + OFFSET__HASH;
+    return array[idx];
   }
 
   int getNext(int node) {
@@ -210,6 +242,11 @@ final class NodeTable implements Serializable {
   void setNext(int node, int next) {
     int idx = node * NODE_SIZE + OFFSET__NEXT;
     AA.setVolatile(array, idx, next);
+  }
+
+  void setNextNonVolatile(int node, int next) {
+    int idx = node * NODE_SIZE + OFFSET__NEXT;
+    array[idx] = next;
   }
 
   boolean trySetInitializing(int node) {

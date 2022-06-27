@@ -496,7 +496,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int LOW(int r) {
-    return bddnodes.getLow(r);
+    return bddnodes.getLowNonVolatile(r);
   }
 
   private void SETLOW(int r, int v) {
@@ -768,7 +768,7 @@ public class JFactory extends BDDFactory implements Serializable {
             // still need to garbage collect (another thread didn't do it already)
             int freenum = bdd_gbc();
 
-            if ((freenum * 100) / bddnodesize <= minfreenodes) {
+            if ((freenum * 100L) / bddnodesize <= minfreenodes) {
               bdd_noderesize();
               hash2 = NODEHASH(level, low, high);
             }
@@ -3406,7 +3406,7 @@ public class JFactory extends BDDFactory implements Serializable {
       if (HASREF(n)) {
         bdd_mark(n);
       }
-      SETHASH(n, 0);
+      bddnodes.setHashNonVolatile(n, 0);
     }
 
     int freenum = 0;
@@ -3414,15 +3414,15 @@ public class JFactory extends BDDFactory implements Serializable {
     int[] freepos = new int[NUM_FREEPOS];
     int idx = 0;
     for (int n = bddnodesize - 1; n >= 2; n--) {
-      if (MARKED(n) && LOW(n) != INVALID_BDD) {
+      if (bddnodes.getMarkNonVolatile(n) && LOW(n) != INVALID_BDD) {
         int hash2;
-        UNMARK(n);
+        bddnodes.setMarkNonVolatile(n, false);
         hash2 = NODEHASH(LEVEL(n), LOW(n), HIGH(n));
-        SETNEXT(n, HASH(hash2));
-        SETHASH(hash2, n);
+        bddnodes.setNextNonVolatile(n, bddnodes.getHashNonVolatile(hash2));
+        bddnodes.setHashNonVolatile(hash2, n);
       } else {
-        SETLOW(n, INVALID_BDD);
-        SETNEXT(n, freepos[idx]);
+        bddnodes.setLowNonVolatile(n, INVALID_BDD);
+        bddnodes.setNextNonVolatile(n, freepos[idx]);
         freepos[idx] = n;
         idx = (idx + 1) % freepos.length;
         freenum++;
@@ -3505,11 +3505,11 @@ public class JFactory extends BDDFactory implements Serializable {
       return;
     }
 
-    if (MARKED(i) || LOW(i) == INVALID_BDD) {
+    if (bddnodes.getMarkNonVolatile(i) || LOW(i) == INVALID_BDD) {
       return;
     }
 
-    SETMARK(i);
+    bddnodes.setMarkNonVolatile(i, true);
 
     bdd_mark(LOW(i));
     bdd_mark(HIGH(i));
