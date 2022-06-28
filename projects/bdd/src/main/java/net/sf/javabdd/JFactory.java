@@ -476,7 +476,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int LEVEL(int node) {
-    return bddnodes.getLevel(node);
+    return bddnodes.getLevelVolatile(node);
   }
 
   private void SETLEVELANDMARK(int node, int val) {
@@ -496,7 +496,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int LOW(int r) {
-    return bddnodes.getLowNonVolatile(r);
+    return bddnodes.getLowVolatile(r);
   }
 
   private void SETLOW(int r, int v) {
@@ -504,7 +504,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int HIGH(int r) {
-    return bddnodes.getHigh(r);
+    return bddnodes.getHighVolatile(r);
   }
 
   private void SETHIGH(int r, int v) {
