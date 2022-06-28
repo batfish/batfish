@@ -476,7 +476,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int LEVEL(int node) {
-    return bddnodes.getLevelVolatile(node);
+    return bddnodes.getLevel(node);
   }
 
   private void SETLEVELANDMARK(int node, int val) {
@@ -496,7 +496,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int LOW(int r) {
-    return bddnodes.getLowVolatile(r);
+    return bddnodes.getLowNonVolatile(r);
   }
 
   private void SETLOW(int r, int v) {
@@ -504,7 +504,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int HIGH(int r) {
-    return bddnodes.getHighVolatile(r);
+    return bddnodes.getHigh(r);
   }
 
   private void SETHIGH(int r, int v) {
@@ -792,9 +792,9 @@ public class JFactory extends BDDFactory implements Serializable {
 
       newNodeIndex(res);
 
-      bddnodes.setRefcountLevelAndMark(res, level); // refcount and mark initially 0
-      SETLOW(res, low);
-      SETHIGH(res, high);
+      bddnodes.setRefcountLevelAndMarkNonVolatile(res, level); // refcount and mark initially 0
+      bddnodes.setLowNonVolatile(res, low);
+      bddnodes.setHighNonVolatile(res, high);
 
       // insert the node (or find a dupe of it)
       int ret = bddnodes.insertNode(res, hash2, headHashBucket, level, low, high);
@@ -802,8 +802,8 @@ public class JFactory extends BDDFactory implements Serializable {
         // another thread created a copy first. return res to freepos
         // note: another thead could have set bddfreepos to zero so it can GC. if that happens,
         // the compareAndSet will fail and res will be collected
-        SETLOW(res, INVALID_BDD);
-        SETNEXT(res, nextFreepos);
+        bddnodes.setLowNonVolatile(res, INVALID_BDD);
+        bddnodes.setNextNonVolatile(res, nextFreepos);
         assert bddfreepos == nextFreepos;
         bddfreepos = res;
       }

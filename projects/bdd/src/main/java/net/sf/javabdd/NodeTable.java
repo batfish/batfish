@@ -151,6 +151,11 @@ final class NodeTable implements Serializable {
     AA.setVolatile(array, idx, val);
   }
 
+  void setRefcountLevelAndMarkNonVolatile(int node, int val) {
+    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
+    array[idx] = val;
+  }
+
   /** Invariant: node is fully built. */
   int getLevel(int node) {
     // We don't need to use getVolatile here, because the level cannot change during the node's
@@ -209,6 +214,11 @@ final class NodeTable implements Serializable {
     AA.setVolatile(array, idx, high);
   }
 
+  void setHighNonVolatile(int node, int high) {
+    int idx = node * NODE_SIZE + OFFSET__HIGH;
+    array[idx] = high;
+  }
+
   /** Set the hash bucket index (i.e. the ID of the first node in bucket) for the input node. */
   void setHash(int node, int value) {
     int idx = node * NODE_SIZE + OFFSET__HASH;
@@ -239,6 +249,13 @@ final class NodeTable implements Serializable {
     return (int) AA.getVolatile(array, idx);
   }
 
+  int getNextNonVolatile(int node) {
+    // have to use getVolatile, because bdd_makenode may have just inserted this node in another
+    // thread
+    int idx = node * NODE_SIZE + OFFSET__NEXT;
+    return array[idx];
+  }
+
   void setNext(int node, int next) {
     int idx = node * NODE_SIZE + OFFSET__NEXT;
     AA.setVolatile(array, idx, next);
@@ -267,7 +284,7 @@ final class NodeTable implements Serializable {
     while (true) {
       // set node's next pointer first, so that if the insert succeeds
       // the chain is immediately correct
-      AA.setVolatile(array, next_idx, next);
+      array[next_idx] = next;
 
       // make sure no other thread has inserted a different node
       if (AA.compareAndSet(array, bucket_idx, next, node)) {
@@ -285,7 +302,7 @@ final class NodeTable implements Serializable {
           return res;
         }
 
-        res = getNext(res);
+        res = getNextNonVolatile(res);
       }
 
       // didn't find a copy, so retry the insert
