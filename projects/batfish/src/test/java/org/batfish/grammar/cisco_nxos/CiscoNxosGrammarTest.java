@@ -9379,7 +9379,7 @@ public final class CiscoNxosGrammarTest {
     batfish.loadConfigurations(batfish.getSnapshot());
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    Set<AbstractRoute> routes = dp.getRibs().get(hostname).get("default").getRoutes();
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname, "default").getRoutes();
 
     // Rib should have the static route whose NHI is determined from a non-default route
     assertThat(
