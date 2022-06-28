@@ -15,7 +15,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFrom;
+import org.batfish.datamodel.ReceivedFromInterface;
 import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
@@ -186,7 +189,7 @@ public class BgpRibTest {
     Create routes to compare. With non-ARRIVAL_ORDER tiebreaker, preference should be:
     1. Lowest originator IP
     2. Shortest cluster list
-    3. Lowest receivedFromIp
+    3. Best ReceivedFrom
     4. Lowest path-id (null considered lowest)
     */
     List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.0"));
@@ -199,7 +202,6 @@ public class BgpRibTest {
       for (Set<Long> clusterList : decreasingLengthClusterLists) {
         rb.setClusterList(clusterList);
         for (Ip receivedFromIp : decreasingIps) {
-          // TODO: fix comparator and test other ReceivedFrom subtypes
           rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp));
           for (Integer pathId : decreasingPathIds) {
             ordered.add(rb.setPathId(pathId).build());
@@ -213,6 +215,36 @@ public class BgpRibTest {
         assertThat(
             String.format("i=%d lhs=%s j=%d rhs=%s", i, ordered.get(i), j, ordered.get(j)),
             Integer.signum(rib.bestPathComparator(ordered.get(i), (ordered.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
+  }
+
+  @Test
+  public void testCompareReceivedFrom() {
+    // Preference order:
+    //  1. Lowest receivedFromIp
+    //  2. Best ReceivedFrom subtype (least -> most preferred: Interface, Ip, Self)
+    //  3. String comparison on ReceivedFromInterface if applicable
+
+    // r1 and r2 break tie on ReceivedFrom subtype
+    ReceivedFrom r1 = ReceivedFromInterface.of("foo1", Ip.parse("169.254.0.2"));
+    ReceivedFrom r2 = ReceivedFromIp.of(Ip.parse("169.254.0.2"));
+
+    // r3 and r4 break tie on interface name
+    ReceivedFrom r3 = ReceivedFromInterface.of("foo1", Ip.parse("169.254.0.1"));
+    ReceivedFrom r4 = ReceivedFromInterface.of("foo2", Ip.parse("169.254.0.1"));
+
+    // lowest IP so far
+    ReceivedFrom r5 = ReceivedFromIp.of(Ip.parse("10.0.0.1"));
+    // always lowest IP
+    ReceivedFrom r6 = ReceivedFromSelf.instance();
+    List<ReceivedFrom> ordered = ImmutableList.of(r1, r2, r3, r4, r5, r6);
+    for (int i = 0; i < ordered.size(); i++) {
+      for (int j = 0; j < ordered.size(); j++) {
+        assertThat(
+            String.format("i=%d lhs=%s j=%d rhs=%s", i, ordered.get(i), j, ordered.get(j)),
+            Integer.signum(BgpRib.compareReceivedFrom(ordered.get(i), (ordered.get(j)))),
             equalTo(Integer.signum(i - j)));
       }
     }
@@ -251,7 +283,6 @@ public class BgpRibTest {
       rb.setClusterList(clusterList);
       for (Ip originatorIp : decreasingIps) {
         rb.setOriginatorIp(originatorIp);
-        // TODO: fix comparator and test other ReceivedFrom subtypes
         for (Ip receivedFromIp : decreasingIps) {
           ordered.add(rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp)).build());
         }
@@ -302,7 +333,6 @@ public class BgpRibTest {
       for (Set<Long> clusterList : decreasingLengthClusterLists) {
         rb.setClusterList(clusterList);
         for (Ip receivedFromIp : decreasingIps) {
-          // TODO: fix comparator and test other ReceivedFrom subtypes
           ordered.add(rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp)).build());
         }
       }
