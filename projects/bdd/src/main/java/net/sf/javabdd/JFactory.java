@@ -707,7 +707,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     private int bdd_makenode(int level, int low, int high) {
-      assert (ISCONST(low) || level < LEVEL(low)) && (ISCONST(high) || level < LEVEL(high));
+      assert (ISCONST(low) || level < LEVEL(low));
+      assert (ISCONST(high) || level < LEVEL(high));
 
       /* check whether childs are equal */
       if (low == high) {
@@ -3419,6 +3420,8 @@ public class JFactory extends BDDFactory implements Serializable {
       bddnodes.setHashNonVolatile(n, 0);
     }
 
+    assert noDuplicateNodes();
+
     int freenum = 0;
 
     int[] freepos = new int[NUM_FREEPOS];
@@ -3467,6 +3470,33 @@ public class JFactory extends BDDFactory implements Serializable {
 
     // validate_all();
     return freenum;
+  }
+
+  /** Check that no marked node is duplicated */
+  private boolean noDuplicateNodes() {
+    long t = System.currentTimeMillis();
+    for (int n = 0; n < bddnodesize; n++) {
+      if (!MARKED(n)) {
+        continue;
+      }
+      int level = LEVEL(n);
+      int low = LOW(n);
+      int high = HIGH(n);
+      int hashNode = HASH(NODEHASH(level, low, high));
+      while (hashNode != 0) {
+        if (hashNode != n
+            && level == LEVEL(hashNode)
+            && low == LOW(hashNode)
+            && high == HIGH(hashNode)) {
+          throw new RuntimeException(
+              String.format("duplicate nodes found: %s and %s", n, hashNode));
+        }
+        hashNode = NEXT(hashNode);
+      }
+    }
+    t = System.currentTimeMillis() - t;
+    System.out.println(String.format("checking for duplicate nodes took %s ms", t));
+    return true;
   }
 
   private int bdd_addref(int root) {
