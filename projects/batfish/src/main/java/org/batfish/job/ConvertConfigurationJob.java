@@ -23,9 +23,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -40,6 +41,7 @@ import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -100,6 +102,7 @@ import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
@@ -417,6 +420,50 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   }
 
   /**
+   * Remove invalid {@link VendorStructureId}s from the {@link Configuration}. {@link
+   * VendorStructureId}s are considered invalid if they do not point to a defined structure in the
+   * specified {@link VendorConfiguration}.
+   *
+   * <p>Currently only handles {@link VendorStructureId}s in {@link IpAccessList}s and their {@link
+   * org.batfish.datamodel.TraceElement}s.
+   */
+  @VisibleForTesting
+  static void removeInvalidVendorStructureIds(Configuration c, VendorConfiguration vc, Warnings w) {
+    assert vc.getAnswerElement() != null;
+    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+        definedStructures = vc.getAnswerElement().getDefinedStructures();
+    InvalidVendorStructureIdEraser vsidEraser =
+        new InvalidVendorStructureIdEraser(definedStructures);
+    c.setIpAccessLists(
+        c.getIpAccessLists().entrySet().stream()
+            .collect(Collectors.toMap(Entry::getKey, e -> vsidEraser.visit(e.getValue()))));
+  }
+
+  /**
+   * Asserts that {@link VendorStructureId}s in the specified {@link Configuration} are valid.
+   *
+   * <p>Currently only checks {@link VendorStructureId}s in {@link IpAccessList}s and their {@link
+   * org.batfish.datamodel.TraceElement}s.
+   */
+  @VisibleForTesting
+  static void assertVendorStructureIdsValid(Configuration c, VendorConfiguration vc, Warnings w) {
+    if (vc.getAnswerElement() == null) {
+      // Tests should fail
+      assert vc.getAnswerElement() != null;
+      return;
+    }
+    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+        definedStructures = vc.getAnswerElement().getDefinedStructures();
+    InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
+    // Erase invalid VSIDs and confirm no changes occur
+    for (IpAccessList acl : c.getIpAccessLists().values()) {
+      for (AclLine line : acl.getLines()) {
+        assert line.equals(eraser.visit(line));
+      }
+    }
+  }
+
+  /**
    * Applies sanity checks and finishing touches to the given {@link Configuration}.
    *
    * <p>Sanity checks such as asserting that required properties hold.
@@ -426,7 +473,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    * <p>Finishing touches such as converting structures to their immutable forms.
    */
   @VisibleForTesting
-  static void finalizeConfiguration(Configuration c, Warnings w) {
+  static void finalizeConfiguration(Configuration c, VendorConfiguration vc, Warnings w) {
     String hostname = c.getHostname();
     if (c.getDefaultCrossZoneAction() == null) {
       throw new BatfishException(
@@ -444,6 +491,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyVrrpGroups(c, w);
     removeInvalidStaticRoutes(c, w);
     removeUndefinedTrackReferences(c, w);
+    // TODO run this assertion once remaining VI-conversions are fixed
+    // Make tests fail if they have invalid VSIDs
+    // assertVendorStructureIdsValid(c, vc, w);
+    removeInvalidVendorStructureIds(c, vc, w);
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
@@ -486,7 +537,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setZones(toImmutableMap(c.getZones()));
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
-    removeInvalidAcls(c, w);
   }
 
   private static void verifyOspfAreas(Configuration c, Warnings w) {
@@ -886,63 +936,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     return true;
   }
 
-  private static void clearInvalidFilterAndWarn(
-      Map<String, IpAccessList> acls,
-      @Nonnull Supplier<IpAccessList> getter,
-      @Nonnull Consumer<IpAccessList> setter,
-      @Nonnull String purpose,
-      Warnings w) {
-    @Nullable IpAccessList acl = getter.get();
-    if (acl == null) {
-      return;
-    }
-    @Nullable IpAccessList inMap = acls.get(acl.getName());
-    // Deliberate == comparison.
-    if (inMap == acl) {
-      return;
-    }
-    if (inMap == null) {
-      w.redFlag(
-          String.format("The device ACL map does not contain %s %s.", purpose, acl.getName()));
-    } else {
-      w.redFlag(
-          String.format(
-              "The device ACL map has a different version of %s %s.", purpose, acl.getName()));
-    }
-    setter.accept(null);
-  }
-
-  /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */
-  private static void removeInvalidAcls(Configuration c, Warnings w) {
-    for (Interface iface : c.getAllInterfaces().values()) {
-      Map<String, IpAccessList> acls = c.getIpAccessLists();
-      clearInvalidFilterAndWarn(
-          acls, iface::getInboundFilter, iface::setInboundFilter, "inbound filter", w);
-      clearInvalidFilterAndWarn(
-          acls, iface::getIncomingFilter, iface::setIncomingFilter, "incoming filter", w);
-      clearInvalidFilterAndWarn(
-          acls, iface::getOutgoingFilter, iface::setOutgoingFilter, "outgoing filter", w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getOutgoingOriginalFlowFilter,
-          iface::setOutgoingOriginalFlowFilter,
-          "outgoing filter on original flow",
-          w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getPostTransformationIncomingFilter,
-          iface::setPostTransformationIncomingFilter,
-          "post transformation incoming filter",
-          w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getPreTransformationOutgoingFilter,
-          iface::setPreTransformationOutgoingFilter,
-          "pre transformation outgoing filter",
-          w);
-    }
-  }
-
   @Override
   public ConvertConfigurationResult call() {
     long startTime = System.currentTimeMillis();
@@ -984,7 +977,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           iptablesConfig.applyAsOverlay(configuration, warnings);
         }
 
-        finalizeConfiguration(configuration, warnings);
+        finalizeConfiguration(configuration, vendorConfiguration, warnings);
 
         String hostname = configuration.getHostname();
         configurations.put(hostname, configuration);

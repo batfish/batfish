@@ -28,6 +28,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
@@ -287,7 +288,7 @@ public class BgpRibGroupsTest {
                     .setOriginType(OriginType.IGP)
                     .setProtocol(RoutingProtocol.BGP)
                     .setLocalPreference(100)
-                    .setReceivedFromIp(Ip.parse("1.1.1.3"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.3")))
                     .setNextHopIp(Ip.parse("1.1.1.3"))
                     .setSrcProtocol(RoutingProtocol.BGP)
                     .build(),
@@ -311,7 +312,7 @@ public class BgpRibGroupsTest {
                     .setOriginType(OriginType.IGP)
                     .setProtocol(RoutingProtocol.BGP)
                     .setLocalPreference(100)
-                    .setReceivedFromIp(Ip.parse("1.1.1.5"))
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.5")))
                     .setNextHopIp(Ip.parse("1.1.1.5"))
                     .setSrcProtocol(RoutingProtocol.BGP)
                     .build(),

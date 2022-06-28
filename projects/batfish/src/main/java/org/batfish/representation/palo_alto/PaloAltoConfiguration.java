@@ -2919,6 +2919,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getPreRulebase().getNatRules().putAll(source.getPreRulebase().getNatRules());
     // Security pre
     target.getPreRulebase().getSecurityRules().putAll(source.getPreRulebase().getSecurityRules());
+    // App-override pre
+    target
+        .getPreRulebase()
+        .getApplicationOverrideRules()
+        .putAll(source.getPreRulebase().getApplicationOverrideRules());
 
     // NAT post
     // Note: using LinkedHashMaps to preserve insertion order
@@ -2936,6 +2941,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     postRulebaseSecurity.putAll(targetPostSecurity);
     targetPostSecurity.clear();
     targetPostSecurity.putAll(postRulebaseSecurity);
+    // App-override post
+    // Note: using InsertOrderedMap to preserve insertion order
+    Map<String, ApplicationOverrideRule> postRulebaseApp =
+        new InsertOrderedMap<>(source.getPostRulebase().getApplicationOverrideRules());
+    Map<String, ApplicationOverrideRule> targetPostApp =
+        target.getPostRulebase().getApplicationOverrideRules();
+    postRulebaseApp.putAll(targetPostApp);
+    targetPostApp.clear();
+    targetPostApp.putAll(postRulebaseApp);
   }
 
   /**
@@ -3368,6 +3382,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         true,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
         PaloAltoStructureUsage.SECURITY_RULE_SOURCE,
+        PaloAltoStructureUsage.NAT_RULE_DESTINATION,
+        PaloAltoStructureUsage.NAT_RULE_SOURCE,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_DESTINATION,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SOURCE);
     // Handle ambiguous interface addresses (e.g. address object names can look like IP addresses)
@@ -3388,6 +3404,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
         PaloAltoStructureUsage.SECURITY_RULE_SOURCE,
+        PaloAltoStructureUsage.NAT_RULE_DESTINATION,
+        PaloAltoStructureUsage.NAT_RULE_SOURCE,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_DESTINATION,
         PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SOURCE);
 

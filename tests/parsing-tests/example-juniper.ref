@@ -11295,6 +11295,24 @@
               "numReferrers" : 1
             }
           },
+          "bgp neighbor" : {
+            "1.10.1.1 (VRF default)" : {
+              "definitionLines" : "14",
+              "numReferrers" : 1
+            },
+            "10.12.11.2 (VRF default)" : {
+              "definitionLines" : "19",
+              "numReferrers" : 1
+            },
+            "3.2.2.2 (VRF default)" : {
+              "definitionLines" : "27",
+              "numReferrers" : 1
+            },
+            "5.6.7.8 (VRF default)" : {
+              "definitionLines" : "23",
+              "numReferrers" : 1
+            }
+          },
           "community" : {
             "as1_to_as2_community" : {
               "definitionLines" : "51",
@@ -11402,6 +11420,20 @@
             },
             "as4" : {
               "definitionLines" : "21-25",
+              "numReferrers" : 1
+            }
+          },
+          "bgp neighbor" : {
+            "1.10.1.1 (VRF default)" : {
+              "definitionLines" : "15",
+              "numReferrers" : 1
+            },
+            "10.13.22.3 (VRF default)" : {
+              "definitionLines" : "20",
+              "numReferrers" : 1
+            },
+            "10.14.22.4 (VRF default)" : {
+              "definitionLines" : "25",
               "numReferrers" : 1
             }
           },
@@ -11533,6 +11565,16 @@
           }
         },
         "configs/as1core1.cfg" : {
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF default)" : {
+              "definitionLines" : "75,83",
+              "numReferrers" : 2
+            },
+            "1.2.2.2 (VRF default)" : {
+              "definitionLines" : "77,84",
+              "numReferrers" : 2
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "definitionLines" : "72",
@@ -11555,6 +11597,20 @@
           }
         },
         "configs/as2border1.cfg" : {
+          "bgp neighbor" : {
+            "10.12.11.1 (VRF default)" : {
+              "definitionLines" : "105",
+              "numReferrers" : 1
+            },
+            "2.1.2.1 (VRF default)" : {
+              "definitionLines" : "89,103",
+              "numReferrers" : 2
+            },
+            "2.1.2.2 (VRF default)" : {
+              "definitionLines" : "90,104",
+              "numReferrers" : 2
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "definitionLines" : "81",
@@ -11705,6 +11761,20 @@
           }
         },
         "configs/as2border2.cfg" : {
+          "bgp neighbor" : {
+            "10.23.21.3 (VRF default)" : {
+              "definitionLines" : "105",
+              "numReferrers" : 1
+            },
+            "2.1.2.1 (VRF default)" : {
+              "definitionLines" : "89,103",
+              "numReferrers" : 2
+            },
+            "2.1.2.2 (VRF default)" : {
+              "definitionLines" : "90,104",
+              "numReferrers" : 2
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "definitionLines" : "81",
@@ -11855,6 +11925,24 @@
           }
         },
         "configs/as2core1.cfg" : {
+          "bgp neighbor" : {
+            "2.1.1.1 (VRF default)" : {
+              "definitionLines" : "90,102",
+              "numReferrers" : 2
+            },
+            "2.1.1.2 (VRF default)" : {
+              "definitionLines" : "92,103",
+              "numReferrers" : 2
+            },
+            "2.1.3.1 (VRF default)" : {
+              "definitionLines" : "94,104",
+              "numReferrers" : 2
+            },
+            "2.1.3.2 (VRF default)" : {
+              "definitionLines" : "96,105",
+              "numReferrers" : 2
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "definitionLines" : "87",
@@ -11901,6 +11989,24 @@
           }
         },
         "configs/as2core2.cfg" : {
+          "bgp neighbor" : {
+            "2.1.1.1 (VRF default)" : {
+              "definitionLines" : "89,101",
+              "numReferrers" : 2
+            },
+            "2.1.1.2 (VRF default)" : {
+              "definitionLines" : "91,102",
+              "numReferrers" : 2
+            },
+            "2.1.3.1 (VRF default)" : {
+              "definitionLines" : "93,103",
+              "numReferrers" : 2
+            },
+            "2.1.3.2 (VRF default)" : {
+              "definitionLines" : "95,104",
+              "numReferrers" : 2
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "definitionLines" : "85",
@@ -11931,6 +12037,16 @@
           }
         },
         "configs/as2dept1.cfg" : {
+          "bgp neighbor" : {
+            "2.34.101.3 (VRF default)" : {
+              "definitionLines" : "80",
+              "numReferrers" : 1
+            },
+            "2.34.201.3 (VRF default)" : {
+              "definitionLines" : "81",
+              "numReferrers" : 1
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "definitionLines" : "70",
@@ -12047,6 +12163,20 @@
           }
         },
         "configs/as2dist1.cfg" : {
+          "bgp neighbor" : {
+            "2.1.2.1 (VRF default)" : {
+              "definitionLines" : "87,98",
+              "numReferrers" : 2
+            },
+            "2.1.2.2 (VRF default)" : {
+              "definitionLines" : "89,99",
+              "numReferrers" : 2
+            },
+            "2.34.101.4 (VRF default)" : {
+              "definitionLines" : "100",
+              "numReferrers" : 1
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "definitionLines" : "82",
@@ -12135,6 +12265,20 @@
           }
         },
         "configs/as2dist2.cfg" : {
+          "bgp neighbor" : {
+            "2.1.2.1 (VRF default)" : {
+              "definitionLines" : "87,98",
+              "numReferrers" : 2
+            },
+            "2.1.2.2 (VRF default)" : {
+              "definitionLines" : "89,99",
+              "numReferrers" : 2
+            },
+            "2.34.201.4 (VRF default)" : {
+              "definitionLines" : "100",
+              "numReferrers" : 1
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "definitionLines" : "82",
@@ -12239,6 +12383,16 @@
           }
         },
         "configs/as3border1.cfg" : {
+          "bgp neighbor" : {
+            "10.23.21.2 (VRF default)" : {
+              "definitionLines" : "94",
+              "numReferrers" : 1
+            },
+            "3.10.1.1 (VRF default)" : {
+              "definitionLines" : "81,93",
+              "numReferrers" : 2
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "definitionLines" : "74",
@@ -12373,6 +12527,16 @@
           }
         },
         "configs/as3border2.cfg" : {
+          "bgp neighbor" : {
+            "10.13.22.1 (VRF default)" : {
+              "definitionLines" : "95",
+              "numReferrers" : 1
+            },
+            "3.10.1.1 (VRF default)" : {
+              "definitionLines" : "82,94",
+              "numReferrers" : 2
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "definitionLines" : "75",
@@ -12507,6 +12671,16 @@
           }
         },
         "configs/as3core1.cfg" : {
+          "bgp neighbor" : {
+            "3.1.1.1 (VRF default)" : {
+              "definitionLines" : "84,92",
+              "numReferrers" : 2
+            },
+            "3.2.2.2 (VRF default)" : {
+              "definitionLines" : "86,93",
+              "numReferrers" : 2
+            }
+          },
           "bgp peer-group" : {
             "as3" : {
               "definitionLines" : "81",
@@ -12601,6 +12775,28 @@
             },
             "xanadu" : {
               "bgp group neighbor" : [
+                23
+              ]
+            }
+          },
+          "bgp neighbor" : {
+            "1.10.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                14
+              ]
+            },
+            "10.12.11.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                19
+              ]
+            },
+            "3.2.2.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                27
+              ]
+            },
+            "5.6.7.8 (VRF default)" : {
+              "bgp neighbor self ref" : [
                 23
               ]
             }
@@ -12756,6 +12952,23 @@
             },
             "as4" : {
               "bgp group neighbor" : [
+                25
+              ]
+            }
+          },
+          "bgp neighbor" : {
+            "1.10.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                15
+              ]
+            },
+            "10.13.22.3 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                20
+              ]
+            },
+            "10.14.22.4 (VRF default)" : {
+              "bgp neighbor self ref" : [
                 25
               ]
             }
@@ -12945,6 +13158,20 @@
           }
         },
         "configs/as1core1.cfg" : {
+          "bgp neighbor" : {
+            "1.1.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                75,
+                83
+              ]
+            },
+            "1.2.2.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                77,
+                84
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "bgp neighbor peer-group" : [
@@ -12976,6 +13203,25 @@
           }
         },
         "configs/as2border1.cfg" : {
+          "bgp neighbor" : {
+            "10.12.11.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                105
+              ]
+            },
+            "2.1.2.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                89,
+                103
+              ]
+            },
+            "2.1.2.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                90,
+                104
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "bgp neighbor peer-group" : [
@@ -13148,6 +13394,25 @@
           }
         },
         "configs/as2border2.cfg" : {
+          "bgp neighbor" : {
+            "10.23.21.3 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                105
+              ]
+            },
+            "2.1.2.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                89,
+                103
+              ]
+            },
+            "2.1.2.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                90,
+                104
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "bgp neighbor peer-group" : [
@@ -13320,6 +13585,32 @@
           }
         },
         "configs/as2core1.cfg" : {
+          "bgp neighbor" : {
+            "2.1.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                90,
+                102
+              ]
+            },
+            "2.1.1.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                92,
+                103
+              ]
+            },
+            "2.1.3.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                94,
+                104
+              ]
+            },
+            "2.1.3.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                96,
+                105
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "bgp neighbor peer-group" : [
@@ -13385,6 +13676,32 @@
           }
         },
         "configs/as2core2.cfg" : {
+          "bgp neighbor" : {
+            "2.1.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                89,
+                101
+              ]
+            },
+            "2.1.1.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                91,
+                102
+              ]
+            },
+            "2.1.3.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                93,
+                103
+              ]
+            },
+            "2.1.3.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                95,
+                104
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "bgp neighbor peer-group" : [
@@ -13437,6 +13754,18 @@
           }
         },
         "configs/as2dept1.cfg" : {
+          "bgp neighbor" : {
+            "2.34.101.3 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                80
+              ]
+            },
+            "2.34.201.3 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                81
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "bgp neighbor peer-group" : [
@@ -13569,6 +13898,25 @@
           }
         },
         "configs/as2dist1.cfg" : {
+          "bgp neighbor" : {
+            "2.1.2.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                87,
+                98
+              ]
+            },
+            "2.1.2.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                89,
+                99
+              ]
+            },
+            "2.34.101.4 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                100
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "bgp neighbor peer-group" : [
@@ -13675,6 +14023,25 @@
           }
         },
         "configs/as2dist2.cfg" : {
+          "bgp neighbor" : {
+            "2.1.2.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                87,
+                98
+              ]
+            },
+            "2.1.2.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                89,
+                99
+              ]
+            },
+            "2.34.201.4 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                100
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "bgp neighbor peer-group" : [
@@ -13800,6 +14167,19 @@
           }
         },
         "configs/as3border1.cfg" : {
+          "bgp neighbor" : {
+            "10.23.21.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                94
+              ]
+            },
+            "3.10.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                81,
+                93
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as2" : {
               "bgp neighbor peer-group" : [
@@ -13950,6 +14330,19 @@
           }
         },
         "configs/as3border2.cfg" : {
+          "bgp neighbor" : {
+            "10.13.22.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                95
+              ]
+            },
+            "3.10.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                82,
+                94
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as1" : {
               "bgp neighbor peer-group" : [
@@ -14100,6 +14493,20 @@
           }
         },
         "configs/as3core1.cfg" : {
+          "bgp neighbor" : {
+            "3.1.1.1 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                84,
+                92
+              ]
+            },
+            "3.2.2.2 (VRF default)" : {
+              "bgp neighbor self ref" : [
+                86,
+                93
+              ]
+            }
+          },
           "bgp peer-group" : {
             "as3" : {
               "bgp neighbor peer-group" : [

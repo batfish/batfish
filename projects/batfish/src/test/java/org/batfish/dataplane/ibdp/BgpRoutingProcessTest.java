@@ -62,6 +62,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
@@ -169,6 +171,7 @@ public class BgpRoutingProcessTest {
                 .setVniIp(ip)
                 .setOriginatorIp(ip)
                 .setNextHop(NextHopDiscard.instance())
+                .setReceivedFrom(ReceivedFromSelf.instance())
                 .build()));
   }
 
@@ -243,6 +246,7 @@ public class BgpRoutingProcessTest {
                 .setOriginType(OriginType.IGP)
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginatorIp(_bgpProcess.getRouterId())
+                .setReceivedFrom(ReceivedFromSelf.instance())
                 .setNextHop(NextHopDiscard.instance())
                 .build(),
             EvpnType3Route.builder()
@@ -253,6 +257,7 @@ public class BgpRoutingProcessTest {
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setOriginMechanism(OriginMechanism.GENERATED)
                 .setOriginType(OriginType.IGP)
+                .setReceivedFrom(ReceivedFromSelf.instance())
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginatorIp(_bgpProcess.getRouterId())
                 .setNextHop(NextHopDiscard.instance())
@@ -905,6 +910,7 @@ public class BgpRoutingProcessTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(neighborIp))
             .setNextHopIp(Ip.parse("2.2.2.2"));
 
     Bgpv4Route inputRoute = routeBuilder.build();
@@ -937,6 +943,7 @@ public class BgpRoutingProcessTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.ZERO)
+            .setReceivedFrom(ReceivedFromSelf.instance())
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
             .build();

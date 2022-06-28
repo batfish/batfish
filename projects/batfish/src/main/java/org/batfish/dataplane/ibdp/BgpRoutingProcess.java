@@ -8,6 +8,7 @@ import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.OriginMechanism.GENERATED;
+import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.OriginMechanism.NETWORK;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
@@ -41,7 +42,10 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -78,6 +82,8 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
@@ -134,6 +140,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * (Arista-like behavior) or in the BGP RIB (Cisco-like behavior).
    */
   private final boolean _generateAggregatesFromMainRib;
+
+  /** Source for assigning path IDs to routes upon export when sending additional paths. */
+  @Nonnull private final AtomicInteger _pathIdGenerator;
+  /**
+   * Map indicating what path ID this process uses when exporting a given route. Keys can be:
+   *
+   * <ul>
+   *   <li>Routes in our BGP RIB (pre-export)
+   *   <li>Non-BGP routes in our main RIB (pre-export), if we do not {@link #_exportFromBgpRib}
+   *   <li>BGP routes resulting from applying {@link #processNeighborSpecificGeneratedRoute} to
+   *       {@link BgpPeerConfig#getGeneratedRoutes() neighbor-specific generated routes}
+   * </ul>
+   */
+  @Nonnull private final ConcurrentMap<AbstractRouteDecorator, Integer> _routesToPathIds;
 
   @Nonnull private final PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
@@ -298,6 +318,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     _exportFromBgpRib = configuration.getExportBgpFromBgpRib();
     _generateAggregatesFromMainRib = configuration.getGenerateBgpAggregatesFromMainRib();
+
+    _pathIdGenerator = new AtomicInteger();
+    _routesToPathIds = new ConcurrentHashMap<>();
 
     // Message queues start out empty
     _bgpv4Edges = ImmutableSortedSet.of();
@@ -774,6 +797,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         // TODO Allow customization of origin type per vendor
         .setOriginType(OriginType.IGP)
         .setProtocol(RoutingProtocol.BGP)
+        .setReceivedFrom(ReceivedFromSelf.instance())
         .setRouteDistinguisher(routeDistinguisher)
         .setVni(vni.getVni())
         .setVniIp(vni.getSourceAddress())
@@ -950,6 +974,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
   }
 
+  /**
+   * Generates and returns all BGP advertisements this process should send over the given edge this
+   * iteration. These advertisements come from BGP routes, non-BGP routes (if this process does not
+   * {@link #_exportFromBgpRib}), and the exporting peer's {@link BgpPeerConfig#getGeneratedRoutes()
+   * generated routes}.
+   *
+   * <p>The advertisements returned by this function have already been subjected to all export
+   * transformations/policies and are ready to go on the wire.
+   *
+   * @param edge The {@link EdgeId} representing the session for which to generate advertisements.
+   *     The {@link EdgeId#head() head} is the remote {@link BgpPeerConfigId} and the {@link
+   *     EdgeId#tail() tail} is our {@link BgpPeerConfigId}.
+   */
   private Stream<RouteAdvertisement<Bgpv4Route>> getOutgoingRoutesForEdge(
       EdgeId edge,
       Map<String, Node> allNodes,
@@ -1105,43 +1142,41 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             .map(Optional::get)
             .map(RouteAdvertisement::new);
 
-    RibDelta<AnnotatedRoute<Bgpv4Route>> bgpRoutesToExport = bgpRibExports.build();
+    // Transform and apply export policy to exportable BGP RIB routes
+    Stream<RouteAdvertisement<Bgpv4Route>> bgpRibRoutesToExport =
+        bgpRibExports
+            .build()
+            .getActions()
+            .map(
+                adv -> {
+                  Optional<Bgpv4Route> transformedRoute =
+                      transformBgpRouteOnExport(
+                          adv.getRoute().getRoute(),
+                          ourConfigId,
+                          remoteConfigId,
+                          ourConfig,
+                          remoteConfig,
+                          remoteBgpRoutingProcess,
+                          ourSession,
+                          Type.IPV4_UNICAST);
+                  // REPLACE does not make sense across routers, update with WITHDRAW
+                  return transformedRoute
+                      .map(
+                          bgpv4Route ->
+                              RouteAdvertisement.<Bgpv4Route>builder()
+                                  .setReason(
+                                      adv.getReason() == Reason.REPLACE
+                                          ? Reason.WITHDRAW
+                                          : adv.getReason())
+                                  .setRoute(bgpv4Route)
+                                  .build())
+                      .orElse(null);
+                })
+            .filter(Objects::nonNull)
+            .distinct();
 
-    // Compute a set of advertisements that can be queued on remote VR
-    Stream<RouteAdvertisement<Bgpv4Route>> advertisementStream =
-        Stream.concat(
-            bgpRoutesToExport
-                .getActions()
-                .map(
-                    adv -> {
-                      Optional<Bgpv4Route> transformedRoute =
-                          transformBgpRouteOnExport(
-                              adv.getRoute().getRoute(),
-                              ourConfigId,
-                              remoteConfigId,
-                              ourConfig,
-                              remoteConfig,
-                              remoteBgpRoutingProcess,
-                              ourSession,
-                              Type.IPV4_UNICAST);
-                      // REPLACE does not make sense across routers, update with WITHDRAW
-                      return transformedRoute
-                          .map(
-                              bgpv4Route ->
-                                  RouteAdvertisement.<Bgpv4Route>builder()
-                                      .setReason(
-                                          adv.getReason() == Reason.REPLACE
-                                              ? Reason.WITHDRAW
-                                              : adv.getReason())
-                                      .setRoute(bgpv4Route)
-                                      .build())
-                          .orElse(null);
-                    })
-                .filter(Objects::nonNull)
-                .distinct(),
-            mainRibExports);
-
-    return Stream.concat(advertisementStream, neighborGeneratedRoutes);
+    // Return all advertisements to queue on the remote VR's BGP process
+    return Streams.concat(bgpRibRoutesToExport, mainRibExports, neighborGeneratedRoutes);
   }
 
   private static boolean isReflectable(
@@ -1666,10 +1701,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
+        exportCandidate,
         transformedOutgoingRouteBuilder,
         ourSessionProperties,
         addressFamily,
-        exportCandidate.getNextHopIp());
+        exportCandidate.getNextHopIp(),
+        _pathIdGenerator,
+        _routesToPathIds);
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
 
@@ -1758,10 +1796,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
+        exportCandidate,
         transformedOutgoingRouteBuilder,
         ourSessionProperties,
         v4Family,
-        Route.UNSET_ROUTE_NEXT_HOP_IP);
+        Route.UNSET_ROUTE_NEXT_HOP_IP,
+        _pathIdGenerator,
+        _routesToPathIds);
 
     // Successfully exported route
     Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
@@ -1794,7 +1835,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // Since the route is received, it is from a post-import-chain view of the route.
       // Copy its attributes directly where possible then directly import it into the RIB.
       Bgpv4Route route =
-          Bgpv4Route.testBuilder()
+          Bgpv4Route.builder()
               .setAdmin(admin)
               .setAsPath(advert.getAsPath())
               .setClusterList(advert.getClusterList())
@@ -1804,9 +1845,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setNetwork(advert.getNetwork())
               .setNextHopIp(advert.getNextHopIp())
               .setOriginatorIp(advert.getOriginatorIp())
+              .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())
               .setProtocol(targetProtocol)
-              .setReceivedFromIp(advert.getSrcIp())
+              // TODO: support external unnumbered session, i.e. ReceivedFromInterface
+              .setReceivedFrom(ReceivedFromIp.of(advert.getSrcIp()))
               // TODO: support external route reflector clients
               .setReceivedFromRouteReflectorClient(false)
               .setSrcProtocol(advert.getSrcProtocol())
@@ -1825,7 +1868,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         localPreference = advert.getLocalPreference();
       }
       Bgpv4Route transformedOutgoingRoute =
-          Bgpv4Route.testBuilder()
+          Bgpv4Route.builder()
               .setAsPath(advert.getAsPath())
               .setClusterList(advert.getClusterList())
               .setCommunities(advert.getCommunities())
@@ -1834,27 +1877,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setNetwork(advert.getNetwork())
               .setNextHopIp(advert.getNextHopIp())
               .setOriginatorIp(advert.getOriginatorIp())
+              // Don't know the origin mechanism on the sender, but for us it will be LEARNED
+              .setOriginMechanism(LEARNED)
               .setOriginType(advert.getOriginType())
               .setProtocol(targetProtocol)
-              .setReceivedFromIp(advert.getSrcIp())
+              // TODO: support external unnumbered session, i.e. ReceivedFromInterface
+              .setReceivedFrom(ReceivedFromIp.of(advert.getSrcIp()))
               // TODO .setReceivedFromRouteReflectorClient(...)
               .setSrcProtocol(advert.getSrcProtocol())
               .build();
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
-          Bgpv4Route.testBuilder()
+          transformedOutgoingRoute.toBuilder()
               .setAdmin(admin)
-              .setAsPath(transformedOutgoingRoute.getAsPath())
-              .setClusterList(transformedOutgoingRoute.getClusterList())
-              .setCommunities(transformedOutgoingRoute.getCommunities())
-              .setLocalPreference(transformedOutgoingRoute.getLocalPreference())
-              .setMetric(transformedOutgoingRoute.getMetric())
-              .setNetwork(transformedOutgoingRoute.getNetwork())
-              .setNextHopIp(transformedOutgoingRoute.getNextHopIp())
-              .setOriginType(transformedOutgoingRoute.getOriginType())
-              .setOriginatorIp(transformedOutgoingRoute.getOriginatorIp())
-              .setReceivedFromIp(transformedOutgoingRoute.getReceivedFromIp())
-              .setReceivedFromRouteReflectorClient(
-                  transformedOutgoingRoute.getReceivedFromRouteReflectorClient())
               .setProtocol(targetProtocol)
               .setSrcProtocol(targetProtocol);
       String ipv4ImportPolicyName = neighbor.getIpv4UnicastAddressFamily().getImportPolicy();
@@ -2196,7 +2230,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())
         .setProtocol(route.getProtocol())
-        .setReceivedFromIp(route.getReceivedFromIp())
+        .setReceivedFrom(route.getReceivedFrom())
         .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
         .setRouteDistinguisher(rd)
         .setSrcProtocol(route.getSrcProtocol())
@@ -2288,7 +2322,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())
         .setProtocol(route.getProtocol())
-        .setReceivedFromIp(route.getReceivedFromIp())
+        .setReceivedFrom(route.getReceivedFrom())
         .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
         .setSrcProtocol(route.getSrcProtocol())
         .setTag(route.getTag())

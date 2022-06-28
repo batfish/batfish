@@ -1,0 +1,36 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name juniper-bgp-add-path
+
+# Boilerplate
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.254/24
+set routing-options autonomous-system 65500
+set routing-options router-id 10.0.0.254
+
+# Common BGP settings
+set protocols bgp family inet unicast add-path receive
+set protocols bgp family inet unicast add-path send
+set protocols bgp family inet unicast add-path send path-count 2
+
+# BGP group g1
+set protocols bgp group g1 family inet unicast add-path send multipath
+set protocols bgp group g1 family inet unicast add-path send path-count 64
+set protocols bgp group g1 type internal
+set protocols bgp group g1 peer-as 65500
+set protocols bgp group g1 neighbor 10.0.0.1
+
+# BGP group g2
+set protocols bgp group g2 neighbor 10.0.0.2 family inet unicast add-path send path-selection-mode all-paths
+set protocols bgp group g2 type internal
+set protocols bgp group g2 peer-as 65500
+
+# BGP group g3
+set protocols bgp group g3 neighbor 10.0.0.3 family inet unicast add-path send path-selection-mode equal-cost-paths
+set protocols bgp group g3 neighbor 10.0.0.3 family inet unicast add-path send prefix-policy appp
+set protocols bgp group g3 type internal
+set protocols bgp group g3 peer-as 65500
+
+# BGP group g4
+set protocols bgp group g4 neighbor 10.0.0.4
+set protocols bgp group g4 type internal
+set protocols bgp group g4 peer-as 65500
+#

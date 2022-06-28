@@ -193,4 +193,12 @@ public class IpAccessList implements Serializable {
     }
     return output.toString();
   }
+
+  public Builder toBuilder() {
+    return builder()
+        .setName(_name)
+        .setLines(ImmutableList.copyOf(_lines))
+        .setSourceName(_sourceName)
+        .setSourceType(_sourceType);
+  }
 }

@@ -1650,13 +1650,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSa_ip_netmask(Sa_ip_netmaskContext ctx) {
-    if (ctx.ip_address() != null) {
-      _currentAddressObject.setIp(toIp(ctx.ip_address()));
-    } else if (ctx.ip_prefix() != null) {
-      _currentAddressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
-    } else {
-      warn(ctx, "Cannot understand what follows 'ip-netmask'");
-    }
+    applyIpNetmask(_currentAddressObject, ctx.ip_netmask());
   }
 
   @Override

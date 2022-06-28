@@ -34,14 +34,7 @@ sa_fqdn
     null_rest_of_line
 ;
 
-sa_ip_netmask
-:
-    IP_NETMASK
-    (
-        ip_address
-        | ip_prefix
-    )
-;
+sa_ip_netmask: IP_NETMASK ip_netmask;
 
 sa_ip_range
 :

@@ -2,7 +2,6 @@ package org.batfish.grammar.cumulus_concatenated;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
-import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
@@ -76,6 +75,7 @@ import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
@@ -273,7 +273,7 @@ public class CumulusConcatenatedGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .build();
     Bgpv4Route bgpRouteVrf2 =

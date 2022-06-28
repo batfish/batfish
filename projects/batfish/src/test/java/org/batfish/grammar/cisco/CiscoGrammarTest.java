@@ -16,6 +16,7 @@ import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
@@ -64,6 +65,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -191,6 +193,8 @@ import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GRO
 import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_LISTEN_RANGE;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD;
@@ -342,6 +346,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -1795,14 +1801,17 @@ public final class CiscoGrammarTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(originatorIp)
+            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
             .build();
     assertThat(l1Routes, hasItem(expected));
 
     // Listener 2
     originatorIp = Ip.parse("10.2.2.1");
     expected =
-        expected.toBuilder().setNextHopIp(originatorIp).setReceivedFromIp(originatorIp).build();
+        expected.toBuilder()
+            .setNextHopIp(originatorIp)
+            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
+            .build();
     assertThat(l2Routes, hasItem(expected));
 
     // Listener 3
@@ -1863,7 +1872,7 @@ public final class CiscoGrammarTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.STATIC)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
 
@@ -1878,7 +1887,7 @@ public final class CiscoGrammarTest {
             .setAsPath(AsPath.of(AsSet.of(originatorAs)))
             .setNextHop(NextHopIp.of(originatorIp))
             .setNonRouting(false)
-            .setReceivedFromIp(originatorIp)
+            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
             .setSrcProtocol(RoutingProtocol.BGP)
             .setWeight(0)
             .setOriginMechanism(LEARNED)
@@ -3751,7 +3760,7 @@ public final class CiscoGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -3784,7 +3793,7 @@ public final class CiscoGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -3828,7 +3837,7 @@ public final class CiscoGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
                   .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -3905,6 +3914,40 @@ public final class CiscoGrammarTest {
     org.batfish.representation.cisco.BgpProcess vrfBgp = c.getVrfs().get("a").getBgpProcess();
     assertThat(vrfBgp.getMasterBgpPeerGroup().getLocalAs(), equalTo(5L));
     assertThat(vrfBgp.getRouterId(), equalTo(Ip.parse("1.2.3.5")));
+  }
+
+  @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "ios-bgp-neighbor";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String neighborIp = bgpNeighborStructureName("1.2.3.4", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:0:0:0:0:0:0/32", "default");
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp, contains(5)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp6, contains(6)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_LISTEN_RANGE, neighborPrefix, contains(8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_LISTEN_RANGE, neighborPrefix6, contains(9)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp6, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE, neighborPrefix, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE, neighborPrefix6, 1));
   }
 
   @Test
@@ -6561,7 +6604,7 @@ public final class CiscoGrammarTest {
             .setOriginMechanism(REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -6579,7 +6622,7 @@ public final class CiscoGrammarTest {
             .setOriginMechanism(GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
             .build();
@@ -6653,7 +6696,7 @@ public final class CiscoGrammarTest {
               .setOriginMechanism(GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
-              .setReceivedFromIp(Ip.ZERO) // indicates local origination
+              .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
               .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
               .build();
@@ -6882,6 +6925,7 @@ public final class CiscoGrammarTest {
             .setNetwork(Prefix.ZERO)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("192.0.2.1")))
             .build();
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("replace-any");

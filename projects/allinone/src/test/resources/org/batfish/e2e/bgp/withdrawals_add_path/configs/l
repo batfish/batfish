@@ -1,0 +1,12 @@
+set system host-name L
+#
+set interfaces ge-0/0/0 unit 0 family inet address 3.0.0.0/31
+set interfaces ge-0/0/0 unit 0 description to-S
+#
+set routing-options static route 0.0.0.0/0 discard
+#
+set protocols bgp local-as 2
+set protocols bgp local-address 3.0.0.0
+set protocols bgp group S peer-as 2
+set protocols bgp group S neighbor 3.0.0.1
+set protocols bgp group S family inet unicast add-path receive

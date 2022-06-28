@@ -1,0 +1,43 @@
+!RANCID-CONTENT-TYPE: cisco
+
+hostname as2border2
+
+interface Loopback0
+  ip address 10.0.2.2 255.255.255.255
+
+interface GigabitEthernet0/0
+  description as1r3:GigabitEthernet0/0
+  ip address 10.12.3.2 255.255.255.0
+  no shutdown
+!
+
+interface GigabitEthernet0/2
+  description as2rr:GigabitEthernet0/1
+  ip address 10.2.23.2 255.255.255.0
+  no shutdown
+!
+
+! as2rr loopback
+ip route 10.0.2.3 255.255.255.255 10.2.23.3
+
+route-map comm3 permit 100
+  set community 3
+
+router bgp 2
+  bgp router-id 10.0.2.2
+  neighbor 10.12.3.1 remote-as 1
+  neighbor 10.0.2.3 remote-as 2
+  neighbor 10.0.2.3 update-source Loopback0
+  address-family ipv4 unicast
+    bgp additional-paths send receive
+    bgp additional-paths select all
+    bgp additional-paths install
+    maximum-paths eibgp 32
+    neighbor 10.12.3.1 activate
+    neighbor 10.12.3.1 route-map comm3 in
+    neighbor 10.0.2.3 activate
+    neighbor 10.0.2.3 advertise additional-paths all
+    neighbor 10.0.2.3 additional-paths send receive
+    neighbor 10.0.2.3 next-hop-self
+    neighbor 10.0.2.3 send-community both
+!

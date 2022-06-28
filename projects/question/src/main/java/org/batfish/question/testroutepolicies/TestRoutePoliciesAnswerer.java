@@ -29,6 +29,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -169,6 +170,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setNetwork(questionsBgpRoute.getNetwork())
         .setCommunities(questionsBgpRoute.getCommunities())
         .setAsPath(questionsBgpRoute.getAsPath())
+        .setReceivedFrom(ReceivedFromSelf.instance()) // TODO: support receivedFrom in input route
         .build();
   }
 

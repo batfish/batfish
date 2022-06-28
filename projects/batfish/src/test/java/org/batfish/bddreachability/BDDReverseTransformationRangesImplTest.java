@@ -110,7 +110,8 @@ public class BDDReverseTransformationRangesImplTest {
     // with incoming filter
     {
       String aclName = "ACL";
-      iface.setIncomingFilter(IpAccessList.builder().setName(aclName).build());
+      IpAccessList acl = IpAccessList.builder().setOwner(iface.getOwner()).setName(aclName).build();
+      iface.setIncomingFilter(acl);
       BDD fwdAclBdd =
           _headerSpaceToBDD.toBDD(
               HeaderSpace.builder().setDstPorts(ImmutableList.of(new SubRange(100, 200))).build());
@@ -169,7 +170,8 @@ public class BDDReverseTransformationRangesImplTest {
     // with pre-transformation outgoing filter
     {
       String aclName = "ACL";
-      iface.setPreTransformationOutgoingFilter(IpAccessList.builder().setName(aclName).build());
+      IpAccessList acl = IpAccessList.builder().setOwner(iface.getOwner()).setName(aclName).build();
+      iface.setPreTransformationOutgoingFilter(acl);
       BDD fwdAclBdd =
           _headerSpaceToBDD.toBDD(
               HeaderSpace.builder().setDstPorts(ImmutableList.of(new SubRange(100, 200))).build());

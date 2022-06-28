@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -64,12 +66,14 @@ public class InterfacePropertySpecifierTest {
 
   @Test
   public void testIncomingFilterReturnsName() {
+    Configuration c = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     IpAccessList acl =
         IpAccessList.builder()
+            .setOwner(c)
             .setName("MY_ACL")
             .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
             .build();
-    Interface i1 = Interface.builder().setName("i1").setIncomingFilter(acl).build();
+    Interface i1 = Interface.builder().setOwner(c).setName("i1").setIncomingFilter(acl).build();
     assertThat(
         InterfacePropertySpecifier.getPropertyDescriptor(INCOMING_FILTER_NAME)
             .getGetter()

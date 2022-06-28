@@ -1,0 +1,58 @@
+set deviceconfig system hostname panorama-rulebase-references
+#
+#
+#
+# Panorama configuration
+#
+set shared application-group SHARED_APP_GRP members [ bgp ]
+set shared address SHARED_SRC ip-netmask 10.10.10.0/24
+set shared address SHARED_DST ip-netmask 10.10.11.0/24
+# Address objects with names that look like IP addresses
+set shared address 11.11.11.11 ip-netmask 10.10.10.11
+set shared address 12.12.12.12 ip-netmask 10.10.10.12
+set shared service SHARED_SERVICE protocol tcp port 1234
+#
+#
+#
+# Managed-device configuration
+#
+set device-group DG1 devices 00000001
+set device-group DG1 application OVERRIDE_APP risk 2
+#
+# Basic network configuration for 00000001
+set template T1 config devices localhost.localdomain vsys vsys1 zone z1 network layer3 ethernet1/1
+set template T1 config devices localhost.localdomain vsys vsys1 zone z2 network layer3 ethernet1/4
+set template T1 config devices localhost.localdomain vsys vsys1 import network interface [ ethernet1/1 ethernet1/4 ]
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/4 layer3 ip 1.1.4.1/24
+set template T1 config devices localhost.localdomain network virtual-router default interface [ ethernet1/1 ethernet1/4 ]
+set template-stack TS1 templates T1
+set template-stack TS1 devices 00000001
+#
+#
+#
+#
+# Pre-rulebase
+#
+set device-group DG1 pre-rulebase security rules PRE_SEC from any
+set device-group DG1 pre-rulebase security rules PRE_SEC to any
+set device-group DG1 pre-rulebase security rules PRE_SEC source [ SHARED_SRC 11.11.11.11 ]
+set device-group DG1 pre-rulebase security rules PRE_SEC destination [ SHARED_DST 12.12.12.12 ]
+set device-group DG1 pre-rulebase security rules PRE_SEC service SHARED_SERVICE
+set device-group DG1 pre-rulebase security rules PRE_SEC application SHARED_APP_GRP
+set device-group DG1 pre-rulebase security rules PRE_SEC action allow
+#
+set device-group DG1 pre-rulebase nat rules PRE_NAT to any
+set device-group DG1 pre-rulebase nat rules PRE_NAT from any
+set device-group DG1 pre-rulebase nat rules PRE_NAT source [ SHARED_SRC 11.11.11.11 ]
+set device-group DG1 pre-rulebase nat rules PRE_NAT destination [ SHARED_DST 12.12.12.12 ]
+set device-group DG1 pre-rulebase nat rules PRE_NAT source-translation dynamic-ip-and-port translated-address 192.168.1.100
+set device-group DG1 pre-rulebase nat rules PRE_NAT service application-default
+#
+set device-group DG1 pre-rulebase application-override rules PRE_APP from any
+set device-group DG1 pre-rulebase application-override rules PRE_APP to any
+set device-group DG1 pre-rulebase application-override rules PRE_APP source [ SHARED_SRC 11.11.11.11 ]
+set device-group DG1 pre-rulebase application-override rules PRE_APP destination [ SHARED_DST 12.12.12.12 ]
+set device-group DG1 pre-rulebase application-override rules PRE_APP port 8642
+set device-group DG1 pre-rulebase application-override rules PRE_APP protocol tcp
+set device-group DG1 pre-rulebase application-override rules PRE_APP application OVERRIDE_APP

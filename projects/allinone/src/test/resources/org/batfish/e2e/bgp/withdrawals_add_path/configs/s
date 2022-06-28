@@ -1,0 +1,25 @@
+set system host-name S
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.5/31
+set interfaces ge-0/0/0 unit 0 description to-A
+set interfaces ge-0/0/1 unit 0 family inet address 2.1.1.3/31
+set interfaces ge-0/0/1 unit 0 description to-M1
+set interfaces ge-0/0/2 unit 0 family inet address 3.0.0.1/31
+set interfaces ge-0/0/2 unit 0 description to-L
+#
+set policy-options policy-statement set-local-pref-50 term t1 then local-preference 50
+set policy-options policy-statement set-local-pref-50 then accept
+#
+set protocols bgp local-as 2
+set protocols bgp group A peer-as 1
+set protocols bgp group A neighbor 1.2.3.4
+set protocols bgp group A local-address 1.2.3.5
+set protocols bgp group A import set-local-pref-50
+set protocols bgp group M1 peer-as 4
+set protocols bgp group M1 neighbor 2.1.1.2
+set protocols bgp group M1 local-address 2.1.1.3
+set protocols bgp group L peer-as 2
+set protocols bgp group L neighbor 3.0.0.0
+set protocols bgp group L local-address 3.0.0.1
+set protocols bgp group L family inet unicast add-path send path-count 64
+set protocols bgp group L family inet unicast add-path send multipath

@@ -30,7 +30,9 @@ public class EvpnType2RouteTest {
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
             .setVni(1)
             .build();
@@ -48,7 +50,9 @@ public class EvpnType2RouteTest {
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
             .setVni(1)
             .build();
@@ -66,7 +70,9 @@ public class EvpnType2RouteTest {
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
             .setVni(1)
             .build();
@@ -84,6 +90,7 @@ public class EvpnType2RouteTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
             .setVni(1);
     new EqualsTester()
@@ -98,8 +105,9 @@ public class EvpnType2RouteTest {
         .addEqualityGroup(erb.setNextHopIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(erb.setOriginatorIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(erb.setOriginMechanism(OriginMechanism.GENERATED).build())
+        .addEqualityGroup(erb.setPathId(5).build())
         .addEqualityGroup(erb.setOriginType(OriginType.INCOMPLETE).build())
-        .addEqualityGroup(erb.setReceivedFromIp(Ip.parse("1.1.1.1")).build())
+        .addEqualityGroup(erb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1"))).build())
         .addEqualityGroup(erb.setReceivedFromRouteReflectorClient(true).build())
         .addEqualityGroup(erb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(
@@ -122,6 +130,7 @@ public class EvpnType2RouteTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("2.2.2.2"), 2))
             .setVni(1);
 
@@ -140,6 +149,7 @@ public class EvpnType2RouteTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.2.3.4"), 2))
             .setVni(1)
             .build();

@@ -311,7 +311,7 @@ public class NatGatewayTest {
   @Test
   public void testInstallIncomingFilter() {
     Configuration cfg = new Configuration("cfg", ConfigurationFormat.AWS);
-    Interface iface = Interface.builder().setName("test").build();
+    Interface iface = Interface.builder().setOwner(cfg).setName("test").build();
 
     Ip blockedIp = Ip.parse("8.8.8.8");
     IpAccessList nacl =

@@ -47,6 +47,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           "Local routes must have a source protocol");
       checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "Missing %s", PROP_PROTOCOL);
+      checkArgument(_receivedFrom != null, "Missing %s", PROP_RECEIVED_FROM);
       checkArgument(_nextHop != null, "Missing next hop");
       return new Bgpv4Route(
           BgpRouteAttributes.create(
@@ -63,9 +64,10 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
               _srcProtocol,
               _tunnelEncapsulationAttribute,
               _weight),
-          _receivedFromIp,
+          _receivedFrom,
           getNetwork(),
           _nextHop,
+          _pathId,
           getAdmin(),
           getTag(),
           getNonForwarding(),
@@ -100,8 +102,9 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           boolean receivedFromRouteReflectorClient,
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @Nullable @JsonProperty(PROP_PATH_ID) Integer pathId,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
+      @Nullable @JsonProperty(PROP_RECEIVED_FROM) ReceivedFrom receivedFrom,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
       @Nullable @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
@@ -114,6 +117,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         "Local routes must have a source protocol");
     checkArgument(originType != null, "Missing %s", PROP_ORIGIN_TYPE);
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
+    checkArgument(receivedFrom != null, "Missing %s", PROP_RECEIVED_FROM);
     return new Bgpv4Route(
         BgpRouteAttributes.create(
             asPath,
@@ -129,9 +133,10 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
             srcProtocol,
             tunnelEncapsulationAttribute,
             weight),
-        receivedFromIp,
+        receivedFrom,
         network,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
+        pathId,
         admin,
         tag,
         false,
@@ -140,14 +145,16 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
 
   private Bgpv4Route(
       BgpRouteAttributes attributes,
-      @Nullable Ip receivedFromIp,
+      @Nonnull ReceivedFrom receivedFrom,
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
+      @Nullable Integer pathId,
       int admin,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, nextHop, admin, attributes, receivedFromIp, tag, nonForwarding, nonRouting);
+    super(
+        network, nextHop, pathId, admin, attributes, receivedFrom, tag, nonForwarding, nonRouting);
   }
 
   public static Builder builder() {
@@ -163,7 +170,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(Ip.parse("1.1.1.1"))
         .setAdmin(170)
-        .setProtocol(RoutingProtocol.BGP);
+        .setProtocol(RoutingProtocol.BGP)
+        .setReceivedFrom(ReceivedFromSelf.instance());
   }
 
   /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
@@ -184,8 +192,9 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setOriginatorIp(_attributes._originatorIp)
         .setOriginMechanism(_attributes.getOriginMechanism())
         .setOriginType(_attributes.getOriginType())
+        .setPathId(_pathId)
         .setProtocol(_attributes.getProtocol())
-        .setReceivedFromIp(_receivedFromIp)
+        .setReceivedFrom(_receivedFrom)
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(_tag)
@@ -205,8 +214,9 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
         && _nextHop.equals(other._nextHop)
+        && Objects.equals(_pathId, other._pathId)
         && _attributes.equals(other._attributes)
-        && Objects.equals(_receivedFromIp, other._receivedFromIp)
+        && _receivedFrom.equals(other._receivedFrom)
         // Things above this line are more likely to cause false earlier.
         && _admin == other._admin
         && _tag == other._tag
@@ -220,9 +230,10 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     if (h == 0) {
       h = _admin;
       h = h * 31 + _attributes.hashCode();
-      h = h * 31 + (_receivedFromIp == null ? 0 : _receivedFromIp.hashCode());
+      h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
+      h = h * 31 + (_pathId != null ? _pathId : 0);
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
       h = h * 31 + Long.hashCode(_tag);
@@ -248,8 +259,9 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .add("_originatorIp", _attributes._originatorIp)
         .add("_originMechanism", _attributes._originMechanism)
         .add("_originType", _attributes._originType)
+        .add("_pathId", _pathId)
         .add("_protocol", _attributes._protocol)
-        .add("_receivedFromIp", _receivedFromIp)
+        .add("_receivedFrom", _receivedFrom)
         .add("_receivedFromRouteReflectorClient", _attributes._receivedFromRouteReflectorClient)
         .add("_srcProtocol", _attributes._srcProtocol)
         .add("_tunnelEncapsulationAttribute", _attributes._tunnelEncapsulationAttribute)

@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_neighbor
+feature bgp
+!
+router bgp 1
+  neighbor 1.2.3.4 remote-as 2
+  neighbor 2001:db8:85a3:0:0:8a2e:370:7334 remote-as 2
+
+  neighbor 1.2.3.0/24 remote-as 2
+  neighbor 2001:db8::/32 remote-as 2
+!

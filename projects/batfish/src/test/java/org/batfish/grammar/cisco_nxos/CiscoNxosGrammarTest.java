@@ -17,6 +17,7 @@ import static org.batfish.datamodel.InactiveReason.VRF_DOWN;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
@@ -54,6 +55,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
@@ -125,6 +127,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrp
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpRedistributionPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getAclLineName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.Conversions.generatedAttributeMapName;
 import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
@@ -249,6 +252,8 @@ import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -783,6 +788,40 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "nxos_bgp_neighbor";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String neighborIp = bgpNeighborStructureName("1.2.3.4", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:0:0:0:0:0:0/32", "default");
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp, contains(7)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp6, contains(8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborPrefix, contains(10)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborPrefix6, contains(11)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp6, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix6, 1));
+  }
+
+  @Test
   public void testBgpNoNeighbor() throws IOException {
     /*
      For each neighbor type (IPv4 active/passive, IPv6 active/passive), both within and outside of
@@ -960,7 +999,7 @@ public final class CiscoNxosGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setTag(0L)
             .setWeight(BGP_LOCAL_WEIGHT)
@@ -1024,7 +1063,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1057,7 +1096,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1101,7 +1140,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1762,6 +1801,7 @@ public final class CiscoNxosGrammarTest {
               .setOriginMechanism(OriginMechanism.LEARNED)
               .setOriginType(OriginType.IGP)
               .setOriginatorIp(Ip.parse("5.6.7.8"))
+              .setReceivedFrom(ReceivedFromIp.of(Ip.parse("5.6.7.8")))
               .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition));
       EvpnType5Route permittedRouteSingleRouteTarget =
           rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(1, 3333))).build();

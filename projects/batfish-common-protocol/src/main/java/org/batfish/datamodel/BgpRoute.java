@@ -27,6 +27,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.visitors.LegacyReceivedFromToIpConverter;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
 @ParametersAreNonnullByDefault
@@ -238,8 +239,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nullable protected Ip _originatorIp;
     @Nullable protected OriginMechanism _originMechanism;
     @Nullable protected OriginType _originType;
+    @Nullable protected Integer _pathId;
     @Nullable protected RoutingProtocol _protocol;
-    @Nullable protected Ip _receivedFromIp;
+    @Nullable protected ReceivedFrom _receivedFrom;
 
     protected boolean _receivedFromRouteReflectorClient;
     @Nullable protected RoutingProtocol _srcProtocol;
@@ -314,6 +316,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Override
     public OriginType getOriginType() {
       return _originType;
+    }
+
+    @Nullable
+    public Integer getPathId() {
+      return _pathId;
     }
 
     @Nullable
@@ -423,13 +430,18 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    public B setPathId(@Nullable Integer pathId) {
+      _pathId = pathId;
+      return getThis();
+    }
+
     public B setProtocol(RoutingProtocol protocol) {
       _protocol = protocol;
       return getThis();
     }
 
-    public B setReceivedFromIp(@Nullable Ip receivedFromIp) {
-      _receivedFromIp = receivedFromIp;
+    public B setReceivedFrom(ReceivedFrom receivedFrom) {
+      _receivedFrom = receivedFrom;
       return getThis();
     }
 
@@ -471,7 +483,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_ORIGIN_MECHANISM = "originMechanism";
   static final String PROP_ORIGIN_TYPE = "originType";
   static final String PROP_ORIGINATOR_IP = "originatorIp";
-  static final String PROP_RECEIVED_FROM_IP = "receivedFromIp";
+  static final String PROP_PATH_ID = "pathId";
+  static final String PROP_RECEIVED_FROM = "receivedFrom";
   static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
       "receivedFromRouteReflectorClient";
   static final String PROP_SRC_PROTOCOL = "srcProtocol";
@@ -479,28 +492,25 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_WEIGHT = "weight";
 
   protected final @Nonnull BgpRouteAttributes _attributes;
+  protected final @Nullable Integer _pathId;
 
-  /**
-   * The {@link Ip} address of the (I)BGP peer from which the route was learned, or {@link Ip#ZERO}
-   * if the BGP route was originated locally.
-   *
-   * <p>Set on origination and on import.
-   */
-  protected final @Nullable Ip _receivedFromIp;
+  protected final @Nonnull ReceivedFrom _receivedFrom;
 
   protected BgpRoute(
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
+      @Nullable Integer pathId,
       int admin,
       BgpRouteAttributes attributes,
-      @Nullable Ip receivedFromIp,
+      ReceivedFrom receivedFrom,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, admin, tag, nonRouting, nonForwarding);
     _attributes = attributes;
     _nextHop = nextHop;
-    _receivedFromIp = receivedFromIp;
+    _pathId = pathId;
+    _receivedFrom = receivedFrom;
   }
 
   @Nonnull
@@ -574,6 +584,16 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _attributes.getOriginType();
   }
 
+  /**
+   * Path ID specified in the BGP advertisement that resulted in this route. Null if the
+   * advertisement specified no path ID or if the route is local.
+   */
+  @Nullable
+  @JsonProperty(PROP_PATH_ID)
+  public Integer getPathId() {
+    return _pathId;
+  }
+
   @Nonnull
   @JsonIgnore(false)
   @JsonProperty(PROP_PROTOCOL)
@@ -582,10 +602,22 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _attributes.getProtocol();
   }
 
+  @JsonProperty(PROP_RECEIVED_FROM)
+  @Nonnull
+  public ReceivedFrom getReceivedFrom() {
+    return _receivedFrom;
+  }
+
+  /**
+   * The {@link Ip} address of the (I)BGP peer from which the route was learned, or {@link Ip#ZERO}
+   * if the BGP route was originated locally.
+   *
+   * <p>Set on origination and on import.
+   */
   @Nullable
-  @JsonProperty(PROP_RECEIVED_FROM_IP)
+  @JsonIgnore
   public Ip getReceivedFromIp() {
-    return _receivedFromIp;
+    return LegacyReceivedFromToIpConverter.convert(_receivedFrom);
   }
 
   @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)

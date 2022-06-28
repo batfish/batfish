@@ -12,6 +12,7 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   BGP_NEIGHBOR_PEER_GROUP("bgp neighbor peer-group"),
   BGP_NEIGHBOR_ROUTE_POLICY_IN("bgp neighbor route-policy in"),
   BGP_NEIGHBOR_ROUTE_POLICY_OUT("bgp neighbor route-policy out"),
+  BGP_NEIGHBOR_SELF_REF("bgp neighbor self ref"),
   BGP_NETWORK_ROUTE_POLICY("bgp network route-policy"),
   BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY("bgp redistribute connected route-policy"),
   BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY("bgp redistribute static route-policy"),
