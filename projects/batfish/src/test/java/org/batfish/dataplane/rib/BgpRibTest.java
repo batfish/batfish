@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import org.batfish.datamodel.BgpTieBreaker;
@@ -189,17 +190,22 @@ public class BgpRibTest {
     1. Lowest originator IP
     2. Shortest cluster list
     3. Best ReceivedFrom
+    4. Lowest path-id (null considered lowest)
     */
     List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.0"));
     List<Set<Long>> decreasingLengthClusterLists =
         ImmutableList.of(ImmutableSet.of(1L), ImmutableSet.of());
+    List<Integer> decreasingPathIds = Arrays.asList(2, 1, null);
     List<Bgpv4Route> ordered = new ArrayList<>();
     for (Ip originatorIp : decreasingIps) {
       rb.setOriginatorIp(originatorIp);
       for (Set<Long> clusterList : decreasingLengthClusterLists) {
         rb.setClusterList(clusterList);
         for (Ip receivedFromIp : decreasingIps) {
-          ordered.add(rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp)).build());
+          rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp));
+          for (Integer pathId : decreasingPathIds) {
+            ordered.add(rb.setPathId(pathId).build());
+          }
         }
       }
     }
@@ -207,6 +213,7 @@ public class BgpRibTest {
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {
         assertThat(
+            String.format("i=%d lhs=%s j=%d rhs=%s", i, ordered.get(i), j, ordered.get(j)),
             Integer.signum(rib.bestPathComparator(ordered.get(i), (ordered.get(j)))),
             equalTo(Integer.signum(i - j)));
       }

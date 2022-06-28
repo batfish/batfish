@@ -355,6 +355,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         // Prefer lower cluster list length. Only applicable to iBGP
         .thenComparing(r -> r.getClusterList().size(), Comparator.reverseOrder())
         .thenComparing(R::getReceivedFrom, BgpRib::compareReceivedFrom)
+        // Prefer no path ID, then lower path ID
+        .thenComparing(R::getPathId, Comparator.nullsLast(Comparator.reverseOrder()))
         .compare(lhs, rhs);
   }
 
