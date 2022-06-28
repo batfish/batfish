@@ -2,17 +2,24 @@ package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasClusterList;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasReceivedFrom;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -130,7 +137,7 @@ public final class BgpBestPathExportTest {
    * R2 and R3 are route reflectors
    * In round 1:
    * - R1 starts iBGP sessions with R2 and R3
-   * - R3 starts iBGP sessions with R2 and R3
+   * - R4 starts iBGP sessions with R2 and R3
    * - R1 redistributes 10.1.0.0/24 to R2 and R3 with high local preference
    * - R2 and R3 redistribute 10.1.0.0/24 to R4 with low local preference
    * - R4 starts eBGP session with R5
@@ -159,35 +166,45 @@ public final class BgpBestPathExportTest {
         dataplane.getBgpRoutes().get("r2", Configuration.DEFAULT_VRF_NAME);
     Set<Bgpv4Route> bgpRoutesOnR3 =
         dataplane.getBgpRoutes().get("r3", Configuration.DEFAULT_VRF_NAME);
-    Set<Bgpv4Route> bgpRoutesOnR4 =
+    Set<Bgpv4Route> bgpActiveRoutesOnR4 =
         dataplane.getBgpRoutes().get("r4", Configuration.DEFAULT_VRF_NAME);
+    Set<Bgpv4Route> bgpBackupRoutesOnR4 =
+        dataplane.getBgpBackupRoutes().get("r4", Configuration.DEFAULT_VRF_NAME);
     Set<Bgpv4Route> bgpRoutesOnR5 =
         dataplane.getBgpRoutes().get("r5", Configuration.DEFAULT_VRF_NAME);
     assertThat(
-        bgpRoutesOnR2.stream().collect(ImmutableList.toImmutableList()),
+        bgpRoutesOnR2,
         containsInAnyOrder(
             // should have single best path for 10.1.0.0/24 through R1
             allOf(
                 hasPrefix(Prefix.parse("10.1.0.0/24")),
                 hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))))));
     assertThat(
-        bgpRoutesOnR3.stream().collect(ImmutableList.toImmutableList()),
+        bgpRoutesOnR3,
         containsInAnyOrder(
             // should have single best path for 10.1.0.0/24 through R1
             allOf(
                 hasPrefix(Prefix.parse("10.1.0.0/24")),
                 hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))))));
+    assertThat(bgpActiveRoutesOnR4, hasSize(1));
+    assertThat(bgpBackupRoutesOnR4, hasSize(1));
     assertThat(
-        bgpRoutesOnR4.stream().collect(ImmutableList.toImmutableList()),
+        Streams.concat(bgpActiveRoutesOnR4.stream(), bgpBackupRoutesOnR4.stream())
+            .collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
-            // should have two paths for 10.1.0.0/24; one through R2, and one through R3
-            // both should have next hop of R1
+            // Should have two paths for 10.1.0.0/24; one through R2, and one through R3
+            // Both should have next hop of R1
+            // Because they have the same next hop, one should be active, and one should be backup
             allOf(
                 hasPrefix(Prefix.parse("10.1.0.0/24")),
-                hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))),
+                hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))),
+                hasClusterList(contains(Ip.parse("2.2.2.2").asLong())),
+                hasReceivedFrom(equalTo(ReceivedFromIp.of(Ip.parse("2.2.2.2"))))),
             allOf(
                 hasPrefix(Prefix.parse("10.1.0.0/24")),
-                hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))))));
+                hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))),
+                hasClusterList(contains(Ip.parse("3.3.3.3").asLong())),
+                hasReceivedFrom(equalTo(ReceivedFromIp.of(Ip.parse("3.3.3.3")))))));
     assertThat(
         bgpRoutesOnR5.stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
