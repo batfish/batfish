@@ -825,7 +825,8 @@ public class JFactory extends BDDFactory implements Serializable {
       // this compareAndSet will fail if another thread starts GC (the value will have changed to
       // zero).
       // if that happens, fine -- we can continue. but we will block on the next bdd_makenode.
-      bddfreepos.compareAndSet(res, NEXT(res));
+      int nextFreepos = NEXT(res);
+      bddfreepos.compareAndSet(res, nextFreepos);
 
       newNodeIndex(res);
 
@@ -834,7 +835,16 @@ public class JFactory extends BDDFactory implements Serializable {
       SETHIGH(res, high);
 
       // insert the node (or find a dupe of it)
-      return bddnodes.insertNode(res, hash2, headHashBucket, level, low, high);
+      int ret = bddnodes.insertNode(res, hash2, headHashBucket, level, low, high);
+      if (ret != res) {
+        // another thread created a copy first. return res to freepos
+        // note: another thead could have set bddfreepos to zero so it can GC. if that happens,
+        // the compareAndSet will fail and res will be collected
+        SETLOW(res, INVALID_BDD);
+        SETNEXT(res, nextFreepos);
+        bddfreepos.compareAndSet(nextFreepos, res);
+      }
+      return ret;
     }
 
     private int bdd_andAll(int[] operands) {
