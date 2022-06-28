@@ -198,6 +198,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -927,8 +928,10 @@ public final class CiscoNxosGrammarTest {
 
     // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32,
     // and VRF2 should also have 2.2.2.2/32
-    Set<AbstractRoute> vrf1Routes = dp.getRibs().get(hostname, "VRF1").getRoutes();
-    Set<AbstractRoute> vrf2Routes = dp.getRibs().get(hostname, "VRF2").getRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
+        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
+        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
     assertThat(
         vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
     assertThat(
@@ -2014,6 +2017,8 @@ public final class CiscoNxosGrammarTest {
     Prefix staticPermittedPrefix = Prefix.parse("1.1.1.1/32");
     Prefix bgpPermittedPrefix = Prefix.parse("2.2.2.2/32");
     Prefix connectedPermittedPrefix = Prefix.parse("3.3.3.3/32");
+    Prefix eigrpPermittedPrefix = Prefix.parse("4.4.4.4/32");
+
     org.batfish.datamodel.StaticRoute.Builder staticRb =
         org.batfish.datamodel.StaticRoute.testBuilder().setNextHopInterface("foo").setAdmin(1);
     org.batfish.datamodel.StaticRoute staticDenied =
@@ -2028,6 +2033,20 @@ public final class CiscoNxosGrammarTest {
             .setProtocol(RoutingProtocol.IBGP);
     Bgpv4Route bgpDenied = bgpRb.setNetwork(staticPermittedPrefix).build();
     Bgpv4Route bgpPermitted = bgpRb.setNetwork(bgpPermittedPrefix).build();
+    EigrpInternalRoute.Builder eigrpRb =
+        EigrpInternalRoute.testBuilder()
+            .setAdmin(90)
+            .setEigrpMetricVersion(EigrpMetricVersion.V2)
+            .setNextHop(NextHopDiscard.instance())
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                    .build())
+            .setProcessAsn(2L);
+    EigrpRoute eigrpDenied =
+        eigrpRb.setNextHop(NextHopDiscard.instance()).setNetwork(staticPermittedPrefix).build();
+    EigrpRoute eigrpPermitted =
+        eigrpRb.setNextHop(NextHopDiscard.instance()).setNetwork(eigrpPermittedPrefix).build();
     ConnectedRoute connectedDenied =
         ConnectedRoute.builder().setNetwork(Prefix.ZERO).setNextHopInterface("Ethernet1").build();
     ConnectedRoute connectedPermitted =
@@ -2077,6 +2096,26 @@ public final class CiscoNxosGrammarTest {
       // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
       // built, so first set other required fields.
       rb.setNetwork(bgpPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
+    }
+    {
+      // Redistribution policy denies EIGRP route that doesn't match eigrp_redist route-map
+      EigrpExternalRoute.Builder rb =
+          EigrpExternalRoute.testBuilder()
+              .setNextHop(nh)
+              .setEigrpMetricVersion(EigrpMetricVersion.V2);
+      assertFalse(redistPolicy.process(eigrpDenied, rb, eigrpProc, Direction.OUT));
+    }
+    {
+      // Redistribution policy permits EIGRP route that matches eigrp_redist route-map
+      EigrpExternalRoute.Builder rb =
+          EigrpExternalRoute.testBuilder()
+              .setNextHop(nh)
+              .setEigrpMetricVersion(EigrpMetricVersion.V2);
+      assertTrue(redistPolicy.process(eigrpPermitted, rb, eigrpProc, Direction.OUT));
+      // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
+      // built, so first set other required fields.
+      rb.setNetwork(eigrpPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
       assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
     }
     {
@@ -9302,7 +9341,7 @@ public final class CiscoNxosGrammarTest {
     batfish.loadConfigurations(batfish.getSnapshot());
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    Set<AbstractRoute> routes = dp.getRibs().get(hostname, "default").getRoutes();
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname).get("default").getRoutes();
 
     // Rib should have the static route whose NHI is determined from a non-default route
     assertThat(
