@@ -822,7 +822,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = andAll_rec(operands);
-      checkresize();
 
       return res;
     }
@@ -1058,7 +1057,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = orAll_rec(operands);
-      checkresize();
 
       return res;
     }
@@ -1309,7 +1307,6 @@ public class JFactory extends BDDFactory implements Serializable {
           res = apply_rec(l, r);
           break;
       }
-      checkresize();
 
       return res;
     }
@@ -1517,7 +1514,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = not_rec(r);
-      checkresize();
 
       return res;
     }
@@ -1592,7 +1588,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = appquant_rec(l, r);
-      checkresize();
 
       return res;
     }
@@ -1649,7 +1644,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = opr == bddop_and ? relprod_rec(l, r) : appquant_rec(l, r);
-      checkresize();
 
       return res;
     }
@@ -1992,7 +1986,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = project_rec(r);
-      checkresize();
 
       return res;
     }
@@ -2184,7 +2177,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = exist_rec(r);
-      checkresize();
 
       return res;
     }
@@ -2314,7 +2306,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = quant_rec(r);
-      checkresize();
 
       return res;
     }
@@ -2390,7 +2381,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = ite_rec(f, g, h);
-      checkresize();
 
       return res;
     }
@@ -2585,7 +2575,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = replace_rec(r);
-      checkresize();
 
       return res;
     }
@@ -2675,7 +2664,6 @@ public class JFactory extends BDDFactory implements Serializable {
       INITREF();
       res = randomfullsatone_rec(r, 0, seed);
 
-      checkresize();
       return res;
     }
 
@@ -2744,7 +2732,6 @@ public class JFactory extends BDDFactory implements Serializable {
       satPolarity = pol;
       res = satoneset_rec(r, var);
 
-      checkresize();
       return res;
     }
 
@@ -2779,7 +2766,6 @@ public class JFactory extends BDDFactory implements Serializable {
       INITREF();
       res = satone_rec(r);
 
-      checkresize();
       return res;
     }
 
@@ -2809,7 +2795,6 @@ public class JFactory extends BDDFactory implements Serializable {
         res = bdd_makesatnode(v, res, true);
       }
 
-      checkresize();
       return res;
     }
 
@@ -2844,7 +2829,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       INITREF();
       int res = transform_rec(l, r);
-      checkresize();
 
       return res;
     }
@@ -3005,7 +2989,6 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient List<IntStack> bddrefstacks;
   private int[] bddvar2level; /* Variable -> level table */
   private int[] bddlevel2var; /* Level -> variable table */
-  private boolean bddresized; /* Flag indicating a resize of the nodetable */
 
   private int minfreenodes = 20;
 
@@ -3151,13 +3134,6 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     return bddlevel2var[LEVEL(root)];
-  }
-
-  private void checkresize() {
-    if (bddresized) {
-      bdd_operator_noderesize();
-    }
-    bddresized = false;
   }
 
   private static int NOTHASH(int r) {
@@ -3567,7 +3543,7 @@ public class JFactory extends BDDFactory implements Serializable {
         .forEach(n -> bddnodes.setLowNonVolatile(n, INVALID_BDD));
 
     bdd_gbc_rehash();
-    bddresized = true;
+    bdd_operator_noderesize();
     long resizeTime = System.currentTimeMillis() - resizeStartTime;
     sumResizeTime += resizeTime;
     LOGGER.info(
@@ -3588,8 +3564,6 @@ public class JFactory extends BDDFactory implements Serializable {
     bddnodesize = bdd_prime_gte(initnodesize);
 
     bddnodes = new NodeTable(bddnodesize);
-
-    bddresized = false;
 
     int[] freepos = new int[NUM_FREEPOS];
     int idx = 0;
@@ -3701,6 +3675,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public int setCacheSize(int newcachesize) {
+    // TODO: need the write lock
     int old = cachesize;
     BddCache_resize(applycache, newcachesize);
     BddCache_resize(quantcache, newcachesize);
@@ -3715,6 +3690,7 @@ public class JFactory extends BDDFactory implements Serializable {
     if (cacheratio > 0) {
       int newcachesize = bddnodesize / cacheratio;
 
+      // TODO parallelize
       BddCache_resize(applycache, newcachesize);
       BddCache_resize(quantcache, newcachesize);
       BddCache_resize(appexcache, newcachesize);
