@@ -4418,9 +4418,6 @@ public final class PaloAltoGrammarTest {
                             matchDestinationAddressTraceElement(),
                             isTraceTree(matchAddressAnyTraceElement())),
                         isTraceTree(
-                            // TODO: fix ssh trace element
-                            // ssh VSID is currently invalid, so it's pruned during config
-                            // finalization
                             matchBuiltInApplicationTraceElement("ssh"),
                             isTraceTree(
                                 matchApplicationOverrideRuleTraceElement(

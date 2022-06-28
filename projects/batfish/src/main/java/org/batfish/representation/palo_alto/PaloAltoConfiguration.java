@@ -800,7 +800,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Optional<Vsys> containingVsys,
       String filename) {
     String appName = reference.getName();
-    // Valid reference
+    // Valid, user-defined obj reference
     if (containingVsys.isPresent()) {
       Vsys vsys = containingVsys.get();
       if (vsys.getApplications().containsKey(appName)) {
