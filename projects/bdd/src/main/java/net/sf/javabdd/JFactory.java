@@ -723,8 +723,15 @@ public class JFactory extends BDDFactory implements Serializable {
 
       /* Try to find an existing node of this kind */
       int hash2 = NODEHASH(level, low, high);
-      int res = HASH(hash2);
 
+      // headHashBucket is the first element in the node's bucket.
+      // we have to update headHashBucket whenever the node table is resized (by this or
+      // another thread). Whenever we update, we also have to scan it to see if another thread
+      // has inserted a copy of the node. Then we will be sure that when we eventually insert
+      // the node, if the bucket has not changed, it still does not contain a copy and we won't
+      // get duplicates.
+      int headHashBucket = HASH(hash2);
+      int res = headHashBucket;
       while (res != 0) {
         if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
           if (CACHESTATS) {
@@ -771,6 +778,7 @@ public class JFactory extends BDDFactory implements Serializable {
             if ((freenum * 100L) / bddnodesize <= minfreenodes) {
               bdd_noderesize();
               hash2 = NODEHASH(level, low, high);
+              headHashBucket = HASH(hash2);
             }
 
             /* Panic if that is not possible */
@@ -778,6 +786,23 @@ public class JFactory extends BDDFactory implements Serializable {
             freepos = bddfreepos.get();
             if (freepos == 0) {
               throw new JavaBDDException(BDD_NODENUM);
+            }
+          } else {
+            int tmp = NODEHASH(level, low, high);
+            if (tmp != hash2) {
+              // another thread resized the table
+              System.out.println("another thread resized. scanning the new bucket");
+              hash2 = tmp;
+              headHashBucket = HASH(hash2);
+              res = headHashBucket;
+              while (res != 0) {
+                if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
+                  System.out.println("new bucket had the node");
+                  return res;
+                }
+                res = NEXT(res);
+              }
+              System.out.println("new bucket did not have the node");
             }
           }
 
@@ -808,9 +833,8 @@ public class JFactory extends BDDFactory implements Serializable {
       SETLOW(res, low);
       SETHIGH(res, high);
 
-      /* Insert node as the first item in the bucket. */
-      bddnodes.insertNode(res, hash2);
-      return res;
+      // insert the node (or find a dupe of it)
+      return bddnodes.insertNode(res, hash2, headHashBucket, level, low, high);
     }
 
     private int bdd_andAll(int[] operands) {

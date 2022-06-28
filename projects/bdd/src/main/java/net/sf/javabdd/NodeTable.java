@@ -260,19 +260,35 @@ final class NodeTable implements Serializable {
    * Insert the input {@code node} with the input {@code hashcode} into the first position of it's
    * hash bucket.
    */
-  void insertNode(int node, int hashcode) {
+  int insertNode(int node, int hashcode, int prevBucket, int level, int low, int high) {
     int next_idx = node * NODE_SIZE + OFFSET__NEXT;
     int bucket_idx = hashcode * NODE_SIZE + OFFSET__HASH;
+    int next = prevBucket;
     while (true) {
-      int next = array[bucket_idx];
       // set node's next pointer first, so that if the insert succeeds
       // the chain is immediately correct
       AA.setVolatile(array, next_idx, next);
 
       // make sure no other thread has inserted a different node
       if (AA.compareAndSet(array, bucket_idx, next, node)) {
-        break;
+        return node;
       }
+
+      // bucket changed since last read. another thread may have inserted this bdd.
+      next = (int) AA.getVolatile(array, bucket_idx);
+
+      int res = next;
+      while (res != 0) {
+        if (getLevel(res) == level && getLowNonVolatile(res) == low && getHigh(res) == high) {
+          // another thread created a copy of node. Return that copy, since it's already in the
+          // table
+          return res;
+        }
+
+        res = getNext(res);
+      }
+
+      // didn't find a copy, so retry the insert
     }
   }
 }
