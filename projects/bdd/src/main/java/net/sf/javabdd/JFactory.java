@@ -582,9 +582,8 @@ public class JFactory extends BDDFactory implements Serializable {
   ReadWriteLock _readWriteLock = new ReentrantReadWriteLock();
 
   private class Worker {
-    private final IntStack bddrefstack =
-        new IntStack(); /* BDDs referenced during the current computation. */
-    private final IntHashSet quantvarset = new IntHashSet(); /* Current variable set for quant. */
+    private IntStack bddrefstack; /* BDDs referenced during the current computation. */
+    private IntHashSet quantvarset;
     private int quantlast; /* Current last variable to be quant. */
     private int applyop; /* Current operator for apply */
     private int appexop; /* Current operator for appex */
@@ -602,7 +601,7 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     private void INITREF() {
-      bddrefstack.clear();
+      bddrefstack = new IntStack();
     }
 
     private int PUSHREF(int a) {
@@ -632,6 +631,8 @@ public class JFactory extends BDDFactory implements Serializable {
       if (num == bddvarnum) {
         return 0;
       }
+
+      INITREF();
 
       // upgrade to writer
       _readWriteLock.readLock().unlock();
@@ -1581,7 +1582,7 @@ public class JFactory extends BDDFactory implements Serializable {
         return bdd_error(BDD_VARSET);
       }
 
-      quantvarset.clear();
+      quantvarset = new IntHashSet();
 
       quantlast = -1;
       for (int n = r; n > 1; n = HIGH(n)) {
