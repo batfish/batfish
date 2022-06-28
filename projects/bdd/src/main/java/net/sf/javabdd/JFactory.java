@@ -961,6 +961,7 @@ public class JFactory extends BDDFactory implements Serializable {
         POPREF(1);
       }
 
+      entry = BddCache_lookupMultiOp(multiopcache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -993,7 +994,6 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       int hash = APPLYHASH(l, r, bddop_and);
       entry = BddCache_lookupI(applycache, hash);
-
       synchronized (entry) {
         if (entry.a == l && entry.b == r && entry.c == bddop_and) {
           if (CACHESTATS) {
@@ -1024,6 +1024,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
+      entry = BddCache_lookupI(applycache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -1190,6 +1191,7 @@ public class JFactory extends BDDFactory implements Serializable {
         POPREF(1);
       }
 
+      entry = BddCache_lookupMultiOp(multiopcache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -1222,7 +1224,6 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       int hash = APPLYHASH(l, r, bddop_or);
       entry = BddCache_lookupI(applycache, hash);
-
       synchronized (entry) {
         if (entry.a == l && entry.b == r && entry.c == bddop_or) {
           if (CACHESTATS) {
@@ -1253,6 +1254,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
+      entry = BddCache_lookupI(applycache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -1446,7 +1448,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       int hash = APPLYHASH(l, r, applyop);
       entry = BddCache_lookupI(applycache, hash);
-
       synchronized (entry) {
         if (entry.a == l && entry.b == r && entry.c == applyop) {
           if (CACHESTATS) {
@@ -1477,6 +1478,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
+      entry = BddCache_lookupI(applycache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -1511,7 +1513,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
       int hash = NOTHASH(r);
       entry = BddCache_lookupI(applycache, hash);
-
       synchronized (entry) {
         if (entry.a == r && entry.c == bddop_not) {
           if (CACHESTATS) {
@@ -1529,6 +1530,7 @@ public class JFactory extends BDDFactory implements Serializable {
       res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
       POPREF(2);
 
+      entry = BddCache_lookupI(applycache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -1643,7 +1645,6 @@ public class JFactory extends BDDFactory implements Serializable {
       // TODO: should we also check for and? For now, don't since and_sat should be real fast.
       int hash = APPLYHASH(l, r, bddop_andsat);
       BddCacheDataI entry = BddCache_lookupI(applycache, hash);
-
       synchronized (entry) {
         if (entry.a == l && entry.b == r && entry.c == bddop_andsat) {
           if (CACHESTATS) {
@@ -1668,6 +1669,7 @@ public class JFactory extends BDDFactory implements Serializable {
         res = andsat_rec(l, LOW(r)) || andsat_rec(l, HIGH(r));
       }
 
+      entry = BddCache_lookupI(applycache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -1718,6 +1720,7 @@ public class JFactory extends BDDFactory implements Serializable {
         res = diffsat_rec(l, LOW(r)) || diffsat_rec(l, HIGH(r));
       }
 
+      entry = BddCache_lookupI(applycache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -1842,6 +1845,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
         POPREF(2);
 
+        entry = BddCache_lookupI(appexcache, hash);
         synchronized (entry) {
           if (CACHESTATS && entry.a != -1) {
             cachestats.opOverwrite++;
@@ -1920,6 +1924,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
         POPREF(2);
 
+        entry = BddCache_lookupI(appexcache, hash);
         synchronized (entry) {
           if (CACHESTATS && entry.a != -1) {
             cachestats.opOverwrite++;
@@ -1996,6 +2001,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
+      entry = BddCache_lookupI(quantcache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -2046,6 +2052,7 @@ public class JFactory extends BDDFactory implements Serializable {
               .shiftLeft(LEVEL(low) - level - 1)
               .add(satcount_rec(high).shiftLeft(LEVEL(high) - level - 1));
 
+      entry = BddCache_lookupBigInteger(countcache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -2105,6 +2112,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       boolean res = testsVars_rec(LOW(r)) || testsVars_rec(HIGH(r));
 
+      entry = BddCache_lookupI(quantcache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -2231,6 +2239,7 @@ public class JFactory extends BDDFactory implements Serializable {
         POPREF(2);
       }
 
+      entry = BddCache_lookupI(quantcache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -2312,6 +2321,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
+      entry = BddCache_lookupI(quantcache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -2431,6 +2441,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
+      entry = BddCache_lookupMultiOp(multiopcache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -2497,6 +2508,7 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       POPREF(2);
 
+      entry = BddCache_lookupI(replacecache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -2570,6 +2582,7 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       POPREF(2);
 
+      entry = BddCache_lookupI(replacecache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
@@ -2844,6 +2857,7 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       POPREF(2);
 
+      entry = BddCache_lookupI(replacecache, hash);
       synchronized (entry) {
         if (CACHESTATS && entry.a != -1) {
           cachestats.opOverwrite++;
