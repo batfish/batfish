@@ -45,7 +45,6 @@ import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -141,8 +140,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   private final boolean _generateAggregatesFromMainRib;
 
-  /** Source for assigning path IDs to routes upon export when sending additional paths. */
-  @Nonnull private final ConcurrentMap<Prefix, AtomicInteger> _pathIdGenerators;
+  /**
+   * Source for assigning path IDs to routes upon export when sending additional paths. The values
+   * indicate the last path ID generated for a route with the keyed prefix.
+   */
+  @Nonnull private final ConcurrentMap<Prefix, Integer> _pathIdGenerators;
   /**
    * Map indicating what path ID this process uses when exporting a given route. Keys can be:
    *
