@@ -38,7 +38,8 @@ public class JunosApplicationTest {
                             .setDstPorts(
                                 ImmutableSet.of(SubRange.singleton(NamedPort.BGP.number())))
                             .build())),
-                getTraceElementForBuiltInApplication(JunosApplication.JUNOS_BGP))));
+                getTraceElementForBuiltInApplication(
+                    JunosApplication.JUNOS_BGP.getJuniperName()))));
   }
 
   @Test
@@ -63,7 +64,8 @@ public class JunosApplicationTest {
                             .setDstPorts(
                                 ImmutableSet.of(SubRange.singleton(NamedPort.NETBIOS_SSN.number())))
                             .build())),
-                getTraceElementForBuiltInApplication(JunosApplication.JUNOS_SMB))));
+                getTraceElementForBuiltInApplication(
+                    JunosApplication.JUNOS_SMB.getJuniperName()))));
   }
 
   @Test
@@ -73,6 +75,6 @@ public class JunosApplicationTest {
         equalTo(
             new OrMatchExpr(
                 ImmutableList.of(new MatchHeaderSpace(HeaderSpace.builder().build())),
-                getTraceElementForBuiltInApplication(JunosApplication.ANY))));
+                getTraceElementForBuiltInApplication(JunosApplication.ANY.getJuniperName()))));
   }
 }
