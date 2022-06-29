@@ -28,7 +28,7 @@ public class FwFromApplicationOrApplicationSetTest {
 
   @Test
   public void testApplyTo_application() {
-    BaseApplication app = new BaseApplication("app");
+    BaseApplication app = new BaseApplication("app", false);
     app.getTerms()
         .putAll(
             ImmutableMap.of(
@@ -64,12 +64,12 @@ public class FwFromApplicationOrApplicationSetTest {
 
   @Test
   public void testApplyTo_applicationSet() {
-    ApplicationSet appSet = new ApplicationSet("appSet");
+    ApplicationSet appSet = new ApplicationSet("appSet", false);
     appSet.setMembers(
         ImmutableList.of(new ApplicationReference("app1"), new ApplicationReference("app2")));
     jc.getMasterLogicalSystem().getApplicationSets().put("appSet", appSet);
-    BaseApplication app1 = new BaseApplication("app1");
-    BaseApplication app2 = new BaseApplication("app2");
+    BaseApplication app1 = new BaseApplication("app1", false);
+    BaseApplication app2 = new BaseApplication("app2", false);
     jc.getMasterLogicalSystem()
         .getApplications()
         .putAll(ImmutableMap.of("app1", app1, "app2", app2));
@@ -101,7 +101,7 @@ public class FwFromApplicationOrApplicationSetTest {
 
   @Test
   public void testToAclLineMatchExpr_application() {
-    BaseApplication app = new BaseApplication("app");
+    BaseApplication app = new BaseApplication("app", false);
     app.getTerms()
         .putAll(
             ImmutableMap.of(
@@ -126,12 +126,12 @@ public class FwFromApplicationOrApplicationSetTest {
   @Test
   public void testToAclLineMatchExpr_applicationSet() {
 
-    ApplicationSet appSet = new ApplicationSet("appSet");
+    ApplicationSet appSet = new ApplicationSet("appSet", false);
     appSet.setMembers(
         ImmutableList.of(new ApplicationReference("app1"), new ApplicationReference("app2")));
     jc.getMasterLogicalSystem().getApplicationSets().put("appSet", appSet);
-    BaseApplication app1 = new BaseApplication("app1");
-    BaseApplication app2 = new BaseApplication("app2");
+    BaseApplication app1 = new BaseApplication("app1", false);
+    BaseApplication app2 = new BaseApplication("app2", false);
     jc.getMasterLogicalSystem()
         .getApplications()
         .putAll(ImmutableMap.of("app1", app1, "app2", app2));
