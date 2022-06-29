@@ -51,12 +51,7 @@ public final class FwFromApplicationOrApplicationSet implements FwFromApplicatio
               _applicationOrApplicationSetName));
 
       // match nothing
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
-          ApplicationSetMember.getTraceElementForUserApplication(
-              jc.getFilename(),
-              JuniperStructureType.APPLICATION,
-              _applicationOrApplicationSetName));
+      return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build());
     }
 
     return application.toAclLineMatchExpr(jc, w);

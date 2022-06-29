@@ -28,4 +28,10 @@ public interface ApplicationSetMember {
             new VendorStructureId(filename, structureType.getDescription(), structureName))
         .build();
   }
+
+  /**
+   * Returns a boolean indicating if this member is a built-in member. If false, the member is
+   * user-defined.
+   */
+  boolean isBuiltIn();
 }

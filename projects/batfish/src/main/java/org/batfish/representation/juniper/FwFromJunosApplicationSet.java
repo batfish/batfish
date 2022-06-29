@@ -36,12 +36,8 @@ public final class FwFromJunosApplicationSet implements FwFromApplicationSetMemb
     if (!_junosApplicationSet.hasDefinition()) {
       w.redFlag("Reference to undefined application: \"" + _junosApplicationSet.name() + "\"");
       // match nothing
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
-          ApplicationSetMember.getTraceElementForUserApplication(
-              jc.getFilename(), JuniperStructureType.APPLICATION, _junosApplicationSet.name()));
+      return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build());
     }
-
     return _junosApplicationSet.getApplicationSet().toAclLineMatchExpr(jc, w);
   }
 }
