@@ -3,7 +3,6 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
@@ -18,14 +17,11 @@ import org.batfish.datamodel.HasReadableLocalPreference;
 import org.batfish.datamodel.HasReadableOriginType;
 import org.batfish.datamodel.HasReadableWeight;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.ReceivedFrom;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasAsPath;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasClusterList;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasCommunities;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasLocalPreference;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasOriginType;
-import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasReceivedFrom;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasWeight;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsBgpv4RouteThat;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsEvpnType3RouteThat;
@@ -42,11 +38,6 @@ public final class BgpRouteMatchers {
    */
   public static @Nonnull Matcher<HasReadableAsPath> hasAsPath(Matcher<? super AsPath> subMatcher) {
     return new HasAsPath(subMatcher);
-  }
-
-  public static @Nonnull Matcher<BgpRoute<?, ?>> hasClusterList(
-      Matcher<? super Set<Long>> subMatcher) {
-    return new HasClusterList(subMatcher);
   }
 
   /**
@@ -91,11 +82,6 @@ public final class BgpRouteMatchers {
 
   public static @Nonnull Matcher<BgpRoute<?, ?>> hasNoPathId() {
     return hasPathId(nullValue());
-  }
-
-  public static @Nonnull Matcher<BgpRoute<?, ?>> hasReceivedFrom(
-      Matcher<? super ReceivedFrom> subMatcher) {
-    return new HasReceivedFrom(subMatcher);
   }
 
   /**
