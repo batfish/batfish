@@ -446,14 +446,8 @@ public class Bgpv4RibTest {
   @Test
   public void testMultipathDiffOriginator() {
     Bgpv4Route bestPath = _rb.build();
-    _multiPathRib.mergeRoute(
-        _rb.setOriginatorIp(Ip.parse("2.2.2.2"))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
-            .build());
-    _multiPathRib.mergeRoute(
-        _rb.setOriginatorIp(Ip.parse("2.2.2.3"))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.3")))
-            .build());
+    _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("2.2.2.2")).build());
+    _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("2.2.2.3")).build());
     _multiPathRib.mergeRoute(bestPath);
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
@@ -471,16 +465,10 @@ public class Bgpv4RibTest {
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
-    Bgpv4Route best = _rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.1"))).build();
-    Bgpv4Route earliest =
-        _rb.setOriginatorIp(Ip.parse("2.2.2.2"))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
-            .build();
+    Bgpv4Route best = _rb.build();
+    Bgpv4Route earliest = _rb.setOriginatorIp(Ip.parse("2.2.2.2")).build();
     _multiPathRib.mergeRoute(earliest);
-    _multiPathRib.mergeRoute(
-        _rb.setOriginatorIp(Ip.parse("2.2.2.3"))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.3")))
-            .build());
+    _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("2.2.2.3")).build());
     _multiPathRib.mergeRoute(best);
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
@@ -490,16 +478,10 @@ public class Bgpv4RibTest {
   @Test
   public void testMultipathDiffClusterList() {
     _rb.setProtocol(RoutingProtocol.IBGP).setClusterList(ImmutableSortedSet.of());
-    Bgpv4Route bestPath = _rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2"))).build();
+    Bgpv4Route bestPath = _rb.build();
     _multiPathRib.mergeRoute(bestPath);
-    _multiPathRib.mergeRoute(
-        _rb.setClusterList(ImmutableSortedSet.of(11L))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.3")))
-            .build());
-    _multiPathRib.mergeRoute(
-        _rb.setClusterList(ImmutableSortedSet.of(22L, 33L))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.4")))
-            .build());
+    _multiPathRib.mergeRoute(_rb.setClusterList(ImmutableSortedSet.of(11L)).build());
+    _multiPathRib.mergeRoute(_rb.setClusterList(ImmutableSortedSet.of(22L, 33L)).build());
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
@@ -508,14 +490,8 @@ public class Bgpv4RibTest {
   @Test
   public void testMultipathDiffNeighbor() {
     Bgpv4Route bestPath = _rb.build();
-    _multiPathRib.mergeRoute(
-        _rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2")))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
-            .build());
-    _multiPathRib.mergeRoute(
-        _rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3")))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.3")))
-            .build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2"))).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3"))).build());
     _multiPathRib.mergeRoute(bestPath);
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
@@ -535,18 +511,9 @@ public class Bgpv4RibTest {
 
   @Test
   public void testMultipathEviction() {
-    _multiPathRib.mergeRoute(
-        _rb.setOriginatorIp(Ip.parse("4.4.4.4"))
-            .setNextHop(NextHopIp.of(Ip.parse("4.4.4.4")))
-            .build());
-    _multiPathRib.mergeRoute(
-        _rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2")))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
-            .build());
-    _multiPathRib.mergeRoute(
-        _rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3")))
-            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.3")))
-            .build());
+    _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("4.4.4.4")).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2"))).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3"))).build());
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), hasSize(1));
@@ -590,7 +557,6 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(
         _rb.setNetwork(Prefix.parse("10.1.1.0/24"))
             .setOriginatorIp(Ip.parse("22.22.22.22"))
-            .setNextHop(NextHopIp.of(Ip.parse("22.22.22.22")))
             .build());
     assertThat(_multiPathRib.getRoutes(), hasSize(4));
     assertThat(_multiPathRib.getBestPathRoutes(), hasSize(3));
@@ -1031,7 +997,7 @@ public class Bgpv4RibTest {
             .setReceivedFrom(ReceivedFromSelf.instance());
     Bgpv4Route.Builder b2 =
         Bgpv4Route.testBuilder()
-            .setNextHop(NextHopIp.of(Ip.parse("3.3.3.4")))
+            .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.MAX)
             .setProtocol(RoutingProtocol.BGP)
@@ -1115,16 +1081,13 @@ public class Bgpv4RibTest {
         ebgpBuilder
             .setOriginatorIp(Ip.MAX)
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
-            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
             .build();
     Bgpv4Route ebgpNewerHigherOriginator =
         ebgpBuilder
             .setOriginatorIp(Ip.MAX)
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
-            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.2")))
             .build();
-    Bgpv4Route ebgpLowerOriginator =
-        ebgpBuilder.setOriginatorIp(Ip.ZERO).setNextHop(NextHopIp.of(Ip.parse("1.1.1.3"))).build();
+    Bgpv4Route ebgpLowerOriginator = ebgpBuilder.setOriginatorIp(Ip.ZERO).build();
     // ibgp
     Bgpv4Rib ibgpBpr =
         new Bgpv4Rib(
@@ -1147,16 +1110,13 @@ public class Bgpv4RibTest {
         ibgpBuilder
             .setOriginatorIp(Ip.MAX)
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
-            .setNextHop(NextHopIp.of(Ip.parse("1.1.2.1")))
             .build();
     Bgpv4Route ibgpNewerHigherOriginator =
         ibgpBuilder
             .setOriginatorIp(Ip.MAX)
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
-            .setNextHop(NextHopIp.of(Ip.parse("1.1.2.2")))
             .build();
-    Bgpv4Route ibgpLowerOriginator =
-        ibgpBuilder.setOriginatorIp(Ip.ZERO).setNextHop(NextHopIp.of(Ip.parse("1.1.2.3"))).build();
+    Bgpv4Route ibgpLowerOriginator = ibgpBuilder.setOriginatorIp(Ip.ZERO).build();
 
     ebgpBpr.mergeRoute(ebgpOlderHigherOriginator);
     ibgpBpr.mergeRoute(ibgpOlderHigherOriginator);
