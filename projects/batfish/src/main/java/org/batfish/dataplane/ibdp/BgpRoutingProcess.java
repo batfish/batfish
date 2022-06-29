@@ -142,7 +142,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private final boolean _generateAggregatesFromMainRib;
 
   /** Source for assigning path IDs to routes upon export when sending additional paths. */
-  @Nonnull private final AtomicInteger _pathIdGenerator;
+  @Nonnull private final ConcurrentMap<Prefix, AtomicInteger> _pathIdGenerators;
   /**
    * Map indicating what path ID this process uses when exporting a given route. Keys can be:
    *
@@ -319,7 +319,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _exportFromBgpRib = configuration.getExportBgpFromBgpRib();
     _generateAggregatesFromMainRib = configuration.getGenerateBgpAggregatesFromMainRib();
 
-    _pathIdGenerator = new AtomicInteger();
+    _pathIdGenerators = new ConcurrentHashMap<>();
     _routesToPathIds = new ConcurrentHashMap<>();
 
     // Message queues start out empty
@@ -1706,7 +1706,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         ourSessionProperties,
         addressFamily,
         exportCandidate.getNextHopIp(),
-        _pathIdGenerator,
+        _pathIdGenerators,
         _routesToPathIds);
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
@@ -1801,7 +1801,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         ourSessionProperties,
         v4Family,
         Route.UNSET_ROUTE_NEXT_HOP_IP,
-        _pathIdGenerator,
+        _pathIdGenerators,
         _routesToPathIds);
 
     // Successfully exported route
