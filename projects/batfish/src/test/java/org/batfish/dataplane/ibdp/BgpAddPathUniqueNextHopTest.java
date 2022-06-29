@@ -21,7 +21,6 @@ import org.batfish.main.TestrigText;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /**
@@ -32,7 +31,6 @@ public final class BgpAddPathUniqueNextHopTest {
 
   private static final Prefix PREFIX = Prefix.strict("10.0.0.0/32");
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
   private DataPlane _dp;
 
   /*

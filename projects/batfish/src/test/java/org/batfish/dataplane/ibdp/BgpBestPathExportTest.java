@@ -8,11 +8,9 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.Bgpv4Route;
@@ -186,25 +184,27 @@ public final class BgpBestPathExportTest {
             allOf(
                 hasPrefix(Prefix.parse("10.1.0.0/24")),
                 hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))))));
-    assertThat(bgpActiveRoutesOnR4, hasSize(1));
-    assertThat(bgpBackupRoutesOnR4, hasSize(1));
+
+    // Should have two paths for 10.1.0.0/24; one through R2, and one through R3
+    // Both should have next hop of R1
+    // Because they have the same next hop, one should be active, and one should be backup
     assertThat(
-        Streams.concat(bgpActiveRoutesOnR4.stream(), bgpBackupRoutesOnR4.stream())
-            .collect(ImmutableList.toImmutableList()),
-        containsInAnyOrder(
-            // Should have two paths for 10.1.0.0/24; one through R2, and one through R3
-            // Both should have next hop of R1
-            // Because they have the same next hop, one should be active, and one should be backup
+        bgpActiveRoutesOnR4,
+        contains(
             allOf(
                 hasPrefix(Prefix.parse("10.1.0.0/24")),
                 hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))),
                 hasClusterList(contains(Ip.parse("2.2.2.2").asLong())),
-                hasReceivedFrom(equalTo(ReceivedFromIp.of(Ip.parse("2.2.2.2"))))),
+                hasReceivedFrom(equalTo(ReceivedFromIp.of(Ip.parse("2.2.2.2")))))));
+    assertThat(
+        bgpBackupRoutesOnR4,
+        contains(
             allOf(
                 hasPrefix(Prefix.parse("10.1.0.0/24")),
                 hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))),
                 hasClusterList(contains(Ip.parse("3.3.3.3").asLong())),
                 hasReceivedFrom(equalTo(ReceivedFromIp.of(Ip.parse("3.3.3.3")))))));
+
     assertThat(
         bgpRoutesOnR5.stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
