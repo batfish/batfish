@@ -4,12 +4,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
 
 public class ImmutableBDDInteger extends BDDInteger implements Serializable {
   private BDD _vars;
@@ -36,26 +37,53 @@ public class ImmutableBDDInteger extends BDDInteger implements Serializable {
   /** Returns a {@link BDD} containing all the variables of this {@link BDDInteger}. */
   public @Nonnull BDD getVars() {
     if (_vars == null) {
-      _vars = _factory.andAll(_bitvec);
+      _vars = value(_maxVal);
     }
     return _vars;
-  }
-
-  /**
-   * Returns a {@link BDD} containing the {@code n} high-order variables of this {@link BDDInteger}.
-   */
-  public @Nonnull BDD getMostSignificantVars(int n) {
-    checkArgument(n <= _bitvec.length, "Cannot get more vars than exist");
-    if (n == _bitvec.length) {
-      return getVars();
-    }
-    return _factory.andAll(Arrays.copyOf(_bitvec, n));
   }
 
   @Override
   public long satAssignmentToLong(BDD satAssignment) {
     checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
     return satAssignmentToLong(satAssignment.minAssignmentBits());
+  }
+
+  @Override
+  protected BDD firstBitsEqual(long val, int length) {
+    checkArgument(length <= _bitvec.length, "Not enough bits");
+    BDD ret = _factory.one();
+    val >>= _bitvec.length - length;
+    for (int i = length - 1; i >= 0; i--) {
+      if ((val & 1) == 1) {
+        ret.andEq(_bitvec[i]);
+      } else {
+        ret.diffEq(_bitvec[i]);
+      }
+      val >>= 1;
+    }
+    return ret;
+  }
+
+  @Override
+  public BDD toBDD(IpWildcard ipWildcard) {
+    checkArgument(_bitvec.length >= Prefix.MAX_PREFIX_LENGTH);
+    long ip = ipWildcard.getIp().asLong();
+    long wildcard = ipWildcard.getWildcardMask();
+    BDD ret = _factory.one();
+    for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
+      boolean significant = (wildcard & 1) == 0;
+      if (significant) {
+        boolean bitValue = (ip & 1) == 1;
+        if (bitValue) {
+          ret.andEq(_bitvec[i]);
+        } else {
+          ret.diffEq(_bitvec[i]);
+        }
+      }
+      ip >>= 1;
+      wildcard >>= 1;
+    }
+    return ret;
   }
 
   public int satAssignmentToInt(BitSet bits) {

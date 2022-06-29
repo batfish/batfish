@@ -3,14 +3,25 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
 
 public final class MutableBDDInteger extends BDDInteger {
+  // Temporary ArrayLists used to optimize some internal computations.
+  private transient List<BDD> _trues;
+  private transient List<BDD> _falses;
+
   public MutableBDDInteger(BDDFactory factory, BDD[] bitvec) {
     super(factory, bitvec);
+    initTransientFields();
   }
 
   public MutableBDDInteger(BDDFactory factory, int length) {
@@ -20,6 +31,17 @@ public final class MutableBDDInteger extends BDDInteger {
   public MutableBDDInteger(MutableBDDInteger other) {
     this(other._factory, other._bitvec.length);
     setValue(other);
+  }
+
+  private void readObject(java.io.ObjectInputStream stream)
+      throws IOException, ClassNotFoundException {
+    stream.defaultReadObject();
+    initTransientFields();
+  }
+
+  private void initTransientFields() {
+    _trues = new ArrayList<>(_bitvec.length);
+    _falses = new ArrayList<>(_bitvec.length);
   }
 
   /**
@@ -74,6 +96,46 @@ public final class MutableBDDInteger extends BDDInteger {
       }
     }
     return value;
+  }
+
+  /** Check if the first length bits match the BDDInteger representing the advertisement prefix. */
+  @Override
+  protected BDD firstBitsEqual(long val, int length) {
+    checkArgument(length <= _bitvec.length, "Not enough bits");
+    _trues.clear();
+    _falses.clear();
+    val >>= _bitvec.length - length;
+    for (int i = length - 1; i >= 0; i--) {
+      boolean bitValue = (val & 1) == 1;
+      if (bitValue) {
+        _trues.add(_bitvec[i]);
+      } else {
+        _falses.add(_bitvec[i]);
+      }
+      val >>= 1;
+    }
+    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
+  }
+
+  @Override
+  public BDD toBDD(IpWildcard ipWildcard) {
+    checkArgument(_bitvec.length >= Prefix.MAX_PREFIX_LENGTH);
+    long ip = ipWildcard.getIp().asLong();
+    long wildcard = ipWildcard.getWildcardMask();
+    _trues.clear();
+    _falses.clear();
+    for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
+      boolean significant = !Ip.getBitAtPosition(wildcard, i);
+      if (significant) {
+        boolean bitValue = Ip.getBitAtPosition(ip, i);
+        if (bitValue) {
+          _trues.add(_bitvec[i]);
+        } else {
+          _falses.add(_bitvec[i]);
+        }
+      }
+    }
+    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
   }
 
   /*
