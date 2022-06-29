@@ -45,7 +45,7 @@ public class StandardAccessListActionLine implements StandardAccessListLine {
   public @Nonnull Optional<ExtendedAccessListLine> toExtendedAccessListLine() {
     return Optional.ofNullable(
         ExtendedAccessListLine.builder()
-            .setName(Long.toString(_seq)) // Use sequence number instead of line content (_name)
+            .setName(_name)
             .setAction(_action)
             .setSrcAddressSpecifier(new WildcardAddressSpecifier(_sourceIps))
             .setDstAddressSpecifier(new WildcardAddressSpecifier(IpWildcard.ANY))

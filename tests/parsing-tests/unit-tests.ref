@@ -71097,7 +71097,7 @@
             }
           },
           "ip access-list standard line" : {
-            "sshabc: 10" : {
+            "sshabc: 10 permit 1.2.4.8/16" : {
               "definitionLines" : "31",
               "numReferrers" : 1
             }
@@ -76597,7 +76597,7 @@
         },
         "configs/arista_misc" : {
           "ip access-list standard line" : {
-            "sshabc: 10" : {
+            "sshabc: 10 permit 1.2.4.8/16" : {
               "ip access-list standard line" : [
                 31
               ]
