@@ -1,7 +1,6 @@
 package org.batfish.dataplane.rib;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
@@ -24,7 +23,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.datamodel.route.nh.NextHopIp;
 import org.junit.Test;
 
 /** Tests of {@link BgpRib} */
@@ -99,48 +97,6 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testMultipathMerge_sameNextHopUseBestPathCompare() {
-    Bgpv4Rib bgpRib =
-        new Bgpv4Rib(
-            null,
-            BgpTieBreaker.ROUTER_ID,
-            null,
-            MultipathEquivalentAsPathMatchMode.EXACT_PATH,
-            false,
-            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
-    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
-
-    Bgpv4Route nh1EcmpBest =
-        rb.setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
-            .setLocalPreference(100)
-            .setOriginatorIp(Ip.parse("1.0.0.1"))
-            .build();
-
-    // ecmp-equal to nh1EcmpBest, but same next-hop so backup via best-path comparison on router-id
-    Bgpv4Route nh1Backup = nh1EcmpBest.toBuilder().setOriginatorIp(Ip.parse("1.0.0.2")).build();
-
-    Bgpv4Route nh2EcmpBest =
-        nh1EcmpBest.toBuilder().setNextHop(NextHopIp.of(Ip.parse("2.2.2.2"))).build();
-
-    // backup because of local preference
-    Bgpv4Route nh3Backup =
-        nh1EcmpBest.toBuilder()
-            .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
-            .setLocalPreference(1)
-            .build();
-
-    bgpRib.mergeRoute(nh1EcmpBest);
-    bgpRib.mergeRoute(nh1Backup);
-    bgpRib.mergeRoute(nh2EcmpBest);
-    bgpRib.mergeRoute(nh3Backup);
-
-    // nh1Backup and nh3Backup should not be ECMP-best
-    assertThat(bgpRib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1EcmpBest, nh2EcmpBest));
-  }
-
-  @Test
   public void testMultipathMergeAndRemove_multipath() {
     Bgpv4Rib bgpRib =
         new Bgpv4Rib(
@@ -154,18 +110,9 @@ public class BgpRibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
-    Bgpv4Route good =
-        rb.setOriginatorIp(Ip.parse("1.1.1.40"))
-            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.40")))
-            .build();
-    Bgpv4Route better =
-        rb.setOriginatorIp(Ip.parse("1.1.1.30"))
-            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.30")))
-            .build();
-    Bgpv4Route best =
-        rb.setOriginatorIp(Ip.parse("1.1.1.20"))
-            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.20")))
-            .build();
+    Bgpv4Route good = rb.setOriginatorIp(Ip.parse("1.1.1.40")).build();
+    Bgpv4Route better = rb.setOriginatorIp(Ip.parse("1.1.1.30")).build();
+    Bgpv4Route best = rb.setOriginatorIp(Ip.parse("1.1.1.20")).build();
     {
       // Merge into empty RIB
       BgpRib.MultipathRibDelta<Bgpv4Route> delta = bgpRib.multipathMergeRouteGetDelta(good);

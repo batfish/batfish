@@ -170,10 +170,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
             // Evaluate AS path compatibility for multipath
             .thenComparing(this::compareRouteAsPath)
             .compare(lhs, rhs);
-    if (multipathCompare != 0
-        || (
-        // For two routes with the same next hop, at most one may be ECMP-best
-        isMultipath() && !lhs.getNextHop().equals(rhs.getNextHop()))) {
+    if (multipathCompare != 0 || isMultipath()) {
       return multipathCompare;
     } else {
       return Comparator.comparing(Function.identity(), this::bestPathComparator).compare(lhs, rhs);
