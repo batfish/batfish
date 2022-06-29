@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -421,7 +420,7 @@ public final class BgpProtocolHelper {
           BgpSessionProperties ourSessionProperties,
           AddressFamily af,
           Ip originalRouteNhip,
-          Map<Prefix, AtomicInteger> pathIdGenerators,
+          Map<Prefix, Integer> pathIdGenerators,
           Map<AbstractRouteDecorator, Integer> routesToPathIds) {
     // Determine path ID to export, if any.
     Integer pathId = null;
@@ -430,9 +429,9 @@ public final class BgpProtocolHelper {
           routesToPathIds.computeIfAbsent(
               originalRoute,
               k ->
-                  pathIdGenerators
-                      .computeIfAbsent(originalRoute.getNetwork(), k2 -> new AtomicInteger())
-                      .incrementAndGet());
+                  // pathIdGenerators is a concurrent map; must use compute rather than get/put
+                  pathIdGenerators.compute(
+                      originalRoute.getNetwork(), (p, lastId) -> lastId == null ? 1 : lastId + 1));
     }
     transformBgpRoutePostExport(
         routeBuilder,
