@@ -2900,6 +2900,10 @@ public class JFactory extends BDDFactory implements Serializable {
   private static class BDDFreePosManager implements Serializable {
     ConcurrentLinkedQueue<Integer> _queue = new ConcurrentLinkedQueue<>();
 
+    void clear() {
+      _queue.clear();
+    }
+
     /** Get a list of free BDD nodes (0-terminated). */
     int get() {
       return firstNonNull(_queue.poll(), 0);
@@ -2909,17 +2913,6 @@ public class JFactory extends BDDFactory implements Serializable {
     void put(int freepos) {
       if (freepos != 0) {
         _queue.add(freepos);
-      }
-    }
-
-    /**
-     * not thread-safe. must be called from a single-threaded context (i.e. while holding the writer
-     * lock.
-     */
-    void set(int[] freepos) {
-      _queue.clear();
-      for (int i = 0; i < freepos.length; i++) {
-        _queue.add(freepos[i]);
       }
     }
   }
@@ -2937,7 +2930,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private int[] bddvar2level; /* Variable -> level table */
   private int[] bddlevel2var; /* Level -> variable table */
 
-  private int minfreenodes = 20;
+  private int minfreenodes = 20; /* Resize if fewer than 20% of nodes are free after GC */
 
   /*=== PRIVATE KERNEL VARIABLES =========================================*/
 
@@ -3286,12 +3279,20 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private static final int INT_MAX = Integer.MAX_VALUE;
-  private static final int NUM_FREEPOS = 32;
 
   private void bdd_gbc_rehash() {
-    int[] freepos = new int[NUM_FREEPOS];
-    int idx = 0;
+    _bddFreePosManager.clear();
+    int freepos = 0;
+    int freelistLen = 0;
 
+    /* The max free list length is a tunable parameter. If too short, the queue becomes very long and workers have to
+     * get lists from the queue more. If too long, a worker will be unable to get a list (and initiate GC) while there
+     * are still many free nodes (in lists currently held by other workers).
+     *
+     * With makeFreelistLen=bddnodesize/100 and minFreenodes=20 (i.e. bddnodesize/20), GC+resize will ensure between
+     * 20 and 100 lists.
+     */
+    int maxFreelistLen = bddnodesize / 100;
     for (int n = bddnodesize - 1; n >= 2; n--) {
       if (LOW(n) != INVALID_BDD) {
         int hash2;
@@ -3299,13 +3300,17 @@ public class JFactory extends BDDFactory implements Serializable {
         bddnodes.setNextNonVolatile(n, bddnodes.getHashNonVolatile(hash2));
         bddnodes.setHashNonVolatile(hash2, n);
       } else {
-        bddnodes.setNextNonVolatile(n, freepos[idx]);
-        freepos[idx] = n;
-        idx = (idx + 1) % freepos.length;
+        bddnodes.setNextNonVolatile(n, freepos);
+        freepos = n;
+        freelistLen++;
+        if (freelistLen == maxFreelistLen) {
+          _bddFreePosManager.put(freepos);
+          freepos = 0;
+          freelistLen = 0;
+        }
       }
     }
-
-    _bddFreePosManager.set(freepos);
+    _bddFreePosManager.put(freepos);
   }
 
   int bdd_gbc() {
@@ -3336,8 +3341,18 @@ public class JFactory extends BDDFactory implements Serializable {
 
     int freenum = 0;
 
-    int[] freepos = new int[NUM_FREEPOS];
-    int idx = 0;
+    _bddFreePosManager.clear();
+    int freepos = 0;
+    int freelistLen = 0;
+
+    /* The max free list length is a tunable parameter. If too short, the queue becomes very long and workers have to
+     * get lists from the queue more. If too long, a worker will be unable to get a list (and initiate GC) while there
+     * are still many free nodes (in lists currently held by other workers).
+     *
+     * With makeFreelistLen=bddnodesize/100 and minFreenodes=20 (i.e. bddnodesize/20), GC+resize will ensure between
+     * 20 and 100 lists.
+     */
+    int maxFreelistLen = bddnodesize / 100;
     for (int n = bddnodesize - 1; n >= 2; n--) {
       if (bddnodes.getMarkNonVolatile(n) && LOW(n) != INVALID_BDD) {
         int hash2;
@@ -3347,14 +3362,19 @@ public class JFactory extends BDDFactory implements Serializable {
         bddnodes.setHashNonVolatile(hash2, n);
       } else {
         bddnodes.setLowNonVolatile(n, INVALID_BDD);
-        bddnodes.setNextNonVolatile(n, freepos[idx]);
-        freepos[idx] = n;
-        idx = (idx + 1) % freepos.length;
+        bddnodes.setNextNonVolatile(n, freepos);
+        freepos = n;
+        freelistLen++;
+        if (freelistLen == maxFreelistLen) {
+          _bddFreePosManager.put(freepos);
+          freepos = 0;
+          freelistLen = 0;
+        }
         freenum++;
       }
     }
 
-    _bddFreePosManager.set(freepos);
+    _bddFreePosManager.put(freepos);
 
     if (freenum > 0) {
       // Don't reset or clean caches if we didn't free any nodes.
@@ -3541,15 +3561,29 @@ public class JFactory extends BDDFactory implements Serializable {
 
     bddnodes = new NodeTable(bddnodesize);
 
-    int[] freepos = new int[NUM_FREEPOS];
-    int idx = 0;
+    int freepos = 0;
+    int freelistLen = 0;
+    /* The max free list length is a tunable parameter. If too short, the queue becomes very long and workers have to
+     * get lists from the queue more. If too long, a worker will be unable to get a list (and initiate GC) while there
+     * are still many free nodes (in lists currently held by other workers).
+     *
+     * With makeFreelistLen=bddnodesize/100 and minFreenodes=20 (i.e. bddnodesize/20), GC+resize will ensure between
+     * 20 and 100 lists.
+     */
+    int maxFreelistLen = bddnodesize / 100;
     for (int n = bddnodesize - 1; n >= 2; n--) {
       SETLOW(n, INVALID_BDD);
-      SETNEXT(n, freepos[idx]);
-      freepos[idx] = n;
-      idx = (idx + 1) % freepos.length;
+      SETNEXT(n, freepos);
+      freepos = n;
+      freelistLen++;
+      if (freelistLen == maxFreelistLen) {
+        _bddFreePosManager.put(freepos);
+        freepos = 0;
+        freelistLen = 0;
+      }
     }
     SETNEXT(bddnodesize - 1, 0);
+    _bddFreePosManager.put(freepos);
 
     SETMAXREF(0);
     SETMAXREF(1);
@@ -3562,7 +3596,6 @@ public class JFactory extends BDDFactory implements Serializable {
 
     cacheratio = 0;
 
-    _bddFreePosManager.set(freepos);
     bddrunning = true;
     bddvarnum = 0;
     gbcollectnum = 0;
