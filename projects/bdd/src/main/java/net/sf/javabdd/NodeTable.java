@@ -277,14 +277,20 @@ final class NodeTable implements Serializable {
    * Insert the input {@code node} with the input {@code hashcode} into the first position of it's
    * hash bucket.
    */
-  int insertNode(int node, int hashcode, int prevBucket, int level, int low, int high) {
-    int next_idx = node * NODE_SIZE + OFFSET__NEXT;
+  int createAndInsertNode(int node, int hashcode, int prevBucket, int level, int low, int high) {
+    int idx = node * NODE_SIZE;
+
+    array[idx + OFFSET__REFCOUNT_MARK_AND_LEVEL] = level;
+    array[idx + OFFSET__LOW] = low;
+    array[idx + OFFSET__HIGH] = high;
+
     int bucket_idx = hashcode * NODE_SIZE + OFFSET__HASH;
     int next = prevBucket;
+
     while (true) {
       // set node's next pointer first, so that if the insert succeeds
       // the chain is immediately correct
-      array[next_idx] = next;
+      array[idx + OFFSET__NEXT] = next;
 
       // make sure no other thread has inserted a different node
       if (AA.compareAndSet(array, bucket_idx, next, node)) {
@@ -296,7 +302,7 @@ final class NodeTable implements Serializable {
 
       int res = next;
       while (res != 0) {
-        if (getLevel(res) == level && getLowNonVolatile(res) == low && getHigh(res) == high) {
+        if (nodeMatches(res, level, low, high)) {
           // another thread created a copy of node. Return that copy, since it's already in the
           // table
           return res;
@@ -307,5 +313,12 @@ final class NodeTable implements Serializable {
 
       // didn't find a copy, so retry the insert
     }
+  }
+
+  public boolean nodeMatches(int node, int level, int low, int high) {
+    int idx = node * NODE_SIZE;
+    return ((array[idx + OFFSET__REFCOUNT_MARK_AND_LEVEL] & LEV_MASK) == level)
+        && (array[idx + OFFSET__LOW] == low)
+        && (array[idx + OFFSET__HIGH] == high);
   }
 }

@@ -707,7 +707,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int headHashBucket = HASH(hash2);
       int res = headHashBucket;
       while (res != 0) {
-        if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
+        if (bddnodes.nodeMatches(res, level, low, high)) {
           if (CACHESTATS) {
             cachestats.uniqueHit++;
           }
@@ -763,7 +763,7 @@ public class JFactory extends BDDFactory implements Serializable {
               headHashBucket = HASH(hash2);
               res = headHashBucket;
               while (res != 0) {
-                if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
+                if (bddnodes.nodeMatches(res, level, low, high)) {
                   System.out.println("new bucket had the node");
                   return res;
                 }
@@ -792,12 +792,8 @@ public class JFactory extends BDDFactory implements Serializable {
 
       newNodeIndex(res);
 
-      bddnodes.setRefcountLevelAndMarkNonVolatile(res, level); // refcount and mark initially 0
-      bddnodes.setLowNonVolatile(res, low);
-      bddnodes.setHighNonVolatile(res, high);
-
       // insert the node (or find a dupe of it)
-      int ret = bddnodes.insertNode(res, hash2, headHashBucket, level, low, high);
+      int ret = bddnodes.createAndInsertNode(res, hash2, headHashBucket, level, low, high);
       if (ret != res) {
         // another thread created a copy first. return res to freepos
         // note: another thead could have set bddfreepos to zero so it can GC. if that happens,
