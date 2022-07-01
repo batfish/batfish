@@ -21,7 +21,7 @@ public abstract class BDDInteger implements Serializable {
     checkArgument(bitvec.length < 64, "Only lengths up to 63 are supported");
     _factory = factory;
     _bitvec = bitvec;
-    _maxVal = 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - bitvec.length);
+    _maxVal = bitvec.length == 0 ? 0L : 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - bitvec.length);
   }
 
   /** Returns the number of bits in this {@link BDDInteger}. */

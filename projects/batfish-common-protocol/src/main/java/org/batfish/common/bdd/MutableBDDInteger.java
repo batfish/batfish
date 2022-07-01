@@ -100,11 +100,11 @@ public final class MutableBDDInteger extends BDDInteger {
 
   /** Check if the first length bits match the BDDInteger representing the advertisement prefix. */
   @Override
-  protected BDD firstBitsEqual(long val, int length) {
+  protected BDD firstBitsEqual(long value, int length) {
     checkArgument(length <= _bitvec.length, "Not enough bits");
     _trues.clear();
     _falses.clear();
-    val >>= _bitvec.length - length;
+    long val = value >> (_bitvec.length - length);
     for (int i = length - 1; i >= 0; i--) {
       boolean bitValue = (val & 1) == 1;
       if (bitValue) {

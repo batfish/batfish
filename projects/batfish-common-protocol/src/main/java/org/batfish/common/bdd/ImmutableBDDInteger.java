@@ -49,10 +49,10 @@ public class ImmutableBDDInteger extends BDDInteger implements Serializable {
   }
 
   @Override
-  protected BDD firstBitsEqual(long val, int length) {
+  protected BDD firstBitsEqual(long value, int length) {
     checkArgument(length <= _bitvec.length, "Not enough bits");
     BDD ret = _factory.one();
-    val >>= _bitvec.length - length;
+    long val = value >> (_bitvec.length - length);
     for (int i = length - 1; i >= 0; i--) {
       if ((val & 1) == 1) {
         ret.andEq(_bitvec[i]);
