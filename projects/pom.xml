@@ -38,7 +38,7 @@
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
         <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
-        <maven-license-plugin.version>1.13</maven-license-plugin.version>
+        <maven-license-plugin.version>1.20</maven-license-plugin.version>
         <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
         <maven-project-info-reports-plugin.version>2.9</maven-project-info-reports-plugin.version>
         <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
@@ -407,9 +407,12 @@
                     <version>${maven-license-plugin.version}</version>
                     <configuration>
                         <licenseMerges>
-                            <licenseMerge>Apache-2.0|The Apache Software License, Version 2.0|Apache License,
-                                Version 2.0|Apache 2.0|Apache License 2.0|Apache 2|Apache License, 2.0
-                            </licenseMerge>
+                            <licenseMerge>Apache-2.0|The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache 2.0|Apache License 2.0|Apache 2|Apache License, 2.0</licenseMerge>
+                            <licenseMerge>BSD-3-Clause|The BSD License|BSD License 3|BSD|Go License</licenseMerge>
+                            <licenseMerge>EDL-1.0|EDL 1.0|Eclipse Distribution License - v 1.0</licenseMerge>
+                            <licenseMerge>EPL-1.0|Eclipse Public License 1.0</licenseMerge>
+                            <licenseMerge>EPL-2.0|EPL 2.0|Eclipse Public License (EPL) 2.0</licenseMerge>
+                            <licenseMerge>ICU|Unicode/ICU License</licenseMerge>
                             <licenseMerge>MIT|MIT License|MIT license|The MIT License</licenseMerge>
                         </licenseMerges>
                     </configuration>
