@@ -978,12 +978,56 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             });
   }
 
+  /** Returns the ASN for the given EIGRP process, or an empty Optional if there is none. */
+  private Optional<Integer> getEigrpAsn(@Nullable String procName, @Nullable String vrfName) {
+    if (procName == null) {
+      // The process must be configured.
+      return Optional.empty();
+    }
+    EigrpProcessConfiguration proc = _eigrpProcesses.get(procName);
+    if (proc == null) {
+      // The configured process does not exist.
+      return Optional.empty();
+    }
+    return getEigrpAsn(proc, vrfName);
+  }
+
+  /** Returns the ASN for the given EIGRP process, or an empty Optional if there is none. */
+  private Optional<Integer> getEigrpAsn(EigrpProcessConfiguration proc, @Nullable String vrfName) {
+    if (vrfName == null) {
+      // The VRF must be configured in the process for this to matter.
+      return Optional.empty();
+    }
+    EigrpVrfConfiguration vrf = proc.getVrf(vrfName);
+    if (vrf == null) {
+      if (proc.getAsn() == null) {
+        vrf = proc.getVrf(DEFAULT_VRF_NAME);
+        if (vrf == null) {
+          // The VRF is not configured in the process.
+          return Optional.empty();
+        }
+      } else {
+        vrf = new EigrpVrfConfiguration();
+      }
+    }
+    return getEigrpAsn(proc, vrf);
+  }
+
+  /** Returns the ASN for the given EIGRP process, or an empty Optional if there is none. */
+  private Optional<Integer> getEigrpAsn(EigrpProcessConfiguration proc, EigrpVrfConfiguration vrf) {
+    if (vrf.getAsn() != null) {
+      // VRF ASN overrides process.
+      return Optional.of(vrf.getAsn());
+    }
+    return Optional.ofNullable(proc.getAsn());
+  }
+
   private void convertEigrpProcessVrf(
       String procName,
       EigrpProcessConfiguration processConfig,
       String vrfName,
       EigrpVrfConfiguration vrfConfig) {
-    Integer asn = Optional.ofNullable(vrfConfig.getAsn()).orElse(processConfig.getAsn());
+    Integer asn = getEigrpAsn(processConfig, vrfConfig).orElse(null);
     if (asn == null) {
       _w.redFlag(
           String.format(
@@ -1029,7 +1073,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .setMetricVersion(EigrpMetricVersion.V2);
     proc.setMode(EigrpProcessMode.CLASSIC);
     String redistPolicyName = eigrpRedistributionPolicyName(vrfName, asn);
-    if (createEigrpRedistributionPolicy(vrfConfig, redistPolicyName)) {
+    if (createEigrpRedistributionPolicy(vrfConfig, vrfName, redistPolicyName)) {
       proc.setRedistributionPolicy(redistPolicyName);
     }
     v.addEigrpProcess(proc.build());
@@ -1042,7 +1086,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * @return {@code true} if a policy was created
    */
   private boolean createEigrpRedistributionPolicy(
-      EigrpVrfConfiguration vrfConfig, String policyName) {
+      EigrpVrfConfiguration vrfConfig, String vrfName, String policyName) {
     Set<NxosRoutingProtocol> supportedProtocols =
         ImmutableSet.of(
             NxosRoutingProtocol.BGP,
@@ -1102,16 +1146,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   return new If(matchBgp, ImmutableList.of(setTag, call(policy.getRouteMap())));
                 case EIGRP:
                   assert policy.getInstance().getTag() != null;
-                  long eigrpAsn = Long.parseLong(policy.getInstance().getTag());
+                  Optional<Integer> eigrpAsn = getEigrpAsn(policy.getInstance().getTag(), vrfName);
+                  if (!eigrpAsn.isPresent()) {
+                    // There is either no EIGRP process with the given tag, this VRF is not
+                    // configured in that process, or there is no ASN configured for it.
+                    return null;
+                  }
                   MatchProtocol matchEigrp =
                       new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
                   String mapName = policy.getRouteMap();
                   List<BooleanExpr> matchConjuncts =
                       Stream.of(
-                              new MatchProcessAsn(eigrpAsn),
+                              new MatchProcessAsn(eigrpAsn.get()),
                               matchEigrp,
                               new Not(matchDefaultRoute()),
-                              mapName == null ? null : new CallExpr(mapName))
+                              new CallExpr(mapName))
                           .filter(Objects::nonNull)
                           .collect(ImmutableList.toImmutableList());
                   Conjunction redistExpr = new Conjunction(matchConjuncts);
@@ -2340,10 +2389,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (eigrpProcess != null) {
       // Find process ASN for this interface. If an ASN is explicitly configured for the interface's
       // VRF, it takes precedence over process ASN (which is just process tag interpreted as ASN).
-      Integer asn =
-          Optional.ofNullable(eigrpProcess.getVrf(vrfName))
-              .map(EigrpVrfConfiguration::getAsn)
-              .orElse(eigrpProcess.getAsn());
+      Integer asn = getEigrpAsn(eigrpProcess, vrfName).orElse(null);
       if (asn != null) {
         String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, vrfName, asn);
         String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, vrfName, asn);
