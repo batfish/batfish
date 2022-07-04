@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
@@ -57,7 +58,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
   }
 
   private ApplicationSet init() {
-    ApplicationSet applicationSet = new ApplicationSet(convertToJuniperName());
+    ApplicationSet applicationSet = new ApplicationSet(convertToJuniperName(), true);
 
     List<JunosApplication> applications;
 
@@ -369,8 +370,18 @@ public enum JunosApplicationSet implements ApplicationSetMember {
     if (!hasDefinition()) {
       return new MatchHeaderSpace(
           HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
-          TraceElement.of(String.format("Matched application-set %s", convertToJuniperName())));
+          getTraceElement(convertToJuniperName()));
     }
     return _applicationSet.get().toAclLineMatchExpr(jc, w);
+  }
+
+  @Override
+  public boolean isBuiltIn() {
+    return true;
+  }
+
+  @VisibleForTesting
+  public static TraceElement getTraceElement(String name) {
+    return TraceElement.of(String.format("Matched built-in application-set %s", name));
   }
 }

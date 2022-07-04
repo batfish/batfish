@@ -53,7 +53,7 @@ public class BaseApplicationTest {
 
   @Test
   public void testToAclLineMatchExpr_noTerms() {
-    BaseApplication app = new BaseApplication("APP");
+    BaseApplication app = new BaseApplication("APP", false);
     assertEquals(
         app.toAclLineMatchExpr(jc, null),
         new MatchHeaderSpace(
@@ -63,7 +63,7 @@ public class BaseApplicationTest {
 
   @Test
   public void testToAclLineMatchExpr_hasTerms() {
-    BaseApplication app = new BaseApplication("APP");
+    BaseApplication app = new BaseApplication("APP", false);
     Term term1 = new Term("TERM1");
     Term term2 = new Term("TERM2");
     app.getTerms().put("TERM1", term1);
@@ -75,5 +75,15 @@ public class BaseApplicationTest {
             ImmutableList.of(term1.toAclLineMatchExpr(), term2.toAclLineMatchExpr()),
             getTraceElementForUserApplication(
                 jc.getFilename(), JuniperStructureType.APPLICATION, "APP")));
+  }
+
+  @Test
+  public void testToAclLineMatchExpr_builtIn() {
+    BaseApplication app = new BaseApplication("BUILT_IN_APP", true);
+    assertEquals(
+        app.toAclLineMatchExpr(jc, null),
+        new MatchHeaderSpace(
+            app.getMainTerm().toHeaderSpace(),
+            JunosApplication.getTraceElementForBuiltInApplication("BUILT_IN_APP")));
   }
 }

@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -32,6 +31,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFrom;
 import org.batfish.datamodel.ReceivedFromInterface;
 import org.batfish.datamodel.ReceivedFromIp;
@@ -408,7 +408,7 @@ public final class BgpProtocolHelper {
    * @param af sender's address family configuration
    * @param originalRouteNhip BGP next hop IP of the original route, or {@link
    *     Route#UNSET_ROUTE_NEXT_HOP_IP} if original route is not BGP
-   * @param pathIdGenerator Used for generating a path ID for the outgoing advertisement if needed
+   * @param pathIdGenerators Used for generating a path ID for the outgoing advertisement if needed
    * @param routesToPathIds Routes we have already exported, mapped to the path IDs with which we
    *     exported them. If the outgoing route needs a path ID, we will look up {@code originalRoute}
    *     in this map to find the correct path ID, and add a new entry if it isn't already there.
@@ -420,13 +420,18 @@ public final class BgpProtocolHelper {
           BgpSessionProperties ourSessionProperties,
           AddressFamily af,
           Ip originalRouteNhip,
-          AtomicInteger pathIdGenerator,
+          Map<Prefix, Integer> pathIdGenerators,
           Map<AbstractRouteDecorator, Integer> routesToPathIds) {
     // Determine path ID to export, if any.
     Integer pathId = null;
     if (ourSessionProperties.getAdditionalPaths()) {
       pathId =
-          routesToPathIds.computeIfAbsent(originalRoute, k -> pathIdGenerator.incrementAndGet());
+          routesToPathIds.computeIfAbsent(
+              originalRoute,
+              k ->
+                  // pathIdGenerators is a concurrent map; must use compute rather than get/put
+                  pathIdGenerators.compute(
+                      originalRoute.getNetwork(), (p, lastId) -> lastId == null ? 1 : lastId + 1));
     }
     transformBgpRoutePostExport(
         routeBuilder,

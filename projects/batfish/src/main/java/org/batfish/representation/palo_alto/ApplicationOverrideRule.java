@@ -32,7 +32,7 @@ public final class ApplicationOverrideRule implements Serializable {
   @Nullable private String _description;
 
   // Application used for traffic matching this rule
-  @Nullable private String _application;
+  @Nullable private ApplicationOrApplicationGroupReference _application;
 
   private boolean _disabled;
 
@@ -77,7 +77,7 @@ public final class ApplicationOverrideRule implements Serializable {
   }
 
   @Nullable
-  public String getApplication() {
+  public ApplicationOrApplicationGroupReference getApplication() {
     return _application;
   }
 
@@ -145,8 +145,8 @@ public final class ApplicationOverrideRule implements Serializable {
     _description = description;
   }
 
-  public void setApplication(String application) {
-    _application = application;
+  public void setApplication(@Nonnull String application) {
+    _application = new ApplicationOrApplicationGroupReference(application);
   }
 
   public void setDisabled(boolean disabled) {

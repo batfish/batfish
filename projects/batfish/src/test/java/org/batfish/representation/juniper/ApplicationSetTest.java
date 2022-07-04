@@ -23,15 +23,15 @@ public class ApplicationSetTest {
 
     JuniperConfiguration jc = new JuniperConfiguration();
     jc.setFilename("host");
-    jc.getMasterLogicalSystem().getApplications().put("app2", new BaseApplication("app2"));
+    jc.getMasterLogicalSystem().getApplications().put("app2", new BaseApplication("app2", false));
 
-    ApplicationSet appSet = new ApplicationSet("appSet");
+    ApplicationSet appSet = new ApplicationSet("appSet", false);
     appSet.setMembers(ImmutableList.of(new ApplicationReference("app2")));
     jc.getMasterLogicalSystem().getApplicationSets().put("appSet", appSet);
 
-    jc.getMasterLogicalSystem().getApplications().put("app1", new BaseApplication("app1"));
+    jc.getMasterLogicalSystem().getApplications().put("app1", new BaseApplication("app1", false));
 
-    ApplicationSet masterAppSet = new ApplicationSet("masterAppSet");
+    ApplicationSet masterAppSet = new ApplicationSet("masterAppSet", false);
     List<ApplicationSetMemberReference> members =
         ImmutableList.of(new ApplicationReference("app1"), new ApplicationSetReference("appSet"));
     masterAppSet.setMembers(members);
@@ -54,5 +54,18 @@ public class ApplicationSetTest {
                         "host", JuniperStructureType.APPLICATION_SET, "appSet"))),
             ApplicationSetMember.getTraceElementForUserApplication(
                 "host", JuniperStructureType.APPLICATION_SET, "masterAppSet")));
+  }
+
+  @Test
+  public void testToAclLineMatchExpr_builtIn() {
+    JuniperConfiguration jc = new JuniperConfiguration();
+    jc.setFilename("host");
+    String parentAppSetName = "PARENT_BUILT_IN";
+    ApplicationSet appSet = new ApplicationSet(parentAppSetName, true);
+    jc.getMasterLogicalSystem().getApplicationSets().put(parentAppSetName, appSet);
+
+    assertEquals(
+        appSet.toAclLineMatchExpr(jc, null),
+        new OrMatchExpr(ImmutableList.of(), JunosApplicationSet.getTraceElement(parentAppSetName)));
   }
 }

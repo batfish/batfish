@@ -25,13 +25,18 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generat
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSgSgLines;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSharedGatewayOutgoingFilter;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateVsysSharedGatewayCalls;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.getTraceElementForAppReference;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.securityRuleApplies;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.unexpectedUnboundedCustomUrlWildcard;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationGroupTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationObjectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -40,6 +45,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
@@ -812,5 +818,52 @@ public final class PaloAltoConfigurationTest {
     assertTrue(dest.getServices().containsKey("service"));
     assertTrue(dest.getServiceGroups().containsKey("serviceGroup"));
     assertTrue(dest.getTags().containsKey("tag"));
+  }
+
+  @Test
+  public void testGetTraceElementForAppReferenceValidApp() {
+    Vsys vsys = new Vsys(DEFAULT_VSYS_NAME);
+    String filename = "config";
+    String appName = "appName";
+    vsys.getApplications().put(appName, Application.builder(appName).build());
+    assertThat(
+        getTraceElementForAppReference(
+                new ApplicationOrApplicationGroupReference(appName), Optional.of(vsys), filename)
+            .get(),
+        equalTo(matchApplicationObjectTraceElement(appName, vsys.getName(), filename)));
+  }
+
+  @Test
+  public void testGetTraceElementForAppReferenceValidAppGroup() {
+    Vsys vsys = new Vsys(DEFAULT_VSYS_NAME);
+    String filename = "config";
+    String appGroupName = "appGroupName";
+    vsys.getApplicationGroups().put(appGroupName, new ApplicationGroup(appGroupName));
+    assertThat(
+        getTraceElementForAppReference(
+                new ApplicationOrApplicationGroupReference(appGroupName),
+                Optional.of(vsys),
+                filename)
+            .get(),
+        equalTo(matchApplicationGroupTraceElement(appGroupName, vsys.getName(), filename)));
+  }
+
+  @Test
+  public void testGetTraceElementForAppReferenceValidBuiltIn() {
+    String filename = "config";
+    assertThat(
+        getTraceElementForAppReference(
+                new ApplicationOrApplicationGroupReference("ssh"), Optional.empty(), filename)
+            .get(),
+        equalTo(matchBuiltInApplicationTraceElement("ssh")));
+  }
+
+  @Test
+  public void testGetTraceElementForAppReferenceInvalid() {
+    String filename = "config";
+    assertThat(
+        getTraceElementForAppReference(
+            new ApplicationOrApplicationGroupReference("undefined"), Optional.empty(), filename),
+        equalTo(Optional.empty()));
   }
 }

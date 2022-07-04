@@ -1496,8 +1496,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _currentAclSeq = lastKey + 10;
     }
     // structure definition tracking
-    String structName =
-        aclLineStructureName(_currentStandardAcl.getName(), _currentAclSeq.toString());
+    String lineName = getFullText(ctx).trim();
+    String structName = aclLineStructureName(_currentStandardAcl.getName(), lineName);
     int configLine = ctx.start.getLine();
     _configuration.defineSingleLineStructure(IP_ACCESS_LIST_STANDARD_LINE, structName, configLine);
     _configuration.referenceStructure(

@@ -745,7 +745,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Vsys vsys,
       List<ApplicationOverrideRule> rules,
       Map<String, AclLineMatchExpr> ruleNameToAcl,
-      String app) {
+      ApplicationOrApplicationGroupReference app) {
     // Exprs that match the specified application name
     // Using list as it's possible for multiple rules to override the same app
     List<AclLineMatchExpr> appMatchExprs = new LinkedList<>();
@@ -774,8 +774,48 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
       preceding.add(ruleAcl);
     }
-    return new OrMatchExpr(
-        appMatchExprs, matchApplicationObjectTraceElement(app, vsys.getName(), _filename));
+    return new OrMatchExpr(appMatchExprs, getTraceElementForAppReference(app, vsys).orElse(null));
+  }
+
+  /**
+   * Get the {@link TraceElement} for the specified {@link ApplicationOrApplicationGroupReference}
+   * if it is a valid reference. Otherwise returns {@link Optional#empty()}
+   */
+  private Optional<TraceElement> getTraceElementForAppReference(
+      ApplicationOrApplicationGroupReference reference, Vsys vsys) {
+    return getTraceElementForAppReference(
+        reference, getVsysForReference(reference, vsys), _filename);
+  }
+
+  /**
+   * Get the {@link TraceElement} for the specified {@link ApplicationOrApplicationGroupReference}.
+   *
+   * <p>If {@code containingVsys} is specified, the reference must point to an {@link Application}
+   * or {@link ApplicationGroup} defined in the specified {@link Vsys}. Otherwise, the reference is
+   * checked against built-in objects.
+   */
+  @VisibleForTesting
+  static Optional<TraceElement> getTraceElementForAppReference(
+      ApplicationOrApplicationGroupReference reference,
+      Optional<Vsys> containingVsys,
+      String filename) {
+    String appName = reference.getName();
+    // Valid, user-defined obj reference
+    if (containingVsys.isPresent()) {
+      Vsys vsys = containingVsys.get();
+      if (vsys.getApplications().containsKey(appName)) {
+        return Optional.of(matchApplicationObjectTraceElement(appName, vsys.getName(), filename));
+      } else {
+        assert vsys.getApplicationGroups().containsKey(appName);
+        return Optional.of(matchApplicationGroupTraceElement(appName, vsys.getName(), filename));
+      }
+    }
+    // Built-in reference
+    if (isBuiltInApp(appName)) {
+      return Optional.of(matchBuiltInApplicationTraceElement(appName));
+    }
+    // Invalid reference
+    return Optional.empty();
   }
 
   /**
@@ -862,7 +902,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .forEach(
             a ->
                 appNameToAcl.put(
-                    a, buildApplicationOverrideApplicationAcl(vsys, rules, ruleNameToAcl, a)));
+                    a.getName(),
+                    buildApplicationOverrideApplicationAcl(vsys, rules, ruleNameToAcl, a)));
 
     return appNameToAcl;
   }

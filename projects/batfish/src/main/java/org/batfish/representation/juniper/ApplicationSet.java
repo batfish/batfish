@@ -13,12 +13,14 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 
 public class ApplicationSet implements ApplicationSetMember, Serializable {
 
+  private final boolean _builtIn;
   private List<ApplicationSetMemberReference> _members;
   private String _name;
 
-  public ApplicationSet(String name) {
+  public ApplicationSet(String name, boolean builtIn) {
     _name = name;
     _members = ImmutableList.of();
+    _builtIn = builtIn;
   }
 
   @Override
@@ -46,8 +48,15 @@ public class ApplicationSet implements ApplicationSetMember, Serializable {
             .filter(Predicates.notNull())
             .map(member -> member.toAclLineMatchExpr(jc, w))
             .collect(ImmutableList.toImmutableList()),
-        ApplicationSetMember.getTraceElementForUserApplication(
-            jc.getFilename(), JuniperStructureType.APPLICATION_SET, _name));
+        isBuiltIn()
+            ? JunosApplicationSet.getTraceElement(_name)
+            : ApplicationSetMember.getTraceElementForUserApplication(
+                jc.getFilename(), JuniperStructureType.APPLICATION_SET, _name));
+  }
+
+  @Override
+  public boolean isBuiltIn() {
+    return _builtIn;
   }
 
   public void setMembers(List<ApplicationSetMemberReference> members) {

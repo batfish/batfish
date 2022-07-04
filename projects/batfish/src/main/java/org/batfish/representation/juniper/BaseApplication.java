@@ -77,6 +77,8 @@ public final class BaseApplication implements Application, Serializable {
     }
   }
 
+  private final boolean _builtIn;
+
   private boolean _ipv6;
 
   private Term _mainTerm;
@@ -85,10 +87,11 @@ public final class BaseApplication implements Application, Serializable {
 
   private final String _name;
 
-  public BaseApplication(String name) {
+  public BaseApplication(String name, boolean builtIn) {
     _mainTerm = new Term();
     _terms = new LinkedHashMap<>();
     _name = name;
+    _builtIn = builtIn;
   }
 
   @Override
@@ -160,9 +163,16 @@ public final class BaseApplication implements Application, Serializable {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
-    TraceElement userDefinedApplicationTraceElement =
-        ApplicationSetMember.getTraceElementForUserApplication(
-            jc.getFilename(), JuniperStructureType.APPLICATION, _name);
-    return toAclLineMatchExpr(userDefinedApplicationTraceElement);
+    TraceElement traceElement =
+        isBuiltIn()
+            ? JunosApplication.getTraceElementForBuiltInApplication(_name)
+            : ApplicationSetMember.getTraceElementForUserApplication(
+                jc.getFilename(), JuniperStructureType.APPLICATION, _name);
+    return toAclLineMatchExpr(traceElement);
+  }
+
+  @Override
+  public boolean isBuiltIn() {
+    return _builtIn;
   }
 }

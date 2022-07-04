@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
@@ -243,11 +244,15 @@ public enum JunosApplication implements Application {
   }
 
   public String getJuniperName() {
-    return name().toLowerCase().replace("_", "-");
+    return getJuniperName(name());
+  }
+
+  private static String getJuniperName(String name) {
+    return name.toLowerCase().replace("_", "-");
   }
 
   private BaseApplication init() {
-    BaseApplication baseApplication = new BaseApplication(getJuniperName());
+    BaseApplication baseApplication = new BaseApplication(getJuniperName(), true);
     Map<String, Term> terms = baseApplication.getTerms();
 
     Integer portRangeStart = null;
@@ -1144,7 +1149,8 @@ public enum JunosApplication implements Application {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
-    TraceElement builtinApplicationTraceElement = getTraceElementForBuiltInApplication(this);
+    TraceElement builtinApplicationTraceElement =
+        getTraceElementForBuiltInApplication(getJuniperName());
     if (!hasDefinition()) {
       w.redFlag(String.format("Built-in application %s is not implemented", getJuniperName()));
       return new FalseExpr(builtinApplicationTraceElement);
@@ -1152,7 +1158,13 @@ public enum JunosApplication implements Application {
     return _baseApplication.get().toAclLineMatchExpr(builtinApplicationTraceElement);
   }
 
-  public static TraceElement getTraceElementForBuiltInApplication(JunosApplication app) {
-    return TraceElement.of("Matched built-in application " + app.getJuniperName());
+  @Override
+  public boolean isBuiltIn() {
+    return true;
+  }
+
+  @VisibleForTesting
+  public static TraceElement getTraceElementForBuiltInApplication(String appName) {
+    return TraceElement.of("Matched built-in application " + getJuniperName(appName));
   }
 }
