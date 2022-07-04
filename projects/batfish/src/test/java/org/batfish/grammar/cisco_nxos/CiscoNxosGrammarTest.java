@@ -2071,15 +2071,15 @@ public final class CiscoNxosGrammarTest {
     Bgpv4Route bgpDenied = bgpRb.setNetwork(staticPermittedPrefix).build();
     Bgpv4Route bgpPermitted = bgpRb.setNetwork(bgpPermittedPrefix).build();
     EigrpInternalRoute.Builder eigrpRb =
-    EigrpInternalRoute.testBuilder()
-        .setAdmin(90)
-        .setEigrpMetricVersion(EigrpMetricVersion.V2)
-        .setNextHop(NextHopDiscard.instance())
-        .setEigrpMetric(
-            ClassicMetric.builder()
-                .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
-                .build())
-        .setProcessAsn(2L);
+        EigrpInternalRoute.testBuilder()
+            .setAdmin(90)
+            .setEigrpMetricVersion(EigrpMetricVersion.V2)
+            .setNextHop(NextHopDiscard.instance())
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                    .build())
+            .setProcessAsn(2L);
     EigrpRoute eigrpDenied =
         eigrpRb.setNextHop(NextHopDiscard.instance()).setNetwork(staticPermittedPrefix).build();
     EigrpRoute eigrpPermitted =
