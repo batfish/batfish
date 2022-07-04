@@ -2145,13 +2145,16 @@ public final class CiscoNxosGrammarTest {
     }
     {
       // Redistribution policy permits EIGRP route that matches eigrp_redist route-map
+      // Routing process will copy metrics from the original route.
       EigrpExternalRoute.Builder rb =
           EigrpExternalRoute.testBuilder()
               .setNextHop(nh)
-              .setEigrpMetricVersion(EigrpMetricVersion.V2);
+              .setEigrpMetricVersion(eigrpPermitted.getEigrpMetricVersion())
+              .setEigrpMetric(eigrpPermitted.getEigrpMetric())
+              .setProcessAsn(eigrpPermitted.getProcessAsn());
       assertTrue(redistPolicy.process(eigrpPermitted, rb, eigrpProc, Direction.OUT));
-      rb.setNetwork(eigrpPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
-      assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
+      rb.setNetwork(eigrpPermittedPrefix).setDestinationAsn(2L);
+      assertThat(rb.build().getEigrpMetric(), equalTo(eigrpPermitted.getEigrpMetric()));
     }
     {
       // Redistribution policy correctly denies/permits connected routes

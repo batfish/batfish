@@ -1126,7 +1126,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   // If adding support for a new protocol, also add it to supportedProtocols above
                 case BGP:
                   assert policy.getInstance().getTag() != null;
-                  statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
                   long asn = Long.parseLong(policy.getInstance().getTag());
                   if (_bgpGlobalConfiguration.getLocalAs() != asn) {
                     // NXOS won't let you configure multiple BGP processes, but it will let you
@@ -1136,7 +1135,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   BooleanExpr matchBgp =
                       new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);
                   Statement setTag = new SetTag(new LiteralLong(asn));
-                  return new If(matchBgp, ImmutableList.of(setTag, call(policy.getRouteMap())));
+                  return new If(
+                      matchBgp,
+                      ImmutableList.of(
+                          setTag,
+                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                          call(policy.getRouteMap())));
                 case EIGRP:
                   assert policy.getInstance().getTag() != null;
                   Optional<Integer> eigrpAsn = getEigrpAsn(policy.getInstance().getTag(), vrfName);
@@ -1160,15 +1164,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   return new If(
                       redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
                 case DIRECT:
-                  statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
                   return new If(
                       new MatchProtocol(RoutingProtocol.CONNECTED),
-                      ImmutableList.of(call(policy.getRouteMap())));
+                      ImmutableList.of(
+                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                          call(policy.getRouteMap())));
                 case STATIC:
-                  statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
                   return new If(
                       new MatchProtocol(RoutingProtocol.STATIC),
-                      ImmutableList.of(call(policy.getRouteMap())));
+                      ImmutableList.of(
+                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                          call(policy.getRouteMap())));
                 default:
                   return null;
               }
