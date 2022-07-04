@@ -2071,15 +2071,15 @@ public final class CiscoNxosGrammarTest {
     Bgpv4Route bgpDenied = bgpRb.setNetwork(staticPermittedPrefix).build();
     Bgpv4Route bgpPermitted = bgpRb.setNetwork(bgpPermittedPrefix).build();
     EigrpInternalRoute.Builder eigrpRb =
-        EigrpInternalRoute.testBuilder()
-            .setAdmin(90)
-            .setEigrpMetricVersion(EigrpMetricVersion.V2)
-            .setNextHop(NextHopDiscard.instance())
-            .setEigrpMetric(
-                ClassicMetric.builder()
-                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
-                    .build())
-            .setProcessAsn(2L);
+    EigrpInternalRoute.testBuilder()
+        .setAdmin(90)
+        .setEigrpMetricVersion(EigrpMetricVersion.V2)
+        .setNextHop(NextHopDiscard.instance())
+        .setEigrpMetric(
+            ClassicMetric.builder()
+                .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                .build())
+        .setProcessAsn(2L);
     EigrpRoute eigrpDenied =
         eigrpRb.setNextHop(NextHopDiscard.instance()).setNetwork(staticPermittedPrefix).build();
     EigrpRoute eigrpPermitted =
@@ -2150,10 +2150,8 @@ public final class CiscoNxosGrammarTest {
               .setNextHop(nh)
               .setEigrpMetricVersion(EigrpMetricVersion.V2);
       assertTrue(redistPolicy.process(eigrpPermitted, rb, eigrpProc, Direction.OUT));
-      // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
-      // built, so first set other required fields.
       rb.setNetwork(eigrpPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
-      assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
+      assertFalse(rb.build().getEigrpMetric() == defaultMetric);
     }
     {
       // Redistribution policy correctly denies/permits connected routes
