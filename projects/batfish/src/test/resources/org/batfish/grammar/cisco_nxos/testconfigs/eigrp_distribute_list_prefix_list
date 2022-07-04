@@ -8,6 +8,7 @@ vrf context VRF
   ! defined so it will be converted
 !
 router eigrp 1
+  vrf VRF
 !
 ip prefix-list PL_IN seq 10 permit 1.1.1.0/24 ge 24
 ip prefix-list PL_OUT seq 10 permit 2.2.2.0/24 ge 24
