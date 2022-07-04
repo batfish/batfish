@@ -2151,7 +2151,7 @@ public final class CiscoNxosGrammarTest {
               .setEigrpMetricVersion(EigrpMetricVersion.V2);
       assertTrue(redistPolicy.process(eigrpPermitted, rb, eigrpProc, Direction.OUT));
       rb.setNetwork(eigrpPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
-      assertFalse(rb.build().getEigrpMetric() == defaultMetric);
+      assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
     }
     {
       // Redistribution policy correctly denies/permits connected routes
