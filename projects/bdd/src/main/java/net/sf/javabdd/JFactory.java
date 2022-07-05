@@ -941,11 +941,14 @@ public class JFactory extends BDDFactory implements Serializable {
     return bdd;
   }
 
-  public int bdd_andLiterals(int[] literals) {
+  private int bdd_andLiterals(int[] literals) {
     assert literals.length > 0; // empty array handled in caller
     INITREF();
 
-    // build bottom-up
+    /* build bottom-up, skipping the operator cache at each level since this construction is very cheap (and we don't
+     * want to evict a more valuable cache entry. We could consider using the multip cache to cache the entire
+     * andLiterals operation.
+     */
     int last = -1;
     int lastLevel = -1;
     for (int i = literals.length - 1; i >= 0; i--) {
