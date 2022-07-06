@@ -806,6 +806,44 @@ public class JFactory extends BDDFactory implements Serializable {
       return ret;
     }
 
+    private int bdd_andLiterals(int[] literals) {
+      assert literals.length > 0; // empty array handled in caller
+      INITREF();
+
+      /* build bottom-up, skipping the operator cache at each level since this construction is very cheap (and we don't
+       * want to evict a more valuable cache entry. We could consider using the multip cache to cache the entire
+       * andLiterals operation.
+       */
+      int last = -1;
+      int lastLevel = -1;
+      for (int i = literals.length - 1; i >= 0; i--) {
+        int n = literals[i];
+        int level = LEVEL(n);
+        int var = bddlevel2var[level];
+        boolean positive = n == bddvarset[var * 2];
+        if (!(positive || n == bddvarset[var * 2 + 1])) {
+          throw new IllegalArgumentException(String.format("argument %s is not a literal", i));
+        }
+
+        if (last == -1) {
+          last = n;
+        } else {
+          if (level >= lastLevel) {
+            throw new IllegalArgumentException("Levels are not strictly increasing");
+          }
+          PUSHREF(last);
+          if (positive) {
+            last = bdd_makenode(level, BDDZERO, last);
+          } else {
+            last = bdd_makenode(level, last, BDDZERO);
+          }
+          POPREF(1);
+        }
+        lastLevel = level;
+      }
+      return last;
+    }
+
     private int bdd_andAll(int[] operands) {
       if (operands.length == 0) {
         return BDDONE;
@@ -3147,46 +3185,10 @@ public class JFactory extends BDDFactory implements Serializable {
       ids[i] = id;
     }
 
-    BDDImpl bdd = makeBDD(bdd_andLiterals(ids));
+    _readWriteLock.readLock().lock();
+    BDDImpl bdd = makeBDD(new Worker().bdd_andLiterals(ids));
+    _readWriteLock.readLock().unlock();
     return bdd;
-  }
-
-  private int bdd_andLiterals(int[] literals) {
-    assert literals.length > 0; // empty array handled in caller
-    INITREF();
-
-    /* build bottom-up, skipping the operator cache at each level since this construction is very cheap (and we don't
-     * want to evict a more valuable cache entry. We could consider using the multip cache to cache the entire
-     * andLiterals operation.
-     */
-    int last = -1;
-    int lastLevel = -1;
-    for (int i = literals.length - 1; i >= 0; i--) {
-      int n = literals[i];
-      int level = LEVEL(n);
-      int var = bddlevel2var[level];
-      boolean positive = n == bddvarset[var * 2];
-      if (!(positive || n == bddvarset[var * 2 + 1])) {
-        throw new IllegalArgumentException(String.format("argument %s is not a literal", i));
-      }
-
-      if (last == -1) {
-        last = n;
-      } else {
-        if (level >= lastLevel) {
-          throw new IllegalArgumentException("Levels are not strictly increasing");
-        }
-        PUSHREF(last);
-        if (positive) {
-          last = bdd_makenode(level, BDDZERO, last);
-        } else {
-          last = bdd_makenode(level, last, BDDZERO);
-        }
-        POPREF(1);
-      }
-      lastLevel = level;
-    }
-    return last;
   }
 
   @Override
