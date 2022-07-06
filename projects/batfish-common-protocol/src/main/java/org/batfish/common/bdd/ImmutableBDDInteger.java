@@ -14,9 +14,15 @@ import org.batfish.datamodel.Prefix;
 
 public class ImmutableBDDInteger extends BDDInteger implements Serializable {
   private BDD _vars;
+  private BDD[] _negBitvec;
 
   public ImmutableBDDInteger(BDDFactory factory, BDD[] bitvec) {
     super(factory, bitvec);
+
+    _negBitvec = new BDD[bitvec.length];
+    for (int i = 0; i < _negBitvec.length; i++) {
+      _negBitvec[i] = bitvec[i].not();
+    }
   }
 
   /**
@@ -51,17 +57,17 @@ public class ImmutableBDDInteger extends BDDInteger implements Serializable {
   @Override
   protected BDD firstBitsEqual(long value, int length) {
     checkArgument(length <= _bitvec.length, "Not enough bits");
-    BDD ret = _factory.one();
     long val = value >> (_bitvec.length - length);
+    BDD[] literals = new BDD[length];
     for (int i = length - 1; i >= 0; i--) {
       if ((val & 1) == 1) {
-        ret.andEq(_bitvec[i]);
+        literals[i] = _bitvec[i];
       } else {
-        ret.diffEq(_bitvec[i]);
+        literals[i] = _negBitvec[i];
       }
       val >>= 1;
     }
-    return ret;
+    return _factory.andLiterals(literals);
   }
 
   @Override
