@@ -4,11 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.visitors.IpSpaceCanContainReferences.ipSpaceCanContainReferences;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,11 +64,12 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
    *       objects. So it's much faster to use == and reconvert different equivalent objects.
    * </ul>
    */
-  private final LoadingCache<IpSpace, BDD> _cache =
-      CacheBuilder.newBuilder()
-          .maximumSize(1_000_000)
+  private final Cache<IpSpace, BDD> _cache =
+      Caffeine.newBuilder()
           .weakKeys() // this makes equality check for keys be identity, not deep.
-          .build(CacheLoader.from(ipSpace -> ipSpace.accept(this)));
+          .maximumSize(1_000_000)
+          .removalListener((IpSpace ipSpace, BDD bdd, RemovalCause cause) -> bdd.free())
+          .build();
 
   private final @Nullable IpSpaceToBDD _nonRefIpSpaceToBDD;
 
@@ -104,8 +105,13 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visit(IpSpace ipSpace) {
     if (_nonRefIpSpaceToBDD == null || ipSpaceCanContainReferences(ipSpace)) {
+      BDD cached = _cache.getIfPresent(ipSpace);
+      if (cached == null) {
+        cached = ipSpace.accept(this);
+        _cache.put(ipSpace, cached);
+      }
       // Use local cache. Make a copy so that the caller owns it.
-      return _cache.getUnchecked(ipSpace).id();
+      return cached.id();
     }
     return _nonRefIpSpaceToBDD.visit(ipSpace);
   }
