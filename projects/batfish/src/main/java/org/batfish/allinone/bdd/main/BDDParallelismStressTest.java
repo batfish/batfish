@@ -1,5 +1,6 @@
 package org.batfish.allinone.bdd.main;
 
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.UniverseIpSpace;
 
 /** Replays a BDD trace. */
 public final class BDDParallelismStressTest {
@@ -18,6 +24,11 @@ public final class BDDParallelismStressTest {
     pkt.getFactory().setNodeTableSize(10_000_000);
     Random rng = new Random();
     Thread[] threads = new Thread[numThreads];
+
+    IpSpaceToBDD toBdd =
+        new IpSpaceToBDD(
+            pkt.getDstIpSpaceToBDD(), ImmutableMap.of("foo", UniverseIpSpace.INSTANCE));
+
     long t = System.currentTimeMillis();
     for (int i = 0; i < numThreads; i++) {
       final int iFinal = i;
@@ -27,7 +38,16 @@ public final class BDDParallelismStressTest {
               BDD bdd = pkt.getFactory().zero();
               BDD bddNot = pkt.getFactory().one();
               for (int n = 0; n < 10000; n++) {
-                BDD randBdd = pkt.getDstIp().value(Math.abs(rng.nextInt()));
+                Ip ip1 = Ip.create(Math.abs(rng.nextInt()));
+                Ip ip2 = Ip.create(Math.abs(rng.nextInt()));
+                AclIpSpace aclIpSpace =
+                    (AclIpSpace)
+                        AclIpSpace.builder()
+                            .then(AclIpSpaceLine.permit(ip1.toIpSpace()))
+                            .then(AclIpSpaceLine.permit(ip2.toIpSpace()))
+                            .build();
+                BDD randBdd = toBdd.visit(aclIpSpace);
+
                 bdd.orEq(randBdd);
                 bddNot.diffWith(randBdd);
               }
@@ -69,10 +89,9 @@ public final class BDDParallelismStressTest {
     int maxNumThreads = Integer.parseInt(args[1]);
     int iters = Integer.parseInt(args[2]);
     boolean gcTime = parseBoolean(args[3]);
-    BDDParallelismStressTest test = new BDDParallelismStressTest();
     // warm up
     for (int i = 0; i < 4; i++) {
-      test.bench(1, gcTime);
+      bench(1, gcTime);
     }
     List<String> log = new ArrayList<>();
     for (int numThreads = minNumThreads; numThreads <= maxNumThreads; numThreads++) {
@@ -82,7 +101,7 @@ public final class BDDParallelismStressTest {
               .mapToObj(
                   i -> {
                     try {
-                      return String.valueOf(test.bench(numThreadsFinal, gcTime));
+                      return String.valueOf(bench(numThreadsFinal, gcTime));
                     } catch (InterruptedException e) {
                       throw new RuntimeException(e);
                     }
