@@ -920,6 +920,66 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int bddop_ite = 14;
 
   @Override
+  public BDD andLiterals(BDD... literals) {
+    if (literals.length == 0) {
+      return makeBDD(BDDONE);
+    }
+    if (literals.length == 1) {
+      return literals[0];
+    }
+
+    int[] ids = new int[literals.length];
+    for (int i = 0; i < literals.length; i++) {
+      int id = ((BDDImpl) literals[i])._index;
+      if (ISCONST(id)) {
+        throw new IllegalArgumentException("Illegal constant " + id);
+      }
+      ids[i] = id;
+    }
+
+    BDDImpl bdd = makeBDD(bdd_andLiterals(ids));
+    return bdd;
+  }
+
+  private int bdd_andLiterals(int[] literals) {
+    assert literals.length > 0; // empty array handled in caller
+    INITREF();
+
+    /* build bottom-up, skipping the operator cache at each level since this construction is very cheap (and we don't
+     * want to evict a more valuable cache entry. We could consider using the multip cache to cache the entire
+     * andLiterals operation.
+     */
+    int last = -1;
+    int lastLevel = -1;
+    for (int i = literals.length - 1; i >= 0; i--) {
+      int n = literals[i];
+      int level = LEVEL(n);
+      int var = bddlevel2var[level];
+      boolean positive = n == bddvarset[var * 2];
+      if (!(positive || n == bddvarset[var * 2 + 1])) {
+        throw new IllegalArgumentException(String.format("argument %s is not a literal", i));
+      }
+
+      if (last == -1) {
+        last = n;
+      } else {
+        if (level >= lastLevel) {
+          throw new IllegalArgumentException("Levels are not strictly increasing");
+        }
+        PUSHREF(last);
+        if (positive) {
+          last = bdd_makenode(level, BDDZERO, last);
+        } else {
+          last = bdd_makenode(level, last, BDDZERO);
+        }
+        POPREF(1);
+      }
+      lastLevel = level;
+    }
+    return last;
+  }
+
+  @Override
   public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
     int[] operands =
         StreamSupport.stream(bddOperands.spliterator(), false)

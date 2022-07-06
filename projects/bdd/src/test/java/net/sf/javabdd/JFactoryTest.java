@@ -15,10 +15,14 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
 import org.apache.commons.lang3.SerializationUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests of {@link JFactory}. */
 public class JFactoryTest {
+  @Rule public ExpectedException _exception = ExpectedException.none();
+
   private JFactory _factory = (JFactory) JFactory.init(10000, 10000);
 
   @Test
@@ -569,6 +573,48 @@ public class JFactoryTest {
     assertEquals(one, ite.project(_factory.ithVar(5)));
     assertEquals(one, ite.project(_factory.ithVar(7)));
     assertEquals(one, ite.project(_factory.ithVar(9))); // last var
+  }
+
+  @Test
+  public void testAndLiterals() {
+    _factory.setVarNum(4);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+    BDD v2 = _factory.ithVar(2);
+    BDD v3 = _factory.ithVar(3);
+
+    assertEquals(
+        v0.and(v1.not()).and(v2).and(v3.not()), _factory.andLiterals(v0, v1.not(), v2, v3.not()));
+  }
+
+  @Test
+  public void testAndLiterals_varOrder() {
+    _factory.setVarNum(4);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+
+    _exception.expect(IllegalArgumentException.class);
+    _factory.andLiterals(v1, v0);
+  }
+
+  @Test
+  public void testAndLiterals_constants() {
+    _factory.setVarNum(4);
+    BDD v1 = _factory.ithVar(1);
+
+    _exception.expect(IllegalArgumentException.class);
+    _factory.andLiterals(v1, _factory.zero());
+  }
+
+  @Test
+  public void testAndLiterals_complex() {
+    _factory.setVarNum(4);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+    BDD v2 = _factory.ithVar(2);
+
+    _exception.expect(IllegalArgumentException.class);
+    _factory.andLiterals(v0.and(v1), v2);
   }
 
   @Test

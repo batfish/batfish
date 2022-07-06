@@ -338,6 +338,14 @@ public abstract class BDDFactory {
   }
 
   /**
+   * Returns the logical 'and' of zero or more BDD literals (constraints on exactly one variable --
+   * i.e. the variable must be true or must be false).
+   *
+   * <p>Precondition: The variables' levels must be strictly increasing.
+   */
+  public abstract BDD andLiterals(BDD... literals);
+
+  /**
    * Returns the logical 'and' of zero or more BDDs. None of the input BDDs are consumed or mutated.
    * More efficient than using {@link BDD::and} or {@link BDD::andWith} iteratively, especially for
    * large numbers of operands, because it creates fewer intermediate BDDs.
