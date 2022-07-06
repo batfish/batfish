@@ -4544,6 +4544,15 @@ public final class CiscoGrammarTest {
     assertThat(c2, hasInterface(iface2Name, isOspfPassive(equalTo(true))));
   }
 
+  /** Check that OSPF is enabled even when interfaces are after the router OSPF stanza. */
+  @Test
+  public void testOspfInterfaceAfterOspf() throws IOException {
+    Configuration c = parseConfig("ios-ospf-interface-after-ospf");
+    String iface1Name = "Ethernet1";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.get(iface1Name).getOspfProcess(), equalTo("1"));
+  }
+
   @Test
   public void testOspfProcessInference() throws IOException {
     Configuration c = parseConfig("ios-ospf-process-inference");

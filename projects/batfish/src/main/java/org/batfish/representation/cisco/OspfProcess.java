@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,7 +11,6 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -63,8 +61,6 @@ public class OspfProcess implements Serializable {
   private Long _maxMetricSummaryLsa;
 
   private final String _name;
-
-  private Set<OspfNetwork> _networks;
 
   private Set<String> _nonDefaultInterfaces;
 
@@ -134,7 +130,6 @@ public class OspfProcess implements Serializable {
   public OspfProcess(String name, ConfigurationFormat format) {
     _name = name;
     _referenceBandwidth = getReferenceOspfBandwidth(format);
-    _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
     _inboundIInterfaceDistributeLists = new HashMap<>();
@@ -146,31 +141,6 @@ public class OspfProcess implements Serializable {
     _wildcardNetworks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _summaries = new TreeMap<>();
-  }
-
-  public void computeNetworks(Collection<Interface> interfaces) {
-    for (Interface i : interfaces) {
-      ConcreteInterfaceAddress address = i.getAddress();
-      if (address == null) {
-        continue;
-      }
-      for (OspfWildcardNetwork wn : _wildcardNetworks) {
-        // first we check if the interface ip address matches the ospf
-        // network when the wildcard is ORed to both
-        long wildcardLong = wn.getWildcard().asLong();
-        long ospfNetworkLong = wn.getNetworkAddress().asLong();
-        long intIpLong = address.getIp().asLong();
-        long wildcardedOspfNetworkLong = ospfNetworkLong | wildcardLong;
-        long wildcardedIntIpLong = intIpLong | wildcardLong;
-        if (wildcardedOspfNetworkLong == wildcardedIntIpLong) {
-          // since we have a match, we add the INTERFACE network, ignoring
-          // the wildcard stuff from before
-          Prefix newOspfNetwork = address.getPrefix();
-          _networks.add(new OspfNetwork(newOspfNetwork, wn.getArea()));
-          break;
-        }
-      }
-    }
   }
 
   public long getDefaultInformationMetric() {
@@ -225,10 +195,6 @@ public class OspfProcess implements Serializable {
 
   public String getName() {
     return _name;
-  }
-
-  public Set<OspfNetwork> getNetworks() {
-    return _networks;
   }
 
   public Set<String> getNonDefaultInterfaces() {

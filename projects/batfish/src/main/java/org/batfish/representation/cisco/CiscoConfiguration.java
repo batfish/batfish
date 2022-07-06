@@ -60,6 +60,7 @@ import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1321,7 +1322,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
    * not overlap with any {@link OspfNetwork} in the specified {@link OspfProcess}
    */
   private static @Nullable OspfNetwork getOspfNetworkForInterface(
-      Interface iface, OspfProcess process) {
+      Interface iface, Set<OspfNetwork> ospfNetworks) {
     ConcreteInterfaceAddress interfaceAddress = iface.getAddress();
     if (interfaceAddress == null) {
       // Iface has no IP address / isn't associated with a network in this OSPF process
@@ -1335,7 +1336,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 .reversed()
                 .thenComparing(n -> n.getPrefix().getStartIp())
                 .thenComparingLong(OspfNetwork::getArea),
-            process.getNetworks());
+            ospfNetworks);
     for (OspfNetwork network : networks) {
       Prefix networkPrefix = network.getPrefix();
       Ip networkAddress = networkPrefix.getStartIp();
@@ -1347,23 +1348,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     return null;
-  }
-
-  /**
-   * Get the {@link OspfProcess} corresponding to the specified {@link Interface}
-   *
-   * <p>Returns {@code null} if the {@link Interface} does not have an {@link OspfProcess}
-   * explicitly associated with it and does not overlap with an {@link OspfNetwork} in any {@link
-   * OspfProcess} in the specified {@link Vrf}
-   */
-  private static @Nullable OspfProcess getOspfProcessForInterface(Vrf vrf, Interface iface) {
-    if (iface.getOspfProcess() != null) {
-      return vrf.getOspfProcesses().get(iface.getOspfProcess());
-    }
-    return vrf.getOspfProcesses().values().stream()
-        .filter(p -> getOspfNetworkForInterface(iface, p) != null)
-        .findFirst()
-        .orElse(null);
   }
 
   private org.batfish.datamodel.Interface toInterface(
@@ -1794,6 +1778,36 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ImmutableList.of());
   }
 
+  private static Set<OspfNetwork> computeOspfNetworks(
+      OspfProcess proc, Collection<Interface> interfaces) {
+    ImmutableSet.Builder<OspfNetwork> networks = ImmutableSet.builder();
+
+    for (Interface i : interfaces) {
+      ConcreteInterfaceAddress address = i.getAddress();
+      if (address == null) {
+        continue;
+      }
+      for (OspfWildcardNetwork wn : proc.getWildcardNetworks()) {
+        // first we check if the interface ip address matches the ospf
+        // network when the wildcard is ORed to both
+        long wildcardLong = wn.getWildcard().asLong();
+        long ospfNetworkLong = wn.getNetworkAddress().asLong();
+        long intIpLong = address.getIp().asLong();
+        long wildcardedOspfNetworkLong = ospfNetworkLong | wildcardLong;
+        long wildcardedIntIpLong = intIpLong | wildcardLong;
+        if (wildcardedOspfNetworkLong == wildcardedIntIpLong) {
+          // since we have a match, we add the INTERFACE network, ignoring
+          // the wildcard stuff from before
+          Prefix newOspfNetwork = address.getPrefix();
+          networks.add(new OspfNetwork(newOspfNetwork, wn.getArea()));
+          break;
+        }
+      }
+    }
+
+    return networks.build();
+  }
+
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     Ip routerId = proc.getRouterId();
@@ -1832,6 +1846,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Set RFC 1583 compatibility
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
 
+    Set<OspfNetwork> ospfNetworks = computeOspfNetworks(proc, _interfaces.values());
+
     for (Entry<String, org.batfish.datamodel.Interface> e :
         c.getAllInterfaces(vrfName).entrySet()) {
       org.batfish.datamodel.Interface iface = e.getValue();
@@ -1843,7 +1859,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
         continue;
       }
-      OspfNetwork network = getOspfNetworkForInterface(vsIface, proc);
+      OspfNetwork network = getOspfNetworkForInterface(vsIface, ospfNetworks);
       if (vsIface.getOspfProcess() == null && network == null) {
         // Interface is not in an OspfNetwork on this process
         continue;
