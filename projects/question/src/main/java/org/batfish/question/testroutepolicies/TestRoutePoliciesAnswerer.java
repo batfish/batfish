@@ -167,6 +167,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setMetric(questionsBgpRoute.getMetric())
         .setLocalPreference(questionsBgpRoute.getLocalPreference())
         .setTag(questionsBgpRoute.getTag())
+        .setTunnelEncapsulationAttribute(questionsBgpRoute.getTunnelEncapsulationAttribute())
         .setNetwork(questionsBgpRoute.getNetwork())
         .setCommunities(questionsBgpRoute.getCommunities())
         .setAsPath(questionsBgpRoute.getAsPath())
@@ -307,8 +308,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   private static Row toRow(Result result) {
     org.batfish.datamodel.questions.BgpRoute inputRoute =
         toQuestionsBgpRoute(result.getInputRoute());
+    org.batfish.datamodel.questions.BgpRoute outputRoute =
+        toQuestionsBgpRoute(result.getOutputRoute());
     LineAction action = result.getAction();
-    Bgpv4Route outputRoute = result.getOutputRoute();
     boolean permit = action == PERMIT;
     RoutingPolicyId policyId = result.getPolicyId();
     return Row.builder()
@@ -316,12 +318,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(COL_POLICY_NAME, policyId.getPolicy())
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
-        .put(COL_OUTPUT_ROUTE, permit ? toQuestionsBgpRoute(outputRoute) : null)
-        .put(
-            COL_DIFF,
-            permit
-                ? new BgpRouteDiffs(routeDiffs(inputRoute, toQuestionsBgpRoute(outputRoute)))
-                : null)
+        .put(COL_OUTPUT_ROUTE, permit ? outputRoute : null)
+        .put(COL_DIFF, permit ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
         .put(COL_TRACE, result.getTrace())
         .build();
   }
@@ -333,18 +331,17 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       return null;
     }
 
-    Bgpv4Route snapshotOutputRoute = snapshotResult.getOutputRoute();
-    Bgpv4Route referenceOutputRoute = referenceResult.getOutputRoute();
+    org.batfish.datamodel.questions.BgpRoute snapshotOutputRoute =
+        toQuestionsBgpRoute(snapshotResult.getOutputRoute());
+    org.batfish.datamodel.questions.BgpRoute referenceOutputRoute =
+        toQuestionsBgpRoute(referenceResult.getOutputRoute());
 
     boolean equalAction = snapshotResult.getAction() == referenceResult.getAction();
     boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
     assert !(equalAction && equalOutputRoutes);
 
     BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(
-            routeDiffs(
-                toQuestionsBgpRoute(referenceOutputRoute),
-                toQuestionsBgpRoute(snapshotOutputRoute)));
+        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
 
     RoutingPolicyId policyId = snapshotResult.getPolicyId();
     Bgpv4Route inputRoute = snapshotResult.getInputRoute();
@@ -354,10 +351,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
         .put(baseColumnName(COL_ACTION), snapshotResult.getAction())
         .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
-        .put(baseColumnName(COL_OUTPUT_ROUTE), toQuestionsBgpRoute(snapshotResult.getOutputRoute()))
-        .put(
-            deltaColumnName(COL_OUTPUT_ROUTE),
-            toQuestionsBgpRoute(referenceResult.getOutputRoute()))
+        .put(baseColumnName(COL_OUTPUT_ROUTE), snapshotOutputRoute)
+        .put(deltaColumnName(COL_OUTPUT_ROUTE), referenceOutputRoute)
         .put(COL_DIFF, routeDiffs)
         .build();
   }
