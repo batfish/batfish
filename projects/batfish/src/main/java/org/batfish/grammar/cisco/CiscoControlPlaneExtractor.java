@@ -8818,7 +8818,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitS_router_ospf(S_router_ospfContext ctx) {
-    _currentOspfProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentOspfProcess = null;
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
