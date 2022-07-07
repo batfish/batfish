@@ -1829,40 +1829,38 @@ public final class AsaConfiguration extends VendorConfiguration {
   private void generateCiscoAsaNatTransformations(
       String ifaceName, org.batfish.datamodel.Interface newIface, List<AsaNat> nats) {
 
-    List<Optional<Transformation.Builder>> incomingConvertedNats
-        = new ArrayList<Optional<Transformation.Builder>>();
-    List<Optional<Transformation.Builder>> outgoingConvertedNats
-        = new ArrayList<Optional<Transformation.Builder>>();
+    List<Optional<Transformation.Builder>> incomingConvertedNats =
+        new ArrayList<Optional<Transformation.Builder>>();
+    List<Optional<Transformation.Builder>> outgoingConvertedNats =
+        new ArrayList<Optional<Transformation.Builder>>();
 
     SortedSet<AsaNat> objectNats = new TreeSet<AsaNat>(nats);
-    for(AsaNat nat : objectNats){
+    for (AsaNat nat : objectNats) {
       switch (nat.getSection()) {
         case OBJECT:
-            if(nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
-                || nat.getOutsideInterface().equals(ifaceName)){
-                    incomingConvertedNats.add(nat.toIncomingTransformation(_networkObjects, _w));
-                    outgoingConvertedNats.add(nat.toOutgoingTransformation(_networkObjects, _w));
-            }
-            break;
+          if (nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
+              || nat.getOutsideInterface().equals(ifaceName)) {
+            incomingConvertedNats.add(nat.toIncomingTransformation(_networkObjects, _w));
+            outgoingConvertedNats.add(nat.toOutgoingTransformation(_networkObjects, _w));
+          }
+          break;
         case BEFORE:
-            if(nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
-                || nat.getOutsideInterface().equals(ifaceName)){
-                    incomingConvertedNats.add(nat.toIncomingTransformation(_networkObjects, _w));
-            }
-            if(nat.getInsideInterface().equals(AsaNat.ANY_INTERFACE)
-                || nat.getInsideInterface().equals(ifaceName)){
-                    incomingConvertedNats.add(nat.toOutgoingTransformation(_networkObjects, _w));
-            }
-            break;
+          if (nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
+              || nat.getOutsideInterface().equals(ifaceName)) {
+            incomingConvertedNats.add(nat.toIncomingTransformation(_networkObjects, _w));
+          }
+          if (nat.getInsideInterface().equals(AsaNat.ANY_INTERFACE)
+              || nat.getInsideInterface().equals(ifaceName)) {
+            incomingConvertedNats.add(nat.toOutgoingTransformation(_networkObjects, _w));
+          }
+          break;
         default:
-            break;
+          break;
       }
     }
 
-    newIface.setIncomingTransformation(
-        AsaNatUtil.toTransformationChain(incomingConvertedNats));
-    newIface.setOutgoingTransformation(
-        AsaNatUtil.toTransformationChain(outgoingConvertedNats));
+    newIface.setIncomingTransformation(AsaNatUtil.toTransformationChain(incomingConvertedNats));
+    newIface.setOutgoingTransformation(AsaNatUtil.toTransformationChain(outgoingConvertedNats));
   }
 
   private void applyZoneFilter(
