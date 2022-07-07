@@ -152,6 +152,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_G
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
@@ -188,6 +189,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
+import static org.batfish.representation.juniper.Zone.getInboundFilterName;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -1759,6 +1761,24 @@ public final class FlatJuniperGrammarTest {
     /* esfilter should be referred, while esfilter2 should be unreferred */
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter", 1));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_FILTER, "esfilter2", 0));
+  }
+
+  @Test
+  public void testSecurityZoneTermReference() throws IOException {
+    String hostname = "security-zone-term-refs";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Term is defined and has a self-reference
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename,
+            FIREWALL_FILTER_TERM,
+            computeFirewallFilterTermName(getInboundFilterName("ZONE_NAME"), "ALL"),
+            1));
   }
 
   @Test

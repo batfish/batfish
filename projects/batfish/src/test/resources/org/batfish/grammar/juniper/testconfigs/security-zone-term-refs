@@ -1,0 +1,6 @@
+####BATFISH FLATTENED JUNIPER CONFIG####
+#
+set system host-name security-zone-term-refs
+#
+set security zones security-zone ZONE_NAME host-inbound-traffic protocols all
+#
