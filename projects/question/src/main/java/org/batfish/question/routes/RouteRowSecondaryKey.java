@@ -19,11 +19,11 @@ public abstract class RouteRowSecondaryKey {
     _protocol = protocol;
   }
 
-  public @Nonnull NextHop getNextHop() {
+  public final @Nonnull NextHop getNextHop() {
     return _nextHop;
   }
 
-  public @Nonnull String getProtocol() {
+  public final @Nonnull String getProtocol() {
     return _protocol;
   }
 
