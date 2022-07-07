@@ -37,7 +37,7 @@ public final class BDDParallelismStressTest {
             for (int j = iFinal; j < total_iters; j += numThreads) {
               BDD bdd = pkt.getFactory().zero();
               BDD bddNot = pkt.getFactory().one();
-              for (int n = 0; n < 10000; n++) {
+              for (int n = 0; n < 1000; n++) {
                 Ip ip1 = Ip.create(Math.abs(rng.nextInt()));
                 Ip ip2 = Ip.create(Math.abs(rng.nextInt()));
                 AclIpSpace aclIpSpace =
@@ -90,7 +90,8 @@ public final class BDDParallelismStressTest {
     int iters = Integer.parseInt(args[2]);
     boolean gcTime = parseBoolean(args[3]);
     // warm up
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 10; i++) {
+      System.out.println("Warm up iteration " + i);
       bench(1, gcTime);
     }
     List<String> log = new ArrayList<>();
