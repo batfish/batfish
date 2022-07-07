@@ -841,6 +841,7 @@ public class JFactory extends BDDFactory implements Serializable {
         }
         lastLevel = level;
       }
+      _bddFreePosManager.put(bddfreepos);
       return last;
     }
 
