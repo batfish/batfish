@@ -56,7 +56,8 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1524,8 +1525,8 @@ public final class FlowTracerTest {
   @Test
   public void testMatchSessionReturnFlow() {
     BDDPacket pkt = new BDDPacket();
-    MemoizedIpAccessListToBdd toBdd =
-        new MemoizedIpAccessListToBdd(
+    IpAccessListToBdd toBdd =
+        new IpAccessListToBddImpl(
             pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), ImmutableMap.of());
 
     Ip dstIp = Ip.parse("1.1.1.1");

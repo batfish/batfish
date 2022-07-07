@@ -90,7 +90,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
-import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -2134,7 +2134,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       // We are only going to filter on service, which cannot reference interfaces, ACLs, or
       // IpSpaces.
       IpAccessListToBdd toBDD =
-          new MemoizedIpAccessListToBdd(
+          new IpAccessListToBddImpl(
               packet, BDDSourceManager.empty(packet), ImmutableMap.of(), ImmutableMap.of());
       // SNMP: udp/161
       AclLineMatchExpr matchesSnmp =

@@ -30,7 +30,6 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
-import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
@@ -322,8 +321,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       _prerequisiteBdd = headerSpaceBdd.and(_mgr.isValidValue());
 
       _ipAccessListToBdd =
-          new MemoizedIpAccessListToBdd(
-              _pkt, _mgr, config.getIpAccessLists(), config.getIpSpaces());
+          new IpAccessListToBddImpl(_pkt, _mgr, config.getIpAccessLists(), config.getIpSpaces());
     }
 
     /**
@@ -388,10 +386,9 @@ public final class SearchFiltersAnswerer extends Answerer {
       _prerequisiteBdd = headerSpaceBdd.and(_mgr.isValidValue());
 
       _ipAccessListToBdd =
-          new MemoizedIpAccessListToBdd(
-              _pkt, _mgr, config.getIpAccessLists(), config.getIpSpaces());
+          new IpAccessListToBddImpl(_pkt, _mgr, config.getIpAccessLists(), config.getIpSpaces());
       _refIpAccessListToBdd =
-          new MemoizedIpAccessListToBdd(
+          new IpAccessListToBddImpl(
               _pkt, _mgr, refConfig.getIpAccessLists(), refConfig.getIpSpaces());
     }
 
