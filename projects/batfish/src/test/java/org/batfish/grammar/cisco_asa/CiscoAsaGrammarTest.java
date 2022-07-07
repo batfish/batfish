@@ -2325,7 +2325,7 @@ public final class CiscoAsaGrammarTest {
     AsaConfiguration config = parseVendorConfig(hostname);
 
     List<AsaNat> nats = config.getCiscoAsaNats();
-    assertThat(nats, hasSize(9));
+    assertThat(nats, hasSize(8));
 
     AsaNat nat = nats.get(0);
     assertThat(nat.getDynamic(), equalTo(false));
@@ -2358,21 +2358,16 @@ public final class CiscoAsaGrammarTest {
         equalTo(new NetworkObjectGroupAddressSpecifier("source-mapped-group")));
 
     nat = nats.get(3);
-    assertTrue("NAT is active", nat.getInactive());
-    assertThat(nat.getInsideInterface(), equalTo("inside"));
-    assertThat(nat.getOutsideInterface(), equalTo(AsaNat.ANY_INTERFACE));
-
-    nat = nats.get(4);
     assertThat(nat.getInsideInterface(), equalTo(AsaNat.ANY_INTERFACE));
     assertThat(nat.getOutsideInterface(), equalTo("outside"));
 
-    nat = nats.get(5);
+    nat = nats.get(4);
     assertThat(nat.getInsideInterface(), equalTo("outside"));
     assertThat(nat.getOutsideInterface(), equalTo("inside"));
     assertThat(nat.getRealSource(), equalTo(new WildcardAddressSpecifier(IpWildcard.ANY)));
     assertThat(nat.getMappedSource(), equalTo(new WildcardAddressSpecifier(IpWildcard.ANY)));
 
-    nat = nats.get(6);
+    nat = nats.get(5);
     assertThat(
         nat.getRealSource(), equalTo(new NetworkObjectAddressSpecifier("source-real-subnet")));
     assertThat(
@@ -2415,7 +2410,7 @@ public final class CiscoAsaGrammarTest {
             when(matchDst(mappedSourceHost)).apply(shiftDestinationIp(realSourceHost)).build()));
 
     // Identity NAT
-    nat = config.getCiscoAsaNats().get(5);
+    nat = config.getCiscoAsaNats().get(4);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
     assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
@@ -2427,7 +2422,7 @@ public final class CiscoAsaGrammarTest {
                 .build()));
 
     // Subnet source NAT
-    nat = config.getCiscoAsaNats().get(6);
+    nat = config.getCiscoAsaNats().get(5);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
     assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
@@ -2439,7 +2434,7 @@ public final class CiscoAsaGrammarTest {
                 .build()));
 
     // Source NAT with no interfaces specified
-    nat = config.getCiscoAsaNats().get(7);
+    nat = config.getCiscoAsaNats().get(6);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
     assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
@@ -2460,7 +2455,7 @@ public final class CiscoAsaGrammarTest {
                 .build()));
 
     // Source + destination NAT with no interfaces specified
-    nat = config.getCiscoAsaNats().get(8);
+    nat = config.getCiscoAsaNats().get(7);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
     assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
@@ -2535,7 +2530,7 @@ public final class CiscoAsaGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // check expected references
-    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "inside", 6));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "inside", 5));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "outside", 6));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "dest-mapped", 2));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "dest-real", 2));
@@ -2543,7 +2538,7 @@ public final class CiscoAsaGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-mapped-subnet", 3));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real", 3));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real-subnet", 3));
-    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "source-mapped-group", 2));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "source-mapped-group", 1));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "source-real-group", 2));
 
     assertThat(ccae, not(hasUndefinedReference(filename, INTERFACE, "inside")));
@@ -2559,7 +2554,6 @@ public final class CiscoAsaGrammarTest {
     assertThat(
         ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "source-real-group")));
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-mapped"));
-    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-real"));
   }
 
   @Test
