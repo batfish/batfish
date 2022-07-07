@@ -1,6 +1,7 @@
 package org.batfish.question.routes;
 
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Bgpv4Route;
@@ -10,9 +11,9 @@ import org.batfish.datamodel.route.nh.NextHop;
 /** Class representing the secondary key used for grouping {@link Bgpv4Route}s */
 @ParametersAreNonnullByDefault
 public class BgpRouteRowSecondaryKey extends RouteRowSecondaryKey {
-  @Nullable private final Ip _receivedFromIp;
+  @Nonnull private final Ip _receivedFromIp;
 
-  public BgpRouteRowSecondaryKey(NextHop nextHop, String protocol, @Nullable Ip receivedFromIp) {
+  public BgpRouteRowSecondaryKey(NextHop nextHop, String protocol, Ip receivedFromIp) {
     super(nextHop, protocol);
     _receivedFromIp = receivedFromIp;
   }
@@ -33,7 +34,7 @@ public class BgpRouteRowSecondaryKey extends RouteRowSecondaryKey {
     BgpRouteRowSecondaryKey that = (BgpRouteRowSecondaryKey) o;
     return _nextHop.equals(that._nextHop)
         && _protocol.equals(that._protocol)
-        && Objects.equals(_receivedFromIp, that._receivedFromIp);
+        && _receivedFromIp.equals(that._receivedFromIp);
   }
 
   @Override
@@ -41,7 +42,7 @@ public class BgpRouteRowSecondaryKey extends RouteRowSecondaryKey {
     return Objects.hash(_nextHop, _protocol, _receivedFromIp);
   }
 
-  public @Nullable Ip getReceivedFromIp() {
+  public @Nonnull Ip getReceivedFromIp() {
     return _receivedFromIp;
   }
 }

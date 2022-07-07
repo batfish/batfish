@@ -34,7 +34,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.NextHopComparator;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -249,8 +248,7 @@ public class RoutesAnswerer extends Answerer {
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
           .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance())
-          .thenComparing(
-              row -> row.getIp(COL_RECEIVED_FROM_IP), Comparator.nullsFirst(Ip::compareTo));
+          .thenComparing(row -> row.getIp(COL_RECEIVED_FROM_IP));
 
   private static final Comparator<Row> EVPN_COMPARATOR =
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())

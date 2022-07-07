@@ -144,7 +144,7 @@ public final class BgpProtocolHelper {
     }
 
     builder.setClusterList(ImmutableSet.of());
-    boolean routeOriginatedLocally = Ip.ZERO.equals(route.getReceivedFromIp());
+    boolean routeOriginatedLocally = route.getReceivedFrom().equals(ReceivedFromSelf.instance());
     if (routeProtocol.equals(RoutingProtocol.IBGP) && !localSessionProperties.isEbgp()) {
       /*
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and

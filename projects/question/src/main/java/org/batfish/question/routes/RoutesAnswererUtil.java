@@ -78,6 +78,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableDiff;
+import org.batfish.datamodel.visitors.LegacyReceivedFromToIpConverter;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
@@ -447,7 +448,9 @@ public class RoutesAnswererUtil {
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, bgpv4Route.getOriginType())
         .put(COL_ORIGINATOR_ID, bgpv4Route.getOriginatorIp())
-        .put(COL_RECEIVED_FROM_IP, bgpv4Route.getReceivedFromIp())
+        .put(
+            COL_RECEIVED_FROM_IP,
+            LegacyReceivedFromToIpConverter.convert(bgpv4Route.getReceivedFrom()))
         .put(
             COL_CLUSTER_LIST,
             bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
@@ -877,7 +880,8 @@ public class RoutesAnswererUtil {
                                                     new BgpRouteRowSecondaryKey(
                                                         route.getNextHop(),
                                                         route.getProtocol().protocolName(),
-                                                        route.getReceivedFromIp()),
+                                                        LegacyReceivedFromToIpConverter.convert(
+                                                            route.getReceivedFrom())),
                                                     k -> new TreeSet<>())
                                                 .add(
                                                     RouteRowAttribute.builder()
