@@ -1,12 +1,15 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -84,19 +87,36 @@ public abstract class IpAccessListToBdd {
       @Nonnull BDDSourceManager bddSrcManager,
       @Nonnull HeaderSpaceToBDD headerSpaceToBDD,
       @Nonnull Map<String, IpAccessList> aclEnv) {
+    /* Compute which ACLs we need explicit deny BDDs for. Will be an over-approximation if some ACLs are never used.
+     */
+    Set<String> explicitDenyAcls =
+        aclEnv.values().stream()
+            .map(IpAccessList::getLines)
+            .flatMap(Collection::stream)
+            .filter(AclAclLine.class::isInstance)
+            .map(aclLine -> ((AclAclLine) aclLine).getAclName())
+            .collect(Collectors.toSet());
+    if (!aclEnv.isEmpty()) {
+      LOGGER.info("{} of {} ACLs need explicit deny BDDs", explicitDenyAcls.size(), aclEnv.size());
+    }
+
     /*
      * Use suppliers to convert each ACL in the environment on demand. Memoize to avoid converting
      * an ACL more than once. ACLs can refer to other ACLs in the environment, but if there is a
      * cyclic reference (direct or indirect), NonRecursiveSupplier will throw an exception (to avoid
      * going into an infinite loop).
      */
-    _permitAndDenyBdds = new HashMap<>();
+    _permitAndDenyBdds =
+        toImmutableMap(
+            aclEnv,
+            Map.Entry::getKey,
+            entry ->
+                explicitDenyAcls.contains(entry.getKey())
+                    ? Suppliers.memoize(
+                        new NonRecursiveSupplier<>(() -> toPermitAndDenyBdds(entry.getValue())))
+                    : Suppliers.memoize(
+                        new NonRecursiveSupplier<>(() -> toPermitOnlyBdds(entry.getValue()))));
 
-    aclEnv.forEach(
-        (name, acl) ->
-            _permitAndDenyBdds.put(
-                name,
-                Suppliers.memoize(new NonRecursiveSupplier<>(() -> toPermitAndDenyBdds(acl)))));
     _bddOps = new BDDOps(pkt.getFactory());
     _bddSrcManager = bddSrcManager;
     _factory = pkt.getFactory();
@@ -135,16 +155,66 @@ public abstract class IpAccessListToBdd {
     return getPermitAndDenyBdds(acl.getName()).getPermitBdd();
   }
 
+  /**
+   * Compute only the permit BDD for the input ACL. More efficient, but only correct when the ACL is
+   * not used in any AclAclLines.
+   */
+  private PermitAndDenyBdds toPermitOnlyBdds(IpAccessList acl) {
+    long t = System.nanoTime();
+    List<BDD> lineBdds = new ArrayList<>(acl.getLines().size());
+    List<LineAction> actions = new ArrayList<>(acl.getLines().size());
+
+    for (AclLine line : acl.getLines()) {
+      line.accept(
+          new GenericAclLineVisitor<Void>() {
+            @Override
+            public Void visitAclAclLine(AclAclLine aclAclLine) {
+              PermitAndDenyBdds permitAndDenyBdds = getPermitAndDenyBdds(aclAclLine.getAclName());
+
+              // copy the BDDs so we can safely free them (they are owned by the cache)
+              BDD permitBdd = permitAndDenyBdds.getPermitBdd().id();
+              BDD denyBdd = permitAndDenyBdds.getDenyBdd().id();
+
+              // represent using two lines -- first permit, then deny.
+              lineBdds.add(permitBdd);
+              actions.add(LineAction.PERMIT);
+
+              lineBdds.add(denyBdd);
+              actions.add(LineAction.DENY);
+
+              return null;
+            }
+
+            @Override
+            public Void visitExprAclLine(ExprAclLine exprAclLine) {
+              lineBdds.add(toBdd(exprAclLine.getMatchCondition()));
+              actions.add(exprAclLine.getAction());
+              return null;
+            }
+          });
+    }
+
+    BDD permitBdd = _bddOps.bddAclLines(lineBdds, actions);
+    t = System.nanoTime() - t;
+    LOGGER.debug(
+        "toPermitOnlyBdds({}): {} ns  ({} lines, {} values for tracking sources)",
+        acl.getName(),
+        t,
+        acl.getLines().size(),
+        _bddSrcManager.getFiniteDomain().getValueBdds().size());
+    return new PermitAndDenyBdds(permitBdd, _pkt.getFactory().zero());
+  }
+
   private PermitAndDenyBdds toPermitAndDenyBdds(IpAccessList acl) {
-    long t = System.currentTimeMillis();
+    long t = System.nanoTime();
     PermitAndDenyBdds result =
         _bddOps.bddAclLines(
             acl.getLines().stream()
                 .map(this::toPermitAndDenyBdds)
                 .collect(ImmutableList.toImmutableList()));
-    t = System.currentTimeMillis() - t;
+    t = System.nanoTime() - t;
     LOGGER.debug(
-        "toPermitAndDenyBdds({}): {}ms  ({} lines, {} values for tracking sources)",
+        "toPermitAndDenyBdds({}): {} ns  ({} lines, {} values for tracking sources)",
         acl.getName(),
         t,
         acl.getLines().size(),

@@ -179,6 +179,18 @@ public class FindMatchingFilterLinesAnswererTest {
             .setName("mixedAcl")
             .setLines(acceptingHeaderSpace(permitSpace), rejectingHeaderSpace(denySpace))
             .build();
+
+    AclAclLine permitAclAclLine = new AclAclLine("line name", permitAcl.getName());
+    AclAclLine denyAclAclLine = new AclAclLine("line name", denyAcl.getName());
+    AclAclLine mixedAclAclLine = new AclAclLine("line name", mixedAcl.getName());
+
+    // create an acl that references the AclAclLines so IpAccessListToBdd will compute the explict
+    // deny BDDs
+    IpAccessList refAcl =
+        IpAccessList.builder()
+            .setName("refAcl")
+            .setLines(permitAclAclLine, denyAclAclLine, mixedAclAclLine)
+            .build();
     Map<String, IpAccessList> acls =
         ImmutableMap.of(
             permitAcl.getName(),
@@ -186,7 +198,9 @@ public class FindMatchingFilterLinesAnswererTest {
             denyAcl.getName(),
             denyAcl,
             mixedAcl.getName(),
-            mixedAcl);
+            mixedAcl,
+            refAcl.getName(),
+            refAcl);
 
     BDDPacket pkt = new BDDPacket();
     IpAccessListToBdd bddConverter =
@@ -194,10 +208,6 @@ public class FindMatchingFilterLinesAnswererTest {
     HeaderSpaceToBDD hsConverter = new HeaderSpaceToBDD(pkt, ImmutableMap.of());
     BDD permitSpaceBdd = hsConverter.toBDD(permitSpace);
     BDD denySpaceBdd = hsConverter.toBDD(denySpace);
-
-    AclAclLine permitAclAclLine = new AclAclLine("line name", permitAcl.getName());
-    AclAclLine denyAclAclLine = new AclAclLine("line name", denyAcl.getName());
-    AclAclLine mixedAclAclLine = new AclAclLine("line name", mixedAcl.getName());
 
     {
       // No action specified: Reported action should match all possible actions of referenced ACL
