@@ -57,8 +57,8 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
@@ -404,7 +404,7 @@ public final class BDDReachabilityAnalysisFactory {
     return _aclToBdds.computeIfAbsent(
         config.getHostname(),
         hostname ->
-            new MemoizedIpAccessListToBdd(
+            new IpAccessListToBddImpl(
                 _bddPacket,
                 _bddSourceManagers.get(hostname),
                 config.getIpAccessLists(),
@@ -1459,7 +1459,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private BDD computeInitialHeaderSpaceBdd(AclLineMatchExpr initialHeaderSpace) {
     IpAccessListToBdd ipAccessListToBdd =
-        new MemoizedIpAccessListToBdd(
+        new IpAccessListToBddImpl(
             _bddPacket, BDDSourceManager.empty(_bddPacket), ImmutableMap.of(), ImmutableMap.of());
     return ipAccessListToBdd.toBdd(initialHeaderSpace);
   }
