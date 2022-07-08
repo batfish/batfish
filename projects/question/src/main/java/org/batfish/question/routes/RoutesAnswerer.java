@@ -76,6 +76,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGIN_TYPE = "Origin_Type";
   static final String COL_CLUSTER_LIST = "Cluster_List";
   static final String COL_ORIGINATOR_ID = "Originator_Id";
+  static final String COL_PATH_ID = "Received_Path_Id";
   static final String COL_RECEIVED_FROM_IP = "Received_From_IP";
   static final String COL_STATUS = "Status";
   static final String COL_TUNNEL_ENCAPSULATION_ATTRIBUTE = "Tunnel_Encapsulation_Attribute";
@@ -335,6 +336,7 @@ public class RoutesAnswerer extends Answerer {
                     "Route's Originator ID",
                     Boolean.FALSE,
                     Boolean.TRUE))
+            .add(new ColumnMetadata(COL_PATH_ID, Schema.INTEGER, "Route's Received Path ID"))
             .add(
                 new ColumnMetadata(
                     COL_CLUSTER_LIST,
@@ -422,6 +424,7 @@ public class RoutesAnswerer extends Answerer {
             .add(
                 new ColumnMetadata(
                     COL_RECEIVED_FROM_IP, Schema.IP, "IP of the neighbor who sent this route"))
+            .add(new ColumnMetadata(COL_PATH_ID, Schema.INTEGER, "Route's Received Path ID"))
             .add(
                 new ColumnMetadata(
                     COL_CLUSTER_LIST,
@@ -662,6 +665,12 @@ public class RoutesAnswerer extends Answerer {
                 "Route's Received from IP",
                 Boolean.FALSE,
                 Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_PATH_ID, Schema.INTEGER, "Route's Received Path ID"));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_PATH_ID, Schema.INTEGER, "Route's Received Path ID"));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
