@@ -74551,6 +74551,16 @@
               "numReferrers" : 0
             }
           },
+          "firewall filter term" : {
+            "~INBOUND_ZONE_FILTER~ZONE-protocols ALL" : {
+              "definitionLines" : "24",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~ZONE-system-services ALL" : {
+              "definitionLines" : "25",
+              "numReferrers" : 1
+            }
+          },
           "ike policy" : {
             "1.2.3.4" : {
               "definitionLines" : "14",
@@ -81729,6 +81739,18 @@
             "notglobalAttached" : {
               "address-book attach zone" : [
                 10
+              ]
+            }
+          },
+          "firewall filter term" : {
+            "~INBOUND_ZONE_FILTER~ZONE-protocols ALL" : {
+              "firewall filter term" : [
+                24
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~ZONE-system-services ALL" : {
+              "firewall filter term" : [
+                25
               ]
             }
           },
