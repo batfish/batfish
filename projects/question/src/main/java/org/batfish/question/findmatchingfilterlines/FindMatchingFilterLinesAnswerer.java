@@ -23,7 +23,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
-import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclAclLine;
@@ -146,8 +146,8 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
       Collection<String> acls,
       BDD headerSpaceBdd,
       @Nullable Action action) {
-    MemoizedIpAccessListToBdd bddConverter =
-        new MemoizedIpAccessListToBdd(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
+    IpAccessListToBdd bddConverter =
+        new IpAccessListToBddImpl(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
     Row.TypedRowBuilder rowBuilder = Row.builder(METADATA_MAP).put(COL_NODE, node.getHostname());
     return acls.stream()
         .flatMap(
