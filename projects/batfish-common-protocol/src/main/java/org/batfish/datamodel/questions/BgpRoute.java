@@ -37,6 +37,7 @@ public final class BgpRoute {
   public static final String PROP_ORIGINATOR_IP = "originatorIp";
   public static final String PROP_ORIGIN_MECHANISM = "originMechanism";
   public static final String PROP_ORIGIN_TYPE = "originType";
+  public static final String PROP_PATH_ID = "pathId";
   public static final String PROP_PROTOCOL = "protocol";
   public static final String PROP_SRC_PROTOCOL = "srcProtocol";
   public static final String PROP_TAG = "tag";
@@ -53,6 +54,7 @@ public final class BgpRoute {
   @Nonnull private final Ip _originatorIp;
   @Nonnull private final OriginMechanism _originMechanism;
   @Nonnull private final OriginType _originType;
+  @Nullable private final Integer _pathId;
   @Nonnull private final RoutingProtocol _protocol;
   @Nullable private final RoutingProtocol _srcProtocol;
   private final long _tag;
@@ -69,6 +71,7 @@ public final class BgpRoute {
       Ip originatorIp,
       OriginMechanism originMechanism,
       OriginType originType,
+      @Nullable Integer pathId,
       RoutingProtocol protocol,
       @Nullable RoutingProtocol srcProtocol,
       long tag,
@@ -83,6 +86,7 @@ public final class BgpRoute {
     _originatorIp = originatorIp;
     _originMechanism = originMechanism;
     _originType = originType;
+    _pathId = pathId;
     _protocol = protocol;
     _srcProtocol = srcProtocol;
     _tag = tag;
@@ -101,6 +105,7 @@ public final class BgpRoute {
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @Nullable @JsonProperty(PROP_PATH_ID) Integer pathId,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
@@ -123,6 +128,7 @@ public final class BgpRoute {
         originatorIp,
         firstNonNull(originMechanism, LEARNED),
         originType,
+        pathId,
         protocol,
         srcProtocol,
         tag,
@@ -195,6 +201,12 @@ public final class BgpRoute {
     return _originType;
   }
 
+  @Nullable
+  @JsonProperty(PROP_PATH_ID)
+  public Integer getPathId() {
+    return _pathId;
+  }
+
   @Nonnull
   @JsonProperty(PROP_PROTOCOL)
   public RoutingProtocol getProtocol() {
@@ -243,6 +255,7 @@ public final class BgpRoute {
         && Objects.equals(_originatorIp, bgpRoute._originatorIp)
         && _originMechanism == bgpRoute._originMechanism
         && _originType == bgpRoute._originType
+        && Objects.equals(_pathId, bgpRoute._pathId)
         && _protocol == bgpRoute._protocol
         && _srcProtocol == bgpRoute._srcProtocol
         && Objects.equals(_tunnelEncapsulationAttribute, bgpRoute._tunnelEncapsulationAttribute);
@@ -260,6 +273,7 @@ public final class BgpRoute {
         _originatorIp,
         _originMechanism.ordinal(),
         _originType.ordinal(),
+        _pathId,
         _protocol.ordinal(),
         _srcProtocol != null ? _srcProtocol.ordinal() : null,
         _tag,
@@ -279,10 +293,11 @@ public final class BgpRoute {
         .setMetric(_metric)
         .setNetwork(_network)
         .setNextHopIp(_nextHopIp)
-        .setProtocol(_protocol)
         .setOriginatorIp(_originatorIp)
         .setOriginMechanism(_originMechanism)
         .setOriginType(_originType)
+        .setPathId(_pathId)
+        .setProtocol(_protocol)
         .setSrcProtocol(_srcProtocol)
         .setTag(_tag)
         .setTunnelEncapsulationAttribute(_tunnelEncapsulationAttribute)
@@ -302,6 +317,7 @@ public final class BgpRoute {
     @Nullable private Ip _originatorIp;
     @Nullable private OriginMechanism _originMechanism;
     @Nullable private OriginType _originType;
+    @Nullable private Integer _pathId;
     @Nullable private RoutingProtocol _protocol;
     @Nullable private RoutingProtocol _srcProtocol;
     private long _tag;
@@ -330,6 +346,7 @@ public final class BgpRoute {
           _originatorIp,
           firstNonNull(_originMechanism, LEARNED),
           _originType,
+          _pathId,
           _protocol,
           _srcProtocol,
           _tag,
@@ -382,6 +399,11 @@ public final class BgpRoute {
       return this;
     }
 
+    public Builder setPathId(@Nullable Integer _pathId) {
+      this._pathId = _pathId;
+      return this;
+    }
+
     public Builder setProtocol(RoutingProtocol protocol) {
       _protocol = protocol;
       return this;
@@ -422,6 +444,7 @@ public final class BgpRoute {
         .add("originatorIp", _originatorIp)
         .add("originMechanism", _originMechanism)
         .add("originType", _originType)
+        .add("pathId", _pathId)
         .add("protocol", _protocol)
         .add("srcProtocol", _srcProtocol)
         .add("tag", _tag)

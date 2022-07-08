@@ -249,13 +249,17 @@ public class RoutesAnswerer extends Answerer {
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
           .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance())
-          .thenComparing(row -> row.getIp(COL_RECEIVED_FROM_IP));
+          .thenComparing(row -> row.getIp(COL_RECEIVED_FROM_IP))
+          .thenComparing(
+              row -> row.getInteger(COL_PATH_ID), Comparator.nullsFirst(Comparator.naturalOrder()));
 
   private static final Comparator<Row> EVPN_COMPARATOR =
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
-          .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance());
+          .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance())
+          .thenComparing(
+              row -> row.getInteger(COL_PATH_ID), Comparator.nullsFirst(Comparator.naturalOrder()));
 
   /** Generate the table metadata based on the {@code rib} we are pulling */
   @VisibleForTesting

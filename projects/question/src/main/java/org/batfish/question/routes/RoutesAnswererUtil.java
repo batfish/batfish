@@ -22,6 +22,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_PATH_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_RECEIVED_FROM_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
@@ -451,6 +452,7 @@ public class RoutesAnswererUtil {
         .put(
             COL_RECEIVED_FROM_IP,
             LegacyReceivedFromToIpConverter.convert(bgpv4Route.getReceivedFrom()))
+        .put(COL_PATH_ID, bgpv4Route.getPathId())
         .put(
             COL_CLUSTER_LIST,
             bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
@@ -493,6 +495,7 @@ public class RoutesAnswererUtil {
         .put(COL_ORIGIN_PROTOCOL, evpnRoute.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, evpnRoute.getOriginType())
         .put(COL_ORIGINATOR_ID, evpnRoute.getOriginatorIp())
+        .put(COL_PATH_ID, evpnRoute.getPathId())
         .put(
             COL_CLUSTER_LIST,
             evpnRoute.getClusterList().isEmpty() ? null : evpnRoute.getClusterList())

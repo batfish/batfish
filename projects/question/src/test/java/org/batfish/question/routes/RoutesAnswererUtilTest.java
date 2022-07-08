@@ -16,6 +16,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_PATH_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_RECEIVED_FROM_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
@@ -241,6 +242,7 @@ public class RoutesAnswererUtilTest {
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
+            .setPathId(1)
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3")))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setWeight(7);
@@ -274,9 +276,10 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
             hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
             hasColumn(COL_RECEIVED_FROM_IP, Ip.parse("3.3.3.3"), Schema.IP),
+            hasColumn(COL_PATH_ID, 1, Schema.INTEGER),
             hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)),
             hasColumn(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, equalTo(null), Schema.STRING),
-            hasColumn(COL_WEIGHT, equalTo(7), Schema.INTEGER));
+            hasColumn(COL_WEIGHT, 7, Schema.INTEGER));
 
     assertThat(
         rows,
@@ -388,6 +391,7 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_LOCAL_PREF, 0L, Schema.LONG),
                 hasColumn(COL_COMMUNITIES, ImmutableList.of("1:1"), Schema.list(Schema.STRING)),
                 hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
+                hasColumn(COL_PATH_ID, nullValue(), Schema.INTEGER),
                 hasColumn(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, equalTo(null), Schema.STRING),
                 hasColumn(COL_WEIGHT, 7, Schema.INTEGER),
                 hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
