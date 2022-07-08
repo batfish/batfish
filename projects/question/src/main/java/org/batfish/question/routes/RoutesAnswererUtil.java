@@ -614,8 +614,9 @@ public class RoutesAnswererUtil {
 
     @Override
     public Void visitBgpRouteRowSecondaryKey(BgpRouteRowSecondaryKey bgpRouteRowSecondaryKey) {
-      _rowBuilder.put(
-          _columnPrefix + COL_RECEIVED_FROM_IP, bgpRouteRowSecondaryKey.getReceivedFromIp());
+      _rowBuilder
+          .put(_columnPrefix + COL_RECEIVED_FROM_IP, bgpRouteRowSecondaryKey.getReceivedFromIp())
+          .put(_columnPrefix + COL_PATH_ID, bgpRouteRowSecondaryKey.getPathId());
       return null;
     }
 
@@ -884,7 +885,8 @@ public class RoutesAnswererUtil {
                                                         route.getNextHop(),
                                                         route.getProtocol().protocolName(),
                                                         LegacyReceivedFromToIpConverter.convert(
-                                                            route.getReceivedFrom())),
+                                                            route.getReceivedFrom()),
+                                                        route.getPathId()),
                                                     k -> new TreeSet<>())
                                                 .add(
                                                     RouteRowAttribute.builder()
