@@ -74,11 +74,11 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteStatus;
 import org.batfish.datamodel.route.nh.LegacyNextHops;
-import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableDiff;
+import org.batfish.datamodel.visitors.LegacyReceivedFromToIpConverter;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
@@ -448,7 +448,9 @@ public class RoutesAnswererUtil {
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, bgpv4Route.getOriginType())
         .put(COL_ORIGINATOR_ID, bgpv4Route.getOriginatorIp())
-        .put(COL_RECEIVED_FROM_IP, bgpv4Route.getReceivedFromIp())
+        .put(
+            COL_RECEIVED_FROM_IP,
+            LegacyReceivedFromToIpConverter.convert(bgpv4Route.getReceivedFrom()))
         .put(
             COL_CLUSTER_LIST,
             bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
@@ -565,29 +567,59 @@ public class RoutesAnswererUtil {
       RouteRowSecondaryKey routeRowSecondaryKey,
       KeyPresenceStatus secondaryKeyPresence,
       RowBuilder rowBuilder) {
-    NextHop nextHop = routeRowSecondaryKey.getNextHop();
-    String protocol = routeRowSecondaryKey.getProtocol();
+    SecondaryKeyPopulator secondaryKeyPopulator = new SecondaryKeyPopulator();
     // populating base columns for secondary key if it is present in base snapshot or in both
     // snapshots
     if (secondaryKeyPresence == KeyPresenceStatus.IN_BOTH
         || secondaryKeyPresence == KeyPresenceStatus.ONLY_IN_SNAPSHOT) {
-      rowBuilder
-          .put(COL_BASE_PREFIX + COL_NEXT_HOP, nextHop)
-          .put(
-              COL_BASE_PREFIX + COL_NEXT_HOP_IP,
-              LegacyNextHops.getNextHopIp(nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
-          .put(COL_BASE_PREFIX + COL_PROTOCOL, protocol);
+      secondaryKeyPopulator.populateSecondaryKeyAttrs(
+          routeRowSecondaryKey, rowBuilder, COL_BASE_PREFIX);
     }
     // populating reference columns for secondary key if it is present in reference snapshot or in
     // both snapshots
     if (secondaryKeyPresence == KeyPresenceStatus.IN_BOTH
         || secondaryKeyPresence == KeyPresenceStatus.ONLY_IN_REFERENCE) {
+      secondaryKeyPopulator.populateSecondaryKeyAttrs(
+          routeRowSecondaryKey, rowBuilder, COL_DELTA_PREFIX);
+    }
+  }
+
+  private static class SecondaryKeyPopulator implements RouteRowSecondaryKeyVisitor<Void> {
+    private String _columnPrefix;
+    private RowBuilder _rowBuilder;
+
+    /**
+     * Populates the given {@link RowBuilder} with the attributes of the given {@link
+     * RouteRowSecondaryKey} with column names prefixed with the given {@code columnPrefix}
+     * (expected to be {@link TableDiff#COL_BASE_PREFIX} or {@link TableDiff#COL_DELTA_PREFIX}).
+     */
+    public void populateSecondaryKeyAttrs(
+        RouteRowSecondaryKey routeRowSecondaryKey, RowBuilder rowBuilder, String columnPrefix) {
+      // First populate attributes shared by all types of secondary key
       rowBuilder
-          .put(COL_DELTA_PREFIX + COL_NEXT_HOP, nextHop)
+          .put(columnPrefix + COL_NEXT_HOP, routeRowSecondaryKey.getNextHop())
           .put(
-              COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
-              LegacyNextHops.getNextHopIp(nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
-          .put(COL_DELTA_PREFIX + COL_PROTOCOL, protocol);
+              columnPrefix + COL_NEXT_HOP_IP,
+              LegacyNextHops.getNextHopIp(routeRowSecondaryKey.getNextHop())
+                  .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+          .put(columnPrefix + COL_PROTOCOL, routeRowSecondaryKey.getProtocol());
+      // Now let visitor fill in route-type-specific columns
+      _rowBuilder = rowBuilder;
+      _columnPrefix = columnPrefix;
+      routeRowSecondaryKey.accept(this);
+    }
+
+    @Override
+    public Void visitBgpRouteRowSecondaryKey(BgpRouteRowSecondaryKey bgpRouteRowSecondaryKey) {
+      _rowBuilder.put(
+          _columnPrefix + COL_RECEIVED_FROM_IP, bgpRouteRowSecondaryKey.getReceivedFromIp());
+      return null;
+    }
+
+    @Override
+    public Void visitMainRibRouteRowSecondaryKey(
+        MainRibRouteRowSecondaryKey mainRibRouteRowSecondaryKey) {
+      return null; // no additional columns
     }
   }
 
@@ -644,9 +676,6 @@ public class RoutesAnswererUtil {
         .put(
             prefix + COL_ORIGIN_TYPE,
             routeRowAttribute != null ? routeRowAttribute.getOriginType() : null)
-        .put(
-            prefix + COL_RECEIVED_FROM_IP,
-            routeRowAttribute != null ? routeRowAttribute.getReceivedFromIp() : null)
         .put(prefix + COL_TAG, routeRowAttribute != null ? routeRowAttribute.getTag() : null)
         .put(
             prefix + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
@@ -724,9 +753,9 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Given a {@link Map} of all RIBs groups the routes in them by the fields of {@link RouteRowKey}
-   * and further sub-groups them by {@link RouteRowSecondaryKey} and for routes in the same
-   * sub-group, sorts them according to {@link RouteRowAttribute}s
+   * Given a {@link Map} of all main RIBs, groups the routes in them by the fields of {@link
+   * RouteRowKey} and further sub-groups them by {@link RouteRowSecondaryKey} and for routes in the
+   * same sub-group, sorts them according to {@link RouteRowAttribute}s
    *
    * @param ribs {@link Map} of the RIBs
    * @param matchingNodes {@link Set} of nodes to be matched
@@ -768,7 +797,7 @@ public class RoutesAnswererUtil {
                             new RouteRowKey(node, vrfName, route.getNetwork()),
                             k -> new HashMap<>())
                         .computeIfAbsent(
-                            new RouteRowSecondaryKey(
+                            new MainRibRouteRowSecondaryKey(
                                 route.getNextHop(), route.getProtocol().protocolName()),
                             k -> new TreeSet<>())
                         .add(
@@ -848,9 +877,11 @@ public class RoutesAnswererUtil {
                                                         route.getNetwork()),
                                                     k -> new HashMap<>())
                                                 .computeIfAbsent(
-                                                    new RouteRowSecondaryKey(
+                                                    new BgpRouteRowSecondaryKey(
                                                         route.getNextHop(),
-                                                        route.getProtocol().protocolName()),
+                                                        route.getProtocol().protocolName(),
+                                                        LegacyReceivedFromToIpConverter.convert(
+                                                            route.getReceivedFrom())),
                                                     k -> new TreeSet<>())
                                                 .add(
                                                     RouteRowAttribute.builder()
@@ -874,8 +905,6 @@ public class RoutesAnswererUtil {
                                                                 .map(Community::toString)
                                                                 .collect(toImmutableList()))
                                                         .setOriginType(route.getOriginType())
-                                                        .setReceivedFromIp(
-                                                            route.getReceivedFromIp())
                                                         .setTag(
                                                             route.getTag() == Route.UNSET_ROUTE_TAG
                                                                 ? null

@@ -435,7 +435,6 @@ public class RoutesAnswererUtilTest {
             .setAdminDistance(200)
             .setMetric(2L)
             .setOriginProtocol("bgp")
-            .setReceivedFromIp(Ip.parse("6.6.6.6"))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setLocalPreference(1L)
             .setWeight(7);
@@ -455,41 +454,43 @@ public class RoutesAnswererUtilTest {
     Ip nextHopIp = Ip.parse("1.1.1.2");
     NextHop nextHop = NextHopIp.of(nextHopIp);
 
+    Ip receivedFromIp = Ip.parse("2.2.2.2");
+
     List<DiffRoutesOutput> diff =
         ImmutableList.of(
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(nextHop, "bgp"),
+                new BgpRouteRowSecondaryKey(nextHop, "bgp", receivedFromIp),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrix,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(nextHop, "bgp"),
+                new BgpRouteRowSecondaryKey(nextHop, "bgp", receivedFromIp),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrixChanged,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(nextHop, "bgp"),
+                new BgpRouteRowSecondaryKey(nextHop, "bgp", receivedFromIp),
                 KeyPresenceStatus.ONLY_IN_SNAPSHOT,
                 diffMatrixMissingRefs,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(nextHop, "bgp"),
+                new BgpRouteRowSecondaryKey(nextHop, "bgp", receivedFromIp),
                 KeyPresenceStatus.ONLY_IN_REFERENCE,
                 diffMatrixMissingBase,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(nextHop, "bgp"),
+                new BgpRouteRowSecondaryKey(nextHop, "bgp", receivedFromIp),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrixMissingRefs,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(nextHop, "bgp"),
+                new BgpRouteRowSecondaryKey(nextHop, "bgp", receivedFromIp),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrixMissingBase,
                 KeyPresenceStatus.IN_BOTH));
@@ -570,14 +571,16 @@ public class RoutesAnswererUtilTest {
     // checking equality of inner group
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
         ImmutableMap.of(
-            new RouteRowSecondaryKey(NextHopInterface.of("e0", Ip.parse("1.1.1.2")), "ospfE2"),
+            new MainRibRouteRowSecondaryKey(
+                NextHopInterface.of("e0", Ip.parse("1.1.1.2")), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
                     .setMetric(30L)
                     .setNextHopInterface("e0")
                     .build()),
-            new RouteRowSecondaryKey(NextHopInterface.of("e0", Ip.parse("1.1.1.3")), "ospfE2"),
+            new MainRibRouteRowSecondaryKey(
+                NextHopInterface.of("e0", Ip.parse("1.1.1.3")), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -594,6 +597,7 @@ public class RoutesAnswererUtilTest {
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.2"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
@@ -608,6 +612,7 @@ public class RoutesAnswererUtilTest {
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.3"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2")))
             .setAdmin(10)
             .setMetric(20L)
             .setOriginMechanism(OriginMechanism.LEARNED)
@@ -637,14 +642,15 @@ public class RoutesAnswererUtilTest {
 
     RouteRowKey expectedKey =
         new RouteRowKey("node", Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.0/24"));
-    assertThat(grouped.keySet().iterator().next(), equalTo(expectedKey));
+    assertThat(grouped.keySet(), contains(expectedKey));
 
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroup = grouped.get(expectedKey);
 
     // only the ibgp route is included because of the RoutingProtocolSpecifier above
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
         ImmutableMap.of(
-            new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.3")), "ibgp"),
+            new BgpRouteRowSecondaryKey(
+                NextHopIp.of(Ip.parse("1.1.1.3")), "ibgp", Ip.parse("2.2.2.2")),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -653,7 +659,6 @@ public class RoutesAnswererUtilTest {
                     .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
                     .setOriginType(OriginType.IGP)
                     .setStatus(BEST)
-                    .setReceivedFromIp(Ip.ZERO) /* default legacy value from testBuilder() */
                     .build()));
     // matching the secondary key
     assertThat(innerGroup, equalTo(expectedInnerMap));
@@ -665,6 +670,7 @@ public class RoutesAnswererUtilTest {
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.2"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setProtocol(RoutingProtocol.BGP)
@@ -678,6 +684,7 @@ public class RoutesAnswererUtilTest {
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.3"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.3")))
             .setAdmin(10)
             .setMetric(20L)
             .setOriginType(OriginType.IGP)
@@ -705,14 +712,15 @@ public class RoutesAnswererUtilTest {
 
     RouteRowKey expectedKey =
         new RouteRowKey("node", Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.0/24"));
-    assertThat(grouped.keySet().iterator().next(), equalTo(expectedKey));
+    assertThat(grouped.keySet(), contains(expectedKey));
 
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroup = grouped.get(expectedKey);
 
     // checking equality of inner group
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
         ImmutableMap.of(
-            new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), "bgp"),
+            new BgpRouteRowSecondaryKey(
+                NextHopIp.of(Ip.parse("1.1.1.2")), "bgp", Ip.parse("1.1.1.2")),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -721,9 +729,9 @@ public class RoutesAnswererUtilTest {
                     .setLocalPreference(1L)
                     .setOriginType(OriginType.IGP)
                     .setStatus(BEST)
-                    .setReceivedFromIp(Ip.ZERO) /* default legacy value from testBuilder() */
                     .build()),
-            new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.3")), "bgp"),
+            new BgpRouteRowSecondaryKey(
+                NextHopIp.of(Ip.parse("1.1.1.3")), "bgp", Ip.parse("1.1.1.3")),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -732,7 +740,6 @@ public class RoutesAnswererUtilTest {
                     .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
                     .setOriginType(OriginType.IGP)
                     .setStatus(BEST)
-                    .setReceivedFromIp(Ip.ZERO) /* default legacy value from testBuilder() */
                     .build()));
     // matching the secondary key
     assertThat(innerGroup, equalTo(expectedInnerMap));
@@ -745,6 +752,7 @@ public class RoutesAnswererUtilTest {
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.2"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setProtocol(RoutingProtocol.BGP)
@@ -770,21 +778,21 @@ public class RoutesAnswererUtilTest {
 
     RouteRowKey expectedKey =
         new RouteRowKey("node", Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.0/24"));
-    assertThat(grouped.keySet().iterator().next(), equalTo(expectedKey));
+    assertThat(grouped.keySet(), contains(expectedKey));
 
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroup = grouped.get(expectedKey);
 
     // checking equality of inner group
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
         ImmutableMap.of(
-            new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), "bgp"),
+            new BgpRouteRowSecondaryKey(
+                NextHopIp.of(Ip.parse("1.1.1.2")), "bgp", Ip.parse("1.1.1.2")),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
                     .setMetric(30L)
                     .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
                     .setLocalPreference(1L)
-                    .setReceivedFromIp(Ip.ZERO) /* default legacy value from testBuilder() */
                     .setOriginType(OriginType.IGP)
                     .setStatus(BACKUP)
                     .build()));
@@ -795,10 +803,14 @@ public class RoutesAnswererUtilTest {
   @Test
   public void testGetRoutesDiffCommonKey() {
     RouteRowKey routeRowKey = new RouteRowKey("node", "vrf", Prefix.parse("2.2.2.2/24"));
-    RouteRowSecondaryKey rrsk1 = new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp");
-    RouteRowSecondaryKey rrsk2 = new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), "bgp");
-    RouteRowSecondaryKey rrsk3 = new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.3")), "bgp");
-    RouteRowSecondaryKey rrsk4 = new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.4")), "bgp");
+    RouteRowSecondaryKey rrsk1 =
+        new BgpRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp", null);
+    RouteRowSecondaryKey rrsk2 =
+        new BgpRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), "bgp", null);
+    RouteRowSecondaryKey rrsk3 =
+        new BgpRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.3")), "bgp", null);
+    RouteRowSecondaryKey rrsk4 =
+        new BgpRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.4")), "bgp", null);
 
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
     RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
@@ -862,8 +874,10 @@ public class RoutesAnswererUtilTest {
     RouteRowKey routeRowKey1 = new RouteRowKey("node1", "vrf", Prefix.parse("1.1.1.1/24"));
     RouteRowKey routeRowKey2 = new RouteRowKey("node2", "vrf", Prefix.parse("1.1.1.2/24"));
 
-    RouteRowSecondaryKey rrsk1 = new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp");
-    RouteRowSecondaryKey rrsk2 = new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), "bgp");
+    RouteRowSecondaryKey rrsk1 =
+        new BgpRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp", null);
+    RouteRowSecondaryKey rrsk2 =
+        new BgpRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), "bgp", null);
 
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(11).build();
     RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(22).build();
@@ -902,7 +916,7 @@ public class RoutesAnswererUtilTest {
         ImmutableList.of(
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp"),
+                new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp"),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrix,
                 KeyPresenceStatus.IN_BOTH));
