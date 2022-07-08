@@ -148,7 +148,7 @@ public class RoutesAnswerer extends Answerer {
                 protocolSpec,
                 ImmutableSet.of(BEST, BACKUP),
                 question.getPrefixMatchType()));
-        rows.sort(BGP_COMPARATOR);
+        rows.sort(EVPN_COMPARATOR);
         break;
       case MAIN:
         rows.addAll(
@@ -244,6 +244,13 @@ public class RoutesAnswerer extends Answerer {
           .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance());
 
   private static final Comparator<Row> BGP_COMPARATOR =
+      Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
+          .thenComparing(row -> row.getString(COL_VRF_NAME))
+          .thenComparing(row -> row.getPrefix(COL_NETWORK))
+          .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance())
+          .thenComparing(row -> row.getIp(COL_RECEIVED_FROM_IP));
+
+  private static final Comparator<Row> EVPN_COMPARATOR =
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))

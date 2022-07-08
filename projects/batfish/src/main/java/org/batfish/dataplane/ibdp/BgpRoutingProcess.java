@@ -1104,9 +1104,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   r ->
                       // Withdrawals
                       r.isWithdrawn()
-                          // Received from 0.0.0.0 indicates local origination
+                          // Locally originated
                           || (_exportFromBgpRib
-                              && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
+                              && r.getRoute()
+                                  .getRoute()
+                                  .getReceivedFrom()
+                                  .equals(ReceivedFromSelf.instance()))
                           // RIB-failure routes included
                           || isReflectable(r.getRoute(), ourSession, ourConfig)
                           // RIB-failure routes excluded
