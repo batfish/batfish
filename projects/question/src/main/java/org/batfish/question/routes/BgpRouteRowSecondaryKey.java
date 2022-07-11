@@ -12,9 +12,12 @@ import org.batfish.datamodel.route.nh.NextHop;
 @ParametersAreNonnullByDefault
 public class BgpRouteRowSecondaryKey extends RouteRowSecondaryKey {
   @Nonnull private final Ip _receivedFromIp;
+  @Nullable private final Integer _pathId;
 
-  public BgpRouteRowSecondaryKey(NextHop nextHop, String protocol, Ip receivedFromIp) {
+  public BgpRouteRowSecondaryKey(
+      NextHop nextHop, String protocol, Ip receivedFromIp, @Nullable Integer pathId) {
     super(nextHop, protocol);
+    _pathId = pathId;
     _receivedFromIp = receivedFromIp;
   }
 
@@ -33,13 +36,18 @@ public class BgpRouteRowSecondaryKey extends RouteRowSecondaryKey {
     }
     BgpRouteRowSecondaryKey that = (BgpRouteRowSecondaryKey) o;
     return _nextHop.equals(that._nextHop)
+        && Objects.equals(_pathId, that._pathId)
         && _protocol.equals(that._protocol)
         && _receivedFromIp.equals(that._receivedFromIp);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_nextHop, _protocol, _receivedFromIp);
+    return Objects.hash(_nextHop, _pathId, _protocol, _receivedFromIp);
+  }
+
+  public @Nullable Integer getPathId() {
+    return _pathId;
   }
 
   public @Nonnull Ip getReceivedFromIp() {
