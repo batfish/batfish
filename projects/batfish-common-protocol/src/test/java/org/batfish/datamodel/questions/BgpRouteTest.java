@@ -29,6 +29,7 @@ public class BgpRouteTest {
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
             .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1")))
             .build();
@@ -55,6 +56,7 @@ public class BgpRouteTest {
         .addEqualityGroup(brb.setOriginatorIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(brb.setOriginMechanism(OriginMechanism.NETWORK).build())
         .addEqualityGroup(brb.setOriginType(OriginType.INCOMPLETE).build())
+        .addEqualityGroup(brb.setPathId(5).build())
         .addEqualityGroup(brb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(brb.setSrcProtocol(RoutingProtocol.STATIC).build())
         .addEqualityGroup(
@@ -63,5 +65,27 @@ public class BgpRouteTest {
         .addEqualityGroup(brb.setWeight(1).build(), brb.build().toBuilder().build())
         .addEqualityGroup(new Object())
         .testEquals();
+  }
+
+  @Test
+  public void testToBuilder() {
+    BgpRoute br =
+        BgpRoute.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(1L, 1L))
+            .setCommunities(ImmutableSet.of(StandardCommunity.of(1L)))
+            .setLocalPreference(10)
+            .setMetric(10)
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setPathId(5)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1")))
+            .setWeight(1)
+            .build();
+    assertThat(br, equalTo(br.toBuilder().build()));
   }
 }
