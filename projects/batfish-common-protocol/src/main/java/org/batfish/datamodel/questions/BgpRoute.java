@@ -399,8 +399,8 @@ public final class BgpRoute {
       return this;
     }
 
-    public Builder setPathId(@Nullable Integer _pathId) {
-      this._pathId = _pathId;
+    public Builder setPathId(@Nullable Integer pathId) {
+      _pathId = pathId;
       return this;
     }
 
