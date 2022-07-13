@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,6 +35,7 @@ import org.batfish.datamodel.ReceivedFromInterface;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -41,6 +44,7 @@ import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.visitors.LegacyReceivedFromToIpConverter;
 import org.batfish.datamodel.visitors.ReceivedFromVisitor;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
  * A generic BGP RIB containing the common properties among the RIBs for different types of BGP
@@ -170,10 +174,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
             // Evaluate AS path compatibility for multipath
             .thenComparing(this::compareRouteAsPath)
             .compare(lhs, rhs);
-    if (multipathCompare != 0
-        || (
-        // For two routes with the same next hop, at most one may be ECMP-best
-        isMultipath() && !lhs.getNextHop().equals(rhs.getNextHop()))) {
+    if (multipathCompare != 0 || isMultipath()) {
       return multipathCompare;
     } else {
       return Comparator.comparing(Function.identity(), this::bestPathComparator).compare(lhs, rhs);
@@ -183,7 +184,15 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   @Nonnull
   @Override
   public RibDelta<R> mergeRouteGetDelta(R route) {
+    Map<NextHop, SortedSet<R>> routesByNh = null;
+    boolean multipath = isMultipath();
+    if (multipath) {
+      routesByNh = computeRoutesByNhForPrefix(route.getNetwork());
+    }
     RibDelta<R> delta = super.mergeRouteGetDelta(route);
+    if (multipath) {
+      delta = uniqueNextHopPostProcessDelta(delta, routesByNh);
+    }
     if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
       _logicalArrivalTime.put(route, _logicalClock);
       _logicalClock++;
@@ -194,10 +203,84 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     return delta;
   }
 
+  @Override
+  public @Nonnull Set<R> getRoutes(Prefix prefix) {
+    return computeRoutesByNhForPrefix(prefix).values().stream()
+        .map(SortedSet::last)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /**
+   * Groups ECMP-best (modulo next-hop) routes for a prefix into a mapping from next-hop to mutable
+   * set of routes sorted by best-path comparator.
+   */
+  private @Nonnull Map<NextHop, SortedSet<R>> computeRoutesByNhForPrefix(Prefix prefix) {
+    Map<NextHop, SortedSet<R>> routesByNh = new HashMap<>();
+    for (R route : super.getRoutes(prefix)) {
+      routesByNh
+          .computeIfAbsent(route.getNextHop(), nh -> new TreeSet<>(this::bestPathComparator))
+          .add(route);
+    }
+    return routesByNh;
+  }
+
+  private @Nonnull RibDelta<R> uniqueNextHopPostProcessDelta(
+      RibDelta<R> initialDelta, Map<NextHop, SortedSet<R>> routesByNh) {
+    RibDelta.Builder<R> builder = RibDelta.builder();
+    initialDelta
+        .getActions()
+        .forEach(
+            action -> {
+              R route = action.getRoute();
+              NextHop nh = route.getNextHop();
+              SortedSet<R> routesForNh =
+                  routesByNh.computeIfAbsent(nh, n -> new TreeSet<>(this::bestPathComparator));
+              boolean wasEmpty = routesForNh.isEmpty();
+              if (action.isWithdrawn()) {
+                // withdraw
+                assert routesForNh.contains(route);
+                R oldBest = routesForNh.last();
+                routesForNh.remove(route);
+                if (oldBest.equals(route)) {
+                  if (routesForNh.isEmpty()) {
+                    // the removed route was the last one, so the removal is the only action
+                    builder.from(action);
+                  } else {
+                    // the removed route was best, so promote the new best
+                    builder.from(action).add(routesForNh.last());
+                  }
+                } // else another route was better, so no change occurred
+              } else {
+                // add
+                assert !routesForNh.contains(route);
+                if (wasEmpty) {
+                  routesForNh.add(route);
+                  builder.from(action);
+                  return;
+                }
+                R oldBest = routesForNh.last();
+                routesForNh.add(route);
+                R newBest = routesForNh.last();
+                if (newBest.equals(route)) {
+                  builder.remove(oldBest, Reason.REPLACE).from(action);
+                } // else not the best, so do nothing with this action
+              }
+            });
+    return builder.build();
+  }
+
   @Nonnull
   @Override
   public RibDelta<R> removeRouteGetDelta(R route) {
+    Map<NextHop, SortedSet<R>> routesByNh = null;
+    boolean multipath = isMultipath();
+    if (multipath) {
+      routesByNh = computeRoutesByNhForPrefix(route.getNetwork());
+    }
     RibDelta<R> delta = super.removeRouteGetDelta(route);
+    if (multipath) {
+      delta = uniqueNextHopPostProcessDelta(delta, routesByNh);
+    }
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
       delta
@@ -277,13 +360,21 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   }
 
   @Override
-  @Nonnull
-  public final Set<R> getTypedRoutes() {
-    if (isMultipath()) {
-      return super.getTypedRoutes();
-    } else {
+  protected @Nonnull Set<R> computeTypedRoutes() {
+    if (!isMultipath()) {
       return getBestPathRoutes();
     }
+    Map<NextHop, Map<Prefix, SortedSet<R>>> routesByNhAndPrefix = new HashMap<>();
+    for (R route : super.computeTypedRoutes()) {
+      routesByNhAndPrefix
+          .computeIfAbsent(route.getNextHop(), n -> new HashMap<>())
+          .computeIfAbsent(route.getNetwork(), p -> new TreeSet<>(this::bestPathComparator))
+          .add(route);
+    }
+    return routesByNhAndPrefix.values().stream()
+        .flatMap(m -> m.values().stream())
+        .map(SortedSet::last)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public Set<R> getBestPathRoutes() {
@@ -317,7 +408,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   }
 
   private void selectBestPath(Prefix prefix) {
-    Optional<R> s = getRoutes(prefix).stream().max(this::bestPathComparator);
+    // optimization - avoid extra computation from override of getRoutes(prefix) in this class
+    Optional<R> s = super.getRoutes(prefix).stream().max(this::bestPathComparator);
     if (!s.isPresent()) {
       // Remove best path and return
       _bestPaths.remove(prefix);
