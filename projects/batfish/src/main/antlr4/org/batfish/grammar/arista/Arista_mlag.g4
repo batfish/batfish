@@ -24,17 +24,16 @@ eos_mlag_peer_address
      eos_mpa_ip
      | eos_mpa_heartbeat
    )
-   NEWLINE
 ;
 
 eos_mpa_ip
 :
-   ip = IP_ADDRESS
+   ip = IP_ADDRESS NEWLINE
 ;
 
 eos_mpa_heartbeat
 :
-   HEARTBEAT ip = IP_ADDRESS (VRF vrf_name)?
+   HEARTBEAT ip = IP_ADDRESS (VRF vrf_name)? NEWLINE
 ;
 
 eos_mlag_peer_link
