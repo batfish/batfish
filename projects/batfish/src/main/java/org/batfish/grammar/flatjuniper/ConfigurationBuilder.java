@@ -6821,10 +6821,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     newTerm.getFromHostProtocols().add(protocol);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
 
-    String defName = computeFirewallFilterTermName(_currentZoneInboundFilter.getName(), termName);
-    _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
+    String defName = computeSecurityPolicyTermName(_currentZoneInboundFilter.getName(), termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
     _configuration.referenceStructure(
-        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.getStart()));
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.getStart()));
   }
 
   @Override
@@ -6836,10 +6836,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     newTerm.getFromHostServices().add(service);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
 
-    String defName = computeFirewallFilterTermName(_currentZoneInboundFilter.getName(), termName);
-    _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
+    String defName = computeSecurityPolicyTermName(_currentZoneInboundFilter.getName(), termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
     _configuration.referenceStructure(
-        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.getStart()));
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.getStart()));
   }
 
   @Override
