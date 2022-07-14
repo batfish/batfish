@@ -74551,16 +74551,6 @@
               "numReferrers" : 0
             }
           },
-          "firewall filter term" : {
-            "~INBOUND_ZONE_FILTER~ZONE-protocols ALL" : {
-              "definitionLines" : "24",
-              "numReferrers" : 1
-            },
-            "~INBOUND_ZONE_FILTER~ZONE-system-services ALL" : {
-              "definitionLines" : "25",
-              "numReferrers" : 1
-            }
-          },
           "ike policy" : {
             "1.2.3.4" : {
               "definitionLines" : "14",
@@ -74609,6 +74599,14 @@
             "~GLOBAL_SECURITY_POLICY~ p1" : {
               "definitionLines" : "16-17",
               "numReferrers" : 2
+            },
+            "~INBOUND_ZONE_FILTER~ZONE-protocols ALL" : {
+              "definitionLines" : "24",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~ZONE-system-services ALL" : {
+              "definitionLines" : "25",
+              "numReferrers" : 1
             }
           }
         },
@@ -81742,18 +81740,6 @@
               ]
             }
           },
-          "firewall filter term" : {
-            "~INBOUND_ZONE_FILTER~ZONE-protocols ALL" : {
-              "firewall filter term" : [
-                24
-              ]
-            },
-            "~INBOUND_ZONE_FILTER~ZONE-system-services ALL" : {
-              "firewall filter term" : [
-                25
-              ]
-            }
-          },
           "ike proposal" : {
             "PROPOSAL" : {
               "ike policy ike proposal" : [
@@ -81818,6 +81804,16 @@
               "security policy term" : [
                 16,
                 17
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~ZONE-protocols ALL" : {
+              "security policy term" : [
+                24
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~ZONE-system-services ALL" : {
+              "security policy term" : [
+                25
               ]
             }
           }
