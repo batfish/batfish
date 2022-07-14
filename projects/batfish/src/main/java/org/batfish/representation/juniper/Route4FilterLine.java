@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.util.HashSet;
 import java.util.Set;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route6FilterList;
+import org.batfish.datamodel.RouteFilterList;
 
 public abstract class Route4FilterLine extends RouteFilterLine {
 
@@ -16,8 +16,7 @@ public abstract class Route4FilterLine extends RouteFilterLine {
     _thens = new HashSet<>();
   }
 
-  @Override
-  public final void applyTo(Route6FilterList rfl) {}
+  public abstract void applyTo(RouteFilterList rfl);
 
   @Override
   public Set<PsThen> getThens() {

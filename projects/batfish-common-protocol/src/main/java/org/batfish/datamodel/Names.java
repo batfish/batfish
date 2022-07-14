@@ -104,8 +104,8 @@ public final class Names {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrf);
   }
 
-  public static String generatedBgpDefaultRouteExportPolicyName(boolean ipv4) {
-    return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s~", ipv4 ? "4" : "6");
+  public static String generatedBgpDefaultRouteExportPolicyName() {
+    return "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~";
   }
 
   public static String generatedBgpIndependentNetworkPolicyName(String vrf) {

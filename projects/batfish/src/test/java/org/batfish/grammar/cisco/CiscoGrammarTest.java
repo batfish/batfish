@@ -75,7 +75,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
@@ -343,7 +342,6 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.ReceivedFromIp;
@@ -387,7 +385,6 @@ import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
-import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.SnmpServerMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
@@ -796,12 +793,6 @@ public final class CiscoGrammarTest {
                     .build(),
                 "Ethernet1",
                 c)));
-    // Check Ipv6 as well
-    assertThat(c, hasRoute6FilterList("v6list", permits(Prefix6.parse("::FFFF:10.0.0.0/105"))));
-    assertThat(
-        c,
-        hasRoute6FilterList(
-            "v6list", Route6FilterListMatchers.rejects(Prefix6.parse("::FFFF:10.0.0.0/103"))));
   }
 
   @Test

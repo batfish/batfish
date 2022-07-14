@@ -1,9 +1,6 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route6FilterList;
-import org.batfish.datamodel.SubRange;
 
 public final class Route6FilterLineLengthRange extends Route6FilterLine {
 
@@ -15,14 +12,6 @@ public final class Route6FilterLineLengthRange extends Route6FilterLine {
     super(prefix6);
     _minPrefixLength = minPrefixLength;
     _maxPrefixLength = maxPrefixLength;
-  }
-
-  @Override
-  public void applyTo(Route6FilterList rfl) {
-    org.batfish.datamodel.Route6FilterLine line =
-        new org.batfish.datamodel.Route6FilterLine(
-            LineAction.PERMIT, _prefix6, new SubRange(_minPrefixLength, _maxPrefixLength));
-    rfl.addLine(line);
   }
 
   @Override
