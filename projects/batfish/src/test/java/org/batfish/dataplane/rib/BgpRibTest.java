@@ -1,6 +1,8 @@
 package org.batfish.dataplane.rib;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
@@ -9,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
@@ -23,6 +26,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Test;
 
 /** Tests of {@link BgpRib} */
@@ -97,6 +102,108 @@ public class BgpRibTest {
   }
 
   @Test
+  public void testMultipathMerge_order() {
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
+    Supplier<Bgpv4Rib> makeRib =
+        () ->
+            new Bgpv4Rib(
+                null,
+                BgpTieBreaker.ROUTER_ID,
+                null,
+                MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+                false,
+                LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+                NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+
+    Bgpv4Route nh1 =
+        rb.setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
+            .setOriginatorIp(Ip.parse("1.0.0.1"))
+            .build();
+
+    Bgpv4Route nh2better =
+        rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
+            .setOriginatorIp(Ip.parse("2.0.0.1"))
+            .build();
+
+    Bgpv4Route nh2worse =
+        rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
+            .setOriginatorIp(Ip.parse("2.0.0.2"))
+            .build();
+
+    Bgpv4Route nh3best =
+        rb.setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
+            .setOriginatorIp(Ip.parse("3.0.0.1"))
+            .setLocalPreference(1000)
+            .build();
+
+    {
+      Bgpv4Rib rib = makeRib.get();
+
+      rib.mergeRoute(nh1);
+      assertThat(rib.getTypedRoutes(), contains(nh1));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh1));
+
+      rib.mergeRoute(nh2better);
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
+
+      assertThat(
+          rib.multipathMergeRouteGetDelta(nh2worse).getMultipathDelta(), equalTo(RibDelta.empty()));
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
+    }
+    {
+      Bgpv4Rib rib = makeRib.get();
+
+      rib.mergeRoute(nh1);
+      assertThat(rib.getTypedRoutes(), contains(nh1));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh1));
+
+      rib.mergeRoute(nh2worse);
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2worse));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2worse));
+
+      assertThat(
+          rib.multipathMergeRouteGetDelta(nh2better).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh2worse, Reason.REPLACE).add(nh2better).build()));
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
+
+      assertThat(
+          rib.multipathRemoveRouteGetDelta(nh2better).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh2better, Reason.WITHDRAW).add(nh2worse).build()));
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2worse));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2worse));
+    }
+    {
+      Bgpv4Rib rib = makeRib.get();
+
+      rib.mergeRoute(nh2worse);
+      assertThat(rib.getTypedRoutes(), contains(nh2worse));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2worse));
+
+      assertThat(
+          rib.multipathMergeRouteGetDelta(nh2better).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh2worse, Reason.REPLACE).add(nh2better).build()));
+      assertThat(rib.getTypedRoutes(), contains(nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2better));
+
+      assertThat(
+          rib.multipathMergeRouteGetDelta(nh3best).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh2better, Reason.REPLACE).add(nh3best).build()));
+      assertThat(rib.getTypedRoutes(), contains(nh3best));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh3best));
+
+      assertThat(
+          rib.multipathRemoveRouteGetDelta(nh3best).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh3best, Reason.WITHDRAW).add(nh2better).build()));
+      assertThat(rib.getTypedRoutes(), contains(nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2better));
+    }
+  }
+
+  @Test
   public void testMultipathMergeAndRemove_multipath() {
     Bgpv4Rib bgpRib =
         new Bgpv4Rib(
@@ -110,9 +217,18 @@ public class BgpRibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
-    Bgpv4Route good = rb.setOriginatorIp(Ip.parse("1.1.1.40")).build();
-    Bgpv4Route better = rb.setOriginatorIp(Ip.parse("1.1.1.30")).build();
-    Bgpv4Route best = rb.setOriginatorIp(Ip.parse("1.1.1.20")).build();
+    Bgpv4Route good =
+        rb.setOriginatorIp(Ip.parse("1.1.1.40"))
+            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.40")))
+            .build();
+    Bgpv4Route better =
+        rb.setOriginatorIp(Ip.parse("1.1.1.30"))
+            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.30")))
+            .build();
+    Bgpv4Route best =
+        rb.setOriginatorIp(Ip.parse("1.1.1.20"))
+            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.20")))
+            .build();
     {
       // Merge into empty RIB
       BgpRib.MultipathRibDelta<Bgpv4Route> delta = bgpRib.multipathMergeRouteGetDelta(good);
