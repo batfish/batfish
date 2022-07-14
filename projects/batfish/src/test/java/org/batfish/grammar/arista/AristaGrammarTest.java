@@ -1728,6 +1728,16 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testEosMlagExtraction_heartbeatVrf() {
+    AristaConfiguration c = parseVendorConfig("eos-mlag-peer-address-heartbeat-vrf");
+    MlagConfiguration mlag = c.getEosMlagConfiguration();
+    assertThat(mlag, notNullValue());
+    assertThat(mlag.getDomainId(), equalTo("MLAG_DOMAIN_ID"));
+    assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
+    assertThat(mlag.getPeerAddressHeartbeatVrfName(), equalTo("management"));
+  }
+
+  @Test
   public void testEosMlagExtraction_newInterfaceNames() {
     AristaConfiguration c = parseVendorConfig("eos-mlag-new-interface-names");
     MlagConfiguration mlag = c.getEosMlagConfiguration();
