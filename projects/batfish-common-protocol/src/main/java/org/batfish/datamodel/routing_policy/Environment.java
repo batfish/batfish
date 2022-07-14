@@ -11,7 +11,6 @@ import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -21,10 +20,8 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.as_path.AsPathExpr;
@@ -51,9 +48,7 @@ public class Environment {
         .setCommunitySetMatchExprs(c.getCommunitySetMatchExprs())
         .setCommunitySets(c.getCommunitySets())
         .setIpAccessLists(c.getIpAccessLists())
-        .setIp6AccessLists(c.getIp6AccessLists())
         .setRouteFilterLists(c.getRouteFilterLists())
-        .setRoute6FilterLists(c.getRoute6FilterLists())
         .setRoutingPolicies(c.getRoutingPolicies())
         .setUseOutputAttributes(useOutputAttributesFor(c));
   }
@@ -98,7 +93,6 @@ public class Environment {
   private boolean _error;
   private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
   private final Map<String, IpAccessList> _ipAccessLists;
-  private final Map<String, Ip6AccessList> _ip6AccessLists;
   private boolean _localDefaultAction;
   private boolean _tagExplicitlySet;
 
@@ -106,11 +100,9 @@ public class Environment {
   private final BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
 
   private final AbstractRoute _originalRoute;
-  @Nullable private final AbstractRoute6 _originalRoute6;
   private final AbstractRouteBuilder<?, ?> _outputRoute;
   private final Map<String, RoutingPolicy> _routingPolicies;
   private boolean _readFromIntermediateBgpAttributes;
-  private final Map<String, Route6FilterList> _route6FilterLists;
   private final Map<String, RouteFilterList> _routeFilterLists;
   @Nullable private final String _routeSourceVrf;
   private final boolean _useOutputAttributes;
@@ -137,15 +129,12 @@ public class Environment {
       boolean error,
       BgpRoute.Builder<?, ?> intermediateBgpAttributes,
       Map<String, IpAccessList> ipAccessLists,
-      Map<String, Ip6AccessList> ip6AccessLists,
       boolean localDefaultAction,
       Map<String, RoutingPolicy> routingPolicies,
       @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator,
       AbstractRouteDecorator originalRoute,
-      @Nullable AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
       boolean readFromIntermediateBgpAttributes,
-      Map<String, Route6FilterList> route6FilterLists,
       Map<String, RouteFilterList> routeFilterLists,
       boolean useOutputAttributes,
       boolean writeToIntermediateBgpAttributes,
@@ -168,15 +157,12 @@ public class Environment {
     _error = error;
     _intermediateBgpAttributes = intermediateBgpAttributes;
     _ipAccessLists = ipAccessLists;
-    _ip6AccessLists = ip6AccessLists;
     _localDefaultAction = localDefaultAction;
     _ribIntersectsPrefixSpaceEvaluator = ribIntersectsPrefixSpaceEvaluator;
     _routingPolicies = routingPolicies;
     _originalRoute = originalRoute == null ? null : originalRoute.getAbstractRoute();
-    _originalRoute6 = originalRoute6;
     _outputRoute = outputRoute;
     _readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
-    _route6FilterLists = route6FilterLists;
     _routeFilterLists = routeFilterLists;
     _routeSourceVrf =
         originalRoute instanceof AnnotatedRoute
@@ -261,10 +247,6 @@ public class Environment {
     return _intermediateBgpAttributes;
   }
 
-  public Map<String, Ip6AccessList> getIp6AccessLists() {
-    return _ip6AccessLists;
-  }
-
   public Map<String, IpAccessList> getIpAccessLists() {
     return _ipAccessLists;
   }
@@ -328,21 +310,12 @@ public class Environment {
     return _originalRoute;
   }
 
-  @Nullable
-  public AbstractRoute6 getOriginalRoute6() {
-    return _originalRoute6;
-  }
-
   public AbstractRouteBuilder<?, ?> getOutputRoute() {
     return _outputRoute;
   }
 
   public boolean getReadFromIntermediateBgpAttributes() {
     return _readFromIntermediateBgpAttributes;
-  }
-
-  public Map<String, Route6FilterList> getRoute6FilterLists() {
-    return _route6FilterLists;
   }
 
   public Map<String, RouteFilterList> getRouteFilterLists() {
@@ -428,16 +401,13 @@ public class Environment {
     @Nullable private EigrpProcess _eigrpProcess;
     private boolean _error;
     private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
-    private Map<String, Ip6AccessList> _ip6AccessLists;
     private Map<String, IpAccessList> _ipAccessLists;
     private boolean _localDefaultAction;
     private Map<String, RoutingPolicy> _routingPolicies;
     @Nullable private BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
     private AbstractRouteDecorator _originalRoute;
-    private AbstractRoute6 _originalRoute6;
     private AbstractRouteBuilder<?, ?> _outputRoute;
     private boolean _readFromIntermediateBgpAttributes;
-    private Map<String, Route6FilterList> _route6FilterLists;
     private Map<String, RouteFilterList> _routeFilterLists;
     private boolean _useOutputAttributes;
     private boolean _writeToIntermediateBgpAttributes;
@@ -535,11 +505,6 @@ public class Environment {
       return this;
     }
 
-    public Builder setIp6AccessLists(Map<String, Ip6AccessList> ip6AccessLists) {
-      _ip6AccessLists = toImmutableMap(ip6AccessLists);
-      return this;
-    }
-
     public Builder setIpAccessLists(Map<String, IpAccessList> ipAccessLists) {
       _ipAccessLists = toImmutableMap(ipAccessLists);
       return this;
@@ -564,11 +529,6 @@ public class Environment {
 
     public Builder setOriginalRoute(AbstractRouteDecorator originalRoute) {
       _originalRoute = originalRoute;
-      return this;
-    }
-
-    public Builder setOriginalRoute6(AbstractRoute6 originalRoute6) {
-      _originalRoute6 = originalRoute6;
       return this;
     }
 
@@ -617,24 +577,16 @@ public class Environment {
           _error,
           _intermediateBgpAttributes,
           firstNonNull(_ipAccessLists, ImmutableMap.of()),
-          firstNonNull(_ip6AccessLists, ImmutableMap.of()),
           _localDefaultAction,
           firstNonNull(_routingPolicies, ImmutableMap.of()),
           _ribIntersectsPrefixSpaceEvaluator,
           _originalRoute,
-          _originalRoute6,
           _outputRoute,
           _readFromIntermediateBgpAttributes,
-          firstNonNull(_route6FilterLists, ImmutableMap.of()),
           firstNonNull(_routeFilterLists, ImmutableMap.of()),
           _useOutputAttributes,
           _writeToIntermediateBgpAttributes,
           _tracer);
-    }
-
-    public Builder setRoute6FilterLists(Map<String, Route6FilterList> route6FilterLists) {
-      _route6FilterLists = toImmutableMap(route6FilterLists);
-      return this;
     }
 
     public Builder setRouteFilterLists(Map<String, RouteFilterList> routeFilterLists) {

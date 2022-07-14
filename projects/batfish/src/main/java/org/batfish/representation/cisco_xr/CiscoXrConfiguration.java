@@ -91,7 +91,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -101,7 +100,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpWildcard;
@@ -115,10 +113,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.Route6FilterLine;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -680,39 +675,33 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   private Ip getUpdateSource(
-      Configuration c,
-      String vrfName,
-      LeafBgpPeerGroup lpg,
-      String updateSourceInterface,
-      boolean ipv4) {
+      Configuration c, String vrfName, LeafBgpPeerGroup lpg, String updateSourceInterface) {
     Ip updateSource = null;
-    if (ipv4) {
-      if (updateSourceInterface != null) {
-        org.batfish.datamodel.Interface sourceInterface =
-            c.getAllInterfaces(vrfName).get(updateSourceInterface);
-        if (sourceInterface != null) {
-          ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
-          if (address != null) {
-            Ip sourceIp = address.getIp();
-            updateSource = sourceIp;
-          } else {
-            _w.redFlag(
-                "bgp update source interface: '"
-                    + updateSourceInterface
-                    + "' not assigned an ip address");
-          }
-        }
-      } else {
-        if (lpg instanceof DynamicIpBgpPeerGroup) {
-          updateSource = Ip.AUTO;
+    if (updateSourceInterface != null) {
+      org.batfish.datamodel.Interface sourceInterface =
+          c.getAllInterfaces(vrfName).get(updateSourceInterface);
+      if (sourceInterface != null) {
+        ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
+        if (address != null) {
+          Ip sourceIp = address.getIp();
+          updateSource = sourceIp;
         } else {
-          Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
-          for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
-            for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
-              if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
-                Ip ifaceAddress = interfaceAddress.getIp();
-                updateSource = ifaceAddress;
-              }
+          _w.redFlag(
+              "bgp update source interface: '"
+                  + updateSourceInterface
+                  + "' not assigned an ip address");
+        }
+      }
+    } else {
+      if (lpg instanceof DynamicIpBgpPeerGroup) {
+        updateSource = Ip.AUTO;
+      } else {
+        Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
+        for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
+          for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
+            if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
+              Ip ifaceAddress = interfaceAddress.getIp();
+              updateSource = ifaceAddress;
             }
           }
         }
@@ -968,23 +957,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                           new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
                           ExitAccept.toStaticStatement())));
             });
-    if (!proc.getIpv6Networks().isEmpty()) {
-      String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
-      Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
-      proc.getIpv6Networks()
-          .forEach(
-              (prefix6, bgpNetwork6) -> {
-                int prefixLen = prefix6.getPrefixLength();
-                Route6FilterLine line =
-                    new Route6FilterLine(LineAction.PERMIT, prefix6, SubRange.singleton(prefixLen));
-                localFilter6.addLine(line);
-                String mapName = bgpNetwork6.getRouteMapName();
-                if (mapName != null) {
-                  // TODO update to route-policy if valid, or delete grammar and VS
-                }
-              });
-      c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
-    }
 
     // Finalize redistribution policy and attach to process
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
@@ -998,14 +970,16 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         _w.redFlag("No remote-as set for peer: " + lpg.getName());
         continue;
       }
-      if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
+      if (lpg instanceof Ipv6BgpPeerGroup
+          || lpg instanceof DynamicIpv6BgpPeerGroup
+          || lpg.getNeighborPrefix6() != null) {
         // TODO: implement ipv6 bgp neighbors
         continue;
       }
       // update source
       String updateSourceInterface = lpg.getUpdateSource();
-      boolean ipv4 = lpg.getNeighborPrefix() != null;
-      Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
+      assert lpg.getNeighborPrefix() != null;
+      Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface);
 
       // Get default-originate generation or export policy
       String defaultOriginateGenerationMap = null;
@@ -1016,27 +990,19 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       // Generate import and export policies
       long localAs = firstNonNull(lpg.getLocalAs(), proc.getProcnum());
       String peerImportPolicyName = generateBgpImportPolicy(lpg, localAs, vrfName, c);
-      generateBgpExportPolicy(lpg, localAs, vrfName, ipv4, c);
+      generateBgpExportPolicy(lpg, localAs, vrfName, c);
 
       // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;
-      GeneratedRoute6.Builder defaultRoute6;
       if (lpg.getDefaultOriginate()) {
         defaultRoute = GeneratedRoute.builder();
         defaultRoute.setNetwork(Prefix.ZERO);
         defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
-        defaultRoute6 = new GeneratedRoute6.Builder();
-        defaultRoute6.setNetwork(Prefix6.ZERO);
-        defaultRoute6.setAdmin(MAX_ADMINISTRATIVE_COST);
 
         if (defaultOriginateGenerationMap != null
             && c.getRoutingPolicies().containsKey(defaultOriginateGenerationMap)) {
           // originate contingent on generation policy
-          if (ipv4) {
-            defaultRoute.setGenerationPolicy(defaultOriginateGenerationMap);
-          } else {
-            defaultRoute6.setGenerationPolicy(defaultOriginateGenerationMap);
-          }
+          defaultRoute.setGenerationPolicy(defaultOriginateGenerationMap);
         }
       }
 
@@ -1956,12 +1922,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
-    // convert ipv6 prefix lists to route6 filter lists
-    for (Prefix6List prefixList : _prefix6Lists.values()) {
-      Route6FilterList newRouteFilterList = CiscoXrConversions.toRoute6FilterList(prefixList);
-      c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
-    }
-
     // inherit OSPF settings before calling getAclsUsedForRouting
     _vrfs.values().stream()
         .flatMap(vrf -> vrf.getOspfProcesses().values().stream())
@@ -1997,12 +1957,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                             name,
                             CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription(),
                             null)));
-
-    // convert IPv6 access lists to ipv6 access lists route6 filter lists
-    for (Ipv6AccessList eaList : _ipv6Acls.values()) {
-      Ip6AccessList ipaList = CiscoXrConversions.toIp6AccessList(eaList);
-      c.getIp6AccessLists().put(ipaList.getName(), ipaList);
-    }
 
     // convert RoutePolicy to RoutingPolicy
     for (RoutePolicy routePolicy : _routePolicies.values()) {

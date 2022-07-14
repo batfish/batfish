@@ -58,7 +58,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHelloTime;
@@ -253,8 +252,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
-import org.batfish.datamodel.Route6FilterLine;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -286,7 +283,6 @@ import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
-import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.matchers.VniMatchers;
@@ -5061,14 +5057,6 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpv6AccessListConversion() throws IOException {
-    Configuration c = parseConfig("nxos_ipv6_access_list");
-
-    assertThat(c.getIp6AccessLists(), hasKeys("v6acl1"));
-    // TODO: convert lines
-  }
-
-  @Test
   public void testIpv6AccessListExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ipv6_access_list");
 
@@ -5124,69 +5112,6 @@ public final class CiscoNxosGrammarTest {
   public void testIpv6RouteConversion() throws IOException {
     parseConfig("ipv6_route");
     // TODO: convert lines
-  }
-
-  @Test
-  public void testIpv6PrefixListConversion() throws IOException {
-    String hostname = "nxos_ipv6_prefix_list";
-    Configuration c = parseConfig(hostname);
-
-    assertThat(c, hasRoute6FilterLists(hasKeys("pl_empty", "pl_test", "pl_range")));
-    {
-      Route6FilterList r = c.getRoute6FilterLists().get("pl_empty");
-      assertThat(r, Route6FilterListMatchers.hasLines(empty()));
-    }
-    {
-      Route6FilterList r = c.getRoute6FilterLists().get("pl_test");
-      Iterator<Route6FilterLine> lines = r.getLines().iterator();
-      Route6FilterLine line;
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10::3:0/120")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10::1:0/120")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.DENY));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10::2:0/120")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10::4:0/120")));
-    }
-    {
-      Route6FilterList r = c.getRoute6FilterLists().get("pl_range");
-      Iterator<Route6FilterLine> lines = r.getLines().iterator();
-      Route6FilterLine line;
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(112, Prefix6.MAX_PREFIX_LENGTH)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(SubRange.singleton(120)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(104, Prefix6.MAX_PREFIX_LENGTH)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(116, 120)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(112, 120)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-    }
   }
 
   @Test

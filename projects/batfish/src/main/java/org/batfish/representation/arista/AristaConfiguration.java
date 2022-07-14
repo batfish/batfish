@@ -114,7 +114,6 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -132,7 +131,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -2229,12 +2227,6 @@ public final class AristaConfiguration extends VendorConfiguration {
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
-    // convert ipv6 prefix lists to route6 filter lists
-    for (Prefix6List prefixList : _prefix6Lists.values()) {
-      Route6FilterList newRouteFilterList = Conversions.toRoute6FilterList(prefixList);
-      c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
-    }
-
     // convert standard/extended access lists to access lists or route filter
     // lists
     for (StandardAccessList saList : _standardAccessLists.values()) {
@@ -2252,26 +2244,6 @@ public final class AristaConfiguration extends VendorConfiguration {
       }
       IpAccessList ipaList = toIpAccessList(eaList, _filename);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
-    }
-
-    // convert standard/extended ipv6 access lists to ipv6 access lists or
-    // route6 filter
-    // lists
-    for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
-      if (isAclUsedForRoutingv6(saList.getName())) {
-        Route6FilterList rfList = Conversions.toRoute6FilterList(saList);
-        c.getRoute6FilterLists().put(rfList.getName(), rfList);
-      }
-      c.getIp6AccessLists()
-          .put(saList.getName(), Conversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
-    }
-    for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
-      if (isAclUsedForRoutingv6(eaList.getName())) {
-        Route6FilterList rfList = Conversions.toRoute6FilterList(eaList);
-        c.getRoute6FilterLists().put(rfList.getName(), rfList);
-      }
-      Ip6AccessList ipaList = Conversions.toIp6AccessList(eaList);
-      c.getIp6AccessLists().put(ipaList.getName(), ipaList);
     }
 
     // TODO: convert route maps that are used for PBR to PacketPolicies

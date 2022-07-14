@@ -2,14 +2,16 @@ package org.batfish.representation.cisco_xr;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetNextHop extends RoutePolicySetStatement {
 
-  private boolean _destinationVrf;
+  private static final Comment UNSUPPORTED = new Comment("(unsupported next-hop expression)");
+  private final boolean _destinationVrf;
 
-  private RoutePolicyNextHop _nextHop;
+  private final RoutePolicyNextHop _nextHop;
 
   public RoutePolicySetNextHop(RoutePolicyNextHop nextHop, boolean destinationVrf) {
     _nextHop = nextHop;
@@ -26,6 +28,6 @@ public class RoutePolicySetNextHop extends RoutePolicySetStatement {
 
   @Override
   protected Statement toSetStatement(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    return new SetNextHop(_nextHop.toNextHopExpr(cc, c, w));
+    return _nextHop.toNextHopExpr(cc, c, w).<Statement>map(SetNextHop::new).orElse(UNSUPPORTED);
   }
 }

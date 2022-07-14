@@ -599,7 +599,7 @@ public final class CumulusConversions {
       peerExportPolicy.addStatement(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(generatedBgpDefaultRouteExportPolicyName(true)),
+              new CallExpr(generatedBgpDefaultRouteExportPolicyName()),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
 
@@ -624,7 +624,7 @@ public final class CumulusConversions {
    * the same across BGP processes, so only one is created for each configuration.
    */
   private static void initBgpDefaultRouteExportPolicy(Configuration c) {
-    String policyName = generatedBgpDefaultRouteExportPolicyName(true);
+    String policyName = generatedBgpDefaultRouteExportPolicyName();
     if (c.getRoutingPolicies().containsKey(policyName)) {
       return;
     }
