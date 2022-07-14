@@ -1,0 +1,10 @@
+! boot system flash:/EOS-4.19.1F.swi
+!
+hostname eos-mlag-peer-address-heartbeat-vrf
+!
+mlag configuration
+  domain-id MLAG_DOMAIN_ID
+  peer-address heartbeat 1.1.1.4 vrf management
+!
+interface Port-Channel1
+  mlag 5

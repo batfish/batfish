@@ -19,7 +19,21 @@ eos_mlag_local_interface
 
 eos_mlag_peer_address
 :
-   PEER_ADDRESS HEARTBEAT? ip = IP_ADDRESS NEWLINE
+   PEER_ADDRESS
+   (
+     eos_mpa_ip
+     | eos_mpa_heartbeat
+   )
+;
+
+eos_mpa_ip
+:
+   ip = IP_ADDRESS NEWLINE
+;
+
+eos_mpa_heartbeat
+:
+   HEARTBEAT ip = IP_ADDRESS (VRF vrf_name)? NEWLINE
 ;
 
 eos_mlag_peer_link
