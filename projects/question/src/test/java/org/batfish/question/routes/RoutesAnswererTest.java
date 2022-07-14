@@ -67,6 +67,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -429,10 +430,10 @@ public class RoutesAnswererTest {
             COL_DELTA_PREFIX + COL_NEXT_HOP,
             COL_BASE_PREFIX + COL_NEXT_HOP_IP,
             COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
-            COL_BASE_PREFIX + COL_PROTOCOL,
-            COL_DELTA_PREFIX + COL_PROTOCOL,
             COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE,
             COL_DELTA_PREFIX + COL_NEXT_HOP_INTERFACE,
+            COL_BASE_PREFIX + COL_PROTOCOL,
+            COL_DELTA_PREFIX + COL_PROTOCOL,
             COL_BASE_PREFIX + COL_METRIC,
             COL_DELTA_PREFIX + COL_METRIC,
             COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
@@ -493,10 +494,14 @@ public class RoutesAnswererTest {
         COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
         COL_BASE_PREFIX + COL_ORIGIN_TYPE,
         COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
+        COL_BASE_PREFIX + COL_ORIGINATOR_ID,
+        COL_DELTA_PREFIX + COL_ORIGINATOR_ID,
         COL_BASE_PREFIX + COL_RECEIVED_FROM_IP,
         COL_DELTA_PREFIX + COL_RECEIVED_FROM_IP,
         COL_BASE_PREFIX + COL_PATH_ID,
         COL_DELTA_PREFIX + COL_PATH_ID,
+        COL_BASE_PREFIX + COL_CLUSTER_LIST,
+        COL_DELTA_PREFIX + COL_CLUSTER_LIST,
         COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
         COL_DELTA_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
         COL_BASE_PREFIX + COL_WEIGHT,
@@ -530,10 +535,14 @@ public class RoutesAnswererTest {
         Schema.STRING,
         Schema.STRING,
         Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
         Schema.IP,
         Schema.IP,
         Schema.INTEGER,
         Schema.INTEGER,
+        Schema.list(Schema.LONG),
+        Schema.list(Schema.LONG),
         Schema.STRING,
         Schema.STRING,
         Schema.INTEGER,
@@ -553,6 +562,85 @@ public class RoutesAnswererTest {
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         equalTo(schemaBuilderList.build()));
+  }
+
+  @Test
+  public void testSameColumnsDiffAndNonDiff() {
+    List<String> nonDiffColumns =
+        getTableMetadata(RibProtocol.MAIN).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+    List<String> diffColumns =
+        getDiffTableMetadata(RibProtocol.MAIN).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+
+    ImmutableList.Builder<String> expectedNonDiffColumns = ImmutableList.builder();
+    ImmutableList.Builder<String> expectedDiffColumns = ImmutableList.builder();
+
+    // Key columns are not diffed; should be identical in both tables.
+    List<String> keyColumns = ImmutableList.of(COL_NODE, COL_VRF_NAME, COL_NETWORK);
+    expectedNonDiffColumns.addAll(keyColumns);
+    expectedDiffColumns.addAll(keyColumns);
+
+    // Only differential results have a route entry presence column.
+    expectedDiffColumns.add(COL_ROUTE_ENTRY_PRESENCE);
+
+    // After key columns, all columns in the non-differential result should correspond to two
+    // columns in the differential result (snapshot and reference).
+    IntStream.range(keyColumns.size(), nonDiffColumns.size())
+        .mapToObj(nonDiffColumns::get)
+        .forEach(
+            c -> {
+              expectedNonDiffColumns.add(c);
+              expectedDiffColumns.add(COL_BASE_PREFIX + c);
+              expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+            });
+
+    assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
+    assertThat(diffColumns, equalTo(expectedDiffColumns.build()));
+  }
+
+  @Test
+  public void testSameColumnsDiffAndNonDiffBgp() {
+    List<String> nonDiffColumns =
+        getTableMetadata(RibProtocol.BGP).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+    List<String> diffColumns =
+        getDiffTableMetadata(RibProtocol.BGP).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+
+    ImmutableList.Builder<String> expectedNonDiffColumns = ImmutableList.builder();
+    ImmutableList.Builder<String> expectedDiffColumns = ImmutableList.builder();
+
+    // Key columns are not diffed; should be identical in both tables.
+    List<String> keyColumns = ImmutableList.of(COL_NODE, COL_VRF_NAME, COL_NETWORK);
+    expectedNonDiffColumns.addAll(keyColumns);
+    expectedDiffColumns.addAll(keyColumns);
+
+    // Only differential results have a route entry presence column.
+    expectedDiffColumns.add(COL_ROUTE_ENTRY_PRESENCE);
+
+    // After key columns, all columns in the non-differential result should correspond to two
+    // columns in the differential result (snapshot and reference).
+    // One exception: next hop interface is only present in non-differential for backwards
+    // compatibility, and was never added to differential BGP routes.
+    Set<String> nonDifferentialOnly = ImmutableSet.of(COL_NEXT_HOP_INTERFACE);
+    IntStream.range(keyColumns.size(), nonDiffColumns.size())
+        .mapToObj(nonDiffColumns::get)
+        .forEach(
+            c -> {
+              expectedNonDiffColumns.add(c);
+              if (!nonDifferentialOnly.contains(c)) {
+                expectedDiffColumns.add(COL_BASE_PREFIX + c);
+                expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+              }
+            });
+
+    assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
+    assertThat(diffColumns, equalTo(expectedDiffColumns.build()));
   }
 
   @Test
