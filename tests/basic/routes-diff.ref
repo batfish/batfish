@@ -60,20 +60,6 @@
           "schema" : "Ip"
         },
         {
-          "description" : "Route's Protocol",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Snapshot_Protocol",
-          "schema" : "String"
-        },
-        {
-          "description" : "Route's Protocol",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Reference_Protocol",
-          "schema" : "String"
-        },
-        {
           "description" : "Route's Next Hop Interface",
           "isKey" : false,
           "isValue" : true,
@@ -85,6 +71,20 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Reference_Next_Hop_Interface",
+          "schema" : "String"
+        },
+        {
+          "description" : "Route's Protocol",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Snapshot_Protocol",
+          "schema" : "String"
+        },
+        {
+          "description" : "Route's Protocol",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Reference_Protocol",
           "schema" : "String"
         },
         {
