@@ -19,7 +19,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.errorprone:error_prone_annotations:2.13.1",
     "com.google.guava:guava:31.1-jre",
     maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "31.1-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
-    "com.google.re2j:re2j:1.6",
+    "com.google.re2j:re2j:1.7",
     "com.ibm.icu:icu4j:69.1",
     "commons-beanutils:commons-beanutils:1.9.4",
     "commons-cli:commons-cli:1.5.0",
