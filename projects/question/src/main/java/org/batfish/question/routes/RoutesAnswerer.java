@@ -18,7 +18,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multiset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -186,7 +185,7 @@ public class RoutesAnswerer extends Answerer {
                 new ConstantEnumSetSpecifier<>(ImmutableSet.of(BgpRouteStatus.BEST)))
             .resolve();
 
-    Multiset<Row> rows;
+    List<Row> rows;
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
         routesGroupedByKeyInBase;
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
@@ -217,7 +216,7 @@ public class RoutesAnswerer extends Answerer {
                 network,
                 protocolSpec);
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP);
+        rows = new ArrayList<>(getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP));
         break;
 
       case MAIN:
@@ -231,9 +230,10 @@ public class RoutesAnswerer extends Answerer {
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
 
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = getAbstractRouteRowsDiff(routesDiffRaw);
+        rows = new ArrayList<>(getAbstractRouteRowsDiff(routesDiffRaw));
     }
 
+    rows.sort(DIFF_COMPARATOR);
     diffAnswer.postProcessAnswer(_question, rows);
     return diffAnswer;
   }
@@ -260,6 +260,13 @@ public class RoutesAnswerer extends Answerer {
           .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance())
           .thenComparing(
               row -> row.getInteger(COL_PATH_ID), Comparator.nullsFirst(Comparator.naturalOrder()));
+
+  // TODO: Finer-grained sorting using diffed columns.
+  private static final Comparator<Row> DIFF_COMPARATOR =
+      Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
+          .thenComparing(row -> row.getString(COL_VRF_NAME))
+          .thenComparing(row -> row.getPrefix(COL_NETWORK))
+          .thenComparing(row -> row.getString(COL_ROUTE_ENTRY_PRESENCE));
 
   /** Generate the table metadata based on the {@code rib} we are pulling */
   @VisibleForTesting
