@@ -224,6 +224,16 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     return routesByNh;
   }
 
+  /**
+   * Given an initial delta resulting from applying superclass merge/remove that ignores the
+   * requirement for unique next hops among ECMP routes, post-process that delta into one that
+   * respects the unique next-hop constraint.
+   *
+   * @param initialDelta Superclass RibDelta resulting from merging or removing a route
+   * @param routesByNh Routes for the prefix of the initially merged/removed route that were
+   *     ECMP-best (ignoring next-hop) prior to the intiial action, grouped by next-hop and sorted
+   *     by best-path comparator.
+   */
   private @Nonnull RibDelta<R> uniqueNextHopPostProcessDelta(
       RibDelta<R> initialDelta, Map<NextHop, SortedSet<R>> routesByNh) {
     RibDelta.Builder<R> builder = RibDelta.builder();
@@ -235,25 +245,22 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
               NextHop nh = route.getNextHop();
               SortedSet<R> routesForNh =
                   routesByNh.computeIfAbsent(nh, n -> new TreeSet<>(this::bestPathComparator));
-              boolean wasEmpty = routesForNh.isEmpty();
               if (action.isWithdrawn()) {
                 // withdraw
                 assert routesForNh.contains(route);
                 R oldBest = routesForNh.last();
                 routesForNh.remove(route);
                 if (oldBest.equals(route)) {
-                  if (routesForNh.isEmpty()) {
-                    // the removed route was the last one, so the removal is the only action
-                    builder.from(action);
-                  } else {
+                  builder.from(action);
+                  if (!routesForNh.isEmpty()) {
                     // the removed route was best, so promote the new best
                     builder.from(action).add(routesForNh.last());
-                  }
+                  } // else the removed route was the last one, so the removal is the only action
                 } // else another route was better, so no change occurred
               } else {
                 // add
                 assert !routesForNh.contains(route);
-                if (wasEmpty) {
+                if (routesForNh.isEmpty()) {
                   routesForNh.add(route);
                   builder.from(action);
                   return;
