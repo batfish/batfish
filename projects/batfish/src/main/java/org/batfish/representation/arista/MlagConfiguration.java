@@ -11,6 +11,7 @@ public final class MlagConfiguration implements Serializable {
 
   @Nullable private Ip _peerAddress;
   @Nullable private Ip _peerAddressHeartbeat;
+  @Nullable private String _peerAddressHeartbeatVrfName;
   @Nullable private String _peerLink;
   @Nullable private String _localInterface;
   @Nullable private String _domainId;
@@ -35,6 +36,15 @@ public final class MlagConfiguration implements Serializable {
 
   public void setPeerAddressHeartbeat(Ip address) {
     _peerAddressHeartbeat = address;
+  }
+
+  @Nullable
+  public String getPeerAddressHeartbeatVrfName() {
+    return _peerAddressHeartbeatVrfName;
+  }
+
+  public void setPeerAddressHeartbeatVrf(String vrfName) {
+    _peerAddressHeartbeatVrfName = vrfName;
   }
 
   @Nullable

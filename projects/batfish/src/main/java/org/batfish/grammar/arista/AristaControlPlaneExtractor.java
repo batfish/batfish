@@ -381,10 +381,11 @@ import org.batfish.grammar.arista.AristaParser.Eos_bandwidth_specifierContext;
 import org.batfish.grammar.arista.AristaParser.Eos_bgp_communityContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_domainContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_local_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Eos_mlag_peer_addressContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_peer_linkContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_shutdownContext;
+import org.batfish.grammar.arista.AristaParser.Eos_mpa_heartbeatContext;
+import org.batfish.grammar.arista.AristaParser.Eos_mpa_ipContext;
 import org.batfish.grammar.arista.AristaParser.Eos_neighbor_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_aa_modifiersContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_aa_v4Context;
@@ -6112,11 +6113,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
-    if (ctx.HEARTBEAT() == null) {
-      _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
-    } else {
-      _configuration.getEosMlagConfiguration().setPeerAddressHeartbeat(toIp(ctx.ip));
+  public void exitEos_mpa_ip(Eos_mpa_ipContext ctx) {
+    _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitEos_mpa_heartbeat(Eos_mpa_heartbeatContext ctx) {
+    _configuration.getEosMlagConfiguration().setPeerAddressHeartbeat(toIp(ctx.ip));
+    if (ctx.vrf_name() != null) {
+      _configuration.getEosMlagConfiguration().setPeerAddressHeartbeatVrf(toString(ctx.vrf_name()));
     }
   }
 
