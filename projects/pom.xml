@@ -86,7 +86,7 @@
         <lz4.version>1.8.0</lz4.version>
         <mockito.version>3.3.3</mockito.version>
         <parboiled.version>1.3.1</parboiled.version>
-        <re2j.version>1.6</re2j.version>
+        <re2j.version>1.7</re2j.version>
         <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
 
         <!-- Transitive dependencies managed up for security reasons. -->
