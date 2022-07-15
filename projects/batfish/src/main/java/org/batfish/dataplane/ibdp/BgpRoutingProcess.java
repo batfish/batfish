@@ -81,6 +81,7 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
+import org.batfish.datamodel.ReceivedFrom;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route;
@@ -905,6 +906,47 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         continue;
       }
 
+      // Look for existing route with the incoming route's route's prefix, receivedFrom, and pathId.
+      // If it exists, remove it; this advertisement either withdraws or replaces it.
+      // Note that this must happen after transformBgpRouteOnImport because that function sets the
+      // correct receivedFrom on the incoming route builder.
+      ReceivedFrom receivedFrom = transformedIncomingRouteBuilder.getReceivedFrom();
+      assert receivedFrom != null; // guaranteed to be set in transformBgpRouteOnImport
+      Optional<Bgpv4Route> existingRoute =
+          _bgpv4Rib.getRoutes(remoteRoute.getNetwork()).stream()
+              .filter(
+                  r ->
+                      receivedFrom.equals(r.getReceivedFrom())
+                          && Objects.equals(r.getPathId(), remoteRoute.getPathId()))
+              .findFirst();
+      if (!existingRoute.isPresent()) {
+        existingRoute =
+            /*
+            TODO Avoid checking every backup route. Bgpv4Rib._backupRoutes is a Multimap<Prefix, Bgpv4Route>.
+                 Should be able to take advantage of that to get only the backup routes for current prefix.
+            */
+            _bgpv4Rib.getTypedBackupRoutes().stream()
+                .filter(
+                    r ->
+                        r.getNetwork().equals(remoteRoute.getNetwork())
+                            && receivedFrom.equals(r.getReceivedFrom())
+                            && Objects.equals(r.getPathId(), remoteRoute.getPathId()))
+                .findFirst();
+      }
+      existingRoute.ifPresent(
+          r -> {
+            processRemoveInEbgpOrIbgpRib(r, ourSessionProperties.isEbgp());
+            processRemoveInBgpRib(r);
+            if (useRibGroups) {
+              perNeighborDeltaForRibGroups.remove(annotateRoute(r), Reason.WITHDRAW);
+            }
+          });
+
+      if (remoteRouteAdvert.isWithdrawn()) {
+        // Already removed the withdrawn route, if it was present.
+        continue;
+      }
+
       // Process route through import policy, if one exists
       String importPolicyName = ourBgpConfig.getIpv4UnicastAddressFamily().getImportPolicy();
       boolean acceptIncoming = true;
@@ -938,27 +980,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       AnnotatedRoute<AbstractRoute> annotatedTransformedRoute =
           annotateRoute(transformedIncomingRoute);
 
-      if (remoteRouteAdvert.isWithdrawn()) {
-        // Remove from target and overall RIBs and update deltas
-        processRemoveInEbgpOrIbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
-        processRemoveInBgpRib(transformedIncomingRoute);
-        if (useRibGroups) {
-          perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
-        }
-      } else {
-        // Merge into target and overall RIBs and update deltas
-        processMergeInEbgpOrIbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
-        processMergeInBgpRib(transformedIncomingRoute);
-        if (useRibGroups) {
-          perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
-        }
-        _prefixTracer.installed(
-            transformedIncomingRoute.getNetwork(),
-            remoteConfigId.getHostname(),
-            ourSessionProperties.getRemoteIp(),
-            remoteConfigId.getVrfName(),
-            importPolicyName);
+      // Merge into target and overall RIBs and update deltas
+      processMergeInEbgpOrIbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
+      processMergeInBgpRib(transformedIncomingRoute);
+      if (useRibGroups) {
+        perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
       }
+      _prefixTracer.installed(
+          transformedIncomingRoute.getNetwork(),
+          remoteConfigId.getHostname(),
+          ourSessionProperties.getRemoteIp(),
+          remoteConfigId.getVrfName(),
+          importPolicyName);
     }
     // Apply rib groups if any
     if (useRibGroups) {

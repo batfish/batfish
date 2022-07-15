@@ -327,6 +327,10 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return _protocol;
     }
 
+    public @Nullable ReceivedFrom getReceivedFrom() {
+      return _receivedFrom;
+    }
+
     @Override
     @Nonnull
     protected abstract B getThis();
