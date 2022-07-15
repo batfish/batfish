@@ -216,7 +216,7 @@ public class RoutesAnswerer extends Answerer {
                 network,
                 protocolSpec);
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = new ArrayList<>(getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP));
+        rows = new ArrayList<>(getBgpRouteRowsDiff(routesDiffRaw));
         break;
 
       case MAIN:
@@ -668,6 +668,20 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ORIGINATOR_ID,
+                Schema.STRING,
+                "Route's Originator ID",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ORIGINATOR_ID,
+                Schema.STRING,
+                "Route's Originator ID",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
                 COL_BASE_PREFIX + COL_RECEIVED_FROM_IP,
                 Schema.IP,
                 "Route's Received from IP",
@@ -686,6 +700,20 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_PATH_ID, Schema.INTEGER, "Route's Received Path ID"));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_CLUSTER_LIST,
+                Schema.list(Schema.LONG),
+                "Route's Cluster List",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_CLUSTER_LIST,
+                Schema.list(Schema.LONG),
+                "Route's Cluster List",
+                Boolean.FALSE,
+                Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
@@ -747,20 +775,6 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_BASE_PREFIX + COL_PROTOCOL,
-                Schema.STRING,
-                "Route's Protocol",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_DELTA_PREFIX + COL_PROTOCOL,
-                Schema.STRING,
-                "Route's Protocol",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
                 COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE,
                 Schema.STRING,
                 "Route's Next Hop Interface",
@@ -771,6 +785,20 @@ public class RoutesAnswerer extends Answerer {
                 COL_DELTA_PREFIX + COL_NEXT_HOP_INTERFACE,
                 Schema.STRING,
                 "Route's Next Hop Interface",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_PROTOCOL,
+                Schema.STRING,
+                "Route's Protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_PROTOCOL,
+                Schema.STRING,
+                "Route's Protocol",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
