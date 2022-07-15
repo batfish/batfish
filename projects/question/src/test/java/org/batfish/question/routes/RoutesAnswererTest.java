@@ -637,7 +637,7 @@ public class RoutesAnswererTest {
     List<Ip> orderedIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
     List<Integer> orderedPathIds = ImmutableList.of(1, 2);
 
-    Row.RowBuilder rb = Row.builder(getTableMetadata(RibProtocol.BGP).toColumnMap());
+    Row.RowBuilder rb = Row.builder(getTableMetadata(RibProtocol.EVPN).toColumnMap());
     List<Row> orderedRows = new ArrayList<>();
     for (Node n : orderedNodes) {
       rb.put(COL_NODE, n);
