@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasWarnings;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
+import static org.batfish.question.routes.RoutesAnswerer.BGP_COMPARATOR;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_CLUSTER_LIST;
@@ -32,6 +33,9 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.COL_WEIGHT;
+import static org.batfish.question.routes.RoutesAnswerer.DIFF_COMPARATOR;
+import static org.batfish.question.routes.RoutesAnswerer.EVPN_COMPARATOR;
+import static org.batfish.question.routes.RoutesAnswerer.MAIN_RIB_COMPARATOR;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
@@ -54,6 +58,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Multiset;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -89,11 +94,14 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.Location;
@@ -545,6 +553,145 @@ public class RoutesAnswererTest {
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         equalTo(schemaBuilderList.build()));
+  }
+
+  @Test
+  public void testMainRibComparator() {
+    List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
+    List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
+    List<Prefix> orderedNetworks =
+        ImmutableList.of(Prefix.strict("1.1.1.0/24"), Prefix.strict("2.2.2.0/24"));
+    List<Ip> orderedIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+
+    Row.RowBuilder rb = Row.builder(getTableMetadata(RibProtocol.MAIN).toColumnMap());
+    List<Row> orderedRows = new ArrayList<>();
+    for (Node n : orderedNodes) {
+      rb.put(COL_NODE, n);
+      for (String vrf : orderedVrfs) {
+        rb.put(COL_VRF_NAME, vrf);
+        for (Prefix p : orderedNetworks) {
+          rb.put(COL_NETWORK, p);
+          for (Ip nhip : orderedIps) {
+            orderedRows.add(rb.put(COL_NEXT_HOP, NextHopIp.of(nhip)).build());
+          }
+        }
+      }
+    }
+    for (int i = 0; i < orderedRows.size(); i++) {
+      for (int j = 0; j < orderedRows.size(); j++) {
+        assertThat(
+            Integer.signum(MAIN_RIB_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
+  }
+
+  @Test
+  public void testBgpRibComparator() {
+    List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
+    List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
+    List<Prefix> orderedNetworks =
+        ImmutableList.of(Prefix.strict("1.1.1.0/24"), Prefix.strict("2.2.2.0/24"));
+    List<Ip> orderedIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+    List<Integer> orderedPathIds = ImmutableList.of(1, 2);
+
+    Row.RowBuilder rb = Row.builder(getTableMetadata(RibProtocol.BGP).toColumnMap());
+    List<Row> orderedRows = new ArrayList<>();
+    for (Node n : orderedNodes) {
+      rb.put(COL_NODE, n);
+      for (String vrf : orderedVrfs) {
+        rb.put(COL_VRF_NAME, vrf);
+        for (Prefix p : orderedNetworks) {
+          rb.put(COL_NETWORK, p);
+          for (Ip nhip : orderedIps) {
+            rb.put(COL_NEXT_HOP, NextHopIp.of(nhip));
+            for (Ip receivedFromIp : orderedIps) {
+              rb.put(COL_RECEIVED_FROM_IP, receivedFromIp);
+              for (int pathId : orderedPathIds) {
+                orderedRows.add(rb.put(COL_PATH_ID, pathId).build());
+              }
+            }
+          }
+        }
+      }
+    }
+    for (int i = 0; i < orderedRows.size(); i++) {
+      for (int j = 0; j < orderedRows.size(); j++) {
+        assertThat(
+            Integer.signum(BGP_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
+  }
+
+  @Test
+  public void testEvpnRibComparator() {
+    List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
+    List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
+    List<Prefix> orderedNetworks =
+        ImmutableList.of(Prefix.strict("1.1.1.0/24"), Prefix.strict("2.2.2.0/24"));
+    List<Ip> orderedIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+    List<Integer> orderedPathIds = ImmutableList.of(1, 2);
+
+    Row.RowBuilder rb = Row.builder(getTableMetadata(RibProtocol.EVPN).toColumnMap());
+    List<Row> orderedRows = new ArrayList<>();
+    for (Node n : orderedNodes) {
+      rb.put(COL_NODE, n);
+      for (String vrf : orderedVrfs) {
+        rb.put(COL_VRF_NAME, vrf);
+        for (Prefix p : orderedNetworks) {
+          rb.put(COL_NETWORK, p);
+          for (Ip nhip : orderedIps) {
+            rb.put(COL_NEXT_HOP, NextHopIp.of(nhip));
+            for (int pathId : orderedPathIds) {
+              orderedRows.add(rb.put(COL_PATH_ID, pathId).build());
+            }
+          }
+        }
+      }
+    }
+    for (int i = 0; i < orderedRows.size(); i++) {
+      for (int j = 0; j < orderedRows.size(); j++) {
+        assertThat(
+            Integer.signum(EVPN_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
+  }
+
+  @Test
+  public void testDiffComparator() {
+    List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
+    List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
+    List<Prefix> orderedNetworks =
+        ImmutableList.of(Prefix.strict("1.1.1.0/24"), Prefix.strict("2.2.2.0/24"));
+    List<RouteEntryPresenceStatus> orderedStatuses =
+        ImmutableList.of(
+            RouteEntryPresenceStatus.CHANGED, RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT);
+
+    // which RIB currently does not matter here because the comparator only relies on columns that
+    // all differential results include
+    Row.RowBuilder rb = Row.builder(getDiffTableMetadata(RibProtocol.MAIN).toColumnMap());
+    List<Row> orderedRows = new ArrayList<>();
+    for (Node n : orderedNodes) {
+      rb.put(COL_NODE, n);
+      for (String vrf : orderedVrfs) {
+        rb.put(COL_VRF_NAME, vrf);
+        for (Prefix p : orderedNetworks) {
+          rb.put(COL_NETWORK, p);
+          for (RouteEntryPresenceStatus status : orderedStatuses) {
+            orderedRows.add(rb.put(COL_ROUTE_ENTRY_PRESENCE, status).build());
+          }
+        }
+      }
+    }
+    for (int i = 0; i < orderedRows.size(); i++) {
+      for (int j = 0; j < orderedRows.size(); j++) {
+        assertThat(
+            Integer.signum(DIFF_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
   }
 
   /** Run through full pipeline (create question and answerer), */
