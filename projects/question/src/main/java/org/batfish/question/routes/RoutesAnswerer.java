@@ -238,13 +238,15 @@ public class RoutesAnswerer extends Answerer {
     return diffAnswer;
   }
 
-  private static final Comparator<Row> MAIN_RIB_COMPARATOR =
+  @VisibleForTesting
+  static final Comparator<Row> MAIN_RIB_COMPARATOR =
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
           .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance());
 
-  private static final Comparator<Row> BGP_COMPARATOR =
+  @VisibleForTesting
+  static final Comparator<Row> BGP_COMPARATOR =
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
@@ -253,7 +255,8 @@ public class RoutesAnswerer extends Answerer {
           .thenComparing(
               row -> row.getInteger(COL_PATH_ID), Comparator.nullsFirst(Comparator.naturalOrder()));
 
-  private static final Comparator<Row> EVPN_COMPARATOR =
+  @VisibleForTesting
+  static final Comparator<Row> EVPN_COMPARATOR =
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
@@ -262,7 +265,8 @@ public class RoutesAnswerer extends Answerer {
               row -> row.getInteger(COL_PATH_ID), Comparator.nullsFirst(Comparator.naturalOrder()));
 
   // TODO: Finer-grained sorting using diffed columns.
-  private static final Comparator<Row> DIFF_COMPARATOR =
+  @VisibleForTesting
+  static final Comparator<Row> DIFF_COMPARATOR =
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
