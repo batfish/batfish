@@ -518,10 +518,10 @@ public class RoutesAnswererUtil {
    * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for {@link Bgpv4Route}s
    * @return {@link Multiset} of {@link Row}s
    */
-  static Multiset<Row> getBgpRouteRowsDiff(
-      List<DiffRoutesOutput> diffRoutesList, RibProtocol ribProtocol) {
+  static Multiset<Row> getBgpRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
     Multiset<Row> rows = HashMultiset.create();
-    Map<String, ColumnMetadata> columnMetadataMap = getDiffTableMetadata(ribProtocol).toColumnMap();
+    Map<String, ColumnMetadata> columnMetadataMap =
+        getDiffTableMetadata(RibProtocol.BGP).toColumnMap();
     for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
       RouteRowKey routeRowKey = diffRoutesOutput.getRouteRowKey();
       String hostName = routeRowKey.getHostName();
@@ -672,6 +672,9 @@ public class RoutesAnswererUtil {
             prefix + COL_LOCAL_PREF,
             routeRowAttribute != null ? routeRowAttribute.getLocalPreference() : null)
         .put(
+            prefix + COL_CLUSTER_LIST,
+            routeRowAttribute != null ? routeRowAttribute.getClusterList() : null)
+        .put(
             prefix + COL_COMMUNITIES,
             routeRowAttribute != null ? routeRowAttribute.getCommunities() : null)
         .put(
@@ -680,12 +683,16 @@ public class RoutesAnswererUtil {
         .put(
             prefix + COL_ORIGIN_TYPE,
             routeRowAttribute != null ? routeRowAttribute.getOriginType() : null)
+        .put(
+            prefix + COL_ORIGINATOR_ID,
+            routeRowAttribute != null ? routeRowAttribute.getOriginatorIp() : null)
         .put(prefix + COL_TAG, routeRowAttribute != null ? routeRowAttribute.getTag() : null)
         .put(
             prefix + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
             routeRowAttribute != null && routeRowAttribute.getTunnelEncapsulationAttribute() != null
                 ? routeRowAttribute.getTunnelEncapsulationAttribute().toString()
                 : null)
+        .put(prefix + COL_WEIGHT, routeRowAttribute != null ? routeRowAttribute.getWeight() : null)
         .put(
             prefix + COL_STATUS,
             routeRowAttribute != null && routeRowAttribute.getStatus() != null
@@ -888,38 +895,32 @@ public class RoutesAnswererUtil {
                                                             route.getReceivedFrom()),
                                                         route.getPathId()),
                                                     k -> new TreeSet<>())
-                                                .add(
-                                                    RouteRowAttribute.builder()
-                                                        .setOriginProtocol(
-                                                            route.getSrcProtocol() != null
-                                                                ? route
-                                                                    .getSrcProtocol()
-                                                                    .protocolName()
-                                                                : null)
-                                                        .setAdminDistance(
-                                                            route.getAdministrativeCost())
-                                                        .setMetric(route.getMetric())
-                                                        .setAsPath(route.getAsPath())
-                                                        .setLocalPreference(
-                                                            route.getLocalPreference())
-                                                        .setCommunities(
-                                                            route
-                                                                .getCommunities()
-                                                                .getCommunities()
-                                                                .stream()
-                                                                .map(Community::toString)
-                                                                .collect(toImmutableList()))
-                                                        .setOriginType(route.getOriginType())
-                                                        .setTag(
-                                                            route.getTag() == Route.UNSET_ROUTE_TAG
-                                                                ? null
-                                                                : route.getTag())
-                                                        .setTunnelEncapsulationAttribute(
-                                                            route.getTunnelEncapsulationAttribute())
-                                                        .setStatus(status)
-                                                        .build())))));
+                                                .add(bgpRouteToRowAttribute(route, status))))));
 
     return routesGroups;
+  }
+
+  @VisibleForTesting
+  static RouteRowAttribute bgpRouteToRowAttribute(Bgpv4Route route, BgpRouteStatus status) {
+    return RouteRowAttribute.builder()
+        .setOriginProtocol(
+            route.getSrcProtocol() != null ? route.getSrcProtocol().protocolName() : null)
+        .setMetric(route.getMetric())
+        .setAsPath(route.getAsPath())
+        .setLocalPreference(route.getLocalPreference())
+        .setClusterList(route.getClusterList())
+        .setCommunities(
+            route.getCommunities().getCommunities().stream()
+                .map(Community::toString)
+                .collect(toImmutableList()))
+        .setOriginMechanism(route.getOriginMechanism())
+        .setOriginType(route.getOriginType())
+        .setOriginatorIp(route.getOriginatorIp())
+        .setTag(route.getTag() == Route.UNSET_ROUTE_TAG ? null : route.getTag())
+        .setTunnelEncapsulationAttribute(route.getTunnelEncapsulationAttribute())
+        .setWeight(route.getWeight())
+        .setStatus(status)
+        .build();
   }
 
   /**

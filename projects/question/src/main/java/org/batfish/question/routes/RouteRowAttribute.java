@@ -1,20 +1,24 @@
 package org.batfish.question.routes;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsLast;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Route;
@@ -30,12 +34,14 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Nullable private final String _nextHopInterface;
   @Nullable private final AsPath _asPath;
   @Nullable private final Integer _adminDistance;
+  @Nonnull private final Set<Long> _clusterList;
   @Nonnull private final List<String> _communities;
   @Nullable private final Long _localPreference;
   @Nullable private final Long _metric;
   @Nullable private final String _originProtocol;
   @Nullable private final OriginMechanism _originMechanism;
   @Nullable private final OriginType _originType;
+  @Nullable private final Ip _originatorIp;
   @Nullable private final Long _tag;
   @Nullable private final BgpRouteStatus _status;
   @Nullable private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
@@ -47,10 +53,12 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Long metric,
       AsPath asPath,
       Long localPreference,
+      Set<Long> clusterList,
       List<String> communities,
       String originalProtocol,
       OriginMechanism originMechanism,
       OriginType originType,
+      Ip originatorIp,
       Long tag,
       BgpRouteStatus status,
       @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
@@ -60,10 +68,12 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _metric = metric;
     _asPath = asPath;
     _localPreference = localPreference;
+    _clusterList = firstNonNull(clusterList, ImmutableSet.of());
     _communities = firstNonNull(communities, ImmutableList.of());
     _originProtocol = originalProtocol;
     _originMechanism = originMechanism;
     _originType = originType;
+    _originatorIp = originatorIp;
     _tag = tag;
     _status = status;
     _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
@@ -91,6 +101,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nonnull
+  public Set<Long> getClusterList() {
+    return _clusterList;
+  }
+
+  @Nonnull
   public List<String> getCommunities() {
     return _communities;
   }
@@ -113,6 +128,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Nullable
   public OriginType getOriginType() {
     return _originType;
+  }
+
+  @Nullable
+  public Ip getOriginatorIp() {
+    return _originatorIp;
   }
 
   @Nullable
@@ -149,11 +169,13 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           .thenComparing(
               RouteRowAttribute::getOriginMechanism, nullsLast(OriginMechanism::compareTo))
           .thenComparing(RouteRowAttribute::getOriginType, nullsLast(OriginType::compareTo))
+          .thenComparing(RouteRowAttribute::getOriginatorIp, nullsLast(Ip::compareTo))
           .thenComparing(RouteRowAttribute::getTag, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getStatus, nullsLast(BgpRouteStatus::compareTo))
           .thenComparing(
-              routeRowAttribute -> routeRowAttribute.getCommunities().toString(),
-              nullsLast(String::compareTo))
+              routeRowAttribute -> routeRowAttribute.getClusterList().toString(), String::compareTo)
+          .thenComparing(
+              routeRowAttribute -> routeRowAttribute.getCommunities().toString(), String::compareTo)
           .thenComparing(
               routeRowAttribute ->
                   Optional.ofNullable(routeRowAttribute.getTunnelEncapsulationAttribute())
@@ -181,10 +203,12 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         && Objects.equals(_metric, that._metric)
         && Objects.equals(_asPath, that._asPath)
         && Objects.equals(_localPreference, that._localPreference)
-        && Objects.equals(_communities, that._communities)
+        && _clusterList.equals(that._clusterList)
+        && _communities.equals(that._communities)
         && Objects.equals(_originProtocol, that._originProtocol)
         && Objects.equals(_originMechanism, that._originMechanism)
         && Objects.equals(_originType, that._originType)
+        && Objects.equals(_originatorIp, that._originatorIp)
         && Objects.equals(_tag, that._tag)
         && Objects.equals(_status, that._status)
         && Objects.equals(_tunnelEncapsulationAttribute, that._tunnelEncapsulationAttribute)
@@ -199,13 +223,38 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _metric,
         _asPath,
         _localPreference,
+        _clusterList,
         _communities,
+        _originMechanism,
         _originProtocol,
         _originType == null ? 0 : _originType.ordinal(),
+        _originatorIp,
         _tag,
         _status == null ? 0 : _status.ordinal(),
         _tunnelEncapsulationAttribute,
         _weight);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .omitNullValues()
+        .add("nextHopInterface", _nextHopInterface)
+        .add("adminDistance", _adminDistance)
+        .add("asPath", _asPath)
+        .add("clusterList", _clusterList)
+        .add("communities", _communities)
+        .add("localPreference", _localPreference)
+        .add("metric", _metric)
+        .add("originMechanism", _originMechanism)
+        .add("originProtocol", _originProtocol)
+        .add("originType", _originType)
+        .add("originatorIp", _originatorIp)
+        .add("tag", _tag)
+        .add("tunnelEncapsulationAttribute", _tunnelEncapsulationAttribute)
+        .add("weight", _weight)
+        .add("status", _status)
+        .toString();
   }
 
   /** Builder for {@link RouteRowAttribute} */
@@ -215,10 +264,12 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     @Nullable private Long _metric;
     @Nullable private AsPath _asPath;
     @Nullable private Long _localPreference;
+    @Nullable private Set<Long> _clusterList;
     @Nullable private List<String> _communities;
     @Nullable private String _originProtocol;
     @Nullable private OriginMechanism _originMechanism;
     @Nullable private OriginType _originType;
+    @Nullable private Ip _originatorIp;
     @Nullable private Long _tag;
     @Nullable private BgpRouteStatus _status;
     @Nullable private TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
@@ -234,10 +285,12 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _metric,
           _asPath,
           _localPreference,
+          _clusterList,
           _communities,
           _originProtocol,
           _originMechanism,
           _originType,
+          _originatorIp,
           _tag,
           _status,
           _tunnelEncapsulationAttribute,
@@ -264,6 +317,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
+    public Builder setClusterList(Set<Long> clusterList) {
+      _clusterList = clusterList;
+      return this;
+    }
+
     public Builder setCommunities(List<String> communities) {
       _communities = communities;
       return this;
@@ -286,6 +344,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setOriginType(OriginType originType) {
       _originType = originType;
+      return this;
+    }
+
+    public Builder setOriginatorIp(Ip originatorIp) {
+      _originatorIp = originatorIp;
       return this;
     }
 
