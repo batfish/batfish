@@ -617,10 +617,6 @@ public class RoutesAnswererTest {
     }
     for (int i = 0; i < orderedRows.size(); i++) {
       for (int j = 0; j < orderedRows.size(); j++) {
-        if (Integer.signum(BGP_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j))))
-            != Integer.signum(i - j)) {
-          System.out.println("no");
-        }
         assertThat(
             Integer.signum(BGP_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
             equalTo(Integer.signum(i - j)));
