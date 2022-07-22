@@ -13,3 +13,10 @@ delete rulebase security rules RULE1 source addr1
 # set new source
 # RULE1 should only have source as addr2, and only addr2 should be referenced. addr1 should be unused.
 set rulebase security rules RULE1 source addr2
+#
+# Delete an entire rule
+set rulebase security rules RULE2 from any
+set rulebase security rules RULE2 to [ z1 z2 ]
+set rulebase security rules RULE2 source addr1
+set rulebase security rules RULE2 destination any
+delete rulebase security rules RULE2

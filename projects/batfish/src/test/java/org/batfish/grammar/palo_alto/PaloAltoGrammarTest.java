@@ -208,6 +208,7 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
@@ -4173,15 +4174,12 @@ public final class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
+    InsertOrderedMap<String, SecurityRule> securityRules =
+        vsConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules();
+    // The deleted rule should not show up
+    assertThat(securityRules.keySet(), contains("RULE1"));
     assertThat(
-        vsConfig
-            .getVirtualSystems()
-            .get(DEFAULT_VSYS_NAME)
-            .getRulebase()
-            .getSecurityRules()
-            .get("RULE1")
-            .getSource(),
-        contains(new RuleEndpoint(REFERENCE, "addr2")));
+        securityRules.get("RULE1").getSource(), contains(new RuleEndpoint(REFERENCE, "addr2")));
     String filename = "configs/" + hostname;
     assertThat(
         ccae,
