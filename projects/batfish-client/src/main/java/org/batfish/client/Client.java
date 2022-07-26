@@ -799,6 +799,17 @@ public class Client extends AbstractClient implements IClient {
     this(new Settings(args));
   }
 
+  /** Zip {@code srcFolder} and write to {@code destZipFile} */
+  private static void zipFiles(Path srcFolder, Path destZipFile) {
+    try (OutputStream fos = Files.newOutputStream(destZipFile)) {
+      ZipUtility.zipToStream(srcFolder, fos);
+    } catch (Exception e) {
+      // Catch Throwable in case of things like AccessError
+      throw new BatfishException(
+          "Could not zip folder: '" + srcFolder + "' into: '" + destZipFile + "'", e);
+    }
+  }
+
   private boolean addBatfishOption(String[] words, List<String> options, List<String> parameters) {
     if (!isValidArgument(
         options, parameters, 0, 1, Integer.MAX_VALUE, Command.ADD_BATFISH_OPTION)) {
@@ -2225,7 +2236,7 @@ public class Client extends AbstractClient implements IClient {
     boolean createZip = Files.isDirectory(initialUploadTarget);
     if (createZip) {
       uploadTarget = CommonUtil.createTempFile("testrig", "zip");
-      ZipUtility.zipFiles(initialUploadTarget.toAbsolutePath(), uploadTarget.toAbsolutePath());
+      zipFiles(initialUploadTarget.toAbsolutePath(), uploadTarget.toAbsolutePath());
     }
     try {
       boolean result =
