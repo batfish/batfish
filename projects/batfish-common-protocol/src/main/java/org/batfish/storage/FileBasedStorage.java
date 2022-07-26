@@ -19,6 +19,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.google.common.io.MoreFiles;
 import com.google.errorprone.annotations.MustBeClosed;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -171,6 +172,17 @@ public class FileBasedStorage implements StorageProvider {
    */
   public FileBasedStorage(Path baseDir, BatfishLogger logger) {
     this(baseDir, logger, (a, b) -> new AtomicInteger());
+  }
+
+  /** Zip {@code srcFolder} in memory and return input stream from which zip may be read. */
+  private static @MustBeClosed @Nonnull InputStream zipFilesToInputStream(Path srcFolder) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try {
+      ZipUtility.zipToStream(srcFolder, baos);
+    } catch (Exception e) {
+      throw new BatfishException("Could not zip folder: '" + srcFolder + "'", e);
+    }
+    return new ByteArrayInputStream(baos.toByteArray());
   }
 
   /**
@@ -952,7 +964,7 @@ public class FileBasedStorage implements StorageProvider {
       throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
     return Files.isDirectory(objectPath)
-        ? ZipUtility.zipFilesToInputStream(objectPath)
+        ? zipFilesToInputStream(objectPath)
         : Files.newInputStream(objectPath);
   }
 
