@@ -1125,7 +1125,8 @@ public final class WorkMgrTest {
 
   private byte[] createSnapshotZip(String snapshot, String fileName, String fileContents)
       throws IOException {
-    Path zipPath = WorkMgrTestUtils.createSnapshotZip(snapshot, fileName, fileContents, _folder);
+    Path zipPath =
+        WorkMgrTestUtils.createSingleFileSnapshotZip(snapshot, fileName, fileContents, _folder);
     return FileUtils.readFileToByteArray(zipPath.toFile());
   }
 
