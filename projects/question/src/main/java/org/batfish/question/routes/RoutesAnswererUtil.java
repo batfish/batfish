@@ -645,13 +645,6 @@ public class RoutesAnswererUtil {
      */
     public void populateSecondaryKeyAttrs(
         RouteRowSecondaryKey routeRowSecondaryKey, RowBuilder rowBuilder, String columnPrefix) {
-      // First populate attributes shared by all types of secondary key.
-      // Don't populate next hop IP column here because it is not in the differential EVPN table
-      // (it is only in the other tables for backwards compatibility).
-      rowBuilder
-          .put(columnPrefix + COL_NEXT_HOP, routeRowSecondaryKey.getNextHop())
-          .put(columnPrefix + COL_PROTOCOL, routeRowSecondaryKey.getProtocol());
-      // Now let visitor fill in route-type-specific columns
       _rowBuilder = rowBuilder;
       _columnPrefix = columnPrefix;
       routeRowSecondaryKey.accept(this);
@@ -660,10 +653,13 @@ public class RoutesAnswererUtil {
     @Override
     public Void visitBgpRouteRowSecondaryKey(BgpRouteRowSecondaryKey bgpRouteRowSecondaryKey) {
       _rowBuilder
+          .put(_columnPrefix + COL_NEXT_HOP, bgpRouteRowSecondaryKey.getNextHop())
           .put(
+              // included for backwards compatibility
               _columnPrefix + COL_NEXT_HOP_IP,
               LegacyNextHops.getNextHopIp(bgpRouteRowSecondaryKey.getNextHop())
                   .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+          .put(_columnPrefix + COL_PROTOCOL, bgpRouteRowSecondaryKey.getProtocol())
           .put(_columnPrefix + COL_RECEIVED_FROM_IP, bgpRouteRowSecondaryKey.getReceivedFromIp())
           .put(_columnPrefix + COL_PATH_ID, bgpRouteRowSecondaryKey.getPathId());
       return null;
@@ -672,6 +668,8 @@ public class RoutesAnswererUtil {
     @Override
     public Void visitEvpnRouteRowSecondaryKey(EvpnRouteRowSecondaryKey evpnRouteRowSecondaryKey) {
       _rowBuilder
+          .put(_columnPrefix + COL_NEXT_HOP, evpnRouteRowSecondaryKey.getNextHop())
+          .put(_columnPrefix + COL_PROTOCOL, evpnRouteRowSecondaryKey.getProtocol())
           .put(
               _columnPrefix + COL_ROUTE_DISTINGUISHER,
               evpnRouteRowSecondaryKey.getRouteDistinguisher())
@@ -682,10 +680,14 @@ public class RoutesAnswererUtil {
     @Override
     public Void visitMainRibRouteRowSecondaryKey(
         MainRibRouteRowSecondaryKey mainRibRouteRowSecondaryKey) {
-      _rowBuilder.put(
-          _columnPrefix + COL_NEXT_HOP_IP,
-          LegacyNextHops.getNextHopIp(mainRibRouteRowSecondaryKey.getNextHop())
-              .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP));
+      _rowBuilder
+          .put(_columnPrefix + COL_NEXT_HOP, mainRibRouteRowSecondaryKey.getNextHop())
+          .put(
+              // included for backwards compatibility
+              _columnPrefix + COL_NEXT_HOP_IP,
+              LegacyNextHops.getNextHopIp(mainRibRouteRowSecondaryKey.getNextHop())
+                  .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+          .put(_columnPrefix + COL_PROTOCOL, mainRibRouteRowSecondaryKey.getProtocol());
       return null;
     }
   }
