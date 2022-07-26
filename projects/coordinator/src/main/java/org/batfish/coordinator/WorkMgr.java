@@ -1751,6 +1751,15 @@ public class WorkMgr extends AbstractCoordinator {
     Map<Row, Integer> rowIds = Maps.newIdentityHashMap();
     CommonUtil.forEachWithIndex(rawTable.getRowsList(), (i, row) -> rowIds.put(row, i));
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
+
+    for (String c : options.getColumns()) {
+      if (!rawColumnMap.containsKey(c)) {
+        Collection<String> sortedColumnNames = new TreeSet<>(rawColumnMap.keySet());
+        throw new IllegalArgumentException(
+            String.format("Column %s is not in the answer: %s", c, sortedColumnNames));
+      }
+    }
+
     List<Row> filteredRows =
         rawTable.getRowsList().stream()
             .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)))
