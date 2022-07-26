@@ -75,7 +75,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGIN_TYPE = "Origin_Type";
   static final String COL_CLUSTER_LIST = "Cluster_List";
   static final String COL_ORIGINATOR_ID = "Originator_Id";
-  static final String COL_PATH_ID = "Received_Path_Id";
+  static final String COL_PATH_ID = "Received_Path_ID";
   static final String COL_RECEIVED_FROM_IP = "Received_From_IP";
   static final String COL_STATUS = "Status";
   static final String COL_TUNNEL_ENCAPSULATION_ATTRIBUTE = "Tunnel_Encapsulation_Attribute";
