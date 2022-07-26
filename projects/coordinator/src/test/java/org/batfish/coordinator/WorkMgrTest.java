@@ -1994,6 +1994,29 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testProcessAnswerTable2ProjectWrongColumn() {
+    TableMetadata metadata =
+        new TableMetadata(
+            ImmutableList.of(
+                // Also tests that the columns are sorted in error message.
+                new ColumnMetadata("zcol", Schema.INTEGER, "first column but lex last"),
+                new ColumnMetadata("col", Schema.INTEGER, "last column but lex first")));
+    TableAnswerElement table = new TableAnswerElement(metadata);
+    AnswerRowsOptions optionsProject =
+        new AnswerRowsOptions(
+            ImmutableSet.of("missing"),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    _thrown.expectMessage("Column missing is not in the answer: [col, zcol]");
+    _thrown.expect(IllegalArgumentException.class);
+    _manager.processAnswerTable2(table, optionsProject);
+  }
+
+  @Test
   public void testProcessAnswerTableUniqueRows() {
     String columnName = "val";
     TableAnswerElement table =
