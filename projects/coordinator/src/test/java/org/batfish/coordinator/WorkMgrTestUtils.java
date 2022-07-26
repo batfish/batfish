@@ -3,19 +3,22 @@ package org.batfish.coordinator;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -101,7 +104,7 @@ public final class WorkMgrTestUtils {
   public static void uploadTestSnapshot(
       String network, String snapshot, String fileName, String content, TemporaryFolder folder)
       throws IOException {
-    Path tmpSnapshotZip = createSnapshotZip(snapshot, fileName, content, folder);
+    Path tmpSnapshotZip = createSingleFileSnapshotZip(snapshot, fileName, content, folder);
     try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
       Main.getWorkMgr().uploadSnapshot(network, snapshot, inputStream);
     }
@@ -122,14 +125,21 @@ public final class WorkMgrTestUtils {
     return tmpSnapshotSrcDir;
   }
 
-  /** Creates a snapshot zip with the specified config and returns the path to that zip */
-  public static Path createSnapshotZip(
+  /** Creates a snapshot zip with the specified config and returns the path to that zip. */
+  public static Path createSingleFileSnapshotZip(
       String snapshot, String fileName, String content, TemporaryFolder folder) {
-    Path tmpSnapshotSrcDir = createSnapshot(snapshot, fileName, content, folder);
-
-    Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
-    ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
-    return tmpSnapshotZip;
+    Path snapshotZipPath = folder.getRoot().toPath().resolve(snapshot + ".zip");
+    try (FileOutputStream fos = new FileOutputStream(snapshotZipPath.toFile());
+        ZipOutputStream zos = new ZipOutputStream(fos)) {
+      String entryName =
+          String.format("%s/%s/%s", snapshot, BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName);
+      zos.putNextEntry(new ZipEntry(entryName));
+      zos.write(content.getBytes(StandardCharsets.UTF_8));
+      zos.closeEntry();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return snapshotZipPath;
   }
 
   public static void setupQuestionAndAnswer(
