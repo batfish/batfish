@@ -5599,7 +5599,11 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testPredefinedJunosApplicationsConverted() throws IOException {
     // conversion failure will cause an exception
-    parseConfig("pre-defined-junos-applications-converted");
+    String hostname = "pre-defined-junos-applications-converted";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae.getUndefinedReferences().get("configs/" + hostname), anEmptyMap());
   }
 
   @Test
