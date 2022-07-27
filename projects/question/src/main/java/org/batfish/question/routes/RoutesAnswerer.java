@@ -7,10 +7,12 @@ import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getEvpnRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getEvpnRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.groupEvpnRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -219,8 +221,31 @@ public class RoutesAnswerer extends Answerer {
         rows = new ArrayList<>(getBgpRouteRowsDiff(routesDiffRaw));
         break;
 
+      case EVPN:
+        dp = _batfish.loadDataPlane(snapshot);
+        routesGroupedByKeyInBase =
+            groupEvpnRoutes(
+                expandedBgpRouteStatuses.contains(BEST) ? dp.getEvpnRoutes() : null,
+                expandedBgpRouteStatuses.contains(BACKUP) ? dp.getEvpnBackupRoutes() : null,
+                matchingNodes,
+                vrfRegex,
+                network,
+                protocolSpec);
+
+        dp = _batfish.loadDataPlane(reference);
+        routesGroupedByKeyInDelta =
+            groupEvpnRoutes(
+                expandedBgpRouteStatuses.contains(BEST) ? dp.getEvpnRoutes() : null,
+                expandedBgpRouteStatuses.contains(BACKUP) ? dp.getEvpnBackupRoutes() : null,
+                matchingNodes,
+                vrfRegex,
+                network,
+                protocolSpec);
+        routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
+        rows = new ArrayList<>(getEvpnRouteRowsDiff(routesDiffRaw));
+        break;
+
       case MAIN:
-      default:
         dp = _batfish.loadDataPlane(snapshot);
         routesGroupedByKeyInBase =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
@@ -231,6 +256,11 @@ public class RoutesAnswerer extends Answerer {
 
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
         rows = new ArrayList<>(getAbstractRouteRowsDiff(routesDiffRaw));
+        break;
+
+      default:
+        throw new IllegalStateException(
+            String.format("Unknown RIB protocol %s", question.getRib()));
     }
 
     rows.sort(DIFF_COMPARATOR);
@@ -743,8 +773,211 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.FALSE,
                 Boolean.TRUE));
         break;
+      case EVPN:
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_STATUS,
+                Schema.list(Schema.STRING),
+                "Route's statuses",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_STATUS,
+                Schema.list(Schema.STRING),
+                "Route's statuses",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ROUTE_DISTINGUISHER,
+                Schema.STRING,
+                "Route distinguisher",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ROUTE_DISTINGUISHER,
+                Schema.STRING,
+                "Route distinguisher",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_NEXT_HOP,
+                Schema.NEXT_HOP,
+                "Route's Next Hop",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_NEXT_HOP,
+                Schema.NEXT_HOP,
+                "Route's Next Hop",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_PROTOCOL,
+                Schema.STRING,
+                "Route's Protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_PROTOCOL,
+                Schema.STRING,
+                "Route's Protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_AS_PATH,
+                Schema.STRING,
+                "Route's AS path",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_AS_PATH,
+                Schema.STRING,
+                "Route's AS path",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_METRIC,
+                Schema.LONG,
+                "Route's Metric",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_METRIC,
+                Schema.LONG,
+                "Route's Metric",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_LOCAL_PREF,
+                Schema.LONG,
+                "Route's Local Preference",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_LOCAL_PREF,
+                Schema.LONG,
+                "Route's Local Preference",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_COMMUNITIES,
+                Schema.list(Schema.STRING),
+                "Route's List of communities",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_COMMUNITIES,
+                Schema.list(Schema.STRING),
+                "Route's List of communities",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ORIGIN_PROTOCOL,
+                Schema.STRING,
+                "Route's Origin protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
+                Schema.STRING,
+                "Route's Origin protocol",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ORIGIN_TYPE,
+                Schema.STRING,
+                "Route's Origin type",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
+                Schema.STRING,
+                "Route's Origin type",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ORIGINATOR_ID,
+                Schema.STRING,
+                "Route's Originator ID",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ORIGINATOR_ID,
+                Schema.STRING,
+                "Route's Originator ID",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_PATH_ID, Schema.INTEGER, "Route's Received Path ID"));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_PATH_ID, Schema.INTEGER, "Route's Received Path ID"));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_CLUSTER_LIST,
+                Schema.list(Schema.LONG),
+                "Route's Cluster List",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_CLUSTER_LIST,
+                Schema.list(Schema.LONG),
+                "Route's Cluster List",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                Schema.STRING,
+                "Route's BGP Tunnel Encapsulation Attribute",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                Schema.STRING,
+                "Route's BGP Tunnel Encapsulation Attribute",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_WEIGHT,
+                Schema.INTEGER,
+                "Route's BGP weight",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_WEIGHT,
+                Schema.INTEGER,
+                "Route's BGP weight",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        break;
       case MAIN:
-      default:
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_NEXT_HOP,
@@ -829,6 +1062,9 @@ public class RoutesAnswerer extends Answerer {
                 "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
+        break;
+      default:
+        throw new IllegalStateException(String.format("Unknown RIB protocol %s", rib));
     }
     columnBuilder.add(
         new ColumnMetadata(

@@ -64,6 +64,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.FinalMainRib;
@@ -558,6 +559,52 @@ public class RoutesAnswererUtil {
   }
 
   /**
+   * Converts {@link List} of {@link DiffRoutesOutput} to {@link Row}s with one row corresponding to
+   * each {@link DiffRoutesOutput#getDiffInAttributes} of the {@link DiffRoutesOutput}
+   *
+   * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for {@link EvpnRoute}s
+   * @return {@link Multiset} of {@link Row}s
+   */
+  static Multiset<Row> getEvpnRouteRowsDiff(List<DiffRoutesOutput> diffRoutesList) {
+    Multiset<Row> rows = HashMultiset.create();
+    Map<String, ColumnMetadata> columnMetadataMap =
+        getDiffTableMetadata(RibProtocol.EVPN).toColumnMap();
+    for (DiffRoutesOutput diffRoutesOutput : diffRoutesList) {
+      RouteRowKey routeRowKey = diffRoutesOutput.getRouteRowKey();
+      String hostName = routeRowKey.getHostName();
+      String vrfName = routeRowKey.getVrfName();
+      Prefix network = routeRowKey.getPrefix();
+      RouteRowSecondaryKey routeRowSecondaryKey = diffRoutesOutput.getRouteRowSecondaryKey();
+      KeyPresenceStatus secondaryKeyPresenceStatus =
+          diffRoutesOutput.getRouteRowSecondaryKeyStatus();
+
+      for (List<RouteRowAttribute> routeRowAttributeInBaseAndRef :
+          diffRoutesOutput.getDiffInAttributes()) {
+        Row.RowBuilder rowBuilder = Row.builder(columnMetadataMap);
+        rowBuilder
+            .put(COL_NODE, new Node(hostName))
+            .put(COL_VRF_NAME, vrfName)
+            .put(COL_NETWORK, network);
+
+        RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
+        RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
+
+        rowBuilder.put(
+            COL_ROUTE_ENTRY_PRESENCE,
+            getRouteEntryPresence(
+                secondaryKeyPresenceStatus, routeRowAttributeBase, routeRowAttributeRef));
+
+        populateSecondaryKeyAttrs(routeRowSecondaryKey, secondaryKeyPresenceStatus, rowBuilder);
+        populateBgpRouteAttributes(rowBuilder, routeRowAttributeBase, true);
+        populateBgpRouteAttributes(rowBuilder, routeRowAttributeRef, false);
+
+        rows.add(rowBuilder.build());
+      }
+    }
+    return rows;
+  }
+
+  /**
    * Populates the {@link RowBuilder} for differential answer of {@link RoutesAnswerer} with
    * attributes of {@link RouteRowSecondaryKey} for base and reference snapshot
    *
@@ -598,15 +645,6 @@ public class RoutesAnswererUtil {
      */
     public void populateSecondaryKeyAttrs(
         RouteRowSecondaryKey routeRowSecondaryKey, RowBuilder rowBuilder, String columnPrefix) {
-      // First populate attributes shared by all types of secondary key
-      rowBuilder
-          .put(columnPrefix + COL_NEXT_HOP, routeRowSecondaryKey.getNextHop())
-          .put(
-              columnPrefix + COL_NEXT_HOP_IP,
-              LegacyNextHops.getNextHopIp(routeRowSecondaryKey.getNextHop())
-                  .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
-          .put(columnPrefix + COL_PROTOCOL, routeRowSecondaryKey.getProtocol());
-      // Now let visitor fill in route-type-specific columns
       _rowBuilder = rowBuilder;
       _columnPrefix = columnPrefix;
       routeRowSecondaryKey.accept(this);
@@ -615,15 +653,42 @@ public class RoutesAnswererUtil {
     @Override
     public Void visitBgpRouteRowSecondaryKey(BgpRouteRowSecondaryKey bgpRouteRowSecondaryKey) {
       _rowBuilder
+          .put(_columnPrefix + COL_NEXT_HOP, bgpRouteRowSecondaryKey.getNextHop())
+          .put(
+              // included for backwards compatibility
+              _columnPrefix + COL_NEXT_HOP_IP,
+              LegacyNextHops.getNextHopIp(bgpRouteRowSecondaryKey.getNextHop())
+                  .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+          .put(_columnPrefix + COL_PROTOCOL, bgpRouteRowSecondaryKey.getProtocol())
           .put(_columnPrefix + COL_RECEIVED_FROM_IP, bgpRouteRowSecondaryKey.getReceivedFromIp())
           .put(_columnPrefix + COL_PATH_ID, bgpRouteRowSecondaryKey.getPathId());
       return null;
     }
 
     @Override
+    public Void visitEvpnRouteRowSecondaryKey(EvpnRouteRowSecondaryKey evpnRouteRowSecondaryKey) {
+      _rowBuilder
+          .put(_columnPrefix + COL_NEXT_HOP, evpnRouteRowSecondaryKey.getNextHop())
+          .put(_columnPrefix + COL_PROTOCOL, evpnRouteRowSecondaryKey.getProtocol())
+          .put(
+              _columnPrefix + COL_ROUTE_DISTINGUISHER,
+              evpnRouteRowSecondaryKey.getRouteDistinguisher())
+          .put(_columnPrefix + COL_PATH_ID, evpnRouteRowSecondaryKey.getPathId());
+      return null;
+    }
+
+    @Override
     public Void visitMainRibRouteRowSecondaryKey(
         MainRibRouteRowSecondaryKey mainRibRouteRowSecondaryKey) {
-      return null; // no additional columns
+      _rowBuilder
+          .put(_columnPrefix + COL_NEXT_HOP, mainRibRouteRowSecondaryKey.getNextHop())
+          .put(
+              // included for backwards compatibility
+              _columnPrefix + COL_NEXT_HOP_IP,
+              LegacyNextHops.getNextHopIp(mainRibRouteRowSecondaryKey.getNextHop())
+                  .orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+          .put(_columnPrefix + COL_PROTOCOL, mainRibRouteRowSecondaryKey.getProtocol());
+      return null;
     }
   }
 
@@ -900,8 +965,89 @@ public class RoutesAnswererUtil {
     return routesGroups;
   }
 
+  /**
+   * Given a {@link Table} of {@link EvpnRoute}s indexed by Node name and VRF name, applies given
+   * filters and groups the routes by {@link RouteRowKey} and sub-groups them further by {@link
+   * RouteRowSecondaryKey} and for the routes in same sub-groups, sorts them according to {@link
+   * RouteRowAttribute}
+   *
+   * @param evpnBestRoutes {@link Table} of best EVPN routes with rows per node and columns per VRF
+   * @param evpnBackupRoutes {@link Table} of backup EVPN routes with rows per node and columns per
+   *     VRF
+   * @param matchingNodes {@link Set} of nodes to be matched
+   * @param vrfRegex Regex to filter the VRF
+   * @param network {@link Prefix}
+   * @param protocolSpec {@link RoutingProtocolSpecifier} to filter the protocols of the routes
+   * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
+   */
+  public static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
+      groupEvpnRoutes(
+          @Nullable Table<String, String, Set<EvpnRoute<?, ?>>> evpnBestRoutes,
+          @Nullable Table<String, String, Set<EvpnRoute<?, ?>>> evpnBackupRoutes,
+          Set<String> matchingNodes,
+          String vrfRegex,
+          @Nullable Prefix network,
+          RoutingProtocolSpecifier protocolSpec) {
+    checkArgument(
+        evpnBestRoutes != null || evpnBackupRoutes != null,
+        "At least one of best routes or backup routes is required.");
+    Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesGroups =
+        new HashMap<>();
+    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
+
+    Map<BgpRouteStatus, Table<String, String, Set<EvpnRoute<?, ?>>>> routesByStatus =
+        new EnumMap<>(BgpRouteStatus.class);
+    if (evpnBestRoutes != null) {
+      routesByStatus.put(BEST, evpnBestRoutes);
+    }
+    if (evpnBackupRoutes != null) {
+      routesByStatus.put(BACKUP, evpnBackupRoutes);
+    }
+
+    matchingNodes.forEach(
+        hostname ->
+            routesByStatus.forEach(
+                (status, statusRoutes) ->
+                    statusRoutes.row(hostname).entrySet().stream()
+                        .filter(vrfEntry -> compiledVrfRegex.matcher(vrfEntry.getKey()).matches())
+                        .forEach(
+                            vrfEntry ->
+                                vrfEntry.getValue().stream()
+                                    .filter(
+                                        route ->
+                                            (network == null || network.equals(route.getNetwork()))
+                                                && protocolSpec
+                                                    .getProtocols()
+                                                    .contains(route.getProtocol()))
+                                    .forEach(
+                                        route ->
+                                            routesGroups
+                                                .computeIfAbsent(
+                                                    new RouteRowKey(
+                                                        hostname,
+                                                        vrfEntry.getKey(),
+                                                        route.getNetwork()),
+                                                    k -> new HashMap<>())
+                                                .computeIfAbsent(
+                                                    new EvpnRouteRowSecondaryKey(
+                                                        route.getNextHop(),
+                                                        route.getProtocol().protocolName(),
+                                                        route.getReceivedFrom(),
+                                                        route.getPathId(),
+                                                        route.getRouteDistinguisher()),
+                                                    k -> new TreeSet<>())
+                                                .add(bgpRouteToRowAttribute(route, status))))));
+
+    return routesGroups;
+  }
+
+  /**
+   * Converts a BGP route (can be {@link Bgpv4Route} or {@link EvpnRoute}) to {@link
+   * RouteRowAttribute}.
+   */
   @VisibleForTesting
-  static RouteRowAttribute bgpRouteToRowAttribute(Bgpv4Route route, BgpRouteStatus status) {
+  static RouteRowAttribute bgpRouteToRowAttribute(BgpRoute<?, ?> route, BgpRouteStatus status) {
     return RouteRowAttribute.builder()
         .setOriginProtocol(
             route.getSrcProtocol() != null ? route.getSrcProtocol().protocolName() : null)

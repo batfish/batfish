@@ -413,7 +413,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetDiffTableMetadataProtocolAll() {
+  public void testGetDiffTableMetadataMainRib() {
     List<ColumnMetadata> columnMetadata =
         getDiffTableMetadata(RibProtocol.MAIN).getColumnMetadata();
 
@@ -565,6 +565,101 @@ public class RoutesAnswererTest {
   }
 
   @Test
+  public void testGetDiffTableMetadataEvpn() {
+    ImmutableList.Builder<String> expectedBuilder = ImmutableList.builder();
+    expectedBuilder.add(
+        COL_NODE,
+        COL_VRF_NAME,
+        COL_NETWORK,
+        COL_ROUTE_ENTRY_PRESENCE,
+        COL_BASE_PREFIX + COL_STATUS,
+        COL_DELTA_PREFIX + COL_STATUS,
+        COL_BASE_PREFIX + COL_ROUTE_DISTINGUISHER,
+        COL_DELTA_PREFIX + COL_ROUTE_DISTINGUISHER,
+        COL_BASE_PREFIX + COL_NEXT_HOP,
+        COL_DELTA_PREFIX + COL_NEXT_HOP,
+        COL_BASE_PREFIX + COL_PROTOCOL,
+        COL_DELTA_PREFIX + COL_PROTOCOL,
+        COL_BASE_PREFIX + COL_AS_PATH,
+        COL_DELTA_PREFIX + COL_AS_PATH,
+        COL_BASE_PREFIX + COL_METRIC,
+        COL_DELTA_PREFIX + COL_METRIC,
+        COL_BASE_PREFIX + COL_LOCAL_PREF,
+        COL_DELTA_PREFIX + COL_LOCAL_PREF,
+        COL_BASE_PREFIX + COL_COMMUNITIES,
+        COL_DELTA_PREFIX + COL_COMMUNITIES,
+        COL_BASE_PREFIX + COL_ORIGIN_PROTOCOL,
+        COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
+        COL_BASE_PREFIX + COL_ORIGIN_TYPE,
+        COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
+        COL_BASE_PREFIX + COL_ORIGINATOR_ID,
+        COL_DELTA_PREFIX + COL_ORIGINATOR_ID,
+        COL_BASE_PREFIX + COL_PATH_ID,
+        COL_DELTA_PREFIX + COL_PATH_ID,
+        COL_BASE_PREFIX + COL_CLUSTER_LIST,
+        COL_DELTA_PREFIX + COL_CLUSTER_LIST,
+        COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+        COL_DELTA_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+        COL_BASE_PREFIX + COL_WEIGHT,
+        COL_DELTA_PREFIX + COL_WEIGHT,
+        COL_BASE_PREFIX + COL_TAG,
+        COL_DELTA_PREFIX + COL_TAG);
+
+    ImmutableList.Builder<Schema> schemaBuilderList = ImmutableList.builder();
+    schemaBuilderList.add(
+        Schema.NODE,
+        Schema.STRING,
+        Schema.PREFIX,
+        Schema.STRING,
+        Schema.list(Schema.STRING),
+        Schema.list(Schema.STRING),
+        Schema.STRING,
+        Schema.STRING,
+        Schema.NEXT_HOP,
+        Schema.NEXT_HOP,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.LONG,
+        Schema.LONG,
+        Schema.LONG,
+        Schema.LONG,
+        Schema.list(Schema.STRING),
+        Schema.list(Schema.STRING),
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.INTEGER,
+        Schema.INTEGER,
+        Schema.list(Schema.LONG),
+        Schema.list(Schema.LONG),
+        Schema.STRING,
+        Schema.STRING,
+        Schema.INTEGER,
+        Schema.INTEGER,
+        Schema.LONG,
+        Schema.LONG);
+
+    List<ColumnMetadata> columnMetadata =
+        getDiffTableMetadata(RibProtocol.EVPN).getColumnMetadata();
+    assertThat(
+        columnMetadata.stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(expectedBuilder.build()));
+
+    assertThat(
+        columnMetadata.stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(schemaBuilderList.build()));
+  }
+
+  @Test
   public void testSameColumnsDiffAndNonDiff() {
     List<String> nonDiffColumns =
         getTableMetadata(RibProtocol.MAIN).getColumnMetadata().stream()
@@ -628,6 +723,48 @@ public class RoutesAnswererTest {
     // One exception: next hop interface is only present in non-differential for backwards
     // compatibility, and was never added to differential BGP routes.
     Set<String> nonDifferentialOnly = ImmutableSet.of(COL_NEXT_HOP_INTERFACE);
+    IntStream.range(keyColumns.size(), nonDiffColumns.size())
+        .mapToObj(nonDiffColumns::get)
+        .forEach(
+            c -> {
+              expectedNonDiffColumns.add(c);
+              if (!nonDifferentialOnly.contains(c)) {
+                expectedDiffColumns.add(COL_BASE_PREFIX + c);
+                expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+              }
+            });
+
+    assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
+    assertThat(diffColumns, equalTo(expectedDiffColumns.build()));
+  }
+
+  @Test
+  public void testSameColumnsDiffAndNonDiffEvpn() {
+    List<String> nonDiffColumns =
+        getTableMetadata(RibProtocol.EVPN).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+    List<String> diffColumns =
+        getDiffTableMetadata(RibProtocol.EVPN).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+
+    ImmutableList.Builder<String> expectedNonDiffColumns = ImmutableList.builder();
+    ImmutableList.Builder<String> expectedDiffColumns = ImmutableList.builder();
+
+    // Key columns are not diffed; should be identical in both tables.
+    List<String> keyColumns = ImmutableList.of(COL_NODE, COL_VRF_NAME, COL_NETWORK);
+    expectedNonDiffColumns.addAll(keyColumns);
+    expectedDiffColumns.addAll(keyColumns);
+
+    // Only differential results have a route entry presence column.
+    expectedDiffColumns.add(COL_ROUTE_ENTRY_PRESENCE);
+
+    // After key columns, all columns in the non-differential result should correspond to two
+    // columns in the differential result (snapshot and reference).
+    // Exception: next hop IP and interface columns are only present in non-differential for
+    // backwards compatibility, and were never added to differential EVPN routes.
+    Set<String> nonDifferentialOnly = ImmutableSet.of(COL_NEXT_HOP_IP, COL_NEXT_HOP_INTERFACE);
     IntStream.range(keyColumns.size(), nonDiffColumns.size())
         .mapToObj(nonDiffColumns::get)
         .forEach(

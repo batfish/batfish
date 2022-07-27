@@ -35,6 +35,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.computeNextHopNode;
 import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getEvpnRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getEvpnRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMatchingPrefixRoutes;
@@ -644,6 +645,83 @@ public class RoutesAnswererUtilTest {
             .put(COL_NEXT_HOP_IP, Schema.IP)
             .put(COL_PROTOCOL, Schema.STRING)
             .put(COL_RECEIVED_FROM_IP, Schema.IP)
+            .put(COL_PATH_ID, Schema.INTEGER)
+            .put(COL_AS_PATH, Schema.STRING)
+            .put(COL_CLUSTER_LIST, Schema.list(Schema.LONG))
+            .put(COL_COMMUNITIES, Schema.list(Schema.STRING))
+            .put(COL_LOCAL_PREF, Schema.LONG)
+            .put(COL_METRIC, Schema.LONG)
+            .put(COL_ORIGIN_PROTOCOL, Schema.STRING)
+            .put(COL_ORIGIN_TYPE, Schema.STRING)
+            .put(COL_ORIGINATOR_ID, Schema.STRING)
+            .put(COL_TAG, Schema.LONG)
+            .put(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, Schema.STRING)
+            .put(COL_WEIGHT, Schema.INTEGER)
+            .build();
+    columnSchemas.forEach(
+        (col, schema) -> assertThat(row, hasColumn(COL_BASE_PREFIX + col, notNullValue(), schema)));
+    assertThat(
+        (int) row.getColumnNames().stream().filter(c -> c.startsWith(COL_BASE_PREFIX)).count(),
+        equalTo(columnSchemas.size()));
+  }
+
+  @Test
+  public void testGetEvpnRouteRowsDiffPopulatesAllColumns() {
+    RouteRowKey primaryKey = new RouteRowKey("node", "vrf", Prefix.parse("1.0.0.0/8"));
+    EvpnRouteRowSecondaryKey secondaryKey =
+        new EvpnRouteRowSecondaryKey(
+            NextHopIp.of(Ip.parse("1.1.1.1")),
+            "evpn",
+            // note receivedFrom is not currently surfaced.
+            ReceivedFromIp.of(Ip.parse("2.2.2.2")),
+            1,
+            RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2));
+    RouteRowAttribute attrs =
+        RouteRowAttribute.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
+            .setClusterList(ImmutableSet.of(1L))
+            .setCommunities(ImmutableList.of("1:1"))
+            .setLocalPreference(2L)
+            .setMetric(3L)
+            .setOriginProtocol("bgp")
+            // note origin mechanism is not currently surfaced.
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setOriginatorIp(Ip.parse("3.3.3.3"))
+            .setTag(4L)
+            .setStatus(BEST)
+            .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("4.4.4.4")))
+            .setWeight(5)
+            .build();
+
+    List<DiffRoutesOutput> diff =
+        ImmutableList.of(
+            new DiffRoutesOutput(
+                primaryKey,
+                secondaryKey,
+                KeyPresenceStatus.ONLY_IN_SNAPSHOT,
+                ImmutableList.of(Lists.newArrayList(attrs, null)),
+                KeyPresenceStatus.ONLY_IN_SNAPSHOT));
+    Multiset<Row> rows = getEvpnRouteRowsDiff(diff);
+    Row row = Iterables.getOnlyElement(rows);
+
+    // check that key columns are populated
+    Map<String, Schema> keyColumnSchemas =
+        ImmutableMap.<String, Schema>builder()
+            .put(COL_NODE, Schema.NODE)
+            .put(COL_VRF_NAME, Schema.STRING)
+            .put(COL_NETWORK, Schema.PREFIX)
+            .build();
+    keyColumnSchemas.forEach(
+        (col, schema) -> assertThat(row, hasColumn(col, notNullValue(), schema)));
+
+    // check that secondary key and attribute columns are populated and that we're checking them all
+    Map<String, Schema> columnSchemas =
+        ImmutableMap.<String, Schema>builder()
+            .put(COL_STATUS, Schema.list(Schema.STRING))
+            .put(COL_ROUTE_DISTINGUISHER, Schema.STRING)
+            .put(COL_NEXT_HOP, Schema.NEXT_HOP)
+            .put(COL_PROTOCOL, Schema.STRING)
             .put(COL_PATH_ID, Schema.INTEGER)
             .put(COL_AS_PATH, Schema.STRING)
             .put(COL_CLUSTER_LIST, Schema.list(Schema.LONG))
