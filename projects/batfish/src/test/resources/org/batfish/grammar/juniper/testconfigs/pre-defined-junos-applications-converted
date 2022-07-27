@@ -28,7 +28,6 @@ set security policies global policy policy-name match application junos-gprs-sct
 set security policies global policy policy-name match application junos-gre
 set security policies global policy policy-name match application junos-gtp
 set security policies global policy policy-name match application junos-h323
-set security policies global policy policy-name match application junos-host
 set security policies global policy policy-name match application junos-http
 set security policies global policy policy-name match application junos-http-ext
 set security policies global policy policy-name match application junos-https
