@@ -1053,13 +1053,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Set<Bgpv4Route> ebgpv4Prev;
     RibDelta<Bgpv4Route> ebgpv4DeltaPrev;
     if (ourSession.getAdditionalPaths()) {
-      /*
-      TODO: https://github.com/batfish/batfish/issues/704
-         Add path is broken for all intents and purposes.
-         Need support for additional-paths based on https://tools.ietf.org/html/rfc7911
-         AND the combination of vendor-specific knobs, none of which are currently supported.
-      */
-      // TODO: sending withdrawals with add-path is likely unsafe.
       bgpv4Prev = _bgpv4Prev;
       bgpv4DeltaPrev = _bgpv4DeltaPrev;
       ebgpv4Prev = _ebgpv4Prev;
