@@ -5,23 +5,52 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
 
-/** Replays a BDD trace. */
-public final class BDDParallelismStressTest {
-  private static long bench(int numThreads, boolean gcTime) throws InterruptedException {
-    int total_iters = 100;
+@State(Scope.Benchmark)
+public class BDDParallelismStressTest {
+  public static class Config {
+    public final String factory;
+    public final int threads;
+
+    public Config(String factory, int threads) {
+      this.factory = factory;
+      this.threads = threads;
+    }
+  }
+
+  public static Config parseConfig(String spec) {
+    String[] params = spec.split(":");
+    String factory = params[0];
+    int threads = Integer.parseInt(params[1]);
+    return new Config(factory, threads);
+  }
+
+  @Param({"OrigJFactory:1", "JFactory:1"})
+  public String _configSpec;
+
+  private static long bench(String factory, int numThreads, boolean gcTime)
+      throws InterruptedException {
+    int total_iters = 10;
     System.gc();
-    BDDPacket pkt = new BDDPacket();
-    pkt.getFactory().setNodeTableSize(10_000_000);
+    BDDPacket pkt = new BDDPacket(BDDFactory.init(factory, 10_000_000, 1_000_000));
     Random rng = new Random();
     Thread[] threads = new Thread[numThreads];
 
@@ -83,6 +112,14 @@ public final class BDDParallelismStressTest {
     throw new IllegalArgumentException("not a boolean: " + s);
   }
 
+  @Benchmark
+  @BenchmarkMode(Mode.AverageTime)
+  @OutputTimeUnit(TimeUnit.SECONDS)
+  public void bench() throws InterruptedException {
+    Config cfg = parseConfig(_configSpec);
+    bench(cfg.factory, cfg.threads, false);
+  }
+
   public static void main(String[] args)
       throws IOException, ClassNotFoundException, InterruptedException {
     int minNumThreads = Integer.parseInt(args[0]);
@@ -92,7 +129,7 @@ public final class BDDParallelismStressTest {
     // warm up
     for (int i = 0; i < 10; i++) {
       System.out.println("Warm up iteration " + i);
-      bench(1, gcTime);
+      bench("JFactory", 1, gcTime);
     }
     List<String> log = new ArrayList<>();
     for (int numThreads = minNumThreads; numThreads <= maxNumThreads; numThreads++) {
@@ -102,7 +139,7 @@ public final class BDDParallelismStressTest {
               .mapToObj(
                   i -> {
                     try {
-                      return String.valueOf(bench(numThreadsFinal, gcTime));
+                      return String.valueOf(bench("JFactory", numThreadsFinal, gcTime));
                     } catch (InterruptedException e) {
                       throw new RuntimeException(e);
                     }
