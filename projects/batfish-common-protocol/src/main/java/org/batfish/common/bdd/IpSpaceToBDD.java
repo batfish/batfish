@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
@@ -106,12 +107,21 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   public BDD visit(IpSpace ipSpace) {
     if (_nonRefIpSpaceToBDD == null || ipSpaceCanContainReferences(ipSpace)) {
       BDD cached = _cache.getIfPresent(ipSpace);
-      if (cached == null) {
-        cached = ipSpace.accept(this);
-        _cache.put(ipSpace, cached);
+      if (cached != null) {
+        // Use local cache. Make a copy so that the caller owns it. This can throw if another thread
+        // evicts the BDD concurrently. In that case, treat it like a cache miss and recompute.
+        try {
+          return cached.id();
+        } catch (BDDException e) {
+          // fall-through.
+        }
       }
-      // Use local cache. Make a copy so that the caller owns it.
-      return cached.id();
+
+      BDD res = ipSpace.accept(this);
+      // make a new copy for the cache, since it may get evicted (and freed) immediately (presumably
+      // because the cache entry is currently locked)
+      _cache.put(ipSpace, res.id());
+      return res;
     }
     return _nonRefIpSpaceToBDD.visit(ipSpace);
   }
