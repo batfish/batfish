@@ -40,7 +40,6 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -113,11 +112,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
   private long madeBDDs;
   /** The total number of BDDs ever freed. */
   private long freedBDDs;
-
-  @Override
-  public long numOutstandingBDDs() {
-    return madeBDDs - freedBDDs;
-  }
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
@@ -203,26 +197,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
       return makeBDD(bdd_relprod(x, y, z));
     }
 
-    @Override
-    public BDD compose(BDD g, int var) {
-      int x = _index;
-      int y = ((BDDImpl) g)._index;
-      return makeBDD(bdd_compose(x, y, var));
-    }
-
-    @Override
-    public BDD veccompose(BDDPairing pair) {
-      int x = _index;
-      return makeBDD(bdd_veccompose(x, (bddPair) pair));
-    }
-
-    @Override
-    public BDD constrain(BDD that) {
-      int x = _index;
-      int y = ((BDDImpl) that)._index;
-      return makeBDD(bdd_constrain(x, y));
-    }
-
     /**
      * Given the index of the result of an operation, either changes {@code this} {@link BDD} (when
      * {@code makeNew} is false) or creates a new BDD ({@code makeNew} is true).
@@ -267,47 +241,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_forall(x, y));
-    }
-
-    @Override
-    public BDD unique(BDD var) {
-      int x = _index;
-      int y = ((BDDImpl) var)._index;
-      return makeBDD(bdd_unique(x, y));
-    }
-
-    @Override
-    public BDD restrict(BDD var) {
-      int x = _index;
-      int y = ((BDDImpl) var)._index;
-      return makeBDD(bdd_restrict(x, y));
-    }
-
-    @Override
-    public BDD restrictWith(BDD that) {
-      int x = _index;
-      int y = ((BDDImpl) that)._index;
-      int a = bdd_restrict(x, y);
-      bdd_delref(x);
-      if (this != that) {
-        that.free();
-      }
-      bdd_addref(a);
-      _index = a;
-      return this;
-    }
-
-    @Override
-    public BDD simplify(BDD d) {
-      int x = _index;
-      int y = ((BDDImpl) d)._index;
-      return makeBDD(bdd_simplify(x, y));
-    }
-
-    @Override
-    public BDD support() {
-      int x = _index;
-      return makeBDD(bdd_support(x));
     }
 
     @Override
@@ -376,15 +309,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public BDD applyUni(BDD that, BDDOp opr, BDD var) {
-      int x = _index;
-      int y = ((BDDImpl) that)._index;
-      int z = opr.id;
-      int a = ((BDDImpl) var)._index;
-      return makeBDD(bdd_appuni(x, y, z, a));
-    }
-
-    @Override
     public BDD satOne() {
       int x = _index;
       return makeBDD(bdd_satone(x));
@@ -432,24 +356,8 @@ public class OrigJFactory extends BDDFactory implements Serializable {
     }
 
     @Override
-    public int nodeCount() {
-      return bdd_nodecount(_index);
-    }
-
-    @Override
-    public double pathCount() {
-      return bdd_pathcount(_index);
-    }
-
-    @Override
     public double satCount() {
       return bdd_satcount(_index).doubleValue();
-    }
-
-    @Override
-    public int[] varProfile() {
-      int x = _index;
-      return bdd_varprofile(x);
     }
 
     @Override
@@ -4703,6 +4611,11 @@ public class OrigJFactory extends BDDFactory implements Serializable {
     bddPair next;
 
     @Override
+    public void freezeAndInstall() {
+      // noop
+    }
+
+    @Override
     public void set(int oldvar, int newvar) {
       bdd_setpair(this, oldvar, newvar);
     }
@@ -4710,11 +4623,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
     @Override
     public void set(int oldvar, BDD newvar) {
       bdd_setbddpair(this, oldvar, ((BDDImpl) newvar)._index);
-    }
-
-    @Override
-    public void reset() {
-      bdd_resetpair(this);
     }
 
     @Override
@@ -4886,56 +4794,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
     return bdd_setvarnum(num);
   }
 
-  @Override
-  public int duplicateVar(int var) {
-    if (var < 0 || var >= bddvarnum) {
-      bdd_error(BDD_VAR);
-      return BDDZERO;
-    }
-
-    int newVar = bddvarnum;
-    int lev = bddvar2level[var];
-    // Increase the size of the various data structures.
-    bdd_setvarnum(bddvarnum + 1);
-    // Actually duplicate the var in all BDDs.
-    insert_level(lev);
-    dup_level(lev, 0);
-    // Fix up bddvar2level
-    for (int i = 0; i < bddvarnum; ++i) {
-      if (bddvar2level[i] > lev && bddvar2level[i] < bddvarnum) {
-        ++bddvar2level[i];
-      }
-    }
-    bddvar2level[newVar] = lev + 1;
-    // Fix up bddlevel2var
-    for (int i = bddvarnum - 2; i > lev; --i) {
-      bddlevel2var[i + 1] = bddlevel2var[i];
-    }
-    bddlevel2var[lev + 1] = newVar;
-    // Fix up bddvarset
-    for (int bdv = 0; bdv < bddvarnum; bdv++) {
-      bddvarset[bdv * 2] = PUSHREF(bdd_makenode(bddvar2level[bdv], BDDZERO, BDDONE));
-      bddvarset[bdv * 2 + 1] = bdd_makenode(bddvar2level[bdv], BDDONE, BDDZERO);
-      POPREF(1);
-
-      SETMAXREF(bddvarset[bdv * 2]);
-      SETMAXREF(bddvarset[bdv * 2 + 1]);
-    }
-    // Fix up pairs
-    for (bddPair pair = pairs; pair != null; pair = pair.next) {
-      bdd_delref(pair.result[bddvarnum - 1]);
-      for (int i = bddvarnum - 1; i > lev + 1; --i) {
-        pair.result[i] = pair.result[i - 1];
-        if (i != LEVEL(pair.result[i]) && i > pair.last) {
-          pair.last = i;
-        }
-      }
-      pair.result[lev + 1] = bdd_ithvar(newVar);
-    }
-
-    return newVar;
-  }
-
   private int bdd_setvarnum(int num) {
     int bdv;
     int oldbddvarnum = bddvarnum;
@@ -5003,17 +4861,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
   }
 
   @Override
-  public void printAll() {
-    bdd_fprintall(System.out);
-  }
-
-  @Override
-  public void printTable(BDD b) {
-    int x = ((BDDImpl) b)._index;
-    bdd_fprinttable(System.out, x);
-  }
-
-  @Override
   public int level2Var(int level) {
     return bddlevel2var[level];
   }
@@ -5021,11 +4868,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
   @Override
   public int var2Level(int var) {
     return bddvar2level[var];
-  }
-
-  @Override
-  public void setVarOrder(int[] neworder) {
-    bdd_setvarorder(neworder);
   }
 
   private transient int[] extroots;
@@ -5481,8 +5323,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
   }
 
   private int reorder_init() {
-    reorder_handler(true, reorderstats);
-
     levels = new levelData[bddvarnum];
 
     for (int n = 0; n < bddvarnum; n++) {
@@ -5757,8 +5597,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
 
     imatrixDelete(iactmtx);
     bdd_gbc();
-
-    reorder_handler(false, reorderstats);
   }
 
   private static void imatrixDelete(imatrix mtx) {
@@ -5769,28 +5607,12 @@ public class OrigJFactory extends BDDFactory implements Serializable {
   }
 
   @Override
-  public int nodeCount(Collection<BDD> r) {
-    int[] a = new int[r.size()];
-    int j = 0;
-    for (Object o : r) {
-      BDDImpl b = (BDDImpl) o;
-      a[j++] = b._index;
-    }
-    return bdd_anodecount(a);
-  }
-
-  @Override
   public int getNodeTableSize() {
     return bdd_getallocnum();
   }
 
   private int bdd_getallocnum() {
     return bddnodesize;
-  }
-
-  @Override
-  public int getNodeNum() {
-    return bdd_getnodenum();
   }
 
   @Override
@@ -5871,40 +5693,6 @@ public class OrigJFactory extends BDDFactory implements Serializable {
   private void bdd_fprintstat(PrintStream out) {
     CacheStats s = cachestats;
     out.print(s.toString());
-  }
-
-  @Override
-  protected BDDDomain createDomain(int a, BigInteger b) {
-    return new bddDomain(a, b);
-  }
-
-  private class bddDomain extends BDDDomain {
-
-    bddDomain(int a, BigInteger b) {
-      super(a, b);
-    }
-
-    @Override
-    public BDDFactory getFactory() {
-      return OrigJFactory.this;
-    }
-  }
-
-  @Override
-  protected BDDBitVector createBitVector(int a) {
-    return new bvec(a);
-  }
-
-  private class bvec extends BDDBitVector {
-
-    bvec(int bitnum) {
-      super(bitnum);
-    }
-
-    @Override
-    public BDDFactory getFactory() {
-      return OrigJFactory.this;
-    }
   }
 
   //// Prime stuff below.
