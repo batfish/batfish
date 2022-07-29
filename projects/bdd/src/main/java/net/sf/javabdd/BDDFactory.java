@@ -90,12 +90,21 @@ public abstract class BDDFactory {
    */
   public static BDDFactory init(String bddpackage, int nodenum, int cachesize) {
     try {
-      if (bddpackage.equals("j") || bddpackage.equals("java")) {
+      if (bddpackage.equals("j") || bddpackage.equals("java") || bddpackage.equals("JFactory")) {
         return JFactory.init(nodenum, cachesize);
       }
     } catch (LinkageError e) {
       LOGGER.info("Could not load BDD package {}: {}", bddpackage, e.getLocalizedMessage());
     }
+
+    try {
+      if (bddpackage.equals("origJFactory")) {
+        return OrigJFactory.init(nodenum, cachesize);
+      }
+    } catch (LinkageError e) {
+      LOGGER.info("Could not load BDD package {}: {}", bddpackage, e.getLocalizedMessage());
+    }
+
     try {
       Class<?> c = Class.forName(bddpackage);
       Method m = c.getMethod("init", int.class, int.class);
