@@ -978,8 +978,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    *
    * <p>Note: two VSYSes must be specified: one where the rule exists and one for the VSYS/namespace
    * containing objects the rule relies on. These VSYSes are usually the same, but are different for
-   * rules that exist in a Shared VSYS. A rule in a Shared VSYS prefers objects in the Panorama
-   * namespace over objects in its own (the Shared) namespace.
+   * rules that exist in the Shared VSYS. A rule in the Shared VSYS effectively uses the Panorama
+   * namespace; it looks for objects in the Panorama namespace first and falls back to the Shared
+   * namespace just like a Panorama rule would.
    */
   private void addSecurityRulesToMap(
       Rulebase rulebase,
