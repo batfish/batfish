@@ -130,8 +130,8 @@
                                 <version>${autoservice.version}</version>
                             </path>
                         </annotationProcessorPaths>
-                        <source>1.8</source>
-                        <target>1.8</target>
+                        <source>11</source>
+                        <target>11</target>
                         <showWarnings>true</showWarnings>
                         <compilerArgs>
                             <arg>-Werror</arg>
@@ -485,7 +485,7 @@
                             <rules>
                                 <dependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[1.8,)</version>
+                                    <version>[11,)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>3.3.9</version>
