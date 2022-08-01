@@ -915,11 +915,25 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Note: using map to avoid duplicating rulenames (not allowed on PAN devices)
     Map<String, ExprAclLine> ruleToExprAclLine = new LinkedHashMap<>();
     Vsys panorama = getPanorama();
+    Vsys shared = getShared();
 
-    // PreRulebase solely comes from Panorama, if it exists
+    // PreRulebase comes from Panorama and shared vsyses, if they exist
+    // Shared pre-rulebase is applied first
+    if (shared != null) {
+      addSecurityRulesToMap(
+          shared.getPreRulebase(),
+          shared,
+          panorama, // Shared rules can use Panorama-namepsace objects (and fallback to
+          // Shared-namespace)
+          fromZone,
+          toZone,
+          appOverrideAcls,
+          ruleToExprAclLine);
+    }
     if (panorama != null) {
       addSecurityRulesToMap(
           panorama.getPreRulebase(),
+          panorama,
           panorama,
           fromZone,
           toZone,
@@ -929,13 +943,26 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Regular Rulebase comes solely from this vsys
     addSecurityRulesToMap(
-        vsys.getRulebase(), vsys, fromZone, toZone, appOverrideAcls, ruleToExprAclLine);
+        vsys.getRulebase(), vsys, vsys, fromZone, toZone, appOverrideAcls, ruleToExprAclLine);
 
-    // PostRulebase solely comes from Panorama, if it exists
+    // PostRulebase comes from Panorama and shared vsyses, if they exist
+    // Panorama post-rulebase is applied first
     if (panorama != null) {
       addSecurityRulesToMap(
           panorama.getPostRulebase(),
           panorama,
+          panorama,
+          fromZone,
+          toZone,
+          appOverrideAcls,
+          ruleToExprAclLine);
+    }
+    if (shared != null) {
+      addSecurityRulesToMap(
+          shared.getPostRulebase(),
+          shared,
+          panorama, // Shared rules can use Panorama-namepsace objects (and fallback to
+          // Shared-namespace)
           fromZone,
           toZone,
           appOverrideAcls,
@@ -948,10 +975,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Helper to build ExprAclLines from SecurityRules between zones in the specified Rulebase. Adds
    * these to the specified map.
+   *
+   * <p>Note: two VSYSes must be specified: one where the rule exists and one for the VSYS/namespace
+   * containing objects the rule relies on. These VSYSes are usually the same, but are different for
+   * rules that exist in the Shared VSYS. A rule in the Shared VSYS effectively uses the Panorama
+   * namespace; it looks for objects in the Panorama namespace first and falls back to the Shared
+   * namespace just like a Panorama rule would.
    */
   private void addSecurityRulesToMap(
       Rulebase rulebase,
-      Vsys vsys,
+      Vsys ruleVsys,
+      Vsys namespaceVsys,
       String fromZone,
       String toZone,
       Map<String, AclLineMatchExpr> appOverrideAcls,
@@ -960,7 +994,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       String name = entry.getKey();
       SecurityRule rule = entry.getValue();
       if (securityRuleApplies(fromZone, toZone, rule, _w) && !ruleToExprAclLine.containsKey(name)) {
-        ruleToExprAclLine.put(name, toIpAccessListLine(rule, vsys, appOverrideAcls));
+        ruleToExprAclLine.put(
+            name, toIpAccessListLine(rule, ruleVsys, namespaceVsys, appOverrideAcls));
       }
     }
   }
@@ -1582,7 +1617,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   //   However, services are a bit complicated when `service application-default` is used. In that
   //   case, we extract service definitions from the application that matches.
   private ExprAclLine toIpAccessListLine(
-      SecurityRule rule, Vsys vsys, Map<String, AclLineMatchExpr> appOverrideAcls) {
+      SecurityRule rule,
+      Vsys ruleVsys,
+      Vsys namespaceVsys,
+      Map<String, AclLineMatchExpr> appOverrideAcls) {
     assert !rule.getDisabled(); // handled by caller.
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1592,7 +1630,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     //////////////////////////////////////////////////////////////////////////////////////////
     // 2. Match SRC IPs if specified.
     List<MatchHeaderSpace> srcExprs =
-        aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), vsys, _w, _filename);
+        aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), namespaceVsys, _w, _filename);
     if (!srcExprs.isEmpty()) {
       conjuncts.add(
           rule.getNegateSource()
@@ -1605,7 +1643,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs if specified.
     List<MatchHeaderSpace> dstExprs =
-        aclLineMatchExprsFromRuleEndpointDestinations(rule.getDestination(), vsys, _w, _filename);
+        aclLineMatchExprsFromRuleEndpointDestinations(
+            rule.getDestination(), namespaceVsys, _w, _filename);
     if (!dstExprs.isEmpty()) {
       conjuncts.add(
           rule.getNegateDestination()
@@ -1618,15 +1657,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match services.
-    getServiceExpr(rule, vsys, appOverrideAcls).ifPresent(conjuncts::add);
+    getServiceExpr(rule, namespaceVsys, appOverrideAcls).ifPresent(conjuncts::add);
 
     return ExprAclLine.builder()
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
-        .setTraceElement(matchSecurityRuleTraceElement(rule.getName(), vsys))
+        .setTraceElement(matchSecurityRuleTraceElement(rule.getName(), ruleVsys))
         .setVendorStructureId(
-            securityRuleVendorStructureId(rule.getName(), vsys.getName(), _filename))
+            securityRuleVendorStructureId(rule.getName(), ruleVsys.getName(), _filename))
         .build();
   }
 
@@ -3008,10 +3047,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _panorama = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
     _shared = new Vsys(SHARED_VSYS_NAME, NamespaceType.SHARED);
 
-    // Keep shared objects in their own namespace
+    // Keep shared objects and rules in their own namespace
     applyVsysObjects(shared, _shared);
-    // Merge shared rules into Panorama rules, to keep conversion simpler
-    applyVsysRulebase(shared, _panorama);
+    applyVsysRulebase(shared, _shared);
 
     List<DeviceGroup> inheritedDeviceGroups = new ArrayList<>();
     inheritedDeviceGroups.add(template);

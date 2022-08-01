@@ -105,6 +105,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.securityRuleVendorStructureId;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
@@ -3772,6 +3773,53 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T1", 1));
     assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T2", 1));
     assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T3", 1));
+  }
+
+  @Test
+  public void testDeviceGroupSharedInheritanceVSIDs() {
+    String panoramaHostname = "device-group-shared-inheritance";
+    String filename = TESTCONFIGS_PREFIX + panoramaHostname;
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration panConfig = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = panConfig.toVendorIndependentConfigurations();
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration c =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    String sharedRuleName = "PRE_RULE_SHARED";
+    String panoramaRuleName = "PRE_RULE_DG";
+    String vsysName = "vsys1";
+    String zone1Name = "Z1";
+    String zone2Name = "Z2";
+    IpAccessList z1ToZ2Filter =
+        c.getIpAccessLists()
+            .get(
+                zoneToZoneFilter(
+                    computeObjectName(vsysName, zone1Name),
+                    computeObjectName(vsysName, zone2Name)));
+
+    // Security rule from Shared vsys has the correct VSID (pointing to Shared vsys)
+    AclLine sharedLine = z1ToZ2Filter.getLines().get(0);
+    assertThat(sharedLine.getName(), equalTo(sharedRuleName));
+    assertThat(
+        sharedLine.getVendorStructureId().get(),
+        equalTo(securityRuleVendorStructureId(sharedRuleName, SHARED_VSYS_NAME, filename)));
+    assertThat(
+        sharedLine.getTraceElement(),
+        equalTo(matchSecurityRuleTraceElement(sharedRuleName, SHARED_VSYS_NAME, filename)));
+
+    // Security rule from Panorama vsys has the correct VSID (pointing to Panorama vsys)
+    AclLine panoramaLine = z1ToZ2Filter.getLines().get(1);
+    assertThat(panoramaLine.getName(), equalTo(panoramaRuleName));
+    assertThat(
+        panoramaLine.getVendorStructureId().get(),
+        equalTo(securityRuleVendorStructureId(panoramaRuleName, PANORAMA_VSYS_NAME, filename)));
+    assertThat(
+        panoramaLine.getTraceElement(),
+        equalTo(matchSecurityRuleTraceElement(panoramaRuleName, PANORAMA_VSYS_NAME, filename)));
   }
 
   @Test
