@@ -24,7 +24,8 @@ public final class PaloAltoTraceElementCreators {
         .build();
   }
 
-  static VendorStructureId securityRuleVendorStructureId(
+  @VisibleForTesting
+  public static VendorStructureId securityRuleVendorStructureId(
       String ruleName, String vsysName, String filename) {
     return new VendorStructureId(
         filename,
