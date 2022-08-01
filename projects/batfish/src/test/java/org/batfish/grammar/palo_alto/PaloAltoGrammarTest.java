@@ -3807,6 +3807,9 @@ public final class PaloAltoGrammarTest {
     assertThat(
         sharedLine.getVendorStructureId().get(),
         equalTo(securityRuleVendorStructureId(sharedRuleName, SHARED_VSYS_NAME, filename)));
+    assertThat(
+        sharedLine.getTraceElement(),
+        equalTo(matchSecurityRuleTraceElement(sharedRuleName, SHARED_VSYS_NAME, filename)));
 
     // Security rule from Panorama vsys has the correct VSID (pointing to Panorama vsys)
     AclLine panoramaLine = z1ToZ2Filter.getLines().get(1);
@@ -3814,6 +3817,9 @@ public final class PaloAltoGrammarTest {
     assertThat(
         panoramaLine.getVendorStructureId().get(),
         equalTo(securityRuleVendorStructureId(panoramaRuleName, PANORAMA_VSYS_NAME, filename)));
+    assertThat(
+        panoramaLine.getTraceElement(),
+        equalTo(matchSecurityRuleTraceElement(panoramaRuleName, PANORAMA_VSYS_NAME, filename)));
   }
 
   @Test

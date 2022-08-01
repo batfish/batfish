@@ -1663,7 +1663,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
-        .setTraceElement(matchSecurityRuleTraceElement(rule.getName(), namespaceVsys))
+        .setTraceElement(matchSecurityRuleTraceElement(rule.getName(), ruleVsys))
         .setVendorStructureId(
             securityRuleVendorStructureId(rule.getName(), ruleVsys.getName(), _filename))
         .build();
