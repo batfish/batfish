@@ -54,6 +54,7 @@ public class BenchOrAll {
     for (int i = 0; i < _numDisjuncts; i++) {
       res.orEq(randomIpBdd());
     }
+    res.free();
   }
 
   @Benchmark
@@ -62,6 +63,6 @@ public class BenchOrAll {
     for (int i = 0; i < _numDisjuncts; i++) {
       disjuncts[i] = randomIpBdd();
     }
-    _pkt.getFactory().orAll(disjuncts);
+    _pkt.getFactory().orAll(disjuncts).free();
   }
 }
