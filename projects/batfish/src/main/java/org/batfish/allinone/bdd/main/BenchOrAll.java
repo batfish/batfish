@@ -1,18 +1,24 @@
 package org.batfish.allinone.bdd.main;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
 public class BenchOrAll {
   private static final int NUM_IP_BDDS = 1000;
@@ -25,9 +31,9 @@ public class BenchOrAll {
   public String _factoryName;
 
   @Param({"2", "4", "8", "16", "32", "64"})
-  public String _numDisjunctsStr;
+  public int _numDisjuncts;
 
-  private int _numDisjuncts;
+  private BDD[] _disjuncts;
 
   private Ip randomIp() {
     return Ip.create(Math.abs(_rng.nextInt()));
@@ -41,7 +47,7 @@ public class BenchOrAll {
         IntStream.range(0, NUM_IP_BDDS)
             .mapToObj(i -> _pkt.getDstIp().toBDD(randomIp()))
             .toArray(BDD[]::new);
-    _numDisjuncts = Integer.parseInt(_numDisjunctsStr);
+    _disjuncts = new BDD[_numDisjuncts];
   }
 
   private BDD randomIpBdd() {
@@ -59,10 +65,9 @@ public class BenchOrAll {
 
   @Benchmark
   public void benchOrAll() {
-    BDD[] disjuncts = new BDD[_numDisjuncts];
     for (int i = 0; i < _numDisjuncts; i++) {
-      disjuncts[i] = randomIpBdd();
+      _disjuncts[i] = randomIpBdd();
     }
-    _pkt.getFactory().orAll(disjuncts).free();
+    _pkt.getFactory().orAll(_disjuncts).free();
   }
 }
