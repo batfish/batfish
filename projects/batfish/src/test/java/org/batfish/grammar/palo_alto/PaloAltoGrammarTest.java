@@ -4352,6 +4352,86 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testApplicationOverrideRuleDiffVsysVSIDs() {
+    String panoramaHostname = "application-override-diff-vsys-vsids";
+    String filename = TESTCONFIGS_PREFIX + panoramaHostname;
+    PaloAltoConfiguration panConfig = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = panConfig.toVendorIndependentConfigurations();
+
+    String firewallId1 = "00000001";
+    String vsysName = "vsys1";
+    String zone1Name = "z1";
+    String zone2Name = "z2";
+    String if1name = "ethernet1/1";
+
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    // Arbitrarily choose one zone pair to test (rule should be applied to all zone pairs)
+    IpAccessList z1ToZ2Filter =
+        firewall1
+            .getIpAccessLists()
+            .get(
+                zoneToZoneFilter(
+                    computeObjectName(vsysName, zone1Name),
+                    computeObjectName(vsysName, zone2Name)));
+
+    // Matches RULE1
+    Flow flowRULE1 =
+        Flow.builder()
+            .setIngressNode(firewall1.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setDstPort(22)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+    List<TraceTree> flowTraceRULE1 =
+        AclTracer.trace(
+            z1ToZ2Filter,
+            flowRULE1,
+            if1name,
+            firewall1.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+
+    // App-override VSID should point to the correct vsys
+    // Even though it is in a different vsys (Panorama) than the interfaces/zones (vsys1)
+    assertThat(
+        flowTraceRULE1,
+        contains(
+            isTraceTree(
+                matchSecurityRuleTraceElement("RULE1", PANORAMA_VSYS_NAME, filename),
+                isTraceTree(
+                    matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                isTraceTree(
+                    matchDestinationAddressTraceElement(),
+                    isTraceTree(matchAddressAnyTraceElement())),
+                isTraceTree(
+                    matchServiceApplicationDefaultTraceElement(),
+                    isTraceTree(
+                        matchApplicationObjectTraceElement(
+                            "OVERRIDE_SSH", SHARED_VSYS_NAME, filename),
+                        isTraceTree(
+                            matchApplicationOverrideRuleTraceElement(
+                                "OVERRIDE_APP_RULE1", PANORAMA_VSYS_NAME, filename),
+                            isTraceTree(
+                                matchSourceAddressTraceElement(),
+                                isTraceTree(matchAddressAnyTraceElement())),
+                            isTraceTree(
+                                matchDestinationAddressTraceElement(),
+                                isTraceTree(matchAddressAnyTraceElement())),
+                            TraceTreeMatchers.hasTraceElement("Matched protocol TCP"),
+                            TraceTreeMatchers.hasTraceElement("Matched port")))))));
+  }
+
+  @Test
   public void testApplicationOverrideRuleTraceElements() {
     String hostname = "application-override-tracing";
     String filename = "configs/" + hostname;
