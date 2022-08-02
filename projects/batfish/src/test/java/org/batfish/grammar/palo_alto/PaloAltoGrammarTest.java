@@ -4371,6 +4371,7 @@ public final class PaloAltoGrammarTest {
     Configuration firewall1 =
         viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
 
+    // Arbitrarily choose one zone pair to test (rule should be applied to all zone pairs)
     IpAccessList z1ToZ2Filter =
         firewall1
             .getIpAccessLists()
