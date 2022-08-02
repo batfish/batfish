@@ -743,7 +743,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    */
   private AclLineMatchExpr buildApplicationOverrideApplicationAcl(
       Vsys vsys,
-      List<ApplicationOverrideRule> rules,
+      List<AppOverrideRuleAndVsys> rules,
       Map<String, AclLineMatchExpr> ruleNameToAcl,
       ApplicationOrApplicationGroupReference app) {
     // Exprs that match the specified application name
@@ -753,7 +753,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Running list of app-override rules that precede the one we're evaluating
     ImmutableList.Builder<AclLineMatchExpr> preceding = ImmutableList.builder();
 
-    for (ApplicationOverrideRule rule : rules) {
+    for (AppOverrideRuleAndVsys ruleAndVsys : rules) {
+      ApplicationOverrideRule rule = ruleAndVsys.getRule();
+      Vsys ruleVsys = ruleAndVsys.getVsys();
       AclLineMatchExpr ruleAcl = ruleNameToAcl.get(rule.getName());
 
       // For each rule corresponding to the app we're interested in, add another appMatchExpr
@@ -769,7 +771,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             new AndMatchExpr(
                 childMatchExprs.build(),
                 matchApplicationOverrideRuleTraceElement(
-                    rule.getName(), vsys.getName(), _filename)));
+                    rule.getName(), ruleVsys.getName(), _filename)));
       }
 
       preceding.add(ruleAcl);
@@ -819,26 +821,51 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
+   * Simple container class with an {@link ApplicationOverrideRule} and its containing {@link Vsys}.
+   */
+  private class AppOverrideRuleAndVsys {
+    public AppOverrideRuleAndVsys(ApplicationOverrideRule rule, Vsys vsys) {
+      _rule = rule;
+      _vsys = vsys;
+    }
+
+    public ApplicationOverrideRule getRule() {
+      return _rule;
+    }
+
+    public Vsys getVsys() {
+      return _vsys;
+    }
+
+    private final ApplicationOverrideRule _rule;
+    private final Vsys _vsys;
+  }
+
+  /**
    * Collects the application-override rules from this Vsys and merges the common
    * pre-/post-rulebases from Panorama. Filters out rules that aren't applicable or are invalid.
    */
   @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
-  private List<ApplicationOverrideRule> getApplicableApplicationOverrideRules(
+  private List<AppOverrideRuleAndVsys> getApplicableApplicationOverrideRules(
       Vsys vsys, String fromZone, String toZone) {
-    Stream<ApplicationOverrideRule> pre =
+    Stream<AppOverrideRuleAndVsys> pre =
         _panorama == null
             ? Stream.of()
-            : _panorama.getPreRulebase().getApplicationOverrideRules().values().stream();
-    Stream<ApplicationOverrideRule> post =
+            : _panorama.getPreRulebase().getApplicationOverrideRules().values().stream()
+                .map(r -> new AppOverrideRuleAndVsys(r, _panorama));
+    Stream<AppOverrideRuleAndVsys> post =
         _panorama == null
             ? Stream.of()
-            : _panorama.getPostRulebase().getApplicationOverrideRules().values().stream();
-    Stream<ApplicationOverrideRule> rules =
-        vsys.getRulebase().getApplicationOverrideRules().values().stream();
+            : _panorama.getPostRulebase().getApplicationOverrideRules().values().stream()
+                .map(r -> new AppOverrideRuleAndVsys(r, _panorama));
+    Stream<AppOverrideRuleAndVsys> rules =
+        vsys.getRulebase().getApplicationOverrideRules().values().stream()
+            .map(r -> new AppOverrideRuleAndVsys(r, vsys));
 
     return Stream.concat(Stream.concat(pre, rules), post)
-        .filter(this::applicationOverrideRuleValid)
-        .filter(e -> applicationOverrideRuleApplies(fromZone, toZone, e))
+        .filter(ruleAndVsys -> applicationOverrideRuleValid(ruleAndVsys.getRule()))
+        .filter(
+            ruleAndVsys -> applicationOverrideRuleApplies(fromZone, toZone, ruleAndVsys.getRule()))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -887,17 +914,21 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private Map<String, AclLineMatchExpr> buildApplicationOverrideMap(
       Vsys vsys, String fromZone, String toZone) {
     // Ordered list of rules that are applicable to the current fromZone, toZone, and vsys
-    List<ApplicationOverrideRule> rules =
+    List<AppOverrideRuleAndVsys> rules =
         getApplicableApplicationOverrideRules(vsys, fromZone, toZone);
 
     // First, build independent ACLs for each rule (ignoring things like shadowing)
     Map<String, AclLineMatchExpr> ruleNameToAcl = new HashMap<>();
-    rules.forEach(r -> ruleNameToAcl.put(r.getName(), buildApplicationOverrideRuleAcl(vsys, r)));
+    rules.forEach(
+        ruleAndVsys ->
+            ruleNameToAcl.put(
+                ruleAndVsys.getRule().getName(),
+                buildApplicationOverrideRuleAcl(vsys, ruleAndVsys.getRule())));
 
     // Next, build map of app name to ACL, using the converted rules from above
     Map<String, AclLineMatchExpr> appNameToAcl = new HashMap<>();
     rules.stream()
-        .map(ApplicationOverrideRule::getApplication)
+        .map(ruleAndVsys -> ruleAndVsys.getRule().getApplication())
         .collect(ImmutableSet.toImmutableSet())
         .forEach(
             a ->
