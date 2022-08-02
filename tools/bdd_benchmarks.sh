@@ -25,10 +25,6 @@ then
   CMD="$CMD -i 1 -f 1 -wi 1 -w 1 -r 1"
 fi
 
-function list() {
-  $CMD -l | tail -n +2
-}
-
 function run() {
   BDD_FACTORY=$1
   THREADS=$2
@@ -49,3 +45,7 @@ run JFactory 5 $b
 run JFactory 6 $b
 run JFactory 7 $b
 run JFactory 8 $b
+run JFactory 10 $b
+run JFactory 12 $b
+run JFactory 16 $b
+run JFactory 20 $b
