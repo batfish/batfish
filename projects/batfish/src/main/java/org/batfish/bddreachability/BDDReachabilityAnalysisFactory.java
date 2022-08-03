@@ -39,6 +39,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -179,7 +180,7 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting final @Nonnull BDDFibGenerator _bddFibGenerator;
 
   private final Map<String, BDDSourceManager> _bddSourceManagers;
-  private final Map<String, IpAccessListToBdd> _aclToBdds = new HashMap<>();
+  private final Map<String, IpAccessListToBdd> _aclToBdds = new ConcurrentHashMap<>();
   private final Map<String, BDDOutgoingOriginalFlowFilterManager>
       _bddOutgoingOriginalFlowFilterManagers;
 

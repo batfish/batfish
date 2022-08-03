@@ -66,4 +66,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.parboiled:parboiled-java:1.3.1",
     "org.skyscreamer:jsonassert:1.5.0",
     "org.xerial:sqlite-jdbc:3.25.2",
+#    "com.github.biboudis:jmh-profilers:0.1.4",
+    "org.openjdk.jmh:jmh-core:1.35",
+    "org.openjdk.jmh:jmh-generator-annprocess:1.35",
 ]

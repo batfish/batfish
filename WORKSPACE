@@ -91,21 +91,3 @@ http_jar(
     sha256 = "6852386d7975eff29171dae002cc223251510d35f291ae277948f381a7b380b4",
     url = "https://search.maven.org/remotecontent?filepath=org/antlr/antlr4/4.7.2/antlr4-4.7.2-complete.jar",
 )
-
-# Bazel rule for jmh (java microbenchmark harness)
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-  name = "rules_jmh",
-  strip_prefix = "buchgr-rules_jmh-6ccf8d7",
-  url = "https://github.com/buchgr/rules_jmh/zipball/6ccf8d7b270083982e5c143935704b9f3f18b256",
-  type = "zip",
-  sha256 = "dbb7d7e5ec6e932eddd41b910691231ffd7b428dff1ef9a24e4a9a59c1a1762d",
-)
-
-load("@rules_jmh//:deps.bzl", "rules_jmh_deps")
-rules_jmh_deps()
-load("@rules_jmh//:defs.bzl", "rules_jmh_maven_deps")
-rules_jmh_maven_deps()
-

@@ -165,6 +165,11 @@ public class TestrigText {
       return this;
     }
 
+    public @Nonnull Builder setIspConfigBytes(@Nonnull byte[] ispConfigBytes) {
+      _ispConfigBytes = ispConfigBytes;
+      return this;
+    }
+
     public @Nonnull Builder setIspConfigPrefix(@Nonnull String testrigResourcePrefix) {
       _ispConfigBytes =
           readTestrigResources(
@@ -172,6 +177,11 @@ public class TestrigText {
               .values()
               .iterator()
               .next();
+      return this;
+    }
+
+    public @Nonnull Builder setLayer1TopologyBytes(@Nonnull byte[] layer1TopologyBytes) {
+      _layer1TopologyBytes = layer1TopologyBytes;
       return this;
     }
 

@@ -4,13 +4,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -69,7 +69,7 @@ public class BDDPacket implements Serializable {
   private static final int TCP_FLAG_LENGTH = 1;
   private static final int PACKET_LENGTH_LENGTH = 16;
 
-  private final Map<Integer, String> _bitNames;
+  private final BiMap<Integer, String> _bitNames;
   private final BDDFactory _factory;
   private int _nextFreeBDDVarIdxBeforePacketVars = 0;
   private int _nextFreeBDDVarIdx = FIRST_PACKET_VAR;
@@ -141,7 +141,7 @@ public class BDDPacket implements Serializable {
       _factory.setVarNum(numNeeded);
     }
 
-    _bitNames = new HashMap<>();
+    _bitNames = HashBiMap.create();
 
     _dstIp = allocatePrimedBDDInteger("dstIp", IP_LENGTH);
     _srcIp = allocatePrimedBDDInteger("srcIp", IP_LENGTH);
@@ -233,6 +233,9 @@ public class BDDPacket implements Serializable {
   }
 
   private BDD allocateBDDBitAfterPacketVars(String name) {
+    if (_bitNames.containsValue(name)) {
+      return _factory.ithVar(_bitNames.inverse().get(name));
+    }
     if (_factory.varNum() < _nextFreeBDDVarIdx + 1) {
       _factory.setVarNum(_nextFreeBDDVarIdx + 1);
     }
