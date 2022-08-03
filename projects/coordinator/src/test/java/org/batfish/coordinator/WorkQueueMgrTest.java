@@ -90,7 +90,17 @@ public final class WorkQueueMgrTest {
       case ASSIGN_SUCCESS:
         {
           QueuedWork work = _workQueueMgr.getWorkForAssignment();
-          _workQueueMgr.markAssignmentSuccess(work, "test");
+          _workQueueMgr.markAssignmentSuccess(
+              work,
+              new TaskHandle() {
+                @Override
+                public Task checkTask() {
+                  return new Task(TaskStatus.InProgress);
+                }
+
+                @Override
+                public void postTermination() {}
+              });
           return work;
         }
       case QUEUE:
