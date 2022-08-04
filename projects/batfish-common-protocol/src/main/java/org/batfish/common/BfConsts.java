@@ -8,6 +8,12 @@ package org.batfish.common;
 
 public class BfConsts {
 
+  /**
+   * If true, use old-style pool manager and worker registration (takes up two ports). Else, work
+   * manager should directly spawn Batfish worker threads.
+   */
+  public static final boolean USE_LEGACY_POOL_WORK_EXECUTOR = false;
+
   public enum TaskStatus {
     InProgress,
     RequeueFailure,

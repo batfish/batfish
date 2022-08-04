@@ -182,7 +182,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   private final IdManager _idManager;
   private final BatfishLogger _logger;
-  private final Settings _settings;
   private final SnapshotMetadataMgr _snapshotMetadataManager;
   private WorkQueueMgr _workQueueMgr;
   private final StorageProvider _storage;
@@ -192,8 +191,8 @@ public class WorkMgr extends AbstractCoordinator {
       Settings settings,
       BatfishLogger logger,
       @Nonnull IdManager idManager,
-      @Nonnull StorageProvider storage) {
-    _settings = settings;
+      @Nonnull StorageProvider storage,
+      @Nonnull WorkExecutorCreator workExecutorCreator) {
     _idManager = idManager;
     _storage = storage;
     _snapshotMetadataManager = new SnapshotMetadataMgr(_storage);
@@ -204,8 +203,7 @@ public class WorkMgr extends AbstractCoordinator {
     _gcExecutor =
         new ThreadPoolExecutor(
             0, 1, 0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1), new DiscardOldestPolicy());
-    // TODO: implement simple worker assigner and use instead
-    _assigner = new PoolAssigner(_logger, _settings);
+    _workExecutor = workExecutorCreator.apply(logger, settings);
   }
 
   @VisibleForTesting
@@ -223,7 +221,22 @@ public class WorkMgr extends AbstractCoordinator {
         // _logger.info("WM:AssignWork: No unassigned work\n");
         return;
       }
-      _assigner.assign(work).applyTo(_workQueueMgr);
+      SubmissionResult result = _workExecutor.submit(work);
+      switch (result.getType()) {
+        case ERROR:
+          _workQueueMgr.markAssignmentError(work);
+          break;
+        case SUCCESS:
+          TaskHandle handle = result.getTaskHandle();
+          assert handle != null;
+          _workQueueMgr.markAssignmentSuccess(work, handle);
+          break;
+        case FAILURE:
+          _workQueueMgr.markAssignmentFailure(work);
+          break;
+        case TERMINATED:
+          break;
+      }
     } catch (Exception e) {
       _logger.errorf("Got exception in assignWork: %s\n", Throwables.getStackTraceAsString(e));
     }
@@ -244,9 +257,6 @@ public class WorkMgr extends AbstractCoordinator {
           _workQueueMgr.processTaskCheckResult(work, task);
         } catch (Exception e) {
           _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
-        }
-        if (task.getStatus().isTerminated()) {
-          assignedHandle.postTermination();
         }
       }
     } catch (Exception e) {
@@ -2143,5 +2153,5 @@ public class WorkMgr extends AbstractCoordinator {
         firstNonNull(getReferenceLibrary(network), new ReferenceLibrary(null)));
   }
 
-  private final Assigner _assigner;
+  private final WorkExecutor _workExecutor;
 }

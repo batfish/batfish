@@ -90,7 +90,9 @@ public class WorkMgrServiceTest {
     Main.setLogger(logger);
     Main.initAuthorizer();
     FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
-    WorkMgr manager = new WorkMgr(settings, logger, new StorageBasedIdManager(fbs), fbs);
+    WorkMgr manager =
+        new WorkMgr(
+            settings, logger, new StorageBasedIdManager(fbs), fbs, new TestWorkExecutorCreator());
     Main.setWorkMgr(manager);
     manager.initNetwork(_networkName, null);
     manager.getIdManager().assignNetwork(_networkName, _networkId);
@@ -413,5 +415,18 @@ public class WorkMgrServiceTest {
     // networkArg should be name, not ID
     assertTrue(networkArg.isDone());
     assertThat(networkArg.get(), equalTo(_networkName));
+  }
+
+  static class TestWorkExecutorCreator implements WorkExecutorCreator {
+
+    @Override
+    public WorkExecutor apply(BatfishLogger batfishLogger, Settings settings) {
+      return new WorkExecutor() {
+        @Override
+        public SubmissionResult submit(QueuedWork work) {
+          throw new UnsupportedOperationException();
+        }
+      };
+    }
   }
 }

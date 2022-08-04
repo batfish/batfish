@@ -10,10 +10,4 @@ public interface TaskHandle {
 
   /** Fetches the status of queued work in the form of a {@link Task}. */
   Task checkTask();
-
-  /**
-   * Cleanup function to be called in the case that result of {@link #checkTask()} is a terminated
-   * task.
-   */
-  void postTermination();
 }

@@ -20,9 +20,9 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.uri.UriComponent;
 
-/** Legacy pool-based assigner implementation. */
+/** Legacy {@link WorkExecutor} implementation that passes work items to idle workers in a pool. */
 @ParametersAreNonnullByDefault
-public class PoolAssigner implements Assigner {
+public class PoolWorkExecutor implements WorkExecutor {
 
   /** A task handler that checks work by querying the worker assigned from the pool. */
   private class PoolTaskHandle implements TaskHandle {
@@ -37,6 +37,14 @@ public class PoolAssigner implements Assigner {
 
     @Override
     public Task checkTask() {
+      Task task = doCheckTask();
+      if (task.getStatus().isTerminated()) {
+        Main.getPoolMgr().refreshWorkerStatus(_worker);
+      }
+      return task;
+    }
+
+    private Task doCheckTask() {
       _logger.debugf("WM:CheckWork: Trying to check %s on %s\n", _work, _worker);
       Task task = new Task(TaskStatus.UnreachableOrBadResponse);
       Client client = null;
@@ -95,31 +103,26 @@ public class PoolAssigner implements Assigner {
 
       return task;
     }
-
-    @Override
-    public void postTermination() {
-      Main.getPoolMgr().refreshWorkerStatus(_worker);
-    }
   }
 
-  public PoolAssigner(BatfishLogger logger, Settings settings) {
+  public PoolWorkExecutor(BatfishLogger logger, Settings settings) {
     _logger = logger;
     _settings = settings;
   }
 
   @Override
-  public AssignmentResult assign(QueuedWork work) {
+  public SubmissionResult submit(QueuedWork work) {
     String idleWorker = Main.getPoolMgr().getWorkerForAssignment();
 
     // get out if no idle worker was found, but release the work first
     if (idleWorker == null) {
       _logger.info("WM:AssignWork: No idle worker\n");
-      return new FailureAssignmentResult(work);
+      return SubmissionResult.failure();
     }
     return assignWork(work, idleWorker);
   }
 
-  private @Nonnull AssignmentResult assignWork(QueuedWork work, String worker) {
+  private @Nonnull SubmissionResult assignWork(QueuedWork work, String worker) {
 
     _logger.infof("WM:AssignWork: Trying to assign %s to %s\n", work, worker);
 
@@ -157,7 +160,7 @@ public class PoolAssigner implements Assigner {
         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
           _logger.errorf("WM:AssignWork: Got non-OK response %s\n", response.getStatus());
           // previous to refactoring, returned with no value
-          return new FailureAssignmentResult(work);
+          return SubmissionResult.failure();
         }
         String sobj = response.readEntity(String.class);
         array = new JSONArray(sobj);
@@ -188,23 +191,23 @@ public class PoolAssigner implements Assigner {
     }
 
     if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
-      return TerminatedAssignmentResult.instance();
+      return SubmissionResult.terminated();
     }
 
     // mark the assignment results for both work and worker
     if (assignmentError) {
-      return new ErrorAssignmentResult(work);
+      return SubmissionResult.error();
     } else if (assigned) {
       try {
         Main.getPoolMgr().markAssignmentResult(worker, assigned);
       } catch (Exception e) {
         String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignment for work %s: %s\n", work, stackTrace);
-        return new FailureAssignmentResult(work);
+        return SubmissionResult.failure();
       }
-      return new SuccessAssignmentResult(work, new PoolTaskHandle(work, worker));
+      return SubmissionResult.success(new PoolTaskHandle(work, worker));
     } else {
-      return new FailureAssignmentResult(work);
+      return SubmissionResult.failure();
     }
   }
 

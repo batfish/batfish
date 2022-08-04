@@ -11,7 +11,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
-import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.LaunchResult;
 import org.batfish.common.Task;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.codehaus.jettison.json.JSONArray;
@@ -57,10 +57,7 @@ public class Service {
         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
       }
 
-      Task task = BatchManager.get().getTaskFromLog(taskId);
-      if (task == null) {
-        task = new Task(TaskStatus.Unknown);
-      }
+      Task task = Driver.getBatfishWorkerService().getTaskStatus(taskId);
       String taskStr = BatfishObjectMapper.writeString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {
@@ -105,8 +102,20 @@ public class Service {
       String[] args = argsList.toArray(new String[argsList.size()]);
 
       _logger.infof("Will run with args: %s\n", Arrays.toString(args));
+      LaunchResult lr = Driver.getBatfishWorkerService().runTask(taskId, args);
 
-      return new JSONArray(Driver.runBatfishThroughService(taskId, args));
+      switch (lr.getType()) {
+        case BUSY:
+          return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "worker not idle"));
+        case ERROR:
+          return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, lr.getMessage()));
+        case LAUNCHED:
+          return new JSONArray(
+              Arrays.asList(BfConsts.SVC_SUCCESS_KEY, String.format("launched %s", taskId)));
+        default:
+          throw new IllegalArgumentException(
+              String.format("Invalid LaunchResult.Type: %s", lr.getType()));
+      }
     } catch (Exception e) {
       return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
     }

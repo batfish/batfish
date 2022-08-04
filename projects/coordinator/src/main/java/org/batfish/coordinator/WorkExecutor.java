@@ -2,10 +2,10 @@ package org.batfish.coordinator;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Entity that assigns queued work to some abstract batfish worker. */
+/** Entity that executes work items to be performed work to some abstract batfish worker. */
 @ParametersAreNonnullByDefault
-public interface Assigner {
+public interface WorkExecutor {
 
   /** Attempt to assign work and return the result of the attempt. */
-  AssignmentResult assign(QueuedWork work);
+  SubmissionResult submit(QueuedWork work);
 }

@@ -1,5 +1,7 @@
 package org.batfish.allinone;
 
+import static org.batfish.common.BfConsts.USE_LEGACY_POOL_WORK_EXECUTOR;
+
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import java.util.ArrayList;
@@ -10,7 +12,12 @@ import java.util.concurrent.ExecutionException;
 import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.util.BindPortFutures;
+import org.batfish.coordinator.BatfishWorkerServiceWorkExecutor;
+import org.batfish.coordinator.PoolWorkExecutor;
+import org.batfish.coordinator.WorkExecutorCreator;
+import org.batfish.main.Driver;
 
 public class AllInOne {
 
@@ -137,14 +144,18 @@ public class AllInOne {
 
     String batfishArgs =
         String.format(
-            "%s -%s %s -%s %s -%s %s -%s %s",
+            "%s -%s %s -%s %s %s -%s %s",
             _settings.getBatfishArgs(),
             org.batfish.config.Settings.ARG_RUN_MODE,
             _settings.getBatfishRunMode(),
             org.batfish.config.Settings.ARG_COORDINATOR_REGISTER,
             "true",
-            org.batfish.config.Settings.ARG_COORDINATOR_POOL_PORT,
-            bindPortFutures.getPoolPort().get(),
+            BfConsts.USE_LEGACY_POOL_WORK_EXECUTOR
+                ? String.format(
+                    "-%s %s",
+                    org.batfish.config.Settings.ARG_COORDINATOR_POOL_PORT,
+                    bindPortFutures.getPoolPort().get())
+                : "",
             org.batfish.config.Settings.ARG_TRACING_ENABLE,
             _settings.getTracingEnable());
     // If we are running a command file, just use an ephemeral port for worker
@@ -201,8 +212,15 @@ public class AllInOne {
         new Thread("coordinatorThread") {
           @Override
           public void run() {
+            WorkExecutorCreator workExecutorCreator =
+                USE_LEGACY_POOL_WORK_EXECUTOR
+                    ? PoolWorkExecutor::new
+                    : (logger, settings) ->
+                        new BatfishWorkerServiceWorkExecutor(
+                            logger, Driver.getBatfishWorkerService());
             try {
-              org.batfish.coordinator.Main.main(argArray, _logger, bindPortFutures);
+              org.batfish.coordinator.Main.main(
+                  argArray, _logger, bindPortFutures, workExecutorCreator);
             } catch (Exception e) {
               _logger.errorf(
                   "Initialization of coordinator failed with args: %s\nExceptionMessage: %s\n",
