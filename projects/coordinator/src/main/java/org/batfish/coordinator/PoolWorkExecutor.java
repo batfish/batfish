@@ -117,7 +117,7 @@ public class PoolWorkExecutor implements WorkExecutor {
     // get out if no idle worker was found, but release the work first
     if (idleWorker == null) {
       _logger.info("WM:AssignWork: No idle worker\n");
-      return SubmissionResult.failure();
+      return SubmissionResult.busy();
     }
     return assignWork(work, idleWorker);
   }
@@ -160,7 +160,7 @@ public class PoolWorkExecutor implements WorkExecutor {
         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
           _logger.errorf("WM:AssignWork: Got non-OK response %s\n", response.getStatus());
           // previous to refactoring, returned with no value
-          return SubmissionResult.failure();
+          return SubmissionResult.busy();
         }
         String sobj = response.readEntity(String.class);
         array = new JSONArray(sobj);
@@ -203,11 +203,11 @@ public class PoolWorkExecutor implements WorkExecutor {
       } catch (Exception e) {
         String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignment for work %s: %s\n", work, stackTrace);
-        return SubmissionResult.failure();
+        return SubmissionResult.busy();
       }
       return SubmissionResult.success(new PoolTaskHandle(work, worker));
     } else {
-      return SubmissionResult.failure();
+      return SubmissionResult.busy();
     }
   }
 

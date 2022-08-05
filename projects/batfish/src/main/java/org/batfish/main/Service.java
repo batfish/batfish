@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -57,7 +58,9 @@ public class Service {
         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
       }
 
-      Task task = Driver.getBatfishWorkerService().getTaskStatus(taskId);
+      Task task =
+          Optional.ofNullable(Driver.getBatfishWorkerService().getTaskStatus(taskId))
+              .orElse(Task.unknown());
       String taskStr = BatfishObjectMapper.writeString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {

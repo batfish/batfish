@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -8,23 +10,33 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class SubmissionResult {
 
-  enum Type {
+  public enum Type {
+    /**
+     * The submission failed because of an unrecoverable error. The submission should not be
+     * reattempted.
+     */
     ERROR,
+    /** The submission succeeded. The result contains a task handle to track the submission. */
     SUCCESS,
-    FAILURE,
+    /**
+     * The submission failed because the executor is currently busy. The submission should be
+     * reattempted at a later time.
+     */
+    BUSY,
+    /** The submission succeeded, but has already terminated. */
     TERMINATED
   }
 
-  public static @Nonnull SubmissionResult error() {
-    return ERROR;
+  public static @Nonnull SubmissionResult error(String message) {
+    return new SubmissionResult(Type.ERROR, null, message);
   }
 
-  public static @Nonnull SubmissionResult failure() {
-    return FAILURE;
+  public static @Nonnull SubmissionResult busy() {
+    return BUSY;
   }
 
   public static @Nonnull SubmissionResult success(TaskHandle handle) {
-    return new SubmissionResult(handle, Type.SUCCESS);
+    return new SubmissionResult(Type.SUCCESS, handle, null);
   }
 
   public static @Nonnull SubmissionResult terminated() {
@@ -35,20 +47,39 @@ public final class SubmissionResult {
     return _type;
   }
 
-  public @Nullable TaskHandle getTaskHandle() {
+  /**
+   * Task handle for a result of type {@link Type#SUCCESS}.
+   *
+   * @throws IllegalStateException if result is of any other type.
+   */
+  public @Nonnull TaskHandle getTaskHandle() {
+    checkState(_type == Type.SUCCESS, "Only a submission of type SUCCESS has a task handle");
+    assert _taskHandle != null;
     return _taskHandle;
   }
 
-  private SubmissionResult(@Nullable TaskHandle taskHandle, Type type) {
-    _taskHandle = taskHandle;
-    _type = type;
+  /**
+   * Message for a result of type {@link Type#ERROR}.
+   *
+   * @throws IllegalStateException if result is of any other type.
+   */
+  public @Nonnull String getMessage() {
+    checkState(_type == Type.ERROR, "Only a submission of type ERROR has a message");
+    assert _message != null;
+    return _message;
   }
 
-  private static final SubmissionResult ERROR = new SubmissionResult(null, Type.ERROR);
-  private static final SubmissionResult FAILURE = new SubmissionResult(null, Type.FAILURE);
-  private static final SubmissionResult TERMINATED = new SubmissionResult(null, Type.TERMINATED);
+  private SubmissionResult(Type type, @Nullable TaskHandle taskHandle, @Nullable String message) {
+    _type = type;
+    _taskHandle = taskHandle;
+    _message = message;
+  }
+
+  private static final SubmissionResult BUSY = new SubmissionResult(Type.BUSY, null, null);
+  private static final SubmissionResult TERMINATED =
+      new SubmissionResult(Type.TERMINATED, null, null);
 
   private final @Nonnull Type _type;
-
+  private final @Nullable String _message;
   private final @Nullable TaskHandle _taskHandle;
 }

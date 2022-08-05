@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import javax.annotation.Nonnull;
 import org.batfish.common.Task;
 
 /**
@@ -9,5 +10,6 @@ import org.batfish.common.Task;
 public interface TaskHandle {
 
   /** Fetches the status of queued work in the form of a {@link Task}. */
+  @Nonnull
   Task checkTask();
 }

@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -7,12 +9,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishWorkerService;
 import org.batfish.common.BfConsts;
 import org.batfish.common.LaunchResult;
+import org.batfish.common.Task;
 
 /**
  * {@link WorkExecutor} implementation that delegates directly to a {@link BatfishWorkerService}.
@@ -28,14 +32,14 @@ public class BatfishWorkerServiceWorkExecutor implements WorkExecutor {
 
   @Override
   public SubmissionResult submit(QueuedWork work) {
-    String taskId = work.getId().toString();
-    Map<String, String> params = new HashMap<>(work.resolveRequestParams());
-    params.put(
-        BfConsts.ARG_STORAGE_BASE,
-        Main.getSettings().getContainersLocation().toAbsolutePath().toString());
-    _logger.infof("BFS:runTask(%s,%s)\n", taskId, params);
-    assert !Strings.isNullOrEmpty(taskId);
     try {
+      String taskId = work.getId().toString();
+      checkArgument(!Strings.isNullOrEmpty(taskId), "taskId must be non-empty");
+      Map<String, String> params = new HashMap<>(work.resolveRequestParams());
+      params.put(
+          BfConsts.ARG_STORAGE_BASE,
+          Main.getSettings().getContainersLocation().toAbsolutePath().toString());
+      _logger.infof("BFS:runTask(%s,%s)\n", taskId, params);
       ImmutableList.Builder<String> argsBuilder = ImmutableList.builder();
       params.forEach(
           (k, v) -> {
@@ -51,22 +55,21 @@ public class BatfishWorkerServiceWorkExecutor implements WorkExecutor {
       LaunchResult lr = _batfishWorkerService.runTask(taskId, args);
       switch (lr.getType()) {
         case LAUNCHED:
-          _logger.info(String.format("Work submitted with ID: %s\n", taskId));
-          return SubmissionResult.success(() -> _batfishWorkerService.getTaskStatus(taskId));
+          return SubmissionResult.success(
+              () ->
+                  Optional.ofNullable(_batfishWorkerService.getTaskStatus(taskId))
+                      .orElse(Task.unknown()));
         case BUSY:
-          _logger.warn(String.format("Work with ID: %s requeued because worker is busy\n", taskId));
-          return SubmissionResult.failure();
+          return SubmissionResult.busy();
         case ERROR:
-          _logger.error(String.format("Error submitting work: %s\n", lr.getMessage()));
-          return SubmissionResult.error();
+          return SubmissionResult.error(lr.getMessage());
         default:
           throw new IllegalArgumentException(
               String.format("Invalid LaunchResult.Type: %s", lr.getType()));
       }
     } catch (Exception e) {
-      _logger.error(
+      return SubmissionResult.error(
           String.format("Exception submitting work: %s\n", Throwables.getStackTraceAsString(e)));
-      return SubmissionResult.error();
     }
   }
 

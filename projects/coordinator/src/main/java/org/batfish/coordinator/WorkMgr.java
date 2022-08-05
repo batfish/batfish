@@ -224,14 +224,17 @@ public class WorkMgr extends AbstractCoordinator {
       SubmissionResult result = _workExecutor.submit(work);
       switch (result.getType()) {
         case ERROR:
+          _logger.error(String.format("Error submitting work: %s\n", result.getMessage()));
           _workQueueMgr.markAssignmentError(work);
           break;
         case SUCCESS:
+          _logger.info(String.format("Work submitted with ID: %s\n", work.getId()));
           TaskHandle handle = result.getTaskHandle();
-          assert handle != null;
           _workQueueMgr.markAssignmentSuccess(work, handle);
           break;
-        case FAILURE:
+        case BUSY:
+          _logger.warn(
+              String.format("Work with ID: %s requeued because worker is busy\n", work.getId()));
           _workQueueMgr.markAssignmentFailure(work);
           break;
         case TERMINATED:
