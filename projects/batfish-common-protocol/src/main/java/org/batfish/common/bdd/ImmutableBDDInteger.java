@@ -73,23 +73,42 @@ public class ImmutableBDDInteger extends BDDInteger implements Serializable {
   @Override
   public BDD toBDD(IpWildcard ipWildcard) {
     checkArgument(_bitvec.length >= Prefix.MAX_PREFIX_LENGTH);
+    if (ipWildcard.isPrefix()) {
+      return firstBitsEqual(
+          ipWildcard.getIp().asLong(), Integer.numberOfLeadingZeros((int) ipWildcard.getMask()));
+    }
+
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcardMask();
-    BDD ret = _factory.one();
+
+    int sigBits = 0;
+    int bit = 1;
+    for (int i = 0; i < Prefix.MAX_PREFIX_LENGTH; i++) {
+      if ((wildcard & bit) == 0) {
+        sigBits++;
+      }
+      bit <<= 1;
+    }
+    assert sigBits < Prefix.MAX_PREFIX_LENGTH;
+
+    BDD[] literals = new BDD[sigBits];
+
+    int lit = literals.length - 1; // populating literals back-to-front
     for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
       boolean significant = (wildcard & 1) == 0;
       if (significant) {
         boolean bitValue = (ip & 1) == 1;
         if (bitValue) {
-          ret.andEq(_bitvec[i]);
+          literals[lit] = _bitvec[i];
         } else {
-          ret.diffEq(_bitvec[i]);
+          literals[lit] = _negBitvec[i];
         }
+        lit--;
       }
       ip >>= 1;
       wildcard >>= 1;
     }
-    return ret;
+    return _factory.andLiterals(literals);
   }
 
   public int satAssignmentToInt(BitSet bits) {
