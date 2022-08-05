@@ -12,7 +12,6 @@ import java.util.concurrent.ExecutionException;
 import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.util.BindPortFutures;
 import org.batfish.coordinator.BatfishWorkerServiceWorkExecutor;
 import org.batfish.coordinator.PoolWorkExecutor;
@@ -150,7 +149,7 @@ public class AllInOne {
             _settings.getBatfishRunMode(),
             org.batfish.config.Settings.ARG_COORDINATOR_REGISTER,
             "true",
-            BfConsts.USE_LEGACY_POOL_WORK_EXECUTOR
+            USE_LEGACY_POOL_WORK_EXECUTOR
                 ? String.format(
                     "-%s %s",
                     org.batfish.config.Settings.ARG_COORDINATOR_POOL_PORT,
@@ -172,7 +171,7 @@ public class AllInOne {
           @Override
           public void run() {
             try {
-              org.batfish.main.Driver.main(argArray, _logger);
+              org.batfish.main.Driver.main(argArray, _logger, USE_LEGACY_POOL_WORK_EXECUTOR);
             } catch (Exception e) {
               _logger.errorf(
                   "Initialization of batfish failed with args: %s\nExceptionMessage: %s\n",
@@ -222,7 +221,11 @@ public class AllInOne {
                             Driver.getBatfishWorkerService());
             try {
               org.batfish.coordinator.Main.main(
-                  argArray, _logger, bindPortFutures, workExecutorCreator);
+                  argArray,
+                  _logger,
+                  bindPortFutures,
+                  workExecutorCreator,
+                  USE_LEGACY_POOL_WORK_EXECUTOR);
             } catch (Exception e) {
               _logger.errorf(
                   "Initialization of coordinator failed with args: %s\nExceptionMessage: %s\n",

@@ -15,7 +15,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishWorkerService;
-import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
@@ -79,10 +78,10 @@ public class Driver {
     return _mainLogger;
   }
 
-  public static void main(String[] args, BatfishLogger logger) {
+  public static void main(String[] args, BatfishLogger logger, boolean initLegacyWorkerService) {
     mainInit(args);
     _mainLogger = logger;
-    mainRun();
+    mainRun(initLegacyWorkerService);
   }
 
   private static void mainInit(String[] args) {
@@ -97,7 +96,7 @@ public class Driver {
     }
   }
 
-  private static void mainRun() {
+  private static void mainRun(boolean initLegacyWorkerService) {
     System.setErr(_mainLogger.getPrintStream());
     System.setOut(_mainLogger.getPrintStream());
     _mainSettings.setLogger(_mainLogger);
@@ -106,7 +105,7 @@ public class Driver {
         mainRunWorker();
         break;
       case WORKSERVICE:
-        if (BfConsts.USE_LEGACY_POOL_WORK_EXECUTOR) {
+        if (initLegacyWorkerService) {
           mainRunWorkService();
         }
         break;

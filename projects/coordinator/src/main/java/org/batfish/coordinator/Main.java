@@ -329,15 +329,14 @@ public class Main {
       String[] args,
       BatfishLogger logger,
       BindPortFutures portFutures,
-      WorkExecutorCreator workExecutorCreator) {
+      WorkExecutorCreator workExecutorCreator,
+      boolean initLegacyPoolManager) {
     mainInit(args);
 
     // Supply ports early if known before binding
-    if (BfConsts.USE_LEGACY_POOL_WORK_EXECUTOR) {
-      int configuredPoolPort = _settings.getServicePoolPort();
-      if (configuredPoolPort > 0) {
-        portFutures.getPoolPort().complete(configuredPoolPort);
-      }
+    int configuredPoolPort = _settings.getServicePoolPort();
+    if (configuredPoolPort > 0) {
+      portFutures.getPoolPort().complete(configuredPoolPort);
     }
     int configuredWorkPort = _settings.getServiceWorkPort();
     if (configuredWorkPort > 0) {
@@ -349,7 +348,7 @@ public class Main {
     }
 
     _logger = logger;
-    mainRun(portFutures, workExecutorCreator);
+    mainRun(portFutures, workExecutorCreator, initLegacyPoolManager);
   }
 
   public static void mainInit(String[] args) {
@@ -366,10 +365,12 @@ public class Main {
   }
 
   private static void mainRun(
-      BindPortFutures portFutures, WorkExecutorCreator workExecutorCreator) {
+      BindPortFutures portFutures,
+      WorkExecutorCreator workExecutorCreator,
+      boolean initLegacyPoolManager) {
     try {
       initAuthorizer();
-      if (BfConsts.USE_LEGACY_POOL_WORK_EXECUTOR) {
+      if (initLegacyPoolManager) {
         initPoolManager(portFutures);
       }
       initWorkManager(portFutures, workExecutorCreator);
