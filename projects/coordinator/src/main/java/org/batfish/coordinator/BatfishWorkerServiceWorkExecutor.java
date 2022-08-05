@@ -7,10 +7,10 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
@@ -74,7 +74,7 @@ public class BatfishWorkerServiceWorkExecutor implements WorkExecutor {
 
   @VisibleForTesting
   static @Nonnull List<String> getRunArgs(QueuedWork work, Path containersLocation) {
-    Map<String, String> params = new HashMap<>(work.resolveRequestParams());
+    Map<String, String> params = new TreeMap<>(work.resolveRequestParams());
     params.put(BfConsts.ARG_STORAGE_BASE, containersLocation.toAbsolutePath().toString());
     ImmutableList.Builder<String> argsBuilder = ImmutableList.builder();
     params.forEach(

@@ -65,16 +65,17 @@ public final class BatfishWorkerServiceWorkExecutorTest {
         getRunArgs(getTestQueuedWork(), containersLocation),
         equalTo(
             ImmutableList.of(
+                "-baz",
                 "-container",
                 "n",
-                "-testrig",
-                "s",
+                "-foo",
+                "bar",
                 "-snapshotname",
                 "s",
                 "-storagebase",
                 "/dev/null",
-                "-foo",
-                "bar")));
+                "-testrig",
+                "s")));
   }
 
   @Test
@@ -120,7 +121,7 @@ public final class BatfishWorkerServiceWorkExecutorTest {
 
   private static @Nonnull QueuedWork getTestQueuedWork() {
     UUID uuid = UUID.randomUUID();
-    WorkItem wi = new WorkItem(uuid, "n", "s", ImmutableMap.of("foo", "bar"));
+    WorkItem wi = new WorkItem(uuid, "n", "s", ImmutableMap.of("foo", "bar", "baz", ""));
     WorkDetails wd =
         new WorkDetails(
             new NetworkId("n"), new SnapshotId("s"), false, WorkType.DATAPLANING, null, null);
