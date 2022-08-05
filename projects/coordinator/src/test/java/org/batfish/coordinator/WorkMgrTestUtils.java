@@ -19,6 +19,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -49,7 +50,13 @@ public final class WorkMgrTestUtils {
     Main.setLogger(logger);
     Main.initAuthorizer();
     FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
-    WorkMgr workMgr = new WorkMgr(Main.getSettings(), logger, new StorageBasedIdManager(fbs), fbs);
+    WorkMgr workMgr =
+        new WorkMgr(
+            Main.getSettings(),
+            logger,
+            new StorageBasedIdManager(fbs),
+            fbs,
+            new TestWorkExecutorCreator());
     // Setup some test version data
     Main.setWorkMgr(workMgr);
   }
@@ -88,7 +95,8 @@ public final class WorkMgrTestUtils {
     Main.mainInit(new String[] {});
     Main.setLogger(logger);
     Main.initAuthorizer();
-    Main.setWorkMgr(new WorkMgr(Main.getSettings(), logger, idManager, storage));
+    Main.setWorkMgr(
+        new WorkMgr(Main.getSettings(), logger, idManager, storage, new TestWorkExecutorCreator()));
   }
 
   public static void uploadTestSnapshot(String network, String snapshot, TemporaryFolder folder)
@@ -185,6 +193,19 @@ public final class WorkMgrTestUtils {
           AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
       storage.storeAnswer(networkId, snapshotId, answerStr, answerId);
       storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata, answerId);
+    }
+  }
+
+  static class TestWorkExecutorCreator implements WorkExecutorCreator {
+
+    @Override
+    public WorkExecutor apply(BatfishLogger batfishLogger, Settings settings) {
+      return new WorkExecutor() {
+        @Override
+        public SubmissionResult submit(QueuedWork work) {
+          throw new UnsupportedOperationException();
+        }
+      };
     }
   }
 }

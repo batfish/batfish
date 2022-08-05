@@ -300,9 +300,11 @@ public class Main {
     }
   }
 
-  private static void initWorkManager(BindPortFutures bindPortFutures) {
+  private static void initWorkManager(
+      BindPortFutures bindPortFutures, WorkExecutorCreator workExecutorCreator) {
     FileBasedStorage fbs = new FileBasedStorage(_settings.getContainersLocation(), _logger);
-    _workManager = new WorkMgr(_settings, _logger, new StorageBasedIdManager(fbs), fbs);
+    _workManager =
+        new WorkMgr(_settings, _logger, new StorageBasedIdManager(fbs), fbs, workExecutorCreator);
     _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(
@@ -323,7 +325,12 @@ public class Main {
         bindPortFutures.getWorkV2Port());
   }
 
-  public static void main(String[] args, BatfishLogger logger, BindPortFutures portFutures) {
+  public static void main(
+      String[] args,
+      BatfishLogger logger,
+      BindPortFutures portFutures,
+      WorkExecutorCreator workExecutorCreator,
+      boolean initLegacyPoolManager) {
     mainInit(args);
 
     // Supply ports early if known before binding
@@ -341,7 +348,7 @@ public class Main {
     }
 
     _logger = logger;
-    mainRun(portFutures);
+    mainRun(portFutures, workExecutorCreator, initLegacyPoolManager);
   }
 
   public static void mainInit(String[] args) {
@@ -357,11 +364,16 @@ public class Main {
     }
   }
 
-  private static void mainRun(BindPortFutures portFutures) {
+  private static void mainRun(
+      BindPortFutures portFutures,
+      WorkExecutorCreator workExecutorCreator,
+      boolean initLegacyPoolManager) {
     try {
       initAuthorizer();
-      initPoolManager(portFutures);
-      initWorkManager(portFutures);
+      if (initLegacyPoolManager) {
+        initPoolManager(portFutures);
+      }
+      initWorkManager(portFutures, workExecutorCreator);
     } catch (Exception e) {
       System.err.println(
           "org.batfish.coordinator: Initialization of a helper failed: "

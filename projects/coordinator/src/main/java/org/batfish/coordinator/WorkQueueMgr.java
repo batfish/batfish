@@ -394,9 +394,9 @@ public class WorkQueueMgr {
     work.setStatus(WorkStatusCode.UNASSIGNED);
   }
 
-  public synchronized void markAssignmentSuccess(QueuedWork work, String assignedWorker)
+  public synchronized void markAssignmentSuccess(QueuedWork work, TaskHandle taskHandle)
       throws IOException {
-    work.setAssignment(assignedWorker);
+    work.setAssignment(taskHandle);
 
     // update testrig metadata
     WorkDetails wDetails = work.getDetails();
