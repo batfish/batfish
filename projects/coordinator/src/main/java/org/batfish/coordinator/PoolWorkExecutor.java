@@ -126,7 +126,7 @@ public class PoolWorkExecutor implements WorkExecutor {
 
     _logger.infof("WM:AssignWork: Trying to assign %s to %s\n", work, worker);
 
-    boolean assignmentError = false;
+    String assignmentErrorMessage = null;
     boolean assigned = false;
 
     Client client = null;
@@ -171,10 +171,8 @@ public class PoolWorkExecutor implements WorkExecutor {
               array.toString(), array.get(0), array.get(1)));
 
       if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-        _logger.error(
-            String.format("ERROR in assigning task: %s %s\n", array.get(0), array.get(1)));
-
-        assignmentError = true;
+        assignmentErrorMessage =
+            String.format("ERROR in assigning task: %s %s\n", array.get(0), array.get(1));
       } else {
         assigned = true;
       }
@@ -195,8 +193,8 @@ public class PoolWorkExecutor implements WorkExecutor {
     }
 
     // mark the assignment results for both work and worker
-    if (assignmentError) {
-      return SubmissionResult.error();
+    if (assignmentErrorMessage != null) {
+      return SubmissionResult.error(assignmentErrorMessage);
     } else if (assigned) {
       try {
         Main.getPoolMgr().markAssignmentResult(worker, assigned);
