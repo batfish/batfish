@@ -237,6 +237,9 @@ public class WorkMgr extends AbstractCoordinator {
               String.format("Work with ID: %s requeued because worker is busy\n", work.getId()));
           _workQueueMgr.markAssignmentFailure(work);
           break;
+        default:
+          throw new IllegalArgumentException(
+              String.format("Invalid SubmissionResult.Type: %s", result.getType()));
       }
     } catch (Exception e) {
       _logger.errorf("Got exception in assignWork: %s\n", Throwables.getStackTraceAsString(e));
