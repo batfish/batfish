@@ -188,16 +188,12 @@ public class PoolWorkExecutor implements WorkExecutor {
       }
     }
 
-    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
-      return SubmissionResult.terminated();
-    }
-
     // mark the assignment results for both work and worker
     if (assignmentErrorMessage != null) {
       return SubmissionResult.error(assignmentErrorMessage);
     } else if (assigned) {
       try {
-        Main.getPoolMgr().markAssignmentResult(worker, assigned);
+        Main.getPoolMgr().markAssignmentResult(worker, true);
       } catch (Exception e) {
         String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignment for work %s: %s\n", work, stackTrace);

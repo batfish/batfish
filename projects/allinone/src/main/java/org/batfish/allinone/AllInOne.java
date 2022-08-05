@@ -217,7 +217,9 @@ public class AllInOne {
                     ? PoolWorkExecutor::new
                     : (logger, settings) ->
                         new BatfishWorkerServiceWorkExecutor(
-                            logger, Driver.getBatfishWorkerService());
+                            logger,
+                            settings.getContainersLocation(),
+                            Driver.getBatfishWorkerService());
             try {
               org.batfish.coordinator.Main.main(
                   argArray, _logger, bindPortFutures, workExecutorCreator);

@@ -23,8 +23,6 @@ public final class SubmissionResult {
      * reattempted at a later time.
      */
     BUSY,
-    /** The submission succeeded, but has already terminated. */
-    TERMINATED
   }
 
   public static @Nonnull SubmissionResult error(String message) {
@@ -39,10 +37,6 @@ public final class SubmissionResult {
     return new SubmissionResult(Type.SUCCESS, handle, null);
   }
 
-  public static @Nonnull SubmissionResult terminated() {
-    return TERMINATED;
-  }
-
   public @Nonnull Type getType() {
     return _type;
   }
@@ -53,7 +47,10 @@ public final class SubmissionResult {
    * @throws IllegalStateException if result is of any other type.
    */
   public @Nonnull TaskHandle getTaskHandle() {
-    checkState(_type == Type.SUCCESS, "Only a submission of type SUCCESS has a task handle");
+    checkState(
+        _type == Type.SUCCESS,
+        "Only a submission of type SUCCESS has a task handle, but type is %s",
+        _type);
     assert _taskHandle != null;
     return _taskHandle;
   }
@@ -64,7 +61,10 @@ public final class SubmissionResult {
    * @throws IllegalStateException if result is of any other type.
    */
   public @Nonnull String getMessage() {
-    checkState(_type == Type.ERROR, "Only a submission of type ERROR has a message");
+    checkState(
+        _type == Type.ERROR,
+        "Only a submission of type ERROR has a message, but type is %s",
+        _type);
     assert _message != null;
     return _message;
   }
@@ -76,8 +76,6 @@ public final class SubmissionResult {
   }
 
   private static final SubmissionResult BUSY = new SubmissionResult(Type.BUSY, null, null);
-  private static final SubmissionResult TERMINATED =
-      new SubmissionResult(Type.TERMINATED, null, null);
 
   private final @Nonnull Type _type;
   private final @Nullable String _message;
