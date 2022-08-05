@@ -1,7 +1,5 @@
 package org.batfish.allinone;
 
-import static org.batfish.common.BfConsts.USE_LEGACY_POOL_WORK_EXECUTOR;
-
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import java.util.ArrayList;
@@ -19,6 +17,12 @@ import org.batfish.coordinator.WorkExecutorCreator;
 import org.batfish.main.Driver;
 
 public class AllInOne {
+
+  /**
+   * If true, use old-style pool manager and worker registration (takes up two ports). Else, work
+   * manager should directly spawn Batfish worker threads.
+   */
+  private static final boolean USE_LEGACY_POOL_WORK_EXECUTOR = false;
 
   private static String[] getArgArrayFromString(String argString) {
     if (Strings.isNullOrEmpty(argString)) {
