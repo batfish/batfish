@@ -75,22 +75,15 @@ public class ImmutableBDDInteger extends BDDInteger implements Serializable {
     checkArgument(_bitvec.length >= Prefix.MAX_PREFIX_LENGTH);
     if (ipWildcard.isPrefix()) {
       return firstBitsEqual(
-          ipWildcard.getIp().asLong(), Integer.numberOfLeadingZeros((int) ipWildcard.getMask()));
+          ipWildcard.getIp().asLong(),
+          Integer.numberOfLeadingZeros((int) ipWildcard.getWildcardMask()));
     }
 
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcardMask();
 
-    int sigBits = 0;
-    int bit = 1;
-    for (int i = 0; i < Prefix.MAX_PREFIX_LENGTH; i++) {
-      if ((wildcard & bit) == 0) {
-        sigBits++;
-      }
-      bit <<= 1;
-    }
+    int sigBits = Long.bitCount(wildcard);
     assert sigBits < Prefix.MAX_PREFIX_LENGTH;
-
     BDD[] literals = new BDD[sigBits];
 
     int lit = literals.length - 1; // populating literals back-to-front
