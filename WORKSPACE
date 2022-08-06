@@ -62,6 +62,16 @@ load("@jol_maven//:defs.bzl", jol_pinned_maven_install = "pinned_maven_install")
 jol_pinned_maven_install()
 
 ##########################################################
+## GPL'ed JMH tool
+load("//tools/benchmarks:jmh.bzl", "setup_jmh_maven")
+
+setup_jmh_maven()
+
+load("@jmh_maven//:defs.bzl", jmh_pinned_maven_install = "pinned_maven_install")
+
+jmh_pinned_maven_install()
+
+##########################################################
 ## Python setup
 
 http_archive(

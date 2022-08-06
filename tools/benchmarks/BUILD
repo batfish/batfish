@@ -1,4 +1,13 @@
-load("@batfish//skylark:jmh.bzl", "jmh_java_benchmarks")
+load(":jmh.bzl", "jmh_java_benchmarks")
+load("@rules_java//java:defs.bzl", "java_plugin")
+
+package(default_visibility = ["//tools/benchmarks:__subpackages__"])
+
+java_plugin(
+    name = "jmh_annotation_processor",
+    processor_class = "org.openjdk.jmh.generators.BenchmarkProcessor",
+    deps = ["@jmh_maven//:org_openjdk_jmh_jmh_generator_annprocess"],
+)
 
 jmh_java_benchmarks(
     name = "ipWildcardToBdd",
