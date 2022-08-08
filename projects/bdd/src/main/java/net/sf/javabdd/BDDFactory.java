@@ -30,6 +30,8 @@ package net.sf.javabdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.IntIntMap;
 import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -775,6 +779,10 @@ public abstract class BDDFactory {
     public int opMiss;
     public int opOverwrite;
     public int swapCount;
+    public IntIntMap multiOpHitByOperands = new IntIntHashMap();
+    public IntIntMap multiOpMissByOperands = new IntIntHashMap();
+    public IntIntMap multiOpHitByLevel = new IntIntHashMap();
+    public IntIntMap multiOpMissByLevel = new IntIntHashMap();
 
     protected CacheStats() {}
 
@@ -841,7 +849,43 @@ public abstract class BDDFactory {
       sb.append("Swap count =    ");
       sb.append(swapCount);
       sb.append(newLine);
+
+      printMultiopStats(multiOpHitByLevel, multiOpMissByLevel, "Level", sb);
+      sb.append(newLine);
+      printMultiopStats(multiOpHitByOperands, multiOpMissByOperands, "Operands", sb);
+      sb.append(newLine);
+
       return sb.toString();
+    }
+
+    private static void printMultiopStats(
+        IntIntMap hits, IntIntMap miss, String label, StringBuilder sb) {
+      List<Integer> keys =
+          Stream.of(hits.keys().toArray(), miss.keys().toArray())
+              .flatMapToInt(Arrays::stream)
+              .sorted()
+              .distinct()
+              .boxed()
+              .collect(Collectors.toList());
+      String newLine = getProperty("line.separator", "\n");
+      sb.append(String.format("Multiop Hits by %s:  ", label));
+      sb.append(newLine);
+      keys.forEach(k -> sb.append(String.format("  %s:  %s\n", k, hits.getOrDefault(k, 0))));
+      sb.append(newLine);
+      sb.append(String.format("Multiop Miss by %s:  ", label));
+      sb.append(newLine);
+      keys.forEach(k -> sb.append(String.format("  %s:  %s\n", k, miss.getOrDefault(k, 0))));
+      sb.append(newLine);
+      sb.append(String.format("Multiop Hit Rate by %s:  ", label));
+      sb.append(newLine);
+      keys.forEach(
+          k -> {
+            int hit = hits.getOrDefault(k, 0);
+            double rate =
+                hit == 0 ? 0.0d : (((double) hit) / ((double) (hit + miss.getOrDefault(k, 0))));
+            sb.append(String.format("  %s:  %f", k, rate));
+            sb.append(newLine);
+          });
     }
   }
 

@@ -65,7 +65,7 @@ import org.apache.logging.log4j.Logger;
 public class JFactory extends BDDFactory implements Serializable {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
-  private static final boolean CACHESTATS = false;
+  private static final boolean CACHESTATS = true;
 
   /** A cache of BDDImpls that have been freed and may now be reused. */
   private transient Queue<BDDImpl> _bddReuse;
@@ -1921,6 +1921,10 @@ public class JFactory extends BDDFactory implements Serializable {
     return res;
   }
 
+  private int minLevel(int[] operands) {
+    return Arrays.stream(operands).map(this::LEVEL).min().getAsInt();
+  }
+
   private int orAll_rec(int[] operands) {
     if (operands.length == 0) {
       return BDDZERO;
@@ -1939,11 +1943,15 @@ public class JFactory extends BDDFactory implements Serializable {
     if (entry.a == bddop_or && Arrays.equals(operands, entry.operands)) {
       if (CACHESTATS) {
         cachestats.opHit++;
+        cachestats.multiOpHitByOperands.addTo(operands.length, 1);
+        cachestats.multiOpHitByLevel.addTo(minLevel(operands), 1);
       }
       return entry.b;
     }
     if (CACHESTATS) {
       cachestats.opMiss++;
+      cachestats.multiOpMissByOperands.addTo(operands.length, 1);
+      cachestats.multiOpMissByLevel.addTo(minLevel(operands), 1);
     }
 
     /* Compute the result in a way that generalizes or_rec. Identify the variable to branch on, and
