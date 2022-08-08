@@ -1218,6 +1218,22 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testBgpMaxMedOnStartup_no_value() {
+    // Test that this command is parsed (and ignored)
+    parse("router bgp 1\n  bgp max-med on-startup\n");
+    // Does not interact with max-med administrative
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(null));
+  }
+
+  @Test
+  public void testBgpMaxMedOnStartup_value() {
+    // Test that this command is parsed (and ignored)
+    parse("router bgp 1\n  bgp max-med on-startup 15\n");
+    // Does not interact with max-med administrative
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(null));
+  }
+
+  @Test
   public void testBgpRouterId() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));

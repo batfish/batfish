@@ -34,7 +34,7 @@ rb_bgp
     | rbb_log_neighbor_changes
     | rbb_router_id
     | rbb_cluster_id
-    | rbb_max_med_administrative
+    | rbb_max_med
     | rbb_listen
   )
 ;
@@ -82,9 +82,23 @@ rbb_log_neighbor_changes
   LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
-rbb_max_med_administrative
+rbb_max_med
 :
-   MAX_MED ADMINISTRATIVE (med = uint32)? NEWLINE
+   MAX_MED
+   (
+     rbbmm_administrative
+     | rbbmm_on_startup_null
+   )
+;
+
+rbbmm_administrative
+:
+   ADMINISTRATIVE (med = uint32)? NEWLINE
+;
+
+rbbmm_on_startup_null
+:
+   ON_STARTUP (med = uint32)? NEWLINE
 ;
 
 rbbb_aspath_multipath_relax
