@@ -1,0 +1,90 @@
+name: Pre-commit
+on: [push]
+env:
+  BATFISH_DOCKER_CI_BASE_IMAGE: "docker.io/batfish/ci-base:2e658ee-955ad65fe4"
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    steps:
+      - uses: actions/checkout@v3
+      - name: Java Formatting
+        run: |
+          tools/fix_java_format.sh --check
+  template:
+    runs-on: ubuntu-latest
+    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    steps:
+      - uses: actions/checkout@v3
+      - name: JSON Templates
+        run: |
+          python3 -m virtualenv .venv
+          . .venv/bin/activate
+          python3 -m pip install pytest
+          cd tests && pytest
+  mvn_build:
+    runs-on: ubuntu-latest
+    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    steps:
+      - uses: actions/checkout@v3
+      - name: Maven Build
+        run: |
+          mkdir workspace
+          mvn -f projects package
+          cp projects/allinone/target/allinone-bundle-*.jar workspace/allinone.jar
+      - name: Save JAR
+        uses: actions/upload-artifact@v3
+        with:
+          name: allinone_jar
+          path: workspace/allinone.jar
+  junit:
+    runs-on: ubuntu-latest
+    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    needs:
+      - format
+      - template
+    steps:
+      - uses: actions/checkout@v3
+      - name: Maven Junit Tests and Coverage
+        run: |
+          mvn -f projects/pom.xml test -DskipTests=false -Djacoco.skip=false
+          mkdir -p workspace
+          rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/
+      - name: Save Jacoco exec
+        uses: actions/upload-artifact@v3
+        with:
+          name: jacoco_exec
+          path: workspace/**/jacoco.exec
+  checkstyle:
+    runs-on: ubuntu-latest
+    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    needs:
+      - format
+      - template
+    steps:
+      - uses: actions/checkout@v3
+      - name: Checkstyle, findbugs, dependency
+        run: |
+          mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
+  bazel_build:
+    runs-on: ubuntu-latest
+    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    steps:
+      - uses: actions/checkout@v3
+      - name: Bazel build and test
+        run: |
+          python3 -m virtualenv .venv
+          . .venv/bin/activate
+          bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
+  bazel_pmd:
+    runs-on: ubuntu-latest
+    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    steps:
+      - uses: actions/checkout@v3
+      - name: Bazel PMD
+        run: |
+          python3 -m virtualenv .venv
+          . .venv/bin/activate
+          bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
+
+
