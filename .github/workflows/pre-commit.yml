@@ -5,7 +5,9 @@ env:
 jobs:
   format:
     runs-on: ubuntu-latest
-    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    container:
+      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+      options: --user 1001
     steps:
       - uses: actions/checkout@v3
       - name: Java Formatting
