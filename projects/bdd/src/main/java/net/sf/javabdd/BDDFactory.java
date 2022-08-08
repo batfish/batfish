@@ -40,6 +40,7 @@ import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -369,6 +370,15 @@ public abstract class BDDFactory {
    * @see #orAll(Iterable)
    */
   public final BDD orAll(BDD... bddOperands) {
+    if (bddOperands.length <= 2) {
+      if (bddOperands.length == 2) {
+        return bddOperands[0].or(bddOperands[1]);
+      }
+      if (bddOperands.length == 1) {
+        return bddOperands[0];
+      }
+      return zero();
+    }
     return orAll(Arrays.asList(bddOperands), false);
   }
 
@@ -379,14 +389,34 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'or' together
    */
-  public final BDD orAll(Iterable<BDD> bddOperands) {
+  public final BDD orAll(Collection<BDD> bddOperands) {
+    int size = bddOperands.size();
+    if (size <= 2) {
+      Iterator<BDD> iter = bddOperands.iterator();
+      if (size == 2) {
+        return iter.next().or(iter.next());
+      }
+      if (size == 1) {
+        return iter.next();
+      }
+      return zero();
+    }
     return orAll(bddOperands, false);
   }
 
   /**
-   * @see #orAllAndFree(Iterable)
+   * @see #orAllAndFree(Collection)
    */
   public final BDD orAllAndFree(BDD... bddOperands) {
+    if (bddOperands.length <= 2) {
+      if (bddOperands.length == 2) {
+        return bddOperands[0].orWith(bddOperands[1]);
+      }
+      if (bddOperands.length == 1) {
+        return bddOperands[0];
+      }
+      return zero();
+    }
     return orAll(Arrays.asList(bddOperands), true);
   }
 
@@ -399,12 +429,23 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'or' together
    */
-  public final BDD orAllAndFree(Iterable<BDD> bddOperands) {
+  public final BDD orAllAndFree(Collection<BDD> bddOperands) {
+    int size = bddOperands.size();
+    if (size <= 2) {
+      Iterator<BDD> iter = bddOperands.iterator();
+      if (size == 2) {
+        return iter.next().orWith(iter.next());
+      }
+      if (size == 1) {
+        return iter.next();
+      }
+      return zero();
+    }
     return orAll(bddOperands, true);
   }
 
-  /** Implementation of {@link #orAll(Iterable)} and {@link #orAllAndFree(Iterable)}. */
-  protected abstract BDD orAll(Iterable<BDD> bdds, boolean free);
+  /** Implementation of {@link #orAll(Collection)} and {@link #orAllAndFree(Collection)}. */
+  protected abstract BDD orAll(Collection<BDD> bdds, boolean free);
 
   /**
    * Sets the node table size.
@@ -859,31 +900,23 @@ public abstract class BDDFactory {
     }
 
     private static void printMultiopStats(
-        IntIntMap hits, IntIntMap miss, String label, StringBuilder sb) {
+        IntIntMap hits, IntIntMap misses, String label, StringBuilder sb) {
       List<Integer> keys =
-          Stream.of(hits.keys().toArray(), miss.keys().toArray())
+          Stream.of(hits.keys().toArray(), misses.keys().toArray())
               .flatMapToInt(Arrays::stream)
               .sorted()
               .distinct()
               .boxed()
               .collect(Collectors.toList());
       String newLine = getProperty("line.separator", "\n");
-      sb.append(String.format("Multiop Hits by %s:  ", label));
-      sb.append(newLine);
-      keys.forEach(k -> sb.append(String.format("  %s:  %s\n", k, hits.getOrDefault(k, 0))));
-      sb.append(newLine);
-      sb.append(String.format("Multiop Miss by %s:  ", label));
-      sb.append(newLine);
-      keys.forEach(k -> sb.append(String.format("  %s:  %s\n", k, miss.getOrDefault(k, 0))));
-      sb.append(newLine);
-      sb.append(String.format("Multiop Hit Rate by %s:  ", label));
+      sb.append(String.format("Multiop stats (hit, miss, hit rate) by %s:  ", label));
       sb.append(newLine);
       keys.forEach(
           k -> {
             int hit = hits.getOrDefault(k, 0);
-            double rate =
-                hit == 0 ? 0.0d : (((double) hit) / ((double) (hit + miss.getOrDefault(k, 0))));
-            sb.append(String.format("  %s:  %f", k, rate));
+            int miss = misses.getOrDefault(k, 0);
+            double rate = hit == 0 ? 0.0d : (((double) hit) / ((double) (hit + miss)));
+            sb.append(String.format("  %d:  %d, %d, %f", k, hit, miss, rate));
             sb.append(newLine);
           });
     }

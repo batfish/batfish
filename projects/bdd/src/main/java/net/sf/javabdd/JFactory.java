@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -65,7 +66,9 @@ import org.apache.logging.log4j.Logger;
 public class JFactory extends BDDFactory implements Serializable {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
-  private static final boolean CACHESTATS = true;
+  private static final boolean CACHESTATS = false;
+
+  private static final int MAX_MULTIOP_CACHE_OPS = 32;
 
   /** A cache of BDDImpls that have been freed and may now be reused. */
   private transient Queue<BDDImpl> _bddReuse;
@@ -1017,15 +1020,31 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   @Override
-  protected BDD orAll(Iterable<BDD> bddOperands, boolean free) {
-    int[] operands =
-        StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
-            .filter(i -> i != BDDZERO)
-            .sorted()
-            .distinct()
-            .peek(this::CHECK)
-            .toArray();
+  protected BDD orAll(Collection<BDD> bddOperands, boolean free) {
+    assert bddOperands.size() > 2 : "BDDFactory methods should handle <=2 operands.";
+
+    int[] operands = new int[bddOperands.size()];
+    int i = 0;
+    Iterator<BDD> iter = bddOperands.iterator();
+    while (iter.hasNext()) {
+      BDDImpl operand = (BDDImpl) iter.next();
+      if (operand.isOne()) {
+        // short circuit
+        if (free) {
+          bddOperands.forEach(BDD::free);
+        }
+        return one();
+      }
+      if (!operand.isZero()) {
+        int idx = operand._index;
+        CHECK(idx);
+        operands[i++] = idx;
+      }
+    }
+    if (i != operands.length) {
+      // operands included at least one zero BDD
+      operands = Arrays.copyOf(operands, i);
+    }
     int ret = bdd_orAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
@@ -1926,32 +1945,45 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int orAll_rec(int[] operands) {
-    if (operands.length == 0) {
-      return BDDZERO;
-    } else if (operands.length == 1) {
-      return operands[0];
-    } else if (operands.length == 2) {
+    if (operands.length <= 2) {
+      if (operands.length == 0) {
+        return BDDZERO;
+      } else if (operands.length == 1) {
+        return operands[0];
+      }
       return or_rec(operands[0], operands[1]);
     }
 
-    // sort and dedup the operands to optimize caching
-    Arrays.sort(operands);
-    operands = dedupSorted(operands);
+    MultiOpBddCacheData entry = null;
+    int hash = 0;
+    boolean cache = operands.length <= MAX_MULTIOP_CACHE_OPS;
+    if (cache) {
+      // sort and dedup the operands to optimize caching
+      Arrays.sort(operands);
+      operands = dedupSorted(operands);
 
-    int hash = MULTIOPHASH(operands, bddop_or);
-    MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
-    if (entry.a == bddop_or && Arrays.equals(operands, entry.operands)) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-        cachestats.multiOpHitByOperands.addTo(operands.length, 1);
-        cachestats.multiOpHitByLevel.addTo(minLevel(operands), 1);
+      if (operands.length <= 2) {
+        if (operands.length == 1) {
+          return operands[0];
+        }
+        return or_rec(operands[0], operands[1]);
       }
-      return entry.b;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-      cachestats.multiOpMissByOperands.addTo(operands.length, 1);
-      cachestats.multiOpMissByLevel.addTo(minLevel(operands), 1);
+
+      hash = MULTIOPHASH(operands, bddop_or);
+      entry = BddCache_lookupMultiOp(multiopcache, hash);
+      if (entry.a == bddop_or && Arrays.equals(operands, entry.operands)) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+          cachestats.multiOpHitByOperands.addTo(operands.length, 1);
+          cachestats.multiOpHitByLevel.addTo(minLevel(operands), 1);
+        }
+        return entry.b;
+      }
+      if (CACHESTATS) {
+        cachestats.opMiss++;
+        cachestats.multiOpMissByOperands.addTo(operands.length, 1);
+        cachestats.multiOpMissByLevel.addTo(minLevel(operands), 1);
+      }
     }
 
     /* Compute the result in a way that generalizes or_rec. Identify the variable to branch on, and
@@ -2066,13 +2098,15 @@ public class JFactory extends BDDFactory implements Serializable {
       POPREF(1);
     }
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
+    if (cache) {
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
+      entry.a = bddop_or;
+      entry.b = res;
+      entry.operands = operands;
+      entry.hash = hash;
     }
-    entry.a = bddop_or;
-    entry.b = res;
-    entry.operands = operands;
-    entry.hash = hash;
     return res;
   }
 
