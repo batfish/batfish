@@ -82,8 +82,8 @@ public class ImmutableBDDInteger extends BDDInteger implements Serializable {
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcardMask();
 
-    int sigBits = Long.bitCount(wildcard);
-    assert sigBits < Prefix.MAX_PREFIX_LENGTH;
+    int sigBits = Prefix.MAX_PREFIX_LENGTH - Long.bitCount(wildcard);
+    assert sigBits < Prefix.MAX_PREFIX_LENGTH && sigBits > 0; // can't == 0, since it's not a prefix
     BDD[] literals = new BDD[sigBits];
 
     int lit = literals.length - 1; // populating literals back-to-front
@@ -101,6 +101,7 @@ public class ImmutableBDDInteger extends BDDInteger implements Serializable {
       ip >>= 1;
       wildcard >>= 1;
     }
+    assert lit == -1; // we populated every element of the array
     return _factory.andLiterals(literals);
   }
 
