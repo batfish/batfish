@@ -15,7 +15,9 @@ jobs:
           tools/fix_java_format.sh --check
   template:
     runs-on: ubuntu-latest
-    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    container:
+      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+      options: --user 1001
     steps:
       - uses: actions/checkout@v3
       - name: JSON Templates
@@ -26,7 +28,9 @@ jobs:
           cd tests && pytest
   mvn_build:
     runs-on: ubuntu-latest
-    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    container:
+      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+      options: --user 1001
     steps:
       - uses: actions/checkout@v3
       - name: Maven Build
@@ -41,7 +45,9 @@ jobs:
           path: workspace/allinone.jar
   junit:
     runs-on: ubuntu-latest
-    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    container:
+      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+      options: --user 1001
     needs:
       - format
       - template
@@ -59,7 +65,9 @@ jobs:
           path: workspace/**/jacoco.exec
   checkstyle:
     runs-on: ubuntu-latest
-    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    container:
+      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+      options: --user 1001
     needs:
       - format
       - template
@@ -70,7 +78,9 @@ jobs:
           mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
   bazel_build:
     runs-on: ubuntu-latest
-    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    container:
+      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+      options: --user 1001
     steps:
       - uses: actions/checkout@v3
       - name: Bazel build and test
@@ -80,7 +90,9 @@ jobs:
           bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
   bazel_pmd:
     runs-on: ubuntu-latest
-    container: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+    container:
+      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
+      options: --user 1001
     steps:
       - uses: actions/checkout@v3
       - name: Bazel PMD
