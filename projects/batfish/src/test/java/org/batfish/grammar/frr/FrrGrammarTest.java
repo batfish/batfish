@@ -1212,6 +1212,20 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testBgpMaxMedOnStartup_onlytime() {
+    // Test that the max-med on-startup is parsed and ignored, and does not impact administrative.
+    parse("router bgp 1\n bgp max-med on-startup 15\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), nullValue());
+  }
+
+  @Test
+  public void testBgpMaxMedOnStartup_timeandmed() {
+    // Test that the max-med on-startup is parsed and ignored, and does not impact administrative.
+    parse("router bgp 1\n bgp max-med on-startup 15 4000000000\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), nullValue());
+  }
+
+  @Test
   public void testBgpMaxMedAdministrative_unset() {
     parse("router bgp 1\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(null));
