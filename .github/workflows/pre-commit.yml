@@ -75,15 +75,16 @@ jobs:
           path: workspace/**/jacoco.exec
   checkstyle:
     runs-on: ubuntu-latest
-    container:
-      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
-      options: --user ${{ needs.configure.outputs.uid_gid }}
     needs:
-      - configure
       - format
       - template
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Checkstyle, findbugs, dependency
         run: |
           mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
