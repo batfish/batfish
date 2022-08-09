@@ -1,6 +1,15 @@
 name: Pre-commit
 on: [push]
 jobs:
+  get_date:
+    name: ":clock: Get Date"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=ymd::$(date +'%Y-%m-%d')"
+    outputs:
+      ymd: ${{ steps.date.outputs.ymd }}
   format:
     runs-on: ubuntu-latest
     steps:
@@ -81,6 +90,8 @@ jobs:
         run: |
           mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
   bazel_build_test_and_pmd:
+    needs:
+      - get_date
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -88,7 +99,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel
+          key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE') }}-${{ hashFiles('maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
       - name: Bazel build and test
         run: |
           bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
