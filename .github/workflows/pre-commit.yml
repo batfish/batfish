@@ -35,13 +35,14 @@ jobs:
       - name: JSON Templates
         run: cd tests && pytest
   mvn_build:
-    needs: configure
     runs-on: ubuntu-latest
-    container:
-      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
-      options: --user ${{ needs.configure.outputs.uid_gid }}
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Maven Build
         run: |
           mkdir workspace
@@ -89,7 +90,6 @@ jobs:
         run: |
           mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
   bazel_build:
-    needs: configure
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -97,7 +97,6 @@ jobs:
         run: |
           bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
   bazel_pmd:
-    needs: configure
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
