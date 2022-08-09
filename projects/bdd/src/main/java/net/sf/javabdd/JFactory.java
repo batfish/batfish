@@ -2003,15 +2003,23 @@ public class JFactory extends BDDFactory implements Serializable {
      */
 
     int minLevel = LEVEL(operands[0]);
+    int minLevelNode = operands[0]; // lightweight deduping
+    int deduped = 0;
     int nodesWithMinLevel = 0;
     int nodesWithMinLevelLowNonZero = 0;
     int nodesWithMinLevelHighNonZero = 0;
     boolean nodeWithMinLevelHasLowOne = false;
     boolean nodeWithMinLevelHasHighOne = false;
     for (int n : operands) {
+      if (n == minLevelNode) {
+        deduped++;
+        continue;
+      }
       int level = LEVEL(n);
       if (level < minLevel) {
         minLevel = level;
+        minLevelNode = n;
+        deduped = 0;
         nodesWithMinLevel = 0;
         nodesWithMinLevelHighNonZero = 0;
         nodesWithMinLevelLowNonZero = 0;
@@ -2033,7 +2041,7 @@ public class JFactory extends BDDFactory implements Serializable {
       nodesWithMinLevelLowNonZero += ISZERO(low) ? 0 : 1;
     }
 
-    int nodesWithoutMinLevel = operands.length - nodesWithMinLevel;
+    int nodesWithoutMinLevel = operands.length - nodesWithMinLevel - deduped;
 
     int low;
     if (!nodeWithMinLevelHasLowOne) {
@@ -2044,6 +2052,9 @@ public class JFactory extends BDDFactory implements Serializable {
       int[] lowOperands = new int[nodesWithMinLevelLowNonZero + nodesWithoutMinLevel];
       int i = 0;
       for (int operand : operands) {
+        if (operand == minLevelNode) {
+          continue;
+        }
         if (LEVEL(operand) == minLevel) {
           int l = LOW(operand);
           if (!ISZERO(l)) {
@@ -2071,6 +2082,9 @@ public class JFactory extends BDDFactory implements Serializable {
       int[] highOperands = new int[nodesWithMinLevelHighNonZero + nodesWithoutMinLevel];
       int i = 0;
       for (int operand : operands) {
+        if (operand == minLevelNode) {
+          continue;
+        }
         if (LEVEL(operand) == minLevel) {
           int h = HIGH(operand);
           if (!ISZERO(h)) {
