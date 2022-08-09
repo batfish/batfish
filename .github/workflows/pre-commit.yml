@@ -1,7 +1,5 @@
 name: Pre-commit
 on: [push]
-env:
-  BATFISH_DOCKER_CI_BASE_IMAGE: "docker.io/batfish/ci-base:2e658ee-955ad65fe4"
 jobs:
   format:
     runs-on: ubuntu-latest
@@ -13,8 +11,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Java Formatting
-        run: |
-            tools/fix_java_format.sh --check
+        run: tools/fix_java_format.sh --check
   json_template:
     runs-on: ubuntu-latest
     steps:
