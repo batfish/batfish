@@ -268,10 +268,12 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  private CompletionMetadata getCompletionMetadata(String network, String snapshot)
-      throws IOException {
+  private @Nullable CompletionMetadata getCompletionMetadata(
+      String network, @Nullable String snapshot) throws IOException {
     checkArgument(!isNullOrEmpty(network), "Network name should be supplied");
-    checkArgument(!isNullOrEmpty(snapshot), "Snapshot name should be supplied");
+    if (snapshot == null) {
+      return null;
+    }
 
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
@@ -289,7 +291,7 @@ public class WorkMgr extends AbstractCoordinator {
   @Nullable
   public List<AutocompleteSuggestion> autoComplete(
       String network,
-      String snapshot,
+      @Nullable String snapshot,
       Variable.Type completionType,
       String query,
       int maxSuggestions)
@@ -2140,12 +2142,13 @@ public class WorkMgr extends AbstractCoordinator {
   /** Provides the results of validating the user supplied input */
   @Nullable
   public InputValidationNotes validateInput(
-      String network, String snapshot, Variable.Type varType, String query) throws IOException {
+      String network, @Nullable String snapshot, Variable.Type varType, String query)
+      throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
       return null;
     }
-    if (!_idManager.hasSnapshotId(snapshot, networkIdOpt.get())) {
+    if (snapshot != null && !_idManager.hasSnapshotId(snapshot, networkIdOpt.get())) {
       return null;
     }
     return InputValidationUtils.validate(

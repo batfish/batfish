@@ -1,5 +1,6 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.CoordConstsV2.RSC_AUTOCOMPLETE;
 import static org.batfish.common.CoordConstsV2.RSC_COMPLETED_WORK;
 import static org.batfish.common.CoordConstsV2.RSC_INFERRED_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_INPUT;
@@ -13,6 +14,7 @@ import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -140,5 +142,10 @@ public final class SnapshotResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.status(Status.OK).entity(json).build();
+  }
+
+  @Path(RSC_AUTOCOMPLETE)
+  public @Nonnull AutocompleteResource getAutocompleteResource() {
+    return new AutocompleteResource(_network, _snapshot);
   }
 }
