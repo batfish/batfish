@@ -5,16 +5,15 @@ import static com.google.common.collect.ImmutableTable.toImmutableTable;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +96,7 @@ public final class BDDReachabilityUtils {
       BDD newValue =
           prior == null
               ? factory.orAll(inputs)
-              : factory.orAll(Iterables.concat(inputs, Collections.singleton(prior)));
+              : factory.orAll(ImmutableList.<BDD>builder().addAll(inputs).add(prior).build());
       if (newValue.equals(prior)) {
         // No change, so no need to update neighbors.
         newValue.free();
