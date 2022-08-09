@@ -3,13 +3,6 @@ on: [push]
 env:
   BATFISH_DOCKER_CI_BASE_IMAGE: "docker.io/batfish/ci-base:2e658ee-955ad65fe4"
 jobs:
-  configure:
-    runs-on: ubuntu-latest
-    outputs:
-      uid_gid: ${{ steps.get-user.outputs.uid_gid }}
-    steps:
-      - id: get-user
-        run: echo "::set-output name=uid_gid::$(id -u):$(id -g)"
   format:
     runs-on: ubuntu-latest
     steps:
@@ -55,15 +48,16 @@ jobs:
           path: workspace/allinone.jar
   junit:
     runs-on: ubuntu-latest
-    container:
-      image: docker.io/batfish/ci-base:2e658ee-955ad65fe4
-      options: --user ${{ needs.configure.outputs.uid_gid }}
     needs:
-      - configure
       - format
       - template
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
       - name: Maven Junit Tests and Coverage
         run: |
           mvn -f projects/pom.xml test -DskipTests=false -Djacoco.skip=false
