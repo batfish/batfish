@@ -43,12 +43,16 @@ public final class Zone implements Serializable {
     _name = name;
     _addressBook = globalAddressBook;
     _addressBookType = AddressBookType.GLOBAL;
-    _inboundFilter = new ConcreteFirewallFilter("~INBOUND_ZONE_FILTER~" + name, Family.INET);
+    _inboundFilter = new ConcreteFirewallFilter(getInboundFilterName(name), Family.INET);
     _inboundInterfaceFilters = new TreeMap<>();
     _interfaces = new ArrayList<>();
     _fromZonePolicies = new TreeMap<>();
     _toZonePolicies = new TreeMap<>();
     _screens = new TreeSet<>();
+  }
+
+  public static String getInboundFilterName(String zoneName) {
+    return "~INBOUND_ZONE_FILTER~" + zoneName;
   }
 
   public void attachAddressBook(AddressBook addressBook) {

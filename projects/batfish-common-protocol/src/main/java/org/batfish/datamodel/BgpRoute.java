@@ -27,7 +27,6 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.visitors.LegacyReceivedFromToIpConverter;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
 @ParametersAreNonnullByDefault
@@ -606,18 +605,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Nonnull
   public ReceivedFrom getReceivedFrom() {
     return _receivedFrom;
-  }
-
-  /**
-   * The {@link Ip} address of the (I)BGP peer from which the route was learned, or {@link Ip#ZERO}
-   * if the BGP route was originated locally.
-   *
-   * <p>Set on origination and on import.
-   */
-  @Nullable
-  @JsonIgnore
-  public Ip getReceivedFromIp() {
-    return LegacyReceivedFromToIpConverter.convert(_receivedFrom);
   }
 
   @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)

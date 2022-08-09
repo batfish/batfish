@@ -15,7 +15,6 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.Mlag;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
@@ -258,36 +257,6 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Mlag featureValueOf(Configuration actual) {
       return actual.getMlags().get(_name);
-    }
-  }
-
-  static final class HasRoute6FilterList extends FeatureMatcher<Configuration, Route6FilterList> {
-    private final String _name;
-
-    HasRoute6FilterList(
-        @Nonnull String name, @Nonnull Matcher<? super Route6FilterList> subMatcher) {
-      super(
-          subMatcher,
-          "A Configuration with Route6FilterList " + name + ":",
-          "Route6FilterList " + name);
-      _name = name;
-    }
-
-    @Override
-    protected Route6FilterList featureValueOf(Configuration actual) {
-      return actual.getRoute6FilterLists().get(_name);
-    }
-  }
-
-  static final class HasRoute6FilterLists
-      extends FeatureMatcher<Configuration, Map<String, Route6FilterList>> {
-    HasRoute6FilterLists(@Nonnull Matcher<? super Map<String, Route6FilterList>> subMatcher) {
-      super(subMatcher, "A Configuration with route6FilterLists:", "route6FilterLists");
-    }
-
-    @Override
-    protected Map<String, Route6FilterList> featureValueOf(Configuration actual) {
-      return actual.getRoute6FilterLists();
     }
   }
 

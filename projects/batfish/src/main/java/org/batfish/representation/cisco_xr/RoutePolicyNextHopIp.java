@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import java.util.Collections;
+import java.util.Optional;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -20,7 +21,7 @@ public class RoutePolicyNextHopIp extends RoutePolicyNextHop {
   }
 
   @Override
-  public NextHopExpr toNextHopExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    return new IpNextHop(Collections.singletonList(_address));
+  public Optional<NextHopExpr> toNextHopExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
+    return Optional.of(new IpNextHop(Collections.singletonList(_address)));
   }
 }

@@ -332,6 +332,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setTag(34)

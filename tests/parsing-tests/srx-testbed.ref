@@ -6391,6 +6391,50 @@
             "zone~untrust~to~zone~untrust p" : {
               "definitionLines" : "64-67",
               "numReferrers" : 4
+            },
+            "~INBOUND_ZONE_FILTER~hostos PING" : {
+              "definitionLines" : "91",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~hostos SSH" : {
+              "definitionLines" : "92",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~loopback PING" : {
+              "definitionLines" : "94",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust BGP" : {
+              "definitionLines" : "81",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust PING" : {
+              "definitionLines" : "78",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust SSH" : {
+              "definitionLines" : "79",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust TELNET" : {
+              "definitionLines" : "80",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust BGP" : {
+              "definitionLines" : "88",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust IKE" : {
+              "definitionLines" : "87",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust PING" : {
+              "definitionLines" : "85",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust SSH" : {
+              "definitionLines" : "86",
+              "numReferrers" : 1
             }
           }
         },
@@ -6509,6 +6553,50 @@
             "zone~trust~to~zone~trust default-permit" : {
               "definitionLines" : "48-51",
               "numReferrers" : 4
+            },
+            "~INBOUND_ZONE_FILTER~hostos PING" : {
+              "definitionLines" : "79",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~hostos SSH" : {
+              "definitionLines" : "80",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~loopback PING" : {
+              "definitionLines" : "77",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust BGP" : {
+              "definitionLines" : "67",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust PING" : {
+              "definitionLines" : "64",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust SSH" : {
+              "definitionLines" : "65",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust TELNET" : {
+              "definitionLines" : "66",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust BGP" : {
+              "definitionLines" : "74",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust IKE" : {
+              "definitionLines" : "73",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust PING" : {
+              "definitionLines" : "71",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust SSH" : {
+              "definitionLines" : "72",
+              "numReferrers" : 1
             }
           }
         },
@@ -6627,6 +6715,50 @@
             "zone~trust~to~zone~trust default-permit" : {
               "definitionLines" : "52-55",
               "numReferrers" : 4
+            },
+            "~INBOUND_ZONE_FILTER~hostos PING" : {
+              "definitionLines" : "73",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~hostos SSH" : {
+              "definitionLines" : "74",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~loopback PING" : {
+              "definitionLines" : "71",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust BGP" : {
+              "definitionLines" : "61",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust PING" : {
+              "definitionLines" : "58",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust SSH" : {
+              "definitionLines" : "59",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~trust TELNET" : {
+              "definitionLines" : "60",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust BGP" : {
+              "definitionLines" : "68",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust IKE" : {
+              "definitionLines" : "67",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust PING" : {
+              "definitionLines" : "65",
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~untrust SSH" : {
+              "definitionLines" : "66",
+              "numReferrers" : 1
             }
           }
         }
@@ -6920,6 +7052,61 @@
                 66,
                 67
               ]
+            },
+            "~INBOUND_ZONE_FILTER~hostos PING" : {
+              "security policy term" : [
+                91
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~hostos SSH" : {
+              "security policy term" : [
+                92
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~loopback PING" : {
+              "security policy term" : [
+                94
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust BGP" : {
+              "security policy term" : [
+                81
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust PING" : {
+              "security policy term" : [
+                78
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust SSH" : {
+              "security policy term" : [
+                79
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust TELNET" : {
+              "security policy term" : [
+                80
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust BGP" : {
+              "security policy term" : [
+                88
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust IKE" : {
+              "security policy term" : [
+                87
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust PING" : {
+              "security policy term" : [
+                85
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust SSH" : {
+              "security policy term" : [
+                86
+              ]
             }
           }
         },
@@ -7103,6 +7290,61 @@
                 50,
                 51
               ]
+            },
+            "~INBOUND_ZONE_FILTER~hostos PING" : {
+              "security policy term" : [
+                79
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~hostos SSH" : {
+              "security policy term" : [
+                80
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~loopback PING" : {
+              "security policy term" : [
+                77
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust BGP" : {
+              "security policy term" : [
+                67
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust PING" : {
+              "security policy term" : [
+                64
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust SSH" : {
+              "security policy term" : [
+                65
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust TELNET" : {
+              "security policy term" : [
+                66
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust BGP" : {
+              "security policy term" : [
+                74
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust IKE" : {
+              "security policy term" : [
+                73
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust PING" : {
+              "security policy term" : [
+                71
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust SSH" : {
+              "security policy term" : [
+                72
+              ]
             }
           }
         },
@@ -7276,6 +7518,61 @@
                 53,
                 54,
                 55
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~hostos PING" : {
+              "security policy term" : [
+                73
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~hostos SSH" : {
+              "security policy term" : [
+                74
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~loopback PING" : {
+              "security policy term" : [
+                71
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust BGP" : {
+              "security policy term" : [
+                61
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust PING" : {
+              "security policy term" : [
+                58
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust SSH" : {
+              "security policy term" : [
+                59
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~trust TELNET" : {
+              "security policy term" : [
+                60
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust BGP" : {
+              "security policy term" : [
+                68
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust IKE" : {
+              "security policy term" : [
+                67
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust PING" : {
+              "security policy term" : [
+                65
+              ]
+            },
+            "~INBOUND_ZONE_FILTER~untrust SSH" : {
+              "security policy term" : [
+                66
               ]
             }
           }

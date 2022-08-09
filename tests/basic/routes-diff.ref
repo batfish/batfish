@@ -60,20 +60,6 @@
           "schema" : "Ip"
         },
         {
-          "description" : "Route's Protocol",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Snapshot_Protocol",
-          "schema" : "String"
-        },
-        {
-          "description" : "Route's Protocol",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Reference_Protocol",
-          "schema" : "String"
-        },
-        {
           "description" : "Route's Next Hop Interface",
           "isKey" : false,
           "isValue" : true,
@@ -85,6 +71,20 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Reference_Next_Hop_Interface",
+          "schema" : "String"
+        },
+        {
+          "description" : "Route's Protocol",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Snapshot_Protocol",
+          "schema" : "String"
+        },
+        {
+          "description" : "Route's Protocol",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Reference_Protocol",
           "schema" : "String"
         },
         {
@@ -135,8 +135,8 @@
     "rows" : [
       {
         "Node" : {
-          "id" : "node-as1core1",
-          "name" : "as1core1"
+          "id" : "node-as1border1",
+          "name" : "as1border1"
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
@@ -187,8 +187,8 @@
       },
       {
         "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
+          "id" : "node-as1core1",
+          "name" : "as1core1"
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",

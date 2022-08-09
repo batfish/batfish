@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -68,14 +69,14 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_COMPLETION_TYPE) String completionType,
       /* Optional: not needed for some completions */
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_COMPLETION_TYPE) String completionType,
-      @FormDataParam(CoordConsts.SVC_KEY_QUERY) String query,
+      @FormDataParam(CoordConsts.SVC_KEY_QUERY) String queryArg,
       /* Optional */
       @FormDataParam(CoordConsts.SVC_KEY_MAX_SUGGESTIONS) String maxSuggestions) {
     try {
-      _logger.infof("WMS:autoComplete %s %s %s\n", completionType, query, maxSuggestions);
+      _logger.infof("WMS:autoComplete %s %s %s\n", completionType, queryArg, maxSuggestions);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -88,13 +89,14 @@ public class WorkMgrService {
 
       Variable.Type varType = Variable.Type.fromString(completionType);
 
+      String query = firstNonNull(queryArg, "");
       List<AutocompleteSuggestion> answer =
           Main.getWorkMgr()
               .autoComplete(
                   networkName,
                   snapshotName,
                   varType,
-                  query,
+                  firstNonNull(query, ""),
                   Strings.isNullOrEmpty(maxSuggestions)
                       ? Integer.MAX_VALUE
                       : Integer.parseInt(maxSuggestions));

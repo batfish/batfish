@@ -62,11 +62,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -74,11 +69,9 @@ import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
-import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Container;
-import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
@@ -132,10 +125,8 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.StoredObjectMetadata;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr extends AbstractCoordinator {
   private static final Logger LOGGER = LogManager.getLogger(WorkMgr.class);
@@ -191,7 +182,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   private final IdManager _idManager;
   private final BatfishLogger _logger;
-  private final Settings _settings;
   private final SnapshotMetadataMgr _snapshotMetadataManager;
   private WorkQueueMgr _workQueueMgr;
   private final StorageProvider _storage;
@@ -201,8 +191,8 @@ public class WorkMgr extends AbstractCoordinator {
       Settings settings,
       BatfishLogger logger,
       @Nonnull IdManager idManager,
-      @Nonnull StorageProvider storage) {
-    _settings = settings;
+      @Nonnull StorageProvider storage,
+      @Nonnull WorkExecutorCreator workExecutorCreator) {
     _idManager = idManager;
     _storage = storage;
     _snapshotMetadataManager = new SnapshotMetadataMgr(_storage);
@@ -213,6 +203,7 @@ public class WorkMgr extends AbstractCoordinator {
     _gcExecutor =
         new ThreadPoolExecutor(
             0, 1, 0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1), new DiscardOldestPolicy());
+    _workExecutor = workExecutorCreator.apply(logger, settings);
   }
 
   @VisibleForTesting
@@ -230,138 +221,59 @@ public class WorkMgr extends AbstractCoordinator {
         // _logger.info("WM:AssignWork: No unassigned work\n");
         return;
       }
-
-      String idleWorker = Main.getPoolMgr().getWorkerForAssignment();
-
-      // get out if no idle worker was found, but release the work first
-      if (idleWorker == null) {
-        _workQueueMgr.markAssignmentFailure(work);
-
-        _logger.info("WM:AssignWork: No idle worker\n");
-        return;
+      SubmissionResult result = _workExecutor.submit(work);
+      switch (result.getType()) {
+        case ERROR:
+          _logger.error(String.format("Error submitting work: %s\n", result.getMessage()));
+          _workQueueMgr.markAssignmentError(work);
+          break;
+        case SUCCESS:
+          _logger.info(String.format("Work submitted with ID: %s\n", work.getId()));
+          TaskHandle handle = result.getTaskHandle();
+          _workQueueMgr.markAssignmentSuccess(work, handle);
+          break;
+        case BUSY:
+          _logger.warn(
+              String.format("Work with ID: %s requeued because worker is busy\n", work.getId()));
+          _workQueueMgr.markAssignmentFailure(work);
+          break;
+        default:
+          throw new IllegalArgumentException(
+              String.format("Invalid SubmissionResult.Type: %s", result.getType()));
       }
-
-      assignWork(work, idleWorker);
     } catch (Exception e) {
       _logger.errorf("Got exception in assignWork: %s\n", Throwables.getStackTraceAsString(e));
     }
-  }
-
-  private void assignWork(QueuedWork work, String worker) {
-
-    _logger.infof("WM:AssignWork: Trying to assign %s to %s\n", work, worker);
-
-    boolean assignmentError = false;
-    boolean assigned = false;
-
-    Client client = null;
-    try {
-      // get the task and add other standard stuff
-      JSONObject task = new JSONObject(work.resolveRequestParams());
-      task.put(
-          BfConsts.ARG_STORAGE_BASE,
-          Main.getSettings().getContainersLocation().toAbsolutePath().toString());
-
-      client = CommonUtil.createHttpClientBuilder().build();
-
-      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
-      WebTarget webTarget =
-          client
-              .target(
-                  String.format(
-                      "%s://%s%s/%s",
-                      protocol, worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_RUN_TASK_RSC))
-              .queryParam(
-                  BfConsts.SVC_TASKID_KEY,
-                  UriComponent.encode(
-                      work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED))
-              .queryParam(
-                  BfConsts.SVC_TASK_KEY,
-                  UriComponent.encode(
-                      task.toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
-
-      JSONArray array;
-      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-          _logger.errorf("WM:AssignWork: Got non-OK response %s\n", response.getStatus());
-          return;
-        }
-        String sobj = response.readEntity(String.class);
-        array = new JSONArray(sobj);
-      }
-      _logger.info(
-          String.format(
-              "WM:AssignWork: response: %s [%s] [%s]\n",
-              array.toString(), array.get(0), array.get(1)));
-
-      if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-        _logger.error(
-            String.format("ERROR in assigning task: %s %s\n", array.get(0), array.get(1)));
-
-        assignmentError = true;
-      } else {
-        assigned = true;
-      }
-    } catch (ProcessingException e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.error(String.format("Unable to connect to worker at %s: %s\n", worker, stackTrace));
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
-    } finally {
-      if (client != null) {
-        client.close();
-      }
-    }
-
-    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
-      return;
-    }
-
-    // mark the assignment results for both work and worker
-    if (assignmentError) {
-      try {
-        _workQueueMgr.markAssignmentError(work);
-      } catch (Exception e) {
-        String stackTrace = Throwables.getStackTraceAsString(e);
-        _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
-      }
-    } else if (assigned) {
-      try {
-        _workQueueMgr.markAssignmentSuccess(work, worker);
-      } catch (Exception e) {
-        String stackTrace = Throwables.getStackTraceAsString(e);
-        _logger.errorf("Unable to markAssignmentSuccess for work %s: %s\n", work, stackTrace);
-      }
-
-    } else {
-      _workQueueMgr.markAssignmentFailure(work);
-    }
-
-    Main.getPoolMgr().markAssignmentResult(worker, assigned);
   }
 
   private void checkTasks() {
     try {
       List<QueuedWork> workToCheck = _workQueueMgr.getWorkForChecking();
       for (QueuedWork work : workToCheck) {
-        String assignedWorker = work.getAssignedWorker();
-        if (assignedWorker == null) {
-          _logger.errorf("WM:CheckWork no assigned worker for %s\n", work);
+        TaskHandle assignedHandle = work.getAssignedHandle();
+        if (assignedHandle == null) {
+          _logger.errorf("WM:CheckWork no assigned handle for %s\n", work);
           _workQueueMgr.makeWorkUnassigned(work);
           continue;
         }
-        checkTask(work, assignedWorker);
+        Task task = assignedHandle.checkTask();
+        try {
+          _workQueueMgr.processTaskCheckResult(work, task);
+        } catch (Exception e) {
+          _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
+        }
       }
     } catch (Exception e) {
       _logger.errorf("Got exception in checkTasks: %s\n", Throwables.getStackTraceAsString(e));
     }
   }
 
-  private CompletionMetadata getCompletionMetadata(String network, String snapshot)
-      throws IOException {
+  private @Nullable CompletionMetadata getCompletionMetadata(
+      String network, @Nullable String snapshot) throws IOException {
     checkArgument(!isNullOrEmpty(network), "Network name should be supplied");
-    checkArgument(!isNullOrEmpty(snapshot), "Snapshot name should be supplied");
+    if (snapshot == null) {
+      return null;
+    }
 
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
@@ -379,7 +291,7 @@ public class WorkMgr extends AbstractCoordinator {
   @Nullable
   public List<AutocompleteSuggestion> autoComplete(
       String network,
-      String snapshot,
+      @Nullable String snapshot,
       Variable.Type completionType,
       String query,
       int maxSuggestions)
@@ -395,77 +307,6 @@ public class WorkMgr extends AbstractCoordinator {
         getNetworkNodeRoles(network),
         getReferenceLibrary(network),
         true);
-  }
-
-  private void checkTask(QueuedWork work, String worker) {
-    _logger.debugf("WM:CheckWork: Trying to check %s on %s\n", work, worker);
-
-    Task task = new Task(TaskStatus.UnreachableOrBadResponse);
-
-    Client client = null;
-    try {
-      client = CommonUtil.createHttpClientBuilder().build();
-
-      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
-      WebTarget webTarget =
-          client
-              .target(
-                  String.format(
-                      "%s://%s%s/%s",
-                      protocol, worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_GET_TASKSTATUS_RSC))
-              .queryParam(
-                  BfConsts.SVC_TASKID_KEY,
-                  UriComponent.encode(
-                      work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
-
-      JSONArray array;
-      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-          _logger.errorf("WM:CheckTask: Got non-OK response %s\n", response.getStatus());
-          return;
-        }
-        String sobj = response.readEntity(String.class);
-        array = new JSONArray(sobj);
-      }
-      _logger.debugf("WM:CheckTask: response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
-
-      if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-        _logger.error(
-            String.format(
-                "got error while refreshing status: %s %s\n", array.get(0), array.get(1)));
-      } else {
-        String taskStr = array.get(1).toString();
-        task = BatfishObjectMapper.mapper().readValue(taskStr, Task.class);
-        if (task.getStatus() == null) {
-          _logger.error("did not see status key in json response\n");
-        }
-      }
-    } catch (ProcessingException e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.error(String.format("exception: %s\n", stackTrace));
-    } finally {
-      if (client != null) {
-        client.close();
-      }
-    }
-
-    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
-      return;
-    }
-
-    try {
-      _workQueueMgr.processTaskCheckResult(work, task);
-    } catch (Exception e) {
-      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
-    }
-
-    // if the task ended, send a hint to the pool manager to look up worker status
-    if (task.getStatus().isTerminated()) {
-      Main.getPoolMgr().refreshWorkerStatus(worker);
-    }
   }
 
   WorkDetails computeWorkDetails(WorkItem workItem) throws IOException {
@@ -1751,6 +1592,15 @@ public class WorkMgr extends AbstractCoordinator {
     Map<Row, Integer> rowIds = Maps.newIdentityHashMap();
     CommonUtil.forEachWithIndex(rawTable.getRowsList(), (i, row) -> rowIds.put(row, i));
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
+
+    for (String c : options.getColumns()) {
+      if (!rawColumnMap.containsKey(c)) {
+        Collection<String> sortedColumnNames = new TreeSet<>(rawColumnMap.keySet());
+        throw new IllegalArgumentException(
+            String.format("Column %s is not in the answer: %s", c, sortedColumnNames));
+      }
+    }
+
     List<Row> filteredRows =
         rawTable.getRowsList().stream()
             .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)))
@@ -2292,12 +2142,13 @@ public class WorkMgr extends AbstractCoordinator {
   /** Provides the results of validating the user supplied input */
   @Nullable
   public InputValidationNotes validateInput(
-      String network, String snapshot, Variable.Type varType, String query) throws IOException {
+      String network, @Nullable String snapshot, Variable.Type varType, String query)
+      throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
       return null;
     }
-    if (!_idManager.hasSnapshotId(snapshot, networkIdOpt.get())) {
+    if (snapshot != null && !_idManager.hasSnapshotId(snapshot, networkIdOpt.get())) {
       return null;
     }
     return InputValidationUtils.validate(
@@ -2308,4 +2159,6 @@ public class WorkMgr extends AbstractCoordinator {
         firstNonNull(getNetworkNodeRoles(network), NodeRolesData.builder().build()),
         firstNonNull(getReferenceLibrary(network), new ReferenceLibrary(null)));
   }
+
+  private final WorkExecutor _workExecutor;
 }

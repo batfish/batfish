@@ -32,6 +32,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
@@ -166,13 +167,13 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportReceivedFromIp() {
+  public void testTransformOnImportReceivedFrom() {
     assertThat(
         transformBgpRouteOnImport(
                 _baseBgpRouteBuilder.build(), 1L, false, false, _process, Ip.parse("1.2.3.4"), null)
             .build()
-            .getReceivedFromIp(),
-        equalTo(Ip.parse("1.2.3.4")));
+            .getReceivedFrom(),
+        equalTo(ReceivedFromIp.of(Ip.parse("1.2.3.4"))));
   }
 
   @Test

@@ -1125,7 +1125,8 @@ public final class WorkMgrTest {
 
   private byte[] createSnapshotZip(String snapshot, String fileName, String fileContents)
       throws IOException {
-    Path zipPath = WorkMgrTestUtils.createSnapshotZip(snapshot, fileName, fileContents, _folder);
+    Path zipPath =
+        WorkMgrTestUtils.createSingleFileSnapshotZip(snapshot, fileName, fileContents, _folder);
     return FileUtils.readFileToByteArray(zipPath.toFile());
   }
 
@@ -1990,6 +1991,29 @@ public final class WorkMgrTest {
     assertThat(projectedRows, equalTo(ImmutableList.of(row1Projected, row2Projected)));
     assertThat(projectedRows.get(0).getId(), equalTo(0));
     assertThat(projectedRows.get(1).getId(), equalTo(1));
+  }
+
+  @Test
+  public void testProcessAnswerTable2ProjectWrongColumn() {
+    TableMetadata metadata =
+        new TableMetadata(
+            ImmutableList.of(
+                // Also tests that the columns are sorted in error message.
+                new ColumnMetadata("zcol", Schema.INTEGER, "first column but lex last"),
+                new ColumnMetadata("col", Schema.INTEGER, "last column but lex first")));
+    TableAnswerElement table = new TableAnswerElement(metadata);
+    AnswerRowsOptions optionsProject =
+        new AnswerRowsOptions(
+            ImmutableSet.of("missing"),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    _thrown.expectMessage("Column missing is not in the answer: [col, zcol]");
+    _thrown.expect(IllegalArgumentException.class);
+    _manager.processAnswerTable2(table, optionsProject);
   }
 
   @Test

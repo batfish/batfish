@@ -14,7 +14,7 @@ import org.batfish.datamodel.pojo.WorkStatus;
 
 public class QueuedWork {
 
-  String _assignedWorker;
+  TaskHandle _assignedHandle;
 
   Date _dateAssigned;
 
@@ -37,14 +37,14 @@ public class QueuedWork {
 
   public synchronized void clearAssignment() {
     _dateAssigned = null;
-    _assignedWorker = null;
+    _assignedHandle = null;
 
     _lastTaskCheckResult = null;
     _dateLastTaskCheckedStatus = null;
   }
 
-  public String getAssignedWorker() {
-    return _assignedWorker;
+  public TaskHandle getAssignedHandle() {
+    return _assignedHandle;
   }
 
   public Date getDateCreated() {
@@ -80,9 +80,9 @@ public class QueuedWork {
     _dateLastTaskCheckedStatus = new Date();
   }
 
-  public synchronized void setAssignment(String assignedWorker) {
+  public synchronized void setAssignment(TaskHandle assignedHandle) {
     _status = WorkStatusCode.ASSIGNED;
-    _assignedWorker = assignedWorker;
+    _assignedHandle = assignedHandle;
     _dateAssigned = new Date();
   }
 
@@ -109,7 +109,7 @@ public class QueuedWork {
         _dateCreated,
         _dateAssigned,
         _dateTerminated,
-        _assignedWorker,
+        _assignedHandle,
         (_lastTaskCheckResult == null) ? "null" : _lastTaskCheckResult.getStatus(),
         _dateLastTaskCheckedStatus);
   }

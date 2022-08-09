@@ -105,6 +105,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.securityRuleVendorStructureId;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
@@ -208,6 +209,7 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
@@ -3774,6 +3776,53 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testDeviceGroupSharedInheritanceVSIDs() {
+    String panoramaHostname = "device-group-shared-inheritance";
+    String filename = TESTCONFIGS_PREFIX + panoramaHostname;
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration panConfig = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = panConfig.toVendorIndependentConfigurations();
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration c =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    String sharedRuleName = "PRE_RULE_SHARED";
+    String panoramaRuleName = "PRE_RULE_DG";
+    String vsysName = "vsys1";
+    String zone1Name = "Z1";
+    String zone2Name = "Z2";
+    IpAccessList z1ToZ2Filter =
+        c.getIpAccessLists()
+            .get(
+                zoneToZoneFilter(
+                    computeObjectName(vsysName, zone1Name),
+                    computeObjectName(vsysName, zone2Name)));
+
+    // Security rule from Shared vsys has the correct VSID (pointing to Shared vsys)
+    AclLine sharedLine = z1ToZ2Filter.getLines().get(0);
+    assertThat(sharedLine.getName(), equalTo(sharedRuleName));
+    assertThat(
+        sharedLine.getVendorStructureId().get(),
+        equalTo(securityRuleVendorStructureId(sharedRuleName, SHARED_VSYS_NAME, filename)));
+    assertThat(
+        sharedLine.getTraceElement(),
+        equalTo(matchSecurityRuleTraceElement(sharedRuleName, SHARED_VSYS_NAME, filename)));
+
+    // Security rule from Panorama vsys has the correct VSID (pointing to Panorama vsys)
+    AclLine panoramaLine = z1ToZ2Filter.getLines().get(1);
+    assertThat(panoramaLine.getName(), equalTo(panoramaRuleName));
+    assertThat(
+        panoramaLine.getVendorStructureId().get(),
+        equalTo(securityRuleVendorStructureId(panoramaRuleName, PANORAMA_VSYS_NAME, filename)));
+    assertThat(
+        panoramaLine.getTraceElement(),
+        equalTo(matchSecurityRuleTraceElement(panoramaRuleName, PANORAMA_VSYS_NAME, filename)));
+  }
+
+  @Test
   public void testDeviceGroupSharedInerhitance() {
     String panoramaHostname = "device-group-shared-inheritance";
     String firewallId1 = "00000001";
@@ -4173,15 +4222,12 @@ public final class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
+    InsertOrderedMap<String, SecurityRule> securityRules =
+        vsConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules();
+    // The deleted rule should not show up
+    assertThat(securityRules.keySet(), contains("RULE1"));
     assertThat(
-        vsConfig
-            .getVirtualSystems()
-            .get(DEFAULT_VSYS_NAME)
-            .getRulebase()
-            .getSecurityRules()
-            .get("RULE1")
-            .getSource(),
-        contains(new RuleEndpoint(REFERENCE, "addr2")));
+        securityRules.get("RULE1").getSource(), contains(new RuleEndpoint(REFERENCE, "addr2")));
     String filename = "configs/" + hostname;
     assertThat(
         ccae,
@@ -4303,6 +4349,86 @@ public final class PaloAltoGrammarTest {
         not(
             hasUndefinedReference(
                 filename, PaloAltoStructureType.APPLICATION, "amazon-cloud-drive-base")));
+  }
+
+  @Test
+  public void testApplicationOverrideRuleDiffVsysVSIDs() {
+    String panoramaHostname = "application-override-diff-vsys-vsids";
+    String filename = TESTCONFIGS_PREFIX + panoramaHostname;
+    PaloAltoConfiguration panConfig = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = panConfig.toVendorIndependentConfigurations();
+
+    String firewallId1 = "00000001";
+    String vsysName = "vsys1";
+    String zone1Name = "z1";
+    String zone2Name = "z2";
+    String if1name = "ethernet1/1";
+
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    // Arbitrarily choose one zone pair to test (rule should be applied to all zone pairs)
+    IpAccessList z1ToZ2Filter =
+        firewall1
+            .getIpAccessLists()
+            .get(
+                zoneToZoneFilter(
+                    computeObjectName(vsysName, zone1Name),
+                    computeObjectName(vsysName, zone2Name)));
+
+    // Matches RULE1
+    Flow flowRULE1 =
+        Flow.builder()
+            .setIngressNode(firewall1.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setDstPort(22)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+    List<TraceTree> flowTraceRULE1 =
+        AclTracer.trace(
+            z1ToZ2Filter,
+            flowRULE1,
+            if1name,
+            firewall1.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+
+    // App-override VSID should point to the correct vsys
+    // Even though it is in a different vsys (Panorama) than the interfaces/zones (vsys1)
+    assertThat(
+        flowTraceRULE1,
+        contains(
+            isTraceTree(
+                matchSecurityRuleTraceElement("RULE1", PANORAMA_VSYS_NAME, filename),
+                isTraceTree(
+                    matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                isTraceTree(
+                    matchDestinationAddressTraceElement(),
+                    isTraceTree(matchAddressAnyTraceElement())),
+                isTraceTree(
+                    matchServiceApplicationDefaultTraceElement(),
+                    isTraceTree(
+                        matchApplicationObjectTraceElement(
+                            "OVERRIDE_SSH", SHARED_VSYS_NAME, filename),
+                        isTraceTree(
+                            matchApplicationOverrideRuleTraceElement(
+                                "OVERRIDE_APP_RULE1", PANORAMA_VSYS_NAME, filename),
+                            isTraceTree(
+                                matchSourceAddressTraceElement(),
+                                isTraceTree(matchAddressAnyTraceElement())),
+                            isTraceTree(
+                                matchDestinationAddressTraceElement(),
+                                isTraceTree(matchAddressAnyTraceElement())),
+                            TraceTreeMatchers.hasTraceElement("Matched protocol TCP"),
+                            TraceTreeMatchers.hasTraceElement("Matched port")))))));
   }
 
   @Test

@@ -6820,6 +6820,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentZoneInboundFilter.getTerms().put(termName, newTerm);
     newTerm.getFromHostProtocols().add(protocol);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
+
+    String defName = computeSecurityPolicyTermName(_currentZoneInboundFilter.getName(), termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.getStart()));
   }
 
   @Override
@@ -6830,6 +6835,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentZoneInboundFilter.getTerms().put(termName, newTerm);
     newTerm.getFromHostServices().add(service);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
+
+    String defName = computeSecurityPolicyTermName(_currentZoneInboundFilter.getName(), termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.getStart()));
   }
 
   @Override

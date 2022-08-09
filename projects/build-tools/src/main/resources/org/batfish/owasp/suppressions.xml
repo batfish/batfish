@@ -4,4 +4,8 @@
     <notes>This is a SUSE packaging bug, nothing to do with jar.</notes>
     <cve>CVE-2020-8022</cve>
   </suppress>
+  <suppress>
+    <notes>This is an extremely low quality CVE relating to Python flask, usually in example code or project websites. See: https://github.com/jeremylong/DependencyCheck/issues/4671</notes>
+    <cve>CVE-2022-31569</cve>
+  </suppress>
 </suppressions>

@@ -114,7 +114,6 @@ public class Vrf extends ComparableStructure<String> {
   private BgpProcess _bgpProcess;
   private String _description;
   private FirewallSessionVrfInfo _firewallSessionVrfInfo;
-  private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
   private NavigableSet<GeneratedRoute> _generatedRoutes;
   private SortedMap<Long, EigrpProcess> _eigrpProcesses;
   private IsisProcess _isisProcess;
@@ -133,7 +132,6 @@ public class Vrf extends ComparableStructure<String> {
     _appliedRibGroups = ImmutableSortedMap.of();
     _eigrpProcesses = ImmutableSortedMap.of();
     _generatedRoutes = new TreeSet<>();
-    _generatedIpv6Routes = new TreeSet<>();
     _kernelRoutes = ImmutableSortedSet.of();
     _ospfProcesses = ImmutableSortedMap.of();
     _staticRoutes = new TreeSet<>();
@@ -191,11 +189,6 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_FIREWALL_SESSION_VRF_INFO)
   public @Nullable FirewallSessionVrfInfo getFirewallSessionVrfInfo() {
     return _firewallSessionVrfInfo;
-  }
-
-  /** Generated IPV6 routes for this VRF. */
-  public NavigableSet<GeneratedRoute6> getGeneratedIpv6Routes() {
-    return _generatedIpv6Routes;
   }
 
   /** Generated IPV4 routes for this VRF. */
@@ -314,10 +307,6 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_FIREWALL_SESSION_VRF_INFO)
   public void setFirewallSessionVrfInfo(FirewallSessionVrfInfo firewallSessionVrfInfo) {
     _firewallSessionVrfInfo = firewallSessionVrfInfo;
-  }
-
-  public void setGeneratedIpv6Routes(NavigableSet<GeneratedRoute6> generatedIpv6Routes) {
-    _generatedIpv6Routes = generatedIpv6Routes;
   }
 
   @JsonProperty(PROP_GENERATED_ROUTES)

@@ -23,7 +23,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.FlowDiffMatchers.isIpRewrite;
@@ -210,8 +209,6 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -228,7 +225,6 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
-import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -1609,7 +1605,6 @@ public final class F5BigipStructuredGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     String v4Name = "/Common/MY_IPV4_PREFIX_LIST";
-    String v6Name = "/Common/MY_IPV6_PREFIX_LIST";
     String invalidName = "/Common/INVALID_MIXED_PREFIX_LIST";
 
     // Check the presence and behavior of the IPv4 prefix-list
@@ -1622,17 +1617,8 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(v4, permits(Prefix.parse("192.0.2.4/31")));
     assertThat(v4, rejects(Prefix.parse("192.0.2.4/32")));
 
-    // Check the presence and behavior of the IPv6 prefix-list
-    assertThat(c, hasRoute6FilterLists(hasKey(v6Name)));
-
-    Route6FilterList v6 = c.getRoute6FilterLists().get(v6Name);
-
-    assertThat(v6, Route6FilterListMatchers.permits(Prefix6.parse("dead:beef:1::/64")));
-    assertThat(v6, Route6FilterListMatchers.rejects(Prefix6.parse("dead:beef:1::/128")));
-
     // The invalid list should not make it into the data model
     assertThat(c, hasRouteFilterLists(not(hasKey(invalidName))));
-    assertThat(c, hasRoute6FilterLists(not(hasKey(invalidName))));
 
     // Check errors
     Warnings warnings =
@@ -1644,11 +1630,6 @@ public final class F5BigipStructuredGrammarTest {
             .map(Warning::getText)
             .anyMatch(Predicates.containsPattern("Missing IPv4 prefix.*PL4_WITH_MISSING_PREFIX")));
     assertTrue(
-        "Missing IPv6 prefix reported",
-        warnings.getRedFlagWarnings().stream()
-            .map(Warning::getText)
-            .anyMatch(Predicates.containsPattern("Missing IPv6 prefix.*PL6_WITH_MISSING_PREFIX")));
-    assertTrue(
         "Invalid IPv4 length-range reported",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
@@ -1656,22 +1637,10 @@ public final class F5BigipStructuredGrammarTest {
                 Predicates.containsPattern(
                     "Invalid IPv4 prefix-len-range.*PL4_WITH_INVALID_LENGTH")));
     assertTrue(
-        "Invalid IPv6 length-range reported",
-        warnings.getRedFlagWarnings().stream()
-            .map(Warning::getText)
-            .anyMatch(
-                Predicates.containsPattern(
-                    "Invalid IPv6 prefix-len-range.*PL6_WITH_INVALID_LENGTH")));
-    assertTrue(
         "Missing action reported for IPv4 prefix-list",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
             .anyMatch(Predicates.containsPattern("Missing action.*PL4_WITH_MISSING_ACTION")));
-    assertTrue(
-        "Missing action reported for IPv6 prefix-list",
-        warnings.getRedFlagWarnings().stream()
-            .map(Warning::getText)
-            .anyMatch(Predicates.containsPattern("Missing action.*PL6_WITH_MISSING_ACTION")));
   }
 
   @Test

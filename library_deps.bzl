@@ -19,7 +19,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.errorprone:error_prone_annotations:2.13.1",
     "com.google.guava:guava:31.1-jre",
     maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "31.1-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
-    "com.google.re2j:re2j:1.6",
+    "com.google.re2j:re2j:1.7",
     "com.ibm.icu:icu4j:69.1",
     "commons-beanutils:commons-beanutils:1.9.4",
     "commons-cli:commons-cli:1.5.0",
@@ -33,7 +33,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "net.sourceforge.pmd:pmd-java:6.36.0",
     "org.antlr:antlr4-runtime:4.7.2",
     "org.apache.commons:commons-collections4:4.4",
-    "org.apache.commons:commons-configuration2:2.7",
+    "org.apache.commons:commons-configuration2:2.8.0",
     "org.apache.commons:commons-lang3:3.12.0",
     "org.apache.commons:commons-text:1.9",
     "org.apache.httpcomponents:httpclient:4.5.13",  # managed up 2021-06-04 for CVE-2020-13956

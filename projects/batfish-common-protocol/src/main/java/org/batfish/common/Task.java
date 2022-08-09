@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BfConsts.TaskStatus;
 
@@ -189,4 +190,10 @@ public final class Task {
         "[Status: %s LastBatch: %s]",
         _status, _batches.isEmpty() ? "None" : _batches.get(_batches.size() - 1));
   }
+
+  public static @Nonnull Task unknown() {
+    return UNKNOWN;
+  }
+
+  private static final Task UNKNOWN = new Task(TaskStatus.Unknown);
 }
