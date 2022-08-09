@@ -112,20 +112,16 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: allinone_jar
-      - name: Download jacoco
-        uses: actions/download-artifact@v3
-        with:
-          name: jacoco_exec
       - name: Ref tests
         run: |
           REFS=$(find tests -name commands)
           for cmd in ${REFS}; do
             .buildkite/ref_test.sh ${cmd}
           done
-      - name: Update Jacoco exec
+      - name: Upload Jacoco exec
         uses: actions/upload-artifact@v3
         with:
-          name: jacoco_exec
+          name: jacoco_exec_ref
           path: workspace/**/jacoco.exec
   code_cov:
     runs-on: ubuntu-latest
@@ -143,9 +139,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: allinone_jar
-      - name: Download jacoco
+      - name: Download jacoco from unit tests
         uses: actions/download-artifact@v3
         with:
           name: jacoco_exec
+      - name: Download jacoco from ref tests
+        uses: actions/download-artifact@v3
+        with:
+          name: jacoco_exec_ref
       - name: Generate report
         run: .buildkite/jacoco_report.sh
