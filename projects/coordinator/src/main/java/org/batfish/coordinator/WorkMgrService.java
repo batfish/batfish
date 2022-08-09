@@ -1245,7 +1245,10 @@ public class WorkMgrService {
 
       checkNetworkAccessibility(apiKey, networkName);
 
-      Main.getWorkMgr().uploadSnapshot(networkName, snapshotName, fileStream);
+      if (!Main.getWorkMgr().uploadSnapshot(networkName, snapshotName, fileStream)) {
+        return failureResponse(
+            String.format("Snapshot with name: '%s' already exists", snapshotName));
+      }
       _logger.infof(
           "Uploaded snapshot:%s for network:%s using api-key:%s\n",
           snapshotName, networkName, apiKey);

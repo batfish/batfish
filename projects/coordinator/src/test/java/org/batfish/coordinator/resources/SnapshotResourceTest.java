@@ -1,14 +1,24 @@
 package org.batfish.coordinator.resources;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.batfish.coordinator.WorkMgrTestUtils.createSingleFileSnapshotZip;
 import static org.batfish.coordinator.WorkMgrTestUtils.uploadTestSnapshot;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -309,5 +319,62 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
       assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
       assertThat(response.readEntity(String.class), equalTo("logoutput"));
     }
+  }
+
+  @Test
+  public void testUploadSnapshot() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String filename = "snapshot.zip";
+    Main.getWorkMgr().initNetwork(network, null);
+    Path tmpSnapshotZip = createSingleFileSnapshotZip(snapshot, filename, "foo", _folder);
+    Builder target = getTarget(network, snapshot);
+    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
+      try (Response resp =
+          target.post(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM))) {
+        assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
+      }
+    }
+    assertTrue(Main.getWorkMgr().checkSnapshotExists(network, snapshot));
+  }
+
+  @Test
+  public void testUploadSnapshotAlreadyExists() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    String filename = "snapshot.zip";
+    Main.getWorkMgr().initNetwork(network, null);
+    Path tmpSnapshotZip = createSingleFileSnapshotZip(snapshot, filename, "foo", _folder);
+    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
+      Main.getWorkMgr().uploadSnapshot(network, snapshot, inputStream);
+    }
+    Builder target = getTarget(network, snapshot);
+    try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
+      try (Response resp =
+          target.post(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM))) {
+        assertThat(resp.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+        String msg = resp.readEntity(String.class);
+        assertThat(
+            msg, equalTo("Snapshot in network 'network1' with name: 'snapshot1' already exists"));
+      }
+    }
+    assertTrue(Main.getWorkMgr().checkSnapshotExists(network, snapshot));
+  }
+
+  @Test
+  public void testUploadSnapshotBadContent() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    Builder target = getTarget(network, snapshot);
+    try (ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[] {})) {
+      try (Response resp =
+          target.post(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM))) {
+        // TODO: Perhaps we should return bad request for this case, but it would take some
+        //       rewriting of the uploadSnapshot call chain.
+        assertThat(resp.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+      }
+    }
+    assertFalse(Main.getWorkMgr().checkSnapshotExists(network, snapshot));
   }
 }

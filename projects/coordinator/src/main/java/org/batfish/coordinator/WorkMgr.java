@@ -1434,8 +1434,9 @@ public class WorkMgr extends AbstractCoordinator {
    * @param networkName Name of the network to upload the snapshot to.
    * @param snapshotName Name of the new snapshot.
    * @param fileStream {@link InputStream} of the snapshot zip.
+   * @return {@code true} if successful, or {@code false} if snapshot already exists.
    */
-  public void uploadSnapshot(String networkName, String snapshotName, InputStream fileStream) {
+  public boolean uploadSnapshot(String networkName, String snapshotName, InputStream fileStream) {
     LOGGER.info("Beginning snapshot upload to {}/{}", networkName, snapshotName);
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(networkName);
     checkArgument(networkIdOpt.isPresent(), "Missing network: '%s'", networkName);
@@ -1443,7 +1444,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Fail early if the snapshot already exists
     if (_idManager.hasSnapshotId(snapshotName, networkId)) {
-      throw new BatfishException("Snapshot with name: '" + snapshotName + "' already exists");
+      return false;
     }
 
     // Save uploaded zip for troubleshooting
@@ -1472,6 +1473,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     // Trigger GC since uploading initial snapshot can change expungeBeforeDate
     triggerGarbageCollection();
+    return true;
   }
 
   public boolean checkNetworkExists(String networkName) {

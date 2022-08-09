@@ -12,12 +12,15 @@ import static org.batfish.common.CoordConstsV2.RSC_WORK_JSON;
 import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -39,6 +42,19 @@ public final class SnapshotResource {
   public SnapshotResource(String network, String snapshot) {
     _network = network;
     _snapshot = snapshot;
+  }
+
+  @POST
+  @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+  public Response uploadSnapshot(InputStream inputStream) {
+    if (!Main.getWorkMgr().uploadSnapshot(_network, _snapshot, inputStream)) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(
+              String.format(
+                  "Snapshot in network '%s' with name: '%s' already exists", _network, _snapshot))
+          .build();
+    }
+    return Response.ok().build();
   }
 
   @Path(RSC_POJO_TOPOLOGY)
