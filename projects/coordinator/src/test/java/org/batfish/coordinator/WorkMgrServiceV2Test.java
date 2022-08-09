@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
@@ -9,10 +10,10 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.batfish.coordinator.WorkMgrServiceV2.DEFAULT_NETWORK_PREFIX;
 import static org.batfish.version.Versioned.UNKNOWN_VERSION;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -20,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +37,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
-import org.batfish.datamodel.answers.InitNetworkResponse;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.version.BatfishVersion;
 import org.junit.Before;
@@ -253,30 +254,37 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
       @Nullable String network, @Nullable String networkPrefix) {
     WebTarget target = target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS);
     if (network != null) {
-      target = target.queryParam(CoordConstsV2.QP_NETWORK_NAME, network);
+      target = target.queryParam(CoordConstsV2.QP_NAME, network);
     }
     if (networkPrefix != null) {
-      target = target.queryParam(CoordConstsV2.QP_NETWORK_PREFIX, networkPrefix);
+      target = target.queryParam(CoordConstsV2.QP_NAME_PREFIX, networkPrefix);
     }
     return target;
   }
 
   @Test
   public void testInitNetworkDefaultPrefix() {
-    InitNetworkResponse result;
+    URI outputPath;
+    Container c;
     try (Response response =
         initNetworkTarget(null, null)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .post(null)) {
-      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-      result = response.readEntity(InitNetworkResponse.class);
+      assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
+      outputPath = response.getLocation();
     }
-    assertThat(
-        result.getOutputNetworkName(),
-        containsString(String.format("%s_", DEFAULT_NETWORK_PREFIX)));
-    assertTrue(Main.getWorkMgr().checkNetworkExists(result.getOutputNetworkName()));
+    try (Response response =
+        target(outputPath.getPath())
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get()) {
+      c = response.readEntity(Container.class);
+    }
+    assertThat(c.getName(), startsWith(String.format("%s_", DEFAULT_NETWORK_PREFIX)));
+    assertTrue(Main.getWorkMgr().checkNetworkExists(c.getName()));
   }
 
   @Test
@@ -297,82 +305,130 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   @Test
   public void testInitNetworkQpNetworkNullNetworkPrefix() {
     String network = "net1";
+    URI outputPath;
+    Container c;
     try (Response response =
         initNetworkTarget(network, null)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .post(null)) {
-      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-      InitNetworkResponse result = response.readEntity(InitNetworkResponse.class);
-      assertThat(result.getOutputNetworkName(), equalTo(network));
+      assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
+      outputPath = response.getLocation();
     }
-    assertTrue(Main.getWorkMgr().checkNetworkExists(network));
+    try (Response response =
+        target(outputPath.getPath())
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get()) {
+      c = response.readEntity(Container.class);
+    }
+    assertThat(c.getName(), equalTo(network));
+    assertTrue(Main.getWorkMgr().checkNetworkExists(c.getName()));
   }
 
   @Test
   public void testInitNetworkQpNetworkEmptyNetworkPrefix() {
     String network = "net1";
+    URI outputPath;
+    Container c;
     try (Response response =
         initNetworkTarget(network, "")
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .post(null)) {
-      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-      InitNetworkResponse result = response.readEntity(InitNetworkResponse.class);
-      assertThat(result.getOutputNetworkName(), equalTo(network));
+      assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
+      outputPath = response.getLocation();
     }
-    assertTrue(Main.getWorkMgr().checkNetworkExists(network));
+    try (Response response =
+        target(outputPath.getPath())
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get()) {
+      c = response.readEntity(Container.class);
+    }
+    assertThat(c.getName(), equalTo(network));
+    assertTrue(Main.getWorkMgr().checkNetworkExists(c.getName()));
   }
 
   @Test
   public void testInitNetworkQpNetworkAndNetworkPrefix() {
     String network = "net1";
+    URI outputPath;
+    Container c;
     try (Response response =
         initNetworkTarget(network, "ignored")
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .post(null)) {
-      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-      InitNetworkResponse result = response.readEntity(InitNetworkResponse.class);
-      assertThat(result.getOutputNetworkName(), equalTo(network));
+      assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
+      outputPath = response.getLocation();
     }
-    assertTrue(Main.getWorkMgr().checkNetworkExists(network));
+    try (Response response =
+        target(outputPath.getPath())
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get()) {
+      c = response.readEntity(Container.class);
+    }
+    assertThat(c.getName(), equalTo(network));
+    assertTrue(Main.getWorkMgr().checkNetworkExists(c.getName()));
   }
 
   @Test
   public void testInitNetworkQpNetworkPrefixNullNetwork() {
     String networkPrefix = "prefix";
-    InitNetworkResponse result;
+    URI outputPath;
+    Container c;
     try (Response response =
         initNetworkTarget(null, networkPrefix)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .post(null)) {
-      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-      result = response.readEntity(InitNetworkResponse.class);
+      assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
+      outputPath = response.getLocation();
     }
-    assertThat(result.getOutputNetworkName(), containsString(String.format("%s_", networkPrefix)));
-    assertTrue(Main.getWorkMgr().checkNetworkExists(result.getOutputNetworkName()));
+    try (Response response =
+        target(outputPath.getPath())
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get()) {
+      c = response.readEntity(Container.class);
+    }
+    assertThat(c.getName(), startsWith(String.format("%s_", networkPrefix)));
+    assertTrue(Main.getWorkMgr().checkNetworkExists(c.getName()));
   }
 
   @Test
   public void testInitNetworkQpNetworkPrefixEmptyNetwork() {
     String networkPrefix = "prefix";
-    InitNetworkResponse result;
+    URI outputPath;
+    Container c;
     try (Response response =
         initNetworkTarget("", networkPrefix)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .post(null)) {
-      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-      result = response.readEntity(InitNetworkResponse.class);
+      assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
+      outputPath = response.getLocation();
     }
-    assertThat(result.getOutputNetworkName(), containsString(String.format("%s_", networkPrefix)));
-    assertTrue(Main.getWorkMgr().checkNetworkExists(result.getOutputNetworkName()));
+    try (Response response =
+        target(outputPath.getPath())
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get()) {
+      c = response.readEntity(Container.class);
+    }
+    assertThat(c.getName(), startsWith(String.format("%s_", networkPrefix)));
+    assertTrue(Main.getWorkMgr().checkNetworkExists(c.getName()));
   }
 }

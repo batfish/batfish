@@ -29,7 +29,6 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.NetworkResource;
-import org.batfish.datamodel.answers.InitNetworkResponse;
 import org.batfish.version.Versioned;
 
 /**
@@ -126,9 +125,10 @@ public class WorkMgrServiceV2 {
 
   @POST
   @Path(CoordConstsV2.RSC_NETWORKS)
-  public InitNetworkResponse initNetwork(
-      @QueryParam(CoordConstsV2.QP_NETWORK_NAME) @Nullable String networkNameArg,
-      @QueryParam(CoordConstsV2.QP_NETWORK_PREFIX) @Nullable String networkPrefixArg) {
+  public Response initNetwork(
+      @QueryParam(CoordConstsV2.QP_NAME) @Nullable String networkNameArg,
+      @QueryParam(CoordConstsV2.QP_NAME_PREFIX) @Nullable String networkPrefixArg,
+      @Context UriInfo uriInfo) {
     String networkName = Strings.isNullOrEmpty(networkNameArg) ? null : networkNameArg;
     String networkPrefix = Strings.isNullOrEmpty(networkPrefixArg) ? null : networkPrefixArg;
     if (networkName == null && networkPrefix == null) {
@@ -143,7 +143,7 @@ public class WorkMgrServiceV2 {
     }
 
     Main.getAuthorizer().authorizeContainer(_apiKey, outputNetworkName);
-    return InitNetworkResponse.of(outputNetworkName);
+    return Response.created(uriInfo.getRequestUriBuilder().path(outputNetworkName).build()).build();
   }
 
   @VisibleForTesting static final String DEFAULT_NETWORK_PREFIX = "net";
