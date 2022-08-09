@@ -111,6 +111,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: allinone_jar
+          path: workspace
       - name: Ref tests
         run: |
           REFS=$(find tests -name commands)
@@ -138,13 +139,16 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: allinone_jar
+          path: workspace
       - name: Download jacoco from unit tests
         uses: actions/download-artifact@v3
         with:
           name: jacoco_exec
+          path: workspace
       - name: Download jacoco from ref tests
         uses: actions/download-artifact@v3
         with:
           name: jacoco_exec_ref
+          path: workspace
       - name: Generate report
         run: .buildkite/jacoco_report.sh
