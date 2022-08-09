@@ -2,13 +2,6 @@
 
 set -euxo pipefail
 
-echo PWD
-pwd
-echo .
-ls -la .
-echo WORKSPACE
-ls -la workspace
-
 # First: extract all Batfish classes from the jar
 ALLINONE_JAR="workspace/allinone.jar"
 TMP=$(mktemp -d)
