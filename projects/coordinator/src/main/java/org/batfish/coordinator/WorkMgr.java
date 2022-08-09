@@ -774,6 +774,7 @@ public class WorkMgr extends AbstractCoordinator {
     NetworkId networkId = _idManager.generateNetworkId();
     _storage.initNetwork(networkId);
     _idManager.assignNetwork(newNetworkName, networkId);
+    _logger.infof("Initialized network: %s\n", newNetworkName);
     return newNetworkName;
   }
 

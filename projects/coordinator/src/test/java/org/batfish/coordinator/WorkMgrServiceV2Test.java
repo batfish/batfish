@@ -6,6 +6,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.batfish.coordinator.WorkMgrServiceV2.DEFAULT_NETWORK_PREFIX;
 import static org.batfish.version.Versioned.UNKNOWN_VERSION;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
 import static org.hamcrest.Matchers.containsString;
@@ -250,7 +251,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
 
   private @Nonnull WebTarget initNetworkTarget(
       @Nullable String network, @Nullable String networkPrefix) {
-    WebTarget target = target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_INIT_NETWORK);
+    WebTarget target = target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS);
     if (network != null) {
       target = target.queryParam(CoordConstsV2.QP_NETWORK_NAME, network);
     }
@@ -261,18 +262,21 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testInitNetworkMissingRequired() {
+  public void testInitNetworkDefaultPrefix() {
+    InitNetworkResponse result;
     try (Response response =
         initNetworkTarget(null, null)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .post(null)) {
-      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-      String msg = response.readEntity(String.class);
-      assertThat(
-          msg, equalTo("Must supply one of network_name or network_prefix as query parameter"));
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      result = response.readEntity(InitNetworkResponse.class);
     }
+    assertThat(
+        result.getOutputNetworkName(),
+        containsString(String.format("%s_", DEFAULT_NETWORK_PREFIX)));
+    assertTrue(Main.getWorkMgr().checkNetworkExists(result.getOutputNetworkName()));
   }
 
   @Test

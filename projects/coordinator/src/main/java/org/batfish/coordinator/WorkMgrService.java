@@ -909,7 +909,6 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
 
       String outputNetworkName = Main.getWorkMgr().initNetwork(networkName, networkPrefix);
-      _logger.infof("Initialized network:%s using api-key:%s\n", outputNetworkName, apiKey);
 
       Main.getAuthorizer().authorizeContainer(apiKey, outputNetworkName);
 

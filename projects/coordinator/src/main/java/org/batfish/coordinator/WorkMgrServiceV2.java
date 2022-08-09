@@ -1,11 +1,10 @@
 package org.batfish.coordinator;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.common.CoordConstsV2.QP_VERBOSE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -126,37 +125,26 @@ public class WorkMgrServiceV2 {
   }
 
   @POST
-  @Path(CoordConstsV2.RSC_INIT_NETWORK)
+  @Path(CoordConstsV2.RSC_NETWORKS)
   public InitNetworkResponse initNetwork(
       @QueryParam(CoordConstsV2.QP_NETWORK_NAME) @Nullable String networkNameArg,
       @QueryParam(CoordConstsV2.QP_NETWORK_PREFIX) @Nullable String networkPrefixArg) {
     String networkName = Strings.isNullOrEmpty(networkNameArg) ? null : networkNameArg;
     String networkPrefix = Strings.isNullOrEmpty(networkPrefixArg) ? null : networkPrefixArg;
-    _logger.infof(
-        "%s %s=%s %s=%s\n",
-        CoordConstsV2.RSC_INIT_NETWORK,
-        CoordConstsV2.QP_NETWORK_NAME,
-        firstNonNull(networkName, ""),
-        CoordConstsV2.QP_NETWORK_PREFIX,
-        firstNonNull(networkPrefix, ""));
     if (networkName == null && networkPrefix == null) {
-      throw new BadRequestException(
-          String.format(
-              "Must supply one of %s or %s as query parameter",
-              CoordConstsV2.QP_NETWORK_NAME, CoordConstsV2.QP_NETWORK_PREFIX));
+      networkPrefix = DEFAULT_NETWORK_PREFIX;
     }
     String outputNetworkName;
     try {
       outputNetworkName = Main.getWorkMgr().initNetwork(networkName, networkPrefix);
     } catch (BatfishException e) {
       // already exists
-      _logger.errorf(
-          "%s error: %s", CoordConstsV2.RSC_INIT_NETWORK, Throwables.getStackTraceAsString(e));
       throw new BadRequestException(e.getMessage());
     }
-    _logger.infof("Initialized network:%s\n", outputNetworkName);
 
     Main.getAuthorizer().authorizeContainer(_apiKey, outputNetworkName);
     return InitNetworkResponse.of(outputNetworkName);
   }
+
+  @VisibleForTesting static final String DEFAULT_NETWORK_PREFIX = "net";
 }
