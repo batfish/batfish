@@ -89,10 +89,15 @@ jobs:
       - name: Checkstyle, findbugs, dependency
         run: |
           mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
-  bazel_build:
+  bazel_build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Bazel cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazel"
+          key: ${{runner.os}}-bazel
       - name: Bazel build and test
         run: |
           bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
@@ -100,6 +105,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Bazel cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazel"
+          key: ${{runner.os}}-bazel
       - name: Bazel PMD
         run: |
           bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
