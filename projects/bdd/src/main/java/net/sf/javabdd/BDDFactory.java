@@ -367,7 +367,7 @@ public abstract class BDDFactory {
   protected abstract BDD andAll(Iterable<BDD> bdds, boolean free);
 
   /**
-   * @see #orAll(Iterable)
+   * @see #orAll(Collection)
    */
   public final BDD orAll(BDD... bddOperands) {
     if (bddOperands.length <= 2) {
@@ -375,7 +375,7 @@ public abstract class BDDFactory {
         return bddOperands[0].or(bddOperands[1]);
       }
       if (bddOperands.length == 1) {
-        return bddOperands[0];
+        return bddOperands[0].id();
       }
       return zero();
     }
@@ -397,7 +397,7 @@ public abstract class BDDFactory {
         return iter.next().or(iter.next());
       }
       if (size == 1) {
-        return iter.next();
+        return iter.next().id();
       }
       return zero();
     }
