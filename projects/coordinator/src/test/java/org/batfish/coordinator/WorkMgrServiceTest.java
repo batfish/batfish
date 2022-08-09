@@ -3,10 +3,12 @@ package org.batfish.coordinator;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -40,6 +42,7 @@ import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
+import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -52,6 +55,7 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -415,6 +419,24 @@ public class WorkMgrServiceTest {
     // networkArg should be name, not ID
     assertTrue(networkArg.isDone());
     assertThat(networkArg.get(), equalTo(_networkName));
+  }
+
+  @Test
+  public void testAutocompleteNoOptionalFields() throws JSONException, JsonProcessingException {
+    initNetwork();
+    JSONArray output =
+        _service.autoComplete(
+            CoordConsts.DEFAULT_API_KEY,
+            BatfishVersion.getVersionStatic(),
+            _networkName,
+            Type.BGP_PROCESS_PROPERTY_SPEC.getName(),
+            null,
+            null,
+            null);
+    assertThat(output.get(0), equalTo(CoordConsts.SVC_KEY_SUCCESS));
+    JSONArray suggestions = output.getJSONObject(1).getJSONArray(CoordConsts.SVC_KEY_SUGGESTIONS);
+    // assert suggestions is non-empty
+    assertNotNull(suggestions.get(0));
   }
 
   static class TestWorkExecutorCreator implements WorkExecutorCreator {
