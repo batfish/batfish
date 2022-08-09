@@ -10,6 +10,8 @@ public class CoordConstsV2 {
   public static final String HTTP_HEADER_BATFISH_VERSION = "X-Batfish-Version";
 
   public static final String QP_MAX_SUGGESTIONS = "maxsuggestions";
+  public static final String QP_NETWORK_NAME = "network_name";
+  public static final String QP_NETWORK_PREFIX = "network_prefix";
   public static final String QP_VERBOSE = "verbose";
   public static final String QP_QUERY = "query";
 
@@ -21,6 +23,7 @@ public class CoordConstsV2 {
   public static final String RSC_FILTER = "filter";
   public static final String RSC_FORK = "fork";
   public static final String RSC_INFERRED_NODE_ROLES = "inferred_node_roles";
+  public static final String RSC_INIT_NETWORK = "init_network";
   public static final String RSC_INPUT = "input";
   public static final String RSC_ISSUES = "issues";
   public static final String RSC_LIST = "list";

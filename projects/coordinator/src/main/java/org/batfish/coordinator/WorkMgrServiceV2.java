@@ -1,14 +1,20 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.common.CoordConstsV2.QP_VERBOSE;
 
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -18,11 +24,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.NetworkResource;
+import org.batfish.datamodel.answers.InitNetworkResponse;
 import org.batfish.version.Versioned;
 
 /**
@@ -115,5 +123,40 @@ public class WorkMgrServiceV2 {
   @Path(CoordConstsV2.RSC_VERSION)
   public Response getVersion() {
     return Response.ok().entity(Versioned.getVersions()).build();
+  }
+
+  @POST
+  @Path(CoordConstsV2.RSC_INIT_NETWORK)
+  public InitNetworkResponse initNetwork(
+      @QueryParam(CoordConstsV2.QP_NETWORK_NAME) @Nullable String networkNameArg,
+      @QueryParam(CoordConstsV2.QP_NETWORK_PREFIX) @Nullable String networkPrefixArg) {
+    String networkName = Strings.isNullOrEmpty(networkNameArg) ? null : networkNameArg;
+    String networkPrefix = Strings.isNullOrEmpty(networkPrefixArg) ? null : networkPrefixArg;
+    _logger.infof(
+        "%s %s=%s %s=%s\n",
+        CoordConstsV2.RSC_INIT_NETWORK,
+        CoordConstsV2.QP_NETWORK_NAME,
+        firstNonNull(networkName, ""),
+        CoordConstsV2.QP_NETWORK_PREFIX,
+        firstNonNull(networkPrefix, ""));
+    if (networkName == null && networkPrefix == null) {
+      throw new BadRequestException(
+          String.format(
+              "Must supply one of %s or %s as query parameter",
+              CoordConstsV2.QP_NETWORK_NAME, CoordConstsV2.QP_NETWORK_PREFIX));
+    }
+    String outputNetworkName;
+    try {
+      outputNetworkName = Main.getWorkMgr().initNetwork(networkName, networkPrefix);
+    } catch (BatfishException e) {
+      // already exists
+      _logger.errorf(
+          "%s error: %s", CoordConstsV2.RSC_INIT_NETWORK, Throwables.getStackTraceAsString(e));
+      throw new BadRequestException(e.getMessage());
+    }
+    _logger.infof("Initialized network:%s\n", outputNetworkName);
+
+    Main.getAuthorizer().authorizeContainer(_apiKey, outputNetworkName);
+    return InitNetworkResponse.of(outputNetworkName);
   }
 }
