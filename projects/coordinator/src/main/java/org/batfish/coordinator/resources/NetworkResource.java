@@ -2,6 +2,7 @@ package org.batfish.coordinator.resources;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.batfish.common.CoordConstsV2.RSC_AUTOCOMPLETE;
 import static org.batfish.common.CoordConstsV2.RSC_FORK;
 import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
@@ -11,6 +12,7 @@ import static org.batfish.common.CoordConstsV2.RSC_SNAPSHOTS;
 import static org.batfish.common.CoordConstsV2.RSC_WORK;
 
 import java.io.FileNotFoundException;
+import javax.annotation.Nonnull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
@@ -139,5 +141,10 @@ public class NetworkResource {
     } catch (Exception e) {
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
     }
+  }
+
+  @Path(RSC_AUTOCOMPLETE)
+  public @Nonnull AutocompleteResource getAutocompleteResource() {
+    return new AutocompleteResource(_name, null);
   }
 }

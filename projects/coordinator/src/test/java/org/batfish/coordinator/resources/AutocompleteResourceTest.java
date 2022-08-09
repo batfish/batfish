@@ -4,7 +4,9 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.common.CoordConstsV2.QP_MAX_SUGGESTIONS;
 import static org.batfish.common.CoordConstsV2.QP_QUERY;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -43,18 +45,16 @@ public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
 
   private @Nonnull Builder getTarget(
       String network,
-      String snapshot,
+      @Nullable String snapshot,
       Variable.Type varType,
       @Nullable String query,
       @Nullable Integer maxSuggestions) {
     WebTarget t =
-        target(CoordConsts.SVC_CFG_WORK_MGR2)
-            .path(CoordConstsV2.RSC_NETWORKS)
-            .path(network)
-            .path(CoordConstsV2.RSC_SNAPSHOTS)
-            .path(snapshot)
-            .path(CoordConstsV2.RSC_AUTOCOMPLETE)
-            .path(varType.getName());
+        target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS).path(network);
+    if (snapshot != null) {
+      t = t.path(CoordConstsV2.RSC_SNAPSHOTS).path(snapshot);
+    }
+    t = t.path(CoordConstsV2.RSC_AUTOCOMPLETE).path(varType.getName());
     if (query != null) {
       t = t.queryParam(QP_QUERY, query);
     }
@@ -141,6 +141,59 @@ public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
       assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
       AutocompleteResponse aresp = response.readEntity(AutocompleteResponse.class);
       assertThat(aresp.getSuggestions(), hasSize(1));
+    }
+  }
+
+  @Test
+  public void testGetNoSnapshotButNeedsSnapshot() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of("node1"));
+
+    CompletionMetadata completionMetadata =
+        new CompletionMetadata(
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            new PrefixTrieMultiMap<>(),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(
+                "node1",
+                new NodeCompletionMetadata(null),
+                "node2",
+                new NodeCompletionMetadata(null)),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of());
+    IdManager idm = Main.getWorkMgr().getIdManager();
+    NetworkId networkId = idm.getNetworkId(network).get();
+    SnapshotId snapshotId = idm.getSnapshotId(snapshot, networkId).get();
+    Main.getWorkMgr()
+        .getStorage()
+        .storeCompletionMetadata(completionMetadata, networkId, snapshotId);
+
+    // should get 0 results since a snapshot is needed for NODE_NAME
+    try (Response response = getTarget(network, null, Type.NODE_NAME, null, null).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      AutocompleteResponse aresp = response.readEntity(AutocompleteResponse.class);
+      assertThat(aresp.getSuggestions(), empty());
+    }
+  }
+
+  @Test
+  public void testGetNoSnapshot() {
+    String network = "network1";
+    Main.getWorkMgr().initNetwork(network, null);
+
+    try (Response response =
+        getTarget(network, null, Type.BGP_PROCESS_PROPERTY_SPEC, null, null).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      AutocompleteResponse aresp = response.readEntity(AutocompleteResponse.class);
+      // should get results
+      assertThat(aresp.getSuggestions(), not(empty()));
     }
   }
 }

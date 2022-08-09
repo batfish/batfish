@@ -27,7 +27,7 @@ import org.batfish.datamodel.questions.Variable;
 @ParametersAreNonnullByDefault
 public final class AutocompleteResource {
 
-  public AutocompleteResource(String network, String snapshot) {
+  public AutocompleteResource(String network, @Nullable String snapshot) {
     _network = network;
     _snapshot = snapshot;
   }
@@ -60,5 +60,5 @@ public final class AutocompleteResource {
   }
 
   private final @Nonnull String _network;
-  private final @Nonnull String _snapshot;
+  private final @Nullable String _snapshot;
 }
