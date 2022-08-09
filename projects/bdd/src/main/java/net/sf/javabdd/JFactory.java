@@ -2044,71 +2044,81 @@ public class JFactory extends BDDFactory implements Serializable {
     int nodesWithoutMinLevel = operands.length - nodesWithMinLevel - deduped;
 
     int low;
-    if (!nodeWithMinLevelHasLowOne) {
-      /* Make the recursive call for the low branch. None of the operands are 1, so we can't
-       * short-circuit to 1. Allocate and build the array of operands, then make the call and push
-       * the result onto the stack.
-       */
-      int[] lowOperands = new int[nodesWithMinLevelLowNonZero + nodesWithoutMinLevel];
-      int i = 0;
-      for (int operand : operands) {
-        if (operand == minLevelNode) {
-          continue;
-        }
-        if (LEVEL(operand) == minLevel) {
-          int l = LOW(operand);
-          if (!ISZERO(l)) {
-            assert !ISCONST(l);
-            lowOperands[i++] = l;
-          }
-        } else {
-          assert !ISCONST(operand);
-          lowOperands[i++] = operand;
-        }
-      }
-      assert i == lowOperands.length;
-      low = orAll_rec(lowOperands);
-      PUSHREF(low); // make sure low isn't garbage collected.
-    } else {
+    if (nodeWithMinLevelHasLowOne) {
       low = BDDONE;
+    } else {
+      int numLowOperands = nodesWithMinLevelLowNonZero + nodesWithoutMinLevel;
+      if (numLowOperands == 0) {
+        low = BDDZERO;
+      } else {
+        /* Make the recursive call for the low branch. None of the operands are 1, so we can't
+         * short-circuit to 1. Allocate and build the array of operands, then make the call and push
+         * the result onto the stack.
+         */
+        int[] lowOperands = new int[numLowOperands];
+        int i = 0;
+        for (int operand : operands) {
+          if (operand == minLevelNode) {
+            continue;
+          }
+          if (LEVEL(operand) == minLevel) {
+            int l = LOW(operand);
+            if (!ISZERO(l)) {
+              assert !ISCONST(l);
+              lowOperands[i++] = l;
+            }
+          } else {
+            assert !ISCONST(operand);
+            lowOperands[i++] = operand;
+          }
+        }
+        assert i == lowOperands.length;
+        low = orAll_rec(lowOperands);
+        PUSHREF(low); // make sure low isn't garbage collected.
+      }
     }
 
     int high;
-    if (!nodeWithMinLevelHasHighOne) {
-      /* Make the recursive call for the high branch. None of the operands are 1, so we can't
-       * short-circuit to 1. Allocate and build the array of operands, then make the call and push
-       * the result onto the stack.
-       */
-      int[] highOperands = new int[nodesWithMinLevelHighNonZero + nodesWithoutMinLevel];
-      int i = 0;
-      for (int operand : operands) {
-        if (operand == minLevelNode) {
-          continue;
-        }
-        if (LEVEL(operand) == minLevel) {
-          int h = HIGH(operand);
-          if (!ISZERO(h)) {
-            assert !ISCONST(h);
-            highOperands[i++] = h;
-          }
-        } else {
-          assert !ISCONST(operand);
-          highOperands[i++] = operand;
-        }
-      }
-      assert i == highOperands.length;
-      high = orAll_rec(highOperands);
-      PUSHREF(high); // make sure high isn't garbage collected.
-    } else {
+    if (nodeWithMinLevelHasHighOne) {
       high = BDDONE;
+    } else {
+      int numHighOperands = nodesWithMinLevelHighNonZero + nodesWithoutMinLevel;
+      if (numHighOperands == 0) {
+        high = BDDZERO;
+      } else {
+        /* Make the recursive call for the high branch. None of the operands are 1, so we can't
+         * short-circuit to 1. Allocate and build the array of operands, then make the call and push
+         * the result onto the stack.
+         */
+        int[] highOperands = new int[numHighOperands];
+        int i = 0;
+        for (int operand : operands) {
+          if (operand == minLevelNode) {
+            continue;
+          }
+          if (LEVEL(operand) == minLevel) {
+            int h = HIGH(operand);
+            if (!ISZERO(h)) {
+              assert !ISCONST(h);
+              highOperands[i++] = h;
+            }
+          } else {
+            assert !ISCONST(operand);
+            highOperands[i++] = operand;
+          }
+        }
+        assert i == highOperands.length;
+        high = orAll_rec(highOperands);
+        PUSHREF(high); // make sure high isn't garbage collected.
+      }
     }
 
     int res = bdd_makenode(minLevel, low, high);
 
-    if (!nodeWithMinLevelHasHighOne) {
+    if (high < 2) {
       POPREF(1);
     }
-    if (!nodeWithMinLevelHasLowOne) {
+    if (low < 2) {
       POPREF(1);
     }
 
