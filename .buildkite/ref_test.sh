@@ -2,13 +2,6 @@
 
 set -euxo pipefail
 
-echo PWD
-pwd
-echo .
-ls -la .
-echo WORKSPACE
-ls -la workspace
-
 ALLINONE_JAR="workspace/allinone.jar"
 MAIN_CLASS="org.batfish.allinone.Main"
 
