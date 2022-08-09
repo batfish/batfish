@@ -45,7 +45,7 @@ jobs:
       - name: Maven Build
         run: |
           mkdir workspace
-          mvn -f projects package
+          mvn -B -f projects package
           cp projects/allinone/target/allinone-bundle-*.jar workspace/allinone.jar
       - name: Save JAR
         uses: actions/upload-artifact@v3
@@ -66,7 +66,7 @@ jobs:
           cache: 'maven'
       - name: Maven Junit Tests and Coverage
         run: |
-          mvn -f projects/pom.xml test -DskipTests=false -Djacoco.skip=false
+          mvn -B -f projects/pom.xml test -DskipTests=false -Djacoco.skip=false
           mkdir -p workspace
           rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/
       - name: Save Jacoco exec
@@ -88,7 +88,7 @@ jobs:
           cache: 'maven'
       - name: Checkstyle, findbugs, dependency
         run: |
-          mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
+          mvn -B -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
   bazel_build_test_and_pmd:
     needs:
       - get_date
