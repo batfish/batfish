@@ -16,6 +16,8 @@ jobs:
       ymd: ${{ steps.date.outputs.ymd }}
   format:
     runs-on: ubuntu-latest
+    needs:
+      - get_date
     steps:
       - uses: actions/checkout@v3
       - name: Maven cache
@@ -50,6 +52,7 @@ jobs:
     needs:
       - format
       - json_template
+      - get_date
     steps:
       - uses: actions/checkout@v3
       - name: Maven cache
@@ -80,6 +83,7 @@ jobs:
     needs:
       - format
       - json_template
+      - get_date
     steps:
       - uses: actions/checkout@v3
       - name: Maven cache
@@ -119,6 +123,8 @@ jobs:
           bazel test --test_output=errors --test_tag_filters=pmd_test -- //...
   ref_tests:
     runs-on: ubuntu-latest
+    needs:
+      - get_date
     steps:
       - uses: actions/checkout@v3
       - name: Maven cache
@@ -160,6 +166,7 @@ jobs:
     needs:
       - junit
       - ref_tests
+      - get_date
     steps:
       - uses: actions/checkout@v3
       - name: Maven cache
