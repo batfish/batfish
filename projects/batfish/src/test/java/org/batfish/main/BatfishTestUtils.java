@@ -184,6 +184,14 @@ public class BatfishTestUtils {
     return getBatfishFromTestrigText(testrigText, tempFolder.newFolder().toPath());
   }
 
+  /**
+   * Get a new Batfish instance with given configurations, tempFolder should be present for
+   * non-empty configurations
+   *
+   * @param testrigText Structure containing names and content of testrig input files
+   * @param tempFolder Temporary folder to be used to files required for Batfish
+   * @return Batfish instance pointing at new testrig comprising testrigText
+   */
   public static Batfish getBatfishFromTestrigText(TestrigText testrigText, Path tempFolder)
       throws IOException {
     Map<String, byte[]> awsBytes = testrigText.getAwsBytes();
