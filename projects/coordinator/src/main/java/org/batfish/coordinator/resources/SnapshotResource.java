@@ -8,22 +8,28 @@ import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
 import static org.batfish.common.CoordConstsV2.RSC_POJO_TOPOLOGY;
 import static org.batfish.common.CoordConstsV2.RSC_TOPOLOGY;
+import static org.batfish.common.CoordConstsV2.RSC_WORK;
 import static org.batfish.common.CoordConstsV2.RSC_WORK_JSON;
 import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 import org.batfish.coordinator.Main;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
@@ -39,6 +45,19 @@ public final class SnapshotResource {
   public SnapshotResource(String network, String snapshot) {
     _network = network;
     _snapshot = snapshot;
+  }
+
+  @POST
+  @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+  public Response uploadSnapshot(InputStream inputStream, @Context UriInfo uriInfo) {
+    if (!Main.getWorkMgr().uploadSnapshot(_network, _snapshot, inputStream)) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(
+              String.format(
+                  "Snapshot in network '%s' with name: '%s' already exists", _network, _snapshot))
+          .build();
+    }
+    return Response.created(uriInfo.getRequestUri()).build();
   }
 
   @Path(RSC_POJO_TOPOLOGY)
@@ -142,6 +161,11 @@ public final class SnapshotResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.status(Status.OK).entity(json).build();
+  }
+
+  @Path(RSC_WORK)
+  public WorkResource getWorkResource() {
+    return new WorkResource(_network, _snapshot);
   }
 
   @Path(RSC_AUTOCOMPLETE)

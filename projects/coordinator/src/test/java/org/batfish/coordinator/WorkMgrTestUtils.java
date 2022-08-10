@@ -99,22 +99,22 @@ public final class WorkMgrTestUtils {
         new WorkMgr(Main.getSettings(), logger, idManager, storage, new TestWorkExecutorCreator()));
   }
 
-  public static void uploadTestSnapshot(String network, String snapshot, TemporaryFolder folder)
+  public static boolean uploadTestSnapshot(String network, String snapshot, TemporaryFolder folder)
       throws IOException {
-    uploadTestSnapshot(network, snapshot, "c1", folder);
+    return uploadTestSnapshot(network, snapshot, "c1", folder);
   }
 
-  public static void uploadTestSnapshot(
+  public static boolean uploadTestSnapshot(
       String network, String snapshot, String fileName, TemporaryFolder folder) throws IOException {
-    uploadTestSnapshot(network, snapshot, fileName, "content", folder);
+    return uploadTestSnapshot(network, snapshot, fileName, "content", folder);
   }
 
-  public static void uploadTestSnapshot(
+  public static boolean uploadTestSnapshot(
       String network, String snapshot, String fileName, String content, TemporaryFolder folder)
       throws IOException {
     Path tmpSnapshotZip = createSingleFileSnapshotZip(snapshot, fileName, content, folder);
     try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
-      Main.getWorkMgr().uploadSnapshot(network, snapshot, inputStream);
+      return Main.getWorkMgr().uploadSnapshot(network, snapshot, inputStream);
     }
   }
 
