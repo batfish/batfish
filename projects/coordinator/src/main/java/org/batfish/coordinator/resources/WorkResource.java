@@ -1,7 +1,12 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.CoordConstsV2.QP_TYPE;
+
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -11,6 +16,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -18,6 +24,7 @@ import javax.ws.rs.core.UriInfo;
 import org.batfish.common.WorkItem;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.QueuedWork;
+import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.pojo.WorkStatus;
 
@@ -25,8 +32,9 @@ import org.batfish.datamodel.pojo.WorkStatus;
 @ParametersAreNonnullByDefault
 public final class WorkResource {
 
-  public WorkResource(String network) {
+  public WorkResource(String network, @Nullable String snapshot) {
     _network = network;
+    _snapshot = snapshot;
   }
 
   @POST
@@ -68,5 +76,17 @@ public final class WorkResource {
     return queuedWork.toWorkStatus();
   }
 
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public @Nonnull List<WorkStatus> listIncompleteWork(
+      @QueryParam(QP_TYPE) @Nullable WorkType workType) {
+    return Main.getWorkMgr().listIncompleteWork(_network, _snapshot, workType).stream()
+        .map(
+            work ->
+                new WorkStatus(work.getWorkItem(), work.getStatus(), work.getLastTaskCheckResult()))
+        .collect(ImmutableList.toImmutableList());
+  }
+
   private final @Nonnull String _network;
+  private final @Nullable String _snapshot;
 }
