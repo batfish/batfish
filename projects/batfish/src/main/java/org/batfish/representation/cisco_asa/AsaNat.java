@@ -247,7 +247,13 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
   @VisibleForTesting
   public Optional<Transformation.Builder> toIncomingTransformation(
       Map<String, NetworkObject> networkObjects, Warnings w) {
-    return toTransformation(false, networkObjects, w);
+    return toTransformation(false, false, networkObjects, w);
+  }
+
+  @VisibleForTesting
+  public Optional<Transformation.Builder> toIncomingTransformationOrgDestination(
+      Map<String, NetworkObject> networkObjects, Warnings w) {
+    return toTransformation(true, false, networkObjects, w);
   }
 
   /*
@@ -296,7 +302,10 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
    * Object NATs do not divert packets in reverse, only forward.
    */
   private Optional<Transformation.Builder> toTransformation(
-      boolean outgoing, Map<String, NetworkObject> networkObjects, Warnings w) {
+      boolean orgDestination,
+      boolean outgoing,
+      Map<String, NetworkObject> networkObjects,
+      Warnings w) {
 
     if (!outgoing && _dynamic) {
       // Inbound dynamic NAT not supported
@@ -324,7 +333,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
       shiftDestination = _realDestination;
       insideInterface = _insideInterface;
       firstField = IpField.SOURCE;
-      secondField = IpField.DESTINATION;
+      secondField = orgDestination ? IpField.ORG_DESTINATION : IpField.DESTINATION;
     } else {
       // Incoming transformations match the mapped source and real destination and transform into
       // the real source and mapped destination
@@ -333,7 +342,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
       shiftDestination = _mappedDestination;
       assignOrShiftSrc = _realSource;
       insideInterface = ANY_INTERFACE;
-      firstField = IpField.DESTINATION;
+      firstField = orgDestination ? IpField.ORG_DESTINATION : IpField.DESTINATION;
       secondField = IpField.SOURCE;
     }
 
@@ -393,6 +402,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
         shiftDestination,
         matchDestination,
         firstTransformationBuilder.build(),
+        orgDestination,
         networkObjects,
         secondField,
         w);
@@ -401,7 +411,12 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
   @VisibleForTesting
   public Optional<Transformation.Builder> toOutgoingTransformation(
       Map<String, NetworkObject> networkObjects, Warnings w) {
-    return toTransformation(true, networkObjects, w);
+    return toTransformation(false, true, networkObjects, w);
+  }
+
+  public Optional<Transformation.Builder> toOutgoingTransformationOrgDestination(
+      Map<String, NetworkObject> networkObjects, Warnings w) {
+    return toTransformation(true, true, networkObjects, w);
   }
 
   public enum Section {

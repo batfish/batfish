@@ -177,6 +177,21 @@ public final class AclLineMatchExprs {
     return matchDst(Ip.parse(ip).toIpSpace());
   }
 
+  public static AclLineMatchExpr matchOrgDst(IpSpace ipSpace) {
+    return matchOrgDst(ipSpace, null);
+  }
+
+  public static AclLineMatchExpr matchOrgDst(IpSpace ipSpace, @Nullable TraceElement traceElement) {
+    if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
+      return traceElement == null ? TRUE : new TrueExpr(traceElement);
+    }
+    return new MatchHeaderSpace(HeaderSpace.builder().setDstOrgIps(ipSpace).build(), traceElement);
+  }
+
+  public static AclLineMatchExpr matchOrgDst(Prefix prefix) {
+    return matchOrgDst(prefix.toIpSpace());
+  }
+
   public static @Nonnull AclLineMatchExpr matchDstPort(int port) {
     checkArgument(0 <= port && port <= 0xFFFF, "Invalid port: %s", port);
     return match(

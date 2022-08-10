@@ -3,12 +3,12 @@ package org.batfish.representation.cisco_asa;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchOrgDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.representation.cisco_asa.AsaNat.ANY_INTERFACE;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
@@ -163,6 +163,8 @@ final class AsaNatUtil {
 
   private static AclLineMatchExpr matchField(Prefix prefix, IpField field) {
     switch (field) {
+      case ORG_DESTINATION:
+        return matchOrgDst(prefix);
       case DESTINATION:
         return matchDst(prefix);
       case SOURCE:
@@ -176,6 +178,7 @@ final class AsaNatUtil {
       AccessListAddressSpecifier shiftDestination,
       AccessListAddressSpecifier matchDestination,
       Transformation first,
+      boolean orgDestination,
       Map<String, NetworkObject> networkObjects,
       IpField field,
       Warnings w) {
@@ -188,14 +191,18 @@ final class AsaNatUtil {
     }
     Transformation second = secondBuilder.build();
 
+    List<TransformationStep> transformationStep =
+        field == IpField.SOURCE
+            ? !orgDestination ? first.getTransformationSteps() : second.getTransformationSteps()
+            : !orgDestination ? second.getTransformationSteps() : first.getTransformationSteps();
+
     return Optional.of(
-        Transformation.when(and(first.getGuard(), second.getGuard()))
-            .apply(
-                Iterables.concat(first.getTransformationSteps(), second.getTransformationSteps())));
+        Transformation.when(and(first.getGuard(), second.getGuard())).apply(transformationStep));
   }
 
   private static ShiftIpAddressIntoSubnet shiftIp(IpField field, Prefix subnet) {
     switch (field) {
+      case ORG_DESTINATION:
       case DESTINATION:
         return TransformationStep.shiftDestinationIp(subnet);
       case SOURCE:

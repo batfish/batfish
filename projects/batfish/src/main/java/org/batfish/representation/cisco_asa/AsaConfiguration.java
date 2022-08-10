@@ -181,6 +181,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -1763,8 +1764,27 @@ public final class AsaConfiguration extends VendorConfiguration {
   private void generateCiscoAsaNatTransformations(
       String ifaceName, org.batfish.datamodel.Interface newIface, List<AsaNat> nats) {
 
-    if (!nats.stream().map(AsaNat::getSection).allMatch(Section.OBJECT::equals)) {
-      _w.unimplemented("No support for Twice NAT");
+    List<Optional<Transformation.Builder>> incomingConvertedNats =
+        new ArrayList<Optional<Transformation.Builder>>();
+    List<Optional<Transformation.Builder>> outgoingConvertedNats =
+        new ArrayList<Optional<Transformation.Builder>>();
+
+    for (AsaNat nat : nats) {
+      if (nat.getSection() == Section.BEFORE) {
+        if (nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
+            || nat.getOutsideInterface().equals(ifaceName)) {
+          incomingConvertedNats.add(nat.toIncomingTransformation(_networkObjects, _w));
+          outgoingConvertedNats.add(
+              nat.toOutgoingTransformationOrgDestination(_networkObjects, _w));
+        } else if (nat.getInsideInterface().equals(AsaNat.ANY_INTERFACE)
+            || nat.getInsideInterface().equals(ifaceName)) {
+          incomingConvertedNats.add(nat.toOutgoingTransformation(_networkObjects, _w));
+          outgoingConvertedNats.add(
+              nat.toIncomingTransformationOrgDestination(_networkObjects, _w));
+        }
+      } else if (nat.getSection() == Section.AFTER) {
+        _w.unimplemented("Twice NAT's AFTER option is not supported.");
+      }
     }
 
     // ASA places incoming and outgoing object NATs as transformations on the outside interface.
@@ -1778,19 +1798,13 @@ public final class AsaConfiguration extends VendorConfiguration {
                         || nat.getOutsideInterface().equals(ifaceName))
             .collect(Collectors.toCollection(TreeSet::new));
 
-    newIface.setIncomingTransformation(
-        objectNats.stream()
-            .map(nat -> nat.toIncomingTransformation(_networkObjects, _w))
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toList(), AsaNatUtil::toTransformationChain)));
+    for (AsaNat nat : objectNats) {
+      incomingConvertedNats.add(nat.toIncomingTransformation(_networkObjects, _w));
+      outgoingConvertedNats.add(nat.toOutgoingTransformation(_networkObjects, _w));
+    }
 
-    newIface.setOutgoingTransformation(
-        objectNats.stream()
-            .map(nat -> nat.toOutgoingTransformation(_networkObjects, _w))
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toList(), AsaNatUtil::toTransformationChain)));
+    newIface.setIncomingTransformation(AsaNatUtil.toTransformationChain(incomingConvertedNats));
+    newIface.setOutgoingTransformation(AsaNatUtil.toTransformationChain(outgoingConvertedNats));
   }
 
   private void applyZoneFilter(

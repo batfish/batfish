@@ -18,6 +18,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
   public static class Builder {
     private int _dscp;
     private Ip _dstIp;
+    private Ip _dstOrgIp;
     @Nullable private Integer _dstPort;
     private int _ecn;
     private int _fragmentOffset;
@@ -43,6 +44,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
     private Builder() {
       _dscp = 0;
       _dstIp = Ip.ZERO;
+      _dstOrgIp = Ip.ZERO;
       _ecn = 0;
       _fragmentOffset = 0;
       _ipProtocol = null;
@@ -58,6 +60,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _ingressVrf = flow._ingressVrf;
       _srcIp = flow._srcIp;
       _dstIp = flow._dstIp;
+      _dstOrgIp = flow._dstOrgIp;
       _srcPort = flow._srcPort;
       _dstPort = flow._dstPort;
       _ipProtocol = flow._ipProtocol;
@@ -114,6 +117,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
           _ingressVrf,
           _srcIp,
           _dstIp,
+          _dstOrgIp,
           srcPort,
           dstPort,
           firstNonNull(_ipProtocol, IpProtocol.fromNumber(0)),
@@ -194,6 +198,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
     }
 
     public Builder setDstIp(Ip dstIp) {
+      _dstOrgIp = _dstIp;
       _dstIp = dstIp;
       return this;
     }
@@ -325,6 +330,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private static final String PROP_DSCP = "dscp";
   static final String PROP_DST_IP = "dstIp";
+  static final String PROP_DST_ORG_IP = "dstOrgIp";
   static final String PROP_DST_PORT = "dstPort";
   private static final String PROP_ECN = "ecn";
   private static final String PROP_FRAGMENT_OFFSET = "fragmentOffset";
@@ -354,6 +360,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private final int _dscp;
   private final @Nonnull Ip _dstIp;
+  private final @Nonnull Ip _dstOrgIp;
   private final @Nullable Integer _dstPort;
   private final int _ecn;
   private final int _fragmentOffset;
@@ -374,6 +381,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       @Nullable String ingressVrf,
       @Nonnull Ip srcIp,
       @Nonnull Ip dstIp,
+      @Nonnull Ip dstOrgIp,
       @Nullable Integer srcPort,
       @Nullable Integer dstPort,
       @Nonnull IpProtocol ipProtocol,
@@ -397,6 +405,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
     _dstIp = dstIp;
     _srcPort = srcPort;
     _dstPort = dstPort;
+    _dstOrgIp = dstOrgIp;
     _ipProtocol = ipProtocol;
     _dscp = dscp;
     _ecn = ecn;
@@ -425,6 +434,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       @JsonProperty(PROP_INGRESS_VRF) String ingressVrf,
       @JsonProperty(PROP_SRC_IP) Ip srcIp,
       @JsonProperty(PROP_DST_IP) Ip dstIp,
+      @JsonProperty(PROP_DST_ORG_IP) Ip dstOrgIp,
       @JsonProperty(PROP_SRC_PORT) @Nullable Integer srcPort,
       @JsonProperty(PROP_DST_PORT) @Nullable Integer dstPort,
       @JsonProperty(PROP_IP_PROTOCOL) IpProtocol ipProtocol,
@@ -464,6 +474,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
         ingressVrf,
         requireNonNull(srcIp, PROP_SRC_IP + " must not be null"),
         requireNonNull(dstIp, PROP_DST_IP + " must not be null"),
+        null,
         srcPort,
         dstPort,
         ipProtocol,
@@ -531,6 +542,12 @@ public final class Flow implements Comparable<Flow>, Serializable {
   @JsonProperty(PROP_DST_IP)
   public Ip getDstIp() {
     return _dstIp;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_DST_ORG_IP)
+  public Ip getDstOrgIp() {
+    return _dstOrgIp;
   }
 
   @JsonProperty(PROP_DST_PORT)
@@ -738,6 +755,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
         + _srcIp
         + " dstIp:"
         + _dstIp
+        + " dstOrgIp:"
+        + _dstOrgIp
         + " ipProtocol:"
         + _ipProtocol
         + srcPortStr

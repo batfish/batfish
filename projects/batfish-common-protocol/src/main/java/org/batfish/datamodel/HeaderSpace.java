@@ -29,6 +29,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   public static class Builder {
     private SortedSet<Integer> _dscps;
     private @Nullable IpSpace _dstIps;
+    private @Nullable IpSpace _dstOrgIps;
     private SortedSet<SubRange> _dstPorts;
     private SortedSet<Integer> _ecns;
     private SortedSet<SubRange> _fragmentOffsets;
@@ -235,6 +236,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     public Builder setDstIps(IpSpace dstIps) {
       _dstIps = dstIps;
+      return this;
+    }
+
+    public Builder setDstOrgIps(IpSpace dstOrgIps) {
+      _dstOrgIps = dstOrgIps;
       return this;
     }
 
@@ -472,6 +478,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(HeaderSpace::getTcpFlags, Comparators.lexicographical(Ordering.natural()));
   private static final String PROP_DSCPS = "dscps";
   private static final String PROP_DST_IPS = "dstIps";
+  private static final String PROP_DST_ORG_IPS = "dstOrgIps";
   private static final String PROP_DST_PORTS = "dstPorts";
   private static final String PROP_ECNS = "ecns";
   private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
@@ -504,6 +511,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   private SortedSet<Integer> _dscps;
   private IpSpace _dstIps;
+  private IpSpace _dstOrgIps;
   private SortedSet<SubRange> _dstPorts;
   private SortedSet<Integer> _ecns;
   private SortedSet<SubRange> _fragmentOffsets;
@@ -555,6 +563,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private HeaderSpace(Builder builder) {
     _dscps = ImmutableSortedSet.copyOf(builder._dscps);
     _dstIps = builder._dstIps;
+    _dstOrgIps = builder._dstOrgIps;
     _dstPorts = ImmutableSortedSet.copyOf(builder._dstPorts);
     _ecns = ImmutableSortedSet.copyOf(builder._ecns);
     _fragmentOffsets = ImmutableSortedSet.copyOf(builder._fragmentOffsets);
@@ -596,6 +605,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     HeaderSpace other = (HeaderSpace) o;
     return _dscps.equals(other._dscps)
         && Objects.equals(_dstIps, other._dstIps)
+        && Objects.equals(_dstOrgIps, other._dstOrgIps)
         && _dstPorts.equals(other._dstPorts)
         && _ecns.equals(other._ecns)
         && _fragmentOffsets.equals(other._fragmentOffsets)
@@ -791,6 +801,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return Objects.hash(
         _dscps,
         _dstIps,
+        _dstOrgIps,
         _dstPorts,
         _ecns,
         _fragmentOffsets,
@@ -828,6 +839,9 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (_notDstIps != null && _notDstIps.containsIp(flow.getDstIp(), namedIpSpaces)) {
+      return false;
+    }
+    if (_dstOrgIps != null && !_dstOrgIps.containsIp(flow.getDstOrgIp(), namedIpSpaces)) {
       return false;
     }
     if (!_dstPorts.isEmpty()
@@ -1072,6 +1086,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return builder()
         .setDscps(_dscps)
         .setDstIps(_dstIps)
+        .setDstOrgIps(_dstOrgIps)
         .setDstPorts(_dstPorts)
         .setEcns(_ecns)
         .setFragmentOffsets(_fragmentOffsets)
@@ -1104,6 +1119,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .omitNullValues()
         .add(PROP_DSCPS, nullIfEmpty(_dscps))
         .add(PROP_DST_IPS, _dstIps)
+        .add(PROP_DST_ORG_IPS, _dstOrgIps)
         .add(PROP_DST_PORTS, nullIfEmpty(_dstPorts))
         .add(PROP_ECNS, nullIfEmpty(_ecns))
         .add(PROP_FRAGMENT_OFFSETS, nullIfEmpty(_fragmentOffsets))
