@@ -1,17 +1,23 @@
 package org.batfish.coordinator.resources;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
@@ -27,9 +33,20 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** Test of {@link WorkResource}. */
+@ParametersAreNonnullByDefault
 public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  private @Nonnull Builder getWorkTarget(String network) {
+    return target(CoordConsts.SVC_CFG_WORK_MGR2)
+        .path(CoordConstsV2.RSC_NETWORKS)
+        .path(network)
+        .path(CoordConstsV2.RSC_WORK)
+        .request()
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+  }
 
   private @Nonnull Builder getWorkItemTarget(String network, String workId) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
@@ -45,6 +62,56 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   @Before
   public void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
+  }
+
+  @Test
+  public void testQueueWorkDuplicate() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    UUID workId = UUID.randomUUID();
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
+    WorkItem workItem = new WorkItem(workId, network, snapshot, new HashMap<>());
+    WorkItem dupWorkItem = new WorkItem(UUID.randomUUID(), network, snapshot, new HashMap<>());
+    Main.getWorkMgr().queueWork(workItem);
+    try (Response response =
+        getWorkTarget(network).post(Entity.entity(dupWorkItem, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+      String msg = response.readEntity(String.class);
+      assertThat(
+          msg,
+          equalTo(
+              String.format(
+                  "Supplied WorkID '%s' is a duplicate of existing WorkID: '%s'",
+                  dupWorkItem.getId(), workItem.getId())));
+    }
+  }
+
+  @Test
+  public void testQueueWork() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    UUID workId = UUID.randomUUID();
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
+    WorkItem workItem = new WorkItem(workId, network, snapshot, new HashMap<>());
+    URI uri;
+    try (Response response =
+        getWorkTarget(network).post(Entity.entity(workItem, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
+      uri = response.getLocation();
+    }
+    try (Response response =
+        target(uri.getPath())
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      WorkStatus retrieved = response.readEntity(WorkStatus.class);
+      assertTrue(retrieved.getWorkItem().matches(workItem));
+      assertThat(retrieved.getWorkItem().getId(), equalTo(workId));
+    }
   }
 
   @Test
