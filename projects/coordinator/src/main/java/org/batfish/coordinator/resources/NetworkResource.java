@@ -110,7 +110,7 @@ public class NetworkResource {
   /** Relocate the request to {@link WorkResource} */
   @Path(RSC_WORK)
   public WorkResource getWorkResource() {
-    return new WorkResource();
+    return new WorkResource(_name);
   }
 
   /**
