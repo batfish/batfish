@@ -114,6 +114,11 @@ jobs:
         with:
           name: jacoco_exec_ref
           path: workspace/**/jacoco.exec
+      - name: Save JAR
+        uses: actions/upload-artifact@v3
+        with:
+          name: allinone_jar
+          path: workspace/allinone.jar
   code_cov:
     runs-on: ubuntu-latest
     needs:
