@@ -1,5 +1,9 @@
 name: Pre-commit
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 jobs:
   get_date:
     name: ":clock: Get Date"
