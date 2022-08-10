@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
+import javax.annotation.Nonnull;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.Response;
 import org.batfish.common.CoordConsts;
@@ -25,11 +26,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** Test of {@link WorkResource}. */
 public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private Builder getWorkItemTarget(String network, String workId) {
+  private @Nonnull Builder getWorkItemTarget(String network, String workId) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
         .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
@@ -70,6 +72,25 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(network, null);
     try (Response response = getWorkItemTarget(network, "@@@").get()) {
       assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
+  }
+
+  @Test
+  public void testGetWorkStatusWrongNetwork() throws IOException {
+    String network1 = "network1";
+    String network2 = "network2";
+    String snapshot = "snapshot1";
+    UUID workId = UUID.randomUUID();
+    Main.getWorkMgr().initNetwork(network1, null);
+    Main.getWorkMgr().initNetwork(network2, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network1, snapshot, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network2, snapshot, ImmutableSet.of());
+    WorkItem workItem = new WorkItem(workId, network1, snapshot, new HashMap<>());
+    Main.getWorkMgr().queueWork(workItem);
+    try (Response response = getWorkItemTarget(network2, workId.toString()).get()) {
+      // work item should exist
+      // Should get 404 since requested network does not match requested work ID.
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
     }
   }
 
