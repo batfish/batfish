@@ -45,27 +45,27 @@ IBDP is based on incremental fixed point operations:
 
 There are several incremental fixed point operations involved in IBDP. Here is an overview of the dataplane computation process.
 1. `IncrementalBdpEngine.computeIgpDataPlane`
-  * On each `VirtualRouter`, compute initial IGP routes, independent of neighboring devices. This includes connected, local, and static routes, OSFP intra-area routes, RIP internal routes, and EIGRP internal routes.
-  * Propagate OSPF internal routes between devices until an OSPF fixed point is reached.
-  * Propagate RIP internal routes between devices until a RIP fixed point is reached.
+   * On each `VirtualRouter`, compute initial IGP routes, independent of neighboring devices. This includes connected, local, and static routes, OSFP intra-area routes, RIP internal routes, and EIGRP internal routes.
+   * Propagate OSPF internal routes between devices until an OSPF fixed point is reached.
+   * Propagate RIP internal routes between devices until a RIP fixed point is reached.
 1. Stage any [user-provided external BGP advertisements](https://pybatfish.readthedocs.io/en/latest/formats.html?highlight=external%20advertisements#external-bgp-announcements) to be processed by the receiving [`BgpRoutingProcess`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/dataplane/ibdp/BgpRoutingProcess.java) in the first BGP round.
 1. Compute topology context based on the routes so far. (See [topology page](topology.md) for more information about topology computation.)
 1. Compute other non-route information that can affect route presence. For example:
-  * Static routes can be configured to depend on reachability to a given IP. When such routes are present, IBDP computes reachability to those target IPs at this point.
-  * HMM and kernel routes are dependent on what IPs each interface or VRF owns. IP ownership is computed at this point.
+   * Static routes can be configured to depend on reachability to a given IP. When such routes are present, IBDP computes reachability to those target IPs at this point.
+   * HMM and kernel routes are dependent on what IPs each interface or VRF owns. IP ownership is computed at this point.
 1. **Start of topology fixed point operation.** This is the main fixed point operation of IBDP, and the remaining steps compose one topology iteration. When it converges, the dataplane is complete.
 1. `IncrementalBdpEngine.computeNonMonotonicPortionOfDataPlane`: Routing/EGP fixed point operation. This operation brings all devices' routes to a fixed point based on the current topology, reachability, and IP ownership state.
-  * Compute HMM and kernel routes.
-  * Redistribute: In each `VirtualRouter`, perform redistribution of routes into BGP, OSPF, EIGRP, and IS-IS. Redistribution in Batfish is a local operation that adds the redistributed routes to the target protocol's RIB, from which they may be exported later.
-  * Update resolvable routes in protocol RIBs, specifically BGP (the only protocol that checks routes' resolvability). BGP routes are activated or deactivated based on whether their next hop IPs are resolvable in the main RIB.
-  * Queue cross-VRF imports. `VirtualRouter._crossVrfIncomingRoutes` is a queue of routes being sent to that VRF from other VRFs, and it is populated in this step. This is only for leaking routes between main RIBs; there is a separate pipeline for leaking between BGP RIBs.
-  * `IncrementalBdpEngine.computeDependentRoutesIteration`: Compute and propagate dependent routes. "Dependent" means these routes can come and go depending on the current topology or available routes; they are not guaranteed based on the configuration. This includes conditional static routes, generated routes, EIGRP routes, IS-IS routes, OSPF external routes, BGP routes, and the cross-VRF routes that were queued in the previous step.
-  * At this point the routing changes for this EGP round are done. Check for an oscillation:
-    * Compute an iteration hashcode representing the current state of the network. Check if this hashcode has been encountered before. If so, raise a `BdpOscillationException`.
-  * Check if a routing fixed point has been reached, based on `VirtualRouter.isDirty()`. This checks whether the VRF has any route changes to process or incoming routes queued. If any VRF is dirty, IBDP enters another EGP round. Otherwise, the EGP fixed point operation is complete for this topology round.
+   * Compute HMM and kernel routes.
+   * Redistribute: In each `VirtualRouter`, perform redistribution of routes into BGP, OSPF, EIGRP, and IS-IS. Redistribution in Batfish is a local operation that adds the redistributed routes to the target protocol's RIB, from which they may be exported later.
+   * Update resolvable routes in protocol RIBs, specifically BGP (the only protocol that checks routes' resolvability). BGP routes are activated or deactivated based on whether their next hop IPs are resolvable in the main RIB.
+   * Queue cross-VRF imports. `VirtualRouter._crossVrfIncomingRoutes` is a queue of routes being sent to that VRF from other VRFs, and it is populated in this step. This is only for leaking routes between main RIBs; there is a separate pipeline for leaking between BGP RIBs.
+   * `IncrementalBdpEngine.computeDependentRoutesIteration`: Compute and propagate dependent routes. "Dependent" means these routes can come and go depending on the current topology or available routes; they are not guaranteed based on the configuration. This includes conditional static routes, generated routes, EIGRP routes, IS-IS routes, OSPF external routes, BGP routes, and the cross-VRF routes that were queued in the previous step.
+   * At this point the routing changes for this EGP round are done. Check for an oscillation:
+      * Compute an iteration hashcode representing the current state of the network. Check if this hashcode has been encountered before. If so, raise a `BdpOscillationException`.
+   * Check if a routing fixed point has been reached, based on `VirtualRouter.isDirty()`. This checks whether the VRF has any route changes to process or incoming routes queued. If any VRF is dirty, IBDP enters another EGP round. Otherwise, the EGP fixed point operation is complete for this topology round.
 1. Repeat steps 4 and 5 to compute new topology and supplemental information based on the new routing state.
 1. Check if the new topology and supplemental information is all the same as that of the current round. If so, a fixed point has been reached and the dataplane is complete. Otherwise, IBDP enters another topology iteration.
-  * No iteration hashcodes are generated for topology iterations, so oscillations cannot be detected as they are for routing iterations. Instead, if the fixed point operation exceeds `IncrementalBdpEngine.MAX_TOPOLOGY_ITERATIONS` iterations (currently set to 10), IBDP stops and raises a `BdpOscillationException`.
+   * No iteration hashcodes are generated for topology iterations, so oscillations cannot be detected as they are for routing iterations. Instead, if the fixed point operation exceeds `IncrementalBdpEngine.MAX_TOPOLOGY_ITERATIONS` iterations (currently set to 10), IBDP stops and raises a `BdpOscillationException`.
 
 #### Node scheduling
 In some networks, processing nodes in parallel during a routing iteration can cause false positive oscillations. However, parallelization across nodes is safe in most cases, and greatly improves performance.
