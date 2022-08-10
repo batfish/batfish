@@ -2,11 +2,10 @@ package org.batfish.common.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -50,14 +49,17 @@ public final class HeaderSpaceToBDD {
    * A variant of {@link BDDOps#or(BDD...)} that returns {@code null} when all disjuncts are null.
    */
   @VisibleForTesting
-  static BDD orNull(BDD... disjuncts) {
-    BDD result = null;
-    for (BDD disjunct : disjuncts) {
-      if (disjunct != null) {
-        result = result == null ? disjunct : result.or(disjunct);
-      }
+  static BDD orNull(BDD bdd1, BDD bdd2) {
+    if (bdd1 == null && bdd2 == null) {
+      return null;
     }
-    return result;
+    if (bdd1 == null) {
+      return bdd2;
+    }
+    if (bdd2 == null) {
+      return bdd1;
+    }
+    return bdd1.or(bdd2);
   }
 
   public IpSpaceToBDD getDstIpSpaceToBdd() {
@@ -183,41 +185,66 @@ public final class HeaderSpaceToBDD {
   public BDD toBDD(HeaderSpace headerSpace) {
     // HeaderSpace has null fields to mean "unconstrained". Thus we must be careful to treat these
     // as correctly "everything" when positive or "nothing" when negated.
-    BDD[] conjuncts =
-        new BDD[] {
-          toBDD(headerSpace.getPacketLengths(), _bddPacket.getPacketLength()),
-          negateIfNonNull(toBDD(headerSpace.getNotPacketLengths(), _bddPacket.getPacketLength())),
-          toBDD(headerSpace.getFragmentOffsets(), _bddPacket.getFragmentOffset()),
-          negateIfNonNull(
-              toBDD(headerSpace.getNotFragmentOffsets(), _bddPacket.getFragmentOffset())),
-          toBDD(headerSpace.getEcns(), _bddPacket.getEcn()),
-          negateIfNonNull(toBDD(headerSpace.getNotEcns(), _bddPacket.getEcn())),
-          toBDD(headerSpace.getDscps(), _bddPacket.getDscp()),
-          negateIfNonNull(toBDD(headerSpace.getNotDscps(), _bddPacket.getDscp())),
-          toBDD(headerSpace.getTcpFlags()),
-          toBDD(headerSpace.getIcmpTypes(), _bddPacket.getIcmpType()),
-          negateIfNonNull(toBDD(headerSpace.getNotIcmpTypes(), _bddPacket.getIcmpType())),
-          toBDD(headerSpace.getIcmpCodes(), _bddPacket.getIcmpCode()),
-          negateIfNonNull(toBDD(headerSpace.getNotIcmpCodes(), _bddPacket.getIcmpCode())),
-          toBDD(headerSpace.getIpProtocols()),
-          negateIfNonNull(toBDD(headerSpace.getNotIpProtocols())),
-          toBDD(headerSpace.getSrcPorts(), _bddPacket.getSrcPort()),
-          negateIfNonNull(toBDD(headerSpace.getNotSrcPorts(), _bddPacket.getSrcPort())),
-          orNull(
-              toBDD(headerSpace.getSrcOrDstPorts(), _bddPacket.getSrcPort()),
-              toBDD(headerSpace.getSrcOrDstPorts(), _bddPacket.getDstPort())),
-          toBDD(headerSpace.getDstPorts(), _bddPacket.getDstPort()),
-          negateIfNonNull(toBDD(headerSpace.getNotDstPorts(), _bddPacket.getDstPort())),
-          toBDD(headerSpace.getSrcIps(), _srcIpSpaceToBdd),
-          negateIfNonNull(toBDD(headerSpace.getNotSrcIps(), _srcIpSpaceToBdd)),
-          orNull(
-              toBDD(headerSpace.getSrcOrDstIps(), _srcIpSpaceToBdd),
-              toBDD(headerSpace.getSrcOrDstIps(), _dstIpSpaceToBdd)),
-          toBDD(headerSpace.getDstIps(), _dstIpSpaceToBdd),
-          negateIfNonNull(toBDD(headerSpace.getNotDstIps(), _dstIpSpaceToBdd))
-        };
-    BDD positiveSpace =
-        _bddOps.and(Arrays.stream(conjuncts).filter(Objects::nonNull).collect(Collectors.toList()));
+    List<BDD> conjuncts = new ArrayList<>();
+
+    BDD bdd = toBDD(headerSpace.getPacketLengths(), _bddPacket.getPacketLength());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotPacketLengths(), _bddPacket.getPacketLength()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getFragmentOffsets(), _bddPacket.getFragmentOffset());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd =
+        negateIfNonNull(toBDD(headerSpace.getNotFragmentOffsets(), _bddPacket.getFragmentOffset()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getEcns(), _bddPacket.getEcn());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotEcns(), _bddPacket.getEcn()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getDscps(), _bddPacket.getDscp());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotDscps(), _bddPacket.getDscp()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getTcpFlags());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getIcmpTypes(), _bddPacket.getIcmpType());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotIcmpTypes(), _bddPacket.getIcmpType()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getIcmpCodes(), _bddPacket.getIcmpCode());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotIcmpCodes(), _bddPacket.getIcmpCode()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getIpProtocols());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotIpProtocols()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getSrcPorts(), _bddPacket.getSrcPort());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotSrcPorts(), _bddPacket.getSrcPort()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd =
+        orNull(
+            toBDD(headerSpace.getSrcOrDstPorts(), _bddPacket.getSrcPort()),
+            toBDD(headerSpace.getSrcOrDstPorts(), _bddPacket.getDstPort()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getDstPorts(), _bddPacket.getDstPort());
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotDstPorts(), _bddPacket.getDstPort()));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getSrcIps(), _srcIpSpaceToBdd);
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotSrcIps(), _srcIpSpaceToBdd));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd =
+        orNull(
+            toBDD(headerSpace.getSrcOrDstIps(), _srcIpSpaceToBdd),
+            toBDD(headerSpace.getSrcOrDstIps(), _dstIpSpaceToBdd));
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = toBDD(headerSpace.getDstIps(), _dstIpSpaceToBdd);
+    if (bdd != null) conjuncts.add(bdd);
+    bdd = negateIfNonNull(toBDD(headerSpace.getNotDstIps(), _dstIpSpaceToBdd));
+    if (bdd != null) conjuncts.add(bdd);
+    BDD positiveSpace = _bddFactory.andAll(conjuncts);
     return headerSpace.getNegate() ? positiveSpace.not() : positiveSpace;
   }
 }
