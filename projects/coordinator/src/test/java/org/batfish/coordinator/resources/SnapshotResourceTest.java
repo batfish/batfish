@@ -353,7 +353,6 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
       metadata = resp.readEntity(SnapshotMetadata.class);
     }
     assertNotNull(metadata);
-    assertTrue(Main.getWorkMgr().checkSnapshotExists(network, snapshot));
   }
 
   @Test
