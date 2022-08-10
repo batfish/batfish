@@ -2457,26 +2457,24 @@ public final class WorkMgrTest {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
-    uploadTestSnapshot(network, snapshot);
+    assertTrue(uploadTestSnapshot(network, snapshot));
 
     // snapshot should exist
     assertThat(_manager.listSnapshots(network), contains(snapshot));
 
     // should be able to delete and recreate
     _manager.delSnapshot(network, snapshot);
-    uploadTestSnapshot(network, snapshot);
+    assertTrue(uploadTestSnapshot(network, snapshot));
 
     // snapshot should exist again
     assertThat(_manager.listSnapshots(network), contains(snapshot));
 
     // should not be able to upload again with same name
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(containsString(snapshot));
-    uploadTestSnapshot(network, snapshot);
+    assertFalse(uploadTestSnapshot(network, snapshot));
   }
 
-  private void uploadTestSnapshot(String network, String snapshot) throws IOException {
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
+  private boolean uploadTestSnapshot(String network, String snapshot) throws IOException {
+    return WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
   }
 
   private void uploadTestSnapshot(String network, String snapshot, String fileName)

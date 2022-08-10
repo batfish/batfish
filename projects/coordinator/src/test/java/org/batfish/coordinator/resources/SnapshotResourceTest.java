@@ -1,6 +1,7 @@
 package org.batfish.coordinator.resources;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -9,6 +10,7 @@ import static org.batfish.coordinator.WorkMgrTestUtils.uploadTestSnapshot;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -16,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.ws.rs.client.Entity;
@@ -329,12 +332,27 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(network, null);
     Path tmpSnapshotZip = createSingleFileSnapshotZip(snapshot, filename, "foo", _folder);
     Builder target = getTarget(network, snapshot);
+    URI outputUri;
+    SnapshotMetadata metadata;
+
     try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
       try (Response resp =
           target.post(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM))) {
-        assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
+        assertThat(resp.getStatus(), equalTo(CREATED.getStatusCode()));
+        outputUri = resp.getLocation();
       }
     }
+    assertTrue(Main.getWorkMgr().checkSnapshotExists(network, snapshot));
+    try (Response resp =
+        target(outputUri.getPath())
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .get()) {
+      assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
+      metadata = resp.readEntity(SnapshotMetadata.class);
+    }
+    assertNotNull(metadata);
     assertTrue(Main.getWorkMgr().checkSnapshotExists(network, snapshot));
   }
 
