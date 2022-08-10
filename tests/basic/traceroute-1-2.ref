@@ -32,6 +32,7 @@
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "2.128.0.101",
+          "dstOrgIp" : "8.8.8.8",
           "dstPort" : 33434,
           "ecn" : 0,
           "fragmentOffset" : 0,
@@ -193,6 +194,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -458,6 +460,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -626,6 +629,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -891,6 +895,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -1059,6 +1064,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -1324,6 +1330,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -1492,6 +1499,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -1757,6 +1765,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -1792,6 +1801,7 @@
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "2.128.0.101",
+          "dstOrgIp" : "8.8.8.8",
           "dstPort" : 33434,
           "ecn" : 0,
           "fragmentOffset" : 0,
@@ -1953,6 +1963,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -2218,6 +2229,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -2386,6 +2398,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -2651,6 +2664,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -2819,6 +2833,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -3084,6 +3099,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -3252,6 +3268,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
@@ -3517,6 +3534,7 @@
                       "flow" : {
                         "dscp" : 0,
                         "dstIp" : "2.128.0.101",
+                        "dstOrgIp" : "8.8.8.8",
                         "dstPort" : 33434,
                         "ecn" : 0,
                         "fragmentOffset" : 0,
