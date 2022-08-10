@@ -10,6 +10,8 @@ public class CoordConstsV2 {
   public static final String HTTP_HEADER_BATFISH_VERSION = "X-Batfish-Version";
 
   public static final String QP_MAX_SUGGESTIONS = "maxsuggestions";
+  public static final String QP_NAME = "name";
+  public static final String QP_NAME_PREFIX = "name_prefix";
   public static final String QP_TYPE = "type";
   public static final String QP_VERBOSE = "verbose";
   public static final String QP_QUERY = "query";
