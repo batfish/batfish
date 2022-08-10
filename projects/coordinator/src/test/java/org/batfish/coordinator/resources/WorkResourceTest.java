@@ -4,25 +4,33 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.WorkItem;
 import org.batfish.coordinator.Main;
+import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.pojo.WorkStatus;
@@ -38,11 +46,18 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private @Nonnull Builder getWorkTarget(String network) {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_NETWORKS)
-        .path(network)
-        .path(CoordConstsV2.RSC_WORK)
+  private @Nonnull Builder getWorkTarget(
+      String network, @Nullable String snapshot, @Nullable WorkType workType) {
+    WebTarget target =
+        target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_NETWORKS).path(network);
+    if (snapshot != null) {
+      target = target.path(CoordConstsV2.RSC_SNAPSHOTS).path(snapshot);
+    }
+    target = target.path(CoordConstsV2.RSC_WORK);
+    if (workType != null) {
+      target = target.queryParam(CoordConstsV2.QP_TYPE, workType);
+    }
+    return target
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
@@ -75,7 +90,8 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
     WorkItem dupWorkItem = new WorkItem(UUID.randomUUID(), network, snapshot, new HashMap<>());
     Main.getWorkMgr().queueWork(workItem);
     try (Response response =
-        getWorkTarget(network).post(Entity.entity(dupWorkItem, MediaType.APPLICATION_JSON))) {
+        getWorkTarget(network, null, null)
+            .post(Entity.entity(dupWorkItem, MediaType.APPLICATION_JSON))) {
       assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
       String msg = response.readEntity(String.class);
       assertThat(
@@ -97,7 +113,8 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
     WorkItem workItem = new WorkItem(workId, network, snapshot, new HashMap<>());
     URI uri;
     try (Response response =
-        getWorkTarget(network).post(Entity.entity(workItem, MediaType.APPLICATION_JSON))) {
+        getWorkTarget(network, null, null)
+            .post(Entity.entity(workItem, MediaType.APPLICATION_JSON))) {
       assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
       uri = response.getLocation();
     }
@@ -178,6 +195,81 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
 
       // work ID should match
       assertThat(workStatus.getWorkItem().getId(), equalTo(workId));
+    }
+  }
+
+  @Test
+  public void testListIncompleteWorkNoSnapshotNoWorkType() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    UUID workId = UUID.randomUUID();
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
+    WorkItem workItem = new WorkItem(workId, network, snapshot, new HashMap<>());
+    Main.getWorkMgr().queueWork(workItem);
+    try (Response response = getWorkTarget(network, null, null).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      List<WorkStatus> workStatuses = response.readEntity(new GenericType<List<WorkStatus>>() {});
+
+      assertThat(workStatuses, hasSize(1));
+      // work ID should match
+      assertThat(workStatuses.get(0).getWorkItem().getId(), equalTo(workId));
+    }
+  }
+
+  @Test
+  public void testListIncompleteWorkWorkTypeNoSnapshot() throws IOException {
+    String network = "network1";
+    String snapshot = "snapshot1";
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
+    UUID workId1 = UUID.randomUUID();
+    WorkItem workItem1 =
+        new WorkItem(
+            workId1,
+            network,
+            snapshot,
+            ImmutableMap.of(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, ""));
+    UUID workId2 = UUID.randomUUID();
+    WorkItem workItem2 =
+        new WorkItem(
+            workId2,
+            network,
+            snapshot,
+            new HashMap<>(ImmutableMap.of(BfConsts.COMMAND_DUMP_DP, "")));
+    Main.getWorkMgr().queueWork(workItem1);
+    Main.getWorkMgr().queueWork(workItem2);
+    try (Response response = getWorkTarget(network, null, WorkType.DATAPLANING).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      List<WorkStatus> workStatuses = response.readEntity(new GenericType<List<WorkStatus>>() {});
+
+      // should only contain dataplaning work item
+      assertThat(workStatuses, hasSize(1));
+      assertThat(workStatuses.get(0).getWorkItem().getId(), equalTo(workItem2.getId()));
+    }
+  }
+
+  @Test
+  public void testListIncompleteWorkSnapshotNoWorkType() throws IOException {
+    String network = "network1";
+    String snapshot1 = "snapshot1";
+    String snapshot2 = "snapshot2";
+    Main.getWorkMgr().initNetwork(network, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot1, ImmutableSet.of());
+    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot2, ImmutableSet.of());
+    UUID workId1 = UUID.randomUUID();
+    WorkItem workItem1 = new WorkItem(workId1, network, snapshot1, ImmutableMap.of());
+    UUID workId2 = UUID.randomUUID();
+    WorkItem workItem2 = new WorkItem(workId2, network, snapshot2, ImmutableMap.of());
+    Main.getWorkMgr().queueWork(workItem1);
+    Main.getWorkMgr().queueWork(workItem2);
+    try (Response response = getWorkTarget(network, snapshot2, null).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      List<WorkStatus> workStatuses = response.readEntity(new GenericType<List<WorkStatus>>() {});
+
+      // should only contain snapshot2's work item
+      assertThat(workStatuses, hasSize(1));
+      assertThat(workStatuses.get(0).getWorkItem().getId(), equalTo(workItem2.getId()));
     }
   }
 }
