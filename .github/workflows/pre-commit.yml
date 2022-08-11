@@ -114,8 +114,7 @@ jobs:
           path: "~/.cache/bazel"
           key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE') }}-${{ hashFiles('maven_install.json') }}-
-            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE') }}-
+            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-
             ${{runner.os}}-bazel-
       - name: Bazel build and test
         run: |
