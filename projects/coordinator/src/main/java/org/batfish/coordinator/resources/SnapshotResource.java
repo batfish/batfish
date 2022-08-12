@@ -12,6 +12,7 @@ import static org.batfish.common.CoordConstsV2.RSC_WORK;
 import static org.batfish.common.CoordConstsV2.RSC_WORK_JSON;
 import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 
+import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -50,7 +51,16 @@ public final class SnapshotResource {
   @POST
   @Consumes(MediaType.APPLICATION_OCTET_STREAM)
   public Response uploadSnapshot(InputStream inputStream, @Context UriInfo uriInfo) {
-    if (!Main.getWorkMgr().uploadSnapshot(_network, _snapshot, inputStream)) {
+    boolean alreadyExists;
+    try {
+      alreadyExists = !Main.getWorkMgr().uploadSnapshot(_network, _snapshot, inputStream);
+    } catch (Exception e) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(
+              String.format("Error uploading snapshot: %s", Throwables.getStackTraceAsString(e)))
+          .build();
+    }
+    if (alreadyExists) {
       return Response.status(Status.BAD_REQUEST)
           .entity(
               String.format(
