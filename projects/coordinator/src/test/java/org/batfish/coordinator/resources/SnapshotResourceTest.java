@@ -2,7 +2,6 @@ package org.batfish.coordinator.resources;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.coordinator.WorkMgrTestUtils.createSingleFileSnapshotZip;
@@ -387,9 +386,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     try (ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[] {})) {
       try (Response resp =
           target.post(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM))) {
-        // TODO: Perhaps we should return bad request for this case, but it would take some
-        //       rewriting of the uploadSnapshot call chain.
-        assertThat(resp.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+        assertThat(resp.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
       }
     }
     assertFalse(Main.getWorkMgr().checkSnapshotExists(network, snapshot));
