@@ -2043,6 +2043,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     int nodesWithoutMinLevel = operands.length - nodesWithMinLevel - deduped;
 
+    int pushed = 0;
     int low;
     if (nodeWithMinLevelHasLowOne) {
       low = BDDONE;
@@ -2075,6 +2076,7 @@ public class JFactory extends BDDFactory implements Serializable {
         assert i == lowOperands.length;
         low = orAll_rec(lowOperands);
         PUSHREF(low); // make sure low isn't garbage collected.
+        pushed++;
       }
     }
 
@@ -2110,17 +2112,13 @@ public class JFactory extends BDDFactory implements Serializable {
         assert i == highOperands.length;
         high = orAll_rec(highOperands);
         PUSHREF(high); // make sure high isn't garbage collected.
+        pushed++;
       }
     }
 
     int res = bdd_makenode(minLevel, low, high);
 
-    if (high < 2) {
-      POPREF(1);
-    }
-    if (low < 2) {
-      POPREF(1);
-    }
+    POPREF(pushed);
 
     if (cache) {
       if (CACHESTATS && entry.a != -1) {
