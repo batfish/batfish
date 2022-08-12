@@ -62,7 +62,7 @@ public final class UnzipUtility {
     if (!destDirectory.toFile().isDirectory()) {
       throw new IOException(
           String.format(
-              "Output directory does not exist or is not a direcotry: %s", destDirectory));
+              "Output directory does not exist or is not a directory: %s", destDirectory));
     }
     try (ZipInputStream zipIn = new ZipInputStream(zipStream)) {
       for (ZipEntry entry = zipIn.getNextEntry(); entry != null; entry = zipIn.getNextEntry()) {
