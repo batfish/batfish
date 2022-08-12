@@ -155,6 +155,7 @@ done
 cat <<EOF
     command:
       - ".buildkite/jacoco_report.sh"
+    skip: True
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: "${BATFISH_DOCKER_CI_BASE_IMAGE}"
