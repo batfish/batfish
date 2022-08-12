@@ -6,12 +6,12 @@ public class BindPortFutures {
 
   private final CompletableFuture<Integer> _poolPort;
   private final CompletableFuture<Integer> _workPort;
-  private final CompletableFuture<Integer> _workV2Port;
+  private final CompletableFuture<Integer> _servicePort;
 
   public BindPortFutures() {
     _poolPort = new CompletableFuture<>();
     _workPort = new CompletableFuture<>();
-    _workV2Port = new CompletableFuture<>();
+    _servicePort = new CompletableFuture<>();
   }
 
   public CompletableFuture<Integer> getPoolPort() {
@@ -22,7 +22,7 @@ public class BindPortFutures {
     return _workPort;
   }
 
-  public CompletableFuture<Integer> getWorkV2Port() {
-    return _workV2Port;
+  public CompletableFuture<Integer> getServicePort() {
+    return _servicePort;
   }
 }

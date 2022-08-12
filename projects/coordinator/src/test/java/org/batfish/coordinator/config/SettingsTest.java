@@ -17,7 +17,7 @@ public class SettingsTest {
   public void testDefaultValue() {
     Settings settings = new Settings(new String[] {});
     assertThat(settings.getPoolBindHost(), equalTo("localhost"));
-    assertThat(settings.getWorkBindHost(), equalTo("0.0.0.0"));
+    assertThat(settings.getServiceBindHost(), equalTo("0.0.0.0"));
   }
 
   @Test
@@ -25,7 +25,7 @@ public class SettingsTest {
     String[] args = new String[] {"-poolbindhost=10.10.10.10", "-workbindhost=20.20.20.20"};
     Settings settings = new Settings(args);
     assertThat(settings.getPoolBindHost(), equalTo("10.10.10.10"));
-    assertThat(settings.getWorkBindHost(), equalTo("20.20.20.20"));
+    assertThat(settings.getServiceBindHost(), equalTo("20.20.20.20"));
   }
 
   /** Ensure {@link Path} objects are stored/returned properly (with default values) */

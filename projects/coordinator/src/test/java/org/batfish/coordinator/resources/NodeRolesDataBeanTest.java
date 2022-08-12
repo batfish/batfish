@@ -5,12 +5,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import org.batfish.coordinator.WorkMgrServiceV2TestBase;
+import org.batfish.coordinator.MainServiceTestBase;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleMapping;
 import org.junit.Test;
 
-public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
+public class NodeRolesDataBeanTest extends MainServiceTestBase {
 
   @Test
   public void testProperties() {

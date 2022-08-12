@@ -24,7 +24,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.Main;
-import org.batfish.coordinator.WorkMgrServiceV2TestBase;
+import org.batfish.coordinator.MainServiceTestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerSummary;
@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
-public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
+public class AnswerResourceTest extends MainServiceTestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private Builder getAnswerTarget(String network, String question, @Nullable String snapshot) {

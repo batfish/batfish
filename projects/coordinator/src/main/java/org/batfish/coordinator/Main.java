@@ -5,7 +5,8 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileVisitResult;
@@ -18,9 +19,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.ws.rs.core.UriBuilder;
 import org.batfish.common.BatfishException;
@@ -253,76 +256,86 @@ public class Main {
     }
   }
 
-  private static void startWorkManagerService(
-      Class<?> serviceClass,
-      List<Class<?>> features,
+  /** Starts all services that listen on the main service port. */
+  private static void startServices(
+      @Nonnull Set<Class<?>> resourceClasses,
+      @Nonnull List<Class<?>> features,
       int port,
-      CompletableFuture<Integer> portFuture) {
-    ResourceConfig rcWork = new ResourceConfig(serviceClass).register(ExceptionMapper.class);
+      @Nonnull CompletableFuture<Integer> portFuture) {
+    ResourceConfig rcServices = new ResourceConfig(resourceClasses);
     for (Class<?> feature : features) {
       _logger.infof("Registering feature %s", feature.getSimpleName());
-      rcWork.register(feature);
+      rcServices.register(feature);
     }
-
+    List<String> serviceNames =
+        resourceClasses.stream().map(Class::getSimpleName).collect(ImmutableList.toImmutableList());
     HttpServer server;
-    if (_settings.getSslWorkDisable()) {
-      URI workMgrUri =
-          UriBuilder.fromUri("http://" + _settings.getWorkBindHost()).port(port).build();
-
-      _logger.infof("Starting work manager %s at %s\n", serviceClass, workMgrUri);
-
-      server = GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
+    String proto;
+    if (_settings.getSslServiceDisable()) {
+      proto = "http";
+      URI baseEndpoint =
+          UriBuilder.fromUri(String.format("%s://%s", proto, _settings.getServiceBindHost()))
+              .port(port)
+              .build();
+      _logger.infof("Starting %s at %s\n", serviceNames, baseEndpoint);
+      server = GrizzlyHttpServerFactory.createHttpServer(baseEndpoint, rcServices);
     } else {
-      URI workMgrUri =
-          UriBuilder.fromUri("https://" + _settings.getWorkBindHost()).port(port).build();
+      proto = "https";
+      URI baseEndpoint =
+          UriBuilder.fromUri(String.format("%s://%s", proto, _settings.getServiceBindHost()))
+              .port(port)
+              .build();
 
-      _logger.infof("Starting work manager at %s\n", workMgrUri);
+      _logger.infof("Starting %s at %s\n", serviceNames, baseEndpoint);
       server =
           CommonUtil.startSslServer(
-              rcWork,
-              workMgrUri,
-              _settings.getSslWorkKeystoreFile(),
-              _settings.getSslWorkKeystorePassword(),
-              _settings.getSslWorkTrustAllCerts(),
-              _settings.getSslWorkTruststoreFile(),
-              _settings.getSslWorkTruststorePassword(),
+              rcServices,
+              baseEndpoint,
+              _settings.getSslServiceKeystoreFile(),
+              _settings.getSslServiceKeystorePassword(),
+              _settings.getSslServiceTrustAllCerts(),
+              _settings.getSslServiceTruststoreFile(),
+              _settings.getSslServiceTruststorePassword(),
               ConfigurationLocator.class,
               Main.class);
     }
     int selectedListenPort = server.getListeners().iterator().next().getPort();
-    URI actualWorkMgrUri =
-        UriBuilder.fromUri("http://" + _settings.getWorkBindHost())
+    URI actualBaseEndpoint =
+        UriBuilder.fromUri(String.format("%s://%s", proto, _settings.getServiceBindHost()))
             .port(selectedListenPort)
             .build();
-    _logger.infof("Started work manager at %s\n", actualWorkMgrUri);
+    _logger.infof("Started %s at %s\n", serviceNames, actualBaseEndpoint);
     if (!portFuture.isDone()) {
       portFuture.complete(selectedListenPort);
     }
   }
 
-  private static void initWorkManager(
+  /** Initialize the API version service and work manager service(s). */
+  private static void initServices(
       BindPortFutures bindPortFutures, WorkExecutorCreator workExecutorCreator) {
     FileBasedStorage fbs = new FileBasedStorage(_settings.getContainersLocation(), _logger);
     _workManager =
         new WorkMgr(_settings, _logger, new StorageBasedIdManager(fbs), fbs, workExecutorCreator);
     _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
-    startWorkManagerService(
-        WorkMgrService.class,
-        Lists.newArrayList(JettisonFeature.class, MultiPartFeature.class),
+    startServices(
+        ImmutableSet.of(WorkMgrService.class),
+        ImmutableList.of(ExceptionMapper.class, JettisonFeature.class, MultiPartFeature.class),
         _settings.getServiceWorkPort(),
         bindPortFutures.getWorkPort());
-    // Initialize and start the work manager service using the v2 RESTful API and Jackson.
-
-    startWorkManagerService(
-        WorkMgrServiceV2.class,
-        Lists.newArrayList(
+    // Initialize and start the services that listen on the main service port:
+    // - The API version service
+    // - Work manager v2 service
+    startServices(
+        ImmutableSet.of(ApiVersionService.class, WorkMgrServiceV2.class),
+        ImmutableList.of(
+            ExceptionMapper.class,
             ServiceObjectMapper.class,
             JacksonFeature.class,
             ApiKeyAuthenticationFilter.class,
             VersionCompatibilityFilter.class),
-        _settings.getServiceWorkV2Port(),
-        bindPortFutures.getWorkV2Port());
+        _settings.getServicePort(),
+        bindPortFutures.getServicePort());
   }
 
   public static void main(
@@ -342,9 +355,9 @@ public class Main {
     if (configuredWorkPort > 0) {
       portFutures.getWorkPort().complete(configuredWorkPort);
     }
-    int configuredWorkV2Port = _settings.getServiceWorkV2Port();
+    int configuredWorkV2Port = _settings.getServicePort();
     if (configuredWorkV2Port > 0) {
-      portFutures.getWorkV2Port().complete(configuredWorkV2Port);
+      portFutures.getServicePort().complete(configuredWorkV2Port);
     }
 
     _logger = logger;
@@ -373,7 +386,7 @@ public class Main {
       if (initLegacyPoolManager) {
         initPoolManager(portFutures);
       }
-      initWorkManager(portFutures, workExecutorCreator);
+      initServices(portFutures, workExecutorCreator);
     } catch (Exception e) {
       System.err.println(
           "org.batfish.coordinator: Initialization of a helper failed: "

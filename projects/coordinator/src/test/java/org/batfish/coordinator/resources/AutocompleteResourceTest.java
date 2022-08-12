@@ -23,7 +23,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.coordinator.Main;
-import org.batfish.coordinator.WorkMgrServiceV2TestBase;
+import org.batfish.coordinator.MainServiceTestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.PrefixTrieMultiMap;
@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** Test of {@link AutocompleteResource}. */
-public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
+public final class AutocompleteResourceTest extends MainServiceTestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

@@ -4,7 +4,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import org.batfish.coordinator.WorkMgrServiceV2TestBase;
+import org.batfish.coordinator.MainServiceTestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.RoleDimensionMapping;
@@ -13,7 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
+public class NodeRoleDimensionBeanTest extends MainServiceTestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

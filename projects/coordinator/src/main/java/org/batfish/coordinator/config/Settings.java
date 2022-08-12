@@ -40,7 +40,7 @@ public class Settings extends BaseSettings {
   public static final String ARG_SERVICE_NAME = "servicename";
   public static final String ARG_SERVICE_POOL_PORT = "poolport";
   public static final String ARG_SERVICE_WORK_PORT = "workport";
-  public static final String ARG_SERVICE_WORK_V2_PORT = "workv2port";
+  public static final String ARG_SERVICE_PORT = "workv2port"; // TODO: migrate to "serviceport"
   private static final String ARG_SSL_POOL_DISABLE = "sslpooldisable";
 
   private static final String ARG_SSL_POOL_KEYSTORE_FILE = "sslpoolkeystorefile";
@@ -48,19 +48,19 @@ public class Settings extends BaseSettings {
   private static final String ARG_SSL_POOL_TRUST_ALL_CERTS = "sslpooltrustallcerts";
   private static final String ARG_SSL_POOL_TRUSTSTORE_FILE = "sslpooltruststorefile";
   private static final String ARG_SSL_POOL_TRUSTSTORE_PASSWORD = "sslpooltruststorepassword";
-  private static final String ARG_SSL_WORK_DISABLE = "sslworkdisable";
-  private static final String ARG_SSL_WORK_KEYSTORE_FILE = "sslworkkeystorefile";
+  private static final String ARG_SSL_SERVICE_DISABLE = "sslworkdisable";
+  private static final String ARG_SSL_SERVICE_KEYSTORE_FILE = "sslworkkeystorefile";
 
-  private static final String ARG_SSL_WORK_KEYSTORE_PASSWORD = "sslworkkeystorepassword";
-  private static final String ARG_SSL_WORK_TRUST_ALL_CERTS = "sslworktrustallcerts";
-  private static final String ARG_SSL_WORK_TRUSTSTORE_FILE = "sslworktruststorefile";
-  private static final String ARG_SSL_WORK_TRUSTSTORE_PASSWORD = "sslworktruststorepassword";
+  private static final String ARG_SSL_SERVICE_KEYSTORE_PASSWORD = "sslworkkeystorepassword";
+  private static final String ARG_SSL_SERVICE_TRUST_ALL_CERTS = "sslworktrustallcerts";
+  private static final String ARG_SSL_SERVICE_TRUSTSTORE_FILE = "sslworktruststorefile";
+  private static final String ARG_SSL_SERVICE_TRUSTSTORE_PASSWORD = "sslworktruststorepassword";
 
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
   public static final String ARG_TRACING_ENABLE = "tracingenable";
 
-  private static final String ARG_WORK_BIND_HOST = "workbindhost";
+  private static final String ARG_SERVICE_BIND_HOST = "workbindhost";
 
   private static final String ARGNAME_PATHS = "path..";
 
@@ -87,26 +87,26 @@ public class Settings extends BaseSettings {
   private String _serviceName;
   private int _servicePoolPort;
   private int _serviceWorkPort;
-  private int _serviceWorkV2Port;
+  private int _servicePort;
   private boolean _sslPoolDisable;
   private Path _sslPoolKeystoreFile;
   private String _sslPoolKeystorePassword;
   private boolean _sslPoolTrustAllCerts;
   private Path _sslPoolTruststoreFile;
   private String _sslPoolTruststorePassword;
-  private boolean _sslWorkDisable;
-  private Path _sslWorkKeystoreFile;
-  private String _sslWorkKeystorePassword;
-  private boolean _sslWorkTrustAllCerts;
-  private Path _sslWorkTruststoreFile;
-  private String _sslWorkTruststorePassword;
+  private boolean _sslServiceDisable;
+  private Path _sslServiceKeystoreFile;
+  private String _sslServiceKeystorePassword;
+  private boolean _sslServiceTrustAllCerts;
+  private Path _sslServiceTruststoreFile;
+  private String _sslServiceTruststorePassword;
   private String _storageAccountKey;
   private String _storageAccountName;
   private String _storageProtocol;
   private String _tracingAgentHost;
   private Integer _tracingAgentPort;
   private boolean _tracingEnable;
-  private String _workBindHost;
+  private String _serviceBindHost;
 
   public Settings(String[] args) {
     super(
@@ -200,8 +200,8 @@ public class Settings extends BaseSettings {
     return _serviceWorkPort;
   }
 
-  public int getServiceWorkV2Port() {
-    return _serviceWorkV2Port;
+  public int getServicePort() {
+    return _servicePort;
   }
 
   public boolean getSslPoolDisable() {
@@ -232,28 +232,28 @@ public class Settings extends BaseSettings {
     return _questionTemplateDirs;
   }
 
-  public boolean getSslWorkDisable() {
-    return _sslWorkDisable;
+  public boolean getSslServiceDisable() {
+    return _sslServiceDisable;
   }
 
-  public Path getSslWorkKeystoreFile() {
-    return _sslWorkKeystoreFile;
+  public Path getSslServiceKeystoreFile() {
+    return _sslServiceKeystoreFile;
   }
 
-  public String getSslWorkKeystorePassword() {
-    return _sslWorkKeystorePassword;
+  public String getSslServiceKeystorePassword() {
+    return _sslServiceKeystorePassword;
   }
 
-  public boolean getSslWorkTrustAllCerts() {
-    return _sslWorkTrustAllCerts;
+  public boolean getSslServiceTrustAllCerts() {
+    return _sslServiceTrustAllCerts;
   }
 
-  public Path getSslWorkTruststoreFile() {
-    return _sslWorkTruststoreFile;
+  public Path getSslServiceTruststoreFile() {
+    return _sslServiceTruststoreFile;
   }
 
-  public String getSslWorkTruststorePassword() {
-    return _sslWorkTruststorePassword;
+  public String getSslServiceTruststorePassword() {
+    return _sslServiceTruststorePassword;
   }
 
   public String getStorageAccountKey() {
@@ -280,8 +280,8 @@ public class Settings extends BaseSettings {
     return _tracingEnable;
   }
 
-  public String getWorkBindHost() {
-    return _workBindHost;
+  public String getServiceBindHost() {
+    return _serviceBindHost;
   }
 
   private void initConfigDefaults() {
@@ -309,22 +309,22 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
     setDefaultProperty(ARG_POOL_BIND_HOST, "localhost");
     setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
-    setDefaultProperty(ARG_WORK_BIND_HOST, Ip.ZERO.toString());
+    setDefaultProperty(ARG_SERVICE_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_NAME, "coordinator-service");
     setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
-    setDefaultProperty(ARG_SERVICE_WORK_V2_PORT, CoordConsts.SVC_CFG_WORK_V2_PORT);
+    setDefaultProperty(ARG_SERVICE_PORT, CoordConsts.SVC_CFG_WORK_V2_PORT);
     setDefaultProperty(ARG_SSL_POOL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
     setDefaultProperty(ARG_SSL_POOL_KEYSTORE_FILE, null);
     setDefaultProperty(ARG_SSL_POOL_KEYSTORE_PASSWORD, null);
     setDefaultProperty(ARG_SSL_POOL_TRUST_ALL_CERTS, false);
     setDefaultProperty(ARG_SSL_POOL_TRUSTSTORE_FILE, null);
     setDefaultProperty(ARG_SSL_POOL_TRUSTSTORE_PASSWORD, null);
-    setDefaultProperty(ARG_SSL_WORK_DISABLE, CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
-    setDefaultProperty(ARG_SSL_WORK_KEYSTORE_FILE, null);
-    setDefaultProperty(ARG_SSL_WORK_KEYSTORE_PASSWORD, null);
-    setDefaultProperty(ARG_SSL_WORK_TRUST_ALL_CERTS, true);
-    setDefaultProperty(ARG_SSL_WORK_TRUSTSTORE_FILE, null);
-    setDefaultProperty(ARG_SSL_WORK_TRUSTSTORE_PASSWORD, null);
+    setDefaultProperty(ARG_SSL_SERVICE_DISABLE, CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
+    setDefaultProperty(ARG_SSL_SERVICE_KEYSTORE_FILE, null);
+    setDefaultProperty(ARG_SSL_SERVICE_KEYSTORE_PASSWORD, null);
+    setDefaultProperty(ARG_SSL_SERVICE_TRUST_ALL_CERTS, true);
+    setDefaultProperty(ARG_SSL_SERVICE_TRUSTSTORE_FILE, null);
+    setDefaultProperty(ARG_SSL_SERVICE_TRUSTSTORE_PASSWORD, null);
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
@@ -380,7 +380,7 @@ public class Settings extends BaseSettings {
         ARG_SERVICE_POOL_PORT, "port for pool management service", "port_number_pool_service");
 
     addOption(
-        ARG_WORK_BIND_HOST,
+        ARG_SERVICE_BIND_HOST,
         "hostname for work management service",
         "base url for work management service");
 
@@ -388,9 +388,7 @@ public class Settings extends BaseSettings {
         ARG_SERVICE_WORK_PORT, "port for work management service", "port_number_work_service");
 
     addOption(
-        ARG_SERVICE_WORK_V2_PORT,
-        "port for work management service v2",
-        "port_number_work_v2_service");
+        ARG_SERVICE_PORT, "port for work management service v2", "port_number_work_v2_service");
 
     addBooleanOption(ARG_SSL_POOL_DISABLE, "disable SSL on pool manager service");
 
@@ -398,10 +396,10 @@ public class Settings extends BaseSettings {
         ARG_SSL_POOL_TRUST_ALL_CERTS,
         "trust all SSL certs for outgoing connections from pool manager");
 
-    addBooleanOption(ARG_SSL_WORK_DISABLE, "disable SSL on work manager service");
+    addBooleanOption(ARG_SSL_SERVICE_DISABLE, "disable SSL on work manager service");
 
     addBooleanOption(
-        ARG_SSL_WORK_TRUST_ALL_CERTS,
+        ARG_SSL_SERVICE_TRUST_ALL_CERTS,
         "trust all SSL certs for outgoing connections from work manager");
 
     addOption(ARG_TRACING_AGENT_HOST, "jaeger agent host", "jaeger_agent_host");
@@ -433,21 +431,21 @@ public class Settings extends BaseSettings {
     _poolBindHost = getStringOptionValue(ARG_POOL_BIND_HOST);
     _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
     _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
-    _workBindHost = getStringOptionValue(ARG_WORK_BIND_HOST);
+    _serviceBindHost = getStringOptionValue(ARG_SERVICE_BIND_HOST);
     _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
-    _serviceWorkV2Port = getIntegerOptionValue(ARG_SERVICE_WORK_V2_PORT);
+    _servicePort = getIntegerOptionValue(ARG_SERVICE_PORT);
     _sslPoolDisable = getBooleanOptionValue(ARG_SSL_POOL_DISABLE);
     _sslPoolKeystoreFile = getPathOptionValue(ARG_SSL_POOL_KEYSTORE_FILE);
     _sslPoolKeystorePassword = getStringOptionValue(ARG_SSL_POOL_KEYSTORE_PASSWORD);
     _sslPoolTrustAllCerts = getBooleanOptionValue(ARG_SSL_POOL_TRUST_ALL_CERTS);
     _sslPoolTruststoreFile = getPathOptionValue(ARG_SSL_POOL_TRUSTSTORE_FILE);
     _sslPoolTruststorePassword = getStringOptionValue(ARG_SSL_POOL_TRUSTSTORE_PASSWORD);
-    _sslWorkDisable = getBooleanOptionValue(ARG_SSL_WORK_DISABLE);
-    _sslWorkKeystoreFile = getPathOptionValue(ARG_SSL_WORK_KEYSTORE_FILE);
-    _sslWorkKeystorePassword = getStringOptionValue(ARG_SSL_WORK_KEYSTORE_PASSWORD);
-    _sslWorkTrustAllCerts = getBooleanOptionValue(ARG_SSL_WORK_TRUST_ALL_CERTS);
-    _sslWorkTruststoreFile = getPathOptionValue(ARG_SSL_WORK_TRUSTSTORE_FILE);
-    _sslWorkTruststorePassword = getStringOptionValue(ARG_SSL_WORK_TRUSTSTORE_PASSWORD);
+    _sslServiceDisable = getBooleanOptionValue(ARG_SSL_SERVICE_DISABLE);
+    _sslServiceKeystoreFile = getPathOptionValue(ARG_SSL_SERVICE_KEYSTORE_FILE);
+    _sslServiceKeystorePassword = getStringOptionValue(ARG_SSL_SERVICE_KEYSTORE_PASSWORD);
+    _sslServiceTrustAllCerts = getBooleanOptionValue(ARG_SSL_SERVICE_TRUST_ALL_CERTS);
+    _sslServiceTruststoreFile = getPathOptionValue(ARG_SSL_SERVICE_TRUSTSTORE_FILE);
+    _sslServiceTruststorePassword = getStringOptionValue(ARG_SSL_SERVICE_TRUSTSTORE_PASSWORD);
     _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
@@ -491,27 +489,27 @@ public class Settings extends BaseSettings {
     _sslPoolTruststorePassword = sslPoolTruststorePassword;
   }
 
-  public void setSslWorkDisable(boolean sslWorkDisable) {
-    _sslWorkDisable = sslWorkDisable;
+  public void setSslServiceDisable(boolean sslServiceDisable) {
+    _sslServiceDisable = sslServiceDisable;
   }
 
-  public void setSslWorkKeystoreFile(Path sslWorkKeystoreFile) {
-    _sslWorkKeystoreFile = sslWorkKeystoreFile;
+  public void setSslServiceKeystoreFile(Path sslServiceKeystoreFile) {
+    _sslServiceKeystoreFile = sslServiceKeystoreFile;
   }
 
-  public void setSslWorkKeystorePassword(String sslWorkKeystorePassword) {
-    _sslWorkKeystorePassword = sslWorkKeystorePassword;
+  public void setSslServiceKeystorePassword(String sslServiceKeystorePassword) {
+    _sslServiceKeystorePassword = sslServiceKeystorePassword;
   }
 
-  public void setSslWorkTrustAllCerts(boolean sslWorkTrustAllCerts) {
-    _sslWorkTrustAllCerts = sslWorkTrustAllCerts;
+  public void setSslServiceTrustAllCerts(boolean sslServiceTrustAllCerts) {
+    _sslServiceTrustAllCerts = sslServiceTrustAllCerts;
   }
 
-  public void setSslWorkTruststoreFile(Path sslWorkTruststoreFile) {
-    _sslWorkTruststoreFile = sslWorkTruststoreFile;
+  public void setSslServiceTruststoreFile(Path sslServiceTruststoreFile) {
+    _sslServiceTruststoreFile = sslServiceTruststoreFile;
   }
 
-  public void setSslWorkTruststorePassword(String sslWorkTruststorePassword) {
-    _sslWorkTruststorePassword = sslWorkTruststorePassword;
+  public void setSslServiceTruststorePassword(String sslServiceTruststorePassword) {
+    _sslServiceTruststorePassword = sslServiceTruststorePassword;
   }
 }

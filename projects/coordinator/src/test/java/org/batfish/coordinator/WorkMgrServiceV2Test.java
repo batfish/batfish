@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
+public class WorkMgrServiceV2Test extends MainServiceTestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Before

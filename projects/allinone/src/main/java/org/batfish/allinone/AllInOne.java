@@ -117,7 +117,7 @@ public class AllInOne {
     if (_settings.getRunClient()) {
       try {
         _client.getSettings().setCoordinatorWorkPort(bindPortFutures.getWorkPort().get());
-        _client.getSettings().setCoordinatorWorkV2Port(bindPortFutures.getWorkV2Port().get());
+        _client.getSettings().setCoordinatorWorkV2Port(bindPortFutures.getServicePort().get());
       } catch (ExecutionException | InterruptedException e) {
         System.err.println("org.batfish.allinone: Worker initialization failed: " + e.getMessage());
         e.printStackTrace();
@@ -202,7 +202,7 @@ public class AllInOne {
               0,
               org.batfish.coordinator.config.Settings.ARG_SERVICE_WORK_PORT,
               0,
-              org.batfish.coordinator.config.Settings.ARG_SERVICE_WORK_V2_PORT,
+              org.batfish.coordinator.config.Settings.ARG_SERVICE_PORT,
               0);
     }
     String[] initialArgArray = getArgArrayFromString(coordinatorArgs);

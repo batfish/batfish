@@ -30,8 +30,8 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.WorkItem;
 import org.batfish.coordinator.Main;
+import org.batfish.coordinator.MainServiceTestBase;
 import org.batfish.coordinator.WorkDetails.WorkType;
-import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.version.BatfishVersion;
@@ -42,7 +42,7 @@ import org.junit.rules.TemporaryFolder;
 
 /** Test of {@link WorkResource}. */
 @ParametersAreNonnullByDefault
-public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
+public final class WorkResourceTest extends MainServiceTestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

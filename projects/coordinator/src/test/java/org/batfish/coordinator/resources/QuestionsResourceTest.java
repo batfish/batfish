@@ -18,7 +18,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.Main;
-import org.batfish.coordinator.WorkMgrServiceV2TestBase;
+import org.batfish.coordinator.MainServiceTestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.version.BatfishVersion;
@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
-public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
+public final class QuestionsResourceTest extends MainServiceTestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

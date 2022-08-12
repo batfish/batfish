@@ -184,7 +184,7 @@ public class CommonUtil {
     return Hashing.sha256().hashString(saltedSecret, UTF_8).toString();
   }
 
-  public static HttpServer startSslServer(
+  public static @Nonnull HttpServer startSslServer(
       ResourceConfig resourceConfig,
       URI mgrUri,
       Path keystorePath,

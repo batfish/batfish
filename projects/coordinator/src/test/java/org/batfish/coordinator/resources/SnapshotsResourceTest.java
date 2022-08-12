@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.Main;
-import org.batfish.coordinator.WorkMgrServiceV2TestBase;
+import org.batfish.coordinator.MainServiceTestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.version.BatfishVersion;
@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
-public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
+public final class SnapshotsResourceTest extends MainServiceTestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
