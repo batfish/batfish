@@ -2,10 +2,12 @@ package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.common.bdd.util.AclPacketMatchValidityChecker.checkerFor;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addTenantVniInterfaces;
 import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -32,6 +34,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.util.AclPacketMatchValidityChecker;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.util.InterfaceNameComparator;
 import org.batfish.config.Settings;
@@ -41,6 +44,7 @@ import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
@@ -529,6 +533,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setTrackingGroups(toImmutableMap(c.getTrackingGroups()));
     c.setVrfs(verifyAndToImmutableMap(c.getVrfs(), Vrf::getName, w));
     c.setZones(toImmutableMap(c.getZones()));
+    verifyAclInvariants(c, w);
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
   }
@@ -737,6 +742,33 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     @Override
     public Boolean visitNextHopVtep(NextHopVtep nextHopVtep) {
       throw new IllegalArgumentException("Static routes cannot have next hop VTEP");
+    }
+  }
+
+  private static void verifyAclInvariants(Configuration c, Warnings w) {
+    if (c.getConfigurationFormat() == ConfigurationFormat.CISCO_ASA) {
+      // ASA has some invariant issues.
+      return;
+    }
+    AclPacketMatchValidityChecker checker = checkerFor(c);
+    for (IpAccessList acl : c.getIpAccessLists().values()) {
+      try {
+        if (!checker.check(acl)) {
+          String message =
+              String.format(
+                  "Filter %s on device %s does not meet the expected packet invariants",
+                  acl.getName(), c.getHostname());
+          w.redFlag(message);
+          assert false : message;
+        }
+      } catch (Exception e) {
+        String message =
+            String.format(
+                "Filter %s on device %s failed to convert to BDD: %s",
+                acl.getName(), c.getHostname(), Throwables.getStackTraceAsString(e));
+        w.redFlag(message);
+        assert false : message;
+      }
     }
   }
 
