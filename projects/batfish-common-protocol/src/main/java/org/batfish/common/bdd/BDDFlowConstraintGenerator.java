@@ -199,7 +199,7 @@ public final class BDDFlowConstraintGenerator {
         refine(tcpPort.value(NamedPort.HTTPS.number())),
         refine(tcpPort.value(NamedPort.SSH.number())),
         // at least not zero if possible
-        refine(tcpPort.value(0).not()));
+        refine(tcpPort.value(0).notEq()));
   }
 
   private BddRefiner tcpFlagPreferences() {
@@ -268,7 +268,7 @@ public final class BDDFlowConstraintGenerator {
         refine(tcpPort.value(NamedPort.SNMP.number())),
         refine(tcpPort.value(NamedPort.SNMPTRAP.number())),
         // at least not zero if possible
-        refine(tcpPort.value(0).not()));
+        refine(tcpPort.value(0).notEq()));
   }
 
   // Get UDP packets with special named ports, trying to find cases where only one side is

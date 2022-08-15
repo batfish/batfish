@@ -159,6 +159,8 @@ public final class TracingFactory extends JFactory {
     NITH_VAR,
     /** {@link BDD#not()}. */
     NOT,
+    /** {@link BDD#notEq()}. */
+    NOT_EQ,
     /** {@link BDDFactory#one}. */
     ONE,
     /** {@link BDDFactory#orAll}. */
@@ -527,6 +529,10 @@ public final class TracingFactory extends JFactory {
     @Override
     public TracedBDDImpl not() {
       return trace(() -> _bdd.not(), Operation.NOT, _bdd);
+    }
+
+    public TracedBDDImpl notEq() {
+      return trace(() -> _bdd.notEq(), Operation.NOT_EQ, _bdd);
     }
 
     @Override
