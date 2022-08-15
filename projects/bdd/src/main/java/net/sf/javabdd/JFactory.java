@@ -188,6 +188,15 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
+    public BDD notEq() {
+      int result = bdd_not(_index);
+      bdd_delref(_index);
+      bdd_addref(result);
+      _index = result;
+      return this;
+    }
+
+    @Override
     public BDD ite(BDD thenBDD, BDD elseBDD) {
       int x = _index;
       int y = ((BDDImpl) thenBDD)._index;
