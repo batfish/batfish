@@ -39,6 +39,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.version.BatfishVersion;
+import org.batfish.version.WorkMgrV2ApiVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -244,9 +245,12 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .get()) {
       assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
       // Should get a non-unknown Batfish version
+      Map<String, String> result = response.readEntity(new GenericType<Map<String, String>>() {});
+      assertThat(result, hasEntry(equalTo("Batfish"), not(equalTo(UNKNOWN_VERSION))));
       assertThat(
-          response.readEntity(new GenericType<Map<String, String>>() {}),
-          hasEntry(equalTo("Batfish"), not(equalTo(UNKNOWN_VERSION))));
+          result,
+          hasEntry(
+              equalTo("workmgrv2_api_version"), equalTo(WorkMgrV2ApiVersion.getVersionStatic())));
     }
   }
 
