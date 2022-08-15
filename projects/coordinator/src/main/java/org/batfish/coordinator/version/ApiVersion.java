@@ -7,13 +7,13 @@ import javax.annotation.Nonnull;
 import org.batfish.version.Versioned;
 
 @AutoService(Versioned.class)
-public class WorkMgrV2ApiVersion implements Versioned {
+public final class ApiVersion implements Versioned {
   private static final String PROPERTIES_PATH =
       "org/batfish/coordinator/version/version.properties";
 
-  private static final String VERSION_KEY = "workmgrv2_api_version";
+  private static final String VERSION_KEY = "api_version";
 
-  private static final String NAME = "workmgrv2_api_version";
+  private static final String NAME = "api_version";
   private static final String VERSION = getPropertiesVersion(PROPERTIES_PATH, VERSION_KEY);
 
   @Override
