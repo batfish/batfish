@@ -118,8 +118,7 @@ public class FortiosConfigurationTest {
   public void testToMatchExpr_icmp6_defaults() {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP6);
-    HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.IPV6_ICMP).build();
-    assertConverts(service, _hsToBdd.toBDD(expected));
+    assertConverts(service, _bddTestbed.getPkt().getFactory().zero());
   }
 
   @Test
@@ -133,23 +132,6 @@ public class FortiosConfigurationTest {
     HeaderSpace expected =
         HeaderSpace.builder()
             .setIpProtocols(IpProtocol.ICMP)
-            .setIcmpCodes(icmpCode)
-            .setIcmpTypes(icmpType)
-            .build();
-    assertConverts(service, _hsToBdd.toBDD(expected));
-  }
-
-  @Test
-  public void testToMatchExpr_icmp6_custom() {
-    int icmpCode = 1;
-    int icmpType = 2;
-    Service service = new Service("name", new BatfishUUID(1));
-    service.setProtocol(Service.Protocol.ICMP6);
-    service.setIcmpCode(icmpCode);
-    service.setIcmpType(icmpType);
-    HeaderSpace expected =
-        HeaderSpace.builder()
-            .setIpProtocols(IpProtocol.IPV6_ICMP)
             .setIcmpCodes(icmpCode)
             .setIcmpTypes(icmpType)
             .build();
