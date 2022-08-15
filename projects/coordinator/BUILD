@@ -17,6 +17,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/coordinator/src/main/java/org/batfish/coordinator/version",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
@@ -81,6 +82,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/questions:TestQuestion",
+        "//projects/coordinator/src/main/java/org/batfish/coordinator/version",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",

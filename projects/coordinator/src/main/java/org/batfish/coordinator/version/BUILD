@@ -1,0 +1,14 @@
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "version",
+    srcs = glob(["*.java"]),
+    plugins = [
+        "//:auto_service_plugin",
+    ],
+    deps = [
+        "//projects/batfish-common-protocol:common",
+        "@maven//:com_google_auto_service_auto_service_annotations",
+        "@maven//:com_google_code_findbugs_jsr305",
+    ],
+)

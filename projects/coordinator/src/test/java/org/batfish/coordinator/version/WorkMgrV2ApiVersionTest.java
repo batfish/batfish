@@ -1,4 +1,4 @@
-package org.batfish.version;
+package org.batfish.coordinator.version;
 
 import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -6,6 +6,7 @@ import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.junit.Assert.assertThat;
 
 import java.util.ServiceLoader;
+import org.batfish.version.Versioned;
 import org.junit.Test;
 
 /** Test of {@link WorkMgrV2ApiVersion}. */
