@@ -94,6 +94,7 @@ public class BDDPacket implements Serializable {
   private final @Nonnull BDD _tcpRst;
   private final @Nonnull BDD _tcpSyn;
   private final @Nonnull BDD _tcpUrg;
+  private final @Nonnull BDD _tcpFlags;
 
   private final BDDPairing _swapSourceAndDestinationPairing;
   @LazyInit private @Nullable BDD _saneFlow;
@@ -158,6 +159,8 @@ public class BDDPacket implements Serializable {
     _tcpRst = allocateBDDBit("tcpRst");
     _tcpSyn = allocateBDDBit("tcpSyn");
     _tcpUrg = allocateBDDBit("tcpUrg");
+    _tcpFlags =
+        factory.andLiterals(_tcpAck, _tcpCwr, _tcpEce, _tcpFin, _tcpPsh, _tcpRst, _tcpSyn, _tcpUrg);
     _dscp = allocateBDDInteger("dscp", DSCP_LENGTH);
     _ecn = allocateBDDInteger("ecn", ECN_LENGTH);
     _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH);
@@ -529,6 +532,17 @@ public class BDDPacket implements Serializable {
   @Nonnull
   public PrimedBDDInteger getSrcPortPrimedBDDInteger() {
     return _srcPort;
+  }
+
+  /**
+   * Returns an assignment BDD with all TCP flags true.
+   *
+   * <p>May be useful for {@link BDD#project(BDD)}, {@link BDD#testsVars(BDD)}, or similar
+   * operations.
+   */
+  @Nonnull
+  public BDD getTcpFlagsVars() {
+    return _tcpFlags;
   }
 
   @Nonnull
