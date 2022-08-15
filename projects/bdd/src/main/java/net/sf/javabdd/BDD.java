@@ -155,6 +155,12 @@ public abstract class BDD implements Serializable {
   public abstract BDD not();
 
   /**
+   * {@link #not()}, but {@code this} {@link BDD} is changed to the result rather than creating a
+   * new BDD object.
+   */
+  public abstract BDD notEq();
+
+  /**
    * Returns the logical 'and' of two BDDs. This is a shortcut for calling "apply" with the "and"
    * operator.
    *
