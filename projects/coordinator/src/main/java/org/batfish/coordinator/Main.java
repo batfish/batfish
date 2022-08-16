@@ -301,17 +301,21 @@ public class Main {
   }
 
   private static void initWorkManager(
-      BindPortFutures bindPortFutures, WorkExecutorCreator workExecutorCreator) {
+      BindPortFutures bindPortFutures,
+      WorkExecutorCreator workExecutorCreator,
+      boolean initLegacyWorkMgrV1) {
     FileBasedStorage fbs = new FileBasedStorage(_settings.getContainersLocation(), _logger);
     _workManager =
         new WorkMgr(_settings, _logger, new StorageBasedIdManager(fbs), fbs, workExecutorCreator);
     _workManager.startWorkManager();
-    // Initialize and start the work manager service using the legacy API and Jettison.
-    startWorkManagerService(
-        WorkMgrService.class,
-        Lists.newArrayList(JettisonFeature.class, MultiPartFeature.class),
-        _settings.getServiceWorkPort(),
-        bindPortFutures.getWorkPort());
+    if (initLegacyWorkMgrV1) {
+      // Initialize and start the work manager service using the legacy v1 API and Jettison.
+      startWorkManagerService(
+          WorkMgrService.class,
+          Lists.newArrayList(JettisonFeature.class, MultiPartFeature.class),
+          _settings.getServiceWorkPort(),
+          bindPortFutures.getWorkPort());
+    }
     // Initialize and start the work manager service using the v2 RESTful API and Jackson.
 
     startWorkManagerService(
@@ -330,7 +334,8 @@ public class Main {
       BatfishLogger logger,
       BindPortFutures portFutures,
       WorkExecutorCreator workExecutorCreator,
-      boolean initLegacyPoolManager) {
+      boolean initLegacyPoolManager,
+      boolean initLegacyWorkMgrV1) {
     mainInit(args);
 
     // Supply ports early if known before binding
@@ -348,7 +353,7 @@ public class Main {
     }
 
     _logger = logger;
-    mainRun(portFutures, workExecutorCreator, initLegacyPoolManager);
+    mainRun(portFutures, workExecutorCreator, initLegacyPoolManager, initLegacyWorkMgrV1);
   }
 
   public static void mainInit(String[] args) {
@@ -367,13 +372,14 @@ public class Main {
   private static void mainRun(
       BindPortFutures portFutures,
       WorkExecutorCreator workExecutorCreator,
-      boolean initLegacyPoolManager) {
+      boolean initLegacyPoolManager,
+      boolean initLegacyWorkMgrV1) {
     try {
       initAuthorizer();
       if (initLegacyPoolManager) {
         initPoolManager(portFutures);
       }
-      initWorkManager(portFutures, workExecutorCreator);
+      initWorkManager(portFutures, workExecutorCreator, initLegacyWorkMgrV1);
     } catch (Exception e) {
       System.err.println(
           "org.batfish.coordinator: Initialization of a helper failed: "
