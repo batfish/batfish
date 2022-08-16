@@ -471,60 +471,20 @@ public class JFactory extends BDDFactory implements Serializable {
     bddnodes.decRef(node);
   }
 
-  private int GETREF(int node) {
-    return bddnodes.getRef(node);
-  }
-
   private int LEVEL(int node) {
     return bddnodes.getLevel(node);
-  }
-
-  private void SETLEVELANDMARK(int node, int val) {
-    bddnodes.setLevelAndMark(node, val);
-  }
-
-  private void SETMARK(int n) {
-    bddnodes.setMark(n, true);
-  }
-
-  private void UNMARK(int n) {
-    bddnodes.setMark(n, false);
-  }
-
-  private boolean MARKED(int n) {
-    return bddnodes.getMark(n);
   }
 
   private int LOW(int r) {
     return bddnodes.getLowNonVolatile(r);
   }
 
-  private void SETLOW(int r, int v) {
-    bddnodes.setLow(r, v);
-  }
-
   private int HIGH(int r) {
     return bddnodes.getHigh(r);
   }
 
-  private void SETHIGH(int r, int v) {
-    bddnodes.setHigh(r, v);
-  }
-
   private int HASH(int r) {
-    return bddnodes.getHash(r);
-  }
-
-  private void SETHASH(int r, int v) {
-    bddnodes.setHash(r, v);
-  }
-
-  private int NEXT(int r) {
-    return bddnodes.getNext(r);
-  }
-
-  private void SETNEXT(int r, int v) {
-    bddnodes.setNext(r, v);
+    return bddnodes.getHashNonVolatile(r);
   }
 
   private static void _assert(boolean b) {
@@ -662,8 +622,8 @@ public class JFactory extends BDDFactory implements Serializable {
         bddvar2level[bddvarnum] = bddvarnum;
       }
 
-      SETLEVELANDMARK(0, num);
-      SETLEVELANDMARK(1, num);
+      bddnodes.setLevelAndMarkNonVolatile(0, num);
+      bddnodes.setLevelAndMarkNonVolatile(1, num);
       bddvar2level[num] = num;
       bddlevel2var[num] = num;
 
@@ -714,7 +674,7 @@ public class JFactory extends BDDFactory implements Serializable {
           return res;
         }
 
-        res = NEXT(res);
+        res = bddnodes.getNextNonVolatile(res);
         if (CACHESTATS) {
           cachestats.uniqueChain++;
         }
@@ -767,7 +727,7 @@ public class JFactory extends BDDFactory implements Serializable {
                   System.out.println("new bucket had the node");
                   return res;
                 }
-                res = NEXT(res);
+                res = bddnodes.getNextNonVolatile(res);
               }
               System.out.println("new bucket did not have the node");
               getNewBddFreePos();
@@ -787,7 +747,7 @@ public class JFactory extends BDDFactory implements Serializable {
       }
 
       res = bddfreepos;
-      int nextFreepos = NEXT(res);
+      int nextFreepos = bddnodes.getNextNonVolatile(res);
       bddfreepos = nextFreepos;
 
       newNodeIndex(res);
@@ -3407,7 +3367,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private boolean noDuplicateNodes() {
     long t = System.currentTimeMillis();
     for (int n = 0; n < bddnodesize; n++) {
-      if (!MARKED(n)) {
+      if (!bddnodes.getMarkNonVolatile(n)) {
         continue;
       }
       int level = LEVEL(n);
@@ -3415,14 +3375,11 @@ public class JFactory extends BDDFactory implements Serializable {
       int high = HIGH(n);
       int hashNode = HASH(NODEHASH(level, low, high));
       while (hashNode != 0) {
-        if (hashNode != n
-            && level == LEVEL(hashNode)
-            && low == LOW(hashNode)
-            && high == HIGH(hashNode)) {
+        if (hashNode != n && bddnodes.nodeMatches(hashNode, level, low, high)) {
           throw new RuntimeException(
               String.format("duplicate nodes found: %s and %s", n, hashNode));
         }
-        hashNode = NEXT(hashNode);
+        hashNode = bddnodes.getNextNonVolatile(hashNode);
       }
     }
     t = System.currentTimeMillis() - t;
@@ -3571,8 +3528,8 @@ public class JFactory extends BDDFactory implements Serializable {
      */
     int maxFreelistLen = bddnodesize / 100;
     for (int n = bddnodesize - 1; n >= 2; n--) {
-      SETLOW(n, INVALID_BDD);
-      SETNEXT(n, freepos);
+      bddnodes.setLowNonVolatile(n, INVALID_BDD);
+      bddnodes.setNextNonVolatile(n, freepos);
       freepos = n;
       freelistLen++;
       if (freelistLen == maxFreelistLen) {
@@ -3581,17 +3538,17 @@ public class JFactory extends BDDFactory implements Serializable {
         freelistLen = 0;
       }
     }
-    SETNEXT(bddnodesize - 1, 0);
+    bddnodes.setNextNonVolatile(bddnodesize - 1, 0);
     _bddFreePosManager.put(freepos);
 
     SETMAXREF(0);
     SETMAXREF(1);
-    SETLOW(0, 0);
-    SETHIGH(0, 0);
-    SETNEXT(0, 1);
-    SETLOW(1, 1);
-    SETHIGH(1, 1);
-    SETNEXT(1, 2);
+    bddnodes.setLowNonVolatile(0, 0);
+    bddnodes.setHighNonVolatile(0, 0);
+    bddnodes.setNextNonVolatile(0, 1);
+    bddnodes.setLowNonVolatile(1, 1);
+    bddnodes.setHighNonVolatile(1, 1);
+    bddnodes.setNextNonVolatile(1, 2);
 
     cacheratio = 0;
 

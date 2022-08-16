@@ -1,6 +1,6 @@
 java_binary(
-    name = "bddReachabilityAnalysisFactory",
-    main_class = "tools.stress_tests.BDDReachabilityGraphStressTest",
+    name = "snapshotBddStressTests",
+    main_class = "tools.stress_tests.SnapshotBddStressTests",
     testonly = True,
     srcs= ["SnapshotBddStressTests.java"],
     deps = [

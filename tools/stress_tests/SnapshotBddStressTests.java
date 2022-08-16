@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.SortedMap;
-import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory;
 import org.batfish.common.NetworkSnapshot;
@@ -29,12 +29,14 @@ import org.batfish.specifier.SpecifierContext;
 
 public class SnapshotBddStressTests {
   private final String _snapshotDir;
+  private final String _bddFactory;
 
   private Batfish _batfish;
   private SortedMap<String, Configuration> _configs;
 
-  SnapshotBddStressTests(String snapshotDir) throws IOException {
-    this._snapshotDir = snapshotDir;
+  SnapshotBddStressTests(String snapshotDir, String bddFactory) throws IOException {
+    _snapshotDir = snapshotDir;
+    _bddFactory = bddFactory;
 
     Path tmp = Files.createTempDirectory(this.getClass().getSimpleName());
     _batfish = BatfishTestUtils.getBatfishFromTestrigText(loadTestrig(_snapshotDir), tmp);
@@ -46,6 +48,7 @@ public class SnapshotBddStressTests {
     settings.setThrowOnLexerError(false);
     settings.setThrowOnParserError(false);
 
+    NetworkSnapshot snapshot = _batfish.getSnapshot();
     _configs = _batfish.loadConfigurations(snapshot);
 
     checkState(
@@ -53,24 +56,28 @@ public class SnapshotBddStressTests {
         "One or more configs failed to parse");
   }
 
+  private BDDPacket bddPacket() {
+    return new BDDPacket(BDDFactory.init(_bddFactory, 1_000_000, 125_000));
+  }
+
   void ipAccessListToBdd() {
     while (true) {
-      BDDPacket _pkt = new BDDPacket();
-      Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(_pkt, _configs);
+      BDDPacket pkt = bddPacket();
+      long t = System.currentTimeMillis();
+      Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(pkt, _configs);
       _configs
           .values()
           .forEach(
               cfg -> {
                 IpAccessListToBddImpl ipAccessListToBdd =
                     new IpAccessListToBddImpl(
-                        _pkt,
+                        pkt,
                         srcMgrs.get(cfg.getHostname()),
                         cfg.getIpAccessLists(),
                         cfg.getIpSpaces());
-                cfg.getIpAccessLists().values().stream()
-                    .map(ipAccessListToBdd::toBdd)
-                    .forEach(BDD::free);
+                cfg.getIpAccessLists().values().stream().forEach(ipAccessListToBdd::toBdd);
               });
+      System.out.println(System.currentTimeMillis() - t);
     }
   }
 
@@ -87,20 +94,19 @@ public class SnapshotBddStressTests {
             LocationSpecifier.ALL_LOCATIONS.resolve(ctx), ctx);
 
     while (true) {
-      BDDPacket pkt = new BDDPacket();
+      BDDPacket pkt = bddPacket();
       new BDDReachabilityAnalysisFactory(
               pkt, _configs, forwardingAnalysis, ipsRoutedOutInterfacesFactory, false, false)
-          .bddReachabilityAnalysis(ipSpaceAssignment, true)
-          .getForwardEdgeTable()
-          .size();
+          .bddReachabilityAnalysis(ipSpaceAssignment, true);
     }
   }
 
   public static void main(String[] args) throws IOException, ParseException {
     String snapshotDir = args[0];
     String test = args[1];
+    String bddFactory = args[2];
 
-    SnapshotBddStressTests stressTest = new SnapshotBddStressTests(snapshotDir);
+    SnapshotBddStressTests stressTest = new SnapshotBddStressTests(snapshotDir, bddFactory);
 
     switch (test) {
       case "ipAccessListToBdd":

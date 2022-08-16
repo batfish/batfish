@@ -39,7 +39,7 @@ final class NodeTable implements Serializable {
   /** Get the current value of the reference count. */
   int getRef(int node) {
     int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
-    return (int) AA.getVolatile(array, idx) >>> 22;
+    return array[idx] >>> 22; // (int) AA.getVolatile(array, idx) >>> 22;
   }
 
   /** Saturate the input node's reference counter. */
@@ -62,12 +62,13 @@ final class NodeTable implements Serializable {
     int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
     int delta = increment ? REF_INC : -REF_INC;
     while (true) {
-      int ref = (int) AA.getVolatile(array, idx);
+      int ref = array[idx];
       if ((ref & REF_MASK) == REF_MASK || (!increment && ref == 0)) {
         // either the ref count is saturated, or we're trying to decrement from 0
         return;
       }
-      if (AA.weakCompareAndSet(array, idx, ref, ref + delta)) {
+      // plain: data dependency prevents reordering
+      if (AA.weakCompareAndSetPlain(array, idx, ref, ref + delta)) {
         // write succeeded
         return;
       }
@@ -79,24 +80,6 @@ final class NodeTable implements Serializable {
     return getRef(node) != 0;
   }
 
-  /** Clear any references of the input node. */
-  void clearRef(int node) {
-    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
-    AA.getAndBitwiseAnd(array, idx, ~REF_MASK);
-  }
-
-  /** Mark the input node and return the previous value. */
-  boolean setMark(int node, boolean value) {
-    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
-    int prev;
-    if (value) {
-      prev = (int) AA.getAndBitwiseOr(array, idx, MARK_MASK);
-    } else {
-      prev = (int) AA.getAndBitwiseAnd(array, idx, ~MARK_MASK);
-    }
-    return (prev & MARK_MASK) != 0;
-  }
-
   /** Mark the input node and return the previous value. */
   void setMarkNonVolatile(int node, boolean value) {
     int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
@@ -105,12 +88,6 @@ final class NodeTable implements Serializable {
     } else {
       array[idx] &= ~MARK_MASK;
     }
-  }
-
-  /** Return whether the input node is marked. */
-  boolean getMark(int node) {
-    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
-    return ((int) AA.getVolatile(array, idx) & MARK_MASK) != 0;
   }
 
   /** Return whether the input node is marked. */
@@ -132,18 +109,10 @@ final class NodeTable implements Serializable {
     }
   }
 
-  void setLevelAndMark(int node, int val) {
+  void setLevelAndMarkNonVolatile(int node, int val) {
     assert val == (val & (LEV_MASK | MARK_MASK));
     int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
-
-    while (true) {
-      int prev = (int) AA.getVolatile(array, idx);
-      int next = (prev & ~(LEV_MASK | MARK_MASK)) | val;
-      if (AA.weakCompareAndSet(array, idx, prev, next)) {
-        // write succeeded
-        return;
-      }
-    }
+    array[idx] &= (array[idx] & ~(LEV_MASK | MARK_MASK)) | val;
   }
 
   void setRefcountLevelAndMark(int node, int val) {
@@ -167,31 +136,11 @@ final class NodeTable implements Serializable {
     return array[idx] & LEV_MASK;
   }
 
-  int getLevelVolatile(int node) {
-    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
-    return (int) AA.getVolatile(array, idx) & LEV_MASK;
-  }
-
-  int getLevelAndMark(int node) {
-    int idx = node * NODE_SIZE + OFFSET__REFCOUNT_MARK_AND_LEVEL;
-    return (int) AA.getVolatile(array, idx) & (LEV_MASK | MARK_MASK);
-  }
-
   /** Precondition: node is fully built. */
   int getLowNonVolatile(int node) {
     // Don't need to use getVolatile, because LOW is constant for fully built nodes.
     int idx = node * NODE_SIZE + OFFSET__LOW;
     return array[idx];
-  }
-
-  int getLowVolatile(int node) {
-    int idx = node * NODE_SIZE + OFFSET__LOW;
-    return (int) AA.getVolatile(array, idx);
-  }
-
-  void setLow(int node, int low) {
-    int idx = node * NODE_SIZE + OFFSET__LOW;
-    AA.setVolatile(array, idx, low);
   }
 
   void setLowNonVolatile(int node, int low) {
@@ -204,25 +153,9 @@ final class NodeTable implements Serializable {
     return array[idx];
   }
 
-  int getHighVolatile(int node) {
-    int idx = node * NODE_SIZE + OFFSET__HIGH;
-    return (int) AA.getVolatile(array, idx);
-  }
-
-  void setHigh(int node, int high) {
-    int idx = node * NODE_SIZE + OFFSET__HIGH;
-    AA.setVolatile(array, idx, high);
-  }
-
   void setHighNonVolatile(int node, int high) {
     int idx = node * NODE_SIZE + OFFSET__HIGH;
     array[idx] = high;
-  }
-
-  /** Set the hash bucket index (i.e. the ID of the first node in bucket) for the input node. */
-  void setHash(int node, int value) {
-    int idx = node * NODE_SIZE + OFFSET__HASH;
-    AA.setVolatile(array, idx, value);
   }
 
   void setHashNonVolatile(int node, int value) {
@@ -230,23 +163,10 @@ final class NodeTable implements Serializable {
     array[idx] = value;
   }
 
-  int getHash(int node) {
-    // have to use getVolatile, because bdd_makenode can set hash in another thread
-    int idx = node * NODE_SIZE + OFFSET__HASH;
-    return (int) AA.getVolatile(array, idx);
-  }
-
   int getHashNonVolatile(int node) {
     // have to use getVolatile, because bdd_makenode can set hash in another thread
     int idx = node * NODE_SIZE + OFFSET__HASH;
     return array[idx];
-  }
-
-  int getNext(int node) {
-    // have to use getVolatile, because bdd_makenode may have just inserted this node in another
-    // thread
-    int idx = node * NODE_SIZE + OFFSET__NEXT;
-    return (int) AA.getVolatile(array, idx);
   }
 
   int getNextNonVolatile(int node) {
@@ -256,21 +176,9 @@ final class NodeTable implements Serializable {
     return array[idx];
   }
 
-  void setNext(int node, int next) {
-    int idx = node * NODE_SIZE + OFFSET__NEXT;
-    AA.setVolatile(array, idx, next);
-  }
-
   void setNextNonVolatile(int node, int next) {
     int idx = node * NODE_SIZE + OFFSET__NEXT;
     array[idx] = next;
-  }
-
-  boolean trySetInitializing(int node) {
-    int idx = node * NODE_SIZE + OFFSET__LOW;
-    // LOW == -1 means it's free. set it to any other value to prevent
-    // another thread from claiming it
-    return AA.compareAndSet(array, idx, -1, 0);
   }
 
   /**
@@ -293,12 +201,15 @@ final class NodeTable implements Serializable {
       array[idx + OFFSET__NEXT] = next;
 
       // make sure no other thread has inserted a different node
-      if (AA.compareAndSet(array, bucket_idx, next, node)) {
+      // release: make sure the above assignment is not reordered after this set
+      int readNext = (int) AA.compareAndExchangeRelease(array, bucket_idx, next, node);
+      if (readNext == next) {
+        // exchange succeeded
         return node;
       }
 
       // bucket changed since last read. another thread may have inserted this bdd.
-      next = (int) AA.getVolatile(array, bucket_idx);
+      next = readNext;
 
       int res = next;
       while (res != 0) {
