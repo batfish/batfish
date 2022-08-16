@@ -1,10 +1,16 @@
 package org.batfish.client;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -28,16 +34,14 @@ import org.batfish.common.CoordConstsV2;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.version.BatfishVersion;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 public class BfCoordWorkHelper {
 
-  private final String _coordWorkMgr;
   private final String _coordWorkMgrV2;
   private final BatfishLogger _logger;
   private final Settings _settings;
@@ -46,7 +50,6 @@ public class BfCoordWorkHelper {
   public BfCoordWorkHelper(BatfishLogger logger, Settings settings) {
     _logger = logger;
     _settings = settings;
-    _coordWorkMgr = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorWorkPort();
     _coordWorkMgrV2 = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorWorkV2Port();
     try {
       _client = getClientBuilder().build();
@@ -124,7 +127,8 @@ public class BfCoordWorkHelper {
       return response.readEntity(String.class);
     } catch (Exception e) {
       _logger.errorf(
-          "Exception in getWorkJson from %s using (%s, %s)\n", _coordWorkMgr, snapshotName, workId);
+          "Exception in getWorkJson from %s using (%s, %s)\n",
+          _coordWorkMgrV2, snapshotName, workId);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
@@ -157,16 +161,10 @@ public class BfCoordWorkHelper {
       return response.readEntity(String.class);
     } catch (Exception e) {
       _logger.errorf(
-          "Exception in getPojoTopology from %s using %s\n", _coordWorkMgr, snapshotName);
+          "Exception in getPojoTopology from %s using %s\n", _coordWorkMgrV2, snapshotName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
-  }
-
-  private WebTarget getTarget(String resource) {
-    String urlString =
-        String.format("http://%s%s/%s", _coordWorkMgr, CoordConsts.SVC_CFG_WORK_MGR, resource);
-    return _client.target(urlString);
   }
 
   /**
@@ -203,36 +201,26 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  WorkResult getWorkStatus(UUID workId) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
-
-      @SuppressWarnings("PMD.CloseResource") // postData will close it
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      if (jObj == null) {
+  WorkResult getWorkStatus(UUID workId, String network) {
+    WebTarget webTarget =
+        getTargetV2(
+            ImmutableList.of(
+                CoordConstsV2.RSC_NETWORKS, network, CoordConstsV2.RSC_WORK, workId.toString()));
+    try (Response response =
+        webTarget
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .get()) {
+      if (response.getStatus() != Status.OK.getStatusCode()) {
+        _logger.errorf("getWorkStatus: Did not get OK response. Got: %s\n", response.getStatus());
+        _logger.error(response.readEntity(String.class) + "\n");
         return null;
       }
-
-      if (!jObj.has(CoordConsts.SVC_KEY_WORKSTATUS)) {
-        _logger.errorf("workstatus key not found in: %s\n", jObj);
-        return null;
-      }
-
-      WorkStatusCode workStatus =
-          WorkStatusCode.valueOf(jObj.getString(CoordConsts.SVC_KEY_WORKSTATUS));
-
-      if (!jObj.has(CoordConsts.SVC_KEY_TASKSTATUS)) {
-        _logger.errorf("taskstatus key not found in: %s\n", jObj);
-      }
-      String taskStr = jObj.getString(CoordConsts.SVC_KEY_TASKSTATUS);
-
-      return new WorkResult(workStatus, taskStr);
+      WorkStatus workStatus = response.readEntity(WorkStatus.class);
+      return new WorkResult(
+          workStatus.getWorkStatusCode(),
+          BatfishObjectMapper.writeString(workStatus.getTaskStatusStr()));
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
@@ -242,31 +230,29 @@ public class BfCoordWorkHelper {
 
   @Nullable
   public String initNetwork(@Nullable String networkName, @Nullable String networkPrefix) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_INIT_NETWORK);
+    WebTarget webTarget = getTargetV2(ImmutableList.of(CoordConstsV2.RSC_NETWORKS));
+    if (networkName != null) {
+      webTarget = webTarget.queryParam(CoordConstsV2.QP_NAME, networkName);
+    }
+    if (networkPrefix != null) {
+      webTarget = webTarget.queryParam(CoordConstsV2.QP_NAME_PREFIX, networkPrefix);
+    }
+    try (Response response =
+        webTarget
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .post(Entity.entity(null, MediaType.APPLICATION_JSON))) {
 
-      @SuppressWarnings("PMD.CloseResource") // postData will close it
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      if (networkName != null) {
-        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      } else {
-        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_PREFIX, networkPrefix);
-      }
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      if (jObj == null) {
+      if (response.getStatus() != Status.CREATED.getStatusCode()) {
+        _logger.errorf(
+            "initNetwork: Did not get CREATED response. Got: %s\n", response.getStatus());
+        _logger.error(response.readEntity(String.class) + "\n");
         return null;
       }
-
-      if (!jObj.has(CoordConsts.SVC_KEY_NETWORK_NAME)) {
-        _logger.errorf("network name key not found in: %s\n", jObj);
-        return null;
-      }
-
-      return jObj.getString(CoordConsts.SVC_KEY_NETWORK_NAME);
+      String[] components = response.getLocation().getPath().split("/", -1);
+      String encodedNetworkName = components[components.length - 1];
+      return URLDecoder.decode(encodedNetworkName, StandardCharsets.UTF_8.name());
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
@@ -276,13 +262,18 @@ public class BfCoordWorkHelper {
 
   public boolean isReachable(boolean chatty) {
 
-    WebTarget webTarget = getTarget("");
+    WebTarget webTarget = getTargetV2(ImmutableList.of(CoordConstsV2.RSC_VERSION));
 
-    try (Response response = webTarget.request().get()) {
+    try (Response response =
+        webTarget
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .get()) {
       _logger.info(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
-        _logger.errorf("GetObject: Did not get an OK response\n");
+        _logger.errorf("isReachable: Did not get an OK response\n");
         return false;
       }
 
@@ -313,67 +304,24 @@ public class BfCoordWorkHelper {
     }
   }
 
-  @Nullable
-  private JSONObject postData(WebTarget webTarget, MultiPart multiPart) throws Exception {
-    try {
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
-
-      JSONArray array;
-      try (Response response =
-          webTarget
-              .request(MediaType.APPLICATION_JSON)
-              .post(Entity.entity(multiPart, multiPart.getMediaType()))) {
-        _logger.debugf("%s %s %s%n", response.getStatus(), response.getStatusInfo(), response);
-        if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
-          System.err.print("PostData: Did not get an OK response\n");
-          return null;
-        }
-        String sobj = response.readEntity(String.class);
-        array = new JSONArray(sobj);
-      }
-      _logger.debugf("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
-
-      if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
-        _logger.errorf("Error in PostData: %s %s\n", array.get(0), array.get(1));
-        return null;
-      }
-
-      return new JSONObject(array.get(1).toString());
-    } catch (ProcessingException e) {
-      if (e.getMessage().contains("ConnectException")) {
-        _logger.errorf("unable to connect to coordinator at %s\n", _coordWorkMgr);
-        return null;
-      }
-      if (e.getMessage().contains("SSLHandshakeException")) {
-        _logger.errorf(
-            "SSL handshake exception while connecting to coordinator (Is the coordinator using "
-                + "SSL and using keys that you trust?)\n");
-        return null;
-      }
-      if (e.getMessage().contains("SocketException: Unexpected end of file")) {
-        _logger.errorf("SocketException while connecting to coordinator. (Are you using SSL?)\n");
-        return null;
-      }
-      throw e;
-    }
-  }
-
   public boolean queueWork(WorkItem wItem) {
+    WebTarget webTarget =
+        getTargetV2(
+            ImmutableList.of(
+                CoordConstsV2.RSC_NETWORKS, wItem.getNetwork(), CoordConstsV2.RSC_WORK));
 
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_QUEUE_WORK);
-
-      @SuppressWarnings("PMD.CloseResource") // postData will close it
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(
-          multiPart, CoordConsts.SVC_KEY_WORKITEM, BatfishObjectMapper.writeString(wItem));
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      return jObj != null;
+    try (Response response =
+        webTarget
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .post(Entity.entity(wItem, MediaType.APPLICATION_JSON))) {
+      if (response.getStatus() != Status.CREATED.getStatusCode()) {
+        _logger.errorf("queueWork: Did not get CREATED response. Got: %s\n", response.getStatus());
+        _logger.error(response.readEntity(String.class) + "\n");
+        return false;
+      }
+      return true;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
@@ -381,55 +329,76 @@ public class BfCoordWorkHelper {
     }
   }
 
-  public boolean uploadQuestion(
-      String networkName, String snapshotName, String qName, String qFileName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_QUESTION);
-
-      @SuppressWarnings("PMD.CloseResource") // postData will close it
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUESTION_NAME, qName);
-      addFileMultiPart(multiPart, CoordConsts.SVC_KEY_FILE, qFileName);
-
-      return postData(webTarget, multiPart) != null;
+  public boolean uploadQuestion(String networkName, String qName, String qFileName) {
+    WebTarget webTarget =
+        getTargetV2(
+            ImmutableList.of(
+                CoordConstsV2.RSC_NETWORKS, networkName, CoordConstsV2.RSC_QUESTIONS, qName));
+    try (InputStream content = Files.newInputStream(Paths.get(qFileName))) {
+      try (Response response =
+          webTarget
+              .request()
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+              .put(Entity.entity(content, MediaType.TEXT_PLAIN))) {
+        if (response.getStatus() != Status.OK.getStatusCode()) {
+          _logger.errorf(
+              "uploadQuestion: Did not get OK response. Got: %s\n", response.getStatus());
+          _logger.error(response.readEntity(String.class) + "\n");
+          return false;
+        }
+        return true;
+      }
     } catch (Exception e) {
       if (e.getMessage().contains("FileNotFoundException")) {
         _logger.errorf("File not found: %s (question file)\n", qFileName);
       } else {
         _logger.errorf(
             "Exception when uploading question to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr, snapshotName, qName, qFileName, Throwables.getStackTraceAsString(e));
+            _coordWorkMgrV2, networkName, qName, qFileName, Throwables.getStackTraceAsString(e));
       }
       return false;
     }
   }
 
   public boolean uploadSnapshot(String networkName, String snapshotName, String zipfileName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_SNAPSHOT);
+    WebTarget webTarget =
+        getTargetV2(
+            ImmutableList.of(
+                CoordConstsV2.RSC_NETWORKS,
+                networkName,
+                CoordConstsV2.RSC_SNAPSHOTS,
+                snapshotName));
 
-      @SuppressWarnings("PMD.CloseResource") // postData will close it
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+    try (InputStream zipInput = Files.newInputStream(Paths.get(zipfileName))) {
+      try (Response response =
+          webTarget
+              .request()
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+              .post(Entity.entity(zipInput, MediaType.APPLICATION_OCTET_STREAM))) {
 
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
-      addFileMultiPart(multiPart, CoordConsts.SVC_KEY_ZIPFILE, zipfileName);
-
-      return postData(webTarget, multiPart) != null;
+        if (response.getStatus() != Status.CREATED.getStatusCode()) {
+          _logger.errorf(
+              "uploadSnapshot: Did not get CREATED response. Got: %s\n", response.getStatus());
+          _logger.error(response.readEntity(String.class) + "\n");
+          return false;
+        }
+        return true;
+      } catch (Exception e) {
+        _logger.errorf(
+            "Exception in uploadSnapshot from %s for network %s, snapshot %s\n",
+            _coordWorkMgrV2, networkName, snapshotName);
+        _logger.error(Throwables.getStackTraceAsString(e) + "\n");
+        return false;
+      }
     } catch (Exception e) {
       if (e.getMessage().contains("FileNotFoundException")) {
         _logger.errorf("File not found: %s\n", zipfileName);
       } else {
         _logger.errorf(
             "Exception when uploading snapshot to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr,
+            _coordWorkMgrV2,
             networkName,
             snapshotName,
             zipfileName,

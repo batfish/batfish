@@ -875,10 +875,7 @@ public class Client extends AbstractClient implements IClient {
     // upload the question
     boolean resultUpload =
         _workHelper.uploadQuestion(
-            _currContainerName,
-            _currTestrig,
-            questionName,
-            questionFile.toAbsolutePath().toString());
+            _currContainerName, questionName, questionFile.toAbsolutePath().toString());
     if (!resultUpload) {
       return false;
     }
@@ -924,10 +921,7 @@ public class Client extends AbstractClient implements IClient {
     // upload the question
     boolean resultUpload =
         _workHelper.uploadQuestion(
-            _currContainerName,
-            _currTestrig,
-            questionName,
-            questionFile.toAbsolutePath().toString());
+            _currContainerName, questionName, questionFile.toAbsolutePath().toString());
 
     if (!resultUpload) {
       return false;
@@ -1565,9 +1559,9 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean pollWork(UUID wItemId) {
+  private boolean pollWork(UUID wItemId, String network) {
     // Poll the work item until it finishes or fails.
-    WorkResult response = _workHelper.getWorkStatus(wItemId);
+    WorkResult response = _workHelper.getWorkStatus(wItemId, network);
     if (response == null) {
       return false;
     }
@@ -1581,7 +1575,7 @@ public class Client extends AbstractClient implements IClient {
       } catch (InterruptedException e) {
         throw new BatfishException("Interrupted while waiting for work item to complete", e);
       }
-      response = _workHelper.getWorkStatus(wItemId);
+      response = _workHelper.getWorkStatus(wItemId, network);
       if (response == null) {
         return false;
       }
@@ -1592,7 +1586,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean pollWorkAndGetAnswer(WorkItem wItem, @Nullable FileWriter outWriter) {
 
-    boolean pollResult = pollWork(wItem.getId());
+    boolean pollResult = pollWork(wItem.getId(), wItem.getNetwork());
     if (!pollResult) {
       return false;
     }
