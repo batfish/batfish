@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.StampedLock;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -539,7 +539,8 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   AtomicBoolean _needToGc = new AtomicBoolean(false);
-  ReadWriteLock _readWriteLock = new ReentrantReadWriteLock();
+  StampedLock _stampedLock = new StampedLock();
+  ReadWriteLock _readWriteLock = _stampedLock.asReadWriteLock();
 
   private class Worker {
     private IntStack bddrefstack; /* BDDs referenced during the current computation. */
@@ -597,9 +598,6 @@ public class JFactory extends BDDFactory implements Serializable {
       // upgrade to writer
       _readWriteLock.readLock().unlock();
       _readWriteLock.writeLock().lock();
-      // must also be a reader since we're going to call bdd_makenode (which will unlock the
-      // readlock)
-      _readWriteLock.readLock().lock();
 
       if (bddvarset == null) {
         bddvarset = new int[num * 2];
@@ -633,8 +631,8 @@ public class JFactory extends BDDFactory implements Serializable {
       assert bddvarnum == LEVEL(BDDZERO);
       assert bddvarnum == LEVEL(BDDONE);
 
-      // downgrade to reader (readlock is still locked)
       _readWriteLock.writeLock().unlock();
+      _readWriteLock.readLock().lock();
 
       return 0;
     }
@@ -693,10 +691,14 @@ public class JFactory extends BDDFactory implements Serializable {
           /* Try to allocate more nodes */
           bddrefstacks.add(bddrefstack);
 
-          // upgrade to writer
           _needToGc.set(true);
-          _readWriteLock.readLock().unlock();
-          _readWriteLock.writeLock().lock();
+
+          boolean wasReader = _stampedLock.isReadLocked();
+          if (wasReader) {
+            // upgrade to writer
+            _readWriteLock.readLock().unlock();
+            _readWriteLock.writeLock().lock();
+          }
 
           if (_needToGc.compareAndSet(true, false)) {
             // still need to garbage collect (another thread didn't do it already)
@@ -739,9 +741,11 @@ public class JFactory extends BDDFactory implements Serializable {
             }
           }
 
-          // downgrade to reader
-          _readWriteLock.writeLock().unlock();
-          _readWriteLock.readLock().lock();
+          if (wasReader) {
+            // downgrade to reader
+            _readWriteLock.writeLock().unlock();
+            _readWriteLock.readLock().lock();
+          }
           bddrefstacks.remove(bddrefstack);
         }
       }
