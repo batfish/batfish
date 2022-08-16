@@ -152,8 +152,21 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return masked == _ip.asLong();
   }
 
+  /** Returns {@code true} if {@code this} contains every {@link Ip} in the given {@link Prefix}. */
   public boolean containsPrefix(Prefix prefix) {
     return _prefixLength <= prefix._prefixLength && containsIp(prefix._ip);
+  }
+
+  /**
+   * Returns {@code true} if {@code this} {@link Prefix} contains the prefix represented by the
+   * {@link Ip} and length are in separate parts. The given {@link Ip} does not need to be
+   * normalized as the lowest address in the prefix.
+   *
+   * <p>This is a zero-allocation alternative to calling {@link #containsPrefix(Prefix)} with the
+   * result of {@link Prefix#create(Ip, int)}.
+   */
+  public boolean containsPrefix(Ip ip, int prefixLength) {
+    return _prefixLength <= prefixLength && containsIp(ip);
   }
 
   @Override
