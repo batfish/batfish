@@ -5,7 +5,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileVisitResult;
@@ -42,7 +41,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -258,7 +256,7 @@ public class Main {
       List<Class<?>> features,
       int port,
       CompletableFuture<Integer> portFuture) {
-    ResourceConfig rcWork = new ResourceConfig(serviceClass).register(ExceptionMapper.class);
+    ResourceConfig rcWork = new ResourceConfig(serviceClass);
     for (Class<?> feature : features) {
       _logger.infof("Registering feature %s", feature.getSimpleName());
       rcWork.register(feature);
@@ -309,18 +307,13 @@ public class Main {
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(
         WorkMgrService.class,
-        Lists.newArrayList(JettisonFeature.class, MultiPartFeature.class),
+        WorkMgrService.REQUIRED_FEATURES,
         _settings.getServiceWorkPort(),
         bindPortFutures.getWorkPort());
     // Initialize and start the work manager service using the v2 RESTful API and Jackson.
-
     startWorkManagerService(
         WorkMgrServiceV2.class,
-        Lists.newArrayList(
-            ServiceObjectMapper.class,
-            JacksonFeature.class,
-            ApiKeyAuthenticationFilter.class,
-            VersionCompatibilityFilter.class),
+        WorkMgrServiceV2.REQUIRED_FEATURES,
         _settings.getServiceWorkV2Port(),
         bindPortFutures.getWorkV2Port());
   }
