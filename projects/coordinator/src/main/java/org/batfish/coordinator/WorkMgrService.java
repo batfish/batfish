@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.Arrays;
@@ -46,11 +47,16 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /** */
 @Path(CoordConsts.SVC_CFG_WORK_MGR)
 public class WorkMgrService {
+
+  public static final List<Class<?>> REQUIRED_FEATURES =
+      ImmutableList.of(ExceptionMapper.class, JettisonFeature.class, MultiPartFeature.class);
 
   BatfishLogger _logger = Main.getLogger();
 

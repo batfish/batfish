@@ -5,6 +5,7 @@ import static org.batfish.common.CoordConstsV2.QP_VERBOSE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -30,6 +31,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.NetworkResource;
 import org.batfish.version.Versioned;
+import org.glassfish.jersey.jackson.JacksonFeature;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -41,6 +43,14 @@ import org.batfish.version.Versioned;
 @Path(CoordConsts.SVC_CFG_WORK_MGR2)
 @Produces(MediaType.APPLICATION_JSON)
 public class WorkMgrServiceV2 {
+
+  public static final List<Class<?>> REQUIRED_FEATURES =
+      ImmutableList.of(
+          ExceptionMapper.class,
+          ServiceObjectMapper.class,
+          JacksonFeature.class,
+          ApiKeyAuthenticationFilter.class,
+          VersionCompatibilityFilter.class);
 
   private BatfishLogger _logger = Main.getLogger();
 
