@@ -138,11 +138,11 @@ import org.batfish.grammar.frr.FrrParser.Rbafln_route_mapContext;
 import org.batfish.grammar.frr.FrrParser.Rbafln_route_reflector_clientContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_cluster_idContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_confederationContext;
-import org.batfish.grammar.frr.FrrParser.Rbb_max_med_administrativeContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_router_idContext;
 import org.batfish.grammar.frr.FrrParser.Rbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.frr.FrrParser.Rbbl_limitContext;
 import org.batfish.grammar.frr.FrrParser.Rbbl_rangeContext;
+import org.batfish.grammar.frr.FrrParser.Rbbmm_administrativeContext;
 import org.batfish.grammar.frr.FrrParser.Rbn_interfaceContext;
 import org.batfish.grammar.frr.FrrParser.Rbn_ip6Context;
 import org.batfish.grammar.frr.FrrParser.Rbn_ipContext;
@@ -1240,7 +1240,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitRbb_max_med_administrative(Rbb_max_med_administrativeContext ctx) {
+  public void exitRbbmm_administrative(Rbbmm_administrativeContext ctx) {
     if (ctx.med != null) {
       _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
     } else {

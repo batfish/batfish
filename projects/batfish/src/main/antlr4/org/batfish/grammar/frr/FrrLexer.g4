@@ -354,6 +354,8 @@ NOTIFICATIONS: 'notifications';
 
 ON_MATCH: 'on-match';
 
+ON_STARTUP: 'on-startup';
+
 OSPF: 'ospf';
 
 OUT: 'out';
