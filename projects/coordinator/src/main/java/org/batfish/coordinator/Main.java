@@ -5,6 +5,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.net.URI;
@@ -259,6 +260,7 @@ public class Main {
       int port,
       CompletableFuture<Integer> portFuture) {
     ResourceConfig rcWork = new ResourceConfig(serviceClass).register(ExceptionMapper.class);
+    rcWork.addProperties(ImmutableMap.of("jersey.config.server.wadl.disableWadl", "true"));
     for (Class<?> feature : features) {
       _logger.infof("Registering feature %s", feature.getSimpleName());
       rcWork.register(feature);
