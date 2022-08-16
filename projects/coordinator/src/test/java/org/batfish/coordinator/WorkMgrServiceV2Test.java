@@ -37,6 +37,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
+import org.batfish.coordinator.version.ApiVersion;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.version.BatfishVersion;
 import org.junit.Before;
@@ -244,9 +245,9 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .get()) {
       assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
       // Should get a non-unknown Batfish version
-      assertThat(
-          response.readEntity(new GenericType<Map<String, String>>() {}),
-          hasEntry(equalTo("Batfish"), not(equalTo(UNKNOWN_VERSION))));
+      Map<String, String> result = response.readEntity(new GenericType<Map<String, String>>() {});
+      assertThat(result, hasEntry(equalTo("Batfish"), not(equalTo(UNKNOWN_VERSION))));
+      assertThat(result, hasEntry(equalTo("api_version"), equalTo(ApiVersion.getVersionStatic())));
     }
   }
 
