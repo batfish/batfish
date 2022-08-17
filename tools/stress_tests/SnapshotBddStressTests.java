@@ -95,9 +95,11 @@ public class SnapshotBddStressTests {
 
     while (true) {
       BDDPacket pkt = bddPacket();
+      long t = System.currentTimeMillis();
       new BDDReachabilityAnalysisFactory(
               pkt, _configs, forwardingAnalysis, ipsRoutedOutInterfacesFactory, false, false)
           .bddReachabilityAnalysis(ipSpaceAssignment, true);
+      System.out.println(System.currentTimeMillis() - t);
     }
   }
 
