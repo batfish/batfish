@@ -133,11 +133,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.batfish</groupId>
-            <artifactId>question</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
@@ -145,6 +140,13 @@
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
+        </dependency>
+
+        <!-- Runtime scope dependencies. -->
+        <dependency>
+            <groupId>org.batfish</groupId>
+            <artifactId>question</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Test scope dependencies. -->
