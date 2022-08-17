@@ -11,11 +11,10 @@ java_library(
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_apache_commons_commons_lang3",
-        "@maven//:org_parboiled_parboiled_core",
-        "@maven//:org_parboiled_parboiled_java",
     ],
 )
 
