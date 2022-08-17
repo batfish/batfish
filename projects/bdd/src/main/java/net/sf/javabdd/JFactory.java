@@ -2957,17 +2957,19 @@ public class JFactory extends BDDFactory implements Serializable {
 
     /** Get a list of free BDD nodes (0-terminated). */
     int get() {
-      FreePosNode node;
+      FreePosNode node = _queue.get();
       while (true) {
-        node = _queue.get();
         if (node == null) {
           return 0;
         }
-        if (_queue.compareAndSet(node, node._next)) {
-          break;
+        FreePosNode witness = _queue.compareAndExchangeRelease(node, node._next);
+        if (witness == node) {
+          // exchange succeeded
+          return node._pos;
         }
+        // exchange failed
+        node = witness;
       }
-      return node._pos;
     }
 
     /** Return a list of free BDD nodes */
@@ -2976,11 +2978,14 @@ public class JFactory extends BDDFactory implements Serializable {
         return;
       }
       FreePosNode node = new FreePosNode(freepos);
+      node._next = _queue.get();
       while (true) {
-        node._next = _queue.get();
-        if (_queue.compareAndSet(node._next, node)) {
+        FreePosNode witness = _queue.compareAndExchangeRelease(node._next, node);
+        if (witness == node._next) {
+          // exchange succeeded
           return;
         }
+        node._next = witness;
       }
     }
   }
