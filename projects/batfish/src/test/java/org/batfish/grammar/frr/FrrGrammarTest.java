@@ -1218,6 +1218,18 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testBgpMaxMedOnStartup_timeonly() {
+    parse("router bgp 1\n bgp max-med on-startup 15\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), nullValue());
+  }
+
+  @Test
+  public void testBgpMaxMedOnStartup_timeandmed() {
+    parse("router bgp 1\n bgp max-med on-startup 15 4000000000\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), nullValue());
+  }
+
+  @Test
   public void testBgpRouterId() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
