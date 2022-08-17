@@ -28,7 +28,6 @@
  */
 package net.sf.javabdd;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -48,7 +47,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -2941,22 +2939,48 @@ public class JFactory extends BDDFactory implements Serializable {
     }
   }
 
-  private static class BDDFreePosManager implements Serializable {
-    ConcurrentLinkedQueue<Integer> _queue = new ConcurrentLinkedQueue<>();
+  private static final class FreePosNode implements Serializable {
+    final int _pos;
+    @Nullable FreePosNode _next;
+
+    private FreePosNode(int pos) {
+      _pos = pos;
+    }
+  }
+
+  private static final class BDDFreePosManager implements Serializable {
+    AtomicReference<FreePosNode> _queue = new AtomicReference<>(null);
 
     void clear() {
-      _queue.clear();
+      _queue.set(null);
     }
 
     /** Get a list of free BDD nodes (0-terminated). */
     int get() {
-      return firstNonNull(_queue.poll(), 0);
+      FreePosNode node;
+      while (true) {
+        node = _queue.get();
+        if (node == null) {
+          return 0;
+        }
+        if (_queue.compareAndSet(node, node._next)) {
+          break;
+        }
+      }
+      return node._pos;
     }
 
     /** Return a list of free BDD nodes */
     void put(int freepos) {
-      if (freepos != 0) {
-        _queue.add(freepos);
+      if (freepos == 0) {
+        return;
+      }
+      FreePosNode node = new FreePosNode(freepos);
+      while (true) {
+        node._next = _queue.get();
+        if (_queue.compareAndSet(node._next, node)) {
+          return;
+        }
       }
     }
   }
