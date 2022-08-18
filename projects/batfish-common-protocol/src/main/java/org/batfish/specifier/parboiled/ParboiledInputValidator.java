@@ -1,6 +1,6 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage;
+import static org.batfish.specifier.parboiled.InputValidationUtils.getErrorMessage;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

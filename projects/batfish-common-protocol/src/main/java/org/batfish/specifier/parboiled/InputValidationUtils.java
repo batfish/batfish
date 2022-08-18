@@ -1,4 +1,4 @@
-package org.batfish.datamodel.answers;
+package org.batfish.specifier.parboiled;
 
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.autoCompleteSourceLocation;
@@ -11,12 +11,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
-import org.batfish.specifier.parboiled.ParboiledInputValidator;
 
 /** A utility class to validate question inputs */
 @ParametersAreNonnullByDefault

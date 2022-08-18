@@ -1,9 +1,9 @@
-package org.batfish.datamodel.answers;
+package org.batfish.specifier.parboiled;
 
-import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage;
-import static org.batfish.datamodel.answers.InputValidationUtils.validateIp;
-import static org.batfish.datamodel.answers.InputValidationUtils.validatePrefix;
-import static org.batfish.datamodel.answers.InputValidationUtils.validateSourceLocation;
+import static org.batfish.specifier.parboiled.InputValidationUtils.getErrorMessage;
+import static org.batfish.specifier.parboiled.InputValidationUtils.validateIp;
+import static org.batfish.specifier.parboiled.InputValidationUtils.validatePrefix;
+import static org.batfish.specifier.parboiled.InputValidationUtils.validateSourceLocation;
 import static org.batfish.specifier.parboiled.InternetLocationAstNode.INTERNET_LOCATION;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -16,6 +16,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -29,7 +30,7 @@ import org.batfish.specifier.Grammar;
 import org.batfish.specifier.InterfaceLocation;
 import org.junit.Test;
 
-/** Tests for {@link org.batfish.datamodel.answers.InputValidationUtils} */
+/** Tests for {@link InputValidationUtils} */
 public class InputValidationUtilsTest {
 
   private static final CompletionMetadata emptyCompletionMetadata =

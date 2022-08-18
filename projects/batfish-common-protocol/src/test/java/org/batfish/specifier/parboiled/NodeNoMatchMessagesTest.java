@@ -1,9 +1,9 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessageEmptyNameRegex;
-import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessageMissingBook;
-import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessageMissingGroup;
-import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessageMissingName;
+import static org.batfish.specifier.parboiled.InputValidationUtils.getErrorMessageEmptyNameRegex;
+import static org.batfish.specifier.parboiled.InputValidationUtils.getErrorMessageMissingBook;
+import static org.batfish.specifier.parboiled.InputValidationUtils.getErrorMessageMissingGroup;
+import static org.batfish.specifier.parboiled.InputValidationUtils.getErrorMessageMissingName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
