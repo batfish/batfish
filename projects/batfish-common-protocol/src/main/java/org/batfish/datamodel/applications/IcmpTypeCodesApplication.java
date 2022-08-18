@@ -14,7 +14,6 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.specifier.parboiled.CommonParser;
 
 /** An {@link IcmpApplication} of a specific type and one or more codes */
 @ParametersAreNonnullByDefault
@@ -67,8 +66,7 @@ public final class IcmpTypeCodesApplication extends IcmpApplication {
           .build();
 
   /**
-   * Returns if the ICMP code is valid for the provided type. Assumes that type and code are
-   * non-null and non-negative numbers (as parsed by {@link CommonParser#Number()}).
+   * Returns true iff the ICMP code is valid for the provided type.
    *
    * <p>The classification below is based on
    * https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages
