@@ -50,8 +50,8 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.Grammar;
+import org.batfish.specifier.SpecifierAutoComplete;
 import org.batfish.specifier.ToSpecifierString;
-import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
 /** A utility class to generate auto complete suggestions for user input */
 @ParametersAreNonnullByDefault
@@ -233,7 +233,7 @@ public final class AutoCompleteUtils {
         case APPLICATION_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.APPLICATION_SPECIFIER,
                     network,
                     snapshot,
@@ -247,7 +247,7 @@ public final class AutoCompleteUtils {
         case BGP_PEER_PROPERTY_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.BGP_PEER_PROPERTY_SPECIFIER,
                     network,
                     snapshot,
@@ -261,7 +261,7 @@ public final class AutoCompleteUtils {
         case BGP_PROCESS_PROPERTY_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.BGP_PROCESS_PROPERTY_SPECIFIER,
                     network,
                     snapshot,
@@ -275,7 +275,7 @@ public final class AutoCompleteUtils {
         case BGP_ROUTE_STATUS_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.BGP_ROUTE_STATUS_SPECIFIER,
                     network,
                     snapshot,
@@ -289,7 +289,7 @@ public final class AutoCompleteUtils {
         case BGP_SESSION_COMPAT_STATUS_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.BGP_SESSION_COMPAT_STATUS_SPECIFIER,
                     network,
                     snapshot,
@@ -303,7 +303,7 @@ public final class AutoCompleteUtils {
         case BGP_SESSION_STATUS_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.BGP_SESSION_STATUS_SPECIFIER,
                     network,
                     snapshot,
@@ -317,7 +317,7 @@ public final class AutoCompleteUtils {
         case BGP_SESSION_TYPE_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.BGP_SESSION_TYPE_SPECIFIER,
                     network,
                     snapshot,
@@ -353,7 +353,7 @@ public final class AutoCompleteUtils {
         case FILTER_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.FILTER_SPECIFIER,
                     network,
                     snapshot,
@@ -413,7 +413,7 @@ public final class AutoCompleteUtils {
         case INTERFACES_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.INTERFACE_SPECIFIER,
                     network,
                     snapshot,
@@ -427,7 +427,7 @@ public final class AutoCompleteUtils {
         case INTERFACE_PROPERTY_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.INTERFACE_PROPERTY_SPECIFIER,
                     network,
                     snapshot,
@@ -447,7 +447,7 @@ public final class AutoCompleteUtils {
         case IP_PROTOCOL_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.IP_PROTOCOL_SPECIFIER,
                     network,
                     snapshot,
@@ -471,7 +471,7 @@ public final class AutoCompleteUtils {
 
             // then, get grammar-based suggestions
             List<AutocompleteSuggestion> grammarSuggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.IP_SPACE_SPECIFIER,
                     network,
                     snapshot,
@@ -493,7 +493,7 @@ public final class AutoCompleteUtils {
         case IPSEC_SESSION_STATUS_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.IPSEC_SESSION_STATUS_SPECIFIER,
                     network,
                     snapshot,
@@ -507,7 +507,7 @@ public final class AutoCompleteUtils {
         case LOCATION_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.LOCATION_SPECIFIER,
                     network,
                     snapshot,
@@ -527,7 +527,7 @@ public final class AutoCompleteUtils {
         case MLAG_ID_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.MLAG_ID_SPECIFIER,
                     network,
                     snapshot,
@@ -541,7 +541,7 @@ public final class AutoCompleteUtils {
         case NAMED_STRUCTURE_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.NAMED_STRUCTURE_SPECIFIER,
                     network,
                     snapshot,
@@ -566,7 +566,7 @@ public final class AutoCompleteUtils {
         case NODE_PROPERTY_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.NODE_PROPERTY_SPECIFIER,
                     network,
                     snapshot,
@@ -604,7 +604,7 @@ public final class AutoCompleteUtils {
         case NODE_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.NODE_SPECIFIER,
                     network,
                     snapshot,
@@ -618,7 +618,7 @@ public final class AutoCompleteUtils {
         case OSPF_INTERFACE_PROPERTY_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.OSPF_INTERFACE_PROPERTY_SPECIFIER,
                     network,
                     snapshot,
@@ -632,7 +632,7 @@ public final class AutoCompleteUtils {
         case OSPF_PROCESS_PROPERTY_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.OSPF_PROCESS_PROPERTY_SPECIFIER,
                     network,
                     snapshot,
@@ -646,7 +646,7 @@ public final class AutoCompleteUtils {
         case OSPF_SESSION_STATUS_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.OSPF_SESSION_STATUS_SPECIFIER,
                     network,
                     snapshot,
@@ -691,7 +691,7 @@ public final class AutoCompleteUtils {
         case ROUTING_POLICY_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.ROUTING_POLICY_SPECIFIER,
                     network,
                     snapshot,
@@ -705,7 +705,7 @@ public final class AutoCompleteUtils {
         case ROUTING_PROTOCOL_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.ROUTING_PROTOCOL_SPECIFIER,
                     network,
                     snapshot,
@@ -719,7 +719,7 @@ public final class AutoCompleteUtils {
         case SINGLE_APPLICATION_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                SpecifierAutoComplete.autoComplete(
                     Grammar.SINGLE_APPLICATION_SPECIFIER,
                     network,
                     snapshot,
