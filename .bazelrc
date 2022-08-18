@@ -1,2 +1,7 @@
 # Test targets are required to depend on our junit rather than using the one provided by Bazel
 build --explicit_java_test_deps
+
+# Do not instrument Bazel packages that contain parboiled parsers, as this crashes.
+# TODO: this does not seem to work, but passing the exact same argument on the command line
+# makes it take effect.
+coverage --instrumentation_filter=-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled
