@@ -8,7 +8,7 @@ TMP=$(mktemp -d)
 unzip -q "${ALLINONE_JAR}" -d "${TMP}"
 
 # Next: generate aggregated code coverage report
-JACOCO_VERSION=0.8.7
+JACOCO_VERSION=0.8.8
 JACOCO_CLI_JAR_NAME="org.jacoco.cli-${JACOCO_VERSION}-nodeps.jar"
 JACOCO_CLI_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.cli/${JACOCO_VERSION}/${JACOCO_CLI_JAR_NAME}"
 
