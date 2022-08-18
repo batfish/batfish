@@ -52,16 +52,16 @@ public class SnapshotBddStressTests {
 
   void ipAccessListToBdd() {
     while (true) {
-      BDDPacket _pkt = new BDDPacket();
+      BDDPacket pkt = new BDDPacket();
       long t = System.currentTimeMillis();
-      Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(_pkt, _configs);
+      Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(pkt, _configs);
       _configs
           .values()
           .forEach(
               cfg -> {
                 IpAccessListToBddImpl ipAccessListToBdd =
                     new IpAccessListToBddImpl(
-                        _pkt,
+                        pkt,
                         srcMgrs.get(cfg.getHostname()),
                         cfg.getIpAccessLists(),
                         cfg.getIpSpaces());
@@ -69,7 +69,10 @@ public class SnapshotBddStressTests {
                     .map(ipAccessListToBdd::toBdd)
                     .forEach(BDD::free);
               });
-      System.out.println(System.currentTimeMillis() - t);
+      t = System.currentTimeMillis() - t;
+      pkt.getFactory().runGC();
+      System.out.println("live BDDs: " + pkt.getFactory().getNodeNum());
+      System.out.println("time (ms): " + t);
     }
   }
 
@@ -95,7 +98,10 @@ public class SnapshotBddStressTests {
               .getForwardEdgeTable()
               .size();
       assert size > 0;
-      System.out.println(System.currentTimeMillis() - t);
+      t = System.currentTimeMillis() - t;
+      pkt.getFactory().runGC();
+      System.out.println("live BDDs: " + pkt.getFactory().getNodeNum());
+      System.out.println("time (ms): " + t);
     }
   }
 

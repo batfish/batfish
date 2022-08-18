@@ -108,6 +108,13 @@ public class JFactory extends BDDFactory implements Serializable {
     return f;
   }
 
+  @Override
+  public long runGC() {
+    long nodenum = getNodeNum();
+    bdd_gbc();
+    return nodenum - getNodeNum();
+  }
+
   /** The total number of BDDs ever created. */
   private long madeBDDs;
   /** The total number of BDDs ever freed. */
