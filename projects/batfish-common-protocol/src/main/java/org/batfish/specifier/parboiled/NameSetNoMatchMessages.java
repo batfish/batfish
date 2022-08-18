@@ -14,6 +14,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Grammar;
 
 /** Implemented {@link NoMatchMessages} for name sets */
 @ParametersAreNonnullByDefault

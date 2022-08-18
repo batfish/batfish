@@ -41,8 +41,8 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 class IpsecSessionStatusAnswerer extends Answerer {
   static final String COL_INITIATOR = "Node";

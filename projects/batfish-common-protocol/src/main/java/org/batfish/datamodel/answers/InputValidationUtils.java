@@ -15,7 +15,7 @@ import org.batfish.datamodel.answers.InputValidationNotes.Validity;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.batfish.specifier.parboiled.Grammar;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parboiled.ParboiledInputValidator;
 
 /** A utility class to validate question inputs */

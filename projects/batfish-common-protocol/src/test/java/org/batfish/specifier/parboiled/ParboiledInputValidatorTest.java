@@ -13,6 +13,7 @@ import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Grammar;
 import org.junit.Test;
 
 /** Tests for {@link ParboiledInputValidator} */

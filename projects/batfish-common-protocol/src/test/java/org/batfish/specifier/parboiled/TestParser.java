@@ -3,6 +3,7 @@ package org.batfish.specifier.parboiled;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 
 import java.util.Map;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;

@@ -1,4 +1,4 @@
-package org.batfish.specifier.parboiled;
+package org.batfish.specifier;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;

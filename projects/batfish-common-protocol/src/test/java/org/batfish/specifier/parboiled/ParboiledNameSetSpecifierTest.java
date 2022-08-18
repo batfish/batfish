@@ -10,6 +10,7 @@ import java.util.Map;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Mlag;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.MockSpecifierContext;
 import org.junit.Before;
 import org.junit.Test;

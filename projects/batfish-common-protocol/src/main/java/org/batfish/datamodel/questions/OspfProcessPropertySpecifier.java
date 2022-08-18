@@ -14,8 +14,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** Enables specification of a set of Ospf process properties. */
 public class OspfProcessPropertySpecifier extends PropertySpecifier {
