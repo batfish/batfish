@@ -12,9 +12,9 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.EnumSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public abstract class BgpSessionQuestion extends Question {

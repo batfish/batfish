@@ -23,6 +23,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
 import org.junit.Test;

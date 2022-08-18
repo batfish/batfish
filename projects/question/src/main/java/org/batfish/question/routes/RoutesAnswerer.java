@@ -46,9 +46,9 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** Answerer for {@link RoutesQuestion} */
 @ParametersAreNonnullByDefault

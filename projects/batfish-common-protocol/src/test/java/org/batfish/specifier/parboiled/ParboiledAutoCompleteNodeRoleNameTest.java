@@ -16,6 +16,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.hamcrest.Matchers;
 import org.junit.Test;

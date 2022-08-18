@@ -27,8 +27,8 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantNameSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** Answerer for the {@link MlagPropertiesQuestion} */
 public final class MlagPropertiesAnswerer extends Answerer {

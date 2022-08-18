@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.specifier.EnumSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.NameSetSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.parboiled.errors.InvalidInputError;
