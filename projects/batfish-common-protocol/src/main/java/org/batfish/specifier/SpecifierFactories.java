@@ -2,7 +2,6 @@ package org.batfish.specifier;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAppSpecifier;
 import org.batfish.specifier.parboiled.ParboiledEnumSetSpecifier;
 import org.batfish.specifier.parboiled.ParboiledFilterSpecifier;

@@ -40,6 +40,7 @@ import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.hamcrest.Matchers;
 import org.junit.Rule;

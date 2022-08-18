@@ -11,9 +11,9 @@ import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** A {@link Question} that returns compatible OSPF sessions */
 public class OspfSessionCompatibilityQuestion extends Question {

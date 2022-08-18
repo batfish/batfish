@@ -18,7 +18,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** A way to specify groups of RoutingProtocols */
 @ParametersAreNonnullByDefault

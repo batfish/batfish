@@ -1,4 +1,4 @@
-package org.batfish.specifier.parboiled;
+package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -21,8 +21,6 @@ import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
-import org.batfish.specifier.RoutingProtocolSpecifier;
-import org.batfish.specifier.SpecifierContext;
 
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
@@ -57,7 +55,7 @@ public enum Grammar {
 
   static final String BASE_URL = "https://pybatfish.readthedocs.io/en/latest/specifiers.html#";
 
-  static final String GENERAL_NOTE =
+  public static final String GENERAL_NOTE =
       String.format(
           "Be sure to read the notes (%sgeneral-notes-on-the-grammar) on set operations, escaping"
               + " names, and regular expressions.",
@@ -74,7 +72,7 @@ public enum Grammar {
     _urlTail = urlTail;
   }
 
-  String getFullUrl() {
+  public String getFullUrl() {
     return BASE_URL + getUrlTail();
   }
 

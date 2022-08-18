@@ -14,6 +14,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.InterfaceSpecifierInterfaceLocationSpecifier;
 import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.Location;

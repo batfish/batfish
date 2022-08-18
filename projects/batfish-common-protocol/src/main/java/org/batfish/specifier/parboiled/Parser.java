@@ -85,6 +85,7 @@ import java.util.Map;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.specifier.Grammar;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;

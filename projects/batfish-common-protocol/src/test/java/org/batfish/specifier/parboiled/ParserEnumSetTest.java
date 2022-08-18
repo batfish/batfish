@@ -28,6 +28,7 @@ import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
