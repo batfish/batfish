@@ -41,6 +41,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -784,7 +785,7 @@ public final class TracingFactory extends JFactory {
   }
 
   @Override
-  public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
+  public BDD andAll(Collection<BDD> bddOperands, boolean free) {
     List<BDD> implOperands = new LinkedList<>();
     bddOperands.forEach(
         bdd -> {
@@ -798,7 +799,7 @@ public final class TracingFactory extends JFactory {
   }
 
   @Override
-  protected BDD orAll(Iterable<BDD> bddOperands, boolean free) {
+  protected BDD orAll(Collection<BDD> bddOperands, boolean free) {
     List<BDD> implOperands = new LinkedList<>();
     bddOperands.forEach(
         bdd -> {

@@ -7,17 +7,15 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
@@ -91,13 +89,13 @@ public final class BDDReachabilityUtils {
     while (!dirtyStates.isEmpty()) {
       StateExpr dirtyState = dirtyStates.remove();
       visitCounts.compute(dirtyState, (unused, oldCount) -> oldCount == null ? 1 : oldCount + 1);
-      List<BDD> inputs = dirtyInputs.removeAll(dirtyState);
+      LinkedList<BDD> inputs = (LinkedList<BDD>) dirtyInputs.removeAll(dirtyState);
       assert !inputs.isEmpty();
       BDD prior = reachableSets.get(dirtyState);
-      BDD newValue =
-          prior == null
-              ? factory.orAll(inputs)
-              : factory.orAll(Iterables.concat(inputs, Collections.singleton(prior)));
+      if (prior != null) {
+        inputs.addFirst(prior);
+      }
+      BDD newValue = factory.orAll(inputs);
       if (newValue.equals(prior)) {
         // No change, so no need to update neighbors.
         newValue.free();
@@ -118,7 +116,14 @@ public final class BDDReachabilityUtils {
       }
 
       // Compute the newly learned BDDs (union of inputs) and then free them.
-      BDD learned = prior == null ? newValue.id() : factory.orAllAndFree(inputs);
+      BDD learned;
+      if (prior == null) {
+        learned = newValue.id();
+      } else {
+        BDD first = inputs.pollFirst();
+        assert first == prior;
+        learned = factory.orAllAndFree(inputs);
+      }
 
       // Forward the learned BDDs along each outgoing edge.
       dirtyStateEdges.forEach(

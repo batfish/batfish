@@ -50,7 +50,6 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
@@ -979,17 +978,30 @@ public class JFactory extends BDDFactory implements Serializable {
     return last;
   }
 
+  private int[] toIntOperands(Collection<BDD> bddOperands, int identity, int shortCircuit) {
+    int[] operands = new int[bddOperands.size()];
+    int i = 0;
+    for (BDD bdd : bddOperands) {
+      int id = ((BDDImpl) bdd)._index;
+      if (id == shortCircuit) {
+        return null;
+      }
+      if (id == identity) {
+        continue;
+      }
+      operands[i++] = id;
+    }
+    while (i < operands.length) {
+      operands[i++] = identity;
+    }
+    Arrays.sort(operands);
+    return dedupSorted(operands);
+  }
+
   @Override
-  public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
-    int[] operands =
-        StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
-            .filter(i -> i != BDDONE)
-            .sorted()
-            .distinct()
-            .peek(this::CHECK)
-            .toArray();
-    int ret = bdd_andAll(operands);
+  public BDD andAll(Collection<BDD> bddOperands, boolean free) {
+    int[] operands = toIntOperands(bddOperands, BDDONE, BDDZERO);
+    int ret = operands == null ? BDDZERO : bdd_andAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
     }
@@ -1017,16 +1029,9 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   @Override
-  protected BDD orAll(Iterable<BDD> bddOperands, boolean free) {
-    int[] operands =
-        StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
-            .filter(i -> i != BDDZERO)
-            .sorted()
-            .distinct()
-            .peek(this::CHECK)
-            .toArray();
-    int ret = bdd_orAll(operands);
+  protected BDD orAll(Collection<BDD> bddOperands, boolean free) {
+    int[] operands = toIntOperands(bddOperands, BDDZERO, BDDONE);
+    int ret = operands == null ? BDDONE : bdd_orAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
     }
