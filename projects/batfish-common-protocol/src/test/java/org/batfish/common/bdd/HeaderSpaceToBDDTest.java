@@ -223,7 +223,6 @@ public class HeaderSpaceToBDDTest {
 
   @Test
   public void testOrNull_null() {
-    assertThat(HeaderSpaceToBDD.orNull(), nullValue());
     assertThat(HeaderSpaceToBDD.orNull(null, null), nullValue());
   }
 
@@ -231,12 +230,13 @@ public class HeaderSpaceToBDDTest {
   public void testOrNull_one() {
     BDD var = _factory.ithVar(0);
     assertThat(HeaderSpaceToBDD.orNull(var, null), equalTo(var));
+    assertThat(HeaderSpaceToBDD.orNull(null, var), equalTo(var));
   }
 
   @Test
   public void testOrNull_two() {
     BDD var1 = _factory.ithVar(0);
     BDD var2 = _factory.ithVar(1);
-    assertThat(HeaderSpaceToBDD.orNull(null, var1, var2), equalTo(var1.or(var2)));
+    assertThat(HeaderSpaceToBDD.orNull(var1, var2), equalTo(var1.or(var2)));
   }
 }

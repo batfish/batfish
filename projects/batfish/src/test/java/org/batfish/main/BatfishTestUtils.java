@@ -181,6 +181,19 @@ public class BatfishTestUtils {
    */
   public static Batfish getBatfishFromTestrigText(
       TestrigText testrigText, TemporaryFolder tempFolder) throws IOException {
+    return getBatfishFromTestrigText(testrigText, tempFolder.newFolder().toPath());
+  }
+
+  /**
+   * Get a new Batfish instance with given configurations, tempFolder should be present for
+   * non-empty configurations
+   *
+   * @param testrigText Structure containing names and content of testrig input files
+   * @param tempFolder Temporary folder to be used to files required for Batfish
+   * @return Batfish instance pointing at new testrig comprising testrigText
+   */
+  public static Batfish getBatfishFromTestrigText(TestrigText testrigText, Path tempFolder)
+      throws IOException {
     Map<String, byte[]> awsBytes = testrigText.getAwsBytes();
     Map<String, byte[]> bgpTablesBytes = testrigText.getBgpTablesBytes();
     Map<String, byte[]> checkpointMgmtBytes = testrigText.getCheckpointMgmtBytes();
@@ -196,7 +209,7 @@ public class BatfishTestUtils {
 
     Settings settings = new Settings(new String[] {});
     configureBatfishTestSettings(settings);
-    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setStorageBase(tempFolder);
     setNextTestNetworkSnapshot(settings);
     Batfish batfish =
         new Batfish(

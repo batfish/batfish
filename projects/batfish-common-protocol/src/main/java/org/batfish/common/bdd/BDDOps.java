@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.Lists;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,7 @@ public final class BDDOps implements Serializable {
     return _factory.andAll(conjuncts);
   }
 
-  public @Nonnull BDD and(Iterable<BDD> conjuncts) {
+  public @Nonnull BDD and(Collection<BDD> conjuncts) {
     return _factory.andAll(conjuncts);
   }
 
@@ -33,7 +34,7 @@ public final class BDDOps implements Serializable {
     return _factory.orAll(disjuncts);
   }
 
-  public @Nonnull BDD or(Iterable<BDD> disjuncts) {
+  public @Nonnull BDD or(Collection<BDD> disjuncts) {
     return _factory.orAll(disjuncts);
   }
 
