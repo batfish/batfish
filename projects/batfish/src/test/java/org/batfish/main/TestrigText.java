@@ -251,45 +251,37 @@ public class TestrigText {
   }
 
   /** Load a {@link TestrigText} from the specified directory. */
-  public static TestrigText loadTestrig(String dir) {
+  public static TestrigText loadTestrig(String dir) throws IOException {
     TestrigText.Builder builder = TestrigText.builder();
 
     Path snapshotDir = Paths.get(dir);
     checkArgument(snapshotDir.toFile().exists(), "%s does not exist.", dir);
+    checkArgument(snapshotDir.toFile().isDirectory(), "%s is not a directory.", dir);
 
     // layer 1 topology
-    try {
-      Path l1TopologyPath = snapshotDir.resolve("batfish/layer1_topology.json");
-      if (l1TopologyPath.toFile().exists()) {
-        builder.setLayer1TopologyBytes(Files.readAllBytes(l1TopologyPath));
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+    Path l1TopologyPath = snapshotDir.resolve("batfish").resolve("layer1_topology.json");
+    if (l1TopologyPath.toFile().exists()) {
+      builder.setLayer1TopologyBytes(Files.readAllBytes(l1TopologyPath));
     }
 
     // isp config
-    try {
-      Path ispConfigPath = snapshotDir.resolve("batfish/isp_config.json");
-      if (ispConfigPath.toFile().exists()) {
-        builder.setIspConfigBytes(Files.readAllBytes(ispConfigPath));
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+    Path ispConfigPath = snapshotDir.resolve("batfish").resolve("isp_config.json");
+    if (ispConfigPath.toFile().exists()) {
+      builder.setIspConfigBytes(Files.readAllBytes(ispConfigPath));
     }
 
     // runtime data
-    try {
-      Path runtimeDataPath = snapshotDir.resolve("batfish/runtime_data.json");
-      if (runtimeDataPath.toFile().exists()) {
-        builder.setRuntimeDataBytes(Files.readAllBytes(runtimeDataPath));
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+    Path runtimeDataPath = snapshotDir.resolve("batfish").resolve("runtime_data.json");
+    if (runtimeDataPath.toFile().exists()) {
+      builder.setRuntimeDataBytes(Files.readAllBytes(runtimeDataPath));
     }
 
     // configs
+    Path configsDir = snapshotDir.resolve("configs");
+    checkArgument(configsDir.toFile().exists(), "%s does not exist.", configsDir);
+    checkArgument(configsDir.toFile().isDirectory(), "%s is not a directory.", configsDir);
     builder.setConfigurationText(
-        Arrays.stream(snapshotDir.resolve("configs").toFile().listFiles())
+        Arrays.stream(configsDir.toFile().listFiles())
             .collect(
                 ImmutableMap.toImmutableMap(
                     File::getName,

@@ -182,69 +182,61 @@ public final class HeaderSpaceToBDD {
         toBDD(tcpFlags.getUseAck(), tcpFlags.getTcpFlags().getAck(), _bddPacket.getTcpAck()));
   }
 
+  private static void addIfNonNull(List<BDD> bdds, @Nullable BDD bdd) {
+    if (bdd != null) {
+      bdds.add(bdd);
+    }
+  }
+
   public BDD toBDD(HeaderSpace headerSpace) {
     // HeaderSpace has null fields to mean "unconstrained". Thus we must be careful to treat these
     // as correctly "everything" when positive or "nothing" when negated.
-    List<BDD> conjuncts = new ArrayList<>();
+    List<BDD> bdds = new ArrayList<>();
 
-    BDD bdd = toBDD(headerSpace.getPacketLengths(), _bddPacket.getPacketLength());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotPacketLengths(), _bddPacket.getPacketLength()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getFragmentOffsets(), _bddPacket.getFragmentOffset());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd =
-        negateIfNonNull(toBDD(headerSpace.getNotFragmentOffsets(), _bddPacket.getFragmentOffset()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getEcns(), _bddPacket.getEcn());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotEcns(), _bddPacket.getEcn()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getDscps(), _bddPacket.getDscp());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotDscps(), _bddPacket.getDscp()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getTcpFlags());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getIcmpTypes(), _bddPacket.getIcmpType());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotIcmpTypes(), _bddPacket.getIcmpType()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getIcmpCodes(), _bddPacket.getIcmpCode());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotIcmpCodes(), _bddPacket.getIcmpCode()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getIpProtocols());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotIpProtocols()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getSrcPorts(), _bddPacket.getSrcPort());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotSrcPorts(), _bddPacket.getSrcPort()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd =
+    addIfNonNull(bdds, toBDD(headerSpace.getPacketLengths(), _bddPacket.getPacketLength()));
+    addIfNonNull(
+        bdds,
+        negateIfNonNull(toBDD(headerSpace.getNotPacketLengths(), _bddPacket.getPacketLength())));
+    addIfNonNull(bdds, toBDD(headerSpace.getFragmentOffsets(), _bddPacket.getFragmentOffset()));
+
+    addIfNonNull(
+        bdds,
+        negateIfNonNull(
+            toBDD(headerSpace.getNotFragmentOffsets(), _bddPacket.getFragmentOffset())));
+    addIfNonNull(bdds, toBDD(headerSpace.getEcns(), _bddPacket.getEcn()));
+    addIfNonNull(bdds, negateIfNonNull(toBDD(headerSpace.getNotEcns(), _bddPacket.getEcn())));
+    addIfNonNull(bdds, toBDD(headerSpace.getDscps(), _bddPacket.getDscp()));
+    addIfNonNull(bdds, negateIfNonNull(toBDD(headerSpace.getNotDscps(), _bddPacket.getDscp())));
+    addIfNonNull(bdds, toBDD(headerSpace.getTcpFlags()));
+    addIfNonNull(bdds, toBDD(headerSpace.getIcmpTypes(), _bddPacket.getIcmpType()));
+    addIfNonNull(
+        bdds, negateIfNonNull(toBDD(headerSpace.getNotIcmpTypes(), _bddPacket.getIcmpType())));
+    addIfNonNull(bdds, toBDD(headerSpace.getIcmpCodes(), _bddPacket.getIcmpCode()));
+    addIfNonNull(
+        bdds, negateIfNonNull(toBDD(headerSpace.getNotIcmpCodes(), _bddPacket.getIcmpCode())));
+    addIfNonNull(bdds, toBDD(headerSpace.getIpProtocols()));
+    addIfNonNull(bdds, negateIfNonNull(toBDD(headerSpace.getNotIpProtocols())));
+    addIfNonNull(bdds, toBDD(headerSpace.getSrcPorts(), _bddPacket.getSrcPort()));
+    addIfNonNull(
+        bdds, negateIfNonNull(toBDD(headerSpace.getNotSrcPorts(), _bddPacket.getSrcPort())));
+    addIfNonNull(
+        bdds,
         orNull(
             toBDD(headerSpace.getSrcOrDstPorts(), _bddPacket.getSrcPort()),
-            toBDD(headerSpace.getSrcOrDstPorts(), _bddPacket.getDstPort()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getDstPorts(), _bddPacket.getDstPort());
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotDstPorts(), _bddPacket.getDstPort()));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getSrcIps(), _srcIpSpaceToBdd);
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotSrcIps(), _srcIpSpaceToBdd));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd =
+            toBDD(headerSpace.getSrcOrDstPorts(), _bddPacket.getDstPort())));
+    addIfNonNull(bdds, toBDD(headerSpace.getDstPorts(), _bddPacket.getDstPort()));
+    addIfNonNull(
+        bdds, negateIfNonNull(toBDD(headerSpace.getNotDstPorts(), _bddPacket.getDstPort())));
+    addIfNonNull(bdds, toBDD(headerSpace.getSrcIps(), _srcIpSpaceToBdd));
+    addIfNonNull(bdds, negateIfNonNull(toBDD(headerSpace.getNotSrcIps(), _srcIpSpaceToBdd)));
+    addIfNonNull(
+        bdds,
         orNull(
             toBDD(headerSpace.getSrcOrDstIps(), _srcIpSpaceToBdd),
-            toBDD(headerSpace.getSrcOrDstIps(), _dstIpSpaceToBdd));
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = toBDD(headerSpace.getDstIps(), _dstIpSpaceToBdd);
-    if (bdd != null) conjuncts.add(bdd);
-    bdd = negateIfNonNull(toBDD(headerSpace.getNotDstIps(), _dstIpSpaceToBdd));
-    if (bdd != null) conjuncts.add(bdd);
-    BDD positiveSpace = _bddFactory.andAll(conjuncts);
+            toBDD(headerSpace.getSrcOrDstIps(), _dstIpSpaceToBdd)));
+    addIfNonNull(bdds, toBDD(headerSpace.getDstIps(), _dstIpSpaceToBdd));
+    addIfNonNull(bdds, negateIfNonNull(toBDD(headerSpace.getNotDstIps(), _dstIpSpaceToBdd)));
+    BDD positiveSpace = _bddFactory.andAll(bdds);
     return headerSpace.getNegate() ? positiveSpace.not() : positiveSpace;
   }
 }

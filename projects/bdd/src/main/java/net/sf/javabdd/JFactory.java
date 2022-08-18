@@ -978,30 +978,43 @@ public class JFactory extends BDDFactory implements Serializable {
     return last;
   }
 
+  /**
+   * Extracts the indices from the input bddOperands as an array. If {@code shortCircuit} is found,
+   * the returned array will contain {@code shortCircuit} is the first value. If all values are
+   * {@code identity}, the returned array will contain {@code identity} as the first value.
+   * Otherwise the returned array will not contain either {@code shortCircuit} or {@code identity},
+   * and will be sorted and deduped.
+   */
   private int[] toIntOperands(Collection<BDD> bddOperands, int identity, int shortCircuit) {
     int[] operands = new int[bddOperands.size()];
     int i = 0;
     for (BDD bdd : bddOperands) {
       int id = ((BDDImpl) bdd)._index;
       if (id == shortCircuit) {
-        return null;
+        operands[0] = shortCircuit;
+        return operands;
       }
       if (id == identity) {
         continue;
       }
       operands[i++] = id;
     }
-    while (i < operands.length) {
-      operands[i++] = identity;
+    if (i == 0) {
+      // all operands were identity
+      operands[0] = identity;
+      return operands;
     }
-    Arrays.sort(operands);
-    return dedupSorted(operands);
+    Arrays.sort(operands, 0, i - 1);
+    return dedupSorted(operands, i);
   }
 
   @Override
   public BDD andAll(Collection<BDD> bddOperands, boolean free) {
+    if (bddOperands.isEmpty()) {
+      return makeBDD(BDDONE);
+    }
     int[] operands = toIntOperands(bddOperands, BDDONE, BDDZERO);
-    int ret = operands == null ? BDDZERO : bdd_andAll(operands);
+    int ret = ISCONST(operands[0]) ? operands[0] : bdd_andAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
     }
@@ -1030,8 +1043,11 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   protected BDD orAll(Collection<BDD> bddOperands, boolean free) {
+    if (bddOperands.isEmpty()) {
+      return makeBDD(BDDZERO);
+    }
     int[] operands = toIntOperands(bddOperands, BDDZERO, BDDONE);
-    int ret = operands == null ? BDDONE : bdd_orAll(operands);
+    int ret = ISCONST(operands[0]) ? operands[0] : bdd_orAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
     }
@@ -1757,13 +1773,14 @@ public class JFactory extends BDDFactory implements Serializable {
    * Dedup a sorted array. Returns the input array if it contains no duplicates. Mutates the array
    * if there are duplicates.
    */
-  static int[] dedupSorted(int[] values) {
-    if (values.length < 2) {
+  static int[] dedupSorted(int[] values, int len) {
+    assert len <= values.length;
+    if (values.length < 2 && len == values.length) {
       return values;
     }
     int i = 0; // index last written to
     int j = 1; // index to read from next
-    while (j < values.length) {
+    while (j < len) {
       if (values[i] != values[j]) {
         values[++i] = values[j++];
       } else {
@@ -1790,7 +1807,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     // sort and dedup the operands to optimize caching
     Arrays.sort(operands);
-    operands = dedupSorted(operands);
+    operands = dedupSorted(operands, operands.length);
 
     int hash = MULTIOPHASH(operands, bddop_and);
     MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
@@ -1937,7 +1954,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     // sort and dedup the operands to optimize caching
     Arrays.sort(operands);
-    operands = dedupSorted(operands);
+    operands = dedupSorted(operands, operands.length);
 
     int hash = MULTIOPHASH(operands, bddop_or);
     MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);

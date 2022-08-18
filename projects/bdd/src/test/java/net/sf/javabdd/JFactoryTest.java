@@ -489,14 +489,14 @@ public class JFactoryTest {
   public void testDedupSorted() {
     int[] a1 = {1, 1, 2, 2, 3, 3};
     int[] a2 = {1, 2, 3};
-    assertTrue(Arrays.equals(JFactory.dedupSorted(a1), a2));
+    assertTrue(Arrays.equals(JFactory.dedupSorted(a1, a1.length), a2));
 
     // these tests use pointer equality intentionally. no copying if no dupes
-    assertEquals(JFactory.dedupSorted(a2), a2);
+    assertEquals(JFactory.dedupSorted(a2, a2.length), a2);
     int[] a3 = {};
-    assertEquals(JFactory.dedupSorted(a3), a3);
+    assertEquals(JFactory.dedupSorted(a3, a3.length), a3);
     int[] a4 = {1};
-    assertEquals(JFactory.dedupSorted(a4), a4);
+    assertEquals(JFactory.dedupSorted(a4, a4.length), a4);
   }
 
   @Test
