@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
@@ -68,8 +68,11 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
       CacheBuilder.newBuilder()
           .maximumSize(1_000_000)
           .weakKeys() // this makes equality check for keys be identity, not deep.
-          .concurrencyLevel(1) // super::visit is not threadsafe, don't allocate multiple locks
-          .build(CacheLoader.from(ipSpace -> ipSpace.accept(this)));
+          .concurrencyLevel(1) // visit is not threadsafe, don't allocate multiple locks
+          .removalListener(removal -> ((BDD) removal.getValue()).free())
+          .build(
+              CacheLoader.from(
+                  ipSpace -> ipSpace.accept(this) /* TODO why do we need this id()? */));
 
   private final @Nullable IpSpaceToBDD _nonRefIpSpaceToBDD;
 
@@ -106,7 +109,13 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   public BDD visit(IpSpace ipSpace) {
     if (_nonRefIpSpaceToBDD == null || ipSpaceCanContainReferences(ipSpace)) {
       // Use local cache. Make a copy so that the caller owns it.
-      return _cache.getUnchecked(ipSpace).id();
+      try {
+        return _cache.getUnchecked(ipSpace).id();
+      } catch (BDDException e) {
+        e.printStackTrace();
+        System.out.println(ipSpace);
+        throw e;
+      }
     }
     return _nonRefIpSpaceToBDD.visit(ipSpace);
   }
@@ -163,18 +172,14 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    BDD whitelist =
-        _bddOps.or(
-            ipWildcardSetIpSpace.getWhitelist().stream()
-                .map((IpWildcard wc) -> visit(wc.toIpSpace()))
-                .collect(Collectors.toList()));
-
-    BDD blacklist =
-        _bddOps.or(
-            ipWildcardSetIpSpace.getBlacklist().stream()
-                .map((IpWildcard wc) -> visit(wc.toIpSpace()))
-                .collect(Collectors.toList()));
-
+    @Nullable BDD whitelist = BDDOps.orNull(ipWildcardSetIpSpace.getWhitelist(), this::toBDD);
+    if (whitelist == null) {
+      return _factory.zero();
+    }
+    @Nullable BDD blacklist = BDDOps.orNull(ipWildcardSetIpSpace.getBlacklist(), this::toBDD);
+    if (blacklist == null) {
+      return whitelist;
+    }
     return whitelist.diffWith(blacklist);
   }
 
