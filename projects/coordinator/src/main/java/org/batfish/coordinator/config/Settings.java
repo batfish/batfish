@@ -60,6 +60,8 @@ public class Settings extends BaseSettings {
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
   public static final String ARG_TRACING_ENABLE = "tracingenable";
 
+  private static final String ARG_USE_LEGACY_WORK_MGR_V1 = "uselegacyworkmgrv1";
+
   private static final String ARG_WORK_BIND_HOST = "workbindhost";
 
   private static final String ARGNAME_PATHS = "path..";
@@ -106,6 +108,9 @@ public class Settings extends BaseSettings {
   private String _tracingAgentHost;
   private Integer _tracingAgentPort;
   private boolean _tracingEnable;
+
+  private boolean _useLegacyWorkMgrV1;
+
   private String _workBindHost;
 
   public Settings(String[] args) {
@@ -280,6 +285,11 @@ public class Settings extends BaseSettings {
     return _tracingEnable;
   }
 
+  /** If true, start legacy WorkMgrV1 (takes up one port). */
+  public boolean getUseLegacyWorkMgrV1() {
+    return _useLegacyWorkMgrV1;
+  }
+
   public String getWorkBindHost() {
     return _workBindHost;
   }
@@ -328,6 +338,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
+    setDefaultProperty(ARG_USE_LEGACY_WORK_MGR_V1, true);
   }
 
   private void initOptions() {
@@ -457,6 +468,7 @@ public class Settings extends BaseSettings {
     _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK_MS);
     _logFile = getStringOptionValue(ARG_LOG_FILE);
     _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
+    _useLegacyWorkMgrV1 = getBooleanOptionValue(ARG_USE_LEGACY_WORK_MGR_V1);
   }
 
   public void setContainersLocation(Path dir) {

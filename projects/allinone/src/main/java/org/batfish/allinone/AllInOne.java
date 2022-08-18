@@ -24,9 +24,6 @@ public class AllInOne {
    */
   private static final boolean USE_LEGACY_POOL_WORK_EXECUTOR = false;
 
-  /** If true, start legacy WorkMgrV1 (takes up one port). */
-  private static final boolean USE_LEGACY_WORK_MGR_V1 = true;
-
   private static String[] getArgArrayFromString(String argString) {
     if (Strings.isNullOrEmpty(argString)) {
       return new String[0];
@@ -231,8 +228,7 @@ public class AllInOne {
                   _logger,
                   bindPortFutures,
                   workExecutorCreator,
-                  USE_LEGACY_POOL_WORK_EXECUTOR,
-                  USE_LEGACY_WORK_MGR_V1);
+                  USE_LEGACY_POOL_WORK_EXECUTOR);
             } catch (Exception e) {
               _logger.errorf(
                   "Initialization of coordinator failed with args: %s\nExceptionMessage: %s\n",

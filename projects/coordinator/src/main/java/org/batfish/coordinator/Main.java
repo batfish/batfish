@@ -329,8 +329,7 @@ public class Main {
       BatfishLogger logger,
       BindPortFutures portFutures,
       WorkExecutorCreator workExecutorCreator,
-      boolean initLegacyPoolManager,
-      boolean initLegacyWorkMgrV1) {
+      boolean initLegacyPoolManager) {
     mainInit(args);
 
     // Supply ports early if known before binding
@@ -348,7 +347,8 @@ public class Main {
     }
 
     _logger = logger;
-    mainRun(portFutures, workExecutorCreator, initLegacyPoolManager, initLegacyWorkMgrV1);
+    mainRun(
+        portFutures, workExecutorCreator, initLegacyPoolManager, _settings.getUseLegacyWorkMgrV1());
   }
 
   public static void mainInit(String[] args) {
