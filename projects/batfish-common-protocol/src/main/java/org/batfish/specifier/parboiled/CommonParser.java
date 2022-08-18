@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.applications.NamedApplication;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;

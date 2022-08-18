@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.specifier.FilterSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.InterfaceSpecifierFilterSpecifier;
 import org.batfish.specifier.NameFilterSpecifier;
 import org.batfish.specifier.NameRegexFilterSpecifier;

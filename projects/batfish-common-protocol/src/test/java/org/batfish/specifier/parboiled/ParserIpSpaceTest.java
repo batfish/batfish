@@ -19,6 +19,7 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Grammar;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

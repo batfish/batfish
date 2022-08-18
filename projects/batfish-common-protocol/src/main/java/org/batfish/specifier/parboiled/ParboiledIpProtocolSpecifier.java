@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.IpProtocolSpecifier;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;

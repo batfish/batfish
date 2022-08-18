@@ -11,6 +11,7 @@ import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Grammar;
 import org.junit.Test;
 
 /** Tests for {@link NameSetNoMatchMessages} */
