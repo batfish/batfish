@@ -312,8 +312,8 @@ public abstract class BDDFactory {
   public abstract int setCacheRatio(int x);
 
   /**
-   * @see #andAll(Iterable) for the description of this function
-   * @see #andAllAndFree(Iterable) for a variant that also {@link BDD#free() frees} the operands.
+   * @see #andAll(Collection) for the description of this function
+   * @see #andAllAndFree(Collection) for a variant that also {@link BDD#free() frees} the operands.
    */
   public final BDD andAll(BDD... bddOperands) {
     return andAll(Arrays.asList(bddOperands), false);
@@ -326,12 +326,12 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'and' together
    */
-  public final BDD andAll(Iterable<BDD> bddOperands) {
+  public final BDD andAll(Collection<BDD> bddOperands) {
     return andAll(bddOperands, false);
   }
 
   /**
-   * @see #andAllAndFree(Iterable)
+   * @see #andAllAndFree(Collection)
    */
   public final BDD andAllAndFree(BDD... bddOperands) {
     return andAll(Arrays.asList(bddOperands), true);
@@ -354,15 +354,15 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'and' together
    */
-  public final BDD andAllAndFree(Iterable<BDD> bddOperands) {
+  public final BDD andAllAndFree(Collection<BDD> bddOperands) {
     return andAll(bddOperands, true);
   }
 
-  /** Implementation of {@link #andAll(Iterable)} and {@link #andAllAndFree(Iterable)}. */
-  protected abstract BDD andAll(Iterable<BDD> bdds, boolean free);
+  /** Implementation of {@link #andAll(Collection)} and {@link #andAllAndFree(Collection)}. */
+  protected abstract BDD andAll(Collection<BDD> bdds, boolean free);
 
   /**
-   * @see #orAll(Iterable)
+   * @see #orAll(Collection)
    */
   public final BDD orAll(BDD... bddOperands) {
     return orAll(Arrays.asList(bddOperands), false);
@@ -375,12 +375,12 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'or' together
    */
-  public final BDD orAll(Iterable<BDD> bddOperands) {
+  public final BDD orAll(Collection<BDD> bddOperands) {
     return orAll(bddOperands, false);
   }
 
   /**
-   * @see #orAllAndFree(Iterable)
+   * @see #orAllAndFree(Collection)
    */
   public final BDD orAllAndFree(BDD... bddOperands) {
     return orAll(Arrays.asList(bddOperands), true);
@@ -395,12 +395,12 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'or' together
    */
-  public final BDD orAllAndFree(Iterable<BDD> bddOperands) {
+  public final BDD orAllAndFree(Collection<BDD> bddOperands) {
     return orAll(bddOperands, true);
   }
 
-  /** Implementation of {@link #orAll(Iterable)} and {@link #orAllAndFree(Iterable)}. */
-  protected abstract BDD orAll(Iterable<BDD> bdds, boolean free);
+  /** Implementation of {@link #orAll(Collection)} and {@link #orAllAndFree(Collection)}. */
+  protected abstract BDD orAll(Collection<BDD> bdds, boolean free);
 
   /**
    * Sets the node table size.
