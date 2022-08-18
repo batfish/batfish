@@ -1,12 +1,18 @@
 # :warning: This is a guide for Batfish developers :warning:
 
-**If you are interested in trying out Batfish on your network, check out our [instructions for getting started](https://pybatfish.readthedocs.io/en/latest/getting_started.html) instead.**
+**If you are interested in trying out Batfish on your network, check out
+our [instructions for getting started](https://pybatfish.readthedocs.io/en/latest/getting_started.html)
+instead.**
 
 ***
 
 # Overview
 
-Batfish runs as a service that can be accessed via RESTful APIs. A [Python client](https://github.com/batfish/batfish/wiki/Batfish-clients#pybatfish) comes bundled with the [suggested allinone Docker container](https://github.com/batfish/batfish#how-do-i-get-started) or can be [set up separately](https://github.com/batfish/pybatfish#how-do-i-get-started).
+Batfish runs as a service that can be accessed via RESTful APIs.
+A [Python client](https://github.com/batfish/pybatfish) comes bundled
+with
+the [suggested allinone Docker container](https://github.com/batfish/batfish#how-do-i-get-started)
+or can be [set up separately](https://github.com/batfish/pybatfish#how-do-i-get-started).
 
 ## Prerequisites
 
@@ -16,8 +22,8 @@ Batfish runs as a service that can be accessed via RESTful APIs. A [Python clien
 
 We provide OS-specific advice below.
 
-* `Cygwin`: Read [Cygwin notes](#cygwin-notes) first
-* `macOS`: Read [macOS notes](#macos-notes) first
+* `Ubuntu`: Read [Ubuntu notes](#ubuntu) first
+* `macOS`: Read [macOS notes](#macos) first
 
 ## Installation steps
 
@@ -26,30 +32,37 @@ We provide OS-specific advice below.
     - `cd batfish`
 
 2. Compile Batfish
-    - `bazel build //projects/allinone:allinone_main`
+    - `bazel build //projects/allinone:allinone_with_minesweeper_main`
 
 3. Run the Batfish service
-    - `./bazel-bin/projects/allinone/allinone_main -runclient false -coordinatorargs "-templatedirs questions" -runclient false -coordinatorargs "-templatedirs questions"` will start Batfish in service mode using the library of questions within the Batfish repository.
+    - ```
+      bazel run //projects/allinone:allinone_with_minesweeper_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
+      ```
+      will start Batfish in service mode using the library of questions within the Batfish
+      repository.
 
-    Data stored by the service to analyze a network will be stored in a `containers` folder.
+   Data stored by the service to analyze a network will be stored in a `containers` folder.
 
-    If you wish to provide Java arguments, use the `--jvm_args` option:
+   If you wish to provide Java arguments, use the `--jvmopt` option once for each java argument in
+   between `run` and `//projects/allinone:allinone_with_minesweeper_main`:
 
-    To set the RAM:
+   To set the RAM:
     ```
-    --jvm_flag=-Xmx2g
+    bazel run --jvmopt=-Xmx2g //projects/allinone:allinone_with_minesweeper_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
     ```
 
-    To turn on assertions and enable a debugger to attach:
+   To turn on assertions and enable a debugger to attach:
     ```
-    --jvm_flag=-ea --jvm_flag=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009
+    bazel run --jvmopt=-ea --jvmopt=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009 //projects/allinone:allinone_with_minesweeper_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
     ```
 
-    For more info, see the Bazel documentation.
+   For more info, see the Bazel documentation.
 
 4. Explore using Pybatfish
 
-    Once the service is running, you can use [Pybatfish](https://github.com/batfish/batfish/wiki/Batfish-clients#pybatfish) to analyze your network.
+   Once the service is running, you can
+   use [Pybatfish](https://github.com/batfish/pybatfish) to analyze
+   your network.
 
 ## Operation-system specific advice
 
@@ -59,23 +72,38 @@ Do the following before doing anything
 
 1. Install [XCode from Apple Store](https://itunes.apple.com/us/app/xcode/id497799835)
 
-2. Install Homebrew. Follow [these steps](https://brew.sh/).
+2. Install XCode command-line tools.
+    - `xcode-select --install`
+
+3. Install Homebrew. Follow [these steps](https://brew.sh/).
 
 3. Open a fresh terminal to ensure the utilities are correctly picked up.
 
-4. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11 using the following commands.
-    - `brew tap AdoptOpenJDK/openjdk `
-    - `brew install adoptopenjdk11`
+4. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
+   using the following commands.
+    - `brew tap homebrew/cask-versions`
+    - `brew install --cask temurin11`
 
 5. If you don't already have it, install Bazelisk.
     - `brew install bazelisk`
 
-### Cygwin
+### Ubuntu
 
-Do the following before building Batfish
+Do the following before doing anything
 
-1. Handling line-endings
+1. Install Java 11 and corresponding debug symbols
+    - `sudo apt install openjdk-11-jdk openjdk-11-dbg`
 
-    Windows uses different line endings. To handle these differences gracefully, add the following lines to the [core] section of ~/.gitconfig (global settings) or .git/config (repository settings):
+2. If you don't already have it, install Bazelisk.
+    - Open the [bazelisk release page](https://github.com/bazelbuild/bazelisk/releases)
+    - Copy the link for the `bazelisk-linux-amd64` release asset for the latest version
+    - Download and install bazelisk using the copied link (example url below is for `v1.12.2`, but
+      you should use the latest version):
 
-        autocrlf = false
+      `curl -s https://github.com/bazelbuild/bazelisk/releases/download/v1.12.2/bazelisk-linux-amd64 | sudo tee /usr/local/bin/bazelisk`
+    - Make bazelisk executable:
+
+      `sudo chmod +x /usr/local/bin/bazelisk`
+    - Symlink bazel to bazelisk:
+
+      `sudo ln -s bazelisk /usr/local/bin/bazel`
