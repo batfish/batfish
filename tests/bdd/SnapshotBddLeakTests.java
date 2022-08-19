@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.SortedMap;
-
+import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory;
 import org.batfish.common.NetworkSnapshot;
@@ -52,7 +52,9 @@ public class SnapshotBddLeakTests {
 
   int ipAccessListToBdd() {
     BDDPacket pkt = new BDDPacket();
-    int nodes = pkt.getFactory().getNodeNum();
+    BDDFactory factory = pkt.getFactory();
+    factory.runGC();
+    int nodes = factory.getNodeNum();
     Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(pkt, _configs);
     _configs
         .values()
@@ -66,7 +68,8 @@ public class SnapshotBddLeakTests {
                       cfg.getIpSpaces());
               cfg.getIpAccessLists().values().forEach(ipAccessListToBdd::toBdd);
             });
-    return pkt.getFactory().getNodeNum() - nodes;
+    factory.runGC();
+    return factory.getNodeNum() - nodes;
   }
 
   int bddReachabilityAnalysisFactory() {
@@ -75,18 +78,21 @@ public class SnapshotBddLeakTests {
     DataPlane dataPlane = _batfish.loadDataPlane(snapshot);
     ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
     IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory =
-            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs());
+        new IpsRoutedOutInterfacesFactory(dataPlane.getFibs());
     SpecifierContext ctx = _batfish.specifierContext(snapshot);
     IpSpaceAssignment ipSpaceAssignment =
-            InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE.resolve(
-                    LocationSpecifier.ALL_LOCATIONS.resolve(ctx), ctx);
+        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE.resolve(
+            LocationSpecifier.ALL_LOCATIONS.resolve(ctx), ctx);
 
     BDDPacket pkt = new BDDPacket();
-    int nodes = pkt.getFactory().getNodeNum();
+    BDDFactory factory = pkt.getFactory();
+    factory.runGC();
+    int nodes = factory.getNodeNum();
     new BDDReachabilityAnalysisFactory(
             pkt, _configs, forwardingAnalysis, ipsRoutedOutInterfacesFactory, false, false)
-            .bddReachabilityAnalysis(ipSpaceAssignment, true);
-    return pkt.getFactory().getNodeNum() - nodes;
+        .bddReachabilityAnalysis(ipSpaceAssignment, true);
+    factory.runGC();
+    return factory.getNodeNum() - nodes;
   }
 
   public static void main(String[] args) throws IOException, ParseException {

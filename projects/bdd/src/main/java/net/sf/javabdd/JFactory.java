@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -106,6 +107,13 @@ public class JFactory extends BDDFactory implements Serializable {
     BDDFactory f = new JFactory();
     f.initialize(nodenum, cachesize);
     return f;
+  }
+
+  @Override
+  public long runGC() {
+    long nodenum = getNodeNum();
+    bdd_gbc();
+    return nodenum - getNodeNum();
   }
 
   /** The total number of BDDs ever created. */
@@ -1019,8 +1027,19 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public BDD andAll(Collection<BDD> bddOperands, boolean free) {
-    if (bddOperands.isEmpty()) {
+    int size = bddOperands.size();
+    if (size == 0) {
       return makeBDD(BDDONE);
+    }
+    if (size == 1) {
+      BDD bdd = bddOperands.iterator().next();
+      return free ? bdd : bdd.id();
+    }
+    if (size == 2) {
+      Iterator<BDD> iter = bddOperands.iterator();
+      BDD bdd1 = iter.next();
+      BDD bdd2 = iter.next();
+      return free ? bdd1.andWith(bdd2) : bdd1.and(bdd2);
     }
     int[] operands = toIntOperands(bddOperands, BDDONE, BDDZERO);
     int ret = ISCONST(operands[0]) ? operands[0] : bdd_andAll(operands);
@@ -1054,6 +1073,16 @@ public class JFactory extends BDDFactory implements Serializable {
   protected BDD orAll(Collection<BDD> bddOperands, boolean free) {
     if (bddOperands.isEmpty()) {
       return makeBDD(BDDZERO);
+    }
+    if (bddOperands.size() == 1) {
+      BDD bdd = bddOperands.iterator().next();
+      return free ? bdd : bdd.id();
+    }
+    if (bddOperands.size() == 2) {
+      Iterator<BDD> iter = bddOperands.iterator();
+      BDD bdd1 = iter.next();
+      BDD bdd2 = iter.next();
+      return free ? bdd1.orWith(bdd2) : bdd1.or(bdd2);
     }
     int[] operands = toIntOperands(bddOperands, BDDZERO, BDDONE);
     int ret = ISCONST(operands[0]) ? operands[0] : bdd_orAll(operands);
