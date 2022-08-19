@@ -339,7 +339,8 @@ public abstract class BDDFactory {
 
   /**
    * Returns the logical 'and' of zero or more BDD literals (constraints on exactly one variable --
-   * i.e. the variable must be true or must be false).
+   * i.e. the variable must be true or must be false). Does not consume any inputs, and returns a
+   * fresh BDD.
    *
    * <p>Precondition: The variables' levels must be strictly increasing.
    */
