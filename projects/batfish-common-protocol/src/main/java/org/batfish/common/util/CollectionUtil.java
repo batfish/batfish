@@ -86,6 +86,14 @@ public final class CollectionUtil {
                 Comparator.naturalOrder(), keyFunction, valueFunction));
   }
 
+  public static <T, U> List<U> toArrayList(Collection<T> ts, Function<T, U> f) {
+    List<U> us = new ArrayList<>(ts.size());
+    for (T t : ts) {
+      us.add(f.apply(t));
+    }
+    return us;
+  }
+
   /**
    * A collector that returns a hashcode of all the objects in a stream (order-dependent).
    *
