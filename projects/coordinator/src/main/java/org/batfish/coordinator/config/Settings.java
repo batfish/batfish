@@ -421,8 +421,7 @@ public class Settings extends BaseSettings {
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
 
-    addBooleanOption(
-        ARG_USE_LEGACY_WORK_MGR_V1, "Whether to start deprecated WorkMgrV1 (default is true)");
+    addBooleanOption(ARG_USE_LEGACY_WORK_MGR_V1, "Whether to start deprecated WorkMgrV1");
   }
 
   private void parseCommandLine(String[] args) {
