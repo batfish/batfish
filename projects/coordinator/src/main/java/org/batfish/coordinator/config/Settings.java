@@ -420,6 +420,8 @@ public class Settings extends BaseSettings {
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
+
+    addBooleanOption(ARG_USE_LEGACY_WORK_MGR_V1, "Whether to start deprecated WorkMgrV1");
   }
 
   private void parseCommandLine(String[] args) {
