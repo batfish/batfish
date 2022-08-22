@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.WillClose;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -50,24 +51,27 @@ public final class SnapshotResource {
 
   @POST
   @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-  public Response uploadSnapshot(InputStream inputStream, @Context UriInfo uriInfo) {
-    boolean alreadyExists;
-    try {
-      alreadyExists = !Main.getWorkMgr().uploadSnapshot(_network, _snapshot, inputStream);
-    } catch (Exception e) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(
-              String.format("Error uploading snapshot: %s", Throwables.getStackTraceAsString(e)))
-          .build();
+  public Response uploadSnapshot(@WillClose InputStream inputStreamArg, @Context UriInfo uriInfo)
+      throws IOException {
+    try (InputStream inputStream = inputStreamArg) {
+      boolean alreadyExists;
+      try {
+        alreadyExists = !Main.getWorkMgr().uploadSnapshot(_network, _snapshot, inputStream);
+      } catch (Exception e) {
+        return Response.status(Status.BAD_REQUEST)
+            .entity(
+                String.format("Error uploading snapshot: %s", Throwables.getStackTraceAsString(e)))
+            .build();
+      }
+      if (alreadyExists) {
+        return Response.status(Status.BAD_REQUEST)
+            .entity(
+                String.format(
+                    "Snapshot in network '%s' with name: '%s' already exists", _network, _snapshot))
+            .build();
+      }
+      return Response.created(uriInfo.getRequestUri()).build();
     }
-    if (alreadyExists) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(
-              String.format(
-                  "Snapshot in network '%s' with name: '%s' already exists", _network, _snapshot))
-          .build();
-    }
-    return Response.created(uriInfo.getRequestUri()).build();
   }
 
   @Path(RSC_POJO_TOPOLOGY)

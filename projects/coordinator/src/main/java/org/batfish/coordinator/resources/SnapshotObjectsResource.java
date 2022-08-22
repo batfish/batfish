@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.WillClose;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -68,11 +69,14 @@ public final class SnapshotObjectsResource {
 
   @PUT
   @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-  public Response put(InputStream inputStream, @QueryParam(QP_KEY) String key) throws IOException {
-    if (Main.getWorkMgr().putSnapshotExtendedObject(inputStream, _network, _snapshot, key)) {
-      return Response.ok().build();
-    } else {
-      return Response.status(Status.NOT_FOUND).build();
+  public Response put(@WillClose InputStream inputStreamArg, @QueryParam(QP_KEY) String key)
+      throws IOException {
+    try (InputStream inputStream = inputStreamArg) {
+      if (Main.getWorkMgr().putSnapshotExtendedObject(inputStream, _network, _snapshot, key)) {
+        return Response.ok().build();
+      } else {
+        return Response.status(Status.NOT_FOUND).build();
+      }
     }
   }
 

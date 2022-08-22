@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.WillClose;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -59,12 +60,14 @@ public final class NetworkObjectsResource {
 
   @PUT
   @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-  public @Nonnull Response put(InputStream inputStream, @QueryParam(QP_KEY) String key)
-      throws IOException {
-    if (Main.getWorkMgr().putNetworkObject(inputStream, _network, key)) {
-      return Response.ok().build();
-    } else {
-      return Response.status(Status.NOT_FOUND).build();
+  public @Nonnull Response put(
+      @WillClose InputStream inputStreamArg, @QueryParam(QP_KEY) String key) throws IOException {
+    try (InputStream inputStream = inputStreamArg) {
+      if (Main.getWorkMgr().putNetworkObject(inputStream, _network, key)) {
+        return Response.ok().build();
+      } else {
+        return Response.status(Status.NOT_FOUND).build();
+      }
     }
   }
 }
