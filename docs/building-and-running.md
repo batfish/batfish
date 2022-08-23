@@ -32,11 +32,11 @@ We provide OS-specific advice below.
     - `cd batfish`
 
 2. Compile Batfish
-    - `bazel build //projects/allinone:allinone_with_minesweeper_main`
+    - `bazel build //projects/allinone:allinone_main`
 
 3. Run the Batfish service
     - ```
-      bazel run //projects/allinone:allinone_with_minesweeper_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
+      bazel run //projects/allinone:allinone_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
       ```
       will start Batfish in service mode using the library of questions within the Batfish
       repository.
@@ -44,16 +44,16 @@ We provide OS-specific advice below.
    Data stored by the service to analyze a network will be stored in a `containers` folder.
 
    If you wish to provide Java arguments, use the `--jvmopt` option once for each java argument in
-   between `run` and `//projects/allinone:allinone_with_minesweeper_main`:
+   between `run` and `//projects/allinone:allinone_main`:
 
    To set the RAM:
     ```
-    bazel run --jvmopt=-Xmx2g //projects/allinone:allinone_with_minesweeper_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
+    bazel run --jvmopt=-Xmx2g //projects/allinone:allinone_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
     ```
 
    To turn on assertions and enable a debugger to attach:
     ```
-    bazel run --jvmopt=-ea --jvmopt=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009 //projects/allinone:allinone_with_minesweeper_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
+    bazel run --jvmopt=-ea --jvmopt=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009 //projects/allinone:allinone_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
     ```
 
    For more info, see the Bazel documentation.
