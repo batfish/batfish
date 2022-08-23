@@ -833,7 +833,7 @@ public class OrigJFactory extends BDDFactory implements Serializable {
       return makeBDD(BDDONE);
     }
     if (literals.length == 1) {
-      return literals[0];
+      return literals[0].id();
     }
 
     int[] ids = new int[literals.length];

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -585,6 +586,20 @@ public class JFactoryTest {
 
     assertEquals(
         v0.and(v1.not()).and(v2).and(v3.not()), _factory.andLiterals(v0, v1.not(), v2, v3.not()));
+
+    // when given a single literal, returns a copy
+    {
+      BDD res = _factory.andLiterals(v0);
+      assertEquals(v0, res);
+      assertNotSame(v0, res);
+    }
+
+    {
+      BDD notV0 = v0.not();
+      BDD res = _factory.andLiterals(notV0);
+      assertEquals(notV0, res);
+      assertNotSame(notV0, res);
+    }
   }
 
   @Test
