@@ -147,10 +147,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     @Override
     public int var() {
-      acquireReadLock();
-      int ret = bdd_var(_index);
-      releaseReadLock();
-      return ret;
+      return bdd_var(_index);
     }
 
     @Override
@@ -239,10 +236,8 @@ public class JFactory extends BDDFactory implements Serializable {
     public boolean testsVars(BDD var) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      acquireReadLock();
-      boolean ret = new Worker().bdd_testsVars(x, y);
-      releaseReadLock();
-      return ret;
+      // TODO can we move this out of Worker?
+      return new Worker().bdd_testsVars(x, y);
     }
 
     @Override
@@ -267,18 +262,14 @@ public class JFactory extends BDDFactory implements Serializable {
 
     @Override
     public boolean andSat(BDD that) {
-      acquireReadLock();
-      boolean ret = new Worker().andsat_rec(_index, ((BDDImpl) that)._index);
-      releaseReadLock();
-      return ret;
+      // TODO can we move this out of Worker?
+      return new Worker().andsat_rec(_index, ((BDDImpl) that)._index);
     }
 
     @Override
     public boolean diffSat(BDD that) {
-      acquireReadLock();
-      boolean ret = new Worker().diffsat_rec(_index, ((BDDImpl) that)._index);
-      releaseReadLock();
-      return ret;
+      // TODO can we move this out of Worker?
+      return new Worker().diffsat_rec(_index, ((BDDImpl) that)._index);
     }
 
     @Override
@@ -3082,18 +3073,12 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public BDD zero() {
-    acquireReadLock();
-    BDDImpl ret = makeBDD(BDDZERO);
-    releaseReadLock();
-    return ret;
+    return makeBDD(BDDZERO);
   }
 
   @Override
   public BDD one() {
-    acquireReadLock();
-    BDDImpl ret = makeBDD(BDDONE);
-    releaseReadLock();
-    return ret;
+    return makeBDD(BDDONE);
   }
 
   private int bdd_ithvar(int var) {
