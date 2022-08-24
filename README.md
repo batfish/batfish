@@ -13,7 +13,7 @@ A primary use case for Batfish is to validate configuration changes *before* dep
 * BGP routes received from external peers
 * Topology information represented by LLDP/CDP
 
-See [www.batfish.org](http://www.batfish.org) for technical information on how it works. ![Analytics](https://ga-beacon.appspot.com/UA-100596389-3/open-source/batfish?pixel&useReferer)
+See [www.batfish.org](http://www.batfish.org) for technical information on how it works.
 
 ## What kinds of correctness checks does Batfish support?
 
