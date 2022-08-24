@@ -25,6 +25,8 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
+import org.apache.commons.io.IOUtils;
 import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -371,12 +373,13 @@ public class BfCoordWorkHelper {
                 snapshotName));
 
     try (InputStream zipInput = Files.newInputStream(Paths.get(zipfileName))) {
+      StreamingOutput streamedZip = outputStream -> IOUtils.copy(zipInput, outputStream);
       try (Response response =
           webTarget
               .request()
               .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
               .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
-              .post(Entity.entity(zipInput, MediaType.APPLICATION_OCTET_STREAM))) {
+              .post(Entity.entity(streamedZip, MediaType.APPLICATION_OCTET_STREAM))) {
 
         if (response.getStatus() != Status.CREATED.getStatusCode()) {
           _logger.errorf(
