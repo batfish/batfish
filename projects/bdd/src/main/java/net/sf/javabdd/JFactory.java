@@ -301,7 +301,7 @@ public class JFactory extends BDDFactory implements Serializable {
       int a = new Worker().bdd_apply(x, y, z);
       bdd_delref(x);
       if (this != that) {
-        that.free();
+        ((BDDImpl) that).freeLocked();
       }
       bdd_addref(a);
       _index = a;
@@ -436,8 +436,13 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public void free() {
       acquireReadLock();
-      bdd_delref(_index);
+      freeLocked();
       releaseReadLock();
+    }
+
+    /** Readlocks are not reentrant. If we already hold the lock, call this version. */
+    private void freeLocked() {
+      bdd_delref(_index);
       _index = INVALID_BDD;
     }
   }
@@ -3244,7 +3249,7 @@ public class JFactory extends BDDFactory implements Serializable {
             .toArray();
     int ret = new Worker().bdd_andAll(operands);
     if (free) {
-      bddOperands.forEach(BDD::free);
+      bddOperands.forEach(op -> ((BDDImpl) op).freeLocked());
     }
     BDDImpl bdd = makeBDD(ret);
     releaseReadLock();
@@ -3264,7 +3269,7 @@ public class JFactory extends BDDFactory implements Serializable {
             .toArray();
     int ret = new Worker().bdd_orAll(operands);
     if (free) {
-      bddOperands.forEach(BDD::free);
+      bddOperands.forEach(op -> ((BDDImpl) op).freeLocked());
     }
     BDDImpl bdd = makeBDD(ret);
     releaseReadLock();
