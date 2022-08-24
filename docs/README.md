@@ -8,3 +8,4 @@ This section of docs is aimed at developers interested in understanding and impr
 * [Topology](topology.md)
 * [Dataplane computation](dataplane-computation.md)
 * [Question development](question-development.md)
+* [Symbolic analysis engine](symbolic-engine.md)
