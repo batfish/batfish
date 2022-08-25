@@ -1,12 +1,4 @@
-# :warning: This is a guide for Batfish developers :warning:
-
-**If you are interested in trying out Batfish on your network, check out
-our [instructions for getting started](https://pybatfish.readthedocs.io/en/latest/getting_started.html)
-instead.**
-
-***
-
-# Overview
+# Building and running Batfish and its tests
 
 Batfish runs as a service that can be accessed via RESTful APIs.
 A [Python client](https://github.com/batfish/pybatfish) comes bundled
@@ -64,6 +56,54 @@ We provide OS-specific advice below.
    use [Pybatfish](https://github.com/batfish/pybatfish) to analyze
    your network.
 
+## Running tests
+
+You can run all tests in this repository by running:
+
+```
+bazel test //...
+```
+
+The above is a specific instance of the general form for running all tests in all `BUILD` files
+rooted under a specific subdirectory.
+
+For example, to run all tests in all `BUILD` files rooted at `projects/coordinator` do:
+
+```
+bazel test //projects/coordinator/...
+```
+
+To run a specific test rule from a `BUILD` file:
+
+```
+bazel test //<path-to-dir-containing-BUILD>:<name-of-test-rule>
+```
+
+For example, `projects/batfish/BUILD` has a test rule called `pmd`. To run that test, do:
+
+```
+bazel test //projects/batfish:pmd
+```
+
+You can also combine multiple test target expressions:
+
+```
+bazel test //projects/coordinator/... //projects/batfish:pmd
+```
+
+If you want to test just a single function of a rule of type `junit_test`, do:
+
+```
+bazel test --test_filter=<fully-qualified-class-name>#test-function$ -- <test-target-containing-test-class>
+```
+
+For example, to run just the `getNonExistNetwork` test function of the `WorkMgrServiceTest` class,
+do:
+
+```
+bazel test --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistNetwork$ -- //projects/coordinator:coordinator_tests
+```
+
 ## Operation-system specific advice
 
 ### macOS
@@ -77,14 +117,14 @@ Do the following before doing anything
 
 3. Install Homebrew. Follow [these steps](https://brew.sh/).
 
-3. Open a fresh terminal to ensure the utilities are correctly picked up.
+4. Open a fresh terminal to ensure the utilities are correctly picked up.
 
-4. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
+5. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
    using the following commands.
     - `brew tap homebrew/cask-versions`
     - `brew install --cask temurin11`
 
-5. If you don't already have it, install Bazelisk.
+6. If you don't already have it, install Bazelisk.
     - `brew install bazelisk`
 
 ### Ubuntu
