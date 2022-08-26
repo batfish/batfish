@@ -4,7 +4,7 @@ There are a few steps to make sure that IntelliJ can build Batfish correctly.
 
 ## Pre-requisites
 
-* Cloned and compiled Batfish per [these instructions](building-and-running.md)
+* Cloned and compiled Batfish per [these instructions](../building_and_running/README.md)
 
 ## 1. Install IntelliJ plugins
 
@@ -12,7 +12,7 @@ Install the following plugins by opening `Preferences`(macOS) or `Settings`(
 Ubuntu) > `Plugins` > `Marketplace` and then
 searching for the relevant plugin:
 
-![](screenshots/intellij_install_plugins.png)
+![](intellij_install_plugins.png)
 
 ### google-java-format
 
@@ -60,7 +60,7 @@ idea.max.intellisense.filesize=50000
    Note that the sample uses a custom log4j2.properties file in order to adjust logging when
    running `allinone`. You can omit this file/option. However if you want custom logging, you
    can use a copy of `projects/batfish/src/test/resources/log4j2.properties` as a base.
-   ![](screenshots/intellij-allinone-run-configuration.png)
+   ![](intellij-allinone-run-configuration.png)
 
 ## 5. Go
 
