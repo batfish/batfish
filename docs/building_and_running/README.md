@@ -17,6 +17,50 @@ We provide OS-specific advice below.
 * `Ubuntu`: Read [Ubuntu notes](#ubuntu) first
 * `macOS`: Read [macOS notes](#macos) first
 
+### Operation-system specific prerequisite installation
+
+### macOS
+
+Do the following before doing anything
+
+1. Install [XCode from Apple Store](https://itunes.apple.com/us/app/xcode/id497799835)
+
+2. Install XCode command-line tools.
+    - `xcode-select --install`
+
+3. Install Homebrew. Follow [these steps](https://brew.sh/).
+
+4. Open a fresh terminal to ensure the utilities are correctly picked up.
+
+5. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
+   using the following commands.
+    - `brew tap homebrew/cask-versions`
+    - `brew install --cask temurin11`
+
+6. If you don't already have it, install Bazelisk.
+    - `brew install bazelisk`
+
+### Ubuntu
+
+Do the following before doing anything
+
+1. Install Java 11 and corresponding debug symbols
+    - `sudo apt install openjdk-11-jdk openjdk-11-dbg`
+
+2. If you don't already have it, install Bazelisk.
+    - Open the [bazelisk release page](https://github.com/bazelbuild/bazelisk/releases)
+    - Copy the link for the `bazelisk-linux-amd64` release asset for the latest version
+    - Download and install bazelisk using the copied link (example url below is for `v1.12.2`, but
+      you should use the latest version):
+
+      `curl -s https://github.com/bazelbuild/bazelisk/releases/download/v1.12.2/bazelisk-linux-amd64 | sudo tee /usr/local/bin/bazelisk`
+    - Make bazelisk executable:
+
+      `sudo chmod +x /usr/local/bin/bazelisk`
+    - Symlink bazel to bazelisk:
+
+      `sudo ln -s bazelisk /usr/local/bin/bazel`
+
 ## Installation steps
 
 1. Check out the Batfish code
@@ -104,46 +148,25 @@ do:
 bazel test --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistNetwork$ -- //projects/coordinator:coordinator_tests
 ```
 
-## Operation-system specific advice
+## Building a deployable batfish or allinone docker image
 
-### macOS
+- Use the batfish image if you just want the batfish service.
+- Use the allinone image if you want the batfish service and a built-in jupyter notebook server.
 
-Do the following before doing anything
+In order to build either image, you will additionally need to clone another repository:
 
-1. Install [XCode from Apple Store](https://itunes.apple.com/us/app/xcode/id497799835)
+```
+git clone https://github.com/batfish/docker batfish-docker
+cd batfish-docker
+```
 
-2. Install XCode command-line tools.
-    - `xcode-select --install`
+### Building the batfish docker image
 
-3. Install Homebrew. Follow [these steps](https://brew.sh/).
+This section of the doc is still in progress. Check back later!
 
-4. Open a fresh terminal to ensure the utilities are correctly picked up.
+### Building the allinone docker image
 
-5. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
-   using the following commands.
-    - `brew tap homebrew/cask-versions`
-    - `brew install --cask temurin11`
+*The allinone image uses the batfish image as a base. So before creating an allinone image, first
+create a batfish image using the instructions above.*
 
-6. If you don't already have it, install Bazelisk.
-    - `brew install bazelisk`
-
-### Ubuntu
-
-Do the following before doing anything
-
-1. Install Java 11 and corresponding debug symbols
-    - `sudo apt install openjdk-11-jdk openjdk-11-dbg`
-
-2. If you don't already have it, install Bazelisk.
-    - Open the [bazelisk release page](https://github.com/bazelbuild/bazelisk/releases)
-    - Copy the link for the `bazelisk-linux-amd64` release asset for the latest version
-    - Download and install bazelisk using the copied link (example url below is for `v1.12.2`, but
-      you should use the latest version):
-
-      `curl -s https://github.com/bazelbuild/bazelisk/releases/download/v1.12.2/bazelisk-linux-amd64 | sudo tee /usr/local/bin/bazelisk`
-    - Make bazelisk executable:
-
-      `sudo chmod +x /usr/local/bin/bazelisk`
-    - Symlink bazel to bazelisk:
-
-      `sudo ln -s bazelisk /usr/local/bin/bazel`
+This section of the doc is still in progress. Check back later!
