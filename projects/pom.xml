@@ -578,7 +578,7 @@
 
             <dependency>
                 <groupId>org.batfish</groupId>
-                <artifactId>batfish-client</artifactId>
+                <artifactId>client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1027,7 +1027,7 @@
     <modules>
         <module>allinone</module>
         <module>batfish</module>
-        <module>batfish-client</module>
+        <module>client</module>
         <module>batfish-common-protocol</module>
         <module>bdd</module>
         <module>build-tools</module>
