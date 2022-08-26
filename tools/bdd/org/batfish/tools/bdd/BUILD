@@ -1,6 +1,6 @@
 java_binary(
     name = "snapshotBddLeakTests",
-    main_class = "tools.bdd.SnapshotBddLeakTests",
+    main_class = "org.batfish.tools.bdd.SnapshotBddLeakTests",
     testonly = True,
     srcs= ["SnapshotBddLeakTests.java"],
     deps = [
