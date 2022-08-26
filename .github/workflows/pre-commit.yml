@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - master
+  schedule:
+    - cron: '0 * * * *'  # Hourly
+  workflow_dispatch:
+
 jobs:
   get_date:
     name: ":clock: Get Date"
