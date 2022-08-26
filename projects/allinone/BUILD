@@ -37,8 +37,8 @@ java_library(
     resources = glob(["src/main/resources/**"]),
     deps = [
         "//projects/batfish",
-        "//projects/batfish-client:client",
         "//projects/batfish-common-protocol:common",
+        "//projects/client",
         "//projects/coordinator",
         "@maven//:com_google_guava_guava",
         "@maven//:commons_cli_commons_cli",
