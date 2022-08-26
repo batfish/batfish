@@ -1,4 +1,4 @@
-package tests.bdd;
+package tools.bdd;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.main.TestrigText.loadTestrig;

@@ -1,6 +1,6 @@
 java_binary(
     name = "snapshotBddLeakTests",
-    main_class = "tests.bdd.SnapshotBddLeakTests",
+    main_class = "tools.bdd.SnapshotBddLeakTests",
     testonly = True,
     srcs= ["SnapshotBddLeakTests.java"],
     deps = [
