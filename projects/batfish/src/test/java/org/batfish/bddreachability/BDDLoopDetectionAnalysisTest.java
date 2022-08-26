@@ -2,10 +2,12 @@ package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
 import static org.batfish.bddreachability.TestNetwork.LINK_2_NETWORK;
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.symbolic.IngressLocation.interfaceLink;
 import static org.batfish.symbolic.IngressLocation.vrf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -168,5 +170,40 @@ public final class BDDLoopDetectionAnalysisTest {
         ImmutableMap.of(vrf("node1", "vrf1"), _zero, vrf("node2", "vrf2"), _zero);
 
     assertEquals(expected, actual);
+  }
+
+  /**
+   * Test that {@link
+   * org.batfish.bddreachability.BDDLoopDetectionAnalysis#confirmLoop(org.batfish.symbolic.state.StateExpr,
+   * net.sf.javabdd.BDD)} correctly confirms a self-loop on its input state.
+   */
+  @Test
+  public void testConfirmLoop_selfLoop() {
+    StateExpr state1 = new OriginateVrf("node1", "vrf1");
+    StateExpr state2 = new OriginateVrf("node2", "vrf2");
+
+    BDDLoopDetectionAnalysis analysis =
+        new BDDLoopDetectionAnalysis(
+            _pkt,
+            Stream.of(
+                new Edge(state1, state1, IDENTITY), // self-loop
+                new Edge(state1, state2, IDENTITY)),
+            ImmutableSet.of(state1));
+    assertTrue(analysis.confirmLoop(state1, _pkt.getFactory().one()));
+  }
+
+  @Test
+  public void testSelfLoop() {
+    StateExpr state1 = new OriginateVrf("node1", "vrf1");
+    StateExpr state2 = new OriginateVrf("node2", "vrf2");
+
+    BDDLoopDetectionAnalysis analysis =
+        new BDDLoopDetectionAnalysis(
+            _pkt,
+            Stream.of(
+                new Edge(state1, state1, IDENTITY), // self-loop
+                new Edge(state1, state2, IDENTITY)),
+            ImmutableSet.of(state1));
+    assertTrue(analysis.detectLoops().get(IngressLocation.vrf("node1", "vrf1")).isOne());
   }
 }
