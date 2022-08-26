@@ -2,7 +2,6 @@
 
 def _impl(ctx):
     lib = ctx.attr.lib[JavaInfo]
-    src_jars = lib.source_jars
     if len(lib.source_jars) != 1:
         fail("Expecting a single java library")
 
@@ -70,7 +69,7 @@ _pmd_test = rule(
         ),
         "_pmd": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = Label("@batfish//projects/build-tools:pmd"),
         ),
     },

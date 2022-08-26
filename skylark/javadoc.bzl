@@ -1,3 +1,7 @@
+"""
+This file contains a tool to build Javadoc for Batfish.
+"""
+
 # Copyright (C) 2016 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,11 +21,13 @@ def _impl(ctx):
         fail("no libs provided")
 
     zip_output = ctx.outputs.zip
-    transitive_jar_set = depset()
-    source_jars = depset()
-    for l in ctx.attr.libs:
-        source_jars += l.java.source_jars
-        transitive_jar_set += l.java.transitive_deps
+    transitive_jar_deps = []
+    source_jars = []
+    for lib in ctx.attr.libs:
+        source_jars += lib.java.source_jars
+        transitive_jar_deps += lib.java.transitive_deps
+    source_jars_set = depset(source_jars)
+    transitive_jar_set = depset(transitive = transitive_jar_deps)
     transitive_jar_paths = [j.path for j in transitive_jar_set.to_list()]
     dir = ctx.outputs.zip.path + ".dir"
     source = ctx.outputs.zip.path + ".source"
@@ -31,7 +37,7 @@ def _impl(ctx):
         "export TZ",
         "rm -rf %s" % source,
         "mkdir %s" % source,
-        " && ".join(["unzip -qud %s %s" % (source, j.path) for j in source_jars.to_list()]),
+        " && ".join(["unzip -qud %s %s" % (source, j.path) for j in source_jars_set.to_list()]),
         "rm -rf %s" % dir,
         "mkdir %s" % dir,
         " ".join([
@@ -55,7 +61,7 @@ def _impl(ctx):
         "(cd %s && zip -Xqr ../%s *)" % (dir, ctx.outputs.zip.basename),
     ]
     ctx.actions.run_shell(
-        inputs = transitive_jar_set.to_list() + source_jars.to_list() + ctx.files._jdk,
+        inputs = transitive_jar_set.to_list() + source_jars_set.to_list() + ctx.files._jdk,
         outputs = [zip_output],
         command = " && ".join(cmd),
     )

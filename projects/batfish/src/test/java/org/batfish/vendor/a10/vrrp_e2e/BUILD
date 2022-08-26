@@ -9,8 +9,9 @@ junit_tests(
     name = "tests",
     srcs = glob([
         "**/*Test.java",
+    ]) + [
         "package-info.java",
-    ]),
+    ],
     resources = [
         "//projects/batfish/src/test/resources:log4j_config",
         "//projects/batfish/src/test/resources/org/batfish/vendor/a10/vrrp_e2e",

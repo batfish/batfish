@@ -29,11 +29,9 @@ junit_tests(
 java_library(
     name = "testlib",
     testonly = True,
-    srcs = glob(
-        [
-            "MockFrrVendorConfiguration.java",
-        ],
-    ),
+    srcs = [
+        "MockFrrVendorConfiguration.java",
+    ],
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/representation/frr",

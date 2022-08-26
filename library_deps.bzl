@@ -1,3 +1,7 @@
+"""
+This file contains the Maven dependencies of Batfish.
+"""
+
 load("@rules_jvm_external//:specs.bzl", "maven")
 
 # See: https://github.com/bazelbuild/rules_jvm_external#exporting-and-consuming-artifacts-from-external-repositories
