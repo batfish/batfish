@@ -34,6 +34,7 @@ import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
 import com.carrotsearch.hppc.procedures.IntProcedure;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -1002,7 +1003,8 @@ public class JFactory extends BDDFactory implements Serializable {
    * Otherwise the returned array will not contain either {@code shortCircuit} or {@code identity},
    * and will be sorted and deduped.
    */
-  private int[] toIntOperands(Collection<BDD> bddOperands, int identity, int shortCircuit) {
+  @VisibleForTesting
+  static int[] toIntOperands(Collection<BDD> bddOperands, int identity, int shortCircuit) {
     int[] operands = new int[bddOperands.size()];
     int i = 0;
     for (BDD bdd : bddOperands) {
@@ -1021,7 +1023,7 @@ public class JFactory extends BDDFactory implements Serializable {
       operands[0] = identity;
       return operands;
     }
-    Arrays.sort(operands, 0, i - 1);
+    Arrays.sort(operands, 0, i);
     return dedupSorted(operands, i);
   }
 
