@@ -29,7 +29,8 @@ public final class BDDOps implements Serializable {
    * Convert all {@code objs} to {@link BDD} and or them together. If {@code objs} is {@code null}
    * or empty, returns {@code null}. Consumes all input BDDs.
    */
-  public static <T> BDD orNull(@Nullable Collection<T> objs, Function<T, BDD> objToBdd) {
+  public static @Nullable <T> BDD mapAndOrAllNull(
+      @Nullable Collection<T> objs, Function<T, BDD> objToBdd) {
     if (objs == null || objs.isEmpty()) {
       return null;
     }
@@ -43,6 +44,11 @@ public final class BDDOps implements Serializable {
     }
     List<BDD> bdds = toArrayList(objs, objToBdd);
     return bdds.get(0).getFactory().orAllAndFree(bdds);
+  }
+
+  public @Nonnull <T> BDD mapAndOrAll(@Nullable Collection<T> objs, Function<T, BDD> objToBdd) {
+    @Nullable BDD bddOrNull = mapAndOrAllNull(objs, objToBdd);
+    return bddOrNull == null ? _factory.zero() : bddOrNull;
   }
 
   public @Nonnull BDD and(BDD... conjuncts) {

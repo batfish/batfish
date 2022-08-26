@@ -163,15 +163,16 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    @Nullable BDD whitelist = BDDOps.orNull(ipWildcardSetIpSpace.getWhitelist(), this::toBDD);
-    if (whitelist == null) {
+    if (ipWildcardSetIpSpace.getWhitelist().isEmpty()) {
       return _factory.zero();
     }
-    @Nullable BDD blacklist = BDDOps.orNull(ipWildcardSetIpSpace.getBlacklist(), this::toBDD);
-    if (blacklist == null) {
+    BDD whitelist = _bddOps.mapAndOrAll(ipWildcardSetIpSpace.getWhitelist(), this::toBDD);
+    if (ipWildcardSetIpSpace.getBlacklist().isEmpty()) {
+      // short-circuit
       return whitelist;
     }
-    return whitelist.diffWith(blacklist);
+    return whitelist.diffWith(
+        _bddOps.mapAndOrAll(ipWildcardSetIpSpace.getBlacklist(), this::toBDD));
   }
 
   @Override

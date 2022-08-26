@@ -70,6 +70,7 @@ public abstract class IpAccessListToBdd {
   @Nonnull private final Map<String, Supplier<PermitAndDenyBdds>> _permitAndDenyBdds;
 
   @Nonnull private final BDDFactory _factory;
+  @Nonnull private final BDDOps _bddOps;
   @Nonnull private final BDDPacket _pkt;
   @Nonnull private final BDDSourceManager _bddSrcManager;
   @Nonnull private final HeaderSpaceToBDD _headerSpaceToBDD;
@@ -103,6 +104,7 @@ public abstract class IpAccessListToBdd {
                 Suppliers.memoize(new NonRecursiveSupplier<>(() -> toPermitAndDenyBdds(acl)))));
     _bddSrcManager = bddSrcManager;
     _factory = pkt.getFactory();
+    _bddOps = new BDDOps(_factory);
     _headerSpaceToBDD = headerSpaceToBDD;
     _pkt = pkt;
     _toBddConverter = new ToBddConverter();
@@ -367,8 +369,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public final BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      BDD res = BDDOps.orNull(orMatchExpr.getDisjuncts(), IpAccessListToBdd.this::toBdd);
-      return res == null ? _factory.zero() : res;
+      return _bddOps.mapAndOrAll(orMatchExpr.getDisjuncts(), IpAccessListToBdd.this::toBdd);
     }
 
     @Override

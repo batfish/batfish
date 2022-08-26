@@ -1,6 +1,6 @@
 package org.batfish.common.bdd;
 
-import static org.batfish.common.bdd.BDDOps.orNull;
+import static org.batfish.common.bdd.BDDOps.mapAndOrAllNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public final class HeaderSpaceToBDD {
 
   @Nullable
   private BDD toBDD(Collection<Integer> ints, BDDInteger var) {
-    return orNull(ints, i -> var.value((long) i));
+    return mapAndOrAllNull(ints, i -> var.value((long) i));
   }
 
   @VisibleForTesting
@@ -81,26 +81,26 @@ public final class HeaderSpaceToBDD {
 
   @Nullable
   private BDD toBDD(Set<IpProtocol> ipProtocols) {
-    return orNull(ipProtocols, _bddPacket.getIpProtocol()::value);
+    return mapAndOrAllNull(ipProtocols, _bddPacket.getIpProtocol()::value);
   }
 
   @Nullable
   private BDD toBDD(@Nullable Set<SubRange> ranges, BDDInteger var) {
-    return orNull(ranges, (range) -> toBDD(range, var));
+    return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
   }
 
   @Nullable
   private BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpCode var) {
-    return orNull(ranges, (range) -> toBDD(range, var));
+    return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
   }
 
   @Nullable
   private BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpType var) {
-    return orNull(ranges, (range) -> toBDD(range, var));
+    return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
   }
 
   private BDD toBDD(@Nullable Set<SubRange> packetLengths, BDDPacketLength packetLength) {
-    return orNull(packetLengths, (range) -> toBDD(range, packetLength));
+    return mapAndOrAllNull(packetLengths, (range) -> toBDD(range, packetLength));
   }
 
   private static BDD toBDD(SubRange range, BDDIcmpCode var) {
@@ -126,7 +126,7 @@ public final class HeaderSpaceToBDD {
   }
 
   private BDD toBDD(List<TcpFlagsMatchConditions> tcpFlags) {
-    return orNull(tcpFlags, this::toBDD);
+    return mapAndOrAllNull(tcpFlags, this::toBDD);
   }
 
   /** For TcpFlagsMatchConditions */
