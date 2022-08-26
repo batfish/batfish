@@ -5,7 +5,7 @@ exports_files(["pom.xml"])
 java_doc(
     name = "javadoc",
     libs = [
-        "//projects/batfish-client:client",
+        "//projects/client",
         "//projects/batfish-common-protocol:common",
         "//projects/coordinator:coordinator",
         "//projects/batfish:batfish",
