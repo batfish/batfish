@@ -157,9 +157,9 @@ bazel test --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistN
 
 This section of the doc is still in progress. Check back later!
 
-### Building images via github actions
+### Building images via GitHub actions
 
-First, you will need to fork the batfish/docker repo on github.
+First, you will need to fork the batfish/docker repo on GitHub.
 
 1. Visit https://github.com/batfish/docker
 2. Log in if you have not already done so.
@@ -190,13 +190,13 @@ repos in a similar fashion, and made your changes available in a branch on each 
 Modify the pointer(s) in precommit.yml to point to your batfish / pybatfish repos and branches:
 
 1. Open `.github/workflows/precommit.yml` in the editor of your choice
-2. Change the value of `BATFISH_GITHUB_BATFISH_REPO` to the github repo whose batfish source you
+2. Change the value of `BATFISH_GITHUB_BATFISH_REPO` to the GitHub repo whose batfish source you
    want
    to use.
 3. Change the value of `BATFISH_GITHUB_BATFISH_REF` to the branch of your selected repo whose
    batfish
    source you want to use.
-4. Change the value of `BATFISH_GITHUB_PYBATFISH_REPO` to the github repo whose pybatfish source you
+4. Change the value of `BATFISH_GITHUB_PYBATFISH_REPO` to the GitHub repo whose pybatfish source you
    want
    to use. Skip this step if you are only interested in obtaining a `batfish` image.
 5. Change the value of `BATFISH_GITHUB_PYBATFISH_REF` to the branch of your selected repo whose
@@ -218,7 +218,7 @@ Modify the pointer(s) in precommit.yml to point to your batfish / pybatfish repo
        "Comparing changes".
     3. Ensure that the value of `base` is now `master`.
     4. Click `Create pull request` on the right. Note that you do not need to actually merge this
-       pull request, but creating it has the side effect of triggering Github actions which will
+       pull request, but creating it has the side effect of triggering GitHub actions which will
        build the image(s) you need.
 8. Once the PR has been created, click on the "Actions" tab of your repo.
 9. Click on the "Pre-commit" workflow
