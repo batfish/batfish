@@ -1,5 +1,6 @@
 package net.sf.javabdd;
 
+import static net.sf.javabdd.JFactory.toIntOperands;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import java.util.Arrays;
@@ -630,6 +632,38 @@ public class JFactoryTest {
 
     _exception.expect(IllegalArgumentException.class);
     _factory.andLiterals(v0.and(v1), v2);
+  }
+
+  @Test
+  public void testToIntOperands() {
+    _factory.setVarNum(2);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+    BDD one = _factory.one();
+    BDD zero = _factory.zero();
+
+    // all identity --> first element is identity
+    {
+      int[] res = toIntOperands(ImmutableList.of(one, one, one), 1, 0);
+      assertEquals(1, res[0]);
+    }
+
+    // any short-circult --> first element is short-circuit
+    {
+      int[] res = toIntOperands(ImmutableList.of(one, zero, one), 1, 0);
+      assertEquals(0, res[0]);
+    }
+
+    // identity elements are removed, result is sorted
+    {
+      int[] res = toIntOperands(ImmutableList.of(v0, v1, one), 1, 0);
+      assertEquals(2, res.length);
+      assertTrue(res[0] < res[1]);
+
+      res = toIntOperands(ImmutableList.of(v1, v0, one), 1, 0);
+      assertEquals(2, res.length);
+      assertTrue(res[0] < res[1]);
+    }
   }
 
   @Test

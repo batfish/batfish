@@ -34,6 +34,7 @@ import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
 import com.carrotsearch.hppc.procedures.IntProcedure;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -42,6 +43,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -106,6 +108,13 @@ public class JFactory extends BDDFactory implements Serializable {
     BDDFactory f = new JFactory();
     f.initialize(nodenum, cachesize);
     return f;
+  }
+
+  @Override
+  public long runGC() {
+    long nodenum = getNodeNum();
+    bdd_gbc();
+    return nodenum - getNodeNum();
   }
 
   /** The total number of BDDs ever created. */
@@ -994,7 +1003,8 @@ public class JFactory extends BDDFactory implements Serializable {
    * Otherwise the returned array will not contain either {@code shortCircuit} or {@code identity},
    * and will be sorted and deduped.
    */
-  private int[] toIntOperands(Collection<BDD> bddOperands, int identity, int shortCircuit) {
+  @VisibleForTesting
+  static int[] toIntOperands(Collection<BDD> bddOperands, int identity, int shortCircuit) {
     int[] operands = new int[bddOperands.size()];
     int i = 0;
     for (BDD bdd : bddOperands) {
@@ -1013,7 +1023,7 @@ public class JFactory extends BDDFactory implements Serializable {
       operands[0] = identity;
       return operands;
     }
-    Arrays.sort(operands, 0, i - 1);
+    Arrays.sort(operands, 0, i);
     return dedupSorted(operands, i);
   }
 
@@ -1021,6 +1031,16 @@ public class JFactory extends BDDFactory implements Serializable {
   public BDD andAll(Collection<BDD> bddOperands, boolean free) {
     if (bddOperands.isEmpty()) {
       return makeBDD(BDDONE);
+    }
+    if (bddOperands.size() == 1) {
+      BDD bdd = bddOperands.iterator().next();
+      return free ? bdd : bdd.id();
+    }
+    if (bddOperands.size() == 2) {
+      Iterator<BDD> iter = bddOperands.iterator();
+      BDD bdd1 = iter.next();
+      BDD bdd2 = iter.next();
+      return free ? bdd1.andWith(bdd2) : bdd1.and(bdd2);
     }
     int[] operands = toIntOperands(bddOperands, BDDONE, BDDZERO);
     int ret = ISCONST(operands[0]) ? operands[0] : bdd_andAll(operands);
@@ -1054,6 +1074,16 @@ public class JFactory extends BDDFactory implements Serializable {
   protected BDD orAll(Collection<BDD> bddOperands, boolean free) {
     if (bddOperands.isEmpty()) {
       return makeBDD(BDDZERO);
+    }
+    if (bddOperands.size() == 1) {
+      BDD bdd = bddOperands.iterator().next();
+      return free ? bdd : bdd.id();
+    }
+    if (bddOperands.size() == 2) {
+      Iterator<BDD> iter = bddOperands.iterator();
+      BDD bdd1 = iter.next();
+      BDD bdd2 = iter.next();
+      return free ? bdd1.orWith(bdd2) : bdd1.or(bdd2);
     }
     int[] operands = toIntOperands(bddOperands, BDDZERO, BDDONE);
     int ret = ISCONST(operands[0]) ? operands[0] : bdd_orAll(operands);

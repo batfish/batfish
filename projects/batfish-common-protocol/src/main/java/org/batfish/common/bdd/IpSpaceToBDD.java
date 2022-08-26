@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -68,7 +67,8 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
       CacheBuilder.newBuilder()
           .maximumSize(1_000_000)
           .weakKeys() // this makes equality check for keys be identity, not deep.
-          .concurrencyLevel(1) // super::visit is not threadsafe, don't allocate multiple locks
+          .concurrencyLevel(1) // visit is not threadsafe, don't allocate multiple locks
+          .removalListener(removal -> ((BDD) removal.getValue()).free())
           .build(CacheLoader.from(ipSpace -> ipSpace.accept(this)));
 
   private final @Nullable IpSpaceToBDD _nonRefIpSpaceToBDD;
@@ -91,8 +91,8 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   }
 
   /**
-   * Create a {@Link MemoizedIpSpaceToBDD} instance for {@link IpSpace IP spaces} that do not
-   * contain references.
+   * Create an {@link IpSpaceToBDD} instance for {@link IpSpace IP spaces} that do not contain
+   * references.
    */
   public IpSpaceToBDD(BDDInteger var) {
     _bddInteger = var;
@@ -163,19 +163,16 @@ public final class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    BDD whitelist =
-        _bddOps.or(
-            ipWildcardSetIpSpace.getWhitelist().stream()
-                .map((IpWildcard wc) -> visit(wc.toIpSpace()))
-                .collect(Collectors.toList()));
-
-    BDD blacklist =
-        _bddOps.or(
-            ipWildcardSetIpSpace.getBlacklist().stream()
-                .map((IpWildcard wc) -> visit(wc.toIpSpace()))
-                .collect(Collectors.toList()));
-
-    return whitelist.diffWith(blacklist);
+    if (ipWildcardSetIpSpace.getWhitelist().isEmpty()) {
+      return _factory.zero();
+    }
+    BDD whitelist = _bddOps.mapAndOrAll(ipWildcardSetIpSpace.getWhitelist(), this::toBDD);
+    if (ipWildcardSetIpSpace.getBlacklist().isEmpty()) {
+      // short-circuit
+      return whitelist;
+    }
+    return whitelist.diffWith(
+        _bddOps.mapAndOrAll(ipWildcardSetIpSpace.getBlacklist(), this::toBDD));
   }
 
   @Override

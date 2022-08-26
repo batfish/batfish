@@ -1,14 +1,19 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.toArrayList;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -65,8 +70,8 @@ public abstract class IpAccessListToBdd {
   @Nonnull private final Map<String, Supplier<PermitAndDenyBdds>> _permitAndDenyBdds;
 
   @Nonnull private final BDDFactory _factory;
-  @Nonnull private final BDDPacket _pkt;
   @Nonnull private final BDDOps _bddOps;
+  @Nonnull private final BDDPacket _pkt;
   @Nonnull private final BDDSourceManager _bddSrcManager;
   @Nonnull private final HeaderSpaceToBDD _headerSpaceToBDD;
   @Nonnull private final ToBddConverter _toBddConverter;
@@ -97,9 +102,9 @@ public abstract class IpAccessListToBdd {
             _permitAndDenyBdds.put(
                 name,
                 Suppliers.memoize(new NonRecursiveSupplier<>(() -> toPermitAndDenyBdds(acl)))));
-    _bddOps = new BDDOps(pkt.getFactory());
     _bddSrcManager = bddSrcManager;
     _factory = pkt.getFactory();
+    _bddOps = new BDDOps(_factory);
     _headerSpaceToBDD = headerSpaceToBDD;
     _pkt = pkt;
     _toBddConverter = new ToBddConverter();
@@ -135,13 +140,111 @@ public abstract class IpAccessListToBdd {
     return getPermitAndDenyBdds(acl.getName()).getPermitBdd();
   }
 
+  private PermitAndDenyBdds computePermitAndDenyBdds(IpAccessList acl) {
+    BDD permitBdd = _factory.zero();
+    BDD denyBdd = _factory.zero();
+
+    LineAction currentAction = LineAction.PERMIT;
+    List<BDD> lineBddsWithCurrentAction = new LinkedList<>();
+
+    BiFunction<BDD, BDD, Void> finalizeBlock =
+        (BDD sameActionBdd, BDD otherActionBdd) -> {
+          BDD blockBdd = _factory.orAllAndFree(lineBddsWithCurrentAction);
+          otherActionBdd.diffEq(blockBdd);
+          sameActionBdd.orWith(blockBdd);
+          lineBddsWithCurrentAction.clear();
+          return null;
+        };
+
+    // we need to get the permit and deny BDDs for each line. extractLinePermitAndDenyBdds will do
+    // that, and store the result in linePermitAndDenyBdds (index 0=permit, 1=deny).
+    // For ExprAclLines (which cannot both permit and deny), one of the two BDDs will be null.
+    BDD[] linePermitAndDenyBdds = new BDD[2];
+    GenericAclLineVisitor<Void> extractLinePermitAndDenyBdds =
+        new GenericAclLineVisitor<Void>() {
+          @Override
+          public Void visitAclAclLine(AclAclLine aclAclLine) {
+            PermitAndDenyBdds permitAndDenyBdds =
+                _permitAndDenyBdds.get(aclAclLine.getAclName()).get();
+            linePermitAndDenyBdds[0] = permitAndDenyBdds.getPermitBdd();
+            linePermitAndDenyBdds[1] = permitAndDenyBdds.getDenyBdd();
+            return null;
+          }
+
+          @Override
+          public Void visitExprAclLine(ExprAclLine exprAclLine) {
+            // dont go through PermitAndDenyBdds for ExprAclLine, since it will leak BDDs
+            BDD exprBdd = exprAclLine.getMatchCondition().accept(_toBddConverter);
+            if (exprAclLine.getAction() == LineAction.PERMIT) {
+              linePermitAndDenyBdds[0] = exprBdd;
+              linePermitAndDenyBdds[1] = null;
+            } else {
+              linePermitAndDenyBdds[0] = null;
+              linePermitAndDenyBdds[1] = exprBdd;
+            }
+            return null;
+          }
+        };
+
+    for (AclLine line : Lists.reverse(acl.getLines())) {
+      line.accept(extractLinePermitAndDenyBdds);
+      BDD linePermitBdd = linePermitAndDenyBdds[0];
+      BDD lineDenyBdd = linePermitAndDenyBdds[1];
+
+      switch (currentAction) {
+        case PERMIT:
+          if (lineDenyBdd == null) {
+            lineBddsWithCurrentAction.add(linePermitBdd);
+          } else {
+            if (linePermitBdd != null) {
+              // line permits and denies (i.e. AclAclLine)
+              lineBddsWithCurrentAction.add(linePermitBdd);
+            }
+            finalizeBlock.apply(permitBdd, denyBdd);
+
+            // start a new deny block
+            currentAction = LineAction.DENY;
+            lineBddsWithCurrentAction.add(lineDenyBdd);
+          }
+          break;
+        case DENY:
+          if (linePermitBdd == null) {
+            lineBddsWithCurrentAction.add(lineDenyBdd);
+          } else {
+            if (lineDenyBdd != null) {
+              // line permits and denies (i.e. AclAclLine)
+              lineBddsWithCurrentAction.add(lineDenyBdd);
+            }
+            finalizeBlock.apply(denyBdd, permitBdd);
+
+            // start a new permit block
+            currentAction = LineAction.PERMIT;
+            lineBddsWithCurrentAction.add(linePermitBdd);
+          }
+          break;
+        default:
+          throw new IllegalStateException("Unexpected LineAction " + currentAction);
+      }
+    }
+
+    // complete the last piece
+    switch (currentAction) {
+      case PERMIT:
+        finalizeBlock.apply(permitBdd, denyBdd);
+        break;
+      case DENY:
+        finalizeBlock.apply(denyBdd, permitBdd);
+        break;
+      default:
+        throw new IllegalStateException("Unexpected LineAction " + currentAction);
+    }
+
+    return new PermitAndDenyBdds(permitBdd, denyBdd);
+  }
+
   private PermitAndDenyBdds toPermitAndDenyBdds(IpAccessList acl) {
     long t = System.currentTimeMillis();
-    PermitAndDenyBdds result =
-        _bddOps.bddAclLines(
-            acl.getLines().stream()
-                .map(this::toPermitAndDenyBdds)
-                .collect(ImmutableList.toImmutableList()));
+    PermitAndDenyBdds result = computePermitAndDenyBdds(acl);
     t = System.currentTimeMillis() - t;
     LOGGER.debug(
         "toPermitAndDenyBdds({}): {}ms  ({} lines, {} values for tracking sources)",
@@ -205,10 +308,19 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public final BDD visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-      return _bddOps.and(
-          andMatchExpr.getConjuncts().stream()
-              .map(IpAccessListToBdd.this::toBdd)
-              .collect(ImmutableList.toImmutableList()));
+      List<AclLineMatchExpr> exprs = andMatchExpr.getConjuncts();
+      if (exprs == null || exprs.isEmpty()) {
+        return _factory.one();
+      }
+      int size = exprs.size();
+      if (size == 1) {
+        return toBdd(exprs.iterator().next());
+      }
+      if (size == 2) {
+        Iterator<AclLineMatchExpr> iter = exprs.iterator();
+        return toBdd(iter.next()).andWith(toBdd(iter.next()));
+      }
+      return _factory.andAllAndFree(toArrayList(exprs, IpAccessListToBdd.this::toBdd));
     }
 
     @Override
@@ -228,28 +340,36 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public final BDD visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-      return _bddOps.or(
-          matchSrcInterface.getSrcInterfaces().stream()
-              .map(_bddSrcManager::getSourceInterfaceBDD)
-              .collect(Collectors.toList()));
+      Set<String> ifaces = matchSrcInterface.getSrcInterfaces();
+      int size = ifaces.size();
+      if (size == 0) {
+        return _factory.zero();
+      }
+      if (size == 1) {
+        return _bddSrcManager.getSourceInterfaceBDD(ifaces.iterator().next()).id();
+      }
+      if (size == 2) {
+        Iterator<String> iter = ifaces.iterator();
+        BDD bdd1 = _bddSrcManager.getSourceInterfaceBDD(iter.next());
+        BDD bdd2 = _bddSrcManager.getSourceInterfaceBDD(iter.next());
+        return bdd1.or(bdd2);
+      }
+      return _factory.orAll(toArrayList(ifaces, _bddSrcManager::getSourceInterfaceBDD));
     }
 
     @Override
     public final BDD visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-      return toBdd(notMatchExpr.getOperand()).not();
+      return toBdd(notMatchExpr.getOperand()).notEq();
     }
 
     @Override
     public final BDD visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-      return _bddSrcManager.getOriginatingFromDeviceBDD();
+      return _bddSrcManager.getOriginatingFromDeviceBDD().id();
     }
 
     @Override
     public final BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      return _bddOps.or(
-          orMatchExpr.getDisjuncts().stream()
-              .map(IpAccessListToBdd.this::toBdd)
-              .toArray(BDD[]::new));
+      return _bddOps.mapAndOrAll(orMatchExpr.getDisjuncts(), IpAccessListToBdd.this::toBdd);
     }
 
     @Override
