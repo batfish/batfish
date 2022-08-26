@@ -1027,15 +1027,14 @@ public class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public BDD andAll(Collection<BDD> bddOperands, boolean free) {
-    int size = bddOperands.size();
-    if (size == 0) {
+    if (bddOperands.isEmpty()) {
       return makeBDD(BDDONE);
     }
-    if (size == 1) {
+    if (bddOperands.size() == 1) {
       BDD bdd = bddOperands.iterator().next();
       return free ? bdd : bdd.id();
     }
-    if (size == 2) {
+    if (bddOperands.size() == 2) {
       Iterator<BDD> iter = bddOperands.iterator();
       BDD bdd1 = iter.next();
       BDD bdd2 = iter.next();
