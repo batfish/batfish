@@ -189,72 +189,64 @@ repos in a similar fashion, and made your changes available in a branch on each 
 
 Modify the pointer(s) in precommit.yml to point to your batfish / pybatfish repos and branches:
 
-- Open `.github/workflows/precommit.yml` in the editor of your choice
-- Change the value of `BATFISH_GITHUB_BATFISH_REPO` to the github repo whose batfish source you want
-  to use.
-- Change the value of `BATFISH_GITHUB_BATFISH_REF` to the branch of your selected repo whose batfish
-  source you want to use.
-- Change the value of `BATFISH_GITHUB_PYBATFISH_REPO` to the github repo whose pybatfish source you
-  want
-  to use. Skip this step if you are only interested in obtaining a `batfish` image.
-- Change the value of `BATFISH_GITHUB_PYBATFISH_REF` to the branch of your selected repo whose
-  batfish
-  source you want to use. Skip this step if you are only interested in obtaining a `batfish` image.
-- Commit and push the changes to your batfish/docker fork and branch:
+1. Open `.github/workflows/precommit.yml` in the editor of your choice
+2. Change the value of `BATFISH_GITHUB_BATFISH_REPO` to the github repo whose batfish source you
+   want
+   to use.
+3. Change the value of `BATFISH_GITHUB_BATFISH_REF` to the branch of your selected repo whose
+   batfish
+   source you want to use.
+4. Change the value of `BATFISH_GITHUB_PYBATFISH_REPO` to the github repo whose pybatfish source you
+   want
+   to use. Skip this step if you are only interested in obtaining a `batfish` image.
+5. Change the value of `BATFISH_GITHUB_PYBATFISH_REF` to the branch of your selected repo whose
+   batfish
+   source you want to use. Skip this step if you are only interested in obtaining a `batfish` image.
+6. Commit and push the changes to your batfish/docker fork and branch:
    ```
    git commit .github/workflows/precommit.yml -m "(Your commit message here)"
    git push -u fork-owner fork-branch-name
    ```
-- Open a pull request from your branch into your own fork's master.
-    - Visit https://github.com/fork-owner/fork-repo-name/pull/new/fork-branch-name
-    - Change "base repository" to fork-owner/fork-repo-name via the button toward the top left under
-      "Comparing changes".
-    - Ensure that the value of `base` is now `master`.
-    - Click `Create pull request` on the right. Note that you do not need to actually merge this
-      pull request, but creating it has the side effect of triggering Github actions which will
-      build the image(s) you need.
-    - Once the PR has been created, click on the "Actions" tab of your repo.
-    - Click on the "Pre-commit" workflow
-    - Click on the name of the run with your commit message and branch name.
-    - Wait for all Jobs on the left to complete. **If any job does not pass and become green, it is
-      not safe to proceed!**
-    - Click on "Summary" toward the top left if you are not already there, or the artifacts have not
-      appeared yet following completion of the workflow.
-    - Download the image you want (either `allinone_image` or `bf_image`). You will get a zip file.
-    - Unzip the file, and you should get a `.tar` file out.
-    - Load the tar file in docker via `docker load -i <tarfilename>`. You should get output like
-      the following:
+7. Open a pull request from your branch into your own fork's master.
+    1. Visit https://github.com/fork-owner/fork-repo-name/pull/new/fork-branch-name
+    2. Change "base repository" to fork-owner/fork-repo-name via the button toward the top left
+       under
+       "Comparing changes".
+    3. Ensure that the value of `base` is now `master`.
+    4. Click `Create pull request` on the right. Note that you do not need to actually merge this
+       pull request, but creating it has the side effect of triggering Github actions which will
+       build the image(s) you need.
+8. Once the PR has been created, click on the "Actions" tab of your repo.
+9. Click on the "Pre-commit" workflow
+10. Click on the name of the run with your commit message and branch name.
+11. Wait for all Jobs on the left to complete. **If any job does not pass and become green, it is
+    not safe to proceed!**
+12. Click on "Summary" toward the top left if you are not already there, or the artifacts have not
+    appeared yet following completion of the workflow.
+13. Download the image you want (either `allinone_image` or `bf_image`). You will get a zip file.
+14. Unzip the file, and you should get a `.tar` file out.
+15. Load the tar file in docker via `docker load -i <tarfilename>`. You should get output like
+    the following:
+    ```
+    arifogel@nova:~/scratch$docker load -i bf.tar
+    58ff1e19a041: Loading layer [==================================================>]     100B/100B
+    caab24035869: Loading layer [==================================================>]     100B/100B
+    87639d5c0dd6: Loading layer [==================================================>]  60.74MB/60.74MB
+    c7a736a5bb60: Loading layer [==================================================>]  92.78MB/92.78MB
+    Loaded image: batfish/batfish:dev-3
+    ```
+16. Note the tag on the image. In the above example, the tag is `dev-3`.
+17. Now you can launch a container from the image. Note that launching a container will create
+    a `batfish-data` directory under the current directory, which will be used for persistent
+    storage. If there is already such a directory created by a previous version, you should remove
+    it first.
+18. To launch a container, execute the appropriate command below, replacing `dev-3` with the tag
+    you recorded earlier:
+    - For batfish, run:
       ```
-      arifogel@nova:~/scratch$docker load -i bf.tar
-      58ff1e19a041: Loading layer [==================================================>]     100B/100B
-      caab24035869: Loading layer [==================================================>]     100B/100B
-      87639d5c0dd6: Loading layer [==================================================>]  60.74MB/60.74MB
-      c7a736a5bb60: Loading layer [==================================================>]  92.78MB/92.78MB
-      Loaded image: batfish/batfish:dev-3
+      docker run --name batfish -v batfish-data:/data -p 9997:9997 -p 9996:9996 batfish/batfish:dev-3
       ```
-    - Note the tag on the image. In the above example, the tag is `dev-3`.
-    - Now you can launch a container from the image. Note that launching a container will create
-      a `batfish-data` directory under the current directory, which will be used for persistent
-      storage. If there is already such a directory created by a previous version, you should remove
-      it first.
-    - To launch a container, execute the appropriate command below, replacing `dev-3` with the tag
-      you recorded earlier:
-        - For batfish, run:
-          ```
-          docker run --name batfish -v batfish-data:/data -p 9997:9997 -p 9996:9996 batfish/batfish:dev-3
-          ```
-        - For allinone, instead run:
-          ```
-          docker run --name allinone -v batfish-data:/data -p 8888:8888 -p 9997:9997 -p 9996:9996 batfish/allinone:dev-3
-          ```
-
-### Building the batfish docker image
-
-This section of the doc is still in progress. Check back later!
-
-### Building the allinone docker image
-
-*The allinone image uses the batfish image as a base. So before creating an allinone image, first
-create a batfish image using the instructions above.*
-
-This section of the doc is still in progress. Check back later!
+    - For allinone, instead run:
+      ```
+      docker run --name allinone -v batfish-data:/data -p 8888:8888 -p 9997:9997 -p 9996:9996 batfish/allinone:dev-3
+      ```
