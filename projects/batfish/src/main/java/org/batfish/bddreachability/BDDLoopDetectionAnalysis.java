@@ -5,6 +5,7 @@ import static org.batfish.bddreachability.BDDReachabilityUtils.getIngressStateEx
 import static org.batfish.bddreachability.BDDReachabilityUtils.toIngressLocation;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import java.util.Collection;
@@ -118,7 +119,8 @@ public class BDDLoopDetectionAnalysis {
    * Run BFS from one step past the initial state. Each round, check if the initial state has been
    * reached yet.
    */
-  private boolean confirmLoop(StateExpr stateExpr, BDD bdd) {
+  @VisibleForTesting
+  boolean confirmLoop(StateExpr stateExpr, BDD bdd) {
     Map<StateExpr, BDD> reachable = propagate(ImmutableMap.of(stateExpr, bdd));
     Set<StateExpr> dirty = new HashSet<>(reachable.keySet());
 
