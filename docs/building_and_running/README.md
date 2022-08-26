@@ -209,7 +209,7 @@ Modify the pointer(s) in precommit.yml to point to your batfish / pybatfish repo
    ```
 7. Open a pull request from your branch into your own fork's master.
     1. Making appropriate replacements in the following URL,
-       visit https://github.com/fork-owner/fork-repo-name/pull/new/fork-branch-name
+       visit `https://github.com/fork-owner/fork-repo-name/pull/new/fork-branch-name`
     2. Change "base repository" to fork-owner/fork-repo-name via the button toward the top left
        under
        "Comparing changes".
