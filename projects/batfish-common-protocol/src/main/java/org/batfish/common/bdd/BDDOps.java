@@ -1,6 +1,7 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.toArrayList;
 
 import com.google.common.collect.Lists;
 import java.io.Serializable;
@@ -9,7 +10,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.AclIpSpace;
@@ -20,6 +23,32 @@ public final class BDDOps implements Serializable {
 
   public BDDOps(BDDFactory factory) {
     _factory = factory;
+  }
+
+  /**
+   * Convert all {@code objs} to {@link BDD} and or them together. If {@code objs} is {@code null}
+   * or empty, returns {@code null}. Consumes all input BDDs.
+   */
+  public static @Nullable <T> BDD mapAndOrAllNull(
+      @Nullable Collection<T> objs, Function<T, BDD> objToBdd) {
+    if (objs == null || objs.isEmpty()) {
+      return null;
+    }
+    int size = objs.size();
+    if (size == 1) {
+      return objToBdd.apply(objs.iterator().next());
+    }
+    if (size == 2) {
+      Iterator<T> iter = objs.iterator();
+      return objToBdd.apply(iter.next()).orWith(objToBdd.apply(iter.next()));
+    }
+    List<BDD> bdds = toArrayList(objs, objToBdd);
+    return bdds.get(0).getFactory().orAllAndFree(bdds);
+  }
+
+  public @Nonnull <T> BDD mapAndOrAll(@Nullable Collection<T> objs, Function<T, BDD> objToBdd) {
+    @Nullable BDD bddOrNull = mapAndOrAllNull(objs, objToBdd);
+    return bddOrNull == null ? _factory.zero() : bddOrNull;
   }
 
   public @Nonnull BDD and(BDD... conjuncts) {
@@ -60,13 +89,11 @@ public final class BDDOps implements Serializable {
       if (lineAction != currentAction) {
         if (currentAction == LineAction.PERMIT) {
           // matched by any of the permit lines, or permitted by the rest of the acl.
-          BDD tmp = result;
           lineBddsWithCurrentAction.add(result);
-          result = or(lineBddsWithCurrentAction);
-          tmp.free();
+          result = _factory.orAllAndFree(lineBddsWithCurrentAction);
         } else {
           // permitted by the rest of the acl and not matched by any of the deny lines.
-          result = result.diffWith(or(lineBddsWithCurrentAction));
+          result = result.diffWith(_factory.orAllAndFree(lineBddsWithCurrentAction));
         }
         currentAction = lineAction;
         lineBddsWithCurrentAction.clear();
@@ -80,9 +107,9 @@ public final class BDDOps implements Serializable {
     // Reached the start of the ACL. Combine the last batch of lines into the result.
     if (currentAction == LineAction.PERMIT) {
       lineBddsWithCurrentAction.add(result);
-      result = or(lineBddsWithCurrentAction);
+      result = _factory.orAllAndFree(lineBddsWithCurrentAction);
     } else {
-      result = result.diffWith(or(lineBddsWithCurrentAction));
+      result = result.diffWith(_factory.orAllAndFree(lineBddsWithCurrentAction));
     }
     return result;
   }
@@ -104,7 +131,7 @@ public final class BDDOps implements Serializable {
 
     BiFunction<BDD, BDD, Void> finalizeBlock =
         (BDD sameActionBdd, BDD otherActionBdd) -> {
-          BDD blockBdd = or(lineBddsWithCurrentAction);
+          BDD blockBdd = _factory.orAllAndFree(lineBddsWithCurrentAction);
           otherActionBdd.diffEq(blockBdd);
           sameActionBdd.orWith(blockBdd);
           lineBddsWithCurrentAction.clear();

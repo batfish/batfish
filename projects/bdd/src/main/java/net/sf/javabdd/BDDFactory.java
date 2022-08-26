@@ -639,6 +639,9 @@ public abstract class BDDFactory {
    */
   public abstract int getNodeTableSize();
 
+  /** Run garbage collection. Returns the number of freed nodes. */
+  public abstract long runGC();
+
   /**
    * Get the number of active nodes in use. Note that dead nodes that have not been reclaimed yet by
    * a garbage collection are counted as active.
