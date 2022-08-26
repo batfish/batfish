@@ -16,6 +16,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.auto.service:auto-service:1.0.1",
     "com.google.auto.service:auto-service-annotations:1.0.1",
     "com.google.code.findbugs:jsr305:3.0.2",
+    "com.google.code.gson:gson:2.9.1",  # managed up for CVE-2022-25647
     "com.google.errorprone:error_prone_annotations:2.13.1",
     "com.google.guava:guava:31.1-jre",
     maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "31.1-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
@@ -41,7 +42,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.logging.log4j:log4j-api:2.17.2",
     "org.apache.logging.log4j:log4j-core:2.17.2",
     "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2",
-    "org.apache.tomcat.embed:tomcat-embed-core:8.5.75",  # managed up: CVE-2022-23181
+    "org.apache.tomcat.embed:tomcat-embed-core:8.5.82",  # managed up 2022-08-23 for CVEs
     "org.codehaus.jettison:jettison:1.4.1",
     "io.github.java-diff-utils:java-diff-utils:4.11",
     "org.glassfish.grizzly:grizzly-http-server:2.4.4",
