@@ -185,7 +185,7 @@ git push -u fork-owner
 ```
 
 **N.B. The rest of these instructions assume you have already forked the batfish and/or pybatfish
-repos in a similar fashion, and made your changes available in a branch on each forked repo. **
+repos in a similar fashion, and made your changes available in a branch on each forked repo.**
 
 Modify the pointer(s) in precommit.yml to point to your batfish / pybatfish repos and branches:
 
