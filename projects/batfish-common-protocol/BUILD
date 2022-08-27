@@ -69,6 +69,7 @@ java_library(
         "src/generated/resources/org/batfish/common/common.properties",
         "src/main/resources/org/batfish/common/util/salt",
     ],
+    exports = ["//projects/common/src/main/java:common"],
     runtime_deps = [
         "@maven//:commons_beanutils_commons_beanutils",
         "@maven//:jakarta_activation_jakarta_activation_api",
@@ -76,6 +77,7 @@ java_library(
     ],
     deps = [
         "//projects/bdd",
+        "//projects/common/src/main/java:common",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
