@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.junit.Test;
@@ -86,8 +87,11 @@ public class InferRolesTest {
 
   @Test
   public void inferRolesOnExampleTopology() {
-    Optional<RoleMapping> roleMappingOpt =
-        new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
+    Set<NodeEdge> edges =
+        EXAMPLE_TOPOLOGY.getEdges().stream()
+            .map(e -> new NodeEdge(e.getNode1(), e.getNode2()))
+            .collect(Collectors.toSet());
+    Optional<RoleMapping> roleMappingOpt = new InferRoles(EXAMPLE_NODES, edges).inferRoles();
 
     assertTrue(roleMappingOpt.isPresent());
 

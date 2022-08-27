@@ -1,7 +1,7 @@
 package org.batfish.role;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,7 +15,6 @@ import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 
 /**
  * Objects of this class represent a way to map node names to role dimensions and associated role
@@ -55,7 +54,8 @@ public class RoleMapping {
     try {
       Pattern.compile(regex);
     } catch (PatternSyntaxException e) {
-      throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
+      throw new IllegalArgumentException(
+          "Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
   }
 

@@ -218,6 +218,7 @@ import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
+import org.batfish.role.NodeEdge;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.NodeRolesData.Type;
@@ -2437,8 +2438,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NodeRolesId snapshotNodeRolesId =
         _idResolver.getSnapshotNodeRolesId(snapshot.getNetwork(), snapshot.getSnapshot());
     Set<String> nodeNames = loadConfigurations(snapshot).keySet();
-    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(snapshot);
-    Optional<RoleMapping> autoRoles = new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
+    Set<NodeEdge> edges =
+        _topologyProvider.getRawLayer3Topology(snapshot).getEdges().stream()
+            .map(e -> new NodeEdge(e.getNode1(), e.getNode2()))
+            .collect(Collectors.toSet());
+    Optional<RoleMapping> autoRoles = new InferRoles(nodeNames, edges).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
       if (autoRoles.isPresent()) {

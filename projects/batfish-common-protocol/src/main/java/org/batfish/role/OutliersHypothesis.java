@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import org.batfish.common.BatfishException;
 
 // the hypotheses used to perform outlier detection
 public enum OutliersHypothesis {
@@ -31,7 +30,7 @@ public enum OutliersHypothesis {
   public static OutliersHypothesis fromName(String name) {
     OutliersHypothesis instance = _map.get(name);
     if (instance == null) {
-      throw new BatfishException(
+      throw new IllegalArgumentException(
           "No " + OutliersHypothesis.class.getSimpleName() + " with name: '" + name + "'");
     }
     return instance;

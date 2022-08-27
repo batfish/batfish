@@ -1,5 +1,9 @@
 package org.batfish.role;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -10,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.SortedMap;
@@ -22,10 +27,8 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
-import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.RoleEdge;
-import org.batfish.datamodel.Topology;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 public final class InferRoles {
   private static class PreTokenizedString {
@@ -87,7 +90,7 @@ public final class InferRoles {
   }
 
   private final Collection<String> _nodes;
-  private final Topology _topology;
+  private final Collection<NodeEdge> _edges;
 
   // a tokenized version of _chosenNode
   private List<TokenizedString> _tokens;
@@ -104,9 +107,9 @@ public final class InferRoles {
   private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}";
   private static final String DIGIT_REGEX = "\\p{Digit}";
 
-  public InferRoles(Collection<String> nodes, Topology topology) {
+  public InferRoles(Collection<String> nodes, Collection<NodeEdge> edges) {
     _nodes = ImmutableSortedSet.copyOf(nodes);
-    _topology = topology;
+    _edges = ImmutableSortedSet.copyOf(edges);
   }
 
   // A node's name is first parsed into a sequence of simple "pretokens",
@@ -147,7 +150,7 @@ public final class InferRoles {
         case DIGIT_PLUS:
           return plus(DIGIT_REGEX);
         default:
-          throw new BatfishException("this case should be unreachable");
+          throw new IllegalArgumentException("this case should be unreachable");
       }
     }
   }
@@ -253,7 +256,7 @@ public final class InferRoles {
           tokens.add(new TokenizedString(chars.toString(), Token.DIGIT_PLUS));
           break;
         default:
-          throw new BatfishException("Unknown pretoken " + pt);
+          throw new IllegalArgumentException("Unknown pretoken " + pt);
       }
       i++;
     }
@@ -286,7 +289,7 @@ public final class InferRoles {
           tokens.add(new TokenizedString(chars, Token.DIGIT_PLUS));
           break;
         default:
-          throw new BatfishException("Unexpected pretoken " + pt);
+          throw new IllegalArgumentException("Unexpected pretoken " + pt);
       }
       i++;
     }
@@ -369,7 +372,7 @@ public final class InferRoles {
     // produce a role-level topology and the list of nodes in each edge's source role
     // that have an edge to some node in the edge's target role
     SortedMap<RoleEdge, SortedSet<String>> roleEdges = new TreeMap<>();
-    for (Edge e : _topology.getEdges()) {
+    for (NodeEdge e : _edges) {
       String n1 = e.getNode1();
       String n2 = e.getNode2();
       SortedSet<String> roles1 = nodeRolesMap.get(n1);
@@ -415,7 +418,8 @@ public final class InferRoles {
     try {
       pattern = Pattern.compile(regex);
     } catch (PatternSyntaxException e) {
-      throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
+      throw new IllegalArgumentException(
+          "Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
     for (String node : nodes) {
       Matcher matcher = pattern.matcher(node);
@@ -426,7 +430,7 @@ public final class InferRoles {
           SortedSet<String> currNodes = roleNodesMap.computeIfAbsent(role, k -> new TreeSet<>());
           currNodes.add(node);
         } catch (IndexOutOfBoundsException e) {
-          throw new BatfishException(
+          throw new IllegalArgumentException(
               "Supplied regex does not contain enough groups: \"" + pattern.pattern() + "\"", e);
         }
       }
@@ -461,11 +465,74 @@ public final class InferRoles {
     return groups.stream()
         .map(g -> new RegexScore(g, computeRoleScore(regex, g)))
         .max(Comparator.comparingDouble(RegexScore::getScore))
-        .orElseThrow(() -> new BatfishException("this exception should not be reachable"));
+        .orElseThrow(() -> new IllegalArgumentException("this exception should not be reachable"));
   }
 
   private RoleMapping toRoleMapping(Map<String, List<Integer>> dimensionGroups) {
     return new RoleMapping(
         null, regexTokensToRegex(_regex), ImmutableMap.copyOf(dimensionGroups), null);
+  }
+
+  @ParametersAreNonnullByDefault
+  public static class RoleEdge implements Comparable<RoleEdge> {
+    private static final String PROP_ROLE1 = "role1";
+    private static final String PROP_ROLE2 = "role2";
+
+    public RoleEdge(String role1, String role2) {
+      _role1 = role1;
+      _role2 = role2;
+    }
+
+    @JsonProperty(PROP_ROLE1)
+    @Nonnull
+    public String getRole1() {
+      return _role1;
+    }
+
+    @JsonProperty(PROP_ROLE2)
+    @Nonnull
+    public String getRole2() {
+      return _role2;
+    }
+
+    @Nonnull private final String _role1;
+    @Nonnull private final String _role2;
+
+    @JsonCreator
+    private static RoleEdge jsonCreator(
+        @Nullable @JsonProperty(PROP_ROLE1) String role1,
+        @Nullable @JsonProperty(PROP_ROLE2) String role2) {
+      checkArgument(role1 != null, "Missing %s", PROP_ROLE1);
+      checkArgument(role2 != null, "Missing %s", PROP_ROLE2);
+      return new RoleEdge(role1, role2);
+    }
+
+    @Override
+    public int compareTo(RoleEdge o) {
+      return Comparator.comparing(RoleEdge::getRole1)
+          .thenComparing(RoleEdge::getRole2)
+          .compare(this, o);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (o == this) {
+        return true;
+      } else if (!(o instanceof RoleEdge)) {
+        return false;
+      }
+      RoleEdge r = (RoleEdge) o;
+      return _role1.equals(r._role1) && _role2.equals(r._role2);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_role1, _role2);
+    }
+
+    @Override
+    public String toString() {
+      return "<" + _role1 + " --> " + _role2 + ">";
+    }
   }
 }

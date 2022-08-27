@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
@@ -14,6 +15,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.InferRoles;
+import org.batfish.role.NodeEdge;
 import org.batfish.role.RoleMapping;
 
 @AutoService(Plugin.class)
@@ -50,9 +52,11 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       // collect relevant nodes in a list.
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish, snapshot);
 
-      Optional<RoleMapping> roleMapping =
-          new InferRoles(nodes, _batfish.getTopologyProvider().getInitialLayer3Topology(snapshot))
-              .inferRoles();
+      Set<NodeEdge> edges =
+          _batfish.getTopologyProvider().getInitialLayer3Topology(snapshot).getEdges().stream()
+              .map(e -> new NodeEdge(e.getNode1(), e.getNode2()))
+              .collect(Collectors.toSet());
+      Optional<RoleMapping> roleMapping = new InferRoles(nodes, edges).inferRoles();
       return new InferRolesAnswerElement(roleMapping);
     }
   }

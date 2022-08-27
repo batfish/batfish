@@ -69,15 +69,20 @@ java_library(
         "src/generated/resources/org/batfish/common/common.properties",
         "src/main/resources/org/batfish/common/util/salt",
     ],
-    exports = ["//projects/common/src/main/java:common"],
+    exports = [
+        "//projects/batfish-common-protocol/src/main/java/org/batfish/role",
+        "//projects/common/src/main/java:common",
+    ],
     runtime_deps = [
         "@maven//:commons_beanutils_commons_beanutils",
         "@maven//:jakarta_activation_jakarta_activation_api",
         "@maven//:org_glassfish_jersey_inject_jersey_hk2",
     ],
     deps = [
+        "//projects/batfish-common-protocol/src/main/java/org/batfish/role",
         "//projects/bdd",
         "//projects/common/src/main/java:common",
+        "//projects/common/src/main/java/org/batfish/datamodel:names",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
@@ -106,8 +111,6 @@ java_library(
         "@maven//:org_glassfish_jersey_core_jersey_server",
         "@maven//:org_jgrapht_jgrapht_core",
         "@maven//:org_lz4_lz4_java",
-        "@maven//:org_parboiled_parboiled_core",
-        "@maven//:org_parboiled_parboiled_java",
         "@maven//:org_skyscreamer_jsonassert",
     ],
 )
