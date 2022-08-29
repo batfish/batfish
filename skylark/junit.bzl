@@ -1,3 +1,7 @@
+"""
+This file creates a java_test target for JUnit4 run tests.
+"""
+
 # Copyright (C) 2016 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,8 +35,8 @@ public class %s {}
 
 _PREFIXES = ("org", "com", "edu", "net")
 
-def _SafeIndex(l, val):
-    for i, v in enumerate(l):
+def _SafeIndex(lst, val):
+    for i, v in enumerate(lst):
         if val == v:
             return i
     return -1
@@ -63,7 +67,7 @@ def _impl(ctx):
         ctx.attr.outname,
     ))
 
-_GenSuite = rule(
+_gen_suite = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "outname": attr.string(),
@@ -73,6 +77,15 @@ _GenSuite = rule(
 )
 
 def junit_tests(name, srcs, skip_pmd = False, **kwargs):
+    """Create a reference java_test using the given commands file.
+
+    Args:
+      name: the name of the generated test.
+      srcs: the source code of the tests.
+      skip_pmd: if True, a corresponding pmd_test will not be generated over the test sources.
+      **kwargs: other arguments that may be used in the generated java_test. The most common
+        value is deps.
+    """
     if len(srcs) == 0:
         return
 
@@ -90,7 +103,7 @@ def junit_tests(name, srcs, skip_pmd = False, **kwargs):
     # generate a JUnit Suite java file for all the test sources
     s_name = name.replace("-", "_") + "TestSuite"
     test_files = [s for s in srcs if s.endswith("Test.java")]
-    _GenSuite(
+    _gen_suite(
         name = s_name,
         srcs = test_files,
         outname = s_name,
@@ -98,13 +111,13 @@ def junit_tests(name, srcs, skip_pmd = False, **kwargs):
 
     # Run a Java test with suite source file, and existing deps + new testlib
     test_kwargs = dict(**kwargs)
-    test_deps = list(kwargs.pop("deps", []))
+    test_deps = list(test_kwargs.pop("deps", []))
     java_test(
         name = name,
         test_class = s_name,
         srcs = [":" + s_name],
         deps = test_deps + [":" + testlib_name],
-        **kwargs
+        **test_kwargs
     )
 
     # If PMD is on, generate the pmd_test

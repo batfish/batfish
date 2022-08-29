@@ -8,11 +8,9 @@ package(
 java_library(
     name = "TestQuestion",
     testonly = True,
-    srcs = glob(
-        [
-            "TestQuestion.java",
-        ],
-    ),
+    srcs = [
+        "TestQuestion.java",
+    ],
     deps = [
         "//projects/batfish-common-protocol:common",
     ],
