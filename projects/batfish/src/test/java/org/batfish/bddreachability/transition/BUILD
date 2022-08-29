@@ -16,7 +16,7 @@ junit_tests(
     deps = [
         "//projects/batfish",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/bdd",
         "@maven//:com_google_guava_guava",

@@ -80,7 +80,7 @@ junit_tests(
         ":coordinator",
         ":coordinator_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/questions:TestQuestion",
         "//projects/coordinator/src/main/java/org/batfish/coordinator/version",
         "@maven//:com_fasterxml_jackson_core_jackson_core",

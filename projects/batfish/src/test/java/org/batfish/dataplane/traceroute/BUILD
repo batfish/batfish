@@ -17,7 +17,7 @@ junit_tests(
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/bdd",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
