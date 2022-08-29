@@ -111,3 +111,23 @@ http_jar(
     sha256 = "6852386d7975eff29171dae002cc223251510d35f291ae277948f381a7b380b4",
     url = "https://search.maven.org/remotecontent?filepath=org/antlr/antlr4/4.7.2/antlr4-4.7.2-complete.jar",
 )
+
+# Buildifier
+http_archive(
+    name = "buildifier_prebuilt",
+    sha256 = "b3fd85ae7e45c2f36bce52cfdbdb6c20261761ea5928d1686edc8873b0d0dad0",
+    strip_prefix = "buildifier-prebuilt-5.1.0",
+    urls = [
+        "http://github.com/keith/buildifier-prebuilt/archive/5.1.0.tar.gz",
+    ],
+)
+
+load("@buildifier_prebuilt//:deps.bzl", "buildifier_prebuilt_deps")
+
+buildifier_prebuilt_deps()
+
+bazel_skylib_workspace()
+
+load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains")
+
+buildifier_prebuilt_register_toolchains()

@@ -1,3 +1,7 @@
+"""
+This file defines a rule to use the Java Object Layout (JOL) tool to inspect class sizes in memory.
+"""
+
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
 

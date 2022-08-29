@@ -11,7 +11,7 @@ junit_tests(
     resources = [
         "//projects/allinone/src/test/resources/org/batfish/e2e/bgp/withdrawals",
         "//projects/allinone/src/test/resources/org/batfish/e2e/bgp/withdrawals_add_path",
-        ],
+    ],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",

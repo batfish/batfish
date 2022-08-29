@@ -1,3 +1,9 @@
+"""
+This file defines the functionality for testing a Batfish reference (ref) test.
+
+These are tests in //tests/*, where they use the client's functionality to
+generate output and confirm that output matches an existing reference (extension .ref)."""
+
 _CMD = """
 ALL_FILES="$(rootpaths {allinone})"
 BIN_FILE=$$(tr " " "\n" <<< $${{ALL_FILES}} | grep -v jar)
@@ -8,6 +14,15 @@ echo \
 """
 
 def ref_tests(name, commands, allinone = None, extra_deps = None, **kwargs):
+    """Create a reference sh_test using the given commands file.
+
+    Args:
+      name: the name of the generated ref test.
+      commands: the file with the commands in it.
+      allinone: the java_binary target to be used.
+      extra_deps: extra dependencies of the test.
+      **kwargs: other arguments that may be used in the generated sh_test.
+    """
     if allinone == None:
         allinone = "//projects/allinone:allinone_main"
 

@@ -1,5 +1,3 @@
-load("@rules_java//java:defs.bzl", "java_library")
-load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 load("@batfish//skylark:junit.bzl", "junit_tests")
 
 package(

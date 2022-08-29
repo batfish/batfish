@@ -1,6 +1,6 @@
-package(default_visibility = ["//tools/jol:__subpackages__"])
-
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+
+package(default_visibility = ["//tools/jol:__subpackages__"])
 
 copy_file(
     name = "make_jol_local",
