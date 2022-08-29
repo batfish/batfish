@@ -1,6 +1,6 @@
 package org.batfish.common.bdd;
 
-import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
+import static org.batfish.datamodel.HeaderSpace.DEFAULT_PACKET_LENGTH;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstPort;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpCode;
