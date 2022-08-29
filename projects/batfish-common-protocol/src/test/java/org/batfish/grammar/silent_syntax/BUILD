@@ -7,14 +7,9 @@ package(
 
 junit_tests(
     name = "tests",
-    srcs = glob([
-        "**/*Test.java",
-    ]),
+    srcs = glob(["*Test.java"]),
     deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test:common_testlib",
-        "//projects/batfish/src/main/java/org/batfish/representation/arista",
-        "@maven//:com_google_guava_guava",
+        "//projects/batfish-common-protocol:common_lib",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",

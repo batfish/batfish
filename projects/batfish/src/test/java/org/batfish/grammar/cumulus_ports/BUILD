@@ -12,7 +12,7 @@ junit_tests(
     ]),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_ports",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_ports",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus_concatenated",
