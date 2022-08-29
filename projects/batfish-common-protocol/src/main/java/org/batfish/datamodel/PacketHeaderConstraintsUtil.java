@@ -34,9 +34,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 @ParametersAreNonnullByDefault
 public class PacketHeaderConstraintsUtil {
 
-  /** default packet length */
-  public static final int DEFAULT_PACKET_LENGTH = 512;
-
   /**
    * Convert {@link PacketHeaderConstraints} to an {@link AclLineMatchExpr}.
    *

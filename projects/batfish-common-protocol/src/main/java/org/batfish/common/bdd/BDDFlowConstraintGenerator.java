@@ -2,7 +2,7 @@ package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDFlowConstraintGenerator.RefineAll.refineAll;
 import static org.batfish.common.bdd.BDDFlowConstraintGenerator.RefineFirst.refineFirst;
-import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
+import static org.batfish.datamodel.HeaderSpace.DEFAULT_PACKET_LENGTH;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
