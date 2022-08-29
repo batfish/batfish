@@ -1,10 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
--   repo: https://github.com/psf/black
-    rev: 19.10b0
-    hooks:
-    -   id: black
 -   repo: local
     hooks:
     -   id: java-format
@@ -13,6 +9,16 @@ repos:
         language: script
         files: '\.java$'
         pass_filenames: false  # this is a global check, only run it once
+    -   id: buildifier
+        name: buildifier
+        entry: bazel --noblock_for_lock run //:buildifier.fix
+        language: system
+        require_serial: true
+        pass_filenames: false  # this is a global check, only run it once
+-   repo: https://github.com/psf/black
+    rev: 19.10b0
+    hooks:
+    -   id: black
 -   repo: https://github.com/pre-commit/mirrors-isort
     rev: v4.3.21
     hooks:
