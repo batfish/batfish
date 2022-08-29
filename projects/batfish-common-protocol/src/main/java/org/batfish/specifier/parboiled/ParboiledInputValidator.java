@@ -26,6 +26,8 @@ import org.batfish.specifier.Grammar;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.parboiled.parser.CommonParser;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.parboiled.Rule;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.errors.ParserRuntimeException;

@@ -1,9 +1,9 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION_TAIL;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_DIMENSION_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_ROLE_AND_DIMENSION_TAIL;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_ROLE_DIMENSION_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_ROLE_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.OPERATOR_END;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
@@ -17,7 +17,8 @@ import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
 import org.batfish.specifier.Grammar;
-import org.batfish.specifier.parboiled.Anchor.Type;
+import org.batfish.specifier.parboiled.parser.Anchor.Type;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 

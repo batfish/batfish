@@ -1,10 +1,10 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
-import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
-import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.INTERFACE_GROUP_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.OPERATOR_END;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
@@ -20,6 +20,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.junit.Test;
 
 /**

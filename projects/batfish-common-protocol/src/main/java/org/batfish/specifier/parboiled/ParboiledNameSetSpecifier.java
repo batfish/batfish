@@ -12,6 +12,7 @@ import org.batfish.specifier.EnumSetSpecifier;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.NameSetSpecifier;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;

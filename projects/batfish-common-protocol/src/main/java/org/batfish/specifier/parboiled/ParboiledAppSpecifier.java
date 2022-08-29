@@ -17,6 +17,7 @@ import org.batfish.datamodel.applications.TcpApplication;
 import org.batfish.datamodel.applications.UdpApplication;
 import org.batfish.specifier.ApplicationSpecifier;
 import org.batfish.specifier.Grammar;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;

@@ -15,6 +15,7 @@ import org.batfish.specifier.InterfaceSpecifierFilterSpecifier;
 import org.batfish.specifier.NameFilterSpecifier;
 import org.batfish.specifier.NameRegexFilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;

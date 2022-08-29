@@ -11,6 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.IpProtocolSpecifier;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;

@@ -71,6 +71,7 @@ java_library(
     ],
     exports = [
         "//projects/batfish-common-protocol/src/main/java/org/batfish/role",
+        "//projects/batfish-common-protocol/src/main/java/org/batfish/specifier/parboiled",
         "//projects/common/src/main/java:common",
     ],
     runtime_deps = [
@@ -80,9 +81,9 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol/src/main/java/org/batfish/role",
+        "//projects/batfish-common-protocol/src/main/java/org/batfish/specifier/parboiled",
         "//projects/bdd",
         "//projects/common/src/main/java:common",
-        "//projects/common/src/main/java/org/batfish/datamodel:names",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",

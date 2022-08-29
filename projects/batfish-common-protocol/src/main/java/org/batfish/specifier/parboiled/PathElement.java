@@ -1,9 +1,9 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
-import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.ParserUtils.isCharLiteralLabel;
 import static org.batfish.specifier.parboiled.ParserUtils.isStringLiteralLabel;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.CHAR_LITERAL;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.base.MoreObjects;
 import java.util.Map;
@@ -11,7 +11,8 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.specifier.parboiled.Anchor.Type;
+import org.batfish.specifier.parboiled.parser.Anchor;
+import org.batfish.specifier.parboiled.parser.Anchor.Type;
 import org.parboiled.support.MatcherPath.Element;
 
 /** Captures elements of that matched the input or failed to match for invalid input */

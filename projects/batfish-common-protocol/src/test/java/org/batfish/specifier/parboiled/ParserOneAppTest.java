@@ -1,10 +1,10 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.APP_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_ICMP;
-import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_ICMP_TYPE;
-import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_TCP;
-import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_UDP;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.APP_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ONE_APP_ICMP;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ONE_APP_ICMP_TYPE;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ONE_APP_TCP;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ONE_APP_UDP;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -18,6 +18,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
+import org.batfish.specifier.parboiled.parser.CommonParser;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

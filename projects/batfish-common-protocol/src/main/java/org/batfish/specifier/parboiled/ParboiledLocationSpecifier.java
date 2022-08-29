@@ -24,6 +24,7 @@ import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NodeSpecifierInterfaceLocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.ToInterfaceLinkLocationSpecifier;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;

@@ -1,7 +1,7 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
-import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.CHAR_LITERAL;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.base.MoreObjects;
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.specifier.parboiled.parser.Anchor;
 
 /** Represents one (of possibly multiple) potential matches when the parser input does not match */
 @ParametersAreNonnullByDefault

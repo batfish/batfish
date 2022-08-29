@@ -1,11 +1,12 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Parser.initAnchors;
+import static org.batfish.specifier.parboiled.parser.Parser.initAnchors;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import org.batfish.specifier.parboiled.parser.CommonParser;
 import org.junit.Test;
 import org.parboiled.Rule;
 import org.parboiled.parserunners.BasicParseRunner;

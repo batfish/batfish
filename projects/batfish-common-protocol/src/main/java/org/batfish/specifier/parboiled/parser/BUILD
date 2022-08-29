@@ -3,7 +3,7 @@ load("@rules_java//java:defs.bzl", "java_library")
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "parboiled",
+    name = "parser",
     srcs = glob(["**/*.java"]),
     deps = [
         "//projects/batfish-common-protocol/src/main/java/org/batfish/role",

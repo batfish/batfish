@@ -15,6 +15,7 @@ import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoleNameNodeSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.TypesNodeSpecifier;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;

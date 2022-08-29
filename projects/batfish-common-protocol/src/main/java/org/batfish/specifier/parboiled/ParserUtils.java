@@ -1,10 +1,10 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
-import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_VALUE;
-import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
-import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
-import static org.batfish.specifier.parboiled.Anchor.Type.WHITESPACE;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.CHAR_LITERAL;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ENUM_SET_VALUE;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.IGNORE;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.STRING_LITERAL;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.WHITESPACE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.specifier.Grammar;
+import org.batfish.specifier.parboiled.parser.Anchor;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
 import org.parboiled.support.ParsingResult;

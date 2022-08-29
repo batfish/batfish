@@ -22,6 +22,7 @@ import org.batfish.specifier.TypesInterfaceSpecifier;
 import org.batfish.specifier.VrfNameInterfaceSpecifier;
 import org.batfish.specifier.ZoneNameInterfaceSpecifier;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier.IpSpaceAstNodeToIpSpace;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;

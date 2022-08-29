@@ -1,7 +1,7 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.STRING_LITERAL;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 

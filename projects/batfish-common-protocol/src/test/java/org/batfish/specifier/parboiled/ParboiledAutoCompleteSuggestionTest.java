@@ -1,16 +1,16 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.CommonParser.SET_OP_DIFFERENCE;
-import static org.batfish.specifier.parboiled.CommonParser.SET_OP_INTERSECTION;
-import static org.batfish.specifier.parboiled.CommonParser.SET_OP_UNION;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.SET_PREFIX_DIFFERENCE;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.SET_PREFIX_INTERSECTION;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.SET_PREFIX_UNION;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.completeDescriptionIfNeeded;
+import static org.batfish.specifier.parboiled.parser.CommonParser.SET_OP_DIFFERENCE;
+import static org.batfish.specifier.parboiled.parser.CommonParser.SET_OP_INTERSECTION;
+import static org.batfish.specifier.parboiled.parser.CommonParser.SET_OP_UNION;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.batfish.specifier.parboiled.Anchor.Type;
+import org.batfish.specifier.parboiled.parser.Anchor.Type;
 import org.junit.Test;
 
 /** Tests for {@link ParboiledAutoCompleteSuggestion} */

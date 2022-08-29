@@ -1,9 +1,9 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
-import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_PARENS;
-import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_SET_OP;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ROUTING_POLICY_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ROUTING_POLICY_PARENS;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ROUTING_POLICY_SET_OP;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.specifier.Grammar;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

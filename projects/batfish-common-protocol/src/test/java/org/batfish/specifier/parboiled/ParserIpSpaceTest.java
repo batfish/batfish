@@ -1,11 +1,11 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
-import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
-import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
-import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_SET_OP;
-import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.IP_ADDRESS;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.IP_PREFIX;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.IP_RANGE;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.IP_SPACE_SET_OP;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.IP_WILDCARD;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -20,6 +20,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

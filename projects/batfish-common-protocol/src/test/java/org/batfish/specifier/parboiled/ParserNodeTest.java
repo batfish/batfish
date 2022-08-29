@@ -1,11 +1,11 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_SET_OP;
+import static org.batfish.specifier.parboiled.parser.Anchor.Type.NODE_TYPE;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -17,6 +17,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.specifier.Grammar;
+import org.batfish.specifier.parboiled.parser.Parser;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

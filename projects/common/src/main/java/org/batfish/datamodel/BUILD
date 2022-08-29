@@ -11,6 +11,35 @@ java_library(
 )
 
 java_library(
+    name = "bgp_session_properties",
+    srcs = [":BgpSessionProperties.java"],
+    deps = [
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+    ],
+)
+
+java_library(
+    name = "device_type",
+    srcs = [":DeviceType.java"],
+)
+
+java_library(
+    name = "interface_type",
+    srcs = [":InterfaceType.java"],
+)
+
+java_library(
+    name = "ip_protocol",
+    srcs = [":IpProtocol.java"],
+    deps = [
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_google_guava_guava",
+    ],
+)
+
+java_library(
     name = "ipv4",
     srcs = [
         ":AbstractIpSpaceContainsIp.java",
@@ -45,5 +74,14 @@ java_library(
     deps = [
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
+    ],
+)
+
+java_library(
+    name = "subrange",
+    srcs = [":SubRange.java"],
+    deps = [
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_google_code_findbugs_jsr305",
     ],
 )
