@@ -187,8 +187,6 @@ java_library(
         "@maven//:org_glassfish_jersey_core_jersey_server",
         "@maven//:org_jgrapht_jgrapht_core",
         "@maven//:org_lz4_lz4_java",
-        "@maven//:org_parboiled_parboiled_core",
-        "@maven//:org_parboiled_parboiled_java",
         "@maven//:org_skyscreamer_jsonassert",
     ],
 )
