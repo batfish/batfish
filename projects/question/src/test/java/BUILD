@@ -1,0 +1,60 @@
+load("@rules_java//java:defs.bzl", "java_library")
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "question_testlib",
+    testonly = True,
+    srcs = glob(
+        ["**/*.java"],
+        exclude = ["**/*Test.java"],
+    ),
+    deps = [
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
+        "//projects/question",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)
+
+pmd_test(
+    name = "question_testlib_pmd",
+    lib = ":question_testlib",
+)
+
+junit_tests(
+    name = "question_tests",
+    size = "small",
+    srcs = glob(["**/*Test.java"]),
+    plugins = [
+        "//:auto_service_plugin",
+    ],
+    resources = ["//projects/question/src/test/resources/org/batfish/question/jsonpath"],
+    runtime_deps = [
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
+    deps = [
+        ":question_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
+        "//projects/bdd",
+        "//projects/question",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)
