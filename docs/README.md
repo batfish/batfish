@@ -117,6 +117,11 @@ See the [question development doc](question_development/README.md) for details o
 * how the question pipeline works
 * how to add and modify questions
 
+## Symbolic analysis engine
+Batfish includes several questions based on _symbolic analysis_, which can efficiently 
+reason about the behavior (very) large sets of packets. More information about the symbolic analysis engine 
+and the questions implemented on top of it is available [here](symbolic_engine/README.md).
+
 ## Setting up your environment for Batfish development
 
 At minimum, to develop in Bafish you will need to follow the
