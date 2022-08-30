@@ -1,0 +1,29 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+
+package(default_visibility = ["//visibility:public"])
+
+junit_tests(
+    name = "minesweeper_tests",
+    size = "small",
+    srcs = glob([
+        "**/*Test.java",
+    ]),
+    runtime_deps = [
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
+    deps = [
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
+        "//projects/bdd",
+        "//projects/minesweeper",
+        "//projects/question",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
+        "@maven//:dk_brics_automaton",
+        "@maven//:junit_junit",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)
