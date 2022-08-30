@@ -1,7 +1,7 @@
 package org.batfish.common.util.isp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.parboiled.common.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
