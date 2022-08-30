@@ -1,22 +1,16 @@
 load("@batfish//skylark:junit.bzl", "junit_tests")
 
-package(
-    default_testonly = True,
-    default_visibility = ["//visibility:private"],
-)
-
 junit_tests(
-    name = "tests",
-    srcs = glob([
-        "**/*Test.java",
-    ]),
+    name = "F5BigipVipConfigurationTest",
+    size = "small",
+    srcs = ["F5BigipVipConfigurationTest.java"],
+    resources = ["//projects/allinone/src/test/resources/org/batfish/allinone/testconfigs"],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test:common_testlib",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/question",
-        "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
