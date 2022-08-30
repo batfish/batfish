@@ -1,5 +1,4 @@
 load("@rules_java//java:defs.bzl", "java_library")
-load("@batfish//skylark:junit.bzl", "junit_tests")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -78,63 +77,12 @@ java_library(
     ],
 )
 
-java_library(
-    name = "batfish_testlib",
-    testonly = True,
-    srcs = glob(
-        [
-            "src/test/**/*.java",
-        ],
-        exclude = ["src/test/**/*Test.java"],
-    ),
-    deps = [
-        ":batfish",
-        "//projects/batfish-common-protocol:common",
-        "//projects/bdd",
-        "//projects/symbolic",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_guava_guava",
-        "@maven//:junit_junit",
-        "@maven//:org_apache_commons_commons_collections4",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
-)
-
-junit_tests(
-    name = "batfish_tests",
-    size = "medium",
-    srcs = glob([
-        "src/test/**/*Test.java",
-    ]),
-    resources = [
-        "//projects/batfish/src/test/resources",
-    ],
-    tags = ["cpu:4"],
-    deps = [
-        ":batfish",
-        ":batfish_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test:common_testlib",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/questions:TestQuestion",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/identifiers",
-        "//projects/symbolic",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_guava_guava",
-        "@maven//:com_google_guava_guava_testlib",
-        "@maven//:commons_io_commons_io",
-        "@maven//:junit_junit",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
-)
-
 pmd_test(
     name = "pmd",
     lib = ":batfish",
 )
 
-pmd_test(
-    name = "testlib_pmd",
-    lib = ":batfish",
+alias(
+    name = "batfish_testlib",
+    actual = "//projects/batfish/src/test/java:batfish_testlib",
 )
