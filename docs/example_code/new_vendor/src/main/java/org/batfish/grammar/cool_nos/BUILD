@@ -1,0 +1,27 @@
+load("@rules_java//java:defs.bzl", "java_library")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+
+package(
+    default_visibility = ["//docs/example_code:__subpackages__"],
+)
+
+java_library(
+    name = "cool_nos",
+    srcs = glob(
+        ["**/*.java"],
+        exclude = ["BUILD"],
+    ),
+    deps = [
+        "//docs/example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos",
+        "//docs/example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos",
+        "//projects/batfish-common-protocol:common",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":cisco_nxos",
+)

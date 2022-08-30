@@ -1,0 +1,8 @@
+! THIS IS A COOL NOS FILE
+
+system host-name cool.nos.host-name
+! The following will be rejected since they violate the Cool NOS hostname restrictions.
+system host-name underscores_not_allowed
+system host-name .cannot-start-with-period
+system host-name cannot-end-with-period.
+system host-name cannot-exceed-max-length-of-32-characters
