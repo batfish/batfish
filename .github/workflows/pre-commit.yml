@@ -59,29 +59,32 @@ jobs:
       - get_date
     steps:
       - uses: actions/checkout@v3
-      - name: Maven cache
+      - name: Bazel cache
         uses: actions/cache@v3
         with:
-          path: "~/.m2/repository"
-          key: ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-junit-${{ needs.get_date.outputs.ymd }}
+          path: "~/.cache/bazel"
+          key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-junit-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-junit-
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-
-            ${{runner.os}}-maven-
+            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-junit-
+            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-bazel-
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
-      - name: Maven Junit Tests and Coverage
+      - name: Bazel Junit Tests and Coverage
         run: |
-          mvn -B -f projects/pom.xml test -DskipTests=false -Djacoco.skip=false
-          mkdir -p workspace
-          rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/
-      - name: Save Jacoco exec
+          bazel coverage //projects/... \
+            --instrumentation_filter="-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled,-//projects/batfish-common-protocol:specifier_common,-//projects/batfish/src/main/antlr4[/:],-//projects/.*/src/test[/:]" \
+            --test_tag_filters=-pmd_test \
+            --combined_report=lcov \
+            --instrument_test_targets=false
+          cp bazel-out/_coverage/_coverage_report.dat coverage_report.dat
+      - name: Save coverage data
         uses: actions/upload-artifact@v3
         with:
-          name: jacoco_exec
-          path: workspace/**/jacoco.exec
+          name: coverage_report
+          path: coverage_report.dat
   checkstyle:
     runs-on: ubuntu-latest
     needs:
@@ -155,11 +158,6 @@ jobs:
           for cmd in ${REFS}; do
             .buildkite/ref_test.sh ${cmd}
           done
-      - name: Upload Jacoco exec
-        uses: actions/upload-artifact@v3
-        with:
-          name: jacoco_exec_ref
-          path: workspace/**/jacoco.exec
       - name: Save JAR
         uses: actions/upload-artifact@v3
         with:
@@ -169,37 +167,12 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - junit
-      - ref_tests
-      - get_date
     steps:
-      - uses: actions/checkout@v3
-      - name: Maven cache
-        uses: actions/cache@v3
-        with:
-          path: "~/.m2/repository"
-          key: ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-codecov-${{ needs.get_date.outputs.ymd }}
-          restore-keys: |
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-codecov-
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-
-            ${{runner.os}}-maven-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-      - name: Download jar
+      - name: Download coverage from unit tests
         uses: actions/download-artifact@v3
         with:
-          name: allinone_jar
-          path: workspace
-      - name: Download jacoco from unit tests
-        uses: actions/download-artifact@v3
-        with:
-          name: jacoco_exec
-          path: workspace
-      - name: Download jacoco from ref tests
-        uses: actions/download-artifact@v3
-        with:
-          name: jacoco_exec_ref
+          name: coverage_report
           path: workspace
       - name: Generate report
-        run: .buildkite/jacoco_report.sh
+        run: |
+          bash <(curl -s https://codecov.io/bash) -t "${{ secrets.BATFISH_CODECOV_TOKEN }}" -f workspace/coverage_report.dat 
