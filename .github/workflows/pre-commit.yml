@@ -116,8 +116,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
+            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-test-
             ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-
             ${{runner.os}}-bazel-
       - name: Bazel build and test
@@ -130,24 +131,24 @@ jobs:
       - get_date
     steps:
       - uses: actions/checkout@v3
-      - name: Maven cache
-        uses: actions/cache@v3
-        with:
-          path: "~/.m2/repository"
-          key: ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-refs-${{ needs.get_date.outputs.ymd }}
-          restore-keys: |
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-refs-
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-
-            ${{runner.os}}-maven-
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
-      - name: Maven Build
+      - name: Bazel cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazel"
+          key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-build-${{ needs.get_date.outputs.ymd }}
+          restore-keys: |
+            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-build-
+            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-bazel-
+      - name: Build JAR
         run: |
           mkdir workspace
-          mvn -B -f projects package
-          cp projects/allinone/target/allinone-bundle-*.jar workspace/allinone.jar
+          bazel build //projects/allinone:allinone_main_deploy.jar
+          cp bazel-bin/projects/allinone/allinone_main_deploy.jar workspace/allinone.jar
       - name: Ref tests
         run: |
           REFS=$(find tests -name commands)
