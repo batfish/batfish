@@ -175,4 +175,4 @@ jobs:
           path: workspace
       - name: Generate report
         run: |
-          bash <(curl -s https://codecov.io/bash) -t "${{ secrets.BATFISH_CODECOV_TOKEN }}" -g -f workspace/coverage_report.dat 
+          bash <(curl -s https://codecov.io/bash) -t "${{ secrets.BATFISH_CODECOV_TOKEN }}" -g
