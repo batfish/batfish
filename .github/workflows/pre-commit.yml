@@ -128,36 +128,11 @@ jobs:
         run: |
           bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
           bazel test --test_output=errors --test_tag_filters=pmd_test -- //...
-  ref_tests:
-    runs-on: ubuntu-latest
-    needs:
-      - get_date
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-      - name: Bazel cache
-        uses: actions/cache@v3
-        with:
-          path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-build-${{ needs.get_date.outputs.ymd }}
-          restore-keys: |
-            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-build-
-            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-
-            ${{runner.os}}-bazel-
       - name: Build JAR
         run: |
           mkdir workspace
           bazel build //projects/allinone:allinone_main_deploy.jar
           cp bazel-bin/projects/allinone/allinone_main_deploy.jar workspace/allinone.jar
-      - name: Ref tests
-        run: |
-          REFS=$(find tests -name commands)
-          for cmd in ${REFS}; do
-            .buildkite/ref_test.sh ${cmd}
-          done
       - name: Save JAR
         uses: actions/upload-artifact@v3
         with:
