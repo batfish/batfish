@@ -132,11 +132,6 @@ jobs:
             --test_tag_filters=-pmd_test \
             --combined_report=lcov \
             --instrument_test_targets=false
-      - name: Save coverage data
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage_report
-          path: coverage_report.dat
       - name: Generate report
         run: |
           bash <(curl -s https://codecov.io/bash) -t "${{ secrets.BATFISH_CODECOV_TOKEN }}" -f bazel-out/_coverage/_coverage_report.dat
