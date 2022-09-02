@@ -24,15 +24,11 @@ jobs:
       - get_date
     steps:
       - uses: actions/checkout@v3
-      - name: Maven cache
+      - name: google-java-format cache
         uses: actions/cache@v3
         with:
-          path: "~/.m2/repository"
-          key: ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-format-${{ needs.get_date.outputs.ymd }}
-          restore-keys: |
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-format-
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-
-            ${{runner.os}}-maven-
+          path: "~/.cache/google-java-format"
+          key: google-java-format-${{ hashFiles('tools/fix_java_format.sh') }}
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
