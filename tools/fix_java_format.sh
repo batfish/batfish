@@ -5,13 +5,12 @@ set -euo pipefail
 # Find the jar, and download it if needed.
 GJF_VERSION=1.15.0
 JAR_NAME="google-java-format-${GJF_VERSION}-all-deps.jar"
-JAR_SUFFIX=".m2/repository/com/google/googlejavaformat/google-java-format/${GJF_VERSION}/${JAR_NAME}"
-JAR="${HOME}/${JAR_SUFFIX}"
-if [[ $(uname) == *"CYGWIN"* ]]; then
-  JAR="${USERPROFILE}\\$(cygpath -w "${JAR_SUFFIX}")"
-fi
+JAR_URL="https://github.com/google/google-java-format/releases/download/v${GJF_VERSION}/${JAR_NAME}"
+JAR_DIR="${HOME}/.cache/google-java-format"
+JAR="${JAR_DIR}/${JAR_NAME}"
 if [ ! -f ${JAR} ]; then
-  mvn dependency:get -Dartifact=com.google.googlejavaformat:google-java-format:${GJF_VERSION}:jar:all-deps
+  mkdir -p "${JAR_DIR}"
+  wget "${JAR_URL}" -O "${JAR}"
 fi
 
 # Some OS X users have installed GNU find as gfind.
