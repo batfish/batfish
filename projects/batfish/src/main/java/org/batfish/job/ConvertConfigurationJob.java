@@ -986,7 +986,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       vendorConfiguration.setConversionContext(_conversionContext);
       vendorConfiguration.setRuntimeData(_runtimeData);
       SortedMap<String, Warnings> configSpecificWarnings = new ConcurrentSkipListMap<>();
-      final ConvertConfigurationJob thisJob = this;
       List<Configuration> configurationList =
           vendorConfiguration.toVendorIndependentConfigurations();
       // Parallelize because we may get a large number of configurations from e.g. Panorama,
