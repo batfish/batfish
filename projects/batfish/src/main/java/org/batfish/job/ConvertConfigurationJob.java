@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.common.bdd.util.AclPacketMatchValidityChecker.checkerFor;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addTenantVniInterfaces;
@@ -26,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -983,32 +985,44 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       vendorConfiguration.setAnswerElement(answerElement);
       vendorConfiguration.setConversionContext(_conversionContext);
       vendorConfiguration.setRuntimeData(_runtimeData);
-      for (Configuration configuration : vendorConfiguration.toVendorIndependentConfigurations()) {
-
-        // get iptables if applicable
-        IptablesVendorConfiguration iptablesConfig = null;
-        VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
-        if (ov != null) {
-          // apply overlay
-          HostConfiguration oh = (HostConfiguration) ov;
-          iptablesConfig = oh.getIptablesVendorConfig();
-        } else if (vendorConfiguration instanceof HostConfiguration) {
-          // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
-          // semantics.
-          // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
-          // iptablesConfig = oh.getIptablesVendorConfig();
-        }
-        if (iptablesConfig != null) {
-          iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, warnings);
-          iptablesConfig.applyAsOverlay(configuration, warnings);
-        }
-
-        finalizeConfiguration(configuration, vendorConfiguration, warnings);
-
-        String hostname = configuration.getHostname();
-        configurations.put(hostname, configuration);
-        warningsByHost.put(hostname, warnings);
-        filenames.forEach(filename -> fileMap.put(filename, hostname));
+      SortedMap<String, Warnings> configSpecificWarnings = new ConcurrentSkipListMap<>();
+      List<Configuration> configurationList =
+          vendorConfiguration.toVendorIndependentConfigurations();
+      // Parallelize because we may get a large number of configurations from e.g. Panorama,
+      // CheckPoint MGMT.
+      configurationList.parallelStream()
+          .forEach(
+              configuration -> {
+                Warnings currentConfigSpecificWarnings = Batfish.buildWarnings(_settings);
+                configSpecificWarnings.put(
+                    configuration.getHostname(), currentConfigSpecificWarnings);
+                // get iptables if applicable
+                IptablesVendorConfiguration iptablesConfig = null;
+                VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
+                if (ov != null) {
+                  // apply overlay
+                  HostConfiguration oh = (HostConfiguration) ov;
+                  iptablesConfig = oh.getIptablesVendorConfig();
+                } else if (vendorConfiguration instanceof HostConfiguration) {
+                  // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
+                  //       semantics.
+                  // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
+                  // iptablesConfig = oh.getIptablesVendorConfig();
+                }
+                if (iptablesConfig != null) {
+                  iptablesConfig.addAsIpAccessLists(
+                      configuration, vendorConfiguration, currentConfigSpecificWarnings);
+                  iptablesConfig.applyAsOverlay(configuration, currentConfigSpecificWarnings);
+                }
+                finalizeConfiguration(
+                    configuration, vendorConfiguration, currentConfigSpecificWarnings);
+                postFinalize(
+                    configurations, warningsByHost, fileMap, warnings, filenames, configuration);
+              });
+      for (Configuration configuration : configurationList) {
+        // merge in config-specific warnings in deterministic fashion
+        mergeConfigurationWarnings(
+            warnings, configSpecificWarnings.get(configuration.getHostname()));
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {
@@ -1022,5 +1036,35 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ConvertConfigurationResult(
         elapsedTime, _logger.getHistory(), warningsByHost, _name, configurations, answerElement);
+  }
+
+  /** Apply changes to job-level structures. */
+  private synchronized void postFinalize(
+      Map<String, Configuration> configurations,
+      Map<String, Warnings> warningsByHost,
+      Multimap<String, String> fileMap,
+      Warnings warnings,
+      List<String> filenames,
+      Configuration configuration) {
+    String hostname = configuration.getHostname();
+    configurations.put(hostname, configuration);
+    warningsByHost.put(hostname, warnings);
+    filenames.forEach(filename -> fileMap.put(filename, hostname));
+  }
+
+  /** Merge configuration-specific warnings into job warnings */
+  private static void mergeConfigurationWarnings(
+      Warnings warnings, Warnings configurationSpecificWarnings) {
+    checkArgument(
+        configurationSpecificWarnings.getErrorDetails() == null,
+        "Configuration-specific warnings should not have error details");
+    checkArgument(
+        configurationSpecificWarnings.getParseWarnings().isEmpty(),
+        "Configruration-specific warnings should not have parse warnings");
+    warnings.getPedanticWarnings().addAll(configurationSpecificWarnings.getPedanticWarnings());
+    warnings.getRedFlagWarnings().addAll(configurationSpecificWarnings.getRedFlagWarnings());
+    warnings
+        .getUnimplementedWarnings()
+        .addAll(configurationSpecificWarnings.getUnimplementedWarnings());
   }
 }
