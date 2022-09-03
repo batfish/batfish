@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   <suppress>
-    <notes>This is a SUSE packaging bug, nothing to do with jar.</notes>
-    <cve>CVE-2020-8022</cve>
-  </suppress>
-  <suppress>
-    <notes>This is an extremely low quality CVE relating to Python flask, usually in example code or project websites. See: https://github.com/jeremylong/DependencyCheck/issues/4671</notes>
-    <cve>CVE-2022-31569</cve>
-  </suppress>
-  <suppress>
     <notes>JUnit is only used in tests, and we don't want to upgrade right now.</notes>
     <cve>CVE-2020-15250</cve>
   </suppress>
