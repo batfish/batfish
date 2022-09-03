@@ -18,5 +18,5 @@ fi
 ${CACHE_DIR}/dependency-check/bin/dependency-check.sh \
   --failOnCVSS 4 \
   --enableExperimental \
-  --scan maven_install.json \
+  --scan ${1:-maven_install.json} \
   --suppression projects/build-tools/src/main/resources/org/batfish/owasp/suppressions.xml
