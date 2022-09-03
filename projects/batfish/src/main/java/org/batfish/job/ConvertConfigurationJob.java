@@ -986,11 +986,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       vendorConfiguration.setConversionContext(_conversionContext);
       vendorConfiguration.setRuntimeData(_runtimeData);
       SortedMap<String, Warnings> configSpecificWarnings = new ConcurrentSkipListMap<>();
-      List<Configuration> configurationList =
-          vendorConfiguration.toVendorIndependentConfigurations();
       // Parallelize because we may get a large number of configurations from e.g. Panorama,
       // CheckPoint MGMT.
-      configurationList.parallelStream()
+      vendorConfiguration.toVendorIndependentConfigurations().parallelStream()
           .forEach(
               configuration -> {
                 Warnings currentConfigSpecificWarnings = Batfish.buildWarnings(_settings);
@@ -1019,10 +1017,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                 postFinalize(
                     configurations, warningsByHost, fileMap, warnings, filenames, configuration);
               });
-      for (Configuration configuration : configurationList) {
-        // merge in config-specific warnings in deterministic fashion
-        mergeConfigurationWarnings(
-            warnings, configSpecificWarnings.get(configuration.getHostname()));
+      for (Warnings currentConfigSpecificWarnings : configSpecificWarnings.values()) {
+        // Merge in config-specific warnings in deterministic fashion; values are ordered by
+        // Configuration-specific hostname key from SortedMap.
+        mergeConfigurationWarnings(warnings, currentConfigSpecificWarnings);
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {
