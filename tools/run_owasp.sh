@@ -11,7 +11,7 @@ RELEASE_FILE="${CACHE_DIR}/${RELEASE_FILENAME}"
 if [ ! -f ${RELEASE_FILE} ]; then
   mkdir -p "${CACHE_DIR}"
   wget "${RELEASE_URL}" -O "${RELEASE_FILE}"
-  pushd "${CACHE_DIR}" && unzip "${RELEASE_FILENAME}" && popd
+  pushd "${CACHE_DIR}" && unzip -o "${RELEASE_FILENAME}" && popd
 fi
 
 # Run the check
