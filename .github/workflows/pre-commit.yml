@@ -49,28 +49,19 @@ jobs:
         run: cd tests && pytest
   checkstyle:
     runs-on: ubuntu-latest
-    needs:
-      - format
-      - json_template
-      - get_date
     steps:
       - uses: actions/checkout@v3
-      - name: Maven cache
+      - name: Checkstyle cache
         uses: actions/cache@v3
         with:
-          path: "~/.m2/repository"
-          key: ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-checkstyle-${{ needs.get_date.outputs.ymd }}
-          restore-keys: |
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-checkstyle-
-            ${{runner.os}}-maven-${{ hashFiles('**/pom.xml') }}-
-            ${{runner.os}}-maven-
+          path: "~/.cache/checkstyle"
+          key: checkstyle-${{ hashFiles('tools/run_checkstyle.sh') }}
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
-      - name: Checkstyle, findbugs, dependency
-        run: |
-          mvn -B -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false
+      - name: Checkstyle
+        run: tools/run_checkstyle.sh
   bazel_build_test_and_pmd:
     needs:
       - get_date
