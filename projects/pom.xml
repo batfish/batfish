@@ -94,6 +94,7 @@
         <httpclient.version>4.5.13</httpclient.version>
         <httpcore.version>4.4.15</httpcore.version>
         <okhttp.version>4.2.2</okhttp.version>
+        <snakeyaml.version>1.31</snakeyaml.version>
         <tomcat-embed-core.version>8.5.82</tomcat-embed-core.version>
     </properties>
 
@@ -1020,6 +1021,12 @@
                 <groupId>org.xerial</groupId>
                 <artifactId>sqlite-jdbc</artifactId>
                 <version>${sqlite-jdbc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
