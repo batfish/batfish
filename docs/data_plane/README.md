@@ -1,29 +1,20 @@
 # Data plane generation
-Once the vendor independent (VI) model is fully generated and layer 3 topology is initialized, Batfish is ready to compute the dataplane.
+Once the vendor independent (VI) model is fully generated and initial layer 3 topology is computed, Batfish is ready to generate the dataplane.
 
 ### What is the dataplane?
-The output of Batfish's dataplane computation is a [`DataPlane`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/DataPlane.java), which contains routing and forwarding information about the network:
-* [FIBs](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/Fib.java) and [forwarding analysis](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/ForwardingAnalysis.java). This information is used for computing [packet forwarding](https://pybatfish.readthedocs.io/en/latest/notebooks/forwarding.html) results such as traceroute and reachability.
-* Routes contained in routing information bases (main, BGP, and EVPN RIBs). This information is used for answering [routes questions](https://pybatfish.readthedocs.io/en/latest/notebooks/routingTables.html).
+The output of Batfish's dataplane computation is a `ComputeDataPlaneResult`, which contains:
+* A [`DataPlane`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/DataPlane.java) describing the  routing and forwarding behavior of the network. This includes:
+  * [FIBs](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/Fib.java) and [forwarding analysis](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/ForwardingAnalysis.java). This information is used for computing [packet forwarding](https://pybatfish.readthedocs.io/en/latest/notebooks/forwarding.html) results such as traceroute and reachability.
+  * Routes contained in routing information bases (main, BGP, and EVPN RIBs). This information is used for answering [routes questions](https://pybatfish.readthedocs.io/en/latest/notebooks/routingTables.html).
+* A [`TopologyContainer`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/topology/TopologyContainer.java) with the finalized L1-L3, overlay, and routing protocol topologies.
 
-### When is the dataplane computed?
-Computing the dataplane can require several minutes on larger networks, and many questions can be run without it. For this reason, the dataplane is not automatically computed as part of Pybatfish's `bf.init_snapshot(SNAPSHOT_PATH)`. The computation can be kicked off automatically by running a dataplane-dependent question or manually by running `bf.generate_dataplane()`.
-
-#### Dataplane-dependent questions
-Dataplane computation is triggered automatically when a dataplane-dependent question is run. Questions are dataplane-dependent if they depend on routes or forwarding; some examples are [Traceroute](https://pybatfish.readthedocs.io/en/latest/notebooks/forwarding.html#Traceroute), [Reachability](https://pybatfish.readthedocs.io/en/latest/notebooks/forwarding.html#Reachability), [Routes](https://pybatfish.readthedocs.io/en/latest/notebooks/routingTables.html#Routes), and [BGP Session Status](https://pybatfish.readthedocs.io/en/latest/notebooks/routingProtocols.html#BGP-Session-Status). You can see if a given question is dataplane-dependent by checking whether `getDataplane()` returns `true` in its Java [`Question`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/questions/Question.java) implementation.
-
-#### Using `bf.generate_dataplane()`
-Dataplane computation can be triggered manually with `bf.generate_dataplane()`. Even if Batfish has already computed a dataplane for the current snapshot, running this command will cause Batfish to recompute and overwrite it. This is useful for modifying or debugging dataplane computation, since you only need to run `init_snapshot` once.
-
-If dataplane computation crashes, `bf.generate_dataplane()` provides a better error message than running a dataplane-dependent question.
-
-#### Dataplane reuse
-When Batfish computes the dataplane, it stores the resulting [DataPlane](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/DataPlane.java) to disk and reuses it for future dataplane-dependent questions on that snapshot. The dataplane will never be recomputed unless the user runs `bf.generate_dataplane()`.
-
-No dataplane computation is reused across snapshots, even if they are very similar or one is forked from another. Batfish assumes any configuration change can cause route changes across the whole network.
+The `DataPlane` and topologies are serialized to disk when dataplane computation is complete.
 
 ### Oscillations
 Some networks oscillate and do not have a stable state. If Batfish detects oscillation during dataplane computation, it raises a [`BdpOscillationException`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/BdpOscillationException.java) (BDP stands for Batfish dataplane). No dataplane is generated and dataplane-dependent questions cannot be run.
+
+### Determinism
+Some networks have nondeterministic final routing state, often caused by tiebreaking based on arrival order. However, Batfish's dataplane computation is deterministic: it will always produce the same dataplane given the same snapshot. The RIBs and FIBs Batfish produces for nondeterministic networks may or may not be identical to those in the live network.
 
 ### How is the dataplane computed?
 Batfish's dataplane computation algorithm is called incremental Batfish dataplane (IBDP). Alternative algorithms could be introduced by adding new implementations of [`DataPlanePlugin`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/plugin/DataPlanePlugin.java), but currently IBDP is the default and only option. This section describes IBDP.
@@ -34,7 +25,7 @@ IBDP is implemented by [`IncrementalDataPlanePlugin`](https://github.com/batfish
 Within IBDP, there are specialized representations for devices and VRFs:
 * A [`Node`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/dataplane/ibdp/Node.java) represents each device.
 * A [`VirtualRouter`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/dataplane/ibdp/VirtualRouter.java) represents each VRF. Most dataplane computation steps are parallelized across `VirtualRouter` objects. Each `VirtualRouter` has a main [`Rib`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/dataplane/rib/Rib.java) containing the current active routes (corresponding to Cisco-syntax `show ip route`), as well as protocol-specific RIBs containing the routes of each active protocol.
-* In VRFs running BGP, EIGRP, or OSPF, the `VirtualRouter` does not handle the protocol RIB itself, but instead has a [`RoutingProcess`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/dataplane/ibdp/RoutingProcess.java) of the corresponding type to handle the routes for that protocol.
+* In VRFs running BGP, EIGRP, or OSPF, the `VirtualRouter` does not handle the protocol RIB itself, but instead has [`RoutingProcess`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/dataplane/ibdp/RoutingProcess.java) objects of the corresponding type to handle the routes for each process.
 
 The result of the dataplane computation is an [`IncrementalDataPlane`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/dataplane/ibdp/IncrementalDataPlane.java), or IDP.
 
@@ -56,7 +47,7 @@ There are several incremental fixed point operations involved in IBDP. Here is a
 1. **Start of topology fixed point operation.** This is the main fixed point operation of IBDP, and the remaining steps compose one topology iteration. When it converges, the dataplane is complete.
 1. `IncrementalBdpEngine.computeNonMonotonicPortionOfDataPlane`: Routing/EGP fixed point operation. This operation brings all devices' routes to a fixed point based on the current topology, reachability, and IP ownership state.
    * Compute HMM and kernel routes.
-   * Redistribute: In each `VirtualRouter`, perform redistribution of routes into BGP, OSPF, EIGRP, and IS-IS. Redistribution in Batfish is a local operation that adds the redistributed routes to the target protocol's RIB, from which they may be exported later.
+   * Redistribute: In each `VirtualRouter`, perform redistribution of routes into BGP, OSPF, EIGRP, and IS-IS. Redistribution in Batfish is a local operation where a redistribution-specific [`RoutingPolicy`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/routing_policy/RoutingPolicy.java) is applied to main RIB routes, and any routes that pass the policy are added to the target protocol's RIB. From there they may be exported later.
    * Update resolvable routes in protocol RIBs, specifically BGP (the only protocol that checks routes' resolvability). BGP routes are activated or deactivated based on whether their next hop IPs are resolvable in the main RIB.
    * Queue cross-VRF imports. `VirtualRouter._crossVrfIncomingRoutes` is a queue of routes being sent to that VRF from other VRFs, and it is populated in this step. This is only for leaking routes between main RIBs; there is a separate pipeline for leaking between BGP RIBs.
    * `IncrementalBdpEngine.computeDependentRoutesIteration`: Compute and propagate dependent routes. "Dependent" means these routes can come and go depending on the current topology or available routes; they are not guaranteed based on the configuration. This includes conditional static routes, generated routes, EIGRP routes, IS-IS routes, OSPF external routes, BGP routes, and the cross-VRF routes that were queued in the previous step.
@@ -74,15 +65,15 @@ The [`IbdpSchedule`](https://github.com/batfish/batfish/blob/master/projects/bat
 
 However, parallelization according to graph coloring does not completely prevent false positive oscillations. If a routing oscillation occurs, IBDP switches to a fully restrictive [`NodeSerializedSchedule`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/dataplane/ibdp/schedule/NodeSerializedSchedule.java), where no parallelization is allowed across nodes. If the oscillation persists, then IBDP raises a `BdpOscillationException`.
 
-Input:
+### When is the dataplane computed?
+The dataplane is not automatically computed as part of Pybatfish's `bf.init_snapshot(SNAPSHOT_PATH)` because computing it can require several minutes on larger networks, and many questions can be run without it. The computation is triggered automatically the first time the user runs a dataplane-dependent question on a new snapshot.
 
-* post-processed vendor-independent (VI) configuration objects
-* wiring information
-* injected BGP announcements
+#### Using `bf.generate_dataplane()`
+Dataplane computation can be triggered manually with `bf.generate_dataplane()`. Even if Batfish has already computed a dataplane for the current snapshot, running this command will cause Batfish to recompute and overwrite it. This is useful for modifying or debugging dataplane computation, since you only need to run `init_snapshot` once.
 
-Output:
+If dataplane computation crashes, `bf.generate_dataplane()` provides a better error message than running a dataplane-dependent question.
 
-* routing information base (RIB) entries
-* forwarding information base (FIB) entries
-* L1-L3, overlay, and routing protocol topologies
-* IP address ownership information including results of VRRP/HSRP simulation
+#### Dataplane reuse
+When Batfish computes the dataplane, it stores the resulting [DataPlane](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/DataPlane.java) to disk and reuses it for future dataplane-dependent questions on that snapshot. The dataplane will never be recomputed unless the user runs `bf.generate_dataplane()`.
+
+No dataplane computation is reused across snapshots, even if they are very similar or one is forked from another. Batfish assumes any configuration change can cause route changes across the whole network.
