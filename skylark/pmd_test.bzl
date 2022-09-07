@@ -65,12 +65,12 @@ _pmd_test = rule(
         ),
         "ruleset": attr.label(
             allow_single_file = True,
-            default = "@batfish//projects/build-tools:src/main/resources/org/batfish/pmd/pmd-ruleset.xml",
+            default = "@batfish//skylark/pmd:pmd-ruleset.xml",
         ),
         "_pmd": attr.label(
             executable = True,
             cfg = "exec",
-            default = Label("@batfish//projects/build-tools:pmd"),
+            default = Label("@batfish//skylark/pmd:pmd"),
         ),
     },
     test = True,
