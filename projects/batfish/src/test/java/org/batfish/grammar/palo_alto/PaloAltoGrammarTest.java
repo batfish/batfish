@@ -2048,6 +2048,22 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testAppId() {
+    String hostname = "app-id";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+
+    // tcp or udp will match application bittorrent
+    Flow bitTorrentMatch = createFlow("1.1.2.2", "1.1.1.2", IpProtocol.TCP, 1, 999);
+
+    // Confirm flow matching bittorrent with Palo Alto's "App-ID" is not denied.
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(bitTorrentMatch, if1name, c))));
+  }
+
+  @Test
   public void testSecurityRulesNotExplicitlyMatched() {
     /*
     Setup: Device has an interface in a zone with intrazone security rules. If flows leaving the
