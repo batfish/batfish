@@ -77,10 +77,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-test-
-            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-
+            ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
             ${{runner.os}}-bazel-
       - name: Bazel build and test
         run: |
@@ -113,10 +113,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-junit-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-junit-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-junit-
-            ${{runner.os}}-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-junit-
+            ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
             ${{runner.os}}-bazel-
       - uses: actions/setup-java@v3
         with:

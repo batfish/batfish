@@ -56,9 +56,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-owasp-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-owasp-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-owasp-bazel-${{ hashFiles('WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-owasp-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
             ${{runner.os}}-owasp-bazel-
       - uses: actions/setup-java@v3
         with:
