@@ -2057,7 +2057,10 @@ public final class PaloAltoGrammarTest {
     // tcp or udp will match application bittorrent
     Flow bitTorrentMatch = createFlow("1.1.2.2", "1.1.1.2", IpProtocol.TCP, 1, 999);
 
-    // Confirm flow matching bittorrent with Palo Alto's "App-ID" is not denied.
+    // Confirm flow matching bittorrent with Palo Alto's "App-ID" is not denied despite the deny
+    // rule
+    // in the config.
+    // it instead matches the implicit rule permitting intra-zone traffic
     assertThat(
         c,
         hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(bitTorrentMatch, if1name, c))));

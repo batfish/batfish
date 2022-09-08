@@ -1804,15 +1804,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Application a = containingVsys.getApplications().get(name);
       // If the reference is contained by a vsys, should match an application or group above
       assert a != null;
-      Optional<AclLineMatchExpr> expr =
-          aclLineMatchExprForApplication(
+      return aclLineMatchExprForApplication(
               a,
               appOverrideAclsMap,
               matchApplicationObjectTraceElement(name, vsysName, _filename),
               applicationDefaultService,
               rule,
-              _w);
-      return expr.isPresent() ? ImmutableList.of(expr.get()) : ImmutableList.of();
+              _w)
+          .map(e -> ImmutableList.of(e))
+          .orElse(ImmutableList.of());
     }
 
     if (isBuiltInApp(name)) {
@@ -1849,6 +1849,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Warnings w) {
     String appName = application.getName();
 
+    // an overridden application uses L4 definitions and skips app-id, so we can safely just match
+    // its L4 definition from this map.
     if (appOverrideAclsMap.containsKey(appName)) {
       return Optional.of(appOverrideAclsMap.get(appName));
     }

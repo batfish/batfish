@@ -17,6 +17,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationGroupTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationOverrideRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInServiceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
@@ -907,8 +908,13 @@ public class PaloAltoSecurityRuleTest {
 
   private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 
-  @Test
-  public void testAclLineMatchExprForApplication() {
+  // helper for testAclLineMatchExprForApplication
+  private void assertAclLineMatchExprExpectations(
+      Map<String, AclLineMatchExpr> overrideMap,
+      TraceElement te,
+      boolean applicationDefaultService,
+      SecurityRule rule,
+      Optional<AclLineMatchExpr> expectation) {
     Application a =
         Application.builder("a1")
             .addService(
@@ -922,65 +928,73 @@ public class PaloAltoSecurityRuleTest {
                     .addPorts(new SubRange(0, 65535))
                     .build())
             .build();
-    TraceElement te = TraceElement.builder().add("Matched built-in application bittorrent").build();
-    SecurityRule denyRule = new SecurityRule("rule", new Vsys("vsys1"));
-    denyRule.setAction(LineAction.DENY);
-    SecurityRule permitRule = new SecurityRule("rule", new Vsys("vsys1"));
-    permitRule.setAction(LineAction.PERMIT);
-
     Warnings w = new Warnings();
 
+    Optional<AclLineMatchExpr> testMatcher =
+        aclLineMatchExprForApplication(a, overrideMap, te, applicationDefaultService, rule, w);
+    if (expectation.isPresent()) {
+      assertThat(_tb.toBDD(testMatcher.get()), equalTo(_tb.toBDD(expectation.get())));
+    } else {
+      assertThat(testMatcher, equalTo(expectation));
+    }
+  }
+
+  @Test
+  public void testAclLineMatchExprForApplication() {
     // test combinations of accept/deny, app Id/app override, and default/not default
-    Optional<AclLineMatchExpr> denyRuleAppIdNotDefault =
-        aclLineMatchExprForApplication(a, ImmutableMap.of(), te, false, denyRule, w);
-    assertThat(denyRuleAppIdNotDefault, equalTo(Optional.empty()));
+    String vsysName = "vsys1";
+    TraceElement te = matchBuiltInApplicationTraceElement("bittorrent");
+    TraceElement teOverride =
+        matchApplicationOverrideRuleTraceElement("OVERRIDE_RULE", vsysName, "configs/a1");
 
-    Optional<AclLineMatchExpr> denyRuleAppIdDefault =
-        aclLineMatchExprForApplication(a, ImmutableMap.of(), te, true, denyRule, w);
-    assertThat(denyRuleAppIdDefault, equalTo(Optional.empty()));
+    SecurityRule denyRule = new SecurityRule("rule", new Vsys(vsysName));
+    denyRule.setAction(LineAction.DENY);
 
-    Optional<AclLineMatchExpr> permitRuleAppIdNotDefault =
-        aclLineMatchExprForApplication(a, ImmutableMap.of(), te, false, permitRule, w);
-    assertThat(_tb.toBDD(permitRuleAppIdNotDefault.get()), equalTo(_tb.toBDD(new TrueExpr(te))));
+    SecurityRule permitRule = new SecurityRule("rule", new Vsys(vsysName));
+    permitRule.setAction(LineAction.PERMIT);
 
-    Optional<AclLineMatchExpr> permitRuleAppIdDefault =
-        aclLineMatchExprForApplication(a, ImmutableMap.of(), te, true, permitRule, w);
     HeaderSpace.Builder headerBuilder =
         HeaderSpace.builder()
             .setDstPorts(new SubRange(0, 65535))
             .setSrcPorts(new SubRange(0, 65535));
-    assertThat(
-        _tb.toBDD(permitRuleAppIdDefault.get()),
-        equalTo(
-            _tb.toBDD(
-                new OrMatchExpr(
-                    ImmutableList.of(
-                        new MatchHeaderSpace(headerBuilder.setIpProtocols(IpProtocol.TCP).build()),
-                        new MatchHeaderSpace(headerBuilder.setIpProtocols(IpProtocol.UDP).build())),
-                    te))));
 
-    TraceElement teOverride = TraceElement.builder().add("Matched").build();
+    // Deny rule not using app override should not produce any match conditions, per special L5+
+    // logic
+    assertAclLineMatchExprExpectations(ImmutableMap.of(), te, false, denyRule, Optional.empty());
+    assertAclLineMatchExprExpectations(ImmutableMap.of(), te, true, denyRule, Optional.empty());
+
+    // When not matching application-default, the application can match on any port and protocol
+    assertAclLineMatchExprExpectations(
+        ImmutableMap.of(), te, false, permitRule, Optional.of(new TrueExpr(te)));
+
+    // With application-default true, the application matches only on its default port and protocol
+    Optional<AclLineMatchExpr> permitRuleAppIdDefaultExpectation =
+        Optional.of(
+            new OrMatchExpr(
+                ImmutableList.of(
+                    new MatchHeaderSpace(headerBuilder.setIpProtocols(IpProtocol.TCP).build()),
+                    new MatchHeaderSpace(headerBuilder.setIpProtocols(IpProtocol.UDP).build())),
+                te));
+    assertAclLineMatchExprExpectations(
+        ImmutableMap.of(), te, true, permitRule, permitRuleAppIdDefaultExpectation);
+
+    // override tests - an overridden application uses L4 definitions and skips app-id, so we can
+    // safely just match
+    // its L4 definition from the overrideMap.
     AclLineMatchExpr overrideMatcher =
         new OrMatchExpr(
             ImmutableList.of(
                 new MatchHeaderSpace(headerBuilder.setIpProtocols(IpProtocol.ICMP).build())),
             teOverride);
     Map<String, AclLineMatchExpr> overrideMap = ImmutableMap.of("a1", overrideMatcher);
-    Optional<AclLineMatchExpr> denyRuleAppOverrideNotDefault =
-        aclLineMatchExprForApplication(a, overrideMap, teOverride, false, denyRule, w);
-    assertThat(_tb.toBDD(denyRuleAppOverrideNotDefault.get()), equalTo(_tb.toBDD(overrideMatcher)));
 
-    Optional<AclLineMatchExpr> denyRuleAppOverrideDefault =
-        aclLineMatchExprForApplication(a, overrideMap, teOverride, true, denyRule, w);
-    assertThat(_tb.toBDD(denyRuleAppOverrideDefault.get()), equalTo(_tb.toBDD(overrideMatcher)));
-
-    Optional<AclLineMatchExpr> permitRuleAppOverrideNotDefault =
-        aclLineMatchExprForApplication(a, overrideMap, teOverride, false, permitRule, w);
-    assertThat(
-        _tb.toBDD(permitRuleAppOverrideNotDefault.get()), equalTo(_tb.toBDD(overrideMatcher)));
-
-    Optional<AclLineMatchExpr> permitRuleAppOverrideDefault =
-        aclLineMatchExprForApplication(a, overrideMap, teOverride, true, permitRule, w);
-    assertThat(_tb.toBDD(permitRuleAppOverrideDefault.get()), equalTo(_tb.toBDD(overrideMatcher)));
+    assertAclLineMatchExprExpectations(
+        overrideMap, teOverride, false, denyRule, Optional.of(overrideMatcher));
+    assertAclLineMatchExprExpectations(
+        overrideMap, teOverride, true, denyRule, Optional.of(overrideMatcher));
+    assertAclLineMatchExprExpectations(
+        overrideMap, teOverride, false, permitRule, Optional.of(overrideMatcher));
+    assertAclLineMatchExprExpectations(
+        overrideMap, teOverride, true, permitRule, Optional.of(overrideMatcher));
   }
 }
