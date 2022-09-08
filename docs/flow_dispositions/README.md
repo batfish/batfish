@@ -7,7 +7,7 @@ mean the network dropped the flow for some reason.
 Flow dispositions are shown in [Traceroute](https://pybatfish.readthedocs.io/en/latest/notebooks/forwarding.html?highlight=traceroute#Traceroute) and [Reachability](https://pybatfish.readthedocs.io/en/latest/notebooks/forwarding.html?highlight=reachability#Reachability) answers, and [Reachability](https://pybatfish.readthedocs.io/en/latest/notebooks/forwarding.html?highlight=reachability#Reachability) questions support searching for flows with a particular disposition or set of dispositions.
 
 ## Flow disposition meanings
-Since batfish snapshots are not expected to be complete (e.g. there may be other peer networks or ISPs excluded from the snapshot), we use
+Since Batfish snapshots are not expected to be complete (e.g. there may be other peer networks or ISPs excluded from the snapshot), we use
 heuristics to assign some of the dispositions. In particular, the dispostions `DELIVERED_TO_SUBNET`, `EXITS_NETWORK`, 
 `INSUFFICIENT_INFO` and `NEIGHBOR_UNREACHABLE` are used when a flow is forwarded out an interface and no device in the 
 snapshot can receive it (i.e., no device responds to ARP). In this case, we use heuristics to decide whether the flow 
