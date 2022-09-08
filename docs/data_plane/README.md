@@ -13,7 +13,7 @@ The `DataPlane` and topologies are serialized to disk when dataplane computation
 ### Oscillations
 Some networks oscillate and do not have a stable state. If Batfish detects oscillation during dataplane computation, it raises a [`BdpOscillationException`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/BdpOscillationException.java) (BDP stands for Batfish dataplane). No dataplane is generated and dataplane-dependent questions cannot be run.
 
-### Determinism
+### Nondeterminism
 Some networks have nondeterministic final routing state, often caused by tiebreaking based on arrival order. However, Batfish's dataplane computation is deterministic: it will always produce the same dataplane given the same snapshot. The RIBs and FIBs Batfish produces for nondeterministic networks may or may not be identical to those in the live network.
 
 ### How is the dataplane computed?
