@@ -1740,16 +1740,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         serviceDisjuncts.add(
             new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
       } else if (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName())) {
-        if (rule.getAction() == LineAction.PERMIT) {
-          // Since Batfish cannot currently match above L4, we follow Cisco-fragments-like logic:
-          // When permitting an application, optimistically permit all traffic where the L4 rule
-          // matches, assuming it is this application. But when blocking a specific application, do
-          // not block all matching L4 traffic, since we can't know it is this specific application.
-          serviceDisjuncts.add(
-              new OrMatchExpr(
-                  matchServicesForApplications(rule, vsys, appOverrideAcls, true),
-                  matchServiceApplicationDefaultTraceElement()));
-        }
+        serviceDisjuncts.add(
+            new OrMatchExpr(
+                matchServicesForApplications(rule, vsys, appOverrideAcls, true),
+                matchServiceApplicationDefaultTraceElement()));
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
         AclLineMatchExpr serviceMatch = ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr();
 
@@ -1800,7 +1794,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                     .map(
                         a ->
                             aclLineMatchExprForApplication(
-                                a, appOverrideAclsMap, null, applicationDefaultService))
+                                a, appOverrideAclsMap, null, applicationDefaultService, rule, _w))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .collect(ImmutableList.toImmutableList()),
                 matchApplicationGroupTraceElement(name, vsysName, _filename)));
       }
@@ -1808,12 +1804,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Application a = containingVsys.getApplications().get(name);
       // If the reference is contained by a vsys, should match an application or group above
       assert a != null;
-      return ImmutableList.of(
-          aclLineMatchExprForApplication(
+      return aclLineMatchExprForApplication(
               a,
               appOverrideAclsMap,
               matchApplicationObjectTraceElement(name, vsysName, _filename),
-              applicationDefaultService));
+              applicationDefaultService,
+              rule,
+              _w)
+          .map(e -> ImmutableList.of(e))
+          .orElse(ImmutableList.of());
     }
 
     if (isBuiltInApp(name)) {
@@ -1824,7 +1823,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                       app,
                       appOverrideAclsMap,
                       matchBuiltInApplicationTraceElement(name),
-                      applicationDefaultService))
+                      applicationDefaultService,
+                      rule,
+                      _w))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
           .collect(ImmutableList.toImmutableList());
     }
     // Did not find in the right hierarchy, so stop and warn.
@@ -1836,32 +1839,45 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Create an {@link AclLineMatchExpr} matching any services in the specified application. */
-  private AclLineMatchExpr aclLineMatchExprForApplication(
+  @VisibleForTesting
+  public static Optional<AclLineMatchExpr> aclLineMatchExprForApplication(
       Application application,
       Map<String, AclLineMatchExpr> appOverrideAclsMap,
       @Nullable TraceElement traceElement,
-      boolean applicationDefaultService) {
+      boolean applicationDefaultService,
+      SecurityRule rule,
+      Warnings w) {
     String appName = application.getName();
 
+    // an overridden application uses L4 definitions and skips app-id, so we can safely just match
+    // its L4 definition from this map.
     if (appOverrideAclsMap.containsKey(appName)) {
-      return appOverrideAclsMap.get(appName);
+      return Optional.of(appOverrideAclsMap.get(appName));
+    }
+
+    // Since Batfish cannot currently match above L4, we follow Cisco-fragments-like logic:
+    // When permitting an application, optimistically permit all traffic where the L4 rule
+    // matches, assuming it is this application. But when blocking a specific application, do
+    // not block all matching L4 traffic, since we can't know it is this specific application.
+    if (rule.getAction() == LineAction.DENY) {
+      return Optional.empty();
     }
 
     // If we're not using application-default services,
     // Assume application matches regardless of service-y signature
     if (!applicationDefaultService) {
-      return new TrueExpr(traceElement);
+      return Optional.of(new TrueExpr(traceElement));
     }
 
     AclLineMatchExpr appExpr =
         new OrMatchExpr(
             application.getServices().stream()
-                .map(s -> s.toMatchExpr(_w))
+                .map(s -> s.toMatchExpr(w))
                 .collect(ImmutableList.toImmutableList()),
             traceElement);
 
     if (appOverrideAclsMap.isEmpty()) {
-      return appExpr;
+      return Optional.of(appExpr);
     }
 
     // Match the application expr iff no app-override rules are matched
@@ -1869,7 +1885,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     ImmutableList.Builder<AclLineMatchExpr> conjunctions = ImmutableList.builder();
     appOverrideAclsMap.values().forEach(o -> conjunctions.add(new NotMatchExpr(o)));
     conjunctions.add(appExpr);
-    return new AndMatchExpr(conjunctions.build());
+    return Optional.of(new AndMatchExpr(conjunctions.build()));
   }
 
   private List<AclLineMatchExpr> matchServicesForApplications(
