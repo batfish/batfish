@@ -1,0 +1,5 @@
+#
+set system host-name juniper-vni-vrf-target-auto
+#
+set protocols evpn vni-options vni 14002 vrf-target auto
+#

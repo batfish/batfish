@@ -1,0 +1,16 @@
+#
+set system host-name juniper-vxlan-l3vni-novlan
+#
+set interfaces irb unit 20 family inet address 10.0.2.111/24 preferred
+set protocols evpn vni-options vni 5020 vrf-target target:65000:5020
+set protocols evpn encapsulation vxlan
+set protocols evpn extended-vni-list all
+set protocols igmp-snooping vlan default
+set switch-options vtep-source-interface lo0.0
+set switch-options route-distinguisher 192.168.100.111:1
+set switch-options vrf-target target:65000:1
+set vlans v20 vlan-id none
+set vlans v20 l3-interface irb.20
+set vlans v20 vxlan vni 5020
+set routing-instances l3vni_vrf interface irb.20
+#

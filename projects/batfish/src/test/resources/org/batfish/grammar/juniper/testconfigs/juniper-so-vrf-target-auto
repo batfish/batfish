@@ -1,0 +1,5 @@
+#
+set system host-name juniper-so-vrf-target-auto
+#
+set switch-options vrf-target auto
+#

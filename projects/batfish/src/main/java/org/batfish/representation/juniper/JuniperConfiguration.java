@@ -33,24 +33,8 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -82,7 +66,6 @@ import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -125,10 +108,9 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
-import org.batfish.datamodel.bgp.BgpConfederation;
-import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.*;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
@@ -189,7 +171,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
@@ -744,6 +725,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
         localIp = getDefaultSourceAddress(routingInstance, _c).orElse(null);
       }
       neighbor.setLocalIp(localIp);
+      if (ig.getEvpnAf() != null) {
+        EvpnAddressFamily.Builder evpnAfBuilder = EvpnAddressFamily.builder();
+        evpnAfBuilder
+            .setPropagateUnmatched(true)
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setAllowRemoteAsOut(ALWAYS).build());
+        evpnAfBuilder.setL3Vnis(convertL3Evpn().build());
+        neighbor.setEvpnAddressFamily(evpnAfBuilder.build());
+      }
       neighbor.setBgpProcess(proc);
       neighbor.setIpv4UnicastAddressFamily(
           ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());
@@ -2026,47 +2016,165 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return groupsBuilder.build();
   }
 
-  private void convertVxlan() {
+  private @Nullable ImmutableSet.Builder<Layer3VniConfig> convertL3Evpn() {
+    ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
     for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
+      String l3Interface = vxlan.getL3Interface();
+      // vniId and l3interface must be defined for a l3vni.
+      if (vxlan.getVniId() == null || l3Interface == null) {
+        continue;
+      } else {
+        // RT can be set at: evpn vni-options, RI, or switch-options.
+        ExtendedCommunity routeTarget = null;
+        // If route target is set under vni-options stanza it takes precedence
+        if (_masterLogicalSystem.getVniOptions() != null) {
+          if (_masterLogicalSystem.getVniOptions().get(vxlan.getVniId()) != null) {
+            if (_masterLogicalSystem
+                .getVniOptions()
+                .get(vxlan.getVniId())
+                .getVrfTargetCommunityorAuto()
+                .isAuto()) {
+              // RT-Auto is used.
+              // https://datatracker.ietf.org/doc/html/draft-ietf-bess-evpn-overlay-01#section-5.1.2.1
+              // format of ASN:x while ‘x’ is called the local administrator (4 octets long). ‘x’ is
+              // derived:
+              // The last 3 octets are used for the service ID – the VNI. (VNI -> Hex) 3 octets
+              // long, pad as necessary.
+              // The first octet is divided into several fields – bit 1 (0 for auto derived RT), the
+              // next 3 bits identify the type (1 for VXLAN), and the last 4 bits identify the
+              // domain ID (0, for this case). So this gives us 0x0001 0x0000, which makes it 0x10.
+              // In total, 0x10 and (hex of vni), thus 0x10<hex of vni> then -> decimal value.
+              long num = Long.decode("0x10" + Integer.toHexString(vxlan.getVniId()));
+              routeTarget =
+                  ExtendedCommunity.parse(
+                      "target:"
+                          + _masterLogicalSystem.getDefaultRoutingInstance().getAs()
+                          + ":"
+                          + num);
+            } else {
+              // RT is manually defined under vni-options
+              routeTarget =
+                  _masterLogicalSystem
+                      .getVniOptions()
+                      .get(vxlan.getVniId())
+                      .getVrfTargetCommunityorAuto()
+                      .getExtendedCommunity();
+            }
+          }
+
+          // Check for RT config under RI
+        } else if (getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance() != null) {
+          // TODO: Currently can't get RT from RI
+          continue;
+          // Finally, check for RT under switch-options
+        } else {
+          if (_masterLogicalSystem.getSwitchOptions().getVrfTargetCommunityorAuto().isAuto()) {
+            long num = Long.decode("0x10" + Integer.toHexString(vxlan.getVniId()));
+            routeTarget =
+                ExtendedCommunity.parse(
+                    "target:"
+                        + _masterLogicalSystem.getDefaultRoutingInstance().getAs()
+                        + ":"
+                        + num);
+          } else {
+            routeTarget =
+                ExtendedCommunity.parse(
+                    _masterLogicalSystem
+                        .getSwitchOptions()
+                        .getVrfTargetCommunityorAuto()
+                        .toString());
+          }
+        }
+        if (routeTarget == null) {
+          long num = Long.decode("0x10" + Integer.toHexString(vxlan.getVniId()));
+          routeTarget =
+              ExtendedCommunity.parse(
+                  "target:" + _masterLogicalSystem.getDefaultRoutingInstance().getAs() + ":" + num);
+        }
+        // Check if RD is manually configured under RI.
+        if (getInterfaceOrUnitByName(l3Interface)
+                .get()
+                .getRoutingInstance()
+                .getRouteDistinguisherId()
+            != null) {
+          String createdRd =
+              getInterfaceOrUnitByName(l3Interface)
+                      .get()
+                      .getRoutingInstance()
+                      .getRouteDistinguisherId()
+                  + ":"
+                  + getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getAs();
+          l3Vnis.add(
+              Layer3VniConfig.builder()
+                  .setAdvertiseV4Unicast(true)
+                  .setVni(vxlan.getVniId())
+                  .setRouteTarget(routeTarget)
+                  .setImportRouteTarget(routeTarget.toString())
+                  .setRouteDistinguisher(RouteDistinguisher.parse(createdRd))
+                  .setVrf(
+                      getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getName())
+                  .build());
+        } else {
+          // RI is used, but RD is not manually configured. Junos takes route-distinguisher-id +
+          // random number to generate unique RD.
+          Random random = new Random();
+          int number = random.ints(4096, 9999).findFirst().getAsInt();
+          if (vxlan.getVlanId() != null) {
+            number = vxlan.getVlanId();
+          }
+          Ip rdIp = _masterLogicalSystem.getDefaultRoutingInstance().getRouteDistinguisherId();
+          String createdRd = rdIp.toString() + ":" + number;
+          l3Vnis.add(
+              Layer3VniConfig.builder()
+                  .setAdvertiseV4Unicast(true)
+                  .setVni(vxlan.getVniId())
+                  .setRouteTarget(routeTarget)
+                  .setImportRouteTarget(routeTarget.toString())
+                  .setRouteDistinguisher(RouteDistinguisher.parse(createdRd))
+                  .setVrf(
+                      getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getName())
+                  .build());
+        }
+      }
+    }
+    return l3Vnis;
+  }
+
+  private void convertL2Vni() {
+    for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
+      String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
+      String l3Interface = vxlan.getL3Interface();
       if (vxlan.getVniId() == null) {
         continue;
       }
-      String l3Interface = vxlan.getL3Interface();
-      if (l3Interface == null) {
-        if (vxlan.getVlanId() == null) {
-          continue;
-        }
-        // Should be a l2vni
-        Layer2Vni vniSettings =
-            Layer2Vni.builder()
-                .setVni(vxlan.getVniId())
-                .setVlan(vxlan.getVlanId())
-                .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                .setBumTransportMethod(UNICAST_FLOOD_GROUP)
-                .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
-                .build();
-        _c.getDefaultVrf().addLayer2Vni(vniSettings);
-      } else {
-        String vtepSource = _masterLogicalSystem.getSwitchOptions().getVtepSourceInterface();
+      if (vxlan.getVlanId() != null && l3Interface != null) {
         if (vtepSource == null) {
-          continue;
+          Layer2Vni vniSettings =
+              Layer2Vni.builder()
+                  .setVni(vxlan.getVniId())
+                  .setVlan(vxlan.getVlanId())
+                  .setUdpPort(Vni.DEFAULT_UDP_PORT)
+                  .setBumTransportMethod(UNICAST_FLOOD_GROUP)
+                  .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
+                  .build();
+          if (_c.getDefaultVrf().getLayer2Vnis().get(vxlan.getVniId()) == null) {
+            _c.getDefaultVrf().addLayer2Vni(vniSettings);
+          }
+        } else {
+          Layer2Vni vniSettings =
+              Layer2Vni.builder()
+                  .setVni(vxlan.getVniId())
+                  .setVlan(vxlan.getVlanId())
+                  .setSourceAddress(
+                      getInterfaceOrUnitByName(vtepSource).get().getPrimaryAddress().getIp())
+                  .setUdpPort(Vni.DEFAULT_UDP_PORT)
+                  .setBumTransportMethod(UNICAST_FLOOD_GROUP)
+                  .setSrcVrf(_masterLogicalSystem.getDefaultRoutingInstance().getName())
+                  .build();
+          if (_c.getDefaultVrf().getLayer2Vnis().get(vxlan.getVniId()) == null) {
+            _c.getDefaultVrf().addLayer2Vni(vniSettings);
+          }
         }
-        Interface iface =
-            _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().get(l3Interface);
-        if (iface == null) {
-          continue;
-        }
-        if (iface.getPrimaryAddress() == null) {
-          continue;
-        }
-        Layer3Vni vniSettings =
-            Layer3Vni.builder()
-                .setVni(vxlan.getVniId())
-                .setSourceAddress(iface.getPrimaryAddress().getIp())
-                .setUdpPort(Vni.DEFAULT_UDP_PORT)
-                .setSrcVrf(iface.getRoutingInstance().getName())
-                .build();
-        _c.getAllInterfaces().get(l3Interface).getVrf().addLayer3Vni(vniSettings);
       }
     }
   }
@@ -3686,6 +3794,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _c.getSnmpTrapServers().addAll(snmpServer.getHosts().keySet());
       }
 
+      // convert l2vni for l2vniproperties.
+      convertL2Vni();
+
       // static routes
       for (StaticRoute route : ri.getRibs().get(RIB_IPV4_UNICAST).getStaticRoutes().values()) {
         vrf.getStaticRoutes().addAll(toStaticRoutes(route));
@@ -3897,9 +4008,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     warnIllegalNamedCommunitiesUsedForSet();
 
     _c.computeRoutingPolicySources(_w);
-
-    // convert vxlan.
-    convertVxlan();
 
     return _c;
   }
@@ -4184,15 +4292,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         String name = newUnitInterface.getName();
                         // set IRB VLAN ID if assigned
                         newUnitInterface.setVlan(irbVlanIds.get(name));
-                        if (unit.getType() == InterfaceType.IRB_UNIT
-                            && newUnitInterface.getVlan() == null) {
-                          // TODO: May still be active if part of a bridge, though maybe it still
-                          //       needs a vlan.
-                          _w.redFlag(
-                              String.format(
-                                  "Deactivating %s because it has no assigned vlan", name));
-                          newUnitInterface.deactivate(InactiveReason.INCOMPLETE);
-                        }
+                        //                        if (unit.getType() == InterfaceType.IRB_UNIT
+                        //                            && newUnitInterface.getVlan() == null) {
+                        //                          // TODO: May still be active if part of a
+                        // bridge, though maybe it still
+                        //                          //       needs a vlan.
+                        //                          _w.redFlag(
+                        //                              String.format(
+                        //                                  "Deactivating %s because it has no
+                        // assigned vlan", name));
+                        //
+                        // newUnitInterface.deactivate(InactiveReason.INCOMPLETE);
+                        //                        }
 
                         // Don't create bind dependency for 'irb.XXX' interfcaes, since there isn't
                         // really an 'irb' interface

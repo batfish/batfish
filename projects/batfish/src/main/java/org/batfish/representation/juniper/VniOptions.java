@@ -1,23 +1,28 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import org.batfish.datamodel.bgp.RouteDistinguisher;
+import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
-public class SwitchOptions implements Serializable {
+public class VniOptions implements Serializable {
 
-  private String _vtepSourceInterface;
-  private RouteDistinguisher _routeDistinguisher;
-  private ExtendedCommunityOrAuto _vrfTargetCommunityorAuto;
-  private ExtendedCommunity _vrfTargetImport;
-  private ExtendedCommunity _vrfTargetExport;
+  private final Integer _vniId;
 
-  public String getVtepSourceInterface() {
-    return _vtepSourceInterface;
+  private Map<Integer, VniOptions> _vniOptions;
+  private @Nullable ExtendedCommunityOrAuto _vrfTargetCommunityorAuto;
+  private @Nullable ExtendedCommunity _vrfTargetImport;
+  private @Nullable ExtendedCommunity _vrfTargetExport;
+
+  public VniOptions(Integer vniId) {
+    _vniId = vniId;
+    _vrfTargetCommunityorAuto = null;
+    _vrfTargetImport = null;
+    _vrfTargetExport = null;
   }
 
-  public RouteDistinguisher getRouteDistinguisher() {
-    return _routeDistinguisher;
+  public Integer getVniId() {
+    return _vniId;
   }
 
   public ExtendedCommunityOrAuto getVrfTargetCommunityorAuto() {
@@ -30,14 +35,6 @@ public class SwitchOptions implements Serializable {
 
   public ExtendedCommunity getVrfTargetExport() {
     return _vrfTargetExport;
-  }
-
-  public void setVtepSourceInterface(String vtepSourceInterface) {
-    _vtepSourceInterface = vtepSourceInterface;
-  }
-
-  public void setRouteDistinguisher(RouteDistinguisher routeDistinguisher) {
-    _routeDistinguisher = routeDistinguisher;
   }
 
   public void setVrfTargetCommunityorAuto(ExtendedCommunityOrAuto vrfTargetCommunityorAuto) {

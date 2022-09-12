@@ -1,0 +1,5 @@
+#
+set system host-name juniper-vni-vrf-target-export
+#
+set protocols evpn vni-options vni 14002 vrf-target export target:65320:7999999
+#

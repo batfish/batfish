@@ -4279,6 +4279,11 @@ M_VrfTarget_DEC
    F_Digit+ -> type ( DEC )
 ;
 
+M_VrfTarget_AUTO
+:
+   'auto' -> type ( AUTO )
+;
+
 M_VrfTarget_EXPORT
 :
    'export' -> type ( EXPORT )

@@ -1,0 +1,5 @@
+#
+set system host-name juniper-so-vrf-target-export
+#
+set switch-options vrf-target export target:65320:7999999
+#

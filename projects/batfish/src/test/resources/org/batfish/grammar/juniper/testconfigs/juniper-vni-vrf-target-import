@@ -1,0 +1,5 @@
+#
+set system host-name juniper-vni-vrf-target-import
+#
+set protocols evpn vni-options vni 14002 vrf-target import target:65320:7999999
+#

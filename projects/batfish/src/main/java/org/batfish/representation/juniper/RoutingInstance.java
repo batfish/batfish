@@ -14,10 +14,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.*;
 
 public class RoutingInstance implements Serializable {
 
@@ -55,6 +52,7 @@ public class RoutingInstance implements Serializable {
   private double _ospfReferenceBandwidth;
   @Nullable private OspfInterfaceSettings _interfaceAllOspfSettings;
   private final Map<String, RoutingInformationBase> _ribs;
+  private Ip _routeDistinguisherId;
   private Ip _routerId;
   private SnmpServer _snmpServer;
   private final JuniperSystem _system;
@@ -233,6 +231,10 @@ public class RoutingInstance implements Serializable {
     return _routerId;
   }
 
+  public Ip getRouteDistinguisherId() {
+    return _routeDistinguisherId;
+  }
+
   public SnmpServer getSnmpServer() {
     return _snmpServer;
   }
@@ -290,6 +292,10 @@ public class RoutingInstance implements Serializable {
 
   public void setRouterId(Ip routerId) {
     _routerId = routerId;
+  }
+
+  public void setRouteDistinguisherId(Ip routeDistinguisherId) {
+    _routeDistinguisherId = routeDistinguisherId;
   }
 
   public void setSnmpServer(SnmpServer snmpServer) {

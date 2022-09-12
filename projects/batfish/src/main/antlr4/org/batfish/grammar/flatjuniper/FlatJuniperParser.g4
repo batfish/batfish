@@ -222,7 +222,11 @@ vlt_l3_interface
 
 vlt_vlan_id
 :
-   VLAN_ID id = vlan_number
+   VLAN_ID
+    (
+      NONE
+      | id = vlan_number
+    )
 ;
 
 vlt_vlan_id_list
