@@ -10,8 +10,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.BgpSessionStatus;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public class BgpSessionStatusQuestion extends BgpSessionQuestion {

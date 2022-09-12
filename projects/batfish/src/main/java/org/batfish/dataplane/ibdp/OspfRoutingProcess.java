@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -102,22 +101,24 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull private final OspfExternalType2Rib _type2Rib;
   @Nonnull private final OspfRib _ospfRib;
 
-  /* Message queues */
+  /*
+   * Message queues. For determinism, these must be sorted. However, for performance, they should not be SortedMap.
+   */
   @Nonnull
-  private SortedMap<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfIntraAreaRoute>>>
-      _intraAreaIncomingRoutes = ImmutableSortedMap.of();
+  private Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfIntraAreaRoute>>>
+      _intraAreaIncomingRoutes = ImmutableMap.of();
 
   @Nonnull
-  private SortedMap<EdgeId, Queue<RouteAdvertisement<OspfInterAreaRoute>>>
-      _interAreaIncomingRoutes = ImmutableSortedMap.of();
+  private Map<EdgeId, Queue<RouteAdvertisement<OspfInterAreaRoute>>> _interAreaIncomingRoutes =
+      ImmutableMap.of();
 
   @Nonnull
-  private SortedMap<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType1Route>>>
-      _type1IncomingRoutes = ImmutableSortedMap.of();
+  private Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType1Route>>>
+      _type1IncomingRoutes = ImmutableMap.of();
 
   @Nonnull
-  private SortedMap<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType2Route>>>
-      _type2IncomingRoutes = ImmutableSortedMap.of();
+  private Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType2Route>>>
+      _type2IncomingRoutes = ImmutableMap.of();
 
   /* State we need to maintain between iterations */
 
@@ -262,10 +263,11 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 type2Builder.put(edgeId, new ConcurrentLinkedQueue<>());
               }
             });
-    _intraAreaIncomingRoutes = intraAreaBuilder.build();
-    _interAreaIncomingRoutes = interAreaBuilder.build();
-    _type1IncomingRoutes = type1Builder.build();
-    _type2IncomingRoutes = type2Builder.build();
+    // Note: copyOf preserves order, but uses hash-based lookups which are much faster.
+    _intraAreaIncomingRoutes = ImmutableMap.copyOf(intraAreaBuilder.build());
+    _interAreaIncomingRoutes = ImmutableMap.copyOf(interAreaBuilder.build());
+    _type1IncomingRoutes = ImmutableMap.copyOf(type1Builder.build());
+    _type2IncomingRoutes = ImmutableMap.copyOf(type2Builder.build());
 
     // Edges should always be consistent across all types of queues
     assert _intraAreaIncomingRoutes.keySet().equals(_interAreaIncomingRoutes.keySet());

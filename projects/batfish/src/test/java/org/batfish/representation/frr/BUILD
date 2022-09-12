@@ -13,7 +13,7 @@ junit_tests(
     deps = [
         ":testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/main/java/org/batfish/representation/frr",
@@ -29,11 +29,9 @@ junit_tests(
 java_library(
     name = "testlib",
     testonly = True,
-    srcs = glob(
-        [
-            "MockFrrVendorConfiguration.java",
-        ],
-    ),
+    srcs = [
+        "MockFrrVendorConfiguration.java",
+    ],
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/representation/frr",

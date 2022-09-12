@@ -56,7 +56,8 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1524,8 +1525,8 @@ public final class FlowTracerTest {
   @Test
   public void testMatchSessionReturnFlow() {
     BDDPacket pkt = new BDDPacket();
-    MemoizedIpAccessListToBdd toBdd =
-        new MemoizedIpAccessListToBdd(
+    IpAccessListToBdd toBdd =
+        new IpAccessListToBddImpl(
             pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), ImmutableMap.of());
 
     Ip dstIp = Ip.parse("1.1.1.1");
@@ -1800,12 +1801,10 @@ public final class FlowTracerTest {
         nf.interfaceBuilder()
             .setOwner(n1)
             .setOutgoingFilter(
-                IpAccessList.builder().setName("Deny-from-i1").setLines(lines).build())
+                IpAccessList.builder().setOwner(n1).setName("Deny-from-i1").setLines(lines).build())
             .setVrf(v1)
             .setAddress(ConcreteInterfaceAddress.parse("2.0.0.0/31"))
             .build();
-    // Make sure that n1 knows that this filter is applied.
-    n1.setIpAccessLists(ImmutableMap.of(i2.getOutgoingFilter().getName(), i2.getOutgoingFilter()));
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.testBuilder()
@@ -2012,6 +2011,7 @@ public final class FlowTracerTest {
     // Filter denies src IP blockedSrcIp, permits everything else
     IpAccessList filter =
         nf.aclBuilder()
+            .setOwner(c)
             .setLines(
                 ExprAclLine.rejecting(AclLineMatchExprs.matchSrc(blockedSrcIp)),
                 ExprAclLine.ACCEPT_ALL)

@@ -6,7 +6,7 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
-import static org.batfish.datamodel.Ip.ZERO;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
@@ -35,6 +35,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
@@ -77,6 +78,8 @@ import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
+import static org.batfish.representation.arista.AristaStructureType.BGP_LISTEN_RANGE;
+import static org.batfish.representation.arista.AristaStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
@@ -181,6 +184,8 @@ import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
@@ -619,7 +624,7 @@ public class AristaGrammarTest {
               .setCommunities(
                   ImmutableSet.of(StandardCommunity.of(111, 222), StandardCommunity.of(333, 444)))
               .setNextHopIp(peerIp)
-              .setReceivedFromIp(peerIp)
+              .setReceivedFrom(ReceivedFromIp.of(peerIp))
               .build();
       assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
     }
@@ -631,7 +636,7 @@ public class AristaGrammarTest {
           defaultOriginateRoute.toBuilder()
               .setAsPath(AsPath.ofSingletonAsSets(1L, 1234L))
               .setNextHopIp(peerIp)
-              .setReceivedFromIp(peerIp)
+              .setReceivedFrom(ReceivedFromIp.of(peerIp))
               .build();
       assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
     }
@@ -640,7 +645,10 @@ public class AristaGrammarTest {
       Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener", "VRF3").getRoutes();
       Ip peerIp = Ip.parse("10.3.3.1"); // local IP of originating peer
       Bgpv4Route expectedRoute =
-          defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
+          defaultOriginateRoute.toBuilder()
+              .setNextHopIp(peerIp)
+              .setReceivedFrom(ReceivedFromIp.of(peerIp))
+              .build();
       assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
     }
     {
@@ -648,7 +656,10 @@ public class AristaGrammarTest {
       Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener", "VRF4").getRoutes();
       Ip peerIp = Ip.parse("10.4.4.1"); // local IP of originating peer
       Bgpv4Route expectedRoute =
-          defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
+          defaultOriginateRoute.toBuilder()
+              .setNextHopIp(peerIp)
+              .setReceivedFrom(ReceivedFromIp.of(peerIp))
+              .build();
       assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
     }
   }
@@ -775,7 +786,7 @@ public class AristaGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginatorIp(Ip.parse("10.10.10.3"))
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -1501,7 +1512,7 @@ public class AristaGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .setTag(0) // TODO: should redistribute static preserve tag?
@@ -1520,7 +1531,7 @@ public class AristaGrammarTest {
             .setOriginMechanism(OriginMechanism.GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -1595,7 +1606,7 @@ public class AristaGrammarTest {
               .setOriginMechanism(OriginMechanism.GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
-              .setReceivedFromIp(Ip.ZERO) // indicates local origination
+              .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
               .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
               .build();
@@ -1714,6 +1725,16 @@ public class AristaGrammarTest {
     assertThat(mlag.getPeerAddress(), equalTo(Ip.parse("1.1.1.3")));
     assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
     assertThat(mlag.getPeerLink(), equalTo("Port-Channel1"));
+  }
+
+  @Test
+  public void testEosMlagExtraction_heartbeatVrf() {
+    AristaConfiguration c = parseVendorConfig("eos-mlag-peer-address-heartbeat-vrf");
+    MlagConfiguration mlag = c.getEosMlagConfiguration();
+    assertThat(mlag, notNullValue());
+    assertThat(mlag.getDomainId(), equalTo("MLAG_DOMAIN_ID"));
+    assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
+    assertThat(mlag.getPeerAddressHeartbeatVrfName(), equalTo("management"));
   }
 
   @Test
@@ -2015,6 +2036,31 @@ public class AristaGrammarTest {
   public void testCommunityListExtraction() {
     testCommunityListExtraction("arista_community_list_421");
     testCommunityListExtraction("arista_community_list_423");
+  }
+
+  @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "arista_bgp_neighbor_refs";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String neighborNameIp = bgpNeighborStructureName("1.1.1.1", "default");
+    String neighborNamePrefix = bgpNeighborStructureName("4.4.4.0/24", "default");
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborNameIp, contains(6)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_LISTEN_RANGE, neighborNamePrefix, contains(7)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborNameIp, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_LISTEN_RANGE, neighborNamePrefix, 1));
   }
 
   @Test

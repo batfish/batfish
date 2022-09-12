@@ -9,12 +9,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Flow;
-import org.batfish.specifier.DispositionSpecifier;
 
 /**
  * A {@link Trace flow trace} and a {@link Flow} for the reverse direction, if one exists for the
- * trace. Traces that end {@link DispositionSpecifier#SUCCESS successfully} have reverse flows;
- * traces that {@link DispositionSpecifier#FAILURE fail} do not.
+ * trace. Traces that end in a {@link org.batfish.datamodel.FlowDisposition#SUCCESS_DISPOSITIONS
+ * success disposition} have reverse flows; traces that end in a {@link
+ * org.batfish.datamodel.FlowDisposition#FAILURE_DISPOSITIONS failure disposition} do not.
  */
 @ParametersAreNonnullByDefault
 public final class TraceAndReverseFlow {

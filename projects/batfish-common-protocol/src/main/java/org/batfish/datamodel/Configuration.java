@@ -259,8 +259,6 @@ public final class Configuration implements Serializable {
 
   private Map<String, Interface> _interfaces;
 
-  private Map<String, Ip6AccessList> _ip6AccessLists;
-
   private Map<String, IpAccessList> _ipAccessLists;
 
   private Map<String, IpSpace> _ipSpaces;
@@ -297,8 +295,6 @@ public final class Configuration implements Serializable {
   private String _ntpSourceInterface;
 
   private Map<String, PacketPolicy> _packetPolicies;
-
-  private Map<String, Route6FilterList> _route6FilterLists;
 
   private Map<String, RouteFilterList> _routeFilterLists;
 
@@ -355,7 +351,6 @@ public final class Configuration implements Serializable {
     _ikePhase1Proposals = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipAccessLists = new TreeMap<>();
-    _ip6AccessLists = new TreeMap<>();
     _ipSpaces = new HashMap<>();
     _ipSpaceMetadata = new TreeMap<>();
     _ipsecPeerConfigs = ImmutableSortedMap.of();
@@ -368,7 +363,6 @@ public final class Configuration implements Serializable {
     _ntpServers = new TreeSet<>();
     _packetPolicies = new TreeMap<>();
     _routeFilterLists = new TreeMap<>();
-    _route6FilterLists = new TreeMap<>();
     _routingPolicies = new TreeMap<>();
     _snmpTrapServers = new TreeSet<>();
     _tacacsServers = new TreeSet<>();
@@ -664,12 +658,6 @@ public final class Configuration implements Serializable {
     return _disconnectAdminDownInterfaces;
   }
 
-  /** Dictionary of all IPV6 access-lists for this node. */
-  @JsonProperty(PROP_IP6_ACCESS_LISTS)
-  public Map<String, Ip6AccessList> getIp6AccessLists() {
-    return _ip6AccessLists;
-  }
-
   /** Dictionary of all IPV4 access-lists for this node. */
   @JsonProperty(PROP_IP_ACCESS_LISTS)
   public Map<String, IpAccessList> getIpAccessLists() {
@@ -761,12 +749,6 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_PACKET_POLICIES)
   public Map<String, PacketPolicy> getPacketPolicies() {
     return _packetPolicies;
-  }
-
-  /** Dictionary of all IPV6 route filter lists for this node. */
-  @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
-  public Map<String, Route6FilterList> getRoute6FilterLists() {
-    return _route6FilterLists;
   }
 
   /** Dictionary of all IPV4 route filter lists for this node. */
@@ -952,9 +934,9 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_IP6_ACCESS_LISTS)
-  public void setIp6AccessLists(Map<String, Ip6AccessList> ip6AccessLists) {
-    _ip6AccessLists = ip6AccessLists;
-  }
+  @Deprecated
+  @SuppressWarnings("unused")
+  private void setIp6AccessListsDeprecatedForJson(Object unused) {}
 
   @JsonProperty(PROP_IP_ACCESS_LISTS)
   public void setIpAccessLists(Map<String, IpAccessList> ipAccessLists) {
@@ -991,7 +973,7 @@ public final class Configuration implements Serializable {
   /**
    * Set the {@link LocationInfo} for {@link Location locations} on this node. Any missing locations
    * will have their {@link LocationInfo} created automatically. See {@link
-   * org.batfish.specifier.LocationInfoUtils#computeLocationInfo(Map)}.
+   * org.batfish.specifier.LocationInfoUtils}.
    */
   @JsonIgnore
   public void setLocationInfo(Map<Location, LocationInfo> locationInfo) {
@@ -1034,9 +1016,9 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
-  public void setRoute6FilterLists(Map<String, Route6FilterList> route6FilterLists) {
-    _route6FilterLists = route6FilterLists;
-  }
+  @Deprecated
+  @SuppressWarnings("unused")
+  private void setRoute6FilterListsDeprecatedForJson(Object unused) {}
 
   @JsonProperty(PROP_ROUTE_FILTER_LISTS)
   public void setRouteFilterLists(Map<String, RouteFilterList> routeFilterLists) {

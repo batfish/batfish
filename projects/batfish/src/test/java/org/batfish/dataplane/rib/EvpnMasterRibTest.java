@@ -12,6 +12,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -32,6 +33,7 @@ public final class EvpnMasterRibTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.ZERO)
+            .setReceivedFrom(ReceivedFromSelf.instance())
             .setVni(1);
     EvpnType5Route route1 =
         rb.setRouteDistinguisher(RouteDistinguisher.from(1, 1L)).setLocalPreference(10).build();
@@ -60,6 +62,7 @@ public final class EvpnMasterRibTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.ZERO)
+            .setReceivedFrom(ReceivedFromSelf.instance())
             .setRouteDistinguisher(RouteDistinguisher.from(1, 1L))
             .setLocalPreference(10)
             .setVni(1)

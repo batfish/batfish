@@ -35,13 +35,13 @@ public final class PermitAndDenyBdds {
   /** BDD of all flows explicitly matched and permitted */
   @Nonnull
   public BDD getPermitBdd() {
-    return _permitBdd;
+    return _permitBdd.id();
   }
 
   /** BDD of all flows explicitly matched and denied */
   @Nonnull
   public BDD getDenyBdd() {
-    return _denyBdd;
+    return _denyBdd.id();
   }
 
   /** BDD of all explicitly matched flows, whether permitted or denied */
@@ -50,7 +50,7 @@ public final class PermitAndDenyBdds {
     if (_matchBdd == null) {
       _matchBdd = _permitBdd.or(_denyBdd);
     }
-    return _matchBdd;
+    return _matchBdd.id();
   }
 
   /**

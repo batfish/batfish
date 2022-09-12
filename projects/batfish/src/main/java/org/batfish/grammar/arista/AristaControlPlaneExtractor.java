@@ -5,12 +5,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
 import static org.batfish.representation.arista.AristaConfiguration.computeRouteMapEntryName;
 import static org.batfish.representation.arista.AristaStructureType.ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.arista.AristaStructureType.BGP_LISTEN_RANGE;
+import static org.batfish.representation.arista.AristaStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.arista.AristaStructureType.BGP_PEER_GROUP;
 import static org.batfish.representation.arista.AristaStructureType.CLASS_MAP;
 import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LIST;
@@ -52,7 +55,9 @@ import static org.batfish.representation.arista.AristaStructureUsage.BGP_DEFAULT
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_LISTEN_RANGE_PEER_FILTER;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_LISTEN_RANGE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
@@ -376,10 +381,11 @@ import org.batfish.grammar.arista.AristaParser.Eos_bandwidth_specifierContext;
 import org.batfish.grammar.arista.AristaParser.Eos_bgp_communityContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_domainContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_local_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Eos_mlag_peer_addressContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_peer_linkContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.arista.AristaParser.Eos_mlag_shutdownContext;
+import org.batfish.grammar.arista.AristaParser.Eos_mpa_heartbeatContext;
+import org.batfish.grammar.arista.AristaParser.Eos_mpa_ipContext;
 import org.batfish.grammar.arista.AristaParser.Eos_neighbor_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_aa_modifiersContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_aa_v4Context;
@@ -1491,8 +1497,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _currentAclSeq = lastKey + 10;
     }
     // structure definition tracking
-    String structName =
-        aclLineStructureName(_currentStandardAcl.getName(), _currentAclSeq.toString());
+    String lineName = getFullText(ctx).trim();
+    String structName = aclLineStructureName(_currentStandardAcl.getName(), lineName);
     int configLine = ctx.start.getLine();
     _configuration.defineSingleLineStructure(IP_ACCESS_LIST_STANDARD_LINE, structName, configLine);
     _configuration.referenceStructure(
@@ -2735,6 +2741,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _configuration.referenceStructure(
           PEER_FILTER, peerFilterName, BGP_LISTEN_RANGE_PEER_FILTER, ctx.getStart().getLine());
     }
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(prefix.toString(), _currentAristaBgpVrf.getName());
+    _configuration.defineStructure(BGP_LISTEN_RANGE, bgpNeighborStructName, ctx);
+    _configuration.referenceStructure(
+        BGP_LISTEN_RANGE, bgpNeighborStructName, BGP_LISTEN_RANGE_SELF_REF, ctx.prefix.getLine());
   }
 
   @Override
@@ -2811,6 +2822,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentAristaBgpNeighbor =
         _currentAristaBgpVrf.getV4neighbors().computeIfAbsent(ip, AristaBgpV4Neighbor::new);
     _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(ip.toString(), _currentAristaBgpVrf.getName());
+    _configuration.defineStructure(BGP_NEIGHBOR, bgpNeighborStructName, ctx);
+    _configuration.referenceStructure(
+        BGP_NEIGHBOR, bgpNeighborStructName, BGP_NEIGHBOR_SELF_REF, ctx.name.getLine());
   }
 
   @Override
@@ -6097,11 +6113,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
-    if (ctx.HEARTBEAT() == null) {
-      _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
-    } else {
-      _configuration.getEosMlagConfiguration().setPeerAddressHeartbeat(toIp(ctx.ip));
+  public void exitEos_mpa_ip(Eos_mpa_ipContext ctx) {
+    _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitEos_mpa_heartbeat(Eos_mpa_heartbeatContext ctx) {
+    _configuration.getEosMlagConfiguration().setPeerAddressHeartbeat(toIp(ctx.ip));
+    if (ctx.vrf_name() != null) {
+      _configuration.getEosMlagConfiguration().setPeerAddressHeartbeatVrf(toString(ctx.vrf_name()));
     }
   }
 

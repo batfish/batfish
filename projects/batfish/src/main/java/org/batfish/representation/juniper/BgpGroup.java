@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.Ip;
@@ -14,6 +15,7 @@ public class BgpGroup implements Serializable {
     INTERNAL
   }
 
+  private @Nullable AddPath _addPath;
   private Boolean _advertiseExternal;
   private Boolean _advertiseInactive;
   private Boolean _advertisePeerAs;
@@ -57,6 +59,9 @@ public class BgpGroup implements Serializable {
     _inherited = true;
     if (_parent != null) {
       _parent.cascadeInheritance();
+      if (_addPath == null) {
+        _addPath = _parent._addPath;
+      }
       if (_advertiseExternal == null) {
         _advertiseExternal = _parent._advertiseExternal;
       }
@@ -131,6 +136,18 @@ public class BgpGroup implements Serializable {
         _type = _parent._type;
       }
     }
+  }
+
+  /** Returns add-path configuration for family inet unicast. */
+  public @Nullable AddPath getAddPath() {
+    return _addPath;
+  }
+
+  public @Nonnull AddPath getOrInitAddPath() {
+    if (_addPath == null) {
+      _addPath = new AddPath();
+    }
+    return _addPath;
   }
 
   public Boolean getAdvertiseExternal() {

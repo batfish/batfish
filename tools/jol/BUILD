@@ -1,0 +1,19 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+
+package(default_visibility = ["//tools/jol:__subpackages__"])
+
+copy_file(
+    name = "make_jol_local",
+    src = "@jol_maven//:org_openjdk_jol_jol_cli_full",
+    out = "jol_cli.jar",
+)
+
+sh_binary(
+    name = "jol",
+    srcs = [":run_jol.sh"],
+    data = [
+        ":jol_cli.jar",
+        "//projects/allinone:allinone_main_deploy.jar",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)

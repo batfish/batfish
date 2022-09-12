@@ -25,8 +25,8 @@ import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.InterfaceLocation;
-import org.batfish.specifier.parboiled.Grammar;
 import org.junit.Test;
 
 /** Tests for {@link org.batfish.datamodel.answers.InputValidationUtils} */

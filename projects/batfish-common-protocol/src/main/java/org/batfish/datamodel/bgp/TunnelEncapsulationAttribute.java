@@ -48,4 +48,9 @@ public class TunnelEncapsulationAttribute implements Serializable {
   public int hashCode() {
     return _remoteEndpoint.hashCode();
   }
+
+  @Override
+  public String toString() {
+    return String.format("Tunnel type: ipip, remote endpoint: %s", _remoteEndpoint);
+  }
 }

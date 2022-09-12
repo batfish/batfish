@@ -3,6 +3,7 @@ package org.batfish.grammar.frr;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.grammar.frr.FrrParser.Int_exprContext;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.frr.FrrConversions.computeRouteMapEntryName;
@@ -11,6 +12,9 @@ import static org.batfish.representation.frr.FrrStructureType.BGP_AS_PATH_ACCESS
 import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST;
 import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST_STANDARD;
+import static org.batfish.representation.frr.FrrStructureType.BGP_LISTEN_RANGE;
+import static org.batfish.representation.frr.FrrStructureType.BGP_NEIGHBOR;
+import static org.batfish.representation.frr.FrrStructureType.BGP_NEIGHBOR_INTERFACE;
 import static org.batfish.representation.frr.FrrStructureType.IPV6_PREFIX_LIST;
 import static org.batfish.representation.frr.FrrStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP;
@@ -24,6 +28,9 @@ import static org.batfish.representation.frr.FrrStructureUsage.BGP_IPV4_UNICAST_
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_LISTEN_RANGE_SELF_REF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_NEIGHBOR_INTERFACE_SELF_REF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_NETWORK;
 import static org.batfish.representation.frr.FrrStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
 import static org.batfish.representation.frr.FrrStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
@@ -90,6 +97,7 @@ import org.batfish.grammar.frr.FrrParser.Ip_community_list_nameContext;
 import org.batfish.grammar.frr.FrrParser.Ip_prefix_lengthContext;
 import org.batfish.grammar.frr.FrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.frr.FrrParser.Ip_routeContext;
+import org.batfish.grammar.frr.FrrParser.Ipv6_addressContext;
 import org.batfish.grammar.frr.FrrParser.Ipv6_prefix_listContext;
 import org.batfish.grammar.frr.FrrParser.Line_actionContext;
 import org.batfish.grammar.frr.FrrParser.Literal_standard_communityContext;
@@ -130,11 +138,11 @@ import org.batfish.grammar.frr.FrrParser.Rbafln_route_mapContext;
 import org.batfish.grammar.frr.FrrParser.Rbafln_route_reflector_clientContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_cluster_idContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_confederationContext;
-import org.batfish.grammar.frr.FrrParser.Rbb_max_med_administrativeContext;
 import org.batfish.grammar.frr.FrrParser.Rbb_router_idContext;
 import org.batfish.grammar.frr.FrrParser.Rbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.frr.FrrParser.Rbbl_limitContext;
 import org.batfish.grammar.frr.FrrParser.Rbbl_rangeContext;
+import org.batfish.grammar.frr.FrrParser.Rbbmm_administrativeContext;
 import org.batfish.grammar.frr.FrrParser.Rbn_interfaceContext;
 import org.batfish.grammar.frr.FrrParser.Rbn_ip6Context;
 import org.batfish.grammar.frr.FrrParser.Rbn_ipContext;
@@ -362,6 +370,10 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
+    return Ip6.parse(ctx.getText());
   }
 
   private static @Nonnull Prefix toPrefix(PrefixContext ctx) {
@@ -1228,7 +1240,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitRbb_max_med_administrative(Rbb_max_med_administrativeContext ctx) {
+  public void exitRbbmm_administrative(Rbbmm_administrativeContext ctx) {
     if (ctx.med != null) {
       _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
     } else {
@@ -1239,6 +1251,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitRbbl_range(Rbbl_rangeContext ctx) {
     BgpNeighbor bgpNeighbor;
+    String bgpNeighborName;
     if (ctx.prefix() != null) {
       Prefix listenRange = toPrefix(ctx.prefix());
       bgpNeighbor =
@@ -1246,6 +1259,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
               .getNeighbors()
               .computeIfAbsent(
                   listenRange.toString(), (name) -> new BgpDynamicNeighbor(name, listenRange));
+      bgpNeighborName = listenRange.toString();
     } else {
       Prefix6 listenRange = toPrefix6(ctx.prefix6());
       bgpNeighbor =
@@ -1253,8 +1267,17 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
               .getNeighbors()
               .computeIfAbsent(
                   listenRange.toString(), (name) -> new BgpDynamic6Neighbor(name, listenRange));
+      bgpNeighborName = listenRange.toString();
     }
     bgpNeighbor.setPeerGroup(ctx.name.getText());
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(bgpNeighborName, _currentBgpVrf.getVrfName());
+    _vc.defineStructure(BGP_LISTEN_RANGE, bgpNeighborStructName, ctx);
+    _vc.referenceStructure(
+        BGP_LISTEN_RANGE,
+        bgpNeighborStructName,
+        BGP_LISTEN_RANGE_SELF_REF,
+        ctx.getStart().getLine());
   }
 
   @Override
@@ -1264,20 +1287,30 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
 
   @Override
   public void enterRbn_ip(Rbn_ipContext ctx) {
+    Ip ip = toIp(ctx.ip);
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
-            .computeIfAbsent(
-                ctx.ip.getText(), (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)));
+            .computeIfAbsent(ip.toString(), (ipStr) -> new BgpIpNeighbor(ipStr, ip));
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(ip.toString(), _currentBgpVrf.getVrfName());
+    _vc.defineStructure(BGP_NEIGHBOR, bgpNeighborStructName, ctx);
+    _vc.referenceStructure(
+        BGP_NEIGHBOR, bgpNeighborStructName, BGP_NEIGHBOR_SELF_REF, ctx.ip.getStart().getLine());
   }
 
   @Override
   public void enterRbn_ip6(Rbn_ip6Context ctx) {
+    Ip6 ip6 = toIp6(ctx.ip6);
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
-            .computeIfAbsent(
-                ctx.ip6.getText(), (ipStr) -> new BgpIpv6Neighbor(ipStr, Ip6.parse(ipStr)));
+            .computeIfAbsent(ip6.toString(), (ipStr) -> new BgpIpv6Neighbor(ipStr, ip6));
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(ip6.toString(), _currentBgpVrf.getVrfName());
+    _vc.defineStructure(BGP_NEIGHBOR, bgpNeighborStructName, ctx);
+    _vc.referenceStructure(
+        BGP_NEIGHBOR, bgpNeighborStructName, BGP_NEIGHBOR_SELF_REF, ctx.ip6.getStart().getLine());
   }
 
   @Override
@@ -1312,6 +1345,14 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       checkState(
           _currentBgpVrf.getNeighbors().put(ifaceName, _currentBgpNeighbor) == null,
           "neighbor should not already exist since _currentBgpNeighbor was null");
+      String bgpNeighborStructName =
+          bgpNeighborStructureName(ifaceName, _currentBgpVrf.getVrfName());
+      _vc.defineStructure(BGP_NEIGHBOR_INTERFACE, bgpNeighborStructName, ctx);
+      _vc.referenceStructure(
+          BGP_NEIGHBOR_INTERFACE,
+          bgpNeighborStructName,
+          BGP_NEIGHBOR_INTERFACE_SELF_REF,
+          ctx.getStart().getLine());
     }
   }
 

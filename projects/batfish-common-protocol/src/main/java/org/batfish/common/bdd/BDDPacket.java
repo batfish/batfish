@@ -23,6 +23,7 @@ import net.sf.javabdd.JFactory;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 
 /**
@@ -93,6 +94,7 @@ public class BDDPacket implements Serializable {
   private final @Nonnull BDD _tcpRst;
   private final @Nonnull BDD _tcpSyn;
   private final @Nonnull BDD _tcpUrg;
+  private final @Nonnull BDD _tcpFlags;
 
   private final BDDPairing _swapSourceAndDestinationPairing;
   @LazyInit private @Nullable BDD _saneFlow;
@@ -157,6 +159,8 @@ public class BDDPacket implements Serializable {
     _tcpRst = allocateBDDBit("tcpRst");
     _tcpSyn = allocateBDDBit("tcpSyn");
     _tcpUrg = allocateBDDBit("tcpUrg");
+    _tcpFlags =
+        factory.andLiterals(_tcpAck, _tcpCwr, _tcpEce, _tcpFin, _tcpPsh, _tcpRst, _tcpSyn, _tcpUrg);
     _dscp = allocateBDDInteger("dscp", DSCP_LENGTH);
     _ecn = allocateBDDInteger("ecn", ECN_LENGTH);
     _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH);
@@ -425,26 +429,33 @@ public class BDDPacket implements Serializable {
   }
 
   public Flow.Builder getFromFromAssignment(BitSet bits) {
+    IpProtocol protocol = _ipProtocol.satAssignmentToValue(bits);
     Flow.Builder fb = Flow.builder();
     fb.setDstIp(Ip.create(_dstIp.getVar().satAssignmentToLong(bits)));
     fb.setSrcIp(Ip.create(_srcIp.getVar().satAssignmentToLong(bits)));
-    fb.setDstPort(_dstPort.getVar().satAssignmentToInt(bits));
-    fb.setSrcPort(_srcPort.getVar().satAssignmentToInt(bits));
-    fb.setIpProtocol(_ipProtocol.satAssignmentToValue(bits));
-    fb.setIcmpCode(_icmpCode.satAssignmentToValue(bits));
-    fb.setIcmpType(_icmpType.satAssignmentToValue(bits));
-    fb.setTcpFlagsAck(bits.get(_tcpAck.level()));
-    fb.setTcpFlagsCwr(bits.get(_tcpCwr.level()));
-    fb.setTcpFlagsEce(bits.get(_tcpEce.level()));
-    fb.setTcpFlagsFin(bits.get(_tcpFin.level()));
-    fb.setTcpFlagsPsh(bits.get(_tcpPsh.level()));
-    fb.setTcpFlagsRst(bits.get(_tcpRst.level()));
-    fb.setTcpFlagsSyn(bits.get(_tcpSyn.level()));
-    fb.setTcpFlagsUrg(bits.get(_tcpUrg.level()));
+    fb.setIpProtocol(protocol);
     fb.setDscp(_dscp.satAssignmentToInt(bits));
     fb.setEcn(_ecn.satAssignmentToInt(bits));
     fb.setFragmentOffset(_fragmentOffset.satAssignmentToInt(bits));
     fb.setPacketLength(_packetLength.satAssignmentToValue(bits));
+    if (IpProtocol.IP_PROTOCOLS_WITH_PORTS.contains(protocol)) {
+      fb.setDstPort(_dstPort.getVar().satAssignmentToInt(bits));
+      fb.setSrcPort(_srcPort.getVar().satAssignmentToInt(bits));
+    }
+    if (protocol == IpProtocol.ICMP) {
+      fb.setIcmpCode(_icmpCode.satAssignmentToValue(bits));
+      fb.setIcmpType(_icmpType.satAssignmentToValue(bits));
+    }
+    if (protocol == IpProtocol.TCP) {
+      fb.setTcpFlagsAck(bits.get(_tcpAck.level()));
+      fb.setTcpFlagsCwr(bits.get(_tcpCwr.level()));
+      fb.setTcpFlagsEce(bits.get(_tcpEce.level()));
+      fb.setTcpFlagsFin(bits.get(_tcpFin.level()));
+      fb.setTcpFlagsPsh(bits.get(_tcpPsh.level()));
+      fb.setTcpFlagsRst(bits.get(_tcpRst.level()));
+      fb.setTcpFlagsSyn(bits.get(_tcpSyn.level()));
+      fb.setTcpFlagsUrg(bits.get(_tcpUrg.level()));
+    }
     return fb;
   }
 
@@ -521,6 +532,17 @@ public class BDDPacket implements Serializable {
   @Nonnull
   public PrimedBDDInteger getSrcPortPrimedBDDInteger() {
     return _srcPort;
+  }
+
+  /**
+   * Returns an assignment BDD with all TCP flags true.
+   *
+   * <p>May be useful for {@link BDD#project(BDD)}, {@link BDD#testsVars(BDD)}, or similar
+   * operations.
+   */
+  @Nonnull
+  public BDD getTcpFlagsVars() {
+    return _tcpFlags;
   }
 
   @Nonnull

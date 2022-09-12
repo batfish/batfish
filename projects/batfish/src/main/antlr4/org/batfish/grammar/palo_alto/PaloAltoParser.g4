@@ -131,6 +131,7 @@ statement_config_general
 statement_template
 :
     st_description
+    | st_variable
     | statement_template_config
 ;
 

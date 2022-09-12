@@ -3,12 +3,18 @@ package org.batfish.coordinator;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.common.CoordConstsV2.QP_VERBOSE;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -18,12 +24,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.NetworkResource;
 import org.batfish.version.Versioned;
+import org.glassfish.jersey.jackson.JacksonFeature;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -35,6 +43,14 @@ import org.batfish.version.Versioned;
 @Path(CoordConsts.SVC_CFG_WORK_MGR2)
 @Produces(MediaType.APPLICATION_JSON)
 public class WorkMgrServiceV2 {
+
+  public static final List<Class<?>> REQUIRED_FEATURES =
+      ImmutableList.of(
+          ExceptionMapper.class,
+          ServiceObjectMapper.class,
+          JacksonFeature.class,
+          ApiKeyAuthenticationFilter.class,
+          VersionCompatibilityFilter.class);
 
   private BatfishLogger _logger = Main.getLogger();
 
@@ -116,4 +132,29 @@ public class WorkMgrServiceV2 {
   public Response getVersion() {
     return Response.ok().entity(Versioned.getVersions()).build();
   }
+
+  @POST
+  @Path(CoordConstsV2.RSC_NETWORKS)
+  public Response initNetwork(
+      @QueryParam(CoordConstsV2.QP_NAME) @Nullable String networkNameArg,
+      @QueryParam(CoordConstsV2.QP_NAME_PREFIX) @Nullable String networkPrefixArg,
+      @Context UriInfo uriInfo) {
+    String networkName = Strings.isNullOrEmpty(networkNameArg) ? null : networkNameArg;
+    String networkPrefix = Strings.isNullOrEmpty(networkPrefixArg) ? null : networkPrefixArg;
+    if (networkName == null && networkPrefix == null) {
+      networkPrefix = DEFAULT_NETWORK_PREFIX;
+    }
+    String outputNetworkName;
+    try {
+      outputNetworkName = Main.getWorkMgr().initNetwork(networkName, networkPrefix);
+    } catch (BatfishException e) {
+      // already exists
+      throw new BadRequestException(e.getMessage());
+    }
+
+    Main.getAuthorizer().authorizeContainer(_apiKey, outputNetworkName);
+    return Response.created(uriInfo.getRequestUriBuilder().path(outputNetworkName).build()).build();
+  }
+
+  @VisibleForTesting static final String DEFAULT_NETWORK_PREFIX = "net";
 }

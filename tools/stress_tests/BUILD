@@ -1,0 +1,16 @@
+java_binary(
+    name = "snapshotBddStressTests",
+    testonly = True,
+    srcs = ["SnapshotBddStressTests.java"],
+    main_class = "tools.stress_tests.SnapshotBddStressTests",
+    deps = [
+        "//projects/allinone",
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/bdd",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
+)

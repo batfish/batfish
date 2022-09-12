@@ -90,7 +90,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
@@ -569,6 +568,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       boolean allowLocalAsIn = loops > 0;
       AddressFamilyCapabilities.Builder ipv4AfSettingsBuilder = AddressFamilyCapabilities.builder();
+
+      // add-path
+      AddPath addPath = ig.getAddPath();
+      if (addPath != null) {
+        ipv4AfSettingsBuilder.setAdditionalPathsReceive(addPath.getReceive());
+        AddPathSend send = addPath.getSend();
+        if (send != null) {
+          if (send.getPathCount() != null) {
+            // path count must be set for add-path send to be enabled on Juniper
+            ipv4AfSettingsBuilder.setAdditionalPathsSend(true);
+            // TODO: Datamodel property additionalPathsSelectAll needs to be split into at least:
+            //       1. select all paths
+            //       - use if Juniper path-selection-mode is ALL_PATHS, or neither
+            // path-selection-mode
+            //         nor multipath is set
+            //       2. select all ECMP-best paths
+            //       - use if Juniper path-selection-mode is EQUAL_COST_PATHS, or multipath is set
+            ipv4AfSettingsBuilder.setAdditionalPathsSelectAll(true);
+            // TODO: implement max additional-paths to send in datamodel and populate here
+          } else {
+            _w.redFlag(
+                String.format(
+                    "add-path send disabled because add-path send path-count not configured for"
+                        + " neighbor %s",
+                    prefix));
+          }
+        }
+      }
       ipv4AfSettingsBuilder.setAllowLocalAsIn(allowLocalAsIn);
       Boolean advertisePeerAs = ig.getAdvertisePeerAs();
       if (advertisePeerAs == null) {
@@ -3165,11 +3192,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
           int actionLineCounter = 0;
           String routeFilterName = fromRouteFilter.getRouteFilterName();
           RouteFilter rf = _masterLogicalSystem.getRouteFilters().get(routeFilterName);
+          if (!rf.getIpv4()) {
+            continue;
+          }
           for (RouteFilterLine line : rf.getLines()) {
+            if (!(line instanceof Route4FilterLine)) {
+              continue;
+            }
             if (line.getThens().size() > 0) {
               String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
               RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
-              line.applyTo(lineSpecificList);
+              ((Route4FilterLine) line).applyTo(lineSpecificList);
               actionLineCounter++;
               _c.getRouteFilterLists().put(lineListName, lineSpecificList);
               If lineSpecificIfStatement = new If();
@@ -3621,20 +3654,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (rf.getIpv4()) {
         RouteFilterList rfl = new RouteFilterList(name);
         for (RouteFilterLine line : rf.getLines()) {
-          if (line.getThens().size() == 0) {
-            line.applyTo(rfl);
+          if (line instanceof Route4FilterLine && line.getThens().size() == 0) {
+            ((Route4FilterLine) line).applyTo(rfl);
           }
         }
         _c.getRouteFilterLists().put(name, rfl);
-      }
-      if (rf.getIpv6()) {
-        Route6FilterList rfl = new Route6FilterList(name);
-        for (RouteFilterLine line : rf.getLines()) {
-          if (line.getThens().size() == 0) {
-            line.applyTo(rfl);
-          }
-        }
-        _c.getRoute6FilterLists().put(name, rfl);
       }
     }
 
@@ -3936,6 +3960,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.BGP_GROUP,
         JuniperStructureUsage.BGP_ALLOW,
         JuniperStructureUsage.BGP_NEIGHBOR);
+    markConcreteStructure(JuniperStructureType.BGP_NEIGHBOR);
     markConcreteStructure(JuniperStructureType.BRIDGE_DOMAIN);
     markConcreteStructure(
         JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS,

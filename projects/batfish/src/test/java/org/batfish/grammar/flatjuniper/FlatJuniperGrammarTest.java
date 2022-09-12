@@ -70,6 +70,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -154,6 +155,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.computeCon
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.firewallFilterTermVendorStructureId;
 import static org.batfish.representation.juniper.JuniperConfiguration.generateInstanceImportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.generateResolutionRibImportPolicyName;
@@ -164,6 +166,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_CODE_POINT_ALIAS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
@@ -174,6 +178,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
@@ -185,6 +190,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
+import static org.batfish.representation.juniper.Zone.getInboundFilterName;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -270,7 +276,6 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -296,6 +301,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -303,7 +309,7 @@ import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -323,6 +329,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -377,6 +384,7 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.BaseApplication;
+import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.BridgeDomain;
 import org.batfish.representation.juniper.BridgeDomainVlanIdAll;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
@@ -409,6 +417,7 @@ import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
@@ -430,6 +439,7 @@ import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.PatPool;
+import org.batfish.representation.juniper.PathSelectionMode;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCondition;
@@ -1080,6 +1090,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testMisbraced() throws IOException {
+    // don't crash, do produce a config
+    Batfish batfish = getBatfishForConfigurationNames("misbraced");
+    batfish.getSettings().setDisableUnrecognized(false);
+    assertThat(batfish.loadConfigurations(batfish.getSnapshot()), aMapWithSize(1));
+  }
+
+  @Test
   public void testBgpConfederation() {
     JuniperConfiguration c = parseJuniperConfig("bgp-confederation");
     RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
@@ -1124,6 +1142,34 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         parseConfig("bgp-multipath-none").getDefaultVrf(),
         hasBgpProcess(allOf(hasMultipathEbgp(false), hasMultipathIbgp(false))));
+  }
+
+  @Test
+  public void testBgpNeighborExtraction() throws IOException {
+    String hostname = "bgp-neighbor";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String bgpNeighborStructureName = Names.bgpNeighborStructureName("1.2.3.4", "default");
+    String bgpNeighborStructureName6 =
+        Names.bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(4, 5)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, bgpNeighborStructureName, contains(4)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, bgpNeighborStructureName6, contains(5)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_GROUP, "G", 2));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, bgpNeighborStructureName, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, bgpNeighborStructureName6, 1));
   }
 
   @Test
@@ -1236,6 +1282,124 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
     assertThat(
         c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("1.1.1.1"), hasRemoteAs(1L)))));
+  }
+
+  @Test
+  public void testBgpAddPathExtraction() {
+    String hostname = "juniper-bgp-add-path";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    RoutingInstance ri = vc.getMasterLogicalSystem().getDefaultRoutingInstance();
+    BgpGroup master = ri.getMasterBgpGroup();
+    BgpGroup g1 = ri.getNamedBgpGroups().get("g1");
+    BgpGroup n1 = ri.getIpBgpGroups().get(Prefix.strict("10.0.0.1/32"));
+    BgpGroup g2 = ri.getNamedBgpGroups().get("g2");
+    BgpGroup n2 = ri.getIpBgpGroups().get(Prefix.strict("10.0.0.2/32"));
+    BgpGroup g3 = ri.getNamedBgpGroups().get("g3");
+    BgpGroup n3 = ri.getIpBgpGroups().get(Prefix.strict("10.0.0.3/32"));
+
+    assertTrue(master.getAddPath().getReceive());
+    assertThat(master.getAddPath().getSend().getPathCount(), equalTo(2));
+    assertNull(master.getAddPath().getSend().getPathSelectionMode());
+
+    assertFalse(g1.getAddPath().getReceive());
+    assertTrue(g1.getAddPath().getSend().getMultipath());
+    assertThat(g1.getAddPath().getSend().getPathCount(), equalTo(64));
+
+    assertNull(n1.getAddPath());
+
+    assertNull(g2.getAddPath());
+
+    assertFalse(n2.getAddPath().getReceive());
+    assertThat(
+        n2.getAddPath().getSend().getPathSelectionMode(), equalTo(PathSelectionMode.ALL_PATHS));
+
+    assertNull(g3.getAddPath());
+
+    assertFalse(n3.getAddPath().getReceive());
+    assertThat(
+        n3.getAddPath().getSend().getPathSelectionMode(),
+        equalTo(PathSelectionMode.EQUAL_COST_PATHS));
+    assertThat(n3.getAddPath().getSend().getPrefixPolicy(), equalTo("appp"));
+  }
+
+  @Test
+  public void testBgpAddPathReferences() throws IOException {
+    String hostname = "juniper-bgp-add-path";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ae,
+        hasReferencedStructure(
+            "configs/" + hostname,
+            POLICY_STATEMENT,
+            "appp",
+            JuniperStructureUsage.ADD_PATH_SEND_PREFIX_POLICY));
+  }
+
+  @Test
+  public void testBgpAddPathWarnings() throws IOException {
+    String hostname = "juniper-bgp-add-path";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae.getWarnings().get(hostname).getRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                "add-path send disabled because add-path send path-count not configured for"
+                    + " neighbor 10.0.0.2/32"),
+            WarningMatchers.hasText(
+                "add-path send disabled because add-path send path-count not configured for"
+                    + " neighbor 10.0.0.3/32")));
+  }
+
+  @Test
+  public void testBgpAddPathConversion() {
+    String hostname = "juniper-bgp-add-path";
+    Configuration c = parseConfig(hostname);
+    Map<Ip, BgpActivePeerConfig> activeNeighbors =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    {
+      AddressFamilyCapabilities afc =
+          activeNeighbors
+              .get(Ip.parse("10.0.0.1"))
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities();
+      assertFalse(afc.getAdditionalPathsReceive());
+      assertTrue(afc.getAdditionalPathsSend());
+      assertTrue(afc.getAdditionalPathsSelectAll());
+    }
+    {
+      AddressFamilyCapabilities afc =
+          activeNeighbors
+              .get(Ip.parse("10.0.0.2"))
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities();
+      assertFalse(afc.getAdditionalPathsReceive());
+      assertFalse(afc.getAdditionalPathsSend());
+      assertFalse(afc.getAdditionalPathsSelectAll());
+    }
+    {
+      AddressFamilyCapabilities afc =
+          activeNeighbors
+              .get(Ip.parse("10.0.0.3"))
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities();
+      assertFalse(afc.getAdditionalPathsReceive());
+      assertFalse(afc.getAdditionalPathsSend());
+      assertFalse(afc.getAdditionalPathsSelectAll());
+    }
+    {
+      AddressFamilyCapabilities afc =
+          activeNeighbors
+              .get(Ip.parse("10.0.0.4"))
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities();
+      assertTrue(afc.getAdditionalPathsReceive());
+      assertTrue(afc.getAdditionalPathsSend());
+      assertTrue(afc.getAdditionalPathsSelectAll());
+    }
   }
 
   @Test
@@ -1615,6 +1779,21 @@ public final class FlatJuniperGrammarTest {
             .getNamedBgpGroups()
             .get("_vrfB")
             .getEvpnAf());
+  public void testSecurityZoneTermReference() throws IOException {
+    String hostname = "security-zone-term-refs";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Term is defined and has a self-reference
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename,
+            SECURITY_POLICY_TERM,
+            computeSecurityPolicyTermName(getInboundFilterName("ZONE_NAME"), "ALL"),
+            1));
   }
 
   @Test
@@ -2087,20 +2266,23 @@ public final class FlatJuniperGrammarTest {
         c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     /*
-     * Should have four ACLs:
+     * Should have six ACLs:
      *  Explicitly defined in the config file:
      *    One from the global security policy
      *  Generated by logic in toVendorIndependent
      *    One permitting existing connections (default firewall behavior)
      *    Two defining security policies for each interface (combines explicit security policy with
      *        implicit security policies like allow existing connection)
+     *    Two inbound policies, one for each zone
      */
     assertThat(
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
             ACL_NAME_GLOBAL_POLICY,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
-            ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
+            ACL_NAME_SECURITY_POLICY + interfaceNameUntrust,
+            getInboundFilterName("trust"),
+            getInboundFilterName("untrust")));
 
     /* Flows in either direction should be permitted by the global policy */
     assertThat(
@@ -2170,16 +2352,18 @@ public final class FlatJuniperGrammarTest {
         c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     /*
-     * Should have three ACLs generated by logic in toVendorIndependent:
-     *    One permitting existing connections (default firewall behavior)
+     * Should have four ACLs generated by logic in toVendorIndependent:
      *    Two defining security policies for each interface (combines explicit security policy with
      *        implicit security policies like allow existing connection)
+     *    Two for host-inbound-protocols
      */
     assertThat(
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
-            ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
+            ACL_NAME_SECURITY_POLICY + interfaceNameUntrust,
+            getInboundFilterName("trust"),
+            getInboundFilterName("untrust")));
 
     /* Simple flow in either direction should be blocked */
     assertThat(
@@ -2223,14 +2407,13 @@ public final class FlatJuniperGrammarTest {
         c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     /*
-     * Should have five ACLs:
+     * Should have six ACLs:
      *  Explicitly defined in the config file:
      *    One from the security policy from trust to untrust
      *  Generated by logic in toVendorIndependent
-     *    One permitting existing connections (default firewall behavior)
      *    Two defining security policies for each interface (combines explicit security policy with
      *        implicit security policies like allow existing connection)
-     *    One defining a pure version of the cross-zone policy.
+     *    Two for host-inbound-protocols
      */
     assertThat(
         c.getIpAccessLists().keySet(),
@@ -2238,7 +2421,9 @@ public final class FlatJuniperGrammarTest {
             securityPolicyName,
             "~" + securityPolicyName + "~pure",
             aclTrustOut.getName(),
-            aclUntrustOut.getName()));
+            aclUntrustOut.getName(),
+            getInboundFilterName("trust"),
+            getInboundFilterName("untrust")));
 
     /* Simple flow from trust to untrust should be permitted */
     assertThat(
@@ -4346,10 +4531,6 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy familyPolicy = c.getRoutingPolicies().get("FAMILY_POLICY");
     result = familyPolicy.call(envWithRoute(c, new ConnectedRoute(testPrefix, "nextHop")));
     assertThat(result.getBooleanValue(), equalTo(false));
-    result =
-        familyPolicy.call(
-            Environment.builder(c).setOriginalRoute6(new GeneratedRoute6(Prefix6.ZERO)).build());
-    assertThat(result.getBooleanValue(), equalTo(true));
 
     /*
     INTERFACE_POLICY should accept routes from either set interface, but not from other networks
@@ -5434,7 +5615,11 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testPredefinedJunosApplicationsConverted() throws IOException {
     // conversion failure will cause an exception
-    parseConfig("pre-defined-junos-applications-converted");
+    String hostname = "pre-defined-junos-applications-converted";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae.getUndefinedReferences().get("configs/" + hostname), anEmptyMap());
   }
 
   @Test
@@ -7621,6 +7806,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(LEARNED)
             .setOriginType(OriginType.IGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("192.0.2.1")))
             .setNetwork(Prefix.ZERO)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())

@@ -104,7 +104,6 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
@@ -114,12 +113,8 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6Range;
-import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.Route6FilterLine;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -190,11 +185,9 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -206,8 +199,8 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
@@ -236,7 +229,6 @@ import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
-import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.TrackInterface.Mode;
@@ -390,14 +382,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ipPrefixListLine.getLengthRange());
   }
 
-  private static @Nonnull Route6FilterLine toRoute6FilterLine(
-      Ipv6PrefixListLine ipv6PrefixListLine) {
-    return new Route6FilterLine(
-        ipv6PrefixListLine.getAction(),
-        ipv6PrefixListLine.getPrefix6(),
-        ipv6PrefixListLine.getLengthRange());
-  }
-
   @VisibleForTesting
   static @Nonnull RouteFilterList toRouteFilterList(
       IpPrefixList ipPrefixList, String vendorConfigFilename) {
@@ -411,16 +395,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         lines,
         new VendorStructureId(
             vendorConfigFilename, CiscoNxosStructureType.IP_PREFIX_LIST.getDescription(), name));
-  }
-
-  private static @Nonnull Route6FilterList toRoute6FilterList(Ipv6PrefixList ipv6PrefixList) {
-    String name = ipv6PrefixList.getName();
-    Route6FilterList r6fl = new Route6FilterList(name);
-    r6fl.setLines(
-        ipv6PrefixList.getLines().values().stream()
-            .map(CiscoNxosConfiguration::toRoute6FilterLine)
-            .collect(ImmutableList.toImmutableList()));
-    return r6fl;
   }
 
   private transient Configuration _c;
@@ -749,46 +723,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                             Statements.ExitAccept.toStaticStatement())));
               });
     }
-    if (ipv6af != null) {
-      ipv6af
-          .getNetworks()
-          .forEach(
-              network -> {
-                @Nullable String routeMap = network.getRouteMap();
-                List<BooleanExpr> exportNetworkConditions =
-                    ImmutableList.of(
-                        new MatchPrefix6Set(
-                            new DestinationNetwork6(),
-                            new ExplicitPrefix6Set(
-                                new Prefix6Space(Prefix6Range.fromPrefix6(network.getNetwork())))),
-                        new Not(
-                            new MatchProtocol(
-                                RoutingProtocol.BGP,
-                                RoutingProtocol.IBGP,
-                                RoutingProtocol.AGGREGATE)),
-                        routeMap != null && _routeMaps.containsKey(routeMap)
-                            ? new CallExpr(routeMap)
-                            : BooleanExprs.TRUE);
-                networkPolicy.addStatement(
-                    new If(
-                        new Conjunction(exportNetworkConditions),
-                        ImmutableList.of(
-                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                            Statements.ExitAccept.toStaticStatement())));
-              });
-    }
-
-    // Generate BGP_NETWORK6_NETWORKS filter.
-    if (ipv6af != null) {
-      List<Route6FilterLine> lines =
-          ipv6af.getNetworks().stream()
-              .map(Network::getNetwork)
-              .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
-              .collect(ImmutableList.toImmutableList());
-      Route6FilterList localFilter6 =
-          new Route6FilterList("~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~", lines);
-      c.getRoute6FilterLists().put(localFilter6.getName(), localFilter6);
-    }
 
     // Finalize 'network' policy and attach to process
     networkPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
@@ -977,12 +911,49 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             });
   }
 
+  /** Returns the ASN for the given EIGRP process, or an empty Optional if there is none. */
+  private Optional<Integer> getEigrpAsn(@Nullable String procName, @Nullable String vrfName) {
+    if (procName == null) {
+      // The process must be configured.
+      return Optional.empty();
+    }
+    EigrpProcessConfiguration proc = _eigrpProcesses.get(procName);
+    if (proc == null) {
+      // The configured process does not exist.
+      return Optional.empty();
+    }
+    return getEigrpAsn(proc, vrfName);
+  }
+
+  /** Returns the ASN for the given EIGRP process, or an empty Optional if there is none. */
+  private Optional<Integer> getEigrpAsn(EigrpProcessConfiguration proc, @Nullable String vrfName) {
+    if (vrfName == null) {
+      // The VRF must be configured in the process for this to matter.
+      return Optional.empty();
+    }
+    EigrpVrfConfiguration vrf = proc.getVrf(vrfName);
+    if (vrf == null) {
+      // The VRF is not configured in the process.
+      return Optional.empty();
+    }
+    return getEigrpAsn(proc, vrf);
+  }
+
+  /** Returns the ASN for the given EIGRP process, or an empty Optional if there is none. */
+  private Optional<Integer> getEigrpAsn(EigrpProcessConfiguration proc, EigrpVrfConfiguration vrf) {
+    if (vrf.getAsn() != null) {
+      // VRF ASN overrides process.
+      return Optional.of(vrf.getAsn());
+    }
+    return Optional.ofNullable(proc.getAsn());
+  }
+
   private void convertEigrpProcessVrf(
       String procName,
       EigrpProcessConfiguration processConfig,
       String vrfName,
       EigrpVrfConfiguration vrfConfig) {
-    Integer asn = Optional.ofNullable(vrfConfig.getAsn()).orElse(processConfig.getAsn());
+    Integer asn = getEigrpAsn(processConfig, vrfConfig).orElse(null);
     if (asn == null) {
       _w.redFlag(
           String.format(
@@ -1028,7 +999,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .setMetricVersion(EigrpMetricVersion.V2);
     proc.setMode(EigrpProcessMode.CLASSIC);
     String redistPolicyName = eigrpRedistributionPolicyName(vrfName, asn);
-    if (createEigrpRedistributionPolicy(vrfConfig, redistPolicyName)) {
+    if (createEigrpRedistributionPolicy(vrfConfig, vrfName, redistPolicyName)) {
       proc.setRedistributionPolicy(redistPolicyName);
     }
     v.addEigrpProcess(proc.build());
@@ -1041,10 +1012,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * @return {@code true} if a policy was created
    */
   private boolean createEigrpRedistributionPolicy(
-      EigrpVrfConfiguration vrfConfig, String policyName) {
+      EigrpVrfConfiguration vrfConfig, String vrfName, String policyName) {
     Set<NxosRoutingProtocol> supportedProtocols =
         ImmutableSet.of(
-            NxosRoutingProtocol.BGP, NxosRoutingProtocol.DIRECT, NxosRoutingProtocol.STATIC);
+            NxosRoutingProtocol.BGP,
+            NxosRoutingProtocol.EIGRP,
+            NxosRoutingProtocol.DIRECT,
+            NxosRoutingProtocol.STATIC);
     List<RedistributionPolicy> redistPolicies =
         Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
             .filter(Objects::nonNull)
@@ -1077,7 +1051,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 // Default bandwidth and delay found here, and resulting metric verified in GNS3:
                 // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/eigrp/default-metric-eigrp.html
                 () -> EigrpMetricValues.builder().setBandwidth(100000).setDelay(1E9).build());
-    statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
     redistPolicies.stream()
         .filter(policy -> getRouteMaps().containsKey(policy.getRouteMap()))
         .map(
@@ -1095,15 +1068,46 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   BooleanExpr matchBgp =
                       new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);
                   Statement setTag = new SetTag(new LiteralLong(asn));
-                  return new If(matchBgp, ImmutableList.of(setTag, call(policy.getRouteMap())));
+                  return new If(
+                      matchBgp,
+                      ImmutableList.of(
+                          setTag,
+                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                          call(policy.getRouteMap())));
+                case EIGRP:
+                  assert policy.getInstance().getTag() != null;
+                  Optional<Integer> eigrpAsn = getEigrpAsn(policy.getInstance().getTag(), vrfName);
+                  if (!eigrpAsn.isPresent()) {
+                    // There is either no EIGRP process with the given tag, this VRF is not
+                    // configured in that process, or there is no ASN configured for it.
+                    return null;
+                  }
+                  MatchProtocol matchEigrp =
+                      new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
+                  String mapName = policy.getRouteMap();
+                  List<BooleanExpr> matchConjuncts =
+                      Stream.of(
+                              new MatchProcessAsn(eigrpAsn.get()),
+                              matchEigrp,
+                              new Not(matchDefaultRoute()),
+                              new CallExpr(mapName))
+                          .filter(Objects::nonNull)
+                          .collect(ImmutableList.toImmutableList());
+                  Conjunction redistExpr = new Conjunction(matchConjuncts);
+                  return new If(
+                      redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
                 case DIRECT:
                   return new If(
                       new MatchProtocol(RoutingProtocol.CONNECTED),
-                      ImmutableList.of(call(policy.getRouteMap())));
+                      ImmutableList.of(
+                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                          call(policy.getRouteMap())));
                 case STATIC:
                   return new If(
                       new MatchProtocol(RoutingProtocol.STATIC),
-                      ImmutableList.of(call(policy.getRouteMap())));
+                      ImmutableList.of(
+                          new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)),
+                          call(policy.getRouteMap())));
                 default:
                   return null;
               }
@@ -1170,12 +1174,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void convertIpAccessLists() {
     _ipAccessLists.forEach(
         (name, ipAccessList) -> _c.getIpAccessLists().put(name, toIpAccessList(ipAccessList)));
-  }
-
-  private void convertIpv6AccessLists() {
-    _ipv6AccessLists.forEach(
-        (name, ipv6AccessList) ->
-            _c.getIp6AccessLists().put(name, toIp6AccessList(ipv6AccessList)));
   }
 
   private void convertIpAsPathAccessLists() {
@@ -1345,12 +1343,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
             _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList, _filename)));
-  }
-
-  private void convertIpv6PrefixLists() {
-    _ipv6PrefixLists.forEach(
-        (name, ipv6PrefixList) ->
-            _c.getRoute6FilterLists().put(name, toRoute6FilterList(ipv6PrefixList)));
   }
 
   private void convertLoggingServers() {
@@ -2317,10 +2309,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (eigrpProcess != null) {
       // Find process ASN for this interface. If an ASN is explicitly configured for the interface's
       // VRF, it takes precedence over process ASN (which is just process tag interpreted as ASN).
-      Integer asn =
-          Optional.ofNullable(eigrpProcess.getVrf(vrfName))
-              .map(EigrpVrfConfiguration::getAsn)
-              .orElse(eigrpProcess.getAsn());
+      Integer asn = getEigrpAsn(eigrpProcess, vrfName).orElse(null);
       if (asn != null) {
         String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, vrfName, asn);
         String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, vrfName, asn);
@@ -2712,12 +2701,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setUseAck((chooseOnes & 0b010000) != 0)
         .setUseUrg((chooseOnes & 0b100000) != 0)
         .build();
-  }
-
-  private @Nonnull Ip6AccessList toIp6AccessList(Ipv6AccessList list) {
-    // TODO: handle and test top-level fragments behavior
-    // TODO: convert lines
-    return new Ip6AccessList(list.getName());
   }
 
   /**
@@ -3945,10 +3928,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertDomainName();
     convertObjectGroups();
     convertIpAccessLists();
-    convertIpv6AccessLists();
     convertIpAsPathAccessLists();
     convertIpPrefixLists();
-    convertIpv6PrefixLists();
     convertIpCommunityLists();
     convertVrfs();
     convertInterfaces();

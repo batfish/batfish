@@ -87,6 +87,8 @@ import com.google.common.collect.Range;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -526,6 +528,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private Tag _currentTag;
   private Template _currentTemplate;
   private TemplateStack _currentTemplateStack;
+  private Optional<String> _currentTemplateVariableName;
   private VirtualRouter _currentVirtualRouter;
   private Vsys _currentVsys;
   private Zone _currentZone;
@@ -1647,13 +1650,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSa_ip_netmask(Sa_ip_netmaskContext ctx) {
-    if (ctx.ip_address() != null) {
-      _currentAddressObject.setIp(toIp(ctx.ip_address()));
-    } else if (ctx.ip_prefix() != null) {
-      _currentAddressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
-    } else {
-      warn(ctx, "Cannot understand what follows 'ip-netmask'");
-    }
+    applyIpNetmask(_currentAddressObject, ctx.ip_netmask());
   }
 
   @Override
@@ -1907,6 +1904,57 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitSt_description(St_descriptionContext ctx) {
     _currentTemplate.setDescription(getText(ctx.description));
+  }
+
+  @Override
+  public void enterSt_variable(PaloAltoParser.St_variableContext ctx) {
+    _currentTemplateVariableName = toString(ctx, ctx.variable_name());
+  }
+
+  @Override
+  public void exitSt_variable(PaloAltoParser.St_variableContext ctx) {
+    _currentTemplateVariableName = null;
+  }
+
+  @Override
+  public void exitStvt_ip_netmask(PaloAltoParser.Stvt_ip_netmaskContext ctx) {
+    _currentTemplateVariableName.ifPresent(
+        name -> {
+          // Store the variable as an address object, since that is how it is used
+          AddressObject addr = new AddressObject(name);
+          applyIpNetmask(addr, ctx.ip_netmask());
+          getOrCreateDefaultVsys(_currentTemplate).getAddressObjects().put(name, addr);
+
+          defineFlattenedStructure(ADDRESS_OBJECT, computeObjectName(_currentVsys, name), ctx);
+        });
+  }
+
+  /** Apply the ip-netmask (ip addr or prefix) to the specified {@link AddressObject}. */
+  private void applyIpNetmask(AddressObject addressObject, PaloAltoParser.Ip_netmaskContext ctx) {
+    if (ctx.ip_address() != null) {
+      addressObject.setIp(toIp(ctx.ip_address()));
+      return;
+    }
+    assert ctx.ip_prefix() != null;
+    addressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
+  }
+
+  @Override
+  public void exitStvt_ip_range(PaloAltoParser.Stvt_ip_rangeContext ctx) {
+    _currentTemplateVariableName.ifPresent(
+        name -> {
+          toIpRange(ctx.ip_range())
+              .ifPresent(
+                  range -> {
+                    // Store the variable as an address object, since that is how it is used
+                    AddressObject addr = new AddressObject(name);
+                    addr.setIpRange(range);
+                    getOrCreateDefaultVsys(_currentTemplate).getAddressObjects().put(name, addr);
+
+                    defineFlattenedStructure(
+                        ADDRESS_OBJECT, computeObjectName(_currentVsys, name), ctx);
+                  });
+        });
   }
 
   @Override
@@ -3283,6 +3331,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return panorama;
   }
 
+  private Vsys getOrCreateDefaultVsys(PaloAltoConfiguration config) {
+    return config.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
+  }
+
   private static ApplicationOverrideRule.Protocol toApplicationOverrideProtocol(
       Tcp_or_udpContext ctx) {
     if (ctx.TCP() != null) {
@@ -3432,6 +3484,33 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       return Optional.empty();
     }
     return Optional.of(num);
+  }
+
+  private static final Pattern TEMPLATE_VARIABLE_NAME_PATTERN =
+      Pattern.compile("^\\$[A-Za-z0-9._-]{1,62}$");
+
+  private Optional<String> toString(
+      ParserRuleContext messageCtx, PaloAltoParser.Variable_nameContext ctx) {
+    return toString(
+        messageCtx, ctx.variable(), "template variable name", TEMPLATE_VARIABLE_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, String type, Pattern pattern) {
+    return toString(messageCtx, ctx, type, s -> pattern.matcher(s).matches());
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx,
+      ParserRuleContext ctx,
+      String type,
+      Predicate<String> predicate) {
+    String text = getText(ctx);
+    if (!predicate.test(text)) {
+      warn(messageCtx, String.format("Illegal value for %s", type));
+      return Optional.empty();
+    }
+    return Optional.of(text);
   }
 
   private static final IntegerSpace BGP_PEER_GROUP_NAME_LENGTH_SPACE =

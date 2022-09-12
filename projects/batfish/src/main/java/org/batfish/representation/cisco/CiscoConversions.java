@@ -33,10 +33,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +44,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -73,10 +70,6 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
-import org.batfish.datamodel.Ip6AccessList;
-import org.batfish.datamodel.Ip6AccessListLine;
-import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -89,14 +82,10 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route6FilterLine;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -402,7 +391,7 @@ public class CiscoConversions {
    * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
    */
   static void generateBgpExportPolicy(
-      LeafBgpPeerGroup lpg, String vrfName, boolean ipv4, Configuration c, Warnings w) {
+      LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
     List<Statement> exportPolicyStatements = new ArrayList<>();
     if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
       exportPolicyStatements.add(new SetNextHop(SelfNextHop.getInstance()));
@@ -415,11 +404,11 @@ public class CiscoConversions {
     // this policy and get exported without going through the rest of the export policy.
     // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
     if (lpg.getDefaultOriginate()) {
-      initBgpDefaultRouteExportPolicy(vrfName, lpg.getName(), ipv4, c);
+      initBgpDefaultRouteExportPolicy(vrfName, lpg.getName(), c);
       exportPolicyStatements.add(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, lpg.getName())),
+              new CallExpr(computeBgpDefaultRouteExportPolicyName(vrfName, lpg.getName())),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
     }
@@ -470,13 +459,10 @@ public class CiscoConversions {
   }
 
   /**
-   * Initializes export policy for IPv4 or IPv6 default routes if it doesn't already exist. This
-   * policy is the same across BGP processes, so only one is created for each configuration.
-   *
-   * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
+   * Initializes export policy for IPv4 default routes if it doesn't already exist. This policy is
+   * the same across BGP processes, so only one is created for each configuration.
    */
-  static void initBgpDefaultRouteExportPolicy(
-      String vrfName, String peerName, boolean ipv4, Configuration c) {
+  static void initBgpDefaultRouteExportPolicy(String vrfName, String peerName, Configuration c) {
     SetOrigin setOrigin =
         new SetOrigin(
             new LiteralOrigin(
@@ -490,13 +476,12 @@ public class CiscoConversions {
 
     RoutingPolicy.builder()
         .setOwner(c)
-        .setName(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, peerName))
+        .setName(computeBgpDefaultRouteExportPolicyName(vrfName, peerName))
         .addStatement(
             new If(
                 new Conjunction(
                     ImmutableList.of(
-                        ipv4 ? Common.matchDefaultRoute() : Common.matchDefaultRouteV6(),
-                        new MatchProtocol(RoutingProtocol.AGGREGATE))),
+                        Common.matchDefaultRoute(), new MatchProtocol(RoutingProtocol.AGGREGATE))),
                 defaultRouteExportStatements))
         .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();
@@ -828,44 +813,6 @@ public class CiscoConversions {
     ikePhase1Proposal.setLifetimeSeconds(isakmpPolicy.getLifetimeSeconds());
     ikePhase1Proposal.setHashingAlgorithm(isakmpPolicy.getHashAlgorithm());
     return ikePhase1Proposal;
-  }
-
-  static Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
-    String name = eaList.getName();
-    List<Ip6AccessListLine> lines = new ArrayList<>();
-    for (ExtendedIpv6AccessListLine fromLine : eaList.getLines()) {
-      Ip6AccessListLine newLine = new Ip6AccessListLine();
-      newLine.setName(fromLine.getName());
-      newLine.setAction(fromLine.getAction());
-      Ip6Wildcard srcIpWildcard = fromLine.getSourceIpWildcard();
-      if (srcIpWildcard != null) {
-        newLine.getSrcIps().add(srcIpWildcard);
-      }
-      Ip6Wildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
-      if (dstIpWildcard != null) {
-        newLine.getDstIps().add(dstIpWildcard);
-      }
-      // TODO: src/dst address group
-      fromLine.getProtocol().ifPresent(p -> newLine.getIpProtocols().add(p));
-      newLine.getDstPorts().addAll(fromLine.getDstPorts());
-      newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
-      Integer icmpType = fromLine.getIcmpType();
-      if (icmpType != null) {
-        newLine.setIcmpTypes(new TreeSet<>(Collections.singleton(new SubRange(icmpType))));
-      }
-      Integer icmpCode = fromLine.getIcmpCode();
-      if (icmpCode != null) {
-        newLine.setIcmpCodes(new TreeSet<>(Collections.singleton(new SubRange(icmpCode))));
-      }
-      List<TcpFlagsMatchConditions> tcpFlags = fromLine.getTcpFlags();
-      newLine.getTcpFlags().addAll(tcpFlags);
-      Set<Integer> dscps = fromLine.getDscps();
-      newLine.getDscps().addAll(dscps);
-      Set<Integer> ecns = fromLine.getEcns();
-      newLine.getEcns().addAll(ecns);
-      lines.add(newLine);
-    }
-    return new Ip6AccessList(name, lines);
   }
 
   static IpAccessList toIpAccessList(
@@ -1425,32 +1372,6 @@ public class CiscoConversions {
     return newProcess.build();
   }
 
-  static Route6FilterList toRoute6FilterList(ExtendedIpv6AccessList eaList) {
-    String name = eaList.getName();
-    List<Route6FilterLine> lines =
-        eaList.getLines().stream()
-            .map(CiscoConversions::toRoute6FilterLine)
-            .collect(ImmutableList.toImmutableList());
-    return new Route6FilterList(name, lines);
-  }
-
-  static Route6FilterList toRoute6FilterList(StandardIpv6AccessList eaList) {
-    String name = eaList.getName();
-    List<Route6FilterLine> lines =
-        eaList.getLines().stream()
-            .map(CiscoConversions::toRoute6FilterLine)
-            .collect(ImmutableList.toImmutableList());
-    return new Route6FilterList(name, lines);
-  }
-
-  static Route6FilterList toRoute6FilterList(Prefix6List list) {
-    List<Route6FilterLine> lines =
-        list.getLines().stream()
-            .map(pl -> new Route6FilterLine(pl.getAction(), pl.getPrefix(), pl.getLengthRange()))
-            .collect(ImmutableList.toImmutableList());
-    return new Route6FilterList(list.getName(), lines);
-  }
-
   static RouteFilterList toRouteFilterList(ExtendedAccessList eaList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
         eaList.getLines().stream()
@@ -1749,32 +1670,6 @@ public class CiscoConversions {
         .setAction(line.getAction())
         .setMatchCondition(match)
         .setName(line.getName());
-  }
-
-  private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    Ip6 ip = fromLine.getSourceIpWildcard().getIp();
-    BigInteger minSubnet = fromLine.getDestinationIpWildcard().getIp().asBigInteger();
-    BigInteger maxSubnet =
-        minSubnet.or(fromLine.getDestinationIpWildcard().getWildcard().asBigInteger());
-    int minPrefixLength = fromLine.getDestinationIpWildcard().getIp().numSubnetBits();
-    int maxPrefixLength = new Ip6(maxSubnet).numSubnetBits();
-    int statedPrefixLength =
-        fromLine.getSourceIpWildcard().getWildcard().inverted().numSubnetBits();
-    int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
-    Prefix6 prefix = new Prefix6(ip, prefixLength);
-    return new Route6FilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
-  }
-
-  /** Convert a standard IPv6 access list line to a route filter list line */
-  private static Route6FilterLine toRoute6FilterLine(StandardIpv6AccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    Prefix6 prefix = fromLine.getIpWildcard().toPrefix();
-
-    return new Route6FilterLine(
-        action,
-        new Ip6Wildcard(prefix),
-        new SubRange(prefix.getPrefixLength(), Prefix6.MAX_PREFIX_LENGTH));
   }
 
   private static RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {

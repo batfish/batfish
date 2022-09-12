@@ -55,7 +55,9 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -385,12 +387,21 @@ public final class FortiosPolicyConversions {
 
   @Nonnull
   private static AclLineMatchExpr toMatchExpr(Service service, String filename) {
-    ImmutableList<MatchHeaderSpace> exprs =
-        toHeaderSpaces(service).map(MatchHeaderSpace::new).collect(ImmutableList.toImmutableList());
-    // Any valid service should match *some* packets
-    assert !exprs.isEmpty();
-
-    return new OrMatchExpr(exprs, matchServiceTraceElement(service, filename));
+    TraceElement traceElement = matchServiceTraceElement(service, filename);
+    switch (service.getProtocolEffective()) {
+      case ICMP:
+      case IP:
+      case TCP_UDP_SCTP:
+        List<AclLineMatchExpr> exprs =
+            toHeaderSpaces(service)
+                .map(MatchHeaderSpace::new)
+                .collect(ImmutableList.toImmutableList());
+        // Any valid service should match *some* packets
+        assert !exprs.isEmpty();
+        return new OrMatchExpr(exprs, traceElement);
+      default:
+        return new FalseExpr(traceElement);
+    }
   }
 
   @Nonnull
@@ -414,10 +425,6 @@ public final class FortiosPolicyConversions {
       case ICMP:
         return Stream.of(
             buildIcmpHeaderSpace(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()));
-      case ICMP6:
-        return Stream.of(
-            buildIcmpHeaderSpace(
-                IpProtocol.IPV6_ICMP, service.getIcmpCode(), service.getIcmpType()));
       case IP:
         // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
         // protocol number specifies one of those protocols
@@ -429,6 +436,8 @@ public final class FortiosPolicyConversions {
             protocolNumber == 0
                 ? hs.build()
                 : hs.setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build());
+      case ICMP6:
+        throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
       default:
         throw new UnsupportedOperationException(
             String.format("Unrecognized service protocol %s", service.getProtocolEffective()));

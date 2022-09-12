@@ -46,6 +46,7 @@ public final class RemoveSourceConstraint implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
+    assert _mgr.hasIsValidConstraint(bdd) : "input BDD must have a valid source constraint";
     return _mgr.existsSource(bdd);
   }
 

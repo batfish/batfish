@@ -83,6 +83,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLATE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
@@ -97,12 +98,14 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationObjectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationOverrideRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.securityRuleVendorStructureId;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
@@ -206,6 +209,7 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
@@ -274,6 +278,7 @@ import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
 import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.RuleEndpoint;
+import org.batfish.representation.palo_alto.Rulebase;
 import org.batfish.representation.palo_alto.SecurityRule;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
@@ -2043,6 +2048,24 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testAppId() {
+    String hostname = "app-id";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+
+    // tcp or udp will match application bittorrent
+    Flow bitTorrentMatch = createFlow("1.1.2.2", "1.1.1.2", IpProtocol.TCP, 1, 999);
+
+    // Confirm flow matching bittorrent with Palo Alto's "App-ID" is not denied despite the deny
+    // rule in the config.
+    // it instead matches the implicit rule permitting intra-zone traffic
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(bitTorrentMatch, if1name, c))));
+  }
+
+  @Test
   public void testSecurityRulesNotExplicitlyMatched() {
     /*
     Setup: Device has an interface in a zone with intrazone security rules. If flows leaving the
@@ -3614,6 +3637,78 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testTemplateVariableReferences() throws IOException {
+    String hostname = "template-variable-reference";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(filename, ADDRESS_OBJECT, "$UNDEFINED", LAYER3_INTERFACE_ADDRESS));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, "$prefix", 1));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, "$UNUSED", 0));
+  }
+
+  @Test
+  public void testTemplateVariableWarnings() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("template-variable-warn");
+
+    List<ParseWarning> parseWarnings = c.getWarnings().getParseWarnings();
+    assertThat(
+        parseWarnings,
+        containsInAnyOrder(
+            allOf(
+                ParseWarningMatchers.hasText(containsString("thisNameIsTooLong")),
+                hasComment("Illegal value for template variable name")),
+            hasComment("Invalid IP address range")));
+  }
+
+  @Test
+  public void testTemplateVariable() {
+    String hostname = "template-variable";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    Template t1 = c.getTemplate("T1");
+    Vsys vsys = t1.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    assertThat(
+        vsys.getAddressObjects().keySet(),
+        containsInAnyOrder("$range", "$prefix", "$ip", "$overwrite"));
+    AddressObject range = vsys.getAddressObjects().get("$range");
+    AddressObject prefix = vsys.getAddressObjects().get("$prefix");
+    AddressObject ip = vsys.getAddressObjects().get("$ip");
+    AddressObject overwrite = vsys.getAddressObjects().get("$overwrite");
+
+    assertThat(
+        range.getIpSpace(), equalTo(IpRange.range(Ip.parse("10.0.0.100"), Ip.parse("10.1.1.1"))));
+    assertThat(prefix.getIpPrefix().getIp(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(prefix.getIpPrefix().getPrefix(), equalTo(Prefix.parse("10.10.10.1/24")));
+    assertThat(ip.getIp(), equalTo(Ip.parse("10.10.10.10")));
+    assertThat(overwrite.getIp(), equalTo(Ip.parse("10.100.100.100")));
+  }
+
+  @Test
+  public void testTemplateVariableConversion() {
+    String panoramaHostname = "template-variable";
+    String firewallId = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId));
+    Configuration fw =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId)).findFirst().get();
+
+    // Variable reference is resolved
+    assertThat(fw.getActiveInterfaces().keySet(), contains("ethernet1/1"));
+    assertThat(
+        fw.getActiveInterfaces().get("ethernet1/1").getAddress(),
+        equalTo(ConcreteInterfaceAddress.create(Ip.parse("10.10.10.1"), 24)));
+  }
+
+  @Test
   public void testTemplateStack() {
     String hostname = "template-stack";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
@@ -3696,6 +3791,53 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T1", 1));
     assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T2", 1));
     assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T3", 1));
+  }
+
+  @Test
+  public void testDeviceGroupSharedInheritanceVSIDs() {
+    String panoramaHostname = "device-group-shared-inheritance";
+    String filename = TESTCONFIGS_PREFIX + panoramaHostname;
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration panConfig = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = panConfig.toVendorIndependentConfigurations();
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration c =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    String sharedRuleName = "PRE_RULE_SHARED";
+    String panoramaRuleName = "PRE_RULE_DG";
+    String vsysName = "vsys1";
+    String zone1Name = "Z1";
+    String zone2Name = "Z2";
+    IpAccessList z1ToZ2Filter =
+        c.getIpAccessLists()
+            .get(
+                zoneToZoneFilter(
+                    computeObjectName(vsysName, zone1Name),
+                    computeObjectName(vsysName, zone2Name)));
+
+    // Security rule from Shared vsys has the correct VSID (pointing to Shared vsys)
+    AclLine sharedLine = z1ToZ2Filter.getLines().get(0);
+    assertThat(sharedLine.getName(), equalTo(sharedRuleName));
+    assertThat(
+        sharedLine.getVendorStructureId().get(),
+        equalTo(securityRuleVendorStructureId(sharedRuleName, SHARED_VSYS_NAME, filename)));
+    assertThat(
+        sharedLine.getTraceElement(),
+        equalTo(matchSecurityRuleTraceElement(sharedRuleName, SHARED_VSYS_NAME, filename)));
+
+    // Security rule from Panorama vsys has the correct VSID (pointing to Panorama vsys)
+    AclLine panoramaLine = z1ToZ2Filter.getLines().get(1);
+    assertThat(panoramaLine.getName(), equalTo(panoramaRuleName));
+    assertThat(
+        panoramaLine.getVendorStructureId().get(),
+        equalTo(securityRuleVendorStructureId(panoramaRuleName, PANORAMA_VSYS_NAME, filename)));
+    assertThat(
+        panoramaLine.getTraceElement(),
+        equalTo(matchSecurityRuleTraceElement(panoramaRuleName, PANORAMA_VSYS_NAME, filename)));
   }
 
   @Test
@@ -4098,15 +4240,12 @@ public final class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
+    InsertOrderedMap<String, SecurityRule> securityRules =
+        vsConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules();
+    // The deleted rule should not show up
+    assertThat(securityRules.keySet(), contains("RULE1"));
     assertThat(
-        vsConfig
-            .getVirtualSystems()
-            .get(DEFAULT_VSYS_NAME)
-            .getRulebase()
-            .getSecurityRules()
-            .get("RULE1")
-            .getSource(),
-        contains(new RuleEndpoint(REFERENCE, "addr2")));
+        securityRules.get("RULE1").getSource(), contains(new RuleEndpoint(REFERENCE, "addr2")));
     String filename = "configs/" + hostname;
     assertThat(
         ccae,
@@ -4231,6 +4370,86 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testApplicationOverrideRuleDiffVsysVSIDs() {
+    String panoramaHostname = "application-override-diff-vsys-vsids";
+    String filename = TESTCONFIGS_PREFIX + panoramaHostname;
+    PaloAltoConfiguration panConfig = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = panConfig.toVendorIndependentConfigurations();
+
+    String firewallId1 = "00000001";
+    String vsysName = "vsys1";
+    String zone1Name = "z1";
+    String zone2Name = "z2";
+    String if1name = "ethernet1/1";
+
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    // Arbitrarily choose one zone pair to test (rule should be applied to all zone pairs)
+    IpAccessList z1ToZ2Filter =
+        firewall1
+            .getIpAccessLists()
+            .get(
+                zoneToZoneFilter(
+                    computeObjectName(vsysName, zone1Name),
+                    computeObjectName(vsysName, zone2Name)));
+
+    // Matches RULE1
+    Flow flowRULE1 =
+        Flow.builder()
+            .setIngressNode(firewall1.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setDstPort(22)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+    List<TraceTree> flowTraceRULE1 =
+        AclTracer.trace(
+            z1ToZ2Filter,
+            flowRULE1,
+            if1name,
+            firewall1.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+
+    // App-override VSID should point to the correct vsys
+    // Even though it is in a different vsys (Panorama) than the interfaces/zones (vsys1)
+    assertThat(
+        flowTraceRULE1,
+        contains(
+            isTraceTree(
+                matchSecurityRuleTraceElement("RULE1", PANORAMA_VSYS_NAME, filename),
+                isTraceTree(
+                    matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                isTraceTree(
+                    matchDestinationAddressTraceElement(),
+                    isTraceTree(matchAddressAnyTraceElement())),
+                isTraceTree(
+                    matchServiceApplicationDefaultTraceElement(),
+                    isTraceTree(
+                        matchApplicationObjectTraceElement(
+                            "OVERRIDE_SSH", SHARED_VSYS_NAME, filename),
+                        isTraceTree(
+                            matchApplicationOverrideRuleTraceElement(
+                                "OVERRIDE_APP_RULE1", PANORAMA_VSYS_NAME, filename),
+                            isTraceTree(
+                                matchSourceAddressTraceElement(),
+                                isTraceTree(matchAddressAnyTraceElement())),
+                            isTraceTree(
+                                matchDestinationAddressTraceElement(),
+                                isTraceTree(matchAddressAnyTraceElement())),
+                            TraceTreeMatchers.hasTraceElement("Matched protocol TCP"),
+                            TraceTreeMatchers.hasTraceElement("Matched port")))))));
+  }
+
+  @Test
   public void testApplicationOverrideRuleTraceElements() {
     String hostname = "application-override-tracing";
     String filename = "configs/" + hostname;
@@ -4343,7 +4562,7 @@ public final class PaloAltoGrammarTest {
                             matchDestinationAddressTraceElement(),
                             isTraceTree(matchAddressAnyTraceElement())),
                         isTraceTree(
-                            matchApplicationObjectTraceElement("ssh", vsysName, filename),
+                            matchBuiltInApplicationTraceElement("ssh"),
                             isTraceTree(
                                 matchApplicationOverrideRuleTraceElement(
                                     "OVERRIDE_APP_RULE2", vsysName, filename),
@@ -4402,7 +4621,8 @@ public final class PaloAltoGrammarTest {
         rule.getPort(),
         equalTo(IntegerSpace.unionOf(Range.closed(8642, 8643), Range.closed(8765, 8888))));
     assertThat(rule.getProtocol(), equalTo(ApplicationOverrideRule.Protocol.UDP));
-    assertThat(rule.getApplication(), equalTo("APP_UNDEF"));
+    assertThat(
+        rule.getApplication(), equalTo(new ApplicationOrApplicationGroupReference("APP_UNDEF")));
     assertThat(rule.getDescription(), equalTo("longish description"));
     assertThat(rule.getTags(), contains("TAG1", "TAG2"));
     assertTrue(rule.getDisabled());
@@ -4483,5 +4703,50 @@ public final class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
     // Do not convert parents "tunnel" and "vlan", which are not real interfaces.
     assertThat(c.getAllInterfaces(), hasKeys("vlan.1", "tunnel.3"));
+  }
+
+  @Test
+  public void testPanoramaRulebaseCopy() {
+    String panoramaHostname = "panorama-rulebase-copy";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<PaloAltoConfiguration> managedDevices = c.getManagedConfigurations();
+
+    PaloAltoConfiguration fw = Iterables.getOnlyElement(managedDevices);
+    Rulebase pre = fw.getPanorama().getPreRulebase();
+    Rulebase post = fw.getPanorama().getPostRulebase();
+
+    // Panorama rules are copied to the managed device
+    assertThat(pre.getApplicationOverrideRules().keySet(), contains("PRE_APP"));
+    assertThat(pre.getNatRules().keySet(), contains("PRE_NAT"));
+    assertThat(pre.getSecurityRules().keySet(), contains("PRE_SEC"));
+    assertThat(post.getApplicationOverrideRules().keySet(), contains("POST_APP"));
+    assertThat(post.getNatRules().keySet(), contains("POST_NAT"));
+    assertThat(post.getSecurityRules().keySet(), contains("POST_SEC"));
+  }
+
+  @Test
+  public void testPanoramaRulebaseReferences() throws IOException {
+    String hostname = "panorama-rulebase-references";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String addrSrcName = computeObjectName(SHARED_VSYS_NAME, "SHARED_SRC");
+    String addrDstName = computeObjectName(SHARED_VSYS_NAME, "SHARED_DST");
+    String addrIpSrcName = computeObjectName(SHARED_VSYS_NAME, "11.11.11.11");
+    String addrIpDstName = computeObjectName(SHARED_VSYS_NAME, "12.12.12.12");
+    String serviceName = computeObjectName(SHARED_VSYS_NAME, "SHARED_SERVICE");
+    String appGroupName = computeObjectName(SHARED_VSYS_NAME, "SHARED_APP_GRP");
+
+    // Confirm structure references are tracked
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrSrcName, 3));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrDstName, 3));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrIpSrcName, 3));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrIpDstName, 3));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addrDstName, 3));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, serviceName, 1));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION_GROUP, appGroupName, 1));
   }
 }

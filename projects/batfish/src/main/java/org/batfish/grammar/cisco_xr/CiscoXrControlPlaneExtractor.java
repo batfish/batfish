@@ -4,11 +4,13 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.INTERFACE_PREFIX_PATTERN;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_AF_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_SESSION_GROUP;
@@ -55,6 +57,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_LIST
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NETWORK_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY;
@@ -206,6 +209,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -243,8 +247,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.Icmp6Code;
-import org.batfish.datamodel.Icmp6Type;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -271,8 +273,6 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Prefix6Range;
-import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route;
@@ -2253,6 +2253,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       pushPeer(pg);
       _currentDynamicIpv6PeerGroup = pg;
     }
+    String bgpNeighborStructName =
+        bgpNeighborStructureName(_currentPeerGroup.getName(), currentVrf().getName());
+    _configuration.defineStructure(BGP_NEIGHBOR, bgpNeighborStructName, ctx);
+    _configuration.referenceStructure(
+        BGP_NEIGHBOR, bgpNeighborStructName, BGP_NEIGHBOR_SELF_REF, ctx.start.getLine());
     if (ctx.bgp_asn() != null) {
       long remoteAs = toAsNum(ctx.bgp_asn());
       _currentPeerGroup.setRemoteAs(remoteAs);
@@ -3599,9 +3604,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setAck(true).build())
                   .setUseAck(true)
                   .build());
-        } else if (feature.ADDRESS_UNREACHABLE() != null) {
-          icmpType = Icmp6Type.DESTINATION_UNREACHABLE;
-          icmpCode = Icmp6Code.ADDRESS_UNREACHABLE;
         } else if (feature.ADMINISTRATIVELY_PROHIBITED() != null) {
           icmpType = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getType();
           icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED.getCode();
@@ -8424,8 +8426,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       // inline
       PrefixSpace prefixSpace = new PrefixSpace();
-      Prefix6Space prefix6Space = new Prefix6Space();
-      boolean ipv6 = false;
+      List<RoutePolicyInlinePrefix6Set.Entry> entriesV6 = new LinkedList<>();
       for (Prefix_set_elemContext pctxt : ctx.elems) {
         int lower;
         int upper;
@@ -8463,12 +8464,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         if (prefix != null) {
           prefixSpace.addPrefixRange(new PrefixRange(prefix, new SubRange(lower, upper)));
         } else {
-          prefix6Space.addPrefix6Range(new Prefix6Range(prefix6, new SubRange(lower, upper)));
-          ipv6 = true;
+          entriesV6.add(new RoutePolicyInlinePrefix6Set.Entry(prefix6, lower, upper));
         }
       }
-      if (ipv6) {
-        return new RoutePolicyInlinePrefix6Set(prefix6Space);
+      if (!entriesV6.isEmpty()) {
+        return new RoutePolicyInlinePrefix6Set(entriesV6);
       } else {
         return new RoutePolicyInlinePrefixSet(prefixSpace);
       }

@@ -17,6 +17,7 @@ import static org.batfish.datamodel.InactiveReason.VRF_DOWN;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
@@ -54,9 +55,9 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHelloTime;
@@ -125,6 +126,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrp
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpRedistributionPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getAclLineName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.Conversions.generatedAttributeMapName;
 import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
@@ -248,8 +250,8 @@ import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route6FilterLine;
-import org.batfish.datamodel.Route6FilterList;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -281,7 +283,6 @@ import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
-import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.matchers.VniMatchers;
@@ -782,6 +783,40 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "nxos_bgp_neighbor";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String neighborIp = bgpNeighborStructureName("1.2.3.4", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:0:0:0:0:0:0/32", "default");
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp, contains(7)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp6, contains(8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborPrefix, contains(10)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborPrefix6, contains(11)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp6, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix6, 1));
+  }
+
+  @Test
   public void testBgpNoNeighbor() throws IOException {
     /*
      For each neighbor type (IPv4 active/passive, IPv6 active/passive), both within and outside of
@@ -957,7 +992,7 @@ public final class CiscoNxosGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setTag(0L)
             .setWeight(BGP_LOCAL_WEIGHT)
@@ -1021,7 +1056,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1054,7 +1089,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1098,7 +1133,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
                   .setNextHop(NextHopDiscard.instance())
-                  .setReceivedFromIp(ZERO)
+                  .setReceivedFrom(ReceivedFromSelf.instance())
                   .setOriginatorIp(bgpRouterId)
                   .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1759,6 +1794,7 @@ public final class CiscoNxosGrammarTest {
               .setOriginMechanism(OriginMechanism.LEARNED)
               .setOriginType(OriginType.IGP)
               .setOriginatorIp(Ip.parse("5.6.7.8"))
+              .setReceivedFrom(ReceivedFromIp.of(Ip.parse("5.6.7.8")))
               .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition));
       EvpnType5Route permittedRouteSingleRouteTarget =
           rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(1, 3333))).build();
@@ -2014,6 +2050,8 @@ public final class CiscoNxosGrammarTest {
     Prefix staticPermittedPrefix = Prefix.parse("1.1.1.1/32");
     Prefix bgpPermittedPrefix = Prefix.parse("2.2.2.2/32");
     Prefix connectedPermittedPrefix = Prefix.parse("3.3.3.3/32");
+    Prefix eigrpPermittedPrefix = Prefix.parse("4.4.4.4/32");
+
     org.batfish.datamodel.StaticRoute.Builder staticRb =
         org.batfish.datamodel.StaticRoute.testBuilder().setNextHopInterface("foo").setAdmin(1);
     org.batfish.datamodel.StaticRoute staticDenied =
@@ -2028,6 +2066,20 @@ public final class CiscoNxosGrammarTest {
             .setProtocol(RoutingProtocol.IBGP);
     Bgpv4Route bgpDenied = bgpRb.setNetwork(staticPermittedPrefix).build();
     Bgpv4Route bgpPermitted = bgpRb.setNetwork(bgpPermittedPrefix).build();
+    EigrpInternalRoute.Builder eigrpRb =
+        EigrpInternalRoute.testBuilder()
+            .setAdmin(90)
+            .setEigrpMetricVersion(EigrpMetricVersion.V2)
+            .setNextHop(NextHopDiscard.instance())
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                    .build())
+            .setProcessAsn(2L);
+    EigrpRoute eigrpDenied =
+        eigrpRb.setNextHop(NextHopDiscard.instance()).setNetwork(staticPermittedPrefix).build();
+    EigrpRoute eigrpPermitted =
+        eigrpRb.setNextHop(NextHopDiscard.instance()).setNetwork(eigrpPermittedPrefix).build();
     ConnectedRoute connectedDenied =
         ConnectedRoute.builder().setNetwork(Prefix.ZERO).setNextHopInterface("Ethernet1").build();
     ConnectedRoute connectedPermitted =
@@ -2078,6 +2130,27 @@ public final class CiscoNxosGrammarTest {
       // built, so first set other required fields.
       rb.setNetwork(bgpPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
       assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
+    }
+    {
+      // Redistribution policy denies EIGRP route that doesn't match eigrp_redist route-map
+      EigrpExternalRoute.Builder rb =
+          EigrpExternalRoute.testBuilder()
+              .setNextHop(nh)
+              .setEigrpMetricVersion(EigrpMetricVersion.V2);
+      assertFalse(redistPolicy.process(eigrpDenied, rb, eigrpProc, Direction.OUT));
+    }
+    {
+      // Redistribution policy permits EIGRP route that matches eigrp_redist route-map
+      // Routing process will copy metrics from the original route.
+      EigrpExternalRoute.Builder rb =
+          EigrpExternalRoute.testBuilder()
+              .setNextHop(nh)
+              .setEigrpMetricVersion(eigrpPermitted.getEigrpMetricVersion())
+              .setEigrpMetric(eigrpPermitted.getEigrpMetric())
+              .setProcessAsn(eigrpPermitted.getProcessAsn());
+      assertTrue(redistPolicy.process(eigrpPermitted, rb, eigrpProc, Direction.OUT));
+      rb.setNetwork(eigrpPermittedPrefix).setDestinationAsn(2L);
+      assertThat(rb.build().getEigrpMetric(), equalTo(eigrpPermitted.getEigrpMetric()));
     }
     {
       // Redistribution policy correctly denies/permits connected routes
@@ -4984,14 +5057,6 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpv6AccessListConversion() throws IOException {
-    Configuration c = parseConfig("nxos_ipv6_access_list");
-
-    assertThat(c.getIp6AccessLists(), hasKeys("v6acl1"));
-    // TODO: convert lines
-  }
-
-  @Test
   public void testIpv6AccessListExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ipv6_access_list");
 
@@ -5047,69 +5112,6 @@ public final class CiscoNxosGrammarTest {
   public void testIpv6RouteConversion() throws IOException {
     parseConfig("ipv6_route");
     // TODO: convert lines
-  }
-
-  @Test
-  public void testIpv6PrefixListConversion() throws IOException {
-    String hostname = "nxos_ipv6_prefix_list";
-    Configuration c = parseConfig(hostname);
-
-    assertThat(c, hasRoute6FilterLists(hasKeys("pl_empty", "pl_test", "pl_range")));
-    {
-      Route6FilterList r = c.getRoute6FilterLists().get("pl_empty");
-      assertThat(r, Route6FilterListMatchers.hasLines(empty()));
-    }
-    {
-      Route6FilterList r = c.getRoute6FilterLists().get("pl_test");
-      Iterator<Route6FilterLine> lines = r.getLines().iterator();
-      Route6FilterLine line;
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10::3:0/120")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10::1:0/120")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.DENY));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10::2:0/120")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10::4:0/120")));
-    }
-    {
-      Route6FilterList r = c.getRoute6FilterLists().get("pl_range");
-      Iterator<Route6FilterLine> lines = r.getLines().iterator();
-      Route6FilterLine line;
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(112, Prefix6.MAX_PREFIX_LENGTH)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(SubRange.singleton(120)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(104, Prefix6.MAX_PREFIX_LENGTH)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(116, 120)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-
-      line = lines.next();
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getLengthRange(), equalTo(new SubRange(112, 120)));
-      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix6.parse("10:10::/112")));
-    }
   }
 
   @Test

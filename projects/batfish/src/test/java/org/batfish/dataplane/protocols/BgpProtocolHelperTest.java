@@ -32,6 +32,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
@@ -61,7 +63,7 @@ public class BgpProtocolHelperTest {
             .setNetwork(DEST_NETWORK)
             .setNextHopIp(DEST_IP)
             .setProtocol(RoutingProtocol.IBGP)
-            .setReceivedFromIp(Ip.ZERO);
+            .setReceivedFrom(ReceivedFromSelf.instance());
   }
 
   @Test
@@ -89,7 +91,7 @@ public class BgpProtocolHelperTest {
             true,
             true,
             _process,
-            Ip.ZERO,
+            Ip.parse("192.0.2.1"),
             null),
         notNullValue());
   }
@@ -104,7 +106,7 @@ public class BgpProtocolHelperTest {
                 false,
                 true,
                 _process,
-                Ip.ZERO,
+                Ip.parse("192.0.2.1"),
                 null)
             .getProtocol(),
         equalTo(RoutingProtocol.BGP));
@@ -123,7 +125,7 @@ public class BgpProtocolHelperTest {
                 false,
                 true,
                 _process,
-                Ip.ZERO,
+                Ip.parse("192.0.2.1"),
                 null)
             .getNextHopInterface(),
         equalTo(UNSET_NEXT_HOP_INTERFACE));
@@ -142,7 +144,7 @@ public class BgpProtocolHelperTest {
                 false,
                 true,
                 _process,
-                Ip.ZERO,
+                Ip.parse("169.254.0.1"),
                 "baz")
             .getNextHopInterface(),
         equalTo("baz"));
@@ -153,19 +155,25 @@ public class BgpProtocolHelperTest {
     assertThat(
         "No AS path loop, iBGP",
         transformBgpRouteOnImport(
-                _baseBgpRouteBuilder.build(), 1L, false, false, _process, Ip.ZERO, null)
+                _baseBgpRouteBuilder.build(),
+                1L,
+                false,
+                false,
+                _process,
+                Ip.parse("192.0.2.1"),
+                null)
             .getProtocol(),
         equalTo(RoutingProtocol.IBGP));
   }
 
   @Test
-  public void testTransformOnImportReceivedFromIp() {
+  public void testTransformOnImportReceivedFrom() {
     assertThat(
         transformBgpRouteOnImport(
                 _baseBgpRouteBuilder.build(), 1L, false, false, _process, Ip.parse("1.2.3.4"), null)
             .build()
-            .getReceivedFromIp(),
-        equalTo(Ip.parse("1.2.3.4")));
+            .getReceivedFrom(),
+        equalTo(ReceivedFromIp.of(Ip.parse("1.2.3.4"))));
   }
 
   @Test
@@ -177,7 +185,7 @@ public class BgpProtocolHelperTest {
             false,
             true,
             _process,
-            Ip.ZERO,
+            Ip.parse("169.254.0.1"),
             "eth0");
     assertThat("PeerInterface is set", builder.getNextHopInterface(), equalTo("eth0"));
     assertThat(
@@ -190,12 +198,12 @@ public class BgpProtocolHelperTest {
   public void testTransformPostExportClearTag() {
     Builder builder = _baseBgpRouteBuilder.setTag(MAX_TAG);
     transformBgpRoutePostExport(
-        builder, true, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
+        builder, true, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null);
     assertThat("Tag is cleared", builder.getTag(), equalTo(UNSET_ROUTE_TAG));
 
     builder.setTag(MAX_TAG);
     transformBgpRoutePostExport(
-        builder, false, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
+        builder, false, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null);
     assertThat("Tag is cleared", builder.getTag(), equalTo(UNSET_ROUTE_TAG));
   }
 
@@ -207,13 +215,13 @@ public class BgpProtocolHelperTest {
     // Nothing sent
     Builder builder = _baseBgpRouteBuilder.setCommunities(mixedComms).build().toBuilder();
     transformBgpRoutePostExport(
-        builder, true, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
+        builder, true, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null);
     assertThat("Communities cleared", builder.getCommunities(), equalTo(CommunitySet.empty()));
 
     // only standard sent
     builder = _baseBgpRouteBuilder.setCommunities(mixedComms).build().toBuilder();
     transformBgpRoutePostExport(
-        builder, true, true, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
+        builder, true, true, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null);
     assertThat(
         "Only standard communities",
         builder.getCommunities().getCommunities(),
@@ -222,7 +230,7 @@ public class BgpProtocolHelperTest {
     // only extended sent
     builder = _baseBgpRouteBuilder.setCommunities(mixedComms).build().toBuilder();
     transformBgpRoutePostExport(
-        builder, true, false, true, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
+        builder, true, false, true, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null);
     assertThat(
         "Only extended communities",
         builder.getCommunities().getCommunities(),
@@ -231,7 +239,7 @@ public class BgpProtocolHelperTest {
     // both sent
     builder = _baseBgpRouteBuilder.setCommunities(mixedComms).build().toBuilder();
     transformBgpRoutePostExport(
-        builder, true, true, true, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
+        builder, true, true, true, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO, null);
     assertThat("All communities", builder.getCommunities(), equalTo(mixedComms));
   }
 
@@ -241,7 +249,15 @@ public class BgpProtocolHelperTest {
     // Prepend own as
     _baseBgpRouteBuilder.setAsPath(baseAsPath);
     transformBgpRoutePostExport(
-        _baseBgpRouteBuilder, true, false, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
+        _baseBgpRouteBuilder,
+        true,
+        false,
+        false,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null);
     assertThat(
         _baseBgpRouteBuilder.getAsPath(),
         equalTo(
@@ -262,7 +278,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.ACROSS_CONFED_BORDER,
         2,
         DEST_IP,
-        Ip.ZERO);
+        Ip.ZERO,
+        null);
     assertThat(
         _baseBgpRouteBuilder.getAsPath(),
         equalTo(
@@ -279,7 +296,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.WITHIN_CONFED,
         4,
         DEST_IP,
-        Ip.ZERO);
+        Ip.ZERO,
+        null);
     assertThat(
         _baseBgpRouteBuilder.getAsPath(),
         equalTo(
@@ -300,7 +318,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.NO_CONFED,
         5,
         DEST_IP,
-        Ip.ZERO);
+        Ip.ZERO,
+        null);
     assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(baseAsPath));
 
     // Do not prepend for IBGP within confed
@@ -314,7 +333,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.WITHIN_CONFED,
         6,
         DEST_IP,
-        Ip.ZERO);
+        Ip.ZERO,
+        null);
     assertThat(_baseBgpRouteBuilder.getAsPath(), equalTo(baseAsPath));
   }
 
@@ -332,7 +352,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.NO_CONFED,
         1,
         nextHopIp,
-        DEST_IP);
+        DEST_IP,
+        null);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // eBGP across confederation border
@@ -345,7 +366,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.ACROSS_CONFED_BORDER,
         1,
         nextHopIp,
-        DEST_IP);
+        DEST_IP,
+        null);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // eBGP within confederation -- change
@@ -358,7 +380,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.WITHIN_CONFED,
         1,
         nextHopIp,
-        DEST_IP);
+        DEST_IP,
+        null);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // iBGP no confederation -- no change
@@ -371,7 +394,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.NO_CONFED,
         1,
         nextHopIp,
-        DEST_IP);
+        DEST_IP,
+        null);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(DEST_IP));
 
     // iBGP within confederation -- no change
@@ -384,7 +408,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.WITHIN_CONFED,
         1,
         nextHopIp,
-        DEST_IP);
+        DEST_IP,
+        null);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(DEST_IP));
 
     // eBGP within confederation, unset original IP -- overwrite
@@ -397,7 +422,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.WITHIN_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP);
+        UNSET_ROUTE_NEXT_HOP_IP,
+        null);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // iBGP no confederation, unset original IP -- overwrite
@@ -410,7 +436,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.NO_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP);
+        UNSET_ROUTE_NEXT_HOP_IP,
+        null);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
 
     // iBGP within confederation, unset original IP -- overwrite
@@ -423,7 +450,8 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.WITHIN_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP);
+        UNSET_ROUTE_NEXT_HOP_IP,
+        null);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
   }
 

@@ -9,6 +9,7 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.aclLineMatchExprForApplication;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
@@ -16,6 +17,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationGroupTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationOverrideRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInServiceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
@@ -33,12 +35,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
@@ -50,22 +55,35 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
+import org.batfish.representation.palo_alto.SecurityRule;
+import org.batfish.representation.palo_alto.Service;
+import org.batfish.representation.palo_alto.Vsys;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -886,5 +904,97 @@ public class PaloAltoSecurityRuleTest {
     assertTrue(traces.get(flowSharedApplication).get(0).getDisposition().isSuccessful());
     // Flow not matching any allowed application should not be successful
     assertFalse(traces.get(flowDenied).get(0).getDisposition().isSuccessful());
+  }
+
+  private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+
+  // helper for testAclLineMatchExprForApplication
+  private void assertAclLineMatchExprExpectations(
+      Map<String, AclLineMatchExpr> overrideMap,
+      TraceElement te,
+      boolean applicationDefaultService,
+      SecurityRule rule,
+      Optional<AclLineMatchExpr> expectation) {
+    Application a =
+        Application.builder("a1")
+            .addService(
+                Service.builder("bittorrent (tcp/dynamic")
+                    .setIpProtocol(IpProtocol.TCP)
+                    .addPorts(new SubRange(0, 65535))
+                    .build())
+            .addService(
+                Service.builder("bittorrent (udp/dynamic")
+                    .setIpProtocol(IpProtocol.UDP)
+                    .addPorts(new SubRange(0, 65535))
+                    .build())
+            .build();
+    Warnings w = new Warnings();
+
+    Optional<AclLineMatchExpr> testMatcher =
+        aclLineMatchExprForApplication(a, overrideMap, te, applicationDefaultService, rule, w);
+    if (expectation.isPresent()) {
+      assertThat(_tb.toBDD(testMatcher.get()), equalTo(_tb.toBDD(expectation.get())));
+    } else {
+      assertThat(testMatcher, equalTo(expectation));
+    }
+  }
+
+  @Test
+  public void testAclLineMatchExprForApplication() {
+    // test combinations of accept/deny, app Id/app override, and default/not default
+    String vsysName = "vsys1";
+    TraceElement te = matchBuiltInApplicationTraceElement("bittorrent");
+    TraceElement teOverride =
+        matchApplicationOverrideRuleTraceElement("OVERRIDE_RULE", vsysName, "configs/a1");
+
+    SecurityRule denyRule = new SecurityRule("rule", new Vsys(vsysName));
+    denyRule.setAction(LineAction.DENY);
+
+    SecurityRule permitRule = new SecurityRule("rule", new Vsys(vsysName));
+    permitRule.setAction(LineAction.PERMIT);
+
+    HeaderSpace.Builder headerBuilder =
+        HeaderSpace.builder()
+            .setDstPorts(new SubRange(0, 65535))
+            .setSrcPorts(new SubRange(0, 65535));
+
+    // Deny rule not using app override should not produce any match conditions, per special L5+
+    // logic
+    assertAclLineMatchExprExpectations(ImmutableMap.of(), te, false, denyRule, Optional.empty());
+    assertAclLineMatchExprExpectations(ImmutableMap.of(), te, true, denyRule, Optional.empty());
+
+    // When not matching application-default, the application can match on any port and protocol
+    assertAclLineMatchExprExpectations(
+        ImmutableMap.of(), te, false, permitRule, Optional.of(new TrueExpr(te)));
+
+    // With application-default true, the application matches only on its default port and protocol
+    Optional<AclLineMatchExpr> permitRuleAppIdDefaultExpectation =
+        Optional.of(
+            new OrMatchExpr(
+                ImmutableList.of(
+                    new MatchHeaderSpace(headerBuilder.setIpProtocols(IpProtocol.TCP).build()),
+                    new MatchHeaderSpace(headerBuilder.setIpProtocols(IpProtocol.UDP).build())),
+                te));
+    assertAclLineMatchExprExpectations(
+        ImmutableMap.of(), te, true, permitRule, permitRuleAppIdDefaultExpectation);
+
+    // override tests - an overridden application uses L4 definitions and skips app-id, so we can
+    // safely just match
+    // its L4 definition from the overrideMap.
+    AclLineMatchExpr overrideMatcher =
+        new OrMatchExpr(
+            ImmutableList.of(
+                new MatchHeaderSpace(headerBuilder.setIpProtocols(IpProtocol.ICMP).build())),
+            teOverride);
+    Map<String, AclLineMatchExpr> overrideMap = ImmutableMap.of("a1", overrideMatcher);
+
+    assertAclLineMatchExprExpectations(
+        overrideMap, teOverride, false, denyRule, Optional.of(overrideMatcher));
+    assertAclLineMatchExprExpectations(
+        overrideMap, teOverride, true, denyRule, Optional.of(overrideMatcher));
+    assertAclLineMatchExprExpectations(
+        overrideMap, teOverride, false, permitRule, Optional.of(overrideMatcher));
+    assertAclLineMatchExprExpectations(
+        overrideMap, teOverride, true, permitRule, Optional.of(overrideMatcher));
   }
 }

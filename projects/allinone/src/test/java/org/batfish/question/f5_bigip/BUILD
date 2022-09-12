@@ -1,0 +1,18 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+
+junit_tests(
+    name = "F5BigipVipConfigurationTest",
+    size = "small",
+    srcs = ["F5BigipVipConfigurationTest.java"],
+    resources = ["//projects/allinone/src/test/resources/org/batfish/allinone/testconfigs"],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
+        "//projects/question",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)

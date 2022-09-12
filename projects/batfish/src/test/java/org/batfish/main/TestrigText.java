@@ -1,11 +1,18 @@
 package org.batfish.main;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResourceBytes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -165,6 +172,11 @@ public class TestrigText {
       return this;
     }
 
+    public @Nonnull Builder setIspConfigBytes(@Nonnull byte[] ispConfigBytes) {
+      _ispConfigBytes = ispConfigBytes;
+      return this;
+    }
+
     public @Nonnull Builder setIspConfigPrefix(@Nonnull String testrigResourcePrefix) {
       _ispConfigBytes =
           readTestrigResources(
@@ -175,6 +187,11 @@ public class TestrigText {
       return this;
     }
 
+    public @Nonnull Builder setLayer1TopologyBytes(@Nonnull byte[] layer1TopologyBytes) {
+      _layer1TopologyBytes = layer1TopologyBytes;
+      return this;
+    }
+
     public @Nonnull Builder setLayer1TopologyPrefix(@Nonnull String testrigResourcePrefix) {
       _layer1TopologyBytes =
           readTestrigResources(
@@ -182,6 +199,11 @@ public class TestrigText {
               .values()
               .iterator()
               .next();
+      return this;
+    }
+
+    public @Nonnull Builder setRuntimeDataBytes(@Nonnull byte[] runtimeDataBytes) {
+      _runtimeDataBytes = runtimeDataBytes;
       return this;
     }
 
@@ -226,6 +248,73 @@ public class TestrigText {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  /** Load a {@link TestrigText} from the specified directory. */
+  public static TestrigText loadTestrig(String dir) throws IOException {
+    TestrigText.Builder builder = TestrigText.builder();
+
+    Path snapshotDir = Paths.get(dir);
+    checkArgument(snapshotDir.toFile().exists(), "%s does not exist.", dir);
+    checkArgument(snapshotDir.toFile().isDirectory(), "%s is not a directory.", dir);
+
+    // layer 1 topology
+    Path l1TopologyPath = snapshotDir.resolve("batfish").resolve("layer1_topology.json");
+    if (l1TopologyPath.toFile().exists()) {
+      builder.setLayer1TopologyBytes(Files.readAllBytes(l1TopologyPath));
+    }
+
+    // isp config
+    Path ispConfigPath = snapshotDir.resolve("batfish").resolve("isp_config.json");
+    if (ispConfigPath.toFile().exists()) {
+      builder.setIspConfigBytes(Files.readAllBytes(ispConfigPath));
+    }
+
+    // runtime data
+    Path runtimeDataPath = snapshotDir.resolve("batfish").resolve("runtime_data.json");
+    if (runtimeDataPath.toFile().exists()) {
+      builder.setRuntimeDataBytes(Files.readAllBytes(runtimeDataPath));
+    }
+
+    // configs
+    Path configsDir = snapshotDir.resolve("configs");
+    checkArgument(configsDir.toFile().exists(), "%s does not exist.", configsDir);
+    checkArgument(configsDir.toFile().isDirectory(), "%s is not a directory.", configsDir);
+    builder.setConfigurationText(
+        Arrays.stream(configsDir.toFile().listFiles())
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    File::getName,
+                    f -> {
+                      try {
+                        return fileText(f);
+                      } catch (IOException e) {
+                        throw new RuntimeException(e);
+                      }
+                    })));
+
+    // hosts
+    File hostsDir = snapshotDir.resolve("hosts").toFile();
+    if (hostsDir.exists()) {
+      builder.setHostsBytes(
+          Arrays.stream(hostsDir.listFiles())
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      File::getName,
+                      f -> {
+                        try {
+                          return Files.readAllBytes(f.toPath());
+                        } catch (IOException e) {
+                          throw new RuntimeException(e);
+                        }
+                      })));
+    }
+
+    return builder.build();
+  }
+
+  private static String fileText(File f) throws IOException {
+    return new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
   }
 
   private Map<String, byte[]> _awsBytes;

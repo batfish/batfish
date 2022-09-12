@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasWarnings;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
+import static org.batfish.question.routes.RoutesAnswerer.BGP_COMPARATOR;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_CLUSTER_LIST;
@@ -22,14 +23,19 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_PATH_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_RECEIVED_FROM_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
+import static org.batfish.question.routes.RoutesAnswerer.COL_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.COL_WEIGHT;
+import static org.batfish.question.routes.RoutesAnswerer.DIFF_COMPARATOR;
+import static org.batfish.question.routes.RoutesAnswerer.EVPN_COMPARATOR;
+import static org.batfish.question.routes.RoutesAnswerer.MAIN_RIB_COMPARATOR;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
@@ -52,6 +58,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Multiset;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -60,6 +67,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -87,11 +95,14 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.Location;
@@ -352,7 +363,9 @@ public class RoutesAnswererTest {
             COL_ORIGIN_TYPE,
             COL_ORIGINATOR_ID,
             COL_RECEIVED_FROM_IP,
+            COL_PATH_ID,
             COL_CLUSTER_LIST,
+            COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
             COL_WEIGHT,
             COL_TAG);
 
@@ -385,7 +398,9 @@ public class RoutesAnswererTest {
             COL_ORIGIN_PROTOCOL,
             COL_ORIGIN_TYPE,
             COL_ORIGINATOR_ID,
+            COL_PATH_ID,
             COL_CLUSTER_LIST,
+            COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
             COL_WEIGHT,
             COL_TAG);
 
@@ -398,7 +413,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetDiffTableMetadataProtocolAll() {
+  public void testGetDiffTableMetadataMainRib() {
     List<ColumnMetadata> columnMetadata =
         getDiffTableMetadata(RibProtocol.MAIN).getColumnMetadata();
 
@@ -415,10 +430,10 @@ public class RoutesAnswererTest {
             COL_DELTA_PREFIX + COL_NEXT_HOP,
             COL_BASE_PREFIX + COL_NEXT_HOP_IP,
             COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
-            COL_BASE_PREFIX + COL_PROTOCOL,
-            COL_DELTA_PREFIX + COL_PROTOCOL,
             COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE,
             COL_DELTA_PREFIX + COL_NEXT_HOP_INTERFACE,
+            COL_BASE_PREFIX + COL_PROTOCOL,
+            COL_DELTA_PREFIX + COL_PROTOCOL,
             COL_BASE_PREFIX + COL_METRIC,
             COL_DELTA_PREFIX + COL_METRIC,
             COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
@@ -479,8 +494,16 @@ public class RoutesAnswererTest {
         COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
         COL_BASE_PREFIX + COL_ORIGIN_TYPE,
         COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
+        COL_BASE_PREFIX + COL_ORIGINATOR_ID,
+        COL_DELTA_PREFIX + COL_ORIGINATOR_ID,
         COL_BASE_PREFIX + COL_RECEIVED_FROM_IP,
         COL_DELTA_PREFIX + COL_RECEIVED_FROM_IP,
+        COL_BASE_PREFIX + COL_PATH_ID,
+        COL_DELTA_PREFIX + COL_PATH_ID,
+        COL_BASE_PREFIX + COL_CLUSTER_LIST,
+        COL_DELTA_PREFIX + COL_CLUSTER_LIST,
+        COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+        COL_DELTA_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
         COL_BASE_PREFIX + COL_WEIGHT,
         COL_DELTA_PREFIX + COL_WEIGHT,
         COL_BASE_PREFIX + COL_TAG,
@@ -512,8 +535,16 @@ public class RoutesAnswererTest {
         Schema.STRING,
         Schema.STRING,
         Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
         Schema.IP,
         Schema.IP,
+        Schema.INTEGER,
+        Schema.INTEGER,
+        Schema.list(Schema.LONG),
+        Schema.list(Schema.LONG),
+        Schema.STRING,
+        Schema.STRING,
         Schema.INTEGER,
         Schema.INTEGER,
         Schema.LONG,
@@ -531,6 +562,361 @@ public class RoutesAnswererTest {
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         equalTo(schemaBuilderList.build()));
+  }
+
+  @Test
+  public void testGetDiffTableMetadataEvpn() {
+    ImmutableList.Builder<String> expectedBuilder = ImmutableList.builder();
+    expectedBuilder.add(
+        COL_NODE,
+        COL_VRF_NAME,
+        COL_NETWORK,
+        COL_ROUTE_ENTRY_PRESENCE,
+        COL_BASE_PREFIX + COL_STATUS,
+        COL_DELTA_PREFIX + COL_STATUS,
+        COL_BASE_PREFIX + COL_ROUTE_DISTINGUISHER,
+        COL_DELTA_PREFIX + COL_ROUTE_DISTINGUISHER,
+        COL_BASE_PREFIX + COL_NEXT_HOP,
+        COL_DELTA_PREFIX + COL_NEXT_HOP,
+        COL_BASE_PREFIX + COL_PROTOCOL,
+        COL_DELTA_PREFIX + COL_PROTOCOL,
+        COL_BASE_PREFIX + COL_AS_PATH,
+        COL_DELTA_PREFIX + COL_AS_PATH,
+        COL_BASE_PREFIX + COL_METRIC,
+        COL_DELTA_PREFIX + COL_METRIC,
+        COL_BASE_PREFIX + COL_LOCAL_PREF,
+        COL_DELTA_PREFIX + COL_LOCAL_PREF,
+        COL_BASE_PREFIX + COL_COMMUNITIES,
+        COL_DELTA_PREFIX + COL_COMMUNITIES,
+        COL_BASE_PREFIX + COL_ORIGIN_PROTOCOL,
+        COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
+        COL_BASE_PREFIX + COL_ORIGIN_TYPE,
+        COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
+        COL_BASE_PREFIX + COL_ORIGINATOR_ID,
+        COL_DELTA_PREFIX + COL_ORIGINATOR_ID,
+        COL_BASE_PREFIX + COL_PATH_ID,
+        COL_DELTA_PREFIX + COL_PATH_ID,
+        COL_BASE_PREFIX + COL_CLUSTER_LIST,
+        COL_DELTA_PREFIX + COL_CLUSTER_LIST,
+        COL_BASE_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+        COL_DELTA_PREFIX + COL_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+        COL_BASE_PREFIX + COL_WEIGHT,
+        COL_DELTA_PREFIX + COL_WEIGHT,
+        COL_BASE_PREFIX + COL_TAG,
+        COL_DELTA_PREFIX + COL_TAG);
+
+    ImmutableList.Builder<Schema> schemaBuilderList = ImmutableList.builder();
+    schemaBuilderList.add(
+        Schema.NODE,
+        Schema.STRING,
+        Schema.PREFIX,
+        Schema.STRING,
+        Schema.list(Schema.STRING),
+        Schema.list(Schema.STRING),
+        Schema.STRING,
+        Schema.STRING,
+        Schema.NEXT_HOP,
+        Schema.NEXT_HOP,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.LONG,
+        Schema.LONG,
+        Schema.LONG,
+        Schema.LONG,
+        Schema.list(Schema.STRING),
+        Schema.list(Schema.STRING),
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.STRING,
+        Schema.INTEGER,
+        Schema.INTEGER,
+        Schema.list(Schema.LONG),
+        Schema.list(Schema.LONG),
+        Schema.STRING,
+        Schema.STRING,
+        Schema.INTEGER,
+        Schema.INTEGER,
+        Schema.LONG,
+        Schema.LONG);
+
+    List<ColumnMetadata> columnMetadata =
+        getDiffTableMetadata(RibProtocol.EVPN).getColumnMetadata();
+    assertThat(
+        columnMetadata.stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(expectedBuilder.build()));
+
+    assertThat(
+        columnMetadata.stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(schemaBuilderList.build()));
+  }
+
+  @Test
+  public void testSameColumnsDiffAndNonDiff() {
+    List<String> nonDiffColumns =
+        getTableMetadata(RibProtocol.MAIN).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+    List<String> diffColumns =
+        getDiffTableMetadata(RibProtocol.MAIN).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+
+    ImmutableList.Builder<String> expectedNonDiffColumns = ImmutableList.builder();
+    ImmutableList.Builder<String> expectedDiffColumns = ImmutableList.builder();
+
+    // Key columns are not diffed; should be identical in both tables.
+    List<String> keyColumns = ImmutableList.of(COL_NODE, COL_VRF_NAME, COL_NETWORK);
+    expectedNonDiffColumns.addAll(keyColumns);
+    expectedDiffColumns.addAll(keyColumns);
+
+    // Only differential results have a route entry presence column.
+    expectedDiffColumns.add(COL_ROUTE_ENTRY_PRESENCE);
+
+    // After key columns, all columns in the non-differential result should correspond to two
+    // columns in the differential result (snapshot and reference).
+    IntStream.range(keyColumns.size(), nonDiffColumns.size())
+        .mapToObj(nonDiffColumns::get)
+        .forEach(
+            c -> {
+              expectedNonDiffColumns.add(c);
+              expectedDiffColumns.add(COL_BASE_PREFIX + c);
+              expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+            });
+
+    assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
+    assertThat(diffColumns, equalTo(expectedDiffColumns.build()));
+  }
+
+  @Test
+  public void testSameColumnsDiffAndNonDiffBgp() {
+    List<String> nonDiffColumns =
+        getTableMetadata(RibProtocol.BGP).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+    List<String> diffColumns =
+        getDiffTableMetadata(RibProtocol.BGP).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+
+    ImmutableList.Builder<String> expectedNonDiffColumns = ImmutableList.builder();
+    ImmutableList.Builder<String> expectedDiffColumns = ImmutableList.builder();
+
+    // Key columns are not diffed; should be identical in both tables.
+    List<String> keyColumns = ImmutableList.of(COL_NODE, COL_VRF_NAME, COL_NETWORK);
+    expectedNonDiffColumns.addAll(keyColumns);
+    expectedDiffColumns.addAll(keyColumns);
+
+    // Only differential results have a route entry presence column.
+    expectedDiffColumns.add(COL_ROUTE_ENTRY_PRESENCE);
+
+    // After key columns, all columns in the non-differential result should correspond to two
+    // columns in the differential result (snapshot and reference).
+    // One exception: next hop interface is only present in non-differential for backwards
+    // compatibility, and was never added to differential BGP routes.
+    Set<String> nonDifferentialOnly = ImmutableSet.of(COL_NEXT_HOP_INTERFACE);
+    IntStream.range(keyColumns.size(), nonDiffColumns.size())
+        .mapToObj(nonDiffColumns::get)
+        .forEach(
+            c -> {
+              expectedNonDiffColumns.add(c);
+              if (!nonDifferentialOnly.contains(c)) {
+                expectedDiffColumns.add(COL_BASE_PREFIX + c);
+                expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+              }
+            });
+
+    assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
+    assertThat(diffColumns, equalTo(expectedDiffColumns.build()));
+  }
+
+  @Test
+  public void testSameColumnsDiffAndNonDiffEvpn() {
+    List<String> nonDiffColumns =
+        getTableMetadata(RibProtocol.EVPN).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+    List<String> diffColumns =
+        getDiffTableMetadata(RibProtocol.EVPN).getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList());
+
+    ImmutableList.Builder<String> expectedNonDiffColumns = ImmutableList.builder();
+    ImmutableList.Builder<String> expectedDiffColumns = ImmutableList.builder();
+
+    // Key columns are not diffed; should be identical in both tables.
+    List<String> keyColumns = ImmutableList.of(COL_NODE, COL_VRF_NAME, COL_NETWORK);
+    expectedNonDiffColumns.addAll(keyColumns);
+    expectedDiffColumns.addAll(keyColumns);
+
+    // Only differential results have a route entry presence column.
+    expectedDiffColumns.add(COL_ROUTE_ENTRY_PRESENCE);
+
+    // After key columns, all columns in the non-differential result should correspond to two
+    // columns in the differential result (snapshot and reference).
+    // Exception: next hop IP and interface columns are only present in non-differential for
+    // backwards compatibility, and were never added to differential EVPN routes.
+    Set<String> nonDifferentialOnly = ImmutableSet.of(COL_NEXT_HOP_IP, COL_NEXT_HOP_INTERFACE);
+    IntStream.range(keyColumns.size(), nonDiffColumns.size())
+        .mapToObj(nonDiffColumns::get)
+        .forEach(
+            c -> {
+              expectedNonDiffColumns.add(c);
+              if (!nonDifferentialOnly.contains(c)) {
+                expectedDiffColumns.add(COL_BASE_PREFIX + c);
+                expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+              }
+            });
+
+    assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
+    assertThat(diffColumns, equalTo(expectedDiffColumns.build()));
+  }
+
+  @Test
+  public void testMainRibComparator() {
+    List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
+    List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
+    List<Prefix> orderedNetworks =
+        ImmutableList.of(Prefix.strict("1.1.1.0/24"), Prefix.strict("2.2.2.0/24"));
+    List<Ip> orderedIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+
+    Row.RowBuilder rb = Row.builder(getTableMetadata(RibProtocol.MAIN).toColumnMap());
+    List<Row> orderedRows = new ArrayList<>();
+    for (Node n : orderedNodes) {
+      rb.put(COL_NODE, n);
+      for (String vrf : orderedVrfs) {
+        rb.put(COL_VRF_NAME, vrf);
+        for (Prefix p : orderedNetworks) {
+          rb.put(COL_NETWORK, p);
+          for (Ip nhip : orderedIps) {
+            orderedRows.add(rb.put(COL_NEXT_HOP, NextHopIp.of(nhip)).build());
+          }
+        }
+      }
+    }
+    for (int i = 0; i < orderedRows.size(); i++) {
+      for (int j = 0; j < orderedRows.size(); j++) {
+        assertThat(
+            Integer.signum(MAIN_RIB_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
+  }
+
+  @Test
+  public void testBgpRibComparator() {
+    List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
+    List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
+    List<Prefix> orderedNetworks =
+        ImmutableList.of(Prefix.strict("1.1.1.0/24"), Prefix.strict("2.2.2.0/24"));
+    List<Ip> orderedIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+    List<Integer> orderedPathIds = ImmutableList.of(1, 2);
+
+    Row.RowBuilder rb = Row.builder(getTableMetadata(RibProtocol.BGP).toColumnMap());
+    List<Row> orderedRows = new ArrayList<>();
+    for (Node n : orderedNodes) {
+      rb.put(COL_NODE, n);
+      for (String vrf : orderedVrfs) {
+        rb.put(COL_VRF_NAME, vrf);
+        for (Prefix p : orderedNetworks) {
+          rb.put(COL_NETWORK, p);
+          for (Ip nhip : orderedIps) {
+            rb.put(COL_NEXT_HOP, NextHopIp.of(nhip));
+            for (Ip receivedFromIp : orderedIps) {
+              rb.put(COL_RECEIVED_FROM_IP, receivedFromIp);
+              for (int pathId : orderedPathIds) {
+                orderedRows.add(rb.put(COL_PATH_ID, pathId).build());
+              }
+            }
+          }
+        }
+      }
+    }
+    for (int i = 0; i < orderedRows.size(); i++) {
+      for (int j = 0; j < orderedRows.size(); j++) {
+        assertThat(
+            Integer.signum(BGP_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
+  }
+
+  @Test
+  public void testEvpnRibComparator() {
+    List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
+    List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
+    List<Prefix> orderedNetworks =
+        ImmutableList.of(Prefix.strict("1.1.1.0/24"), Prefix.strict("2.2.2.0/24"));
+    List<Ip> orderedIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+    List<Integer> orderedPathIds = ImmutableList.of(1, 2);
+
+    Row.RowBuilder rb = Row.builder(getTableMetadata(RibProtocol.EVPN).toColumnMap());
+    List<Row> orderedRows = new ArrayList<>();
+    for (Node n : orderedNodes) {
+      rb.put(COL_NODE, n);
+      for (String vrf : orderedVrfs) {
+        rb.put(COL_VRF_NAME, vrf);
+        for (Prefix p : orderedNetworks) {
+          rb.put(COL_NETWORK, p);
+          for (Ip nhip : orderedIps) {
+            rb.put(COL_NEXT_HOP, NextHopIp.of(nhip));
+            for (int pathId : orderedPathIds) {
+              orderedRows.add(rb.put(COL_PATH_ID, pathId).build());
+            }
+          }
+        }
+      }
+    }
+    for (int i = 0; i < orderedRows.size(); i++) {
+      for (int j = 0; j < orderedRows.size(); j++) {
+        assertThat(
+            Integer.signum(EVPN_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
+  }
+
+  @Test
+  public void testDiffComparator() {
+    List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
+    List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
+    List<Prefix> orderedNetworks =
+        ImmutableList.of(Prefix.strict("1.1.1.0/24"), Prefix.strict("2.2.2.0/24"));
+    List<RouteEntryPresenceStatus> orderedStatuses =
+        ImmutableList.of(
+            RouteEntryPresenceStatus.CHANGED, RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT);
+
+    // which RIB currently does not matter here because the comparator only relies on columns that
+    // all differential results include
+    Row.RowBuilder rb = Row.builder(getDiffTableMetadata(RibProtocol.MAIN).toColumnMap());
+    List<Row> orderedRows = new ArrayList<>();
+    for (Node n : orderedNodes) {
+      rb.put(COL_NODE, n);
+      for (String vrf : orderedVrfs) {
+        rb.put(COL_VRF_NAME, vrf);
+        for (Prefix p : orderedNetworks) {
+          rb.put(COL_NETWORK, p);
+          for (RouteEntryPresenceStatus status : orderedStatuses) {
+            orderedRows.add(rb.put(COL_ROUTE_ENTRY_PRESENCE, status).build());
+          }
+        }
+      }
+    }
+    for (int i = 0; i < orderedRows.size(); i++) {
+      for (int j = 0; j < orderedRows.size(); j++) {
+        assertThat(
+            Integer.signum(DIFF_COMPARATOR.compare(orderedRows.get(i), (orderedRows.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
   }
 
   /** Run through full pipeline (create question and answerer), */

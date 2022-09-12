@@ -1,0 +1,42 @@
+set deviceconfig system hostname application-override-diff-vsys-vsids
+#
+#
+# Panorama configuration
+#
+# Some definition must exist for app-override
+set shared application OVERRIDE_SSH default port tcp/22
+#
+#
+# Managed-device configuration
+#
+set device-group DG1 devices 00000001
+set device-group DG1 application-group app_group2 members [ app_group1 dns ]
+#
+# Network configuration required to make device 00000001 allow traffic through
+set template T1 config devices localhost.localdomain vsys vsys1 zone z1 network layer3 ethernet1/1
+set template T1 config devices localhost.localdomain vsys vsys1 zone z2 network layer3 ethernet1/2
+set template T1 config devices localhost.localdomain vsys vsys1 import network interface [ ethernet1/1 ethernet1/2 ]
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set template T1 config devices localhost.localdomain network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+set template-stack TS1 templates T1
+set template-stack TS1 devices 00000001
+#
+set device-group DG1 pre-rulebase application-override rules OVERRIDE_APP_RULE1 from any
+set device-group DG1 pre-rulebase application-override rules OVERRIDE_APP_RULE1 to any
+set device-group DG1 pre-rulebase application-override rules OVERRIDE_APP_RULE1 source any
+set device-group DG1 pre-rulebase application-override rules OVERRIDE_APP_RULE1 destination any
+set device-group DG1 pre-rulebase application-override rules OVERRIDE_APP_RULE1 port 22
+set device-group DG1 pre-rulebase application-override rules OVERRIDE_APP_RULE1 protocol tcp
+set device-group DG1 pre-rulebase application-override rules OVERRIDE_APP_RULE1 application OVERRIDE_SSH
+#
+# Allow app-override (tcp/22)
+set device-group DG1 pre-rulebase security rules RULE1 from any
+set device-group DG1 pre-rulebase security rules RULE1 to any
+set device-group DG1 pre-rulebase security rules RULE1 source any
+set device-group DG1 pre-rulebase security rules RULE1 source-user any
+set device-group DG1 pre-rulebase security rules RULE1 destination any
+set device-group DG1 pre-rulebase security rules RULE1 service application-default
+set device-group DG1 pre-rulebase security rules RULE1 application OVERRIDE_SSH
+set device-group DG1 pre-rulebase security rules RULE1 action allow
+#

@@ -260,31 +260,15 @@ public final class TcpFlagsMatchConditions
    * <p>Note this function will return {@code true} if no bits are used.
    */
   public boolean match(Flow flow) {
-    return !(_useAck && _tcpFlags.getAck() ^ flow.getTcpFlags().getAck())
-        && !(_useCwr && _tcpFlags.getCwr() ^ flow.getTcpFlags().getCwr())
-        && !(_useEce && _tcpFlags.getEce() ^ flow.getTcpFlags().getEce())
-        && !(_useFin && _tcpFlags.getFin() ^ flow.getTcpFlags().getFin())
-        && !(_usePsh && _tcpFlags.getPsh() ^ flow.getTcpFlags().getPsh())
-        && !(_useRst && _tcpFlags.getRst() ^ flow.getTcpFlags().getRst())
-        && !(_useSyn && _tcpFlags.getSyn() ^ flow.getTcpFlags().getSyn())
-        && !(_useUrg && _tcpFlags.getUrg() ^ flow.getTcpFlags().getUrg());
-  }
-
-  /**
-   * Returns {@code true} iff the TCP flags used for which matching is enabled match the TCP flags
-   * in the given {@link Flow6}.
-   *
-   * <p>Note this function will return {@code true} if no bits are used.
-   */
-  public boolean match(Flow6 flow6) {
-    return !(_useAck && _tcpFlags.getAck() ^ (flow6.getTcpFlagsAck() == 1))
-        && !(_useCwr && _tcpFlags.getCwr() ^ (flow6.getTcpFlagsCwr() == 1))
-        && !(_useEce && _tcpFlags.getEce() ^ (flow6.getTcpFlagsEce() == 1))
-        && !(_useFin && _tcpFlags.getFin() ^ (flow6.getTcpFlagsFin() == 1))
-        && !(_usePsh && _tcpFlags.getPsh() ^ (flow6.getTcpFlagsPsh() == 1))
-        && !(_useRst && _tcpFlags.getRst() ^ (flow6.getTcpFlagsRst() == 1))
-        && !(_useSyn && _tcpFlags.getSyn() ^ (flow6.getTcpFlagsSyn() == 1))
-        && !(_useUrg && _tcpFlags.getUrg() ^ (flow6.getTcpFlagsUrg() == 1));
+    TcpFlags flags = firstNonNull(flow.getTcpFlags(), TcpFlags.FALSE);
+    return !(_useAck && _tcpFlags.getAck() ^ flags.getAck())
+        && !(_useCwr && _tcpFlags.getCwr() ^ flags.getCwr())
+        && !(_useEce && _tcpFlags.getEce() ^ flags.getEce())
+        && !(_useFin && _tcpFlags.getFin() ^ flags.getFin())
+        && !(_usePsh && _tcpFlags.getPsh() ^ flags.getPsh())
+        && !(_useRst && _tcpFlags.getRst() ^ flags.getRst())
+        && !(_useSyn && _tcpFlags.getSyn() ^ flags.getSyn())
+        && !(_useUrg && _tcpFlags.getUrg() ^ flags.getUrg());
   }
 
   @Override

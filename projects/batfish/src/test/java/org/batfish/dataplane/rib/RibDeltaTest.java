@@ -14,6 +14,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
@@ -180,7 +181,7 @@ public class RibDeltaTest {
         .setProtocol(RoutingProtocol.IBGP)
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(Ip.parse("7.7.7.7"))
-        .setReceivedFromIp(Ip.parse("7.7.7.7"))
+        .setReceivedFrom(ReceivedFromIp.of(Ip.parse("7.7.7.7")))
         .build();
     Bgpv4Route route = routeBuilder.build();
     // Better preference, kicks out route
@@ -237,7 +238,7 @@ public class RibDeltaTest {
             .setProtocol(RoutingProtocol.IBGP)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("7.7.7.7"))
-            .setReceivedFromIp(Ip.parse("7.7.7.7"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("7.7.7.7")))
             .build();
     Bgpv4Route r2 =
         Bgpv4Route.testBuilder()
@@ -245,7 +246,7 @@ public class RibDeltaTest {
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("7.7.7.7"))
-            .setReceivedFromIp(Ip.parse("7.7.7.7"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("7.7.7.7")))
             .build();
 
     // Setup

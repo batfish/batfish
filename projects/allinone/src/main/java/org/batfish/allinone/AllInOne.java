@@ -11,8 +11,18 @@ import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.BindPortFutures;
+import org.batfish.coordinator.BatfishWorkerServiceWorkExecutor;
+import org.batfish.coordinator.PoolWorkExecutor;
+import org.batfish.coordinator.WorkExecutorCreator;
+import org.batfish.main.Driver;
 
 public class AllInOne {
+
+  /**
+   * If true, use old-style pool manager and worker registration (takes up two ports). Else, work
+   * manager should directly spawn Batfish worker threads.
+   */
+  private static final boolean USE_LEGACY_POOL_WORK_EXECUTOR = false;
 
   private static String[] getArgArrayFromString(String argString) {
     if (Strings.isNullOrEmpty(argString)) {
@@ -106,7 +116,6 @@ public class AllInOne {
 
     if (_settings.getRunClient()) {
       try {
-        _client.getSettings().setCoordinatorWorkPort(bindPortFutures.getWorkPort().get());
         _client.getSettings().setCoordinatorWorkV2Port(bindPortFutures.getWorkV2Port().get());
       } catch (ExecutionException | InterruptedException e) {
         System.err.println("org.batfish.allinone: Worker initialization failed: " + e.getMessage());
@@ -137,14 +146,18 @@ public class AllInOne {
 
     String batfishArgs =
         String.format(
-            "%s -%s %s -%s %s -%s %s -%s %s",
+            "%s -%s %s -%s %s %s -%s %s",
             _settings.getBatfishArgs(),
             org.batfish.config.Settings.ARG_RUN_MODE,
             _settings.getBatfishRunMode(),
             org.batfish.config.Settings.ARG_COORDINATOR_REGISTER,
             "true",
-            org.batfish.config.Settings.ARG_COORDINATOR_POOL_PORT,
-            bindPortFutures.getPoolPort().get(),
+            USE_LEGACY_POOL_WORK_EXECUTOR
+                ? String.format(
+                    "-%s %s",
+                    org.batfish.config.Settings.ARG_COORDINATOR_POOL_PORT,
+                    bindPortFutures.getPoolPort().get())
+                : "",
             org.batfish.config.Settings.ARG_TRACING_ENABLE,
             _settings.getTracingEnable());
     // If we are running a command file, just use an ephemeral port for worker
@@ -161,7 +174,7 @@ public class AllInOne {
           @Override
           public void run() {
             try {
-              org.batfish.main.Driver.main(argArray, _logger);
+              org.batfish.main.Driver.main(argArray, _logger, USE_LEGACY_POOL_WORK_EXECUTOR);
             } catch (Exception e) {
               _logger.errorf(
                   "Initialization of batfish failed with args: %s\nExceptionMessage: %s\n",
@@ -201,8 +214,21 @@ public class AllInOne {
         new Thread("coordinatorThread") {
           @Override
           public void run() {
+            WorkExecutorCreator workExecutorCreator =
+                USE_LEGACY_POOL_WORK_EXECUTOR
+                    ? PoolWorkExecutor::new
+                    : (logger, settings) ->
+                        new BatfishWorkerServiceWorkExecutor(
+                            logger,
+                            settings.getContainersLocation(),
+                            Driver.getBatfishWorkerService());
             try {
-              org.batfish.coordinator.Main.main(argArray, _logger, bindPortFutures);
+              org.batfish.coordinator.Main.main(
+                  argArray,
+                  _logger,
+                  bindPortFutures,
+                  workExecutorCreator,
+                  USE_LEGACY_POOL_WORK_EXECUTOR);
             } catch (Exception e) {
               _logger.errorf(
                   "Initialization of coordinator failed with args: %s\nExceptionMessage: %s\n",

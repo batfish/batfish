@@ -34,6 +34,7 @@ import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
 import com.carrotsearch.hppc.procedures.IntProcedure;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -42,6 +43,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -50,7 +52,6 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
@@ -107,6 +108,13 @@ public class JFactory extends BDDFactory implements Serializable {
     BDDFactory f = new JFactory();
     f.initialize(nodenum, cachesize);
     return f;
+  }
+
+  @Override
+  public long runGC() {
+    long nodenum = getNodeNum();
+    bdd_gbc();
+    return nodenum - getNodeNum();
   }
 
   /** The total number of BDDs ever created. */
@@ -185,6 +193,15 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public BDD not() {
       return makeBDD(bdd_not(_index));
+    }
+
+    @Override
+    public BDD notEq() {
+      int result = bdd_not(_index);
+      bdd_delref(_index);
+      bdd_addref(result);
+      _index = result;
+      return this;
     }
 
     @Override
@@ -920,16 +937,113 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int bddop_ite = 14;
 
   @Override
-  public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
-    int[] operands =
-        StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
-            .filter(i -> i != BDDONE)
-            .sorted()
-            .distinct()
-            .peek(this::CHECK)
-            .toArray();
-    int ret = bdd_andAll(operands);
+  public BDD andLiterals(BDD... literals) {
+    if (literals.length == 0) {
+      return makeBDD(BDDONE);
+    }
+    if (literals.length == 1) {
+      return literals[0].id();
+    }
+
+    int[] ids = new int[literals.length];
+    for (int i = 0; i < literals.length; i++) {
+      int id = ((BDDImpl) literals[i])._index;
+      if (ISCONST(id)) {
+        throw new IllegalArgumentException("Illegal constant " + id);
+      }
+      ids[i] = id;
+    }
+
+    BDDImpl bdd = makeBDD(bdd_andLiterals(ids));
+    return bdd;
+  }
+
+  private int bdd_andLiterals(int[] literals) {
+    assert literals.length > 0; // empty array handled in caller
+    INITREF();
+
+    /* build bottom-up, skipping the operator cache at each level since this construction is very cheap (and we don't
+     * want to evict a more valuable cache entry. We could consider using the multip cache to cache the entire
+     * andLiterals operation.
+     */
+    int last = -1;
+    int lastLevel = -1;
+    for (int i = literals.length - 1; i >= 0; i--) {
+      int n = literals[i];
+      int level = LEVEL(n);
+      int var = bddlevel2var[level];
+      boolean positive = n == bddvarset[var * 2];
+      if (!(positive || n == bddvarset[var * 2 + 1])) {
+        throw new IllegalArgumentException(String.format("argument %s is not a literal", i));
+      }
+
+      if (last == -1) {
+        last = n;
+      } else {
+        if (level >= lastLevel) {
+          throw new IllegalArgumentException("Levels are not strictly increasing");
+        }
+        PUSHREF(last);
+        if (positive) {
+          last = bdd_makenode(level, BDDZERO, last);
+        } else {
+          last = bdd_makenode(level, last, BDDZERO);
+        }
+        POPREF(1);
+      }
+      lastLevel = level;
+    }
+    return last;
+  }
+
+  /**
+   * Extracts the indices from the input bddOperands as an array. If {@code shortCircuit} is found,
+   * the returned array will contain {@code shortCircuit} is the first value. If all values are
+   * {@code identity}, the returned array will contain {@code identity} as the first value.
+   * Otherwise the returned array will not contain either {@code shortCircuit} or {@code identity},
+   * and will be sorted and deduped.
+   */
+  @VisibleForTesting
+  static int[] toIntOperands(Collection<BDD> bddOperands, int identity, int shortCircuit) {
+    int[] operands = new int[bddOperands.size()];
+    int i = 0;
+    for (BDD bdd : bddOperands) {
+      int id = ((BDDImpl) bdd)._index;
+      if (id == shortCircuit) {
+        operands[0] = shortCircuit;
+        return operands;
+      }
+      if (id == identity) {
+        continue;
+      }
+      operands[i++] = id;
+    }
+    if (i == 0) {
+      // all operands were identity
+      operands[0] = identity;
+      return operands;
+    }
+    Arrays.sort(operands, 0, i);
+    return dedupSorted(operands, i);
+  }
+
+  @Override
+  public BDD andAll(Collection<BDD> bddOperands, boolean free) {
+    if (bddOperands.isEmpty()) {
+      return makeBDD(BDDONE);
+    }
+    if (bddOperands.size() == 1) {
+      BDD bdd = bddOperands.iterator().next();
+      return free ? bdd : bdd.id();
+    }
+    if (bddOperands.size() == 2) {
+      Iterator<BDD> iter = bddOperands.iterator();
+      BDD bdd1 = iter.next();
+      BDD bdd2 = iter.next();
+      return free ? bdd1.andWith(bdd2) : bdd1.and(bdd2);
+    }
+    int[] operands = toIntOperands(bddOperands, BDDONE, BDDZERO);
+    int ret = ISCONST(operands[0]) ? operands[0] : bdd_andAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
     }
@@ -957,16 +1071,22 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   @Override
-  protected BDD orAll(Iterable<BDD> bddOperands, boolean free) {
-    int[] operands =
-        StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
-            .filter(i -> i != BDDZERO)
-            .sorted()
-            .distinct()
-            .peek(this::CHECK)
-            .toArray();
-    int ret = bdd_orAll(operands);
+  protected BDD orAll(Collection<BDD> bddOperands, boolean free) {
+    if (bddOperands.isEmpty()) {
+      return makeBDD(BDDZERO);
+    }
+    if (bddOperands.size() == 1) {
+      BDD bdd = bddOperands.iterator().next();
+      return free ? bdd : bdd.id();
+    }
+    if (bddOperands.size() == 2) {
+      Iterator<BDD> iter = bddOperands.iterator();
+      BDD bdd1 = iter.next();
+      BDD bdd2 = iter.next();
+      return free ? bdd1.orWith(bdd2) : bdd1.or(bdd2);
+    }
+    int[] operands = toIntOperands(bddOperands, BDDZERO, BDDONE);
+    int ret = ISCONST(operands[0]) ? operands[0] : bdd_orAll(operands);
     if (free) {
       bddOperands.forEach(BDD::free);
     }
@@ -1692,13 +1812,14 @@ public class JFactory extends BDDFactory implements Serializable {
    * Dedup a sorted array. Returns the input array if it contains no duplicates. Mutates the array
    * if there are duplicates.
    */
-  static int[] dedupSorted(int[] values) {
-    if (values.length < 2) {
+  static int[] dedupSorted(int[] values, int len) {
+    assert len <= values.length;
+    if (values.length < 2 && len == values.length) {
       return values;
     }
     int i = 0; // index last written to
     int j = 1; // index to read from next
-    while (j < values.length) {
+    while (j < len) {
       if (values[i] != values[j]) {
         values[++i] = values[j++];
       } else {
@@ -1725,7 +1846,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     // sort and dedup the operands to optimize caching
     Arrays.sort(operands);
-    operands = dedupSorted(operands);
+    operands = dedupSorted(operands, operands.length);
 
     int hash = MULTIOPHASH(operands, bddop_and);
     MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
@@ -1872,7 +1993,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     // sort and dedup the operands to optimize caching
     Arrays.sort(operands);
-    operands = dedupSorted(operands);
+    operands = dedupSorted(operands, operands.length);
 
     int hash = MULTIOPHASH(operands, bddop_or);
     MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);

@@ -1,5 +1,4 @@
 load("@rules_java//java:defs.bzl", "java_library")
-load("@batfish//skylark:junit.bzl", "junit_tests")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -25,32 +24,6 @@ java_library(
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_parboiled_parboiled_core",
-    ],
-)
-
-junit_tests(
-    name = "minesweeper_tests",
-    size = "small",
-    srcs = glob([
-        "src/test/java/**/*Test.java",
-    ]),
-    runtime_deps = [
-        "@maven//:org_apache_logging_log4j_log4j_core",
-        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
-    ],
-    deps = [
-        ":minesweeper",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/bdd",
-        "//projects/question",
-        "@maven//:com_google_guava_guava",
-        "@maven//:com_google_guava_guava_testlib",
-        "@maven//:dk_brics_automaton",
-        "@maven//:junit_junit",
-        "@maven//:org_apache_commons_commons_lang3",
-        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 

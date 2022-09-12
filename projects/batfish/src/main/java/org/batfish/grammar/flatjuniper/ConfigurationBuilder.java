@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
@@ -44,6 +45,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_P
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ADD_PATH_SEND_PREFIX_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
@@ -54,6 +56,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPOR
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_FAMILY_INET_UNICAST_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAINS_ROUTING_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BRIDGE_DOMAIN_SELF_REF;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
@@ -250,8 +253,15 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_routing_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bd_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bf_evpnContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_add_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_rib_groupContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiua_receiveContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiua_sendContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_multipathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_path_countContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_path_selection_modeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_prefix_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_aliasContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
@@ -640,6 +650,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_ipsec_policyCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_destinationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_sourceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sen_staticContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Send_path_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_default_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_from_zoneContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_globalContext;
@@ -732,6 +743,94 @@ import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.Interface.VlanTaggingMode;
 import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
+import org.batfish.representation.juniper.PatPool;
+import org.batfish.representation.juniper.PathSelectionMode;
+import org.batfish.representation.juniper.PolicyStatement;
+import org.batfish.representation.juniper.PrefixList;
+import org.batfish.representation.juniper.PsFromAsPath;
+import org.batfish.representation.juniper.PsFromColor;
+import org.batfish.representation.juniper.PsFromCommunity;
+import org.batfish.representation.juniper.PsFromCondition;
+import org.batfish.representation.juniper.PsFromFamily;
+import org.batfish.representation.juniper.PsFromInstance;
+import org.batfish.representation.juniper.PsFromInterface;
+import org.batfish.representation.juniper.PsFromLocalPreference;
+import org.batfish.representation.juniper.PsFromMetric;
+import org.batfish.representation.juniper.PsFromPolicyStatement;
+import org.batfish.representation.juniper.PsFromPolicyStatementConjunction;
+import org.batfish.representation.juniper.PsFromPrefixList;
+import org.batfish.representation.juniper.PsFromPrefixListFilterLonger;
+import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
+import org.batfish.representation.juniper.PsFromProtocol;
+import org.batfish.representation.juniper.PsFromRouteFilter;
+import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsFromUnsupported;
+import org.batfish.representation.juniper.PsFroms;
+import org.batfish.representation.juniper.PsTerm;
+import org.batfish.representation.juniper.PsThen;
+import org.batfish.representation.juniper.PsThenAccept;
+import org.batfish.representation.juniper.PsThenAsPathExpand;
+import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
+import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
+import org.batfish.representation.juniper.PsThenAsPathPrepend;
+import org.batfish.representation.juniper.PsThenCommunityAdd;
+import org.batfish.representation.juniper.PsThenCommunityDelete;
+import org.batfish.representation.juniper.PsThenCommunitySet;
+import org.batfish.representation.juniper.PsThenDefaultActionAccept;
+import org.batfish.representation.juniper.PsThenDefaultActionReject;
+import org.batfish.representation.juniper.PsThenExternal;
+import org.batfish.representation.juniper.PsThenLocalPreference;
+import org.batfish.representation.juniper.PsThenMetric;
+import org.batfish.representation.juniper.PsThenMetricAdd;
+import org.batfish.representation.juniper.PsThenNextHopDiscard;
+import org.batfish.representation.juniper.PsThenNextHopIp;
+import org.batfish.representation.juniper.PsThenNextHopPeerAddress;
+import org.batfish.representation.juniper.PsThenNextHopReject;
+import org.batfish.representation.juniper.PsThenNextHopSelf;
+import org.batfish.representation.juniper.PsThenNextPolicy;
+import org.batfish.representation.juniper.PsThenOrigin;
+import org.batfish.representation.juniper.PsThenPreference;
+import org.batfish.representation.juniper.PsThenReject;
+import org.batfish.representation.juniper.PsThenTag;
+import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
+import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
+import org.batfish.representation.juniper.QualifiedNextHop;
+import org.batfish.representation.juniper.RegexCommunityMember;
+import org.batfish.representation.juniper.Resolution;
+import org.batfish.representation.juniper.ResolutionRib;
+import org.batfish.representation.juniper.RibGroup;
+import org.batfish.representation.juniper.Route4FilterLine;
+import org.batfish.representation.juniper.Route4FilterLineAddressMask;
+import org.batfish.representation.juniper.Route4FilterLineExact;
+import org.batfish.representation.juniper.Route4FilterLineLengthRange;
+import org.batfish.representation.juniper.Route4FilterLineLonger;
+import org.batfish.representation.juniper.Route4FilterLineOrLonger;
+import org.batfish.representation.juniper.Route4FilterLineThrough;
+import org.batfish.representation.juniper.Route4FilterLineUpTo;
+import org.batfish.representation.juniper.Route6FilterLine;
+import org.batfish.representation.juniper.Route6FilterLineAddressMask;
+import org.batfish.representation.juniper.Route6FilterLineExact;
+import org.batfish.representation.juniper.Route6FilterLineLengthRange;
+import org.batfish.representation.juniper.Route6FilterLineLonger;
+import org.batfish.representation.juniper.Route6FilterLineOrLonger;
+import org.batfish.representation.juniper.Route6FilterLineThrough;
+import org.batfish.representation.juniper.Route6FilterLineUpTo;
+import org.batfish.representation.juniper.RouteFilter;
+import org.batfish.representation.juniper.RoutingInformationBase;
+import org.batfish.representation.juniper.RoutingInstance;
+import org.batfish.representation.juniper.Screen;
+import org.batfish.representation.juniper.ScreenAction;
+import org.batfish.representation.juniper.StaticRoute;
+import org.batfish.representation.juniper.StubSettings;
+import org.batfish.representation.juniper.TcpFinNoAck;
+import org.batfish.representation.juniper.TcpNoFlag;
+import org.batfish.representation.juniper.TcpSynFin;
+import org.batfish.representation.juniper.TunnelAttribute;
+import org.batfish.representation.juniper.Vlan;
+import org.batfish.representation.juniper.VlanRange;
+import org.batfish.representation.juniper.VlanReference;
+import org.batfish.representation.juniper.VrrpGroup;
+import org.batfish.representation.juniper.Zone;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     implements SilentSyntaxListener {
@@ -751,6 +850,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
 
   private static final IntegerSpace FRAGMENT_OFFSET_RANGE = IntegerSpace.of(new SubRange(0, 8191));
+
+  private static final IntegerSpace ADD_PATH_SEND_PATH_COUNT_RANGE =
+      IntegerSpace.of(new SubRange(2, 64));
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
@@ -1720,30 +1822,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return IpProtocol.fromNumber(protocolNum);
     } else if (ctx.AH() != null) {
       return IpProtocol.AHP;
-    } else if (ctx.DSTOPTS() != null) {
-      return IpProtocol.IPV6_OPTS;
     } else if (ctx.EGP() != null) {
       return IpProtocol.EGP;
     } else if (ctx.ESP() != null) {
       return IpProtocol.ESP;
-    } else if (ctx.FRAGMENT() != null) {
-      return IpProtocol.IPV6_FRAG;
     } else if (ctx.GRE() != null) {
       return IpProtocol.GRE;
     } else if (ctx.HOP_BY_HOP() != null) {
       return IpProtocol.HOPOPT;
     } else if (ctx.ICMP() != null) {
       return IpProtocol.ICMP;
-    } else if (ctx.ICMP6() != null) {
-      return IpProtocol.IPV6_ICMP;
-    } else if (ctx.ICMPV6() != null) {
-      return IpProtocol.IPV6_ICMP;
     } else if (ctx.IGMP() != null) {
       return IpProtocol.IGMP;
     } else if (ctx.IPIP() != null) {
       return IpProtocol.IPINIP;
-    } else if (ctx.IPV6() != null) {
-      return IpProtocol.IPV6;
     } else if (ctx.OSPF() != null) {
       return IpProtocol.OSPF;
     } else if (ctx.PIM() != null) {
@@ -2119,7 +2211,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentApplication =
         _currentLogicalSystem
             .getApplications()
-            .computeIfAbsent(name, n -> new BaseApplication(name));
+            .computeIfAbsent(name, n -> new BaseApplication(name, false));
     _currentApplicationTerm = _currentApplication.getMainTerm();
     _configuration.defineFlattenedStructure(APPLICATION, name, ctx, _parser);
   }
@@ -2130,7 +2222,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentApplicationSet =
         _currentLogicalSystem
             .getApplicationSets()
-            .computeIfAbsent(name, n -> new ApplicationSet(name));
+            .computeIfAbsent(name, n -> new ApplicationSet(name, false));
     _configuration.defineFlattenedStructure(APPLICATION_SET, name, ctx, _parser);
   }
 
@@ -2257,18 +2349,38 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           getLine(ctx.NEIGHBOR().getSymbol()));
     }
     if (ctx.ip_address() != null) {
-      Prefix remoteAddress = toIp(ctx.ip_address()).toPrefix();
+      Ip remoteIp = toIp(ctx.ip_address());
+      Prefix remotePrefix = remoteIp.toPrefix();
       Map<Prefix, IpBgpGroup> ipBgpGroups = _currentRoutingInstance.getIpBgpGroups();
-      IpBgpGroup ipBgpGroup = ipBgpGroups.get(remoteAddress);
+      IpBgpGroup ipBgpGroup = ipBgpGroups.get(remotePrefix);
       if (ipBgpGroup == null) {
-        ipBgpGroup = new IpBgpGroup(remoteAddress);
+        ipBgpGroup = new IpBgpGroup(remotePrefix);
         ipBgpGroup.setParent(_currentBgpGroup);
-        ipBgpGroups.put(remoteAddress, ipBgpGroup);
+        ipBgpGroups.put(remotePrefix, ipBgpGroup);
       }
       _currentBgpGroup = ipBgpGroup;
+      String bgpNeighborStructureName =
+          bgpNeighborStructureName(remoteIp.toString(), _currentRoutingInstance.getName());
+      _configuration.defineFlattenedStructure(
+          JuniperStructureType.BGP_NEIGHBOR, bgpNeighborStructureName, ctx, _parser);
+      _configuration.referenceStructure(
+          JuniperStructureType.BGP_NEIGHBOR,
+          bgpNeighborStructureName,
+          BGP_NEIGHBOR_SELF_REFERENCE,
+          getLine(ctx.start));
     } else if (ctx.ipv6_address() != null) {
       _currentBgpGroup.setIpv6(true);
       _currentBgpGroup = DUMMY_BGP_GROUP;
+      String bgpNeighborStructureName =
+          bgpNeighborStructureName(
+              toIp6(ctx.ipv6_address()).toString(), _currentRoutingInstance.getName());
+      _configuration.defineFlattenedStructure(
+          JuniperStructureType.BGP_NEIGHBOR, bgpNeighborStructureName, ctx, _parser);
+      _configuration.referenceStructure(
+          JuniperStructureType.BGP_NEIGHBOR,
+          bgpNeighborStructureName,
+          BGP_NEIGHBOR_SELF_REFERENCE,
+          getLine(ctx.start));
     }
   }
 
@@ -6669,6 +6781,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentZoneInboundFilter.getTerms().put(termName, newTerm);
     newTerm.getFromHostProtocols().add(protocol);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
+
+    String defName = computeSecurityPolicyTermName(_currentZoneInboundFilter.getName(), termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.getStart()));
   }
 
   @Override
@@ -6679,6 +6796,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentZoneInboundFilter.getTerms().put(termName, newTerm);
     newTerm.getFromHostServices().add(service);
     newTerm.getThens().add(FwThenAccept.INSTANCE);
+
+    String defName = computeSecurityPolicyTermName(_currentZoneInboundFilter.getName(), termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.getStart()));
   }
 
   @Override
@@ -6966,6 +7088,54 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.EVPN() != null) {
       _currentBgpGroup.setEvpnAf(true);
     }
+  public void enterBfiu_add_path(Bfiu_add_pathContext ctx) {
+    todo(ctx);
+    _currentBgpGroup.getOrInitAddPath();
+  }
+
+  @Override
+  public void exitBfiua_receive(Bfiua_receiveContext ctx) {
+    _currentBgpGroup.getOrInitAddPath().setReceive(true);
+  }
+
+  @Override
+  public void enterBfiua_send(Bfiua_sendContext ctx) {
+    _currentBgpGroup.getAddPath().getOrInitSend();
+  }
+
+  @Override
+  public void exitBfiuas_multipath(Bfiuas_multipathContext ctx) {
+    _currentBgpGroup.getAddPath().getSend().setMultipath(true);
+  }
+
+  @Override
+  public void exitBfiuas_path_count(Bfiuas_path_countContext ctx) {
+    toInteger(ctx, ctx.count).ifPresent(_currentBgpGroup.getAddPath().getSend()::setPathCount);
+  }
+
+  @Override
+  public void exitBfiuas_path_selection_mode(Bfiuas_path_selection_modeContext ctx) {
+    PathSelectionMode mode;
+    if (ctx.ALL_PATHS() != null) {
+      mode = PathSelectionMode.ALL_PATHS;
+    } else {
+      assert ctx.EQUAL_COST_PATHS() != null;
+      mode = PathSelectionMode.EQUAL_COST_PATHS;
+    }
+    _currentBgpGroup.getAddPath().getSend().setPathSelectionMode(mode);
+  }
+
+  @Override
+  public void exitBfiuas_prefix_policy(Bfiuas_prefix_policyContext ctx) {
+    String name = toString(ctx.policy);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, ctx.getStart().getLine());
+    _currentBgpGroup.getAddPath().getSend().setPrefixPolicy(name);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Send_path_countContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, ADD_PATH_SEND_PATH_COUNT_RANGE, "path-count");
   }
 
   private @Nonnull Optional<Integer> toInteger(

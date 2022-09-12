@@ -34,7 +34,7 @@ rb_bgp
     | rbb_log_neighbor_changes
     | rbb_router_id
     | rbb_cluster_id
-    | rbb_max_med_administrative
+    | rbb_max_med
     | rbb_listen
   )
 ;
@@ -82,9 +82,29 @@ rbb_log_neighbor_changes
   LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
-rbb_max_med_administrative
+rbb_max_med
 :
-   MAX_MED ADMINISTRATIVE (med = uint32)? NEWLINE
+  MAX_MED
+  (
+    rbbmm_administrative
+    | rbbmm_on_startup_null
+  )
+;
+
+rbbmm_administrative
+:
+   ADMINISTRATIVE (med = uint32)? NEWLINE
+;
+
+bgp_startup_time
+:
+  // 5-86400, in seconds
+  uint32
+;
+
+rbbmm_on_startup_null
+:
+   ON_STARTUP (startup_time_s = bgp_startup_time) (med = uint32)? NEWLINE
 ;
 
 rbbb_aspath_multipath_relax
@@ -300,12 +320,12 @@ rb_always_compare_med
 
 rbn_ip
 :
-  ip = IP_ADDRESS rbn_property
+  ip = ip_address rbn_property
 ;
 
 rbn_ip6
 :
-   ip6 = IPV6_ADDRESS rbn_property
+   ip6 = ipv6_address rbn_property
 ;
 
 rbn_name

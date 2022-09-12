@@ -1,10 +1,14 @@
 package org.batfish.e2e.bgp.withdrawals;
 
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasAsPath;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasNoPathId;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasPathId;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Table;
@@ -100,6 +104,79 @@ public class BgpWithdrawalTest {
     assertThat(
         routes.get("l", "default"),
         containsInAnyOrder(hasAsPath(equalTo(AsPath.ofSingletonAsSets(2L, 4L, 5L, 3L)))));
+    assertThat(backupRoutes.get("l", "default"), empty());
+  }
+
+  /**
+   * Same as {@link #testWithdrawals()}, with adjustments made to test withdrawal of a route with a
+   * path ID:
+   *
+   * <ul>
+   *   <li>S and L have an IBGP session rather than EBGP (only IBGP sessions can do add-path)
+   *   <li>S is configured with {@code add-path send multipath} to send all ECMP-best paths
+   *   <li>L is configured with {@code add-path receive}
+   * </ul>
+   *
+   * This lab is Juniper rather than IOS because IOS doesn't have an add-path option for sending
+   * only ECMP-best paths, which is necessary to get S to send a withdrawal. For this reason, in
+   * this lab S sets a low local preference rather than weight on the routes it receives from A.
+   */
+  @Test
+  public void testWithdrawalsWithAddPath() throws IOException {
+    String prefix = "org/batfish/e2e/bgp/withdrawals_add_path";
+    IBatfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(prefix, "a", "b", "m1", "m2", "s", "l")
+                .build(),
+            _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.loadConfigurations(snapshot);
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    Table<String, String, Set<Bgpv4Route>> routes = dp.getBgpRoutes();
+    Table<String, String, Set<Bgpv4Route>> backupRoutes = dp.getBgpBackupRoutes();
+
+    // B receives no route from M2 (and Juniper exports from main RIB, so exported static route is
+    // not in BGP RIB)
+    assertThat(routes.get("b", "default"), empty());
+    assertThat(backupRoutes.get("b", "default"), empty());
+
+    // M2 should have the route from B, with no backup from M1.
+    assertThat(
+        routes.get("m2", "default"), contains(hasAsPath(equalTo(AsPath.ofSingletonAsSets(3L)))));
+    assertThat(backupRoutes.get("m2", "default"), empty());
+
+    // M1 should have the route from B->M2, with no backup from S.
+    assertThat(
+        routes.get("m1", "default"),
+        contains(hasAsPath(equalTo(AsPath.ofSingletonAsSets(5L, 3L)))));
+    assertThat(backupRoutes.get("m1", "default"), empty());
+
+    // S should prefer B->M2->M1 and have A as a backup. Its routes should not have path IDs,
+    // because none of its peers send additional paths (and S isn't configured to receive them).
+    // (The path IDs in routes are received path IDs, not transmitted path IDs.)
+    assertThat(
+        routes.get("s", "default"),
+        contains(allOf(hasAsPath(equalTo(AsPath.ofSingletonAsSets(4L, 5L, 3L))), hasNoPathId())));
+    assertThat(
+        backupRoutes.get("s", "default"),
+        contains(allOf(hasAsPath(equalTo(AsPath.ofSingletonAsSets(1L))), hasNoPathId())));
+
+    // A should have the B->M2->M1->S route in its BGP RIB (static route will win in main RIB)
+    assertThat(
+        routes.get("a", "default"),
+        contains(hasAsPath(equalTo(AsPath.ofSingletonAsSets(2L, 4L, 5L, 3L)))));
+    assertThat(backupRoutes.get("a", "default"), empty());
+
+    // L should have the B->M2->M1->S route and no backup. Also sanity check that the route has a
+    // path ID, indicating that S is sending additional paths.
+    assertThat(
+        routes.get("l", "default"),
+        contains(
+            allOf(
+                hasAsPath(equalTo(AsPath.ofSingletonAsSets(4L, 5L, 3L))),
+                hasPathId(notNullValue()))));
     assertThat(backupRoutes.get("l", "default"), empty());
   }
 }

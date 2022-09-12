@@ -364,7 +364,7 @@
       {
         "File_Name" : "configs/bgp_address_family",
         "Struct_Type" : "undeclared bgp peer",
-        "Ref_Name" : "13.16.3.16",
+        "Ref_Name" : "13.16.3.16 (VRF default)",
         "Context" : "bgp neighbor without remote-as",
         "Lines" : {
           "filename" : "configs/bgp_address_family",
@@ -508,7 +508,7 @@
       {
         "File_Name" : "configs/cisco_additional_paths",
         "Struct_Type" : "undeclared bgp peer",
-        "Ref_Name" : "1.2.3.4",
+        "Ref_Name" : "1.2.3.4 (VRF default)",
         "Context" : "bgp neighbor without remote-as",
         "Lines" : {
           "filename" : "configs/cisco_additional_paths",
@@ -593,7 +593,7 @@
       {
         "File_Name" : "configs/cisco_bgp",
         "Struct_Type" : "undeclared bgp peer",
-        "Ref_Name" : "10.0.0.1",
+        "Ref_Name" : "10.0.0.1 (VRF default)",
         "Context" : "bgp neighbor without remote-as",
         "Lines" : {
           "filename" : "configs/cisco_bgp",
@@ -608,7 +608,7 @@
       {
         "File_Name" : "configs/cisco_bgp",
         "Struct_Type" : "undeclared bgp peer",
-        "Ref_Name" : "10.20.2.2",
+        "Ref_Name" : "10.20.2.2 (VRF default)",
         "Context" : "bgp neighbor without remote-as",
         "Lines" : {
           "filename" : "configs/cisco_bgp",
@@ -620,7 +620,7 @@
       {
         "File_Name" : "configs/cisco_bgp",
         "Struct_Type" : "undeclared bgp peer",
-        "Ref_Name" : "192.168.3.2",
+        "Ref_Name" : "192.168.3.2 (VRF default)",
         "Context" : "bgp neighbor without remote-as",
         "Lines" : {
           "filename" : "configs/cisco_bgp",
@@ -632,7 +632,7 @@
       {
         "File_Name" : "configs/cisco_bgp",
         "Struct_Type" : "undeclared bgp peer",
-        "Ref_Name" : "192.168.4.2",
+        "Ref_Name" : "192.168.4.2 (VRF default)",
         "Context" : "bgp neighbor without remote-as",
         "Lines" : {
           "filename" : "configs/cisco_bgp",
@@ -2659,7 +2659,7 @@
       {
         "File_Name" : "configs/ios_bgp",
         "Struct_Type" : "undeclared bgp peer",
-        "Ref_Name" : "1.2.3.4",
+        "Ref_Name" : "1.2.3.4 (VRF default)",
         "Context" : "bgp neighbor without remote-as",
         "Lines" : {
           "filename" : "configs/ios_bgp",
@@ -4091,6 +4091,79 @@
       },
       {
         "File_Name" : "configs/palo_alto/nat",
+        "Struct_Type" : "address-like",
+        "Ref_Name" : "DST_1",
+        "Context" : "rulebase nat rules destination",
+        "Lines" : {
+          "filename" : "configs/palo_alto/nat",
+          "lines" : [
+            48
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/palo_alto/nat",
+        "Struct_Type" : "address-like",
+        "Ref_Name" : "DST_2",
+        "Context" : "rulebase nat rules destination",
+        "Lines" : {
+          "filename" : "configs/palo_alto/nat",
+          "lines" : [
+            48
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/palo_alto/nat",
+        "Struct_Type" : "address-like",
+        "Ref_Name" : "DST_NAME",
+        "Context" : "rulebase nat rules destination",
+        "Lines" : {
+          "filename" : "configs/palo_alto/nat",
+          "lines" : [
+            37
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/palo_alto/nat",
+        "Struct_Type" : "address-like",
+        "Ref_Name" : "SRC_1",
+        "Context" : "rulebase nat rules source",
+        "Lines" : {
+          "filename" : "configs/palo_alto/nat",
+          "lines" : [
+            47
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/palo_alto/nat",
+        "Struct_Type" : "address-like",
+        "Ref_Name" : "SRC_2",
+        "Context" : "rulebase nat rules source",
+        "Lines" : {
+          "filename" : "configs/palo_alto/nat",
+          "lines" : [
+            47
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/palo_alto/nat",
+        "Struct_Type" : "address-like",
+        "Ref_Name" : "SRC_NAME",
+        "Context" : "rulebase nat rules source",
+        "Lines" : {
+          "filename" : "configs/palo_alto/nat",
+          "lines" : [
+            36,
+            61
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/palo_alto/nat",
         "Struct_Type" : "zone",
         "Ref_Name" : "FROM_1~panorama",
         "Context" : "rulebase nat rules from",
@@ -4388,7 +4461,7 @@
       {
         "File_Name" : "configs/vlan_access_map2",
         "Struct_Type" : "undeclared bgp peer",
-        "Ref_Name" : "10.10.212.233",
+        "Ref_Name" : "10.10.212.233 (VRF default)",
         "Context" : "bgp neighbor without remote-as",
         "Lines" : {
           "filename" : "configs/vlan_access_map2",
@@ -4399,10 +4472,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 357 results",
+      "notes" : "Found 363 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 357
+      "numResults" : 363
     }
   }
 ]

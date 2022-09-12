@@ -1,0 +1,20 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+
+junit_tests(
+    name = "DifferentialReachabilityTest",
+    size = "small",
+    srcs = [
+        "DifferentialReachabilityTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test:common_testlib",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
+        "//projects/question",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)

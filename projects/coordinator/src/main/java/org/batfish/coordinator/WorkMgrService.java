@@ -1,10 +1,12 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.Arrays;
@@ -45,11 +47,16 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /** */
 @Path(CoordConsts.SVC_CFG_WORK_MGR)
 public class WorkMgrService {
+
+  public static final List<Class<?>> REQUIRED_FEATURES =
+      ImmutableList.of(ExceptionMapper.class, JettisonFeature.class, MultiPartFeature.class);
 
   BatfishLogger _logger = Main.getLogger();
 
@@ -68,14 +75,14 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
+      @FormDataParam(CoordConsts.SVC_KEY_COMPLETION_TYPE) String completionType,
       /* Optional: not needed for some completions */
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_COMPLETION_TYPE) String completionType,
-      @FormDataParam(CoordConsts.SVC_KEY_QUERY) String query,
+      @FormDataParam(CoordConsts.SVC_KEY_QUERY) String queryArg,
       /* Optional */
       @FormDataParam(CoordConsts.SVC_KEY_MAX_SUGGESTIONS) String maxSuggestions) {
     try {
-      _logger.infof("WMS:autoComplete %s %s %s\n", completionType, query, maxSuggestions);
+      _logger.infof("WMS:autoComplete %s %s %s\n", completionType, queryArg, maxSuggestions);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -88,13 +95,14 @@ public class WorkMgrService {
 
       Variable.Type varType = Variable.Type.fromString(completionType);
 
+      String query = firstNonNull(queryArg, "");
       List<AutocompleteSuggestion> answer =
           Main.getWorkMgr()
               .autoComplete(
                   networkName,
                   snapshotName,
                   varType,
-                  query,
+                  firstNonNull(query, ""),
                   Strings.isNullOrEmpty(maxSuggestions)
                       ? Integer.MAX_VALUE
                       : Integer.parseInt(maxSuggestions));
@@ -907,7 +915,6 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
 
       String outputNetworkName = Main.getWorkMgr().initNetwork(networkName, networkPrefix);
-      _logger.infof("Initialized network:%s using api-key:%s\n", outputNetworkName, apiKey);
 
       Main.getAuthorizer().authorizeContainer(apiKey, outputNetworkName);
 
@@ -1243,7 +1250,10 @@ public class WorkMgrService {
 
       checkNetworkAccessibility(apiKey, networkName);
 
-      Main.getWorkMgr().uploadSnapshot(networkName, snapshotName, fileStream);
+      if (!Main.getWorkMgr().uploadSnapshot(networkName, snapshotName, fileStream)) {
+        return failureResponse(
+            String.format("Snapshot with name: '%s' already exists", snapshotName));
+      }
       _logger.infof(
           "Uploaded snapshot:%s for network:%s using api-key:%s\n",
           snapshotName, networkName, apiKey);

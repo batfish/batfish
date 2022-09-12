@@ -150,7 +150,7 @@ ALIAS: 'alias';
 ALIASES: 'aliases';
 
 ALL: 'all';
-
+ALL_PATHS: 'all-paths';
 ALLOW: 'allow';
 
 ALLOW_DUPLICATES: 'allow-duplicates';
@@ -610,7 +610,7 @@ ENCRYPTION_ALGORITHM: 'encryption-algorithm';
 ENFORCE_FIRST_AS: 'enforce-first-as';
 
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
-
+EQUAL_COST_PATHS: 'equal-cost-paths';
 ESP: 'esp';
 
 ESP_HEADER: 'ESP-header';
@@ -2020,7 +2020,7 @@ PATH: 'path' -> pushMode(M_AsPathExpr);
 PATH_COUNT: 'path-count';
 
 PATH_SELECTION: 'path-selection';
-
+PATH_SELECTION_MODE: 'path-selection-mode';
 PAYLOAD_PROTOCOL: 'payload-protocol';
 
 PEER_ADDRESS: 'peer-address';
@@ -4442,6 +4442,7 @@ M_Application_JUNOS_PRINTER: 'junos-printer' -> type(JUNOS_PRINTER), popMode;
 M_Application_JUNOS_R2CP: 'junos-r2cp' -> type(JUNOS_R2CP), popMode;
 M_Application_JUNOS_RADACCT: 'junos-radacct' -> type(JUNOS_RADACCT), popMode;
 M_Application_JUNOS_RADIUS: 'junos-radius' -> type(JUNOS_RADIUS), popMode;
+M_Application_JUNOS_RDP: 'junos-rdp' -> type(JUNOS_RDP), popMode;
 M_Application_JUNOS_REALAUDIO: 'junos-realaudio' -> type(JUNOS_REALAUDIO), popMode;
 M_Application_JUNOS_RIP: 'junos-rip' -> type(JUNOS_RIP), popMode;
 M_Application_JUNOS_RSH: 'junos-rsh' -> type(JUNOS_RSH), popMode;

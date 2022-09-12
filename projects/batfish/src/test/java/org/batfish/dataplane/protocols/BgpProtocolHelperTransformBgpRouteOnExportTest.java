@@ -36,6 +36,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
@@ -93,7 +95,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .setNetwork(DEST_NETWORK)
             .setNextHopIp(DEST_IP)
             .setProtocol(RoutingProtocol.IBGP)
-            .setReceivedFromIp(Ip.ZERO);
+            .setReceivedFrom(ReceivedFromSelf.instance());
   }
 
   /**
@@ -197,7 +199,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         ConfedSessionType.NO_CONFED,
         _fromNeighbor.getLocalAs(),
         Ip.parse("1.1.1.1"),
-        Ip.parse("1.1.1.1"));
+        Ip.parse("1.1.1.1"),
+        null);
   }
 
   /**
@@ -419,7 +422,9 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     // _baseBgpRouteBuilder has receivedFromIp 0.0.0.0 indicating local origination
     Bgpv4Route locallyOriginated = _baseBgpRouteBuilder.setMetric(1000).build();
     Bgpv4Route notLocallyOriginated =
-        locallyOriginated.toBuilder().setReceivedFromIp(Ip.parse("1.1.1.1")).build();
+        locallyOriginated.toBuilder()
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
+            .build();
 
     setUpPeers(false);
     assertThat(runTransformBgpRoutePreExport(locallyOriginated).getMetric(), equalTo(1000L));
@@ -515,7 +520,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         ConfedSessionType.NO_CONFED,
         1,
         Ip.parse("1.1.1.1"),
-        Ip.ZERO);
+        Ip.ZERO,
+        null);
     assertThat(
         "Protocol overriden to BGP", routeBuilder.getProtocol(), equalTo(RoutingProtocol.BGP));
   }
@@ -542,7 +548,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.CONNECTED)
-            .setReceivedFromIp(Ip.ZERO)
+            .setReceivedFrom(ReceivedFromSelf.instance())
             .setVni(exportRouteVni)
             .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT);
     {

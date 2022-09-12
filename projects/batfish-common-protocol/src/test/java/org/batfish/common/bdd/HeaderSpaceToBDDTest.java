@@ -222,21 +222,40 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
+  public void test_tcpFlag() {
+    TcpFlagsMatchConditions flags1 =
+        TcpFlagsMatchConditions.builder()
+            .setUseAck(true)
+            .setTcpFlags(TcpFlags.builder().setAck(true).build())
+            .build();
+    TcpFlagsMatchConditions flags2 =
+        TcpFlagsMatchConditions.builder()
+            .setUseCwr(true)
+            .setTcpFlags(TcpFlags.builder().setCwr(false).build())
+            .build();
+    HeaderSpace headerSpace =
+        HeaderSpace.builder().setTcpFlags(ImmutableList.of(flags1, flags2)).build();
+    BDD bdd = _toBDD.toBDD(headerSpace);
+    BDD tcpFlagsBDD = _pkt.getTcpAck().or(_pkt.getTcpCwr().not());
+    assertThat(bdd, equalTo(tcpFlagsBDD));
+  }
+
+  @Test
   public void testOrNull_null() {
-    assertThat(HeaderSpaceToBDD.orNull(), nullValue());
-    assertThat(HeaderSpaceToBDD.orNull(null, null), nullValue());
+    assertThat(HeaderSpaceToBDD.orWithNull(null, null), nullValue());
   }
 
   @Test
   public void testOrNull_one() {
     BDD var = _factory.ithVar(0);
-    assertThat(HeaderSpaceToBDD.orNull(var, null), equalTo(var));
+    assertThat(HeaderSpaceToBDD.orWithNull(var.id(), null), equalTo(var));
+    assertThat(HeaderSpaceToBDD.orWithNull(null, var.id()), equalTo(var));
   }
 
   @Test
   public void testOrNull_two() {
     BDD var1 = _factory.ithVar(0);
     BDD var2 = _factory.ithVar(1);
-    assertThat(HeaderSpaceToBDD.orNull(null, var1, var2), equalTo(var1.or(var2)));
+    assertThat(HeaderSpaceToBDD.orWithNull(var1.id(), var2.id()), equalTo(var1.or(var2)));
   }
 }

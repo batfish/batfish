@@ -1,24 +1,31 @@
 package net.sf.javabdd;
 
+import static net.sf.javabdd.JFactory.toIntOperands;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
 import org.apache.commons.lang3.SerializationUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests of {@link JFactory}. */
 public class JFactoryTest {
+  @Rule public ExpectedException _exception = ExpectedException.none();
+
   private JFactory _factory = (JFactory) JFactory.init(10000, 10000);
 
   @Test
@@ -485,14 +492,14 @@ public class JFactoryTest {
   public void testDedupSorted() {
     int[] a1 = {1, 1, 2, 2, 3, 3};
     int[] a2 = {1, 2, 3};
-    assertTrue(Arrays.equals(JFactory.dedupSorted(a1), a2));
+    assertTrue(Arrays.equals(JFactory.dedupSorted(a1, a1.length), a2));
 
     // these tests use pointer equality intentionally. no copying if no dupes
-    assertEquals(JFactory.dedupSorted(a2), a2);
+    assertEquals(JFactory.dedupSorted(a2, a2.length), a2);
     int[] a3 = {};
-    assertEquals(JFactory.dedupSorted(a3), a3);
+    assertEquals(JFactory.dedupSorted(a3, a3.length), a3);
     int[] a4 = {1};
-    assertEquals(JFactory.dedupSorted(a4), a4);
+    assertEquals(JFactory.dedupSorted(a4, a4.length), a4);
   }
 
   @Test
@@ -569,6 +576,94 @@ public class JFactoryTest {
     assertEquals(one, ite.project(_factory.ithVar(5)));
     assertEquals(one, ite.project(_factory.ithVar(7)));
     assertEquals(one, ite.project(_factory.ithVar(9))); // last var
+  }
+
+  @Test
+  public void testAndLiterals() {
+    _factory.setVarNum(4);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+    BDD v2 = _factory.ithVar(2);
+    BDD v3 = _factory.ithVar(3);
+
+    assertEquals(
+        v0.and(v1.not()).and(v2).and(v3.not()), _factory.andLiterals(v0, v1.not(), v2, v3.not()));
+
+    // when given a single literal, returns a copy
+    {
+      BDD res = _factory.andLiterals(v0);
+      assertEquals(v0, res);
+      assertNotSame(v0, res);
+    }
+
+    {
+      BDD notV0 = v0.not();
+      BDD res = _factory.andLiterals(notV0);
+      assertEquals(notV0, res);
+      assertNotSame(notV0, res);
+    }
+  }
+
+  @Test
+  public void testAndLiterals_varOrder() {
+    _factory.setVarNum(4);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+
+    _exception.expect(IllegalArgumentException.class);
+    _factory.andLiterals(v1, v0);
+  }
+
+  @Test
+  public void testAndLiterals_constants() {
+    _factory.setVarNum(4);
+    BDD v1 = _factory.ithVar(1);
+
+    _exception.expect(IllegalArgumentException.class);
+    _factory.andLiterals(v1, _factory.zero());
+  }
+
+  @Test
+  public void testAndLiterals_complex() {
+    _factory.setVarNum(4);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+    BDD v2 = _factory.ithVar(2);
+
+    _exception.expect(IllegalArgumentException.class);
+    _factory.andLiterals(v0.and(v1), v2);
+  }
+
+  @Test
+  public void testToIntOperands() {
+    _factory.setVarNum(2);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+    BDD one = _factory.one();
+    BDD zero = _factory.zero();
+
+    // all identity --> first element is identity
+    {
+      int[] res = toIntOperands(ImmutableList.of(one, one, one), 1, 0);
+      assertEquals(1, res[0]);
+    }
+
+    // any short-circult --> first element is short-circuit
+    {
+      int[] res = toIntOperands(ImmutableList.of(one, zero, one), 1, 0);
+      assertEquals(0, res[0]);
+    }
+
+    // identity elements are removed, result is sorted
+    {
+      int[] res = toIntOperands(ImmutableList.of(v0, v1, one), 1, 0);
+      assertEquals(2, res.length);
+      assertTrue(res[0] < res[1]);
+
+      res = toIntOperands(ImmutableList.of(v1, v0, one), 1, 0);
+      assertEquals(2, res.length);
+      assertTrue(res[0] < res[1]);
+    }
   }
 
   @Test

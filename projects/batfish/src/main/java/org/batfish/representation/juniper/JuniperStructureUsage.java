@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.vendor.StructureUsage;
 
 public enum JuniperStructureUsage implements StructureUsage {
+  ADD_PATH_SEND_PREFIX_POLICY("add-path send prefix-policy"),
   ADDRESS_BOOK_ATTACH_ZONE("address-book attach zone"),
   AGGREGATE_ROUTE_POLICY("aggregate route policy"),
   APPLICATION_SET_MEMBER_APPLICATION("application-set member application"),
@@ -13,6 +14,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   BGP_EXPORT_POLICY("bgp export policy-statement"),
   BGP_IMPORT_POLICY("bgp import policy-statement"),
   BGP_NEIGHBOR("bgp group neighbor"),
+  BGP_NEIGHBOR_SELF_REFERENCE("bgp neighbor self ref"),
   BGP_FAMILY_INET_UNICAST_RIB_GROUP("bgp family inet unicast rib-group"),
   BRIDGE_DOMAIN_SELF_REF("bridge-domain self reference"),
   BRIDGE_DOMAINS_ROUTING_INTERFACE("bridge-domains routing-interface"),

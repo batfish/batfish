@@ -1,23 +1,33 @@
 package org.batfish.dataplane.rib;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFrom;
+import org.batfish.datamodel.ReceivedFromInterface;
+import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Test;
 
 /** Tests of {@link BgpRib} */
@@ -92,6 +102,108 @@ public class BgpRibTest {
   }
 
   @Test
+  public void testMultipathMerge_order() {
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
+    Supplier<Bgpv4Rib> makeRib =
+        () ->
+            new Bgpv4Rib(
+                null,
+                BgpTieBreaker.ROUTER_ID,
+                null,
+                MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+                false,
+                LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+                NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+
+    Bgpv4Route nh1 =
+        rb.setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
+            .setOriginatorIp(Ip.parse("1.0.0.1"))
+            .build();
+
+    Bgpv4Route nh2better =
+        rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
+            .setOriginatorIp(Ip.parse("2.0.0.1"))
+            .build();
+
+    Bgpv4Route nh2worse =
+        rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
+            .setOriginatorIp(Ip.parse("2.0.0.2"))
+            .build();
+
+    Bgpv4Route nh3best =
+        rb.setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
+            .setOriginatorIp(Ip.parse("3.0.0.1"))
+            .setLocalPreference(1000)
+            .build();
+
+    {
+      Bgpv4Rib rib = makeRib.get();
+
+      rib.mergeRoute(nh1);
+      assertThat(rib.getTypedRoutes(), contains(nh1));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh1));
+
+      rib.mergeRoute(nh2better);
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
+
+      assertThat(
+          rib.multipathMergeRouteGetDelta(nh2worse).getMultipathDelta(), equalTo(RibDelta.empty()));
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
+    }
+    {
+      Bgpv4Rib rib = makeRib.get();
+
+      rib.mergeRoute(nh1);
+      assertThat(rib.getTypedRoutes(), contains(nh1));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh1));
+
+      rib.mergeRoute(nh2worse);
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2worse));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2worse));
+
+      assertThat(
+          rib.multipathMergeRouteGetDelta(nh2better).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh2worse, Reason.REPLACE).add(nh2better).build()));
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
+
+      assertThat(
+          rib.multipathRemoveRouteGetDelta(nh2better).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh2better, Reason.WITHDRAW).add(nh2worse).build()));
+      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2worse));
+      assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2worse));
+    }
+    {
+      Bgpv4Rib rib = makeRib.get();
+
+      rib.mergeRoute(nh2worse);
+      assertThat(rib.getTypedRoutes(), contains(nh2worse));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2worse));
+
+      assertThat(
+          rib.multipathMergeRouteGetDelta(nh2better).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh2worse, Reason.REPLACE).add(nh2better).build()));
+      assertThat(rib.getTypedRoutes(), contains(nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2better));
+
+      assertThat(
+          rib.multipathMergeRouteGetDelta(nh3best).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh2better, Reason.REPLACE).add(nh3best).build()));
+      assertThat(rib.getTypedRoutes(), contains(nh3best));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh3best));
+
+      assertThat(
+          rib.multipathRemoveRouteGetDelta(nh3best).getMultipathDelta(),
+          equalTo(RibDelta.builder().remove(nh3best, Reason.WITHDRAW).add(nh2better).build()));
+      assertThat(rib.getTypedRoutes(), contains(nh2better));
+      assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2better));
+    }
+  }
+
+  @Test
   public void testMultipathMergeAndRemove_multipath() {
     Bgpv4Rib bgpRib =
         new Bgpv4Rib(
@@ -105,9 +217,18 @@ public class BgpRibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
-    Bgpv4Route good = rb.setOriginatorIp(Ip.parse("1.1.1.40")).build();
-    Bgpv4Route better = rb.setOriginatorIp(Ip.parse("1.1.1.30")).build();
-    Bgpv4Route best = rb.setOriginatorIp(Ip.parse("1.1.1.20")).build();
+    Bgpv4Route good =
+        rb.setOriginatorIp(Ip.parse("1.1.1.40"))
+            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.40")))
+            .build();
+    Bgpv4Route better =
+        rb.setOriginatorIp(Ip.parse("1.1.1.30"))
+            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.30")))
+            .build();
+    Bgpv4Route best =
+        rb.setOriginatorIp(Ip.parse("1.1.1.20"))
+            .setNextHop(NextHopIp.of(Ip.parse("1.1.1.20")))
+            .build();
     {
       // Merge into empty RIB
       BgpRib.MultipathRibDelta<Bgpv4Route> delta = bgpRib.multipathMergeRouteGetDelta(good);
@@ -184,19 +305,23 @@ public class BgpRibTest {
     Create routes to compare. With non-ARRIVAL_ORDER tiebreaker, preference should be:
     1. Lowest originator IP
     2. Shortest cluster list
-    3. Lowest receivedFromIp, nulls first (first two properties are nonnull)
+    3. Best ReceivedFrom
+    4. Lowest path-id (null considered lowest)
     */
-    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.ZERO);
+    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.0"));
     List<Set<Long>> decreasingLengthClusterLists =
         ImmutableList.of(ImmutableSet.of(1L), ImmutableSet.of());
+    List<Integer> decreasingPathIds = Arrays.asList(2, 1, null);
     List<Bgpv4Route> ordered = new ArrayList<>();
     for (Ip originatorIp : decreasingIps) {
       rb.setOriginatorIp(originatorIp);
       for (Set<Long> clusterList : decreasingLengthClusterLists) {
         rb.setClusterList(clusterList);
-        ordered.add(rb.setReceivedFromIp(null).build());
         for (Ip receivedFromIp : decreasingIps) {
-          ordered.add(rb.setReceivedFromIp(receivedFromIp).build());
+          rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp));
+          for (Integer pathId : decreasingPathIds) {
+            ordered.add(rb.setPathId(pathId).build());
+          }
         }
       }
     }
@@ -204,7 +329,38 @@ public class BgpRibTest {
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {
         assertThat(
+            String.format("i=%d lhs=%s j=%d rhs=%s", i, ordered.get(i), j, ordered.get(j)),
             Integer.signum(rib.bestPathComparator(ordered.get(i), (ordered.get(j)))),
+            equalTo(Integer.signum(i - j)));
+      }
+    }
+  }
+
+  @Test
+  public void testCompareReceivedFrom() {
+    // Preference order:
+    //  1. Lowest receivedFromIp
+    //  2. Best ReceivedFrom subtype (least -> most preferred: Interface, Ip, Self)
+    //  3. String comparison on ReceivedFromInterface if applicable
+
+    // r1 and r2 break tie on ReceivedFrom subtype
+    ReceivedFrom r1 = ReceivedFromInterface.of("foo1", Ip.parse("169.254.0.2"));
+    ReceivedFrom r2 = ReceivedFromIp.of(Ip.parse("169.254.0.2"));
+
+    // r3 and r4 break tie on interface name
+    ReceivedFrom r3 = ReceivedFromInterface.of("foo1", Ip.parse("169.254.0.1"));
+    ReceivedFrom r4 = ReceivedFromInterface.of("foo2", Ip.parse("169.254.0.1"));
+
+    // lowest IP so far
+    ReceivedFrom r5 = ReceivedFromIp.of(Ip.parse("10.0.0.1"));
+    // always lowest IP
+    ReceivedFrom r6 = ReceivedFromSelf.instance();
+    List<ReceivedFrom> ordered = ImmutableList.of(r1, r2, r3, r4, r5, r6);
+    for (int i = 0; i < ordered.size(); i++) {
+      for (int j = 0; j < ordered.size(); j++) {
+        assertThat(
+            String.format("i=%d lhs=%s j=%d rhs=%s", i, ordered.get(i), j, ordered.get(j)),
+            Integer.signum(BgpRib.compareReceivedFrom(ordered.get(i), (ordered.get(j)))),
             equalTo(Integer.signum(i - j)));
       }
     }
@@ -233,9 +389,9 @@ public class BgpRibTest {
     Create routes to compare. With non-ARRIVAL_ORDER tiebreaker, preference should be:
         1. Shortest Cluster List
         2. Lowest originator IP
-        3. Lowest receivedFromIp, nulls first (first two properties are nonnull)
+        3. Lowest receivedFromIp
     */
-    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.ZERO);
+    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.0"));
     List<Set<Long>> decreasingLengthClusterLists =
         ImmutableList.of(ImmutableSet.of(1L, 2L), ImmutableSet.of(1L), ImmutableSet.of());
     List<Bgpv4Route> ordered = new ArrayList<>();
@@ -243,9 +399,8 @@ public class BgpRibTest {
       rb.setClusterList(clusterList);
       for (Ip originatorIp : decreasingIps) {
         rb.setOriginatorIp(originatorIp);
-        ordered.add(rb.setReceivedFromIp(null).build());
         for (Ip receivedFromIp : decreasingIps) {
-          ordered.add(rb.setReceivedFromIp(receivedFromIp).build());
+          ordered.add(rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp)).build());
         }
       }
     }
@@ -282,9 +437,9 @@ public class BgpRibTest {
     Create routes to compare. With non-ARRIVAL_ORDER tiebreaker, preference should be:
         1. Lowest originator IP
         2. Shortest Cluster List
-        3. Lowest receivedFromIp, nulls first (first two properties are nonnull)
+        3. Lowest receivedFromIp
     */
-    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.ZERO);
+    List<Ip> decreasingIps = ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.0"));
     List<Set<Long>> decreasingLengthClusterLists =
         ImmutableList.of(ImmutableSet.of(1L, 2L), ImmutableSet.of(1L), ImmutableSet.of());
     List<Bgpv4Route> ordered = new ArrayList<>();
@@ -293,9 +448,8 @@ public class BgpRibTest {
       rb.setOriginatorIp(originatorIp);
       for (Set<Long> clusterList : decreasingLengthClusterLists) {
         rb.setClusterList(clusterList);
-        ordered.add(rb.setReceivedFromIp(null).build());
         for (Ip receivedFromIp : decreasingIps) {
-          ordered.add(rb.setReceivedFromIp(receivedFromIp).build());
+          ordered.add(rb.setReceivedFrom(ReceivedFromIp.of(receivedFromIp)).build());
         }
       }
     }

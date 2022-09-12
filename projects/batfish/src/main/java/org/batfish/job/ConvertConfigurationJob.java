@@ -1,11 +1,14 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.common.bdd.util.AclPacketMatchValidityChecker.checkerFor;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addTenantVniInterfaces;
 import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -23,14 +26,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.util.AclPacketMatchValidityChecker;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.util.InterfaceNameComparator;
 import org.batfish.config.Settings;
@@ -40,6 +46,8 @@ import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -48,7 +56,6 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
@@ -57,7 +64,6 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.PrefixIpSpace;
-import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
@@ -100,6 +106,7 @@ import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
@@ -417,6 +424,50 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   }
 
   /**
+   * Remove invalid {@link VendorStructureId}s from the {@link Configuration}. {@link
+   * VendorStructureId}s are considered invalid if they do not point to a defined structure in the
+   * specified {@link VendorConfiguration}.
+   *
+   * <p>Currently only handles {@link VendorStructureId}s in {@link IpAccessList}s and their {@link
+   * org.batfish.datamodel.TraceElement}s.
+   */
+  @VisibleForTesting
+  static void removeInvalidVendorStructureIds(Configuration c, VendorConfiguration vc, Warnings w) {
+    assert vc.getAnswerElement() != null;
+    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+        definedStructures = vc.getAnswerElement().getDefinedStructures();
+    InvalidVendorStructureIdEraser vsidEraser =
+        new InvalidVendorStructureIdEraser(definedStructures);
+    c.setIpAccessLists(
+        c.getIpAccessLists().entrySet().stream()
+            .collect(Collectors.toMap(Entry::getKey, e -> vsidEraser.visit(e.getValue()))));
+  }
+
+  /**
+   * Asserts that {@link VendorStructureId}s in the specified {@link Configuration} are valid.
+   *
+   * <p>Currently only checks {@link VendorStructureId}s in {@link IpAccessList}s and their {@link
+   * org.batfish.datamodel.TraceElement}s.
+   */
+  @VisibleForTesting
+  static void assertVendorStructureIdsValid(Configuration c, VendorConfiguration vc, Warnings w) {
+    if (vc.getAnswerElement() == null) {
+      // Tests should fail
+      assert vc.getAnswerElement() != null;
+      return;
+    }
+    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+        definedStructures = vc.getAnswerElement().getDefinedStructures();
+    InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
+    // Erase invalid VSIDs and confirm no changes occur
+    for (IpAccessList acl : c.getIpAccessLists().values()) {
+      for (AclLine line : acl.getLines()) {
+        assert line.equals(eraser.visit(line));
+      }
+    }
+  }
+
+  /**
    * Applies sanity checks and finishing touches to the given {@link Configuration}.
    *
    * <p>Sanity checks such as asserting that required properties hold.
@@ -426,7 +477,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    * <p>Finishing touches such as converting structures to their immutable forms.
    */
   @VisibleForTesting
-  static void finalizeConfiguration(Configuration c, Warnings w) {
+  static void finalizeConfiguration(Configuration c, VendorConfiguration vc, Warnings w) {
     String hostname = c.getHostname();
     if (c.getDefaultCrossZoneAction() == null) {
       throw new BatfishException(
@@ -444,6 +495,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyVrrpGroups(c, w);
     removeInvalidStaticRoutes(c, w);
     removeUndefinedTrackReferences(c, w);
+    // Make tests fail if they have invalid VSIDs
+    assertVendorStructureIdsValid(c, vc, w);
+    removeInvalidVendorStructureIds(c, vc, w);
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
@@ -462,7 +516,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setInterfaces(
         verifyAndToImmutableMap(
             c.getAllInterfaces(), Interface::getName, w, InterfaceNameComparator.instance()));
-    c.setIp6AccessLists(verifyAndToImmutableMap(c.getIp6AccessLists(), Ip6AccessList::getName, w));
     c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
     c.setIpsecPeerConfigs(toImmutableMap(c.getIpsecPeerConfigs()));
     c.setIpsecPhase2Policies(toImmutableMap(c.getIpsecPhase2Policies()));
@@ -475,8 +528,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setPacketPolicies(verifyAndToImmutableMap(c.getPacketPolicies(), PacketPolicy::getName, w));
     c.setRouteFilterLists(
         verifyAndToImmutableMap(c.getRouteFilterLists(), RouteFilterList::getName, w));
-    c.setRoute6FilterLists(
-        verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
     c.setRoutingPolicies(
         verifyAndToImmutableMap(c.getRoutingPolicies(), RoutingPolicy::getName, w));
     c.setSnmpTrapServers(toImmutableSet(c.getSnmpTrapServers()));
@@ -484,9 +535,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setTrackingGroups(toImmutableMap(c.getTrackingGroups()));
     c.setVrfs(verifyAndToImmutableMap(c.getVrfs(), Vrf::getName, w));
     c.setZones(toImmutableMap(c.getZones()));
+    verifyAclInvariants(c, w);
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
-    removeInvalidAcls(c, w);
   }
 
   private static void verifyOspfAreas(Configuration c, Warnings w) {
@@ -696,6 +747,33 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
   }
 
+  private static void verifyAclInvariants(Configuration c, Warnings w) {
+    if (c.getConfigurationFormat() == ConfigurationFormat.CISCO_ASA) {
+      // ASA has some invariant issues.
+      return;
+    }
+    AclPacketMatchValidityChecker checker = checkerFor(c);
+    for (IpAccessList acl : c.getIpAccessLists().values()) {
+      try {
+        if (!checker.check(acl)) {
+          String message =
+              String.format(
+                  "Filter %s on device %s does not meet the expected packet invariants",
+                  acl.getName(), c.getHostname());
+          w.redFlag(message);
+          assert false : message;
+        }
+      } catch (Exception e) {
+        String message =
+            String.format(
+                "Filter %s on device %s failed to convert to BDD: %s",
+                acl.getName(), c.getHostname(), Throwables.getStackTraceAsString(e));
+        w.redFlag(message);
+        assert false : message;
+      }
+    }
+  }
+
   private static void verifyAsPathStructures(Configuration c) {
     AsPathStructuresVerifier.verify(c);
   }
@@ -886,63 +964,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     return true;
   }
 
-  private static void clearInvalidFilterAndWarn(
-      Map<String, IpAccessList> acls,
-      @Nonnull Supplier<IpAccessList> getter,
-      @Nonnull Consumer<IpAccessList> setter,
-      @Nonnull String purpose,
-      Warnings w) {
-    @Nullable IpAccessList acl = getter.get();
-    if (acl == null) {
-      return;
-    }
-    @Nullable IpAccessList inMap = acls.get(acl.getName());
-    // Deliberate == comparison.
-    if (inMap == acl) {
-      return;
-    }
-    if (inMap == null) {
-      w.redFlag(
-          String.format("The device ACL map does not contain %s %s.", purpose, acl.getName()));
-    } else {
-      w.redFlag(
-          String.format(
-              "The device ACL map has a different version of %s %s.", purpose, acl.getName()));
-    }
-    setter.accept(null);
-  }
-
-  /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */
-  private static void removeInvalidAcls(Configuration c, Warnings w) {
-    for (Interface iface : c.getAllInterfaces().values()) {
-      Map<String, IpAccessList> acls = c.getIpAccessLists();
-      clearInvalidFilterAndWarn(
-          acls, iface::getInboundFilter, iface::setInboundFilter, "inbound filter", w);
-      clearInvalidFilterAndWarn(
-          acls, iface::getIncomingFilter, iface::setIncomingFilter, "incoming filter", w);
-      clearInvalidFilterAndWarn(
-          acls, iface::getOutgoingFilter, iface::setOutgoingFilter, "outgoing filter", w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getOutgoingOriginalFlowFilter,
-          iface::setOutgoingOriginalFlowFilter,
-          "outgoing filter on original flow",
-          w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getPostTransformationIncomingFilter,
-          iface::setPostTransformationIncomingFilter,
-          "post transformation incoming filter",
-          w);
-      clearInvalidFilterAndWarn(
-          acls,
-          iface::getPreTransformationOutgoingFilter,
-          iface::setPreTransformationOutgoingFilter,
-          "pre transformation outgoing filter",
-          w);
-    }
-  }
-
   @Override
   public ConvertConfigurationResult call() {
     long startTime = System.currentTimeMillis();
@@ -964,32 +985,42 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       vendorConfiguration.setAnswerElement(answerElement);
       vendorConfiguration.setConversionContext(_conversionContext);
       vendorConfiguration.setRuntimeData(_runtimeData);
-      for (Configuration configuration : vendorConfiguration.toVendorIndependentConfigurations()) {
-
-        // get iptables if applicable
-        IptablesVendorConfiguration iptablesConfig = null;
-        VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
-        if (ov != null) {
-          // apply overlay
-          HostConfiguration oh = (HostConfiguration) ov;
-          iptablesConfig = oh.getIptablesVendorConfig();
-        } else if (vendorConfiguration instanceof HostConfiguration) {
-          // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
-          // semantics.
-          // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
-          // iptablesConfig = oh.getIptablesVendorConfig();
-        }
-        if (iptablesConfig != null) {
-          iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, warnings);
-          iptablesConfig.applyAsOverlay(configuration, warnings);
-        }
-
-        finalizeConfiguration(configuration, warnings);
-
-        String hostname = configuration.getHostname();
-        configurations.put(hostname, configuration);
-        warningsByHost.put(hostname, warnings);
-        filenames.forEach(filename -> fileMap.put(filename, hostname));
+      SortedMap<String, Warnings> configSpecificWarnings = new ConcurrentSkipListMap<>();
+      // Parallelize because we may get a large number of configurations from e.g. Panorama,
+      // CheckPoint MGMT.
+      vendorConfiguration.toVendorIndependentConfigurations().parallelStream()
+          .forEach(
+              configuration -> {
+                Warnings currentConfigSpecificWarnings = Batfish.buildWarnings(_settings);
+                configSpecificWarnings.put(
+                    configuration.getHostname(), currentConfigSpecificWarnings);
+                // get iptables if applicable
+                IptablesVendorConfiguration iptablesConfig = null;
+                VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
+                if (ov != null) {
+                  // apply overlay
+                  HostConfiguration oh = (HostConfiguration) ov;
+                  iptablesConfig = oh.getIptablesVendorConfig();
+                } else if (vendorConfiguration instanceof HostConfiguration) {
+                  // TODO: To enable below, we need to reconcile overlay and non-overlay iptables
+                  //       semantics.
+                  // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
+                  // iptablesConfig = oh.getIptablesVendorConfig();
+                }
+                if (iptablesConfig != null) {
+                  iptablesConfig.addAsIpAccessLists(
+                      configuration, vendorConfiguration, currentConfigSpecificWarnings);
+                  iptablesConfig.applyAsOverlay(configuration, currentConfigSpecificWarnings);
+                }
+                finalizeConfiguration(
+                    configuration, vendorConfiguration, currentConfigSpecificWarnings);
+                postFinalize(
+                    configurations, warningsByHost, fileMap, warnings, filenames, configuration);
+              });
+      for (Warnings currentConfigSpecificWarnings : configSpecificWarnings.values()) {
+        // Merge in config-specific warnings in deterministic fashion; values are ordered by
+        // Configuration-specific hostname key from SortedMap.
+        mergeConfigurationWarnings(warnings, currentConfigSpecificWarnings);
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {
@@ -1003,5 +1034,35 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ConvertConfigurationResult(
         elapsedTime, _logger.getHistory(), warningsByHost, _name, configurations, answerElement);
+  }
+
+  /** Apply changes to job-level structures. */
+  private synchronized void postFinalize(
+      Map<String, Configuration> configurations,
+      Map<String, Warnings> warningsByHost,
+      Multimap<String, String> fileMap,
+      Warnings warnings,
+      List<String> filenames,
+      Configuration configuration) {
+    String hostname = configuration.getHostname();
+    configurations.put(hostname, configuration);
+    warningsByHost.put(hostname, warnings);
+    filenames.forEach(filename -> fileMap.put(filename, hostname));
+  }
+
+  /** Merge configuration-specific warnings into job warnings */
+  private static void mergeConfigurationWarnings(
+      Warnings warnings, Warnings configurationSpecificWarnings) {
+    checkArgument(
+        configurationSpecificWarnings.getErrorDetails() == null,
+        "Configuration-specific warnings should not have error details");
+    checkArgument(
+        configurationSpecificWarnings.getParseWarnings().isEmpty(),
+        "Configruration-specific warnings should not have parse warnings");
+    warnings.getPedanticWarnings().addAll(configurationSpecificWarnings.getPedanticWarnings());
+    warnings.getRedFlagWarnings().addAll(configurationSpecificWarnings.getRedFlagWarnings());
+    warnings
+        .getUnimplementedWarnings()
+        .addAll(configurationSpecificWarnings.getUnimplementedWarnings());
   }
 }

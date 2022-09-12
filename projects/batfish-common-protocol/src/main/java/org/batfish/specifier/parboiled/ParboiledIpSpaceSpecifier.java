@@ -13,6 +13,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;

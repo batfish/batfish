@@ -49,8 +49,8 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.ToSpecifierString;
-import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
 /** A utility class to generate auto complete suggestions for user input */

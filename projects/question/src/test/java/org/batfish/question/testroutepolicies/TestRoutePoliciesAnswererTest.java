@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -41,6 +42,8 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
@@ -314,7 +317,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testTagAndWeight() {
+  public void testNoChange() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -322,11 +325,18 @@ public class TestRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
+            .setAsPath(AsPath.ofSingletonAsSets(1L))
+            .setCommunities(ImmutableSet.of(StandardCommunity.of(2L)))
+            .setLocalPreference(3L)
+            .setMetric(4L)
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
+            .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setTag(34)
+            .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("2.2.2.2")))
             .setWeight(19)
             .build();
 

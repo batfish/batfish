@@ -16,8 +16,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** Enables specification of a set of Ospf interface properties. */
 public class OspfInterfacePropertySpecifier extends PropertySpecifier {

@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Set;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.junit.Test;
 

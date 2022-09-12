@@ -1,5 +1,4 @@
 load("@rules_java//java:defs.bzl", "java_library")
-load("@batfish//skylark:junit.bzl", "junit_tests")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -17,6 +16,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/coordinator/src/main/java/org/batfish/coordinator/version",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
@@ -35,67 +35,6 @@ java_library(
         "@maven//:org_glassfish_jersey_media_jersey_media_json_jackson",
         "@maven//:org_glassfish_jersey_media_jersey_media_json_jettison",
         "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
-    ],
-)
-
-java_library(
-    name = "coordinator_testlib",
-    testonly = True,
-    srcs = glob(
-        [
-            "src/test/**/*.java",
-        ],
-        exclude = ["src/test/**/*Test.java"],
-    ),
-    resources = glob(["src/test/resources/**"]),
-    deps = [
-        ":coordinator",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/questions:TestQuestion",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_guava_guava",
-        "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
-        "@maven//:junit_junit",
-        "@maven//:org_glassfish_grizzly_grizzly_http_server",
-        "@maven//:org_glassfish_jersey_core_jersey_client",
-        "@maven//:org_glassfish_jersey_core_jersey_server",
-        "@maven//:org_glassfish_jersey_media_jersey_media_json_jackson",
-        "@maven//:org_glassfish_jersey_test_framework_jersey_test_framework_core",
-        "@maven//:org_glassfish_jersey_test_framework_providers_jersey_test_framework_provider_grizzly2",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
-)
-
-junit_tests(
-    name = "coordinator_tests",
-    size = "medium",
-    srcs = glob([
-        "src/test/java/**/*Test.java",
-    ]),
-    runtime_deps = [
-        "@maven//:org_xerial_sqlite_jdbc",
-    ],
-    deps = [
-        ":coordinator",
-        ":coordinator_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/questions:TestQuestion",
-        "@maven//:com_fasterxml_jackson_core_jackson_core",
-        "@maven//:com_fasterxml_jackson_core_jackson_databind",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_guava_guava",
-        "@maven//:com_google_guava_guava_testlib",
-        "@maven//:commons_io_commons_io",
-        "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
-        "@maven//:junit_junit",
-        "@maven//:org_codehaus_jettison_jettison",
-        "@maven//:org_glassfish_jersey_core_jersey_client",
-        "@maven//:org_glassfish_jersey_core_jersey_server",
-        "@maven//:org_glassfish_jersey_media_jersey_media_json_jettison",
-        "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
-        "@maven//:org_glassfish_jersey_test_framework_jersey_test_framework_core",
-        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 

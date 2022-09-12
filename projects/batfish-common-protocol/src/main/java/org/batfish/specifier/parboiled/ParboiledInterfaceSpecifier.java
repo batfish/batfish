@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.specifier.Grammar;
 import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.InterfaceWithConnectedIpsSpecifier;
 import org.batfish.specifier.NameInterfaceSpecifier;

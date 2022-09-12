@@ -1125,7 +1125,8 @@ public final class WorkMgrTest {
 
   private byte[] createSnapshotZip(String snapshot, String fileName, String fileContents)
       throws IOException {
-    Path zipPath = WorkMgrTestUtils.createSnapshotZip(snapshot, fileName, fileContents, _folder);
+    Path zipPath =
+        WorkMgrTestUtils.createSingleFileSnapshotZip(snapshot, fileName, fileContents, _folder);
     return FileUtils.readFileToByteArray(zipPath.toFile());
   }
 
@@ -1993,6 +1994,29 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testProcessAnswerTable2ProjectWrongColumn() {
+    TableMetadata metadata =
+        new TableMetadata(
+            ImmutableList.of(
+                // Also tests that the columns are sorted in error message.
+                new ColumnMetadata("zcol", Schema.INTEGER, "first column but lex last"),
+                new ColumnMetadata("col", Schema.INTEGER, "last column but lex first")));
+    TableAnswerElement table = new TableAnswerElement(metadata);
+    AnswerRowsOptions optionsProject =
+        new AnswerRowsOptions(
+            ImmutableSet.of("missing"),
+            ImmutableList.of(),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    _thrown.expectMessage("Column missing is not in the answer: [col, zcol]");
+    _thrown.expect(IllegalArgumentException.class);
+    _manager.processAnswerTable2(table, optionsProject);
+  }
+
+  @Test
   public void testProcessAnswerTableUniqueRows() {
     String columnName = "val";
     TableAnswerElement table =
@@ -2433,26 +2457,24 @@ public final class WorkMgrTest {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
-    uploadTestSnapshot(network, snapshot);
+    assertTrue(uploadTestSnapshot(network, snapshot));
 
     // snapshot should exist
     assertThat(_manager.listSnapshots(network), contains(snapshot));
 
     // should be able to delete and recreate
     _manager.delSnapshot(network, snapshot);
-    uploadTestSnapshot(network, snapshot);
+    assertTrue(uploadTestSnapshot(network, snapshot));
 
     // snapshot should exist again
     assertThat(_manager.listSnapshots(network), contains(snapshot));
 
     // should not be able to upload again with same name
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(containsString(snapshot));
-    uploadTestSnapshot(network, snapshot);
+    assertFalse(uploadTestSnapshot(network, snapshot));
   }
 
-  private void uploadTestSnapshot(String network, String snapshot) throws IOException {
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
+  private boolean uploadTestSnapshot(String network, String snapshot) throws IOException {
+    return WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
   }
 
   private void uploadTestSnapshot(String network, String snapshot, String fileName)

@@ -3,9 +3,7 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
@@ -19,27 +17,11 @@ public abstract class BDDInteger implements Serializable {
   protected final BDD[] _bitvec;
   protected final long _maxVal;
 
-  // Temporary ArrayLists used to optimize some internal computations.
-  private transient List<BDD> _trues;
-  private transient List<BDD> _falses;
-
   protected BDDInteger(BDDFactory factory, BDD[] bitvec) {
     checkArgument(bitvec.length < 64, "Only lengths up to 63 are supported");
     _factory = factory;
     _bitvec = bitvec;
-    _maxVal = 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - bitvec.length);
-    initTransientFields();
-  }
-
-  private void readObject(java.io.ObjectInputStream stream)
-      throws IOException, ClassNotFoundException {
-    stream.defaultReadObject();
-    initTransientFields();
-  }
-
-  private void initTransientFields() {
-    _trues = new ArrayList<>(_bitvec.length);
-    _falses = new ArrayList<>(_bitvec.length);
+    _maxVal = bitvec.length == 0 ? 0L : 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - bitvec.length);
   }
 
   /** Returns the number of bits in this {@link BDDInteger}. */
@@ -85,71 +67,35 @@ public abstract class BDDInteger implements Serializable {
   }
 
   /** Build a constraint that matches the set of IPs contained by the input {@link Prefix}. */
-  public BDD toBDD(Prefix prefix) {
-    return firstBitsEqual(prefix.getStartIp(), prefix.getPrefixLength());
+  public final BDD toBDD(Prefix prefix) {
+    checkArgument(
+        _bitvec.length == Prefix.MAX_PREFIX_LENGTH,
+        "toBDD(Prefix) requires %s bits",
+        Prefix.MAX_PREFIX_LENGTH);
+    return firstBitsEqual(prefix.getStartIp().asLong(), prefix.getPrefixLength());
   }
 
   /** Build a constraint that matches the input {@link Ip}. */
-  public BDD toBDD(Ip ip) {
-    return firstBitsEqual(ip, Prefix.MAX_PREFIX_LENGTH);
+  public final BDD toBDD(Ip ip) {
+    checkArgument(
+        _bitvec.length == Prefix.MAX_PREFIX_LENGTH,
+        "toBDD(Ip) requires %s bits",
+        Prefix.MAX_PREFIX_LENGTH);
+    return firstBitsEqual(ip.asLong(), Prefix.MAX_PREFIX_LENGTH);
   }
+
+  protected abstract BDD firstBitsEqual(long val, int length);
 
   /** Build a constraint that matches the {@link Ip IPs} matched by the input {@link IpWildcard}. */
-  public BDD toBDD(IpWildcard ipWildcard) {
-    checkArgument(_bitvec.length >= Prefix.MAX_PREFIX_LENGTH);
-    long ip = ipWildcard.getIp().asLong();
-    long wildcard = ipWildcard.getWildcardMask();
-    _trues.clear();
-    _falses.clear();
-    for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
-      boolean significant = !Ip.getBitAtPosition(wildcard, i);
-      if (significant) {
-        boolean bitValue = Ip.getBitAtPosition(ip, i);
-        if (bitValue) {
-          _trues.add(_bitvec[i]);
-        } else {
-          _falses.add(_bitvec[i]);
-        }
-      }
-    }
-    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
-  }
-
-  /** Check if the first length bits match the BDDInteger representing the advertisement prefix. */
-  private BDD firstBitsEqual(Ip ip, int length) {
-    checkArgument(length <= _bitvec.length, "Not enough bits");
-    long b = ip.asLong();
-    _trues.clear();
-    _falses.clear();
-    for (int i = length - 1; i >= 0; i--) {
-      boolean bitValue = Ip.getBitAtPosition(b, i);
-      if (bitValue) {
-        _trues.add(_bitvec[i]);
-      } else {
-        _falses.add(_bitvec[i]);
-      }
-    }
-    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
-  }
+  public abstract BDD toBDD(IpWildcard ipWildcard);
 
   /*
    * Create a BDD representing the exact value
    */
-  public BDD value(long val) {
+  public final BDD value(long val) {
     checkArgument(val >= 0, "value is negative");
     checkArgument(val <= _maxVal, "value %s is out of range [0, %s]", val, _maxVal);
-    long currentVal = val;
-    _trues.clear();
-    _falses.clear();
-    for (int i = _bitvec.length - 1; i >= 0; i--) {
-      if ((currentVal & 1) != 0) {
-        _trues.add(_bitvec[i]);
-      } else {
-        _falses.add(_bitvec[i]);
-      }
-      currentVal >>= 1;
-    }
-    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
+    return firstBitsEqual(val, _bitvec.length);
   }
 
   // Helper function to compute leq on the last N bits of the input value.

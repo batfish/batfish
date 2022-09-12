@@ -9,6 +9,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName;
@@ -19,11 +20,11 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasTrackingGroups;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
@@ -56,6 +57,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCo
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generatedVrrpOrHsrpTrackInterfaceDownName;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
@@ -202,7 +204,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
-import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.OriginMechanism;
@@ -210,7 +211,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
@@ -493,11 +494,6 @@ public final class XrGrammarTest {
                   aclLineName(acl.getName(), line.getName()))),
           line.getVendorStructureId());
     }
-
-    assertThat(c.getIp6AccessLists(), hasKeys("aclv6"));
-    Ip6AccessList aclv6 = c.getIp6AccessLists().get("aclv6");
-    // TODO: get the remark line in there too.
-    assertThat(aclv6.getLines(), hasSize(4));
   }
 
   @Test
@@ -546,6 +542,40 @@ public final class XrGrammarTest {
   public void testBgpNeighborCrash() {
     // Don't crash.
     parseConfig("bgp-neighbor-crash");
+  }
+
+  @Test
+  public void testBgpNeighborRefs() throws IOException {
+    String hostname = "bgp-neighbor-refs";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String neighborIp = bgpNeighborStructureName("1.2.3.4", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:0:0:0:0:0:0/32", "default");
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp, contains(5)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp6, contains(6)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborPrefix, contains(8)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, BGP_NEIGHBOR, neighborPrefix6, contains(9)));
+
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp6, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix, 1));
+    assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix6, 1));
   }
 
   /**
@@ -1672,21 +1702,15 @@ public final class XrGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     Prefix permittedPrefix = Prefix.parse("1.2.3.4/30");
-    Prefix6 permittedPrefix6 = Prefix6.parse("2001::ffff:0/124");
     Prefix rejectedPrefix = Prefix.parse("1.2.4.4/30");
-    Prefix6 rejectedPrefix6 = Prefix6.parse("2001::fffe:0/124");
 
     /*
      * Confirm the generated route filter lists permit correct prefixes and do not permit others
      */
     assertThat(c, hasRouteFilterList("pre_ipv4", permits(permittedPrefix)));
     assertThat(c, hasRouteFilterList("pre_ipv4", not(permits(rejectedPrefix))));
-    assertThat(c, hasRoute6FilterList("pre_ipv6", permits(permittedPrefix6)));
-    assertThat(c, hasRoute6FilterList("pre_ipv6", not(permits(rejectedPrefix6))));
     assertThat(c, hasRouteFilterList("pre_combo", permits(permittedPrefix)));
     assertThat(c, hasRouteFilterList("pre_combo", not(permits(rejectedPrefix))));
-    assertThat(c, hasRoute6FilterList("pre_combo", permits(permittedPrefix6)));
-    assertThat(c, hasRoute6FilterList("pre_combo", not(permits(rejectedPrefix6))));
 
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
@@ -2743,7 +2767,7 @@ public final class XrGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -2971,7 +2995,7 @@ public final class XrGrammarTest {
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
@@ -2989,7 +3013,7 @@ public final class XrGrammarTest {
             .setOriginMechanism(OriginMechanism.GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
-            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
             .build();
@@ -3064,7 +3088,7 @@ public final class XrGrammarTest {
               .setOriginMechanism(OriginMechanism.GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
-              .setReceivedFromIp(Ip.ZERO) // indicates local origination
+              .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
               .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
               .build();

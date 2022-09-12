@@ -1,23 +1,24 @@
 package org.batfish.main;
 
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.UriBuilder;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
+import org.batfish.common.BatfishWorkerService;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.LaunchResult;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
 import org.batfish.common.Task;
@@ -32,6 +33,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 @SuppressWarnings("restriction")
 public class Driver {
+
+  private static volatile boolean _initialized;
 
   public enum RunMode {
     WORKER,
@@ -75,10 +78,10 @@ public class Driver {
     return _mainLogger;
   }
 
-  public static void main(String[] args, BatfishLogger logger) {
+  public static void main(String[] args, BatfishLogger logger, boolean initLegacyWorkerService) {
     mainInit(args);
     _mainLogger = logger;
-    mainRun();
+    mainRun(initLegacyWorkerService);
   }
 
   private static void mainInit(String[] args) {
@@ -93,7 +96,7 @@ public class Driver {
     }
   }
 
-  private static void mainRun() {
+  private static void mainRun(boolean initLegacyWorkerService) {
     System.setErr(_mainLogger.getPrintStream());
     System.setOut(_mainLogger.getPrintStream());
     _mainSettings.setLogger(_mainLogger);
@@ -102,13 +105,16 @@ public class Driver {
         mainRunWorker();
         break;
       case WORKSERVICE:
-        mainRunWorkService();
+        if (initLegacyWorkerService) {
+          mainRunWorkService();
+        }
         break;
       default:
         System.err.println(
             "batfish: Initialization failed. Unknown runmode: " + _mainSettings.getRunMode());
         System.exit(1);
     }
+    _initialized = true;
   }
 
   private static void mainRunWorker() {
@@ -119,6 +125,29 @@ public class Driver {
       }
     }
   }
+
+  public static @Nonnull BatfishWorkerService getBatfishWorkerService() {
+    return BATFISH_WORKER_SERVICE;
+  }
+
+  private static final BatfishWorkerService BATFISH_WORKER_SERVICE =
+      new BatfishWorkerService() {
+
+        @Override
+        public Task getTaskStatus(String taskId) {
+          assert !Strings.isNullOrEmpty(taskId);
+          Task task = BatchManager.get().getTaskFromLog(taskId);
+          if (task == null) {
+            return new Task(TaskStatus.Unknown);
+          }
+          return task;
+        }
+
+        @Override
+        public LaunchResult runTask(String taskId, String[] args) {
+          return runBatfishThroughService(taskId, args);
+        }
+      };
 
   private static void mainRunWorkService() {
     String baseUrl = String.format("http://%s", _mainSettings.getServiceBindHost());
@@ -295,25 +324,27 @@ public class Driver {
     }
   }
 
-  public static List<String> runBatfishThroughService(String taskId, String[] args) {
+  public static @Nonnull LaunchResult runBatfishThroughService(String taskId, String[] args) {
     Settings settings;
     try {
+      if (!_initialized) {
+        return LaunchResult.busy();
+      }
       settings = new Settings(_mainSettings);
       settings.setRunMode(RunMode.WORKER);
       settings.parseCommandLine(args);
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {
-      return Arrays.asList(
-          "failure", "Initialization failed: " + Throwables.getStackTraceAsString(e));
+      return LaunchResult.error("Initialization failed: " + Throwables.getStackTraceAsString(e));
     }
 
     if (!settings.canExecute()) {
-      return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Non-executable command");
+      return LaunchResult.error("Non-executable command");
     }
 
     if (!claimIdle()) {
-      return Arrays.asList(BfConsts.SVC_FAILURE_KEY, "Not idle");
+      return LaunchResult.busy();
     }
 
     // try/catch so that the worker becomes idle again in case of problem submitting thread.
@@ -346,11 +377,11 @@ public class Driver {
 
       thread.start();
 
-      return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
+      return LaunchResult.launched();
     } catch (Exception e) {
-      _mainLogger.error("Exception while running task: " + e.getMessage());
+      _mainLogger.error("Exception while launching task: " + e.getMessage());
       makeIdle();
-      return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
+      return LaunchResult.error(e.getMessage());
     }
   }
 }

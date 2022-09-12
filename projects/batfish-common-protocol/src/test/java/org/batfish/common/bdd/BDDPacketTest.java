@@ -1,6 +1,6 @@
 package org.batfish.common.bdd;
 
-import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
+import static org.batfish.datamodel.HeaderSpace.DEFAULT_PACKET_LENGTH;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstPort;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpCode;
@@ -8,17 +8,11 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpType;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcPort;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsAck;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsCwr;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsEce;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsFin;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsPsh;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsRst;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsUrg;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -32,6 +26,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.TcpFlags;
 import org.junit.Test;
 
 public class BDDPacketTest {
@@ -119,27 +114,24 @@ public class BDDPacketTest {
     BDD bdd =
         pkt.getDstIp()
             .value(dstIp.asLong())
+            .and(pkt.getSrcIp().value(srcIp.asLong()))
+            .and(pkt.getIpProtocol().value(ipProtocol))
             .and(pkt.getIcmpCode().value(icmpCode))
             .and(pkt.getIcmpType().value(icmpType))
-            .and(pkt.getIpProtocol().value(ipProtocol))
-            .and(pkt.getSrcIp().value(srcIp.asLong()))
-            .and(pkt.getTcpAck().not())
-            .and(pkt.getTcpCwr())
-            .and(pkt.getTcpEce().not())
-            .and(pkt.getTcpFin())
-            .and(pkt.getTcpPsh().not())
-            .and(pkt.getTcpRst())
-            .and(pkt.getTcpUrg().not());
+            .randomFullSatOne(7654321);
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
     assertTrue("Unsat", flowBuilder.isPresent());
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
+    assertThat(flow, hasSrcIp(srcIp));
+    assertThat(flow, hasIpProtocol(ipProtocol));
     assertThat(flow, hasIcmpCode(icmpCode));
     assertThat(flow, hasIcmpType(icmpType));
-    assertThat(flow, hasIpProtocol(ipProtocol));
-    assertThat(flow, hasSrcIp(srcIp));
+    assertThat(flow.getDstPort(), nullValue());
+    assertThat(flow.getSrcPort(), nullValue());
+    assertThat(flow.getTcpFlags(), nullValue());
   }
 
   @Test
@@ -152,20 +144,13 @@ public class BDDPacketTest {
     int srcPort = 0xFF;
 
     IpProtocol ipProtocol = IpProtocol.TCP;
-    boolean tcpAck = false;
-    boolean tcpCwr = true;
-    boolean tcpEce = false;
-    boolean tcpFin = true;
-    boolean tcpPsh = false;
-    boolean tcpRst = true;
-    boolean tcpUrg = false;
 
     BDD bdd =
         pkt.getDstIp()
             .value(dstIp.asLong())
-            .and(pkt.getDstPort().value(dstPort))
-            .and(pkt.getIpProtocol().value(ipProtocol))
             .and(pkt.getSrcIp().value(srcIp.asLong()))
+            .and(pkt.getIpProtocol().value(ipProtocol))
+            .and(pkt.getDstPort().value(dstPort))
             .and(pkt.getSrcPort().value(srcPort))
             .and(pkt.getTcpAck().not())
             .and(pkt.getTcpCwr())
@@ -173,7 +158,9 @@ public class BDDPacketTest {
             .and(pkt.getTcpFin())
             .and(pkt.getTcpPsh().not())
             .and(pkt.getTcpRst())
-            .and(pkt.getTcpUrg().not());
+            .and(pkt.getTcpSyn().not())
+            .and(pkt.getTcpUrg())
+            .randomFullSatOne(7654321);
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
     assertTrue("Unsat", flowBuilder.isPresent());
@@ -184,13 +171,45 @@ public class BDDPacketTest {
     assertThat(flow, hasIpProtocol(ipProtocol));
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasSrcPort(srcPort));
-    assertThat(flow, hasTcpFlagsAck(tcpAck));
-    assertThat(flow, hasTcpFlagsCwr(tcpCwr));
-    assertThat(flow, hasTcpFlagsEce(tcpEce));
-    assertThat(flow, hasTcpFlagsFin(tcpFin));
-    assertThat(flow, hasTcpFlagsPsh(tcpPsh));
-    assertThat(flow, hasTcpFlagsRst(tcpRst));
-    assertThat(flow, hasTcpFlagsUrg(tcpUrg));
+    assertThat(
+        flow.getTcpFlags(),
+        equalTo(new TcpFlags(false, true, false, true, false, true, false, true)));
+    assertThat(flow.getIcmpType(), nullValue());
+    assertThat(flow.getIcmpCode(), nullValue());
+  }
+
+  @Test
+  public void testGetFlow_UDP() {
+    BDDPacket pkt = new BDDPacket();
+    Ip dstIp = Ip.parse("123.45.78.0");
+    int dstPort = 0xA0;
+
+    Ip srcIp = Ip.parse("255.255.255.255");
+    int srcPort = 0xFF;
+
+    IpProtocol ipProtocol = IpProtocol.UDP;
+
+    BDD bdd =
+        pkt.getDstIp()
+            .value(dstIp.asLong())
+            .and(pkt.getSrcIp().value(srcIp.asLong()))
+            .and(pkt.getIpProtocol().value(ipProtocol))
+            .and(pkt.getDstPort().value(dstPort))
+            .and(pkt.getSrcPort().value(srcPort))
+            .randomFullSatOne(7654321);
+
+    Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
+    assertTrue("Unsat", flowBuilder.isPresent());
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
+
+    assertThat(flow, hasDstIp(dstIp));
+    assertThat(flow, hasDstPort(dstPort));
+    assertThat(flow, hasIpProtocol(ipProtocol));
+    assertThat(flow, hasSrcIp(srcIp));
+    assertThat(flow, hasSrcPort(srcPort));
+    assertThat(flow.getIcmpType(), nullValue());
+    assertThat(flow.getIcmpCode(), nullValue());
+    assertThat(flow.getTcpFlags(), nullValue());
   }
 
   @Test
@@ -333,5 +352,22 @@ public class BDDPacketTest {
     BDD orig = mkBdd.apply(dstIp, srcIp).apply(dstPort);
     BDD swapped = mkBdd.apply(srcIp, dstIp).apply(srcPort);
     assertThat(pkt.swapSourceAndDestinationFields(orig), equalTo(swapped));
+  }
+
+  @Test
+  public void testGetRepresentativeFlowIgnoresIrrelevantBits() {
+    BDDPacket pkt = new BDDPacket();
+    // A random flow that cannot have ports, icmp type/code, or tcp flags.
+    BDD randomAssignment = pkt.getIpProtocol().value(IpProtocol.OSPF).randomFullSatOne(76451234);
+    Flow flow =
+        pkt.getFlow(randomAssignment)
+            .map(fb -> fb.setIngressNode("n").setIngressVrf("v").build())
+            .orElse(null);
+    assertThat(flow, notNullValue());
+    assertThat(flow.getDstPort(), nullValue());
+    assertThat(flow.getSrcPort(), nullValue());
+    assertThat(flow.getIcmpType(), nullValue());
+    assertThat(flow.getIcmpCode(), nullValue());
+    assertThat(flow.getTcpFlags(), nullValue());
   }
 }

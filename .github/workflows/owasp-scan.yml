@@ -1,0 +1,76 @@
+name: OWASP Vulnerability Scan
+on:
+  pull_request:
+    paths:
+      - maven_install.json
+      - tools/run_owasp.sh
+      - .github/workflows/owasp-scan.yml
+      - projects/build-tools/src/main/resources/org/batfish/owasp/suppressions.xml
+  schedule:
+    - cron: '0 15 * * *'  # 8AM Pacific; daily
+  workflow_dispatch:
+
+jobs:
+  owasp-maven-install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=ymd::$(TZ=America/Los_Angeles date +'%Y-%m-%d')"
+      - uses: actions/checkout@v3
+      - name: Setup OWASP cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/owasp"
+          key: owasp-${{ hashFiles('tools/run_owasp.sh') }}-${{ steps.date.outputs.ymd }}
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      - name: Run OWASP check
+        run: tools/run_owasp.sh
+      - name: Save HTML report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: dependency-check-report.html
+          path: dependency-check-report.html
+  owasp-deploy-jar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=ymd::$(TZ=America/Los_Angeles date +'%Y-%m-%d')"
+      - uses: actions/checkout@v3
+      - name: Setup OWASP cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/owasp"
+          key: owasp-${{ hashFiles('tools/run_owasp.sh') }}-${{ steps.date.outputs.ymd }}
+      - name: Setup Bazelisk cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazelisk"
+          key: ${{runner.os}}-bazelisk-${{ hashFiles('.bazelversion') }}
+      - name: Setup OWASP Bazel cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazel"
+          key: ${{runner.os}}-owasp-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-${{ needs.get_date.outputs.ymd }}
+          restore-keys: |
+            ${{runner.os}}-owasp-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
+            ${{runner.os}}-owasp-bazel-
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      - name: Build deploy jar
+        run: bazel build //projects/allinone:allinone_main_deploy.jar
+      - name: Run OWASP check
+        run: tools/run_owasp.sh bazel-bin/projects/allinone/allinone_main_deploy.jar
+      - name: Save HTML report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: deploy-jar-dependency-check-report.html
+          path: dependency-check-report.html
