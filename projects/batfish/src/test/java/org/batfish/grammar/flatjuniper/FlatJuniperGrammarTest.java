@@ -1779,6 +1779,9 @@ public final class FlatJuniperGrammarTest {
             .getNamedBgpGroups()
             .get("_vrfB")
             .getEvpnAf());
+  }
+
+  @Test
   public void testSecurityZoneTermReference() throws IOException {
     String hostname = "security-zone-term-refs";
     String filename = "configs/" + hostname;

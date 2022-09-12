@@ -33,8 +33,25 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -4317,19 +4334,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         String name = newUnitInterface.getName();
                         // set IRB VLAN ID if assigned
                         newUnitInterface.setVlan(irbVlanIds.get(name));
-                        //                        if (unit.getType() == InterfaceType.IRB_UNIT
-                        //                            && newUnitInterface.getVlan() == null) {
-                        //                          // TODO: May still be active if part of a
-                        // bridge, though maybe it still
-                        //                          //       needs a vlan.
-                        //                          _w.redFlag(
-                        //                              String.format(
-                        //                                  "Deactivating %s because it has no
-                        // assigned vlan", name));
-                        //
-                        // newUnitInterface.deactivate(InactiveReason.INCOMPLETE);
-                        //                        }
-
                         // Don't create bind dependency for 'irb.XXX' interfcaes, since there isn't
                         // really an 'irb' interface
                         if (!name.startsWith("irb")) {
