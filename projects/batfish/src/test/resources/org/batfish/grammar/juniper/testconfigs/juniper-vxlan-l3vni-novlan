@@ -1,6 +1,7 @@
 #
 set system host-name juniper-vxlan-l3vni-novlan
 #
+set interfaces lo0 unit 0 family inet address 10.0.0.111/32 primary
 set interfaces irb unit 20 family inet address 10.0.2.111/24 preferred
 set protocols evpn vni-options vni 5020 vrf-target target:65000:5020
 set protocols evpn encapsulation vxlan

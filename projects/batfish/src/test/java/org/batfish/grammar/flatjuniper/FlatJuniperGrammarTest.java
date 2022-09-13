@@ -7303,15 +7303,16 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testVxlanL3vniConversion() {
     Configuration c = parseConfig("juniper-vxlan-l3vni");
-
     assertEquals(
-        c.getDefaultVrf().getLayer3Vnis().get(5010).getSourceAddress(), Ip.parse("10.0.1.111"));
-    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5010).getSrcVrf(), "default");
-    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5010).getUdpPort(), 4789);
+        c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(5010).getSourceAddress(),
+        Ip.parse("10.0.0.111"));
+    assertEquals(c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(5010).getSrcVrf(), "l3vni_vrf");
+    assertEquals(c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(5010).getUdpPort(), 4789);
     assertEquals(
-        c.getDefaultVrf().getLayer3Vnis().get(5020).getSourceAddress(), Ip.parse("10.0.2.111"));
-    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5020).getSrcVrf(), "default");
-    assertEquals(c.getDefaultVrf().getLayer3Vnis().get(5020).getUdpPort(), 4789);
+        c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(5020).getSourceAddress(),
+        Ip.parse("10.0.0.111"));
+    assertEquals(c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(5020).getSrcVrf(), "l3vni_vrf");
+    assertEquals(c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(5020).getUdpPort(), 4789);
   }
 
   @Test
@@ -7319,7 +7320,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig("juniper-vxlan-l3vni-novlan");
     assertEquals(
         c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(5020).getSourceAddress(),
-        Ip.parse("10.0.2.111"));
+        Ip.parse("10.0.0.111"));
     assertEquals(c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(5020).getSrcVrf(), "l3vni_vrf");
   }
 

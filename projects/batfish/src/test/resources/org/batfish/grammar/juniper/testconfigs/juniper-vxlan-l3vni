@@ -1,7 +1,7 @@
 #
 set system host-name juniper-vxlan-l3vni
 #
-set interfaces lo0 unit 0 family inet address 10.84.249.17/32 primary
+set interfaces lo0 unit 0 family inet address 10.0.0.111/32 primary
 set interfaces irb unit 10 family inet address 10.0.1.111/24 virtual-gateway-address 10.0.1.254
 set interfaces irb unit 20 family inet address 10.0.2.111/24 virtual-gateway-address 10.0.2.254
 set protocols evpn vni-options vni 5010 vrf-target target:65000:5010
@@ -19,4 +19,7 @@ set vlans v10 vxlan vni 5010
 set vlans v20 vlan-id 20
 set vlans v20 l3-interface irb.20
 set vlans v20 vxlan vni 5020
+set routing-instances l3vni_vrf interface irb.20
+set routing-instances l3vni_vrf interface irb.10
+set routing-options route-distinguisher-id 192.168.100.111
 #

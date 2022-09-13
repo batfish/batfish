@@ -1,7 +1,6 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
@@ -9,7 +8,6 @@ public class VniOptions implements Serializable {
 
   private final Integer _vniId;
 
-  private Map<Integer, VniOptions> _vniOptions;
   private @Nullable ExtendedCommunityOrAuto _vrfTargetCommunityorAuto;
   private @Nullable ExtendedCommunity _vrfTargetImport;
   private @Nullable ExtendedCommunity _vrfTargetExport;
