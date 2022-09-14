@@ -71,5 +71,5 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.parboiled:parboiled-java:1.4.1",
     "org.skyscreamer:jsonassert:1.5.0",
     "org.xerial:sqlite-jdbc:3.25.2",
-    "org.yaml:snakeyaml:1.31",  # managed up for CVE-2022-25857
+    "org.yaml:snakeyaml:1.32",  # managed up for CVE-2022-38752
 ]
