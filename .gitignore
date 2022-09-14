@@ -4,12 +4,6 @@
 .DS_Store
 .*.swp
 
-# Maven files
-dependency-reduced-pom.xml
-pom.xml.versionsBackup
-target/
-.project/
-
 # Ignore the list of java files to format-check
 /files_to_check
 
@@ -20,9 +14,6 @@ target/
 # Ignore all bazel-* symlinks. There is no full list since this can change
 # based on the name of the directory bazel is cloned into.
 /bazel-*
-
-# Ignore jacoco coverage reports
-coverage*
 
 # Ignore python cache files
 __pycache__
