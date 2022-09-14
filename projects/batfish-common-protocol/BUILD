@@ -218,13 +218,13 @@ genrule(
     name = "common_properties",
     srcs = [
         "src/main/resources/org/batfish/common/common.properties",
-        "//projects:pom.xml",
+        "//projects:VERSION",
     ],
     outs = [
         "src/generated/resources/org/batfish/common/common.properties",
     ],
     cmd = """
-BATFISH_VERSION="$$(grep -1 batfish-parent $(location //projects:pom.xml) | grep version | sed 's/[<>]/|/g' | cut -f3 -d\\|)"
+BATFISH_VERSION="$$(cat $(location //projects:VERSION))"
 sed s/\\$${project.version}/$${BATFISH_VERSION}/ $(location src/main/resources/org/batfish/common/common.properties) > "$@"
 """,
 )
