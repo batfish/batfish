@@ -86143,7 +86143,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface irb.5 is a VLAN interface but has no vlan set"
+              "text" : "Deactivating irb.5 because it has no assigned vlan"
             }
           ]
         },

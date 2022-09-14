@@ -83,6 +83,7 @@ import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -4373,6 +4374,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         String name = newUnitInterface.getName();
                         // set IRB VLAN ID if assigned
                         newUnitInterface.setVlan(irbVlanIds.get(name));
+
+                        if (unit.getType() == InterfaceType.IRB_UNIT
+                            && newUnitInterface.getVlan() == null) {
+                          // TODO: May still be active if part of a bridge, though maybe it still
+                          //       needs a vlan.
+                          _w.redFlag(
+                              String.format(
+                                  "Deactivating %s because it has no assigned vlan", name));
+                          newUnitInterface.deactivate(InactiveReason.INCOMPLETE);
+                        }
+
                         // Don't create bind dependency for 'irb.XXX' interfcaes, since there isn't
                         // really an 'irb' interface
                         if (!name.startsWith("irb")) {
