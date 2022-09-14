@@ -1,6 +1,6 @@
 load("@batfish//skylark:javadoc.bzl", "java_doc")
 
-exports_files(["pom.xml"])
+exports_files(["VERSION"])
 
 java_doc(
     name = "javadoc",
