@@ -1,0 +1,17 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(
+    default_visibility = ["//docs/example_code:__subpackages__"],
+)
+
+java_library(
+    name = "parsing",
+    srcs = [
+        ":CoolNosBaseLexer.java",
+    ],
+    deps = [
+        "//projects/batfish-common-protocol:parser_common",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
