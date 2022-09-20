@@ -115,14 +115,14 @@ public final class CoolNosGrammarTest {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    CoolNosCombinedParser ciscoNxosParser = new CoolNosCombinedParser(src, settings);
+    CoolNosCombinedParser combinedParser = new CoolNosCombinedParser(src, settings);
     Warnings warnings = new Warnings();
     CoolNosControlPlaneExtractor extractor =
         new CoolNosControlPlaneExtractor(
-            src, ciscoNxosParser, warnings, new SilentSyntaxCollection());
+            src, combinedParser, warnings, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(
-            ciscoNxosParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+            combinedParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     CoolNosConfiguration vendorConfiguration =
         (CoolNosConfiguration) extractor.getVendorConfiguration();

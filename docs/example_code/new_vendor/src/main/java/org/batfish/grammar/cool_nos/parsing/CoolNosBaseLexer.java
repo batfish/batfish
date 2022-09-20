@@ -5,9 +5,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
 import org.batfish.grammar.BatfishLexer;
 
-/**
- * Cisco NX-OS lexer base class providing additional functionality on top of {@link BatfishLexer}.
- */
+/** Cool NOS lexer base class providing additional functionality on top of {@link BatfishLexer}. */
 @ParametersAreNonnullByDefault
 public abstract class CoolNosBaseLexer extends BatfishLexer {
 
