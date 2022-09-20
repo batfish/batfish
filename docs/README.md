@@ -44,7 +44,8 @@ a stage's purpose, inputs, outputs, and how to modify it, click on its name.
     * _What it does_:
         * Process vendor data files into parse trees.
     * _When to modify_:
-        * You want to add support for a new vendor configuration language.
+        * You want to
+          [add support for a new network device](adding_new_device_support/README.md).
         * You want Batfish to silently ignore some syntax it is reporting as unrecognized
         * You want to add full pipeline support for a new feature whose syntax Batfish reports as
           unrecognized, such that the changes will eventually be reflected in the output of one or
@@ -56,19 +57,20 @@ a stage's purpose, inputs, outputs, and how to modify it, click on its name.
     * _What it does_:
         * Extract data from parse trees into vendor-specific (VS) configuration classes.
     * _When to modify_:
-        * You want to add support for a new vendor configuration language.
+        * You want to
+          [add support for a new network device](adding_new_device_support/README.md).
         * You added support for new syntax in the parser, and now you need to extract data from the
           resulting parse tree into the VS model so Batfish can use it.
         * You modified the VS model, and need to update what gets populated using the existing data
-          in
-          the parse tree.
+          in the parse tree.
 
 3. [Conversion](conversion/README.md)
     * _What it does_:
         * Convert vendor-specific (VS) configuration classes into unified vendor-independent (VI)
           configuration classes
     * _When to modify_:
-        * You want to add support for a new vendor configuration language.
+        * You want to
+          [add support for a new network device](adding_new_device_support/README.md).
         * You modified either the VS or VI model, and need to ensure the correct VI data gets
           populated.
         * You want Batfish to use some existing data in the VS model that never makes it to the VI
