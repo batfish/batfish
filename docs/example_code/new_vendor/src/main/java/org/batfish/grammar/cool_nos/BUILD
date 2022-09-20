@@ -23,5 +23,5 @@ java_library(
 
 pmd_test(
     name = "pmd",
-    lib = ":cisco_nxos",
+    lib = ":cool_nos",
 )
