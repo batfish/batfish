@@ -1,4 +1,4 @@
-## Extensible frame-aware layer-3 adjacencies model
+# Extensible frame-aware layer-3 adjacencies model
 
 * Author: Ari Fogel
 * Initial committed draft date: 2022-03-23
