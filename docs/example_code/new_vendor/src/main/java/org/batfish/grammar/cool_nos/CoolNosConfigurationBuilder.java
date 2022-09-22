@@ -24,12 +24,15 @@ import org.batfish.grammar.cool_nos.CoolNosParser.Ipv4_addressContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ipv4_prefixContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ss_addContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ss_deleteContext;
+import org.batfish.grammar.cool_nos.CoolNosParser.Ss_disableContext;
+import org.batfish.grammar.cool_nos.CoolNosParser.Ss_enableContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ss_modifyContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ssa_discardContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ssa_gatewayContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ssa_interfaceContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ssy_host_nameContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.StringContext;
+import org.batfish.grammar.cool_nos.CoolNosParser.Uint16Context;
 import org.batfish.grammar.cool_nos.CoolNosParser.Uint8Context;
 import org.batfish.grammar.cool_nos.CoolNosParser.Vlan_numberContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -133,6 +136,16 @@ public final class CoolNosConfigurationBuilder extends CoolNosParserBaseListener
     _c.getStaticRoutes().remove(prefix);
   }
 
+  @Override
+  public void exitSs_enable(Ss_enableContext ctx) {
+    _currentStaticRoute.setEnable(true);
+  }
+
+  @Override
+  public void exitSs_disable(Ss_disableContext ctx) {
+    _currentStaticRoute.setEnable(false);
+  }
+
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_nameContext ctx) {
     if (ctx.ETHERNET() != null) {
@@ -154,7 +167,7 @@ public final class CoolNosConfigurationBuilder extends CoolNosParserBaseListener
 
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Vlan_numberContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx, VLAN_NUMBER_RANGE, "vlan number");
+    return toIntegerInSpace(messageCtx, ctx.uint16(), VLAN_NUMBER_RANGE, "vlan number");
   }
 
   private static @Nonnull Ip toIp(Ipv4_addressContext ctx) {
@@ -208,11 +221,23 @@ public final class CoolNosConfigurationBuilder extends CoolNosParserBaseListener
   }
 
   /**
+   * Convert a {@link Uint16Context} to an {@link Integer} if it is contained in the provided {@code
+   * space}, or else {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, Uint16Context ctx, IntegerSpace space, String name) {
+    return toIntegerInSpace_helper(messageCtx, ctx, space, name);
+  }
+
+  /**
    * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
    * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
    * {@link Optional#empty}.
+   *
+   * <p>This function should only be called by more strictly typed overloads of {@code
+   * toIntegerSpace}.
    */
-  private @Nonnull Optional<Integer> toIntegerInSpace(
+  private @Nonnull Optional<Integer> toIntegerInSpace_helper(
       ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
     int num = Integer.parseInt(ctx.getText());
     if (!space.contains(num)) {
