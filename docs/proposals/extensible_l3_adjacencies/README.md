@@ -2,7 +2,7 @@
 
 * Author: Ari Fogel
 * Initial committed draft date: 2022-03-23
-* Working branch: `ari-bd`
+* Status: In progress [[Draft PR](https://github.com/batfish/batfish/pull/8246)]
 
 ## Background and motivation
 
@@ -404,7 +404,7 @@ Cons:
 
 ## Resources
 
-* L3 edge establishment and relation to L1/L2 (doc)
+* [L3 edge establishment and relation to L1/L2](resources/l3_edge_establishment_and_relation_to_l1_l2/README.md)
 * [L2 Switching Configuration to XR L2VPN Configuration Conversion Process](https://www.cisco.com/c/en/us/support/docs/routers/asr-9000-series-aggregation-services-routers/116500-problemsolution-product-00.html)
 * [VLAN-aware Bridge Mode | Cumulus Linux 4.2](https://docs.nvidia.com/networking-ethernet-software/cumulus-linux-42/Layer-2/Ethernet-Bridging-VLANs/VLAN-aware-Bridge-Mode/)
 * [Multi-Chassis Link Aggregation - MLAG | Cumulus Linux 4.2](https://docs.nvidia.com/networking-ethernet-software/cumulus-linux-42/Layer-2/Multi-Chassis-Link-Aggregation-MLAG/)
