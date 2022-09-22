@@ -3502,6 +3502,9 @@ public final class FlatJuniperGrammarTest {
                     .including(new SubRange("300-400"))
                     .including(500)
                     .build())));
+
+    // Ensure a vlan-id can be present and that it can be cleared back to null.
+    assertThat(c.getAllInterfaces().get("irb.10").getVlan(), nullValue());
   }
 
   @Test
@@ -3529,7 +3532,8 @@ public final class FlatJuniperGrammarTest {
             "VLAN_ID_LIST_TEST_SINGLETON",
             "VLAN_ID_LIST_TEST_RANGE",
             "VLAN_WITH_INTERFACES",
-            "VLAN_TEST_UNUSED"));
+            "VLAN_TEST_UNUSED",
+            "VLAN_NONE_TEST"));
   }
 
   @Test

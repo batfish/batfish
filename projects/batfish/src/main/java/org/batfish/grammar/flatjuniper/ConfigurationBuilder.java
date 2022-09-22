@@ -7096,7 +7096,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    if (ctx.id != null) {
+    if (ctx.NONE() != null) {
+      _currentNamedVlan.setVlanId(null);
+    } else if (ctx.id != null) {
       Optional<Integer> vlan = toInteger(ctx, ctx.id);
       vlan.ifPresent(_currentNamedVlan::setVlanId);
     }

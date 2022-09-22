@@ -37,3 +37,9 @@ set vlans VLAN_TEST_UNUSED vlan-id 102
 set vlans VLAN_WITH_INTERFACES vlan-id 103
 set vlans VLAN_WITH_INTERFACES interface ge-0/2/0.0
 set vlans VLAN_WITH_INTERFACES l3-interface vlan.103
+
+# vlan-id none can be used
+set interfaces irb unit 10 family inet address 10.1.1.1/28 preferred
+set vlans VLAN_NONE_TEST vlan-id 10
+set vlans VLAN_NONE_TEST l3-interface irb.10
+set vlans VLAN_NONE_TEST vlan-id none
