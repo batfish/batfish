@@ -1,7 +1,7 @@
 ## Vendor-specific BGP network and redistribute behavior lab notes
 
 * Author: Ari Fogel
-* Initial committed draft date: 2021-11-12
+* Last updated: 2022-09-21
 
 ## Objective
 
@@ -163,12 +163,9 @@ TODO
 
 ## Batfish behavior
 
-(May be out of date)
+Every device type has different behavior for bgp `network` and `redistribute` statements.
 
-Every device type has different behavior for bgp `network` and `redistribute` statements. We are
-doing the correct thing for no vendors.
-
-Summary of unsupported behavior:
+Lab-discovered behavior to support:
 
 - [x] A `redistribute` or `network` statement will only ever introduce at most one route into bgp
   for a given prefix
@@ -183,10 +180,11 @@ Summary of unsupported behavior:
     - [ ] A10
     - [ ] FRR
     - [x] NXOS: batfish/batfish#7660
-- [ ] On NXOS, a BGP RIB entry introduced by a `network` statement is preferred (not
+- [X] On NXOS, a BGP RIB entry introduced by a `network` statement is preferred (not
   ECMP-equivalent) over an entry introduced by a `redistribute` statement when all current
   Batfish-supported attributes are set equal by respective route-maps (tie-breaking priority at
   least higher than origin type). We may need a new attribute for this.
+    - batfish/batfish#7690
 - [ ] NHIP is almost always preserved from IGP route via `redistribute` statement, but always
   cleared via `network` statement. This matters for iBGP, and also affects IGP cost to next hop
 - [ ] On A10, a `network` statement without a route-map unconditionally introduces a BGP RIB entry
