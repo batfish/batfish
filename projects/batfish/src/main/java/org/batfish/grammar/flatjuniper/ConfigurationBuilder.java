@@ -285,6 +285,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_autoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evovt_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
@@ -736,6 +737,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vni_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vni_rangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vt_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ZoneContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
@@ -2031,6 +2033,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       }
       return RouteDistinguisher.from(
           toInteger(ctx.rd_asn_colon_id().high16), toLong(ctx.rd_asn_colon_id().low32));
+    }
+  }
+
+  private static @Nonnull ExtendedCommunity toExtendedCommunity(Vt_communityContext ctx) {
+    if (ctx.getText() != null) {
+      return ExtendedCommunity.parse(ctx.getText());
+    } else {
+      throw new BatfishException("invalid extended community: " + ctx.getText());
+    }
+  }
+
+  private static @Nonnull ExtendedCommunity toExtendedCommunity(Extended_communityContext ctx) {
+    if (ctx.getText() != null) {
+      return ExtendedCommunity.parse(ctx.getText());
+    } else {
+      throw new BatfishException("invalid extended community: " + ctx.getText());
     }
   }
 
@@ -3437,14 +3455,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentLogicalSystem
           .getOrInitSwitchOptions()
           .setVrfTargetCommunityorAuto(
-              ExtendedCommunityOrAuto.of(
-                  ExtendedCommunity.parse(ctx.extended_community().getText())));
+              ExtendedCommunityOrAuto.of(toExtendedCommunity(ctx.extended_community())));
     }
   }
 
   @Override
   public void exitSovt_auto(Sovt_autoContext ctx) {
-    if (ctx.getText() != null) {
+    if (ctx.AUTO() != null) {
       _currentLogicalSystem
           .getOrInitSwitchOptions()
           .setVrfTargetCommunityorAuto(ExtendedCommunityOrAuto.auto());
@@ -3455,14 +3472,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitSovt_export(Sovt_exportContext ctx) {
     _currentLogicalSystem
         .getOrInitSwitchOptions()
-        .setVrfTargetExport(ExtendedCommunity.parse(ctx.extended_community().getText()));
+        .setVrfTargetExport(toExtendedCommunity(ctx.extended_community()));
   }
 
   @Override
   public void exitSovt_import(Sovt_importContext ctx) {
     _currentLogicalSystem
         .getOrInitSwitchOptions()
-        .setVrfTargetImport(ExtendedCommunity.parse(ctx.extended_community().getText()));
+        .setVrfTargetImport(toExtendedCommunity(ctx.extended_community()));
   }
 
   @Override
@@ -4415,7 +4432,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         .getVniOptions()
         .get(_currentVni)
         .setVrfTargetCommunityorAuto(
-            ExtendedCommunityOrAuto.of(ExtendedCommunity.parse(ctx.vt_community().getText())));
+            ExtendedCommunityOrAuto.of(toExtendedCommunity(ctx.vt_community())));
   }
 
   @Override
@@ -4424,7 +4441,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentLogicalSystem
           .getVniOptions()
           .get(_currentVni)
-          .setVrfTargetExport(ExtendedCommunity.parse(ctx.vt_community().getText()));
+          .setVrfTargetExport(toExtendedCommunity(ctx.vt_community()));
     }
   }
 
@@ -4434,7 +4451,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentLogicalSystem
           .getVniOptions()
           .get(_currentVni)
-          .setVrfTargetImport(ExtendedCommunity.parse(ctx.vt_community().getText()));
+          .setVrfTargetImport(toExtendedCommunity(ctx.vt_community()));
     }
   }
 
