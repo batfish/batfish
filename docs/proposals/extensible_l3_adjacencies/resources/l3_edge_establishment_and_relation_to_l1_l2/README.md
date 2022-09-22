@@ -11,7 +11,7 @@ Although real networks have wires connecting specific interfaces, it is nice for
 to upload a full wiring diagram. They just upload configs and Batfish "figures it out".
 
 The default operating mode in Batfish is that every pair of compatible L3
-interfaces[<sup>1</sup>](#footnote-1) is
+interfaces[<sup>1</sup>](#1) is
 connected.
 
 This approach does not work for all users, typically because:
@@ -24,7 +24,7 @@ This approach does not work for all users, typically because:
 
 Users who want to be able to evaluate these aspects of their network supply L1 topology information
 in the form of (directed) edges between interfaces (rack1[eth1] → rack2[eth2])
-.[<sup>2</sup>](#footnote-2)
+.[<sup>2</sup>](#2)
 
 The presence of these links affects L3 edge establishment as
 follows [[permalink](https://github.com/batfish/batfish/blob/1cd58cfdf7e121c5d9c773a391fea0b3832a71dd/projects/batfish-common-protocol/src/main/java/org/batfish/common/topology/TopologyUtil.java#L526-L534)]:
@@ -33,7 +33,7 @@ follows [[permalink](https://github.com/batfish/batfish/blob/1cd58cfdf7e121c5d9c
   broadcast domain, in the subset of the network with L1 edges.
 * An L3 edge whether the node owning either interface "has L1 topology" is considered adjacent only
   if the two interfaces are in the same L2 broadcast domain.
-* A node "has L1 topology" if it is the tail of an L1 edge (aka, rack1[<sup>3</sup>](#footnote-3)
+* A node "has L1 topology" if it is the tail of an L1 edge (aka, rack1[<sup>3</sup>](#3)
   above).
   This procedure was designed to:
 
@@ -132,21 +132,18 @@ I think this resolves all the above problems.
 
 Thoughts?
 
-
-<!-- Footnotes themselves at the bottom. -->
-
 ## Notes
 
-### Footnote 1
+#### 1
 
 Compatible means same network, different IP addresses, not network or broadcast IP. 1.2.3.4/24 and
 1.2.3.5/24, but not 1.2.3.0/24 or 1.2.3.255/24. /31s are special of course.
 
-### Footnote 2
+#### 2
 
 We expect these are physical interfaces, but I believe nothing enforces this.
 
-### Footnote 3
+#### 3
 
 The "tail" of an arrow is the flat side, the "head" is the pointy side. Think "arrowhead".
 
