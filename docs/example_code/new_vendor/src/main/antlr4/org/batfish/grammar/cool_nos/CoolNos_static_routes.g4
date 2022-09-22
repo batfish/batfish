@@ -17,12 +17,19 @@ ss
 
 ss_add
 :
-  ADD prefix = ipv4_prefix ss_nh
+  ADD prefix = ipv4_prefix ss_nh NEWLINE
 ;
 
 ss_modify
 :
-  MODIFY prefix = ipv4_prefix ss_nh
+  MODIFY prefix = ipv4_prefix ss_option NEWLINE
+;
+
+ss_option
+:
+  ss_nh
+  | ss_disable
+  | ss_enable
 ;
 
 ss_nh
@@ -32,10 +39,14 @@ ss_nh
   | ssa_interface
 ;
 
-ssa_discard: DISCARD NEWLINE;
+ssa_discard: DISCARD;
 
-ssa_gateway: GATEWAY ip = ipv4_address NEWLINE;
+ssa_gateway: GATEWAY ip = ipv4_address;
 
-ssa_interface: INTERFACE name = interface_name NEWLINE;
+ssa_interface: INTERFACE name = interface_name;
 
 ss_delete: DELETE prefix = ipv4_prefix NEWLINE;
+
+ss_enable: ENABLE;
+
+ss_disable: DISABLE;

@@ -147,7 +147,7 @@ We place the lexer rules for the vast majority of the keywords of a language at 
 default mode, i.e. right after the virtual tokens section. In general, the order of keyword lexer
 rules should not matter, so we prefer to alphabetize them.
 
-Here is the keywords section DEFAULT mode in the example lexer grammar:
+Here is an excerpt of the keywords section DEFAULT mode in the example lexer grammar:
 
 ```
 // BEGIN keywords
