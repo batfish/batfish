@@ -12,7 +12,9 @@ tokens {
 // BEGIN keywords
 ADD: 'add';
 DELETE: 'delete';
+DISABLE: 'disable';
 DISCARD: 'discard';
+ENABLE: 'enable';
 ETHERNET: 'ethernet';
 GATEWAY: 'gateway';
 HOST_NAME: 'host-name' -> pushMode(M_String);
