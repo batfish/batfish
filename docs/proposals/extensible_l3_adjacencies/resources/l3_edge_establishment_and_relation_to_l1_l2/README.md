@@ -1,7 +1,7 @@
 # L3 edge establishment and relation to L1/L2
 
 * Author: Dan Halperin
-* Initial committed draft date: 2021-06-14
+* Last updated: 2022-09-21
 * Status: implemented, but switched off in `master`
 
 ## Background
@@ -129,8 +129,6 @@ I think this resolves all the above problems.
 * The same codepath is used for all networks.
 * and I think we no longer need to care about directionality or provide "more than minimally
   necessary" edges. And we can always understand the impact of failing an interface.
-
-Thoughts?
 
 ## Notes
 

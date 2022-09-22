@@ -1,7 +1,7 @@
 # Extensible frame-aware layer-3 adjacencies model
 
 * Author: Ari Fogel
-* Initial committed draft date: 2022-03-23
+* Last updated: 2022-09-21
 * Status: In progress [[Draft PR](https://github.com/batfish/batfish/pull/8246)]
 
 ## Background and motivation
