@@ -2027,15 +2027,13 @@ public class FileBasedStorage implements StorageProvider {
             } catch (IOException e) {
               LOGGER.error(
                   String.format(
-                      "Failed to expunge blob '%s' of networkId '%s': %s",
-                      path.getFileName(), networkId, Throwables.getStackTraceAsString(e)));
+                      "Failed to expunge blob '%s' of networkId '%s'",
+                      path.getFileName(), networkId),
+                  e);
             }
           });
     } catch (IOException e) {
-      LOGGER.error(
-          String.format(
-              "Failed to expunge blobs from networkId '%s': %s",
-              networkId, Throwables.getStackTraceAsString(e)));
+      LOGGER.error(String.format("Failed to expunge blobs from networkId '%s'", networkId), e);
     }
   }
 
@@ -2055,8 +2053,9 @@ public class FileBasedStorage implements StorageProvider {
                 } catch (IOException e) {
                   LOGGER.error(
                       String.format(
-                          "Error loading snapshot metadata for networkId '%s' snapshotId '%s': %s",
-                          networkId, snapshotId, Throwables.getStackTraceAsString(e)));
+                          "Error loading snapshot metadata for networkId '%s' snapshotId '%s'",
+                          networkId, snapshotId),
+                      e);
                   // Just skip this snapshot
                   return Optional.<SnapshotMetadata>empty();
                 }
