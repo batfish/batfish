@@ -849,6 +849,69 @@ public final class FileBasedStorageTest {
     assertFalse(Files.exists(snapshotDir));
   }
 
+  /** Check that network blobs are expunged under the right conditions */
+  @Test
+  public void testRunGarbageCollection_blobs() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId snapshotId = new SnapshotId("snapshot-id");
+    AnswerId answerId = new AnswerId("answer-id");
+
+    _storage.writeId(networkId, "network"); // make the network extant
+    _storage.writeId(snapshotId, "snapshot", networkId); // make the snapshot extant
+
+    // write an answer and make the snapshot too new to expunge
+    Path answerDir = _storage.getAnswerDir(networkId, snapshotId, answerId);
+    _storage.mkdirs(answerDir);
+    _storage.writeStringToFile(answerDir.resolve("answer"), "answer", UTF_8);
+
+    Instant snapshotTime = Instant.now();
+    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(snapshotTime));
+
+    // create blobs newer and older than the oldest snapshot
+    _storage.storeNetworkBlob(new ByteArrayInputStream(new byte[] {}), networkId, "older");
+    Files.setLastModifiedTime(
+        _storage.getNetworkBlobPath(networkId, "older"),
+        FileTime.from(snapshotTime.minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES)));
+    _storage.storeNetworkBlob(new ByteArrayInputStream(new byte[] {}), networkId, "newer");
+    Files.setLastModifiedTime(
+        _storage.getNetworkBlobPath(networkId, "newer"),
+        FileTime.from(snapshotTime.plus(1, ChronoUnit.MINUTES)));
+
+    _storage.runGarbageCollection();
+    assertFalse(Files.exists(_storage.getNetworkBlobPath(networkId, "older")));
+    assertTrue(Files.exists(_storage.getNetworkBlobPath(networkId, "newer")));
+  }
+
+  @Test
+  public void testGetOldestExtantSnapshotFileLastModifiedDate() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId extantSnapshotId = new SnapshotId("snapshot-id");
+    SnapshotId orphanedSnapshotId = new SnapshotId("orphaned-snapshot-id");
+    AnswerId answerId = new AnswerId("answer-id");
+
+    _storage.writeId(networkId, "network"); // make the network extant
+    _storage.writeId(extantSnapshotId, "snapshot", networkId); // only for the extant snapshot
+
+    // write an answer dir and date the extant snapshot
+    Path extantAnswerDir = _storage.getAnswerDir(networkId, extantSnapshotId, answerId);
+    _storage.mkdirs(extantAnswerDir);
+    Instant extantSnapshotTime = Instant.now();
+    setSnapshotLastModifiedTime(networkId, extantSnapshotId, FileTime.from(extantSnapshotTime));
+
+    // write an answer dir and date the orphaned snapshot older than the extant snapshot
+    Path orphanedAnswerDir = _storage.getAnswerDir(networkId, orphanedSnapshotId, answerId);
+    _storage.mkdirs(orphanedAnswerDir);
+    Instant orphanedSnapshotTime = extantSnapshotTime.minus(10, ChronoUnit.MINUTES);
+    setSnapshotLastModifiedTime(networkId, orphanedSnapshotId, FileTime.from(orphanedSnapshotTime));
+
+    // may differ from extantSnapshotTime due to fs implementation details
+    Instant retrievedExtantSnapshotTime = _storage.getLastModifiedTime(extantAnswerDir);
+    // Should use extant snapshot time even though orphaned snapshot has older entries
+    assertThat(
+        _storage.getOldestExtantSnapshotFileLastModifiedDate(networkId),
+        equalTo(Optional.of(retrievedExtantSnapshotTime)));
+  }
+
   @Test
   public void testCanExpungeSnapshot() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
