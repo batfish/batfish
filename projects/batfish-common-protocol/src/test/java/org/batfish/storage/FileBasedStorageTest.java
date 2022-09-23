@@ -884,7 +884,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testGetOldestExtantSnapshotFileLastModifiedDate() throws IOException {
+  public void testGetOldestSnapshotCreationTime() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId extantSnapshotId = new SnapshotId("snapshot-id");
     SnapshotId orphanedSnapshotId = new SnapshotId("orphaned-snapshot-id");
