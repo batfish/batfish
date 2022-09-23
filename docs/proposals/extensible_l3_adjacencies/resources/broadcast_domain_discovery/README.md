@@ -60,7 +60,7 @@ N trunks on a device, we get 4096*N^2 edges, and similar blow-ups for links acro
 quickly becomes infeasible.
 
 We have since tried reducing complexity by using ranges of VLANs that have similar behavior. This
-has proved challenging to get correct (Sharan
+has proved challenging to get correct (Sharon
 Saadon [reported on NTC Slack](https://networktocode.slack.com/archives/CCE02JK7T/p1619679666156900)
 a bunch of bugs in the first version) and performant (on a large user network with complete L1
 information, inferring the broadcast domains takes longer than parsing and dataplaning combined).
