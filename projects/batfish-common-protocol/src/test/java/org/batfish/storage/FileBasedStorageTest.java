@@ -81,6 +81,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -863,9 +864,9 @@ public final class FileBasedStorageTest {
     Path answerDir = _storage.getAnswerDir(networkId, snapshotId, answerId);
     _storage.mkdirs(answerDir);
     _storage.writeStringToFile(answerDir.resolve("answer"), "answer", UTF_8);
-
     Instant snapshotTime = Instant.now();
     setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(snapshotTime));
+    _storage.storeSnapshotMetadata(new SnapshotMetadata(snapshotTime, null), networkId, snapshotId);
 
     // create blobs newer and older than the oldest snapshot
     _storage.storeNetworkBlob(new ByteArrayInputStream(new byte[] {}), networkId, "older");
@@ -897,19 +898,21 @@ public final class FileBasedStorageTest {
     _storage.mkdirs(extantAnswerDir);
     Instant extantSnapshotTime = Instant.now();
     setSnapshotLastModifiedTime(networkId, extantSnapshotId, FileTime.from(extantSnapshotTime));
+    _storage.storeSnapshotMetadata(
+        new SnapshotMetadata(extantSnapshotTime, null), networkId, extantSnapshotId);
 
     // write an answer dir and date the orphaned snapshot older than the extant snapshot
     Path orphanedAnswerDir = _storage.getAnswerDir(networkId, orphanedSnapshotId, answerId);
     _storage.mkdirs(orphanedAnswerDir);
     Instant orphanedSnapshotTime = extantSnapshotTime.minus(10, ChronoUnit.MINUTES);
     setSnapshotLastModifiedTime(networkId, orphanedSnapshotId, FileTime.from(orphanedSnapshotTime));
+    _storage.storeSnapshotMetadata(
+        new SnapshotMetadata(orphanedSnapshotTime, null), networkId, orphanedSnapshotId);
 
-    // may differ from extantSnapshotTime due to fs implementation details
-    Instant retrievedExtantSnapshotTime = _storage.getLastModifiedTime(extantAnswerDir);
-    // Should use extant snapshot time even though orphaned snapshot has older entries
+    // Should use extant snapshot time even though orphaned snapshot has older creation time
     assertThat(
-        _storage.getOldestExtantSnapshotFileLastModifiedDate(networkId),
-        equalTo(Optional.of(retrievedExtantSnapshotTime)));
+        _storage.getOldestSnapshotCreationTime(networkId),
+        equalTo(Optional.of(extantSnapshotTime)));
   }
 
   @Test

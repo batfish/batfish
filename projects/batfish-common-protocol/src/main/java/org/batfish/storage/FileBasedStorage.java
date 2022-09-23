@@ -11,6 +11,7 @@ import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -2003,14 +2004,12 @@ public class FileBasedStorage implements StorageProvider {
       }
     }
     Optional<Instant> maybeOldestExtantSnapshotFileModifiedDate =
-        getOldestExtantSnapshotFileLastModifiedDate(networkId);
+        getOldestSnapshotCreationTime(networkId);
     if (maybeOldestExtantSnapshotFileModifiedDate.isPresent()) {
-      Instant oldestExtantSnapshotFileModifiedDate =
-          maybeOldestExtantSnapshotFileModifiedDate.get();
+      Instant snapshotMetadataBasedExpungeBeforeDate =
+          maybeOldestExtantSnapshotFileModifiedDate.get().minus(GC_SKEW_ALLOWANCE);
       Instant blobExpungeBeforeDate =
-          oldestExtantSnapshotFileModifiedDate.isBefore(expungeBeforeDate)
-              ? oldestExtantSnapshotFileModifiedDate
-              : expungeBeforeDate;
+          Comparators.min(snapshotMetadataBasedExpungeBeforeDate, expungeBeforeDate);
       expungeOldBlobs(networkId, blobExpungeBeforeDate);
     } // else no point expunging blobs if this network has no snapshots
   }
@@ -2040,27 +2039,32 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
-  /**
-   * Get the oldest last modified time of the oldest file of all extant snapshots. Return {@link
-   * Optional#empty()} if there are no extant snapshots for which a file last modified time was
-   * successfully retrieved.
-   */
   @VisibleForTesting
   @Nonnull
-  Optional<Instant> getOldestExtantSnapshotFileLastModifiedDate(NetworkId networkId) {
+  Optional<Instant> getOldestSnapshotCreationTime(NetworkId networkId) {
     try {
-      Set<String> extantSnapshotIds = listResolvedIds(SnapshotId.class, networkId);
-      try (Stream<Path> snapshotsDirStream = list(getSnapshotsDir(networkId))) {
-        return snapshotsDirStream
-            .filter(
-                snapshotDir ->
-                    extantSnapshotIds.contains(
-                        new SnapshotId(snapshotDir.getFileName().toString()).toString()))
-            .map(this::getOldestEntryLastModifiedDate)
-            .filter(Optional::isPresent)
-            .map((Optional::get))
-            .min(Comparator.naturalOrder());
-      }
+      return listResolvedIds(SnapshotId.class, networkId).stream()
+          .map(SnapshotId::new)
+          .map(
+              snapshotId -> {
+                try {
+                  return Optional.of(
+                      BatfishObjectMapper.mapper()
+                          .readValue(
+                              loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class));
+                } catch (IOException e) {
+                  LOGGER.error(
+                      String.format(
+                          "Error loading snapshot metadata for networkId '%s' snapshotId '%s': %s",
+                          networkId, snapshotId, Throwables.getStackTraceAsString(e)));
+                  // Just skip this snapshot
+                  return Optional.<SnapshotMetadata>empty();
+                }
+              })
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .map(SnapshotMetadata::getCreationTimestamp)
+          .min(Comparator.naturalOrder());
     } catch (IOException e) {
       // Just skip this network
       return Optional.empty();
