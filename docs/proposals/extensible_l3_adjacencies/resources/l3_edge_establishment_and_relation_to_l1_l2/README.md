@@ -1,7 +1,7 @@
 # L3 edge establishment and relation to L1/L2
 
 * Author: Dan Halperin
-* Last updated: 2022-09-21
+* Last updated: 2022-09-23
 * Status: implemented, but switched off in `master`
 
 ## Background
@@ -105,7 +105,8 @@ nice, in the common L3-only case.
 → But we have reason to believe that many users have extensive L1 use in their
 networks.
 
-_Aside: We have other plans [Broadcast domain discovery] to reimplement the current L2 broadcast
+_Aside: We have other plans [[link](../broadcast_domain_discovery/README.md)] to reimplement the
+current L2 broadcast
 domain identification. This should scale much better than current impl, we believe._
 
 ## Proposal
