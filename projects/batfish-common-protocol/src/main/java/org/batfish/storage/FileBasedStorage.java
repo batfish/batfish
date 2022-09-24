@@ -11,6 +11,7 @@ import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -41,6 +42,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -2000,6 +2002,103 @@ public class FileBasedStorage implements StorageProvider {
             dir, Throwables.getStackTraceAsString(e));
         LOGGER.error(String.format("Failed to expunge snapshot directory %s", dir), e);
       }
+    }
+    Optional<Instant> maybeOldestExtantSnapshotFileModifiedDate =
+        getOldestSnapshotCreationTime(networkId);
+    if (maybeOldestExtantSnapshotFileModifiedDate.isPresent()) {
+      Instant snapshotMetadataBasedExpungeBeforeDate =
+          maybeOldestExtantSnapshotFileModifiedDate.get().minus(GC_SKEW_ALLOWANCE);
+      Instant blobExpungeBeforeDate =
+          Comparators.min(snapshotMetadataBasedExpungeBeforeDate, expungeBeforeDate);
+      expungeOldBlobs(networkId, blobExpungeBeforeDate);
+    } // else no point expunging blobs if this network has no snapshots
+  }
+
+  /** Expunge blobs in a network older than the provided date. */
+  private void expungeOldBlobs(NetworkId networkId, Instant blobExpungeBeforeDate) {
+    try (Stream<Path> blobs = Files.walk(getNetworkBlobsDir(networkId))) {
+      blobs.forEach(
+          path -> {
+            try {
+              if (Files.isRegularFile(path)
+                  && getLastModifiedTime(path).isBefore(blobExpungeBeforeDate)) {
+                Files.delete(path);
+              }
+            } catch (IOException e) {
+              LOGGER.error(
+                  String.format(
+                      "Failed to expunge blob '%s' of networkId '%s'",
+                      path.getFileName(), networkId),
+                  e);
+            }
+          });
+    } catch (IOException e) {
+      LOGGER.error(String.format("Failed to expunge blobs from networkId '%s'", networkId), e);
+    }
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Optional<Instant> getOldestSnapshotCreationTime(NetworkId networkId) {
+    try {
+      return listResolvedIds(SnapshotId.class, networkId).stream()
+          .map(SnapshotId::new)
+          .map(
+              snapshotId -> {
+                try {
+                  return Optional.of(
+                      BatfishObjectMapper.mapper()
+                          .readValue(
+                              loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class));
+                } catch (IOException e) {
+                  LOGGER.error(
+                      String.format(
+                          "Error loading snapshot metadata for networkId '%s' snapshotId '%s'",
+                          networkId, snapshotId),
+                      e);
+                  // Just skip this snapshot
+                  return Optional.<SnapshotMetadata>empty();
+                }
+              })
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .map(SnapshotMetadata::getCreationTimestamp)
+          .min(Comparator.naturalOrder());
+    } catch (IOException e) {
+      // Just skip this network
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Get the oldest last madified time of any directory entry that is a descendant of provided path.
+   * Return {@link Optional#empty()} if path does not exist or there are errors fetching last
+   * modified time of all descendants.
+   */
+  private @Nonnull Optional<Instant> getOldestEntryLastModifiedDate(Path path) {
+    try (Stream<Path> paths = Files.walk(path)) {
+      return paths
+          .map(
+              p -> {
+                try {
+                  return Optional.of(getLastModifiedTime(p));
+                } catch (IOException e) {
+                  LOGGER.error(
+                      String.format(
+                          "Failed to get last modified time of '%s': %s",
+                          p, Throwables.getStackTraceAsString(e)));
+                  return Optional.<Instant>empty();
+                }
+              })
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .min(Comparator.naturalOrder());
+    } catch (IOException e) {
+      LOGGER.error(
+          String.format(
+              "Failed to get oldest recursive entry of path rooted at '%s': %s",
+              path, Throwables.getStackTraceAsString(e)));
+      return Optional.empty();
     }
   }
 
