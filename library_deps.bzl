@@ -21,7 +21,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.auto.service:auto-service-annotations:1.0.1",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.9.1",  # managed up for CVE-2022-25647
-    "com.google.errorprone:error_prone_annotations:2.13.1",
+    "com.google.errorprone:error_prone_annotations:2.15.0",
     "com.google.guava:guava:31.1-jre",
     maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "31.1-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
     "com.google.re2j:re2j:1.7",
@@ -40,14 +40,14 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.commons:commons-collections4:4.4",
     "org.apache.commons:commons-configuration2:2.8.0",
     "org.apache.commons:commons-lang3:3.12.0",
-    "org.apache.commons:commons-text:1.9",
+    "org.apache.commons:commons-text:1.10.0",
     "org.apache.httpcomponents:httpclient:4.5.13",  # managed up 2021-06-04 for CVE-2020-13956
     "org.apache.httpcomponents:httpcore:4.4.15",  # managed up 2021-06-04 for fixes
-    "org.apache.logging.log4j:log4j-api:2.17.2",
-    "org.apache.logging.log4j:log4j-core:2.17.2",
-    "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2",
+    "org.apache.logging.log4j:log4j-api:2.19.0",
+    "org.apache.logging.log4j:log4j-core:2.19.0",
+    "org.apache.logging.log4j:log4j-slf4j-impl:2.19.0",
     "org.apache.tomcat.embed:tomcat-embed-core:8.5.82",  # managed up 2022-08-23 for CVEs
-    "org.codehaus.jettison:jettison:1.4.1",
+    "org.codehaus.jettison:jettison:1.5.1",
     "io.github.java-diff-utils:java-diff-utils:4.11",
     "org.glassfish.grizzly:grizzly-http-server:2.4.4",
     "org.glassfish.grizzly:grizzly-framework:2.4.4",
@@ -69,7 +69,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.jline:jline:3.13.1",
     "org.parboiled:parboiled-core:1.4.1",
     "org.parboiled:parboiled-java:1.4.1",
-    "org.skyscreamer:jsonassert:1.5.0",
-    "org.xerial:sqlite-jdbc:3.25.2",
-    "org.yaml:snakeyaml:1.32",  # managed up for CVE-2022-38752
+    "org.skyscreamer:jsonassert:1.5.1",
+    "org.xerial:sqlite-jdbc:3.39.3.0",
+    "org.yaml:snakeyaml:1.33",
 ]
