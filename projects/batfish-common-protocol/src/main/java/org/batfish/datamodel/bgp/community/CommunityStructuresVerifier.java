@@ -66,6 +66,7 @@ import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
+import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
@@ -135,9 +136,16 @@ public final class CommunityStructuresVerifier {
 
   private static final class CommunityStructuresBooleanExprVerifier
       implements BooleanExprVisitor<Void, CommunityStructuresVerifierContext> {
+
     @Override
     public Void visitBooleanExprs(
         StaticBooleanExpr staticBooleanExpr, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchClusterListLength(
+        MatchClusterListLength matchClusterListLength, CommunityStructuresVerifierContext arg) {
       return null;
     }
 
