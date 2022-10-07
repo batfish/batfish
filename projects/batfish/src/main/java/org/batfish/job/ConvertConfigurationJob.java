@@ -1058,7 +1058,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         "Configuration-specific warnings should not have error details");
     checkArgument(
         configurationSpecificWarnings.getParseWarnings().isEmpty(),
-        "Configruration-specific warnings should not have parse warnings");
+        "Configuration-specific warnings should not have parse warnings");
     warnings.getPedanticWarnings().addAll(configurationSpecificWarnings.getPedanticWarnings());
     warnings.getRedFlagWarnings().addAll(configurationSpecificWarnings.getRedFlagWarnings());
     warnings
