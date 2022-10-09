@@ -18,6 +18,7 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
+import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
@@ -41,6 +42,13 @@ import org.batfish.minesweeper.CommunityVar;
 @ParametersAreNonnullByDefault
 public class BooleanExprVarCollector
     implements BooleanExprVisitor<Set<CommunityVar>, Configuration> {
+
+  @Override
+  public Set<CommunityVar> visitMatchClusterListLength(
+      MatchClusterListLength matchClusterListLength, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
   @Override
   public Set<CommunityVar> visitBooleanExprs(
       StaticBooleanExpr staticBooleanExpr, Configuration arg) {
