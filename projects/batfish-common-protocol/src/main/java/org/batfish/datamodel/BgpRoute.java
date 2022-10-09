@@ -33,6 +33,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>>
     extends AbstractRoute
     implements HasReadableAsPath,
+        HasReadableClusterList,
         HasReadableCommunities,
         HasReadableLocalPreference,
         HasReadableOriginType,
@@ -225,6 +226,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   public abstract static class Builder<B extends Builder<B, R>, R extends BgpRoute<B, R>>
       extends AbstractRouteBuilder<B, R>
       implements HasWritableAsPath<B, R>,
+          HasWritableClusterList<B, R>,
           HasWritableCommunities<B, R>,
           HasWritableLocalPreference<B, R>,
           HasWritableOriginType<B, R>,
@@ -278,8 +280,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return _asPath;
     }
 
-    @Nonnull
-    public Set<Long> getClusterList() {
+    @Override
+    public @Nonnull Set<Long> getClusterList() {
       return _clusterList instanceof ImmutableSet
           ? _clusterList
           : Collections.unmodifiableSet(_clusterList);
@@ -344,6 +346,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     /** Overwrite the clusterList attribute */
+    @Override
     public B setClusterList(Set<Long> clusterList) {
       _clusterList = clusterList instanceof ImmutableSet ? clusterList : new HashSet<>(clusterList);
       return getThis();
@@ -519,6 +522,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _attributes._asPath;
   }
 
+  @Override
   public @Nonnull Set<Long> getClusterList() {
     return _attributes._clusterList;
   }

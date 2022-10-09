@@ -21,6 +21,7 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
+import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
@@ -92,6 +93,12 @@ public final class AsPathStructuresVerifier {
     @Override
     public Void visitBooleanExprs(
         StaticBooleanExpr staticBooleanExpr, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchClusterListLength(
+        MatchClusterListLength matchClusterListLength, AsPathStructuresVerifierContext arg) {
       return null;
     }
 
