@@ -16,7 +16,7 @@ import org.batfish.datamodel.routing_policy.Result;
  * Boolean expression that returns {@code true} iff the {@link Environment}'s route's BGP Cluster
  * List Length matches a provided {@link IntExpr} using a provided {@link IntComparator}.
  *
- * <p>Assumes a length of 0 is source route does not have a cluster list.
+ * <p>Assumes a length of 0 if source route does not have a cluster list.
  */
 @ParametersAreNonnullByDefault
 public final class MatchClusterListLength extends BooleanExpr {
