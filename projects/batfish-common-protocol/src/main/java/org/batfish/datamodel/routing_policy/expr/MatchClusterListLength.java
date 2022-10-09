@@ -44,7 +44,7 @@ public final class MatchClusterListLength extends BooleanExpr {
   }
 
   @JsonProperty(PROP_COMPARATOR)
-  public @Nonnull IntComparator getCmp() {
+  public @Nonnull IntComparator getComparator() {
     return _comparator;
   }
 
