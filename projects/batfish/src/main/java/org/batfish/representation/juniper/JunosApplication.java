@@ -1117,6 +1117,13 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_TELNET:
+        {
+          portRangeStart = NamedPort.TELNET.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_TFTP:
         {
           portRangeStart = NamedPort.TFTP.number();
