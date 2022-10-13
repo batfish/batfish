@@ -9,7 +9,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.carrotsearch:hppc:0.9.1",
     "com.fasterxml.jackson.core:jackson-annotations:2.13.4",
     "com.fasterxml.jackson.core:jackson-core:2.13.4",
-    "com.fasterxml.jackson.core:jackson-databind:2.13.4",
+    "com.fasterxml.jackson.core:jackson-databind:2.13.4.1",
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4",
     "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.13.4",
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.13.4",
