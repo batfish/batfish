@@ -15,6 +15,7 @@ import com.google.common.graph.Traverser;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -172,17 +173,14 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       return operator.fold(_prefix, _elements, leftResult, rightResult);
     }
 
-    /** Returns the list of non-null children for this node */
-    private @Nonnull Stream<Node<T>> getChildren() {
-      if (_left == null && _right == null) {
-        return Stream.of();
-      } else if (_left == null) {
-        return Stream.of(_right);
-      } else if (_right == null) {
-        return Stream.of(_left);
-      } else {
-        return Stream.of(_left, _right);
+    /** Returns the list of non-null children for this node that test true. */
+    private @Nonnull List<Node<T>> getFilteredChildren(Predicate<Node<T>> filter) {
+      boolean left = _left != null && filter.test(_left);
+      boolean right = _right != null && filter.test(_right);
+      if (left) {
+        return right ? ImmutableList.of(_left, _right) : ImmutableList.of(_left);
       }
+      return right ? ImmutableList.of(_right) : ImmutableList.of();
     }
 
     @Override
@@ -366,8 +364,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     if (_root == null || !visitNode.test(_root)) {
       return;
     }
-    Traverser.<Node<T>>forTree(
-            node -> node.getChildren().filter(visitNode).collect(ImmutableList.toImmutableList()))
+    Traverser.<Node<T>>forTree(node -> node.getFilteredChildren(visitNode))
         .depthFirstPostOrder(_root)
         .forEach(consumer);
   }
