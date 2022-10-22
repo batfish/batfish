@@ -23,7 +23,7 @@ repos:
     rev: v4.3.21
     hooks:
         -   id: isort
--   repo: git@github.com:humitos/mirrors-autoflake.git
+-   repo: https://github.com/humitos/mirrors-autoflake.git
     rev: v1.3
     hooks:
         - id: autoflake
