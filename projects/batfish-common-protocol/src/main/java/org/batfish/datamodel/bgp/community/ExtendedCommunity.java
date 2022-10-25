@@ -186,6 +186,14 @@ public final class ExtendedCommunity extends Community {
     return of(type << 8 | 0x02, asn, value);
   }
 
+  /**
+   * Return an opaque extended community. See https://tools.ietf.org/html/rfc4360 section 3.3
+   * Assumes a type of 0x03 and a variable input subtype.
+   */
+  public static ExtendedCommunity opaque(byte subtype, long asn, int value) {
+    return of((((int) subtype) << 8) | 0x03, asn, value);
+  }
+
   @Override
   public <T> T accept(CommunityVisitor<T> visitor) {
     return visitor.visitExtendedCommunity(this);
