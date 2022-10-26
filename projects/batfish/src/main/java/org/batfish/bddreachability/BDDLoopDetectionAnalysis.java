@@ -1,12 +1,12 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.BDDReachabilityUtils.backwardFixpoint;
-import static org.batfish.bddreachability.BDDReachabilityUtils.getIngressStateExprBdds;
 import static org.batfish.bddreachability.BDDReachabilityUtils.toIngressLocation;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,6 +19,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.symbolic.IngressLocation;
@@ -28,15 +29,31 @@ import org.batfish.symbolic.state.StateExpr;
 public class BDDLoopDetectionAnalysis {
   private final BDDPacket _bddPacket;
   private final Table<StateExpr, StateExpr, Transition> _forwardEdgeTable;
-  private final Set<StateExpr> _ingressLocationStates;
+  private final Map<StateExpr, BDD> _ingressLocationStateBDDs;
 
-  private BDDLoopDetectionAnalysis(
+  /**
+   * Constructs a {@link BDDLoopDetectionAnalysis} that searches for loops reachable from the sets
+   * of flows per ingress location state specified in {@code ingressLocationStateBDDs}.
+   */
+  public BDDLoopDetectionAnalysis(
       BDDPacket bddPacket,
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable,
-      Set<StateExpr> ingressLocationStates) {
+      Map<StateExpr, BDD> ingressLocationStateBDDs) {
     _bddPacket = bddPacket;
-    _ingressLocationStates = ingressLocationStates;
-    _forwardEdgeTable = forwardEdgeTable;
+    _ingressLocationStateBDDs = ImmutableMap.copyOf(ingressLocationStateBDDs);
+    _forwardEdgeTable = ImmutableTable.copyOf(forwardEdgeTable);
+  }
+
+  /**
+   * Constructs a {@link BDDLoopDetectionAnalysis} that searches for loops reachable from the
+   * specified {@code ingressLocationStates}.
+   */
+  public BDDLoopDetectionAnalysis(
+      BDDPacket bddPacket, Stream<Edge> edges, Set<StateExpr> ingressLocationStates) {
+    this(
+        bddPacket,
+        BDDReachabilityUtils.computeForwardEdgeTable(getLoopEdges(edges, ingressLocationStates)),
+        buildIngressLocationStateBDDs(ingressLocationStates, bddPacket.getFactory().one()));
   }
 
   private static Collection<Edge> getLoopEdges(
@@ -45,12 +62,13 @@ public class BDDLoopDetectionAnalysis {
     return BDDReachabilityGraphOptimizer.optimize(edges, ingressLocationStates, true);
   }
 
-  public BDDLoopDetectionAnalysis(
-      BDDPacket bddPacket, Stream<Edge> edges, Set<StateExpr> ingressLocationStates) {
-    this(
-        bddPacket,
-        BDDReachabilityUtils.computeForwardEdgeTable(getLoopEdges(edges, ingressLocationStates)),
-        ingressLocationStates);
+  /**
+   * Build a mapping from each input ingress location {@link StateExpr} to the input {@link BDD}.
+   */
+  private static Map<StateExpr, BDD> buildIngressLocationStateBDDs(
+      Set<StateExpr> ingressLocationStates, BDD bdd) {
+    return ingressLocationStates.stream()
+        .collect(ImmutableMap.toImmutableMap(Function.identity(), k -> bdd));
   }
 
   public Map<IngressLocation, BDD> detectLoops() {
@@ -93,8 +111,7 @@ public class BDDLoopDetectionAnalysis {
     /*
      * Extract the ingress location BDDs.
      */
-    return getIngressStateExprBdds(
-        loopBDDs, _ingressLocationStates, _bddPacket.getFactory().zero());
+    return getIngressStateExprBdds(loopBDDs, _ingressLocationStateBDDs, _bddPacket.getFactory());
   }
 
   private Map<StateExpr, BDD> propagate(Map<StateExpr, BDD> bdds) {
@@ -158,15 +175,23 @@ public class BDDLoopDetectionAnalysis {
   }
 
   private Map<StateExpr, BDD> reachableInNRounds(int numRounds) {
-    BDD one = _bddPacket.getFactory().one();
-
     // All ingress locations are reachable in 0 rounds.
-    Map<StateExpr, BDD> reachableInNRounds =
-        toImmutableMap(_ingressLocationStates, Function.identity(), k -> one);
+    Map<StateExpr, BDD> reachableInNRounds = _ingressLocationStateBDDs;
 
     for (int round = 0; !reachableInNRounds.isEmpty() && round < numRounds; round++) {
       reachableInNRounds = propagate(reachableInNRounds);
     }
     return reachableInNRounds;
+  }
+
+  private static Map<StateExpr, BDD> getIngressStateExprBdds(
+      Map<StateExpr, BDD> stateReachableBdds,
+      Map<StateExpr, BDD> ingressLocationStateBDDs,
+      BDDFactory factory) {
+    BDD zero = factory.zero();
+    return toImmutableMap(
+        ingressLocationStateBDDs,
+        Map.Entry::getKey,
+        entry -> stateReachableBdds.getOrDefault(entry.getKey(), zero).and(entry.getValue()));
   }
 }
