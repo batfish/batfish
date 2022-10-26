@@ -22,6 +22,8 @@ import org.batfish.datamodel.Ip;
  */
 @ParametersAreNonnullByDefault
 public final class ExtendedCommunity extends Community {
+  // The max value that can be stored in 6 bytes.
+  private static final long VALUE_MAX = 0xFFFF_FFFF_FFFFL;
 
   private static final Set<Byte> _validTypes =
       ImmutableSet.of(
@@ -35,19 +37,16 @@ public final class ExtendedCommunity extends Community {
 
   private final byte _type;
   private final byte _subType;
-  private final long _globalAdministrator;
-  private final long _localAdministrator;
+  private final long _value;
 
   // Cached string representations
   @Nullable private String _str;
   @Nullable private String _regexStr;
 
-  private ExtendedCommunity(
-      byte type, byte subType, long globalAdministrator, long localAdministrator) {
+  private ExtendedCommunity(byte type, byte subType, long value) {
     _type = type;
     _subType = subType;
-    _globalAdministrator = globalAdministrator;
-    _localAdministrator = localAdministrator;
+    _value = value; // 6 bytes
   }
 
   @JsonCreator
@@ -159,17 +158,20 @@ public final class ExtendedCommunity extends Community {
     checkArgument(
         globalAdministrator >= 0 && localAdministrator >= 0,
         "Administrator values must be positive");
+    int gaOffset;
     if (typeByte == 0x00 || typeByte == 0x40) {
       checkArgument(
           globalAdministrator <= 0xFFFFL && localAdministrator <= 0xFFFFFFFFL,
           "Extended community administrator values are not within the allowed range");
+      gaOffset = 32;
     } else {
       checkArgument(
           globalAdministrator <= 0xFFFFFFFFL && localAdministrator <= 0xFFFFL,
           "Extended community administrator values are not within the allowed range");
+      gaOffset = 16;
     }
-    return new ExtendedCommunity(
-        typeByte, (byte) (type & 0xFF), globalAdministrator, localAdministrator);
+    long value = (globalAdministrator << gaOffset) | localAdministrator;
+    return new ExtendedCommunity(typeByte, (byte) (type & 0xFF), value);
   }
 
   public static ExtendedCommunity of(int type, Ip globalAdministrator, long localAdministrator) {
@@ -180,10 +182,34 @@ public final class ExtendedCommunity extends Community {
     return of(type, globalAdministrator.asLong(), localAdministrator);
   }
 
+  public static ExtendedCommunity of(int type, long value) {
+    checkArgument(
+        type >= 0 && type <= 0xFFFF,
+        "Extended community type %s is not within the allowed range",
+        type);
+    byte typeByte = (byte) (type >> 8);
+    checkArgument(
+        _validTypes.contains(typeByte), "Not a valid BGP extended community type: %s", type);
+    checkArgument(value >= 0, "Value must be positive");
+    checkArgument(value <= VALUE_MAX, "Value is not within the allowed space");
+
+    return new ExtendedCommunity(typeByte, (byte) (type & 0xFF), value);
+  }
+
   /** Return a route target extended community */
   public static ExtendedCommunity target(long asn, long value) {
     int type = asn <= 0xFFFFL ? 0x00 : 0x02;
     return of(type << 8 | 0x02, asn, value);
+  }
+
+  /**
+   * Return an opaque extended community. See https://tools.ietf.org/html/rfc4360 section 3.3
+   * Assumes a type of 0x03 or 0x43 and a variable input subtype. Opaque extended communities value
+   * field does not always map to a local and global administrator Leave it a generic 6 octets for
+   * flexibility based on subtype.
+   */
+  public static ExtendedCommunity opaque(byte type, byte subtype, long value) {
+    return of((((int) type) << 8) | subtype, value);
   }
 
   @Override
@@ -222,7 +248,11 @@ public final class ExtendedCommunity extends Community {
    * <p>It is the middle part of the extended community (type:globalAdmin:localAdmin)
    */
   public long getGlobalAdministrator() {
-    return _globalAdministrator;
+    if (!hasGlobalAdministrator()) {
+      throw new UnsupportedOperationException(
+          "Extended community does not have a global administrator");
+    }
+    return _value >> localAdministratorSize();
   }
 
   /**
@@ -231,7 +261,32 @@ public final class ExtendedCommunity extends Community {
    * <p>It is the last part of the extended community (type:globalAdmin:localAdmin)
    */
   public long getLocalAdministrator() {
-    return _localAdministrator;
+    if (!hasLocalAdministrator()) {
+      throw new UnsupportedOperationException(
+          "Extended community does not have a local administrator");
+    }
+    return _value & (VALUE_MAX >> globalAdministratorSize());
+  }
+
+  public long getValue() {
+    return _value;
+  }
+
+  private boolean hasGlobalAdministrator() {
+    // return false if it is an opaque extended community.
+    return !(_type == 0x03 || _type == 0x43);
+  }
+
+  private boolean hasLocalAdministrator() {
+    return hasGlobalAdministrator();
+  }
+
+  private int globalAdministratorSize() {
+    return _type == 0x00 || _type == 0x40 ? 16 : 32;
+  }
+
+  private int localAdministratorSize() {
+    return 48 - globalAdministratorSize();
   }
 
   @Override
@@ -243,15 +298,12 @@ public final class ExtendedCommunity extends Community {
       return false;
     }
     ExtendedCommunity that = (ExtendedCommunity) o;
-    return _type == that._type
-        && _subType == that._subType
-        && _globalAdministrator == that._globalAdministrator
-        && _localAdministrator == that._localAdministrator;
+    return _type == that._type && _subType == that._subType && _value == that._value;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _subType, _globalAdministrator, _localAdministrator);
+    return Objects.hash(_type, _subType, _value);
   }
 
   @Nonnull
@@ -259,7 +311,7 @@ public final class ExtendedCommunity extends Community {
   public String matchString() {
     if (_regexStr == null) {
       // Type is skipped for regex matching
-      _regexStr = _globalAdministrator + ":" + _localAdministrator;
+      _regexStr = getGlobalAdministrator() + ":" + getLocalAdministrator();
     }
     return _regexStr;
   }
@@ -274,10 +326,10 @@ public final class ExtendedCommunity extends Community {
       _str =
           (((int) _type << 8) | _subType)
               + ":"
-              + _globalAdministrator
+              + getGlobalAdministrator()
               + gaSuffix
               + ":"
-              + _localAdministrator;
+              + getLocalAdministrator();
     }
     return _str;
   }
@@ -285,11 +337,9 @@ public final class ExtendedCommunity extends Community {
   @Nonnull
   @Override
   protected BigInteger asBigIntImpl() {
-    int gaOffset = _type == 0x00 || _type == 0x40 ? 32 : 16;
     return BigInteger.valueOf(_type)
         .shiftLeft(56)
         .or(BigInteger.valueOf(_subType).shiftLeft(48))
-        .or(BigInteger.valueOf(_globalAdministrator).shiftLeft(gaOffset))
-        .or(BigInteger.valueOf(_localAdministrator));
+        .or(BigInteger.valueOf(_value));
   }
 }

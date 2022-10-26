@@ -130,6 +130,20 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testOpaqueGetLA() {
+    thrown.expect(UnsupportedOperationException.class);
+    ExtendedCommunity community = ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559);
+    community.getLocalAdministrator();
+  }
+
+  @Test
+  public void testOpaqueGetGA() {
+    thrown.expect(UnsupportedOperationException.class);
+    ExtendedCommunity community = ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559);
+    community.getGlobalAdministrator();
+  }
+
+  @Test
   public void testIsTransitive() {
     assertTrue(ExtendedCommunity.parse("1:1:1").isTransitive());
     assertFalse(ExtendedCommunity.parse("16384:1:1").isTransitive());
@@ -179,6 +193,12 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testOpaqueCreation() {
+    ExtendedCommunity community = ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559);
+    assertThat(community.getValue(), equalTo((long) 65559));
+  }
+
+  @Test
   public void testIsRouteOrigin() {
     assertTrue(ExtendedCommunity.of(0x0003, 1, 1).isRouteOrigin());
     assertTrue(ExtendedCommunity.of(0x0103, 1, 1).isRouteOrigin());
@@ -210,10 +230,23 @@ public final class ExtendedCommunityTest {
   @Test
   public void testGetGlobalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getGlobalAdministrator(), equalTo(2L));
+    assertThat(
+        ExtendedCommunity.of(1, 42995L, 4294967295L).getGlobalAdministrator(), equalTo(42995L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 4294967295L, 1).getGlobalAdministrator(),
+        equalTo(4294967295L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 1, 42995L).getGlobalAdministrator(), equalTo(1L));
   }
 
   @Test
   public void testGetLocalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getLocalAdministrator(), equalTo(3L));
+    assertThat(
+        ExtendedCommunity.of(1, 42995L, 4294967295L).getLocalAdministrator(), equalTo(4294967295L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 4294967295L, 1).getLocalAdministrator(), equalTo(1L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 1, 42995L).getLocalAdministrator(), equalTo(42995L));
   }
 }
