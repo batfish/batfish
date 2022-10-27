@@ -130,6 +130,20 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testGetLAInapplicable() {
+    ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
+    thrown.expect(UnsupportedOperationException.class);
+    community.getLocalAdministrator();
+  }
+
+  @Test
+  public void testGetGAInapplicable() {
+    ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
+    thrown.expect(UnsupportedOperationException.class);
+    community.getGlobalAdministrator();
+  }
+
+  @Test
   public void testIsTransitive() {
     assertTrue(ExtendedCommunity.parse("1:1:1").isTransitive());
     assertFalse(ExtendedCommunity.parse("16384:1:1").isTransitive());
@@ -139,6 +153,10 @@ public final class ExtendedCommunityTest {
   public void testMatchString() {
     ExtendedCommunity ec = ExtendedCommunity.parse("origin:65555L:1");
     assertThat(ec.matchString(), equalTo("65555:1"));
+
+    // check no local/global administrator case
+    assertThat(
+        ExtendedCommunity.opaque(true, 0x00, 65559).matchString(), equalTo("0x3:0x0:0x10017"));
   }
 
   @Test
@@ -147,6 +165,10 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.parse("origin:1L:1").toString(), equalTo("515:1L:1"));
     assertThat(ExtendedCommunity.parse("origin:1:1").toString(), equalTo("3:1:1"));
     assertThat(ExtendedCommunity.parse("origin:0.0.0.0:1").toString(), equalTo("259:0L:1"));
+    assertThat(ExtendedCommunity.parse("origin:0.0.0.0:1").toString(), equalTo("259:0L:1"));
+
+    // check no local/global administrator case
+    assertThat(ExtendedCommunity.opaque(true, 0x00, 65559).toString(), equalTo("0x3:0x0:0x10017"));
   }
 
   @Test
@@ -176,6 +198,12 @@ public final class ExtendedCommunityTest {
         equalTo(ExtendedCommunity.of(0x02 << 8 | 0x02, 65555, 1)));
     assertThat(ExtendedCommunity.target(1, 65555).toString(), equalTo("2:1:65555"));
     assertThat(ExtendedCommunity.target(65555, 1).toString(), equalTo("514:65555L:1"));
+  }
+
+  @Test
+  public void testOpaqueCreation() {
+    ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
+    assertThat(community.getValue(), equalTo((long) 65559));
   }
 
   @Test
@@ -210,10 +238,23 @@ public final class ExtendedCommunityTest {
   @Test
   public void testGetGlobalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getGlobalAdministrator(), equalTo(2L));
+    assertThat(
+        ExtendedCommunity.of(1, 42995L, 4294967295L).getGlobalAdministrator(), equalTo(42995L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 4294967295L, 1).getGlobalAdministrator(),
+        equalTo(4294967295L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 1, 42995L).getGlobalAdministrator(), equalTo(1L));
   }
 
   @Test
   public void testGetLocalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getLocalAdministrator(), equalTo(3L));
+    assertThat(
+        ExtendedCommunity.of(1, 42995L, 4294967295L).getLocalAdministrator(), equalTo(4294967295L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 4294967295L, 1).getLocalAdministrator(), equalTo(1L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 1, 42995L).getLocalAdministrator(), equalTo(42995L));
   }
 }
