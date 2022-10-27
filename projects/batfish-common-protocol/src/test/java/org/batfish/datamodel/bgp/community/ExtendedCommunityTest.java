@@ -130,16 +130,16 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testOpaqueGetLA() {
+  public void testGetLAInapplicable() {
+    ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
     thrown.expect(UnsupportedOperationException.class);
-    ExtendedCommunity community = ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559);
     community.getLocalAdministrator();
   }
 
   @Test
-  public void testOpaqueGetGA() {
+  public void testGetGAInapplicable() {
+    ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
     thrown.expect(UnsupportedOperationException.class);
-    ExtendedCommunity community = ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559);
     community.getGlobalAdministrator();
   }
 
@@ -156,8 +156,7 @@ public final class ExtendedCommunityTest {
 
     // check no local/global administrator case
     assertThat(
-        ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559).matchString(),
-        equalTo("3:0:10017"));
+        ExtendedCommunity.opaque(true, 0x00, 65559).matchString(), equalTo("0x3:0x0:0x10017"));
   }
 
   @Test
@@ -169,9 +168,7 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.parse("origin:0.0.0.0:1").toString(), equalTo("259:0L:1"));
 
     // check no local/global administrator case
-    assertThat(
-        ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559).toString(),
-        equalTo("3:0:10017"));
+    assertThat(ExtendedCommunity.opaque(true, 0x00, 65559).toString(), equalTo("0x3:0x0:0x10017"));
   }
 
   @Test
@@ -205,7 +202,7 @@ public final class ExtendedCommunityTest {
 
   @Test
   public void testOpaqueCreation() {
-    ExtendedCommunity community = ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559);
+    ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
     assertThat(community.getValue(), equalTo((long) 65559));
   }
 
