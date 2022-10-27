@@ -35,7 +35,7 @@ junit_tests(
     name = "batfish_tests",
     size = "medium",
     srcs = glob([
-        "src/test/**/*Test.java",
+        "**/*Test.java",
     ]),
     resources = [
         "//projects/batfish/src/test/resources",
