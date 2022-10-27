@@ -309,11 +309,15 @@ public final class ExtendedCommunity extends Community {
   @Nonnull
   @Override
   public String matchString() {
-    if (_regexStr == null) {
-      // Type is skipped for regex matching
-      _regexStr = getGlobalAdministrator() + ":" + getLocalAdministrator();
+    if (!hasGlobalAdministrator() || !hasLocalAdministrator()) {
+      return toString();
+    } else {
+      if (_regexStr == null) {
+        // Type is skipped for regex matching
+        _regexStr = getGlobalAdministrator() + ":" + getLocalAdministrator();
+      }
+      return _regexStr;
     }
-    return _regexStr;
   }
 
   @Override
@@ -321,15 +325,19 @@ public final class ExtendedCommunity extends Community {
   @JsonValue
   public String toString() {
     if (_str == null) {
-      // To differentiate 4 vs 2-byte global admin values
-      String gaSuffix = _type == 0x00 || _type == 0x40 ? "" : "L";
-      _str =
-          (((int) _type << 8) | _subType)
-              + ":"
-              + getGlobalAdministrator()
-              + gaSuffix
-              + ":"
-              + getLocalAdministrator();
+      if (!hasGlobalAdministrator() || !hasLocalAdministrator()) {
+        _str = String.format("%x:%x:%x", _type, _subType, _value);
+      } else {
+        // To differentiate 4 vs 2-byte global admin values
+        String gaSuffix = _type == 0x00 || _type == 0x40 ? "" : "L";
+        _str =
+            (((int) _type << 8) | _subType)
+                + ":"
+                + getGlobalAdministrator()
+                + gaSuffix
+                + ":"
+                + getLocalAdministrator();
+      }
     }
     return _str;
   }

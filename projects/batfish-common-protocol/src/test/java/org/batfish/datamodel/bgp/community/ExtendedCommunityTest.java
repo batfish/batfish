@@ -153,6 +153,11 @@ public final class ExtendedCommunityTest {
   public void testMatchString() {
     ExtendedCommunity ec = ExtendedCommunity.parse("origin:65555L:1");
     assertThat(ec.matchString(), equalTo("65555:1"));
+
+    // check no local/global administrator case
+    assertThat(
+        ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559).matchString(),
+        equalTo("3:0:10017"));
   }
 
   @Test
@@ -161,6 +166,12 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.parse("origin:1L:1").toString(), equalTo("515:1L:1"));
     assertThat(ExtendedCommunity.parse("origin:1:1").toString(), equalTo("3:1:1"));
     assertThat(ExtendedCommunity.parse("origin:0.0.0.0:1").toString(), equalTo("259:0L:1"));
+    assertThat(ExtendedCommunity.parse("origin:0.0.0.0:1").toString(), equalTo("259:0L:1"));
+
+    // check no local/global administrator case
+    assertThat(
+        ExtendedCommunity.opaque((byte) 0x03, (byte) 0x00, (long) 65559).toString(),
+        equalTo("3:0:10017"));
   }
 
   @Test
