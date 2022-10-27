@@ -23,7 +23,7 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 public final class ExtendedCommunity extends Community {
 
-  private static final Set<Byte> _validTypes =
+  private static final Set<Byte> VALID_TYPES =
       ImmutableSet.of(
           (byte) 0x00,
           (byte) 0x01,
@@ -39,8 +39,8 @@ public final class ExtendedCommunity extends Community {
   private final long _localAdministrator;
 
   // Cached string representations
-  @Nullable private String _str;
-  @Nullable private String _regexStr;
+  @Nullable private transient String _str;
+  @Nullable private transient String _regexStr;
 
   private ExtendedCommunity(
       byte type, byte subType, long globalAdministrator, long localAdministrator) {
@@ -155,7 +155,7 @@ public final class ExtendedCommunity extends Community {
         type);
     byte typeByte = (byte) (type >> 8);
     checkArgument(
-        _validTypes.contains(typeByte), "Not a valid BGP extended community type: %s", type);
+        VALID_TYPES.contains(typeByte), "Not a valid BGP extended community type: %s", type);
     checkArgument(
         globalAdministrator >= 0 && localAdministrator >= 0,
         "Administrator values must be positive");
