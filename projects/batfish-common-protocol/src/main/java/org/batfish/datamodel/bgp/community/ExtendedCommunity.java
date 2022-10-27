@@ -230,7 +230,7 @@ public final class ExtendedCommunity extends Community {
 
   /**
    * Returns the global administrator value, if applicable to this type of extended community. May
-   * be either 2 or 4 bytes depending on type/subtype. **
+   * be either 2 or 4 bytes depending on type/subtype.
    *
    * @throws UnsupportedOperationException if this extended community is not of a type with a global
    *     administrator
@@ -245,7 +245,7 @@ public final class ExtendedCommunity extends Community {
 
   /**
    * Returns the local administrator value, if applicable to this type of extended community. May be
-   * either 2 or 4 bytes depending on type/subtype. **
+   * either 2 or 4 bytes depending on type/subtype.
    *
    * @throws UnsupportedOperationException if this extended community is not of a type with a local
    *     administrator
@@ -258,13 +258,14 @@ public final class ExtendedCommunity extends Community {
     return _value & (VALUE_MAX >> globalAdministratorBits());
   }
 
+  /** Return the 6 byte value */
   public long getValue() {
     return _value;
   }
 
+  /** Return true if the value field contains a global and local administrator */
   @Nonnull
   private boolean hasGlobalAndLocalAdministrator() {
-    // return false if it is an opaque extended community.
     return !(_type == 0x03 || _type == 0x43);
   }
 
