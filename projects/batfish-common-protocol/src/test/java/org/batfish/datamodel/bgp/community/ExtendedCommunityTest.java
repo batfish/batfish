@@ -239,6 +239,14 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testIsOpaque() {
+    assertFalse(ExtendedCommunity.of(0x0010, 1, 1).isOpaque());
+    assertFalse(ExtendedCommunity.of(0x0110, 1, 1).isOpaque());
+    assertTrue(ExtendedCommunity.of(0x0300, 1, 1).isOpaque());
+    assertTrue(ExtendedCommunity.opaque(false, 1, 1).isOpaque());
+  }
+
+  @Test
   public void testGetGlobalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getGlobalAdministrator(), equalTo(2L));
     assertThat(

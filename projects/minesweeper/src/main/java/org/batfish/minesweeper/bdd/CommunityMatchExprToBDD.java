@@ -35,6 +35,7 @@ import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalA
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAdministratorMatch;
+import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
@@ -181,6 +182,13 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
       ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch, Arg arg) {
     throw new UnsupportedOperationException(
         "Currently not supporting matches on extended communities");
+  }
+
+  @Override
+  public BDD visitOpaqueExtendedCommunities(
+      OpaqueExtendedCommunities opaqueExtendedCommunities, Arg arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting matches on opaque extended communities");
   }
 
   @Override

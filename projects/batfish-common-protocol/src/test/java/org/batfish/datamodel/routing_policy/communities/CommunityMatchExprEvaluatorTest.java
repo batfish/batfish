@@ -197,6 +197,26 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
+  public void testVisitOpaqueExtendedCommunities() {
+    assertTrue(
+        OpaqueExtendedCommunities.of(false, 0x00)
+            .accept(EVAL, ExtendedCommunity.opaque(false, 0x00, 1L)));
+    assertTrue(
+        OpaqueExtendedCommunities.of(true, 0x02)
+            .accept(EVAL, ExtendedCommunity.opaque(true, 0x02, 1L)));
+    assertFalse(OpaqueExtendedCommunities.of(true, 0x00).accept(EVAL, StandardCommunity.of(1L)));
+    assertFalse(
+        OpaqueExtendedCommunities.of(true, 0x00)
+            .accept(EVAL, ExtendedCommunity.of(0x0000, 1L, 1L)));
+    assertFalse(
+        OpaqueExtendedCommunities.of(true, 0x00)
+            .accept(EVAL, ExtendedCommunity.opaque(false, 0x00, 1L)));
+    assertFalse(
+        OpaqueExtendedCommunities.of(false, 0x03)
+            .accept(EVAL, ExtendedCommunity.opaque(false, 0x00, 1L)));
+  }
+
+  @Test
   public void testVisitRouteTargetExtendedCommunities() {
     assertTrue(
         RouteTargetExtendedCommunities.instance()

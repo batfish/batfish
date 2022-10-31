@@ -43,6 +43,8 @@ public interface CommunityMatchExprVisitor<T, U> {
   T visitExtendedCommunityLocalAdministratorMatch(
       ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch, U arg);
 
+  T visitOpaqueExtendedCommunities(OpaqueExtendedCommunities opaqueExtendedCommunities, U arg);
+
   T visitRouteTargetExtendedCommunities(
       RouteTargetExtendedCommunities routeTargetExtendedCommunities, U arg);
 

@@ -49,6 +49,7 @@ import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
@@ -442,6 +443,13 @@ public final class CommunityStructuresVerifier {
         ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch,
         CommunityStructuresVerifierContext arg) {
       // nothing that can be checked statically
+      return null;
+    }
+
+    @Override
+    public Void visitOpaqueExtendedCommunities(
+        OpaqueExtendedCommunities opaqueExtendedCommunities,
+        CommunityStructuresVerifierContext arg) {
       return null;
     }
 
