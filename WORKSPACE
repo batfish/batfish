@@ -36,13 +36,15 @@ http_archive(
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load(":library_deps.bzl", "BATFISH_MAVEN_ARTIFACTS")
 
+MAVEN_REPO = "https://repo1.maven.org/maven2"
+
 maven_install(
     artifacts = BATFISH_MAVEN_ARTIFACTS,
     excluded_artifacts = ["org.hamcrest:hamcrest-core"],
     fetch_sources = True,
     maven_install_json = "@batfish//:maven_install.json",
     repositories = [
-        "https://repo1.maven.org/maven2",
+        MAVEN_REPO,
     ],
     strict_visibility = True,
 )
@@ -109,7 +111,7 @@ install_deps()
 http_jar(
     name = "antlr4_tool",
     sha256 = "6852386d7975eff29171dae002cc223251510d35f291ae277948f381a7b380b4",
-    url = "https://search.maven.org/remotecontent?filepath=org/antlr/antlr4/4.7.2/antlr4-4.7.2-complete.jar",
+    url = "%s/antlr/antlr4/4.7.2/antlr4-4.7.2-complete.jar" % MAVEN_REPO,
 )
 
 # Buildifier
