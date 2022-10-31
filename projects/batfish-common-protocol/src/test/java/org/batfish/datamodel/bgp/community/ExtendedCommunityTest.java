@@ -239,6 +239,14 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testIsOpaque() {
+    assertFalse(ExtendedCommunity.of(0x0010, 1, 1).isOpaque());
+    assertFalse(ExtendedCommunity.of(0x0110, 1, 1).isOpaque());
+    assertTrue(ExtendedCommunity.of(0x0300, 1, 1).isOpaque());
+    assertTrue(ExtendedCommunity.opaque(false, 1, 1).isOpaque());
+  }
+
+  @Test
   public void testGetGlobalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getGlobalAdministrator(), equalTo(2L));
     assertThat(
@@ -259,5 +267,12 @@ public final class ExtendedCommunityTest {
         ExtendedCommunity.of(0x01 << 8 | 1, 4294967295L, 1).getLocalAdministrator(), equalTo(1L));
     assertThat(
         ExtendedCommunity.of(0x01 << 8 | 1, 1, 42995L).getLocalAdministrator(), equalTo(42995L));
+  }
+
+  @Test
+  public void testGetSubType() {
+    assertThat(ExtendedCommunity.of(0x0201, 2, 3).getSubtype(), equalTo(0x01));
+    assertThat(ExtendedCommunity.opaque(true, 0x04, 3).getSubtype(), equalTo(0x04));
+    assertThat(ExtendedCommunity.target(1, 3).getSubtype(), equalTo(0x02));
   }
 }

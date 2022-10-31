@@ -228,6 +228,12 @@ public final class ExtendedCommunity extends Community {
     return (_type == 0x00 || _type == 0x01) && _subType == 0x10;
   }
 
+  /** Check whether this community is opaque */
+  public boolean isOpaque() {
+    // https://tools.ietf.org/html/rfc4360
+    return _type == 0x03 || _type == 0x43;
+  }
+
   /**
    * Returns the global administrator value, if applicable to this type of extended community. May
    * be either 2 or 4 bytes depending on type/subtype.
@@ -256,6 +262,24 @@ public final class ExtendedCommunity extends Community {
           String.format("Extended community does not have a local administrator: %s", this));
     }
     return _value & (VALUE_MAX >> globalAdministratorBits());
+  }
+
+  /** Return true if the value field contains a subtype */
+  private boolean hasSubtype() {
+    return true;
+  }
+
+  /**
+   * Returns the subtype value, if applicable to this type of extended community.
+   *
+   * @throws UnsupportedOperationException if this extended community does not have a subtype.
+   */
+  public int getSubtype() {
+    if (!hasSubtype()) {
+      throw new UnsupportedOperationException(
+          String.format("Extended community does not have a subtype: %s", this));
+    }
+    return _subType;
   }
 
   /** Return the 6 byte value */
