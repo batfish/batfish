@@ -26,6 +26,7 @@ import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalA
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAdministratorMatch;
+import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
@@ -147,6 +148,12 @@ public class CommunityMatchExprVarCollector
       Configuration arg) {
     // This is not supported, but rather than throw we do nothing. If we end up needing to model
     // this structure, the later code will crash instead.
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitOpaqueExtendedCommunities(
+      OpaqueExtendedCommunities opaqueExtendedCommunities, Configuration arg) {
     return ImmutableSet.of();
   }
 
