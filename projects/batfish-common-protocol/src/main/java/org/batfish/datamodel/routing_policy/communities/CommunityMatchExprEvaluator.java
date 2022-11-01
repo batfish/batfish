@@ -167,6 +167,17 @@ public final class CommunityMatchExprEvaluator
   }
 
   @Override
+  public Boolean visitOpaqueExtendedCommunities(
+      OpaqueExtendedCommunities opaqueExtendedCommunities, Community arg) {
+    if (!(arg instanceof ExtendedCommunity)) {
+      return false;
+    }
+    return ((ExtendedCommunity) arg).isOpaque()
+        && opaqueExtendedCommunities.getIsTransitive() == arg.isTransitive()
+        && opaqueExtendedCommunities.getSubtype() == ((ExtendedCommunity) arg).getSubtype();
+  }
+
+  @Override
   public @Nonnull Boolean visitRouteTargetExtendedCommunities(
       RouteTargetExtendedCommunities routeTargetExtendedCommunities, Community arg) {
     if (!(arg instanceof ExtendedCommunity)) {
