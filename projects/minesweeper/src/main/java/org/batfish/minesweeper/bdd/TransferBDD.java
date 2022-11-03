@@ -1107,7 +1107,7 @@ public class TransferBDD {
   }
 
   /*
-   * Create a BDDRecord representing the symbolic output of
+   * Create a BDDRoute representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
   public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
