@@ -137,4 +137,5 @@ At minimum, to develop in Bafish you will need to follow the
 For a smoother experience, we recommend you use Intellij IDEA, which you should set up
 according to these [instructions](intellij_setup/README.md).
 
-
+If you are going to to contribute code to Batfish, also read the
+[contributing guide](contributing/README.md).
