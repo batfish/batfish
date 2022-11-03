@@ -37,7 +37,7 @@ Before writing any code, follow the steps in this section:
         ```
         pip install pre-commit
         ```
-    1. Finally, in the of your cloned batfish repository, run:
+    1. Finally, in the root of your cloned batfish repository, run:
        ```
        pre-commit install
        ```
