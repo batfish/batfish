@@ -41,10 +41,10 @@ Before writing any code, follow the steps in this section:
        ```
        pre-commit install
        ```
-   At this point, `pre-commit` will be applied on staged files whenever you run `git commit`. If
-   pre-commit checks fail, you should have unstaged changes with `pre-commit` formatting applied.
-   Inspect the changes with `git diff`, and if they look good, add the modified files with `git add`
-   before running `git commit` again.
+   At this point, `pre-commit` will be applied on staged files whenever you run `git commit` for
+   this repository. If pre-commit checks fail, you should have unstaged changes with `pre-commit`
+   formatting applied. Inspect the changes with `git diff`, and if they look good, add the modified
+   files with `git add` before running `git commit` again.
 2. For a smooth reviewing process, familiarize yourself with the
    [contribution and review standards](#contribution-and-review-standards) below.
 
@@ -52,16 +52,15 @@ Before writing any code, follow the steps in this section:
 
 *Wherever the content in this section is framed as a guide to reviewers, it is just as relevant for
 outside contributors. Knowing what reviewers are looking for will help you write quality code from
-the outset. Aside from its intrinsic value this brings, it also saves time in the long run by
+the outset. Aside from the intrinsic value better code brings, it also saves time in the long run by
 yielding fewer and faster review cycles.*
 
 The standards we have developed below are the result of continuous iteration over the years. They
 may continue to change over time, and in general we are open to suggestions to improvement.
 
-The goal of these standards is to produce code that is, in decreasing order of importance:
+The goal of these standards is to produce code that is:
 
-1. Correct
-1. Safe
+1. Correct/Safe
 1. Maintainable
 1. Legible
 
@@ -70,15 +69,28 @@ When reviewing PRs, consider:
 * Correctness and safety issues in submitted code are the most important concerns, and generally
   should be resolved prior to merge. In exceptional cases where achieving full correctness may be
   infeasible, the limitations must be explicitly documented.
-* Maintainable code is preferred (nice-to-have), but there are often situations where the effort
-  far outweighs the reward. Allowing leeway is often appropriate, especially for outside
-  contributors.
-* We have CI checks for a reason. Reviewers need not comment specifically on pre-commit or test
-  failures unless asked for advice on a solution.
-* Where we provide standards on style, the goal is to maximize legibility. However, adherence to
-  style is low priority compared to other considerations. In general, strict adherence to style
-  should not be a review blocker. Instead, we should prefer automatic style enforcement and
-  correction via pre-commit/CI tooling.
+* Maintainable code is preferred (nice-to-have), but situations may arise where the effort far
+  outweighs the reward. Allowing leeway is often appropriate, especially for outside contributors.
+  Examples:
+    * Factoring out common code
+        * Of practical benefit *only if the code will likely need to be updated later*
+            * Can always be be done at that time instead
+        * When asked of a contributor - especially if refactoring would involve code they didn't
+          touch - increases the scope of the required work at a potential cost to goodwill
+        * If reuse spans multiple libraries, refactoring might require creation of a new common
+          library, additional boilerplate, updating of build dependencies for each consumer
+          library
+    * Replacing a series of `instanceof` checks, for a small number of type cases, with the visitor
+      pattern
+        * No immediate benefit, and potentially no future benefit if there will be no additional
+          consumers of the supertype
+        * Batfish newcomers have historically been unfamiliar with the pattern, so there may be
+          significant learning overhead and additional review cycles if this is requested
+        * Lots of tedious refactoring, boilerplate
+* Purely stylistic concerns (e.g., `++x` vs `x++`, when the distinction is not important) should
+  generally be left alone. Instead, we rely on tools (`google-java-format`, primarily) for automated
+  enforcement of our style constraints. If the tool doesn't enforce a standard, neither need a
+  reviewer.
 
 ## Java coding standards
 
@@ -121,14 +133,15 @@ the excessive burden it may impose when compared to its benefit.
 To strike a balance between verbosity and utility, we prefer that new code be effectively
 null-annotated as follows:
 
-1. Don't annotate primitive values or return types (not applicable)
+1. Don't annotate primitive variables or return types (not applicable)
 1. Don't bother with redundant null-annotations, e.g.
     * No need to mark a function parameter `@Nonnull` if its containing class or package is already
       marked `@ParametersAreNonNullByDefault`
     * No need to mark parameters of `@Override` functions (instead mark the appropriate base class
       or interface function if possible)
 1. No need to annotate local variables unless you find it helpful
-1. New packages should be annotated `@ParamatersAreNonnullByDefault`
+1. New packages, and new classes in unannotated packages, should be
+   annotated `@ParametersAreNonnullByDefault`
 1. Parameters of new functions should be annotated `@Nullable` if applicable; or `@Nonnull` if
    applicable and there is no inherited null annotation
 1. Return types of new functions should be annotated `@Nonnull` or `@Nullable`
@@ -147,10 +160,11 @@ for:
     1. All new non-private classes
     1. All new non-private functions, **EXCEPT**:
         1. Boilerplate functions
-            1. Simple getters that return similary-named field
-            1. Simple setters
-            1. Static `instance()` method for singletons
-            1. Visitor functions
+            1. Simple getters that return fields, where the type and semantics of the field are
+               obvious
+            1. Simple setters, with the same obvious requirement as above
+            1. Static zero-parameter `instance()` method of singleton classes
+            1. Visitor interface functions
         1. `@Override` functions (instead document the function in the base class or interface if
            possible)
         1. Otherwise super-obvious functions
