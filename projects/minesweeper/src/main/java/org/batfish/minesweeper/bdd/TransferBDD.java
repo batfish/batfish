@@ -521,12 +521,15 @@ public class TransferBDD {
       If i = (If) stmt;
       Set<TransferResult> guardResults =
           compute(i.getGuard(), new TransferBDDState(curP.indent(), result));
+
+      Set<TransferBDDState> newStates = new HashSet<>();
+      for (TransferResult guardResult : guardResults) {
       BDD guard = guardResult.getReturnValue().getSecond();
       BDDRoute current = guardResult.getReturnValue().getFirst();
       curP.debug("guard: ");
 
-      TransferBDDState trueState = null;
-      TransferBDDState falseState = null;
+      Set<TransferBDDState> trueStates = new HashSet<>();
+        Set<TransferBDDState> falseStates = new HashSet<>();
 
       // Symbolically execute each branch if it is feasible.
       // Some guards are statically resolved (e.g. CallExprContext and CallStatementContext), which
@@ -537,22 +540,24 @@ public class TransferBDD {
         curP.debug("True Branch");
         // copy the current BDDRoute so we can separately track any updates on the two branches
         TransferParam pTrue = curP.indent().setData(current.deepCopy());
-        trueState =
+        trueStates =
             compute(
                 i.getTrueStatements(),
+                ImmutableSet.of(
                 new TransferBDDState(
                     pTrue,
-                    result.setReturnValue(new TransferReturn(pTrue.getData(), _factory.zero()))));
+                    result.setReturnValue(new TransferReturn(pTrue.getData(), _factory.zero())))));
       }
       if (!guard.isOne()) {
         curP.debug("False Branch");
         TransferParam pFalse = curP.indent().setData(current.deepCopy());
-        falseState =
+        falseStates =
             compute(
                 i.getFalseStatements(),
+                ImmutableSet.of(
                 new TransferBDDState(
                     pFalse,
-                    result.setReturnValue(new TransferReturn(pFalse.getData(), _factory.zero()))));
+                    result.setReturnValue(new TransferReturn(pFalse.getData(), _factory.zero())))));
       }
 
       // compute the new states of the analysis
@@ -561,13 +566,12 @@ public class TransferBDD {
        * need to track a map from BDDs to policies, indicating the conditions under which each
        * policy is the default.
        */
-      Set<TransferBDDState> newStates = new HashSet<>();
       // take into account the possibility that the branches are never reached, because the
       // policy already returned / exited
       // TODO: Currently we are assuming that the guard of this conditional does not return/exit
       // from this policy.  Handling that situation requires more thought.
       BDD alreadyReturned = unreachable(result);
-      if (trueState != null) {
+     for (TransferBDDState trueState : trueStates) {
         TransferResult newResult = trueState.getTransferResult();
         // record any updates to the default actions that occur
         // in the "then" branch
@@ -576,7 +580,7 @@ public class TransferBDD {
         newCurP = ite(curP, alreadyReturned, curP, newCurP);
         newStates.add(toTransferBDDState(newCurP, newResult));
       }
-      if (falseState != null) {
+      for (TransferBDDState falseState : falseStates) {
         // TODO: remove code duplication
         TransferResult newResult = falseState.getTransferResult();
         // record any updates to the default actions that occur
@@ -585,6 +589,7 @@ public class TransferBDD {
         newResult = ite(alreadyReturned, result, newResult);
         newCurP = ite(curP, alreadyReturned, curP, newCurP);
         newStates.add(toTransferBDDState(newCurP, newResult));
+      }
       }
 
       return ImmutableSet.copyOf(newStates);
@@ -665,15 +670,14 @@ public class TransferBDD {
 
       TransferParam newParam =
           curP.indent().setCallContext(TransferParam.CallContext.STMT_CALL).enterScope(name);
-      // TODO: Currently dropping the returned TransferParam on the floor
-      TransferResult callResult =
+      Set<TransferBDDState> callResults =
           compute(
                   pol.getStatements(),
-                  new TransferBDDState(newParam, result.setReturnAssignedValue(_factory.zero())))
-              .getTransferResult();
-
+                  ImmutableSet.of(new TransferBDDState(newParam, result.setReturnAssignedValue(_factory.zero()))));
+// TODO: Currently dropping the returned TransferParam on the floor
+      TransferParam finalCurP = curP;
       // restore the original returnAssigned value
-      result = callResult.setReturnAssignedValue(oldReturnAssigned);
+      return callResults.stream().map(r -> toTransferBDDState(finalCurP, r.getTransferResult().setReturnAssignedValue(oldReturnAssigned))).collect(ImmutableSet.toImmutableSet());
 
     } else if (stmt instanceof BufferedStatement) {
       curP.debug("BufferedStatement");
@@ -695,7 +699,7 @@ public class TransferBDD {
       setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
 
     } else if (stmt instanceof TraceableStatement) {
-      return compute(((TraceableStatement) stmt).getInnerStatements(), state);
+      return compute(((TraceableStatement) stmt).getInnerStatements(), ImmutableSet.of(state));
     } else {
       throw new UnsupportedFeatureException(stmt.toString());
     }
@@ -719,8 +723,7 @@ public class TransferBDD {
   }
 
   /** Symbolic analysis of a list of route-policy statements */
-  @VisibleForTesting
-  Set<TransferResult> compute(List<Statement> statements, TransferParam p) {
+  Set<TransferResult> computePaths(List<Statement> statements, TransferParam p) {
     TransferParam curP = p;
 
     TransferResult result = new TransferResult(curP.getData());
@@ -747,6 +750,12 @@ public class TransferBDD {
   }
     return results.build();
     }
+
+  @VisibleForTesting TransferResult compute(List<Statement> statements, TransferParam p) {
+    // TODO: for now just return the first path
+    return computePaths(statements, p).iterator().next();
+  }
+
 
   private TransferResult fallthrough(TransferResult r, boolean val) {
     BDD notReached = unreachable(r);
@@ -1139,7 +1148,7 @@ public class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public Set<TransferResult> compute(@Nullable Set<Prefix> ignoredNetworks) {
+  public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
     TransferParam p = new TransferParam(o, false);
