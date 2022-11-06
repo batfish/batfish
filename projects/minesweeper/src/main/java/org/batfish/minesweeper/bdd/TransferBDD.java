@@ -573,6 +573,7 @@ public class TransferBDD {
       BDD alreadyReturned = unreachable(result);
      for (TransferBDDState trueState : trueStates) {
         TransferResult newResult = trueState.getTransferResult();
+        newResult = newResult.setReturnValueBDD(newResult.getReturnValue().getSecond().and(guard));
         // record any updates to the default actions that occur
         // in the "then" branch
         TransferParam newCurP = curP.setDefaultActionsFrom(trueState.getTransferParam());
@@ -583,6 +584,7 @@ public class TransferBDD {
       for (TransferBDDState falseState : falseStates) {
         // TODO: remove code duplication
         TransferResult newResult = falseState.getTransferResult();
+        newResult = newResult.setReturnValueBDD(newResult.getReturnValue().getSecond().and(guard.not()));
         // record any updates to the default actions that occur
         // in the "else" branch
         TransferParam newCurP = curP.setDefaultActionsFrom(falseState.getTransferParam());
@@ -738,9 +740,6 @@ public class TransferBDD {
     // If this is the outermost call, then we relate the variables
     if (curP.getInitialCall()) {
       curP.debug("InitialCall finalizing");
-      // incorporate the default action
-      result = exitValue(result, curP.getDefaultAccept());
-
       TransferReturn ret = result.getReturnValue();
       // Only accept routes that are not suppressed
       BDD finalAccepts = ret.getSecond().diff(result.getSuppressedValue());
@@ -752,8 +751,12 @@ public class TransferBDD {
     }
 
   @VisibleForTesting TransferResult compute(List<Statement> statements, TransferParam p) {
-    // TODO: for now just return the first path
-    return computePaths(statements, p).iterator().next();
+    Set<TransferResult> allPaths = computePaths(statements, p);
+    TransferResult result = new TransferResult(new BDDRoute(_factory, _configAtomicPredicates));
+    for (TransferResult path : allPaths) {
+      result = ite(path.getReturnValue().getSecond(), path, result);
+    }
+    return result;
   }
 
 
