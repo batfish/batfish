@@ -203,125 +203,127 @@ public class TransferBDD {
     TransferParam p = state.getTransferParam();
     TransferResult result = state.getTransferResult();
 
+    Set<TransferResult> allResults = new HashSet<>();
+
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
       p.debug("MatchIpv4 Result: true");
-      return ImmutableSet.of(result.setReturnValueBDD(_factory.one()));
+      allResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(true));
 
-    } else if (expr instanceof Conjunction) {
-      p.debug("Conjunction");
-      Conjunction c = (Conjunction) expr;
-      BDD acc = _factory.one();
-      for (BooleanExpr be : c.getConjuncts()) {
-        TransferResult resultCopy =
-            result.setReturnValueBDDRoute(result.getReturnValue().getFirst().deepCopy());
-        Set<TransferResult> newResults = compute(be, toTransferBDDState(p.indent(), resultCopy));
-        // TODO: handle multiple results
-        assert newResults.size() == 1;
-        TransferResult newResult = newResults.iterator().next();
-        // short-circuiting: only update the result if the prior conjuncts were all true
-        result = ite(acc, newResult, result);
-        acc = acc.and(newResult.getReturnValue().getSecond());
-      }
-      p.debug("Conjunction return: %s", acc);
-      return ImmutableSet.of(result.setReturnValueBDD(acc));
+      /* Removing cases that are not needed currently and not well tested.
+          } else if (expr instanceof Conjunction) {
+            p.debug("Conjunction");
+            Conjunction c = (Conjunction) expr;
+            BDD acc = _factory.one();
+            for (BooleanExpr be : c.getConjuncts()) {
+              TransferResult resultCopy =
+                  result.setReturnValueBDDRoute(result.getReturnValue().getFirst().deepCopy());
+              Set<TransferResult> newResults = compute(be, toTransferBDDState(p.indent(), resultCopy));
+              // TODO: handle multiple results
+              assert newResults.size() == 1;
+              TransferResult newResult = newResults.iterator().next();
+              // short-circuiting: only update the result if the prior conjuncts were all true
+              result = ite(acc, newResult, result);
+              acc = acc.and(newResult.getReturnValue().getSecond());
+            }
+            p.debug("Conjunction return: %s", acc);
+            return ImmutableSet.of(result.setReturnValueBDD(acc));
 
-    } else if (expr instanceof Disjunction) {
-      p.debug("Disjunction");
-      Disjunction d = (Disjunction) expr;
-      BDD acc = _factory.zero();
-      for (BooleanExpr be : d.getDisjuncts()) {
-        TransferResult resultCopy =
-            result.setReturnValueBDDRoute(result.getReturnValue().getFirst().deepCopy());
-        Set<TransferResult> newResults = compute(be, toTransferBDDState(p.indent(), resultCopy));
-        // TODO: handle multiple results
-        assert newResults.size() == 1;
-        TransferResult newResult = newResults.iterator().next();
-        // short-circuiting: only update the result if the prior disjuncts were all false
-        result = ite(acc, result, newResult);
-        acc = acc.or(result.getReturnValue().getSecond());
-      }
-      p.debug("Disjunction return: %s", acc);
-      return ImmutableSet.of(result.setReturnValueBDD(acc));
+          } else if (expr instanceof Disjunction) {
+            p.debug("Disjunction");
+            Disjunction d = (Disjunction) expr;
+            BDD acc = _factory.zero();
+            for (BooleanExpr be : d.getDisjuncts()) {
+              TransferResult resultCopy =
+                  result.setReturnValueBDDRoute(result.getReturnValue().getFirst().deepCopy());
+              Set<TransferResult> newResults = compute(be, toTransferBDDState(p.indent(), resultCopy));
+              // TODO: handle multiple results
+              assert newResults.size() == 1;
+              TransferResult newResult = newResults.iterator().next();
+              // short-circuiting: only update the result if the prior disjuncts were all false
+              result = ite(acc, result, newResult);
+              acc = acc.or(result.getReturnValue().getSecond());
+            }
+            p.debug("Disjunction return: %s", acc);
+            return ImmutableSet.of(result.setReturnValueBDD(acc));
 
-    } else if (expr instanceof ConjunctionChain) {
-      p.debug("ConjunctionChain");
-      ConjunctionChain d = (ConjunctionChain) expr;
-      List<BooleanExpr> conjuncts = new ArrayList<>(d.getSubroutines());
-      if (p.getDefaultPolicy() != null) {
-        BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
-        conjuncts.add(be);
-      }
-      if (conjuncts.isEmpty()) {
-        return ImmutableSet.of(result.setReturnValueBDD(_factory.one()));
-      } else {
-        TransferParam record = p;
-        BDD acc = _factory.zero();
-        for (int i = conjuncts.size() - 1; i >= 0; i--) {
-          BooleanExpr conjunct = conjuncts.get(i);
-          TransferParam param =
-              record
-                  .setDefaultPolicy(null)
-                  .setChainContext(TransferParam.ChainContext.CONJUNCTION)
-                  .indent();
-          Set<TransferResult> newResults = compute(conjunct, toTransferBDDState(param, result));
-          // TODO: handle multiple results
-          assert newResults.size() == 1;
-          result = newResults.iterator().next();
-          record = record.setData(result.getReturnValue().getFirst());
-          acc = ite(result.getFallthroughValue(), acc, result.getReturnValue().getSecond());
-        }
-        TransferReturn ret = new TransferReturn(record.getData(), acc);
-        return ImmutableSet.of(result.setReturnValue(ret));
-      }
+          } else if (expr instanceof ConjunctionChain) {
+            p.debug("ConjunctionChain");
+            ConjunctionChain d = (ConjunctionChain) expr;
+            List<BooleanExpr> conjuncts = new ArrayList<>(d.getSubroutines());
+            if (p.getDefaultPolicy() != null) {
+              BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
+              conjuncts.add(be);
+            }
+            if (conjuncts.isEmpty()) {
+              return ImmutableSet.of(result.setReturnValueBDD(_factory.one()));
+            } else {
+              TransferParam record = p;
+              BDD acc = _factory.zero();
+              for (int i = conjuncts.size() - 1; i >= 0; i--) {
+                BooleanExpr conjunct = conjuncts.get(i);
+                TransferParam param =
+                    record
+                        .setDefaultPolicy(null)
+                        .setChainContext(TransferParam.ChainContext.CONJUNCTION)
+                        .indent();
+                Set<TransferResult> newResults = compute(conjunct, toTransferBDDState(param, result));
+                // TODO: handle multiple results
+                assert newResults.size() == 1;
+                result = newResults.iterator().next();
+                record = record.setData(result.getReturnValue().getFirst());
+                acc = ite(result.getFallthroughValue(), acc, result.getReturnValue().getSecond());
+              }
+              TransferReturn ret = new TransferReturn(record.getData(), acc);
+              return ImmutableSet.of(result.setReturnValue(ret));
+            }
 
-    } else if (expr instanceof FirstMatchChain) {
-      p.debug("FirstMatchChain");
-      FirstMatchChain chain = (FirstMatchChain) expr;
-      List<BooleanExpr> chainPolicies = new ArrayList<>(chain.getSubroutines());
-      if (p.getDefaultPolicy() != null) {
-        BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
-        chainPolicies.add(be);
-      }
-      if (chainPolicies.isEmpty()) {
-        // No identity for an empty FirstMatchChain; default policy should always be set.
-        throw new BatfishException("Default policy is not set");
-      }
-      TransferParam record = p;
-      BDD acc = _factory.zero();
-      for (int i = chainPolicies.size() - 1; i >= 0; i--) {
-        BooleanExpr policyMatcher = chainPolicies.get(i);
-        TransferParam param =
-            record
-                .setDefaultPolicy(null)
-                .setChainContext(TransferParam.ChainContext.CONJUNCTION)
-                .indent();
-        Set<TransferResult> results = compute(policyMatcher, toTransferBDDState(param, result));
-        // TODO: handle multiple results
-        assert results.size() == 1;
-        result = results.iterator().next();
-        record = record.setData(result.getReturnValue().getFirst());
-        acc = ite(result.getFallthroughValue(), acc, result.getReturnValue().getSecond());
-      }
-      TransferReturn ret = new TransferReturn(record.getData(), acc);
-      return ImmutableSet.of(result.setReturnValue(ret));
+          } else if (expr instanceof FirstMatchChain) {
+            p.debug("FirstMatchChain");
+            FirstMatchChain chain = (FirstMatchChain) expr;
+            List<BooleanExpr> chainPolicies = new ArrayList<>(chain.getSubroutines());
+            if (p.getDefaultPolicy() != null) {
+              BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
+              chainPolicies.add(be);
+            }
+            if (chainPolicies.isEmpty()) {
+              // No identity for an empty FirstMatchChain; default policy should always be set.
+              throw new BatfishException("Default policy is not set");
+            }
+            TransferParam record = p;
+            BDD acc = _factory.zero();
+            for (int i = chainPolicies.size() - 1; i >= 0; i--) {
+              BooleanExpr policyMatcher = chainPolicies.get(i);
+              TransferParam param =
+                  record
+                      .setDefaultPolicy(null)
+                      .setChainContext(TransferParam.ChainContext.CONJUNCTION)
+                      .indent();
+              Set<TransferResult> results = compute(policyMatcher, toTransferBDDState(param, result));
+              // TODO: handle multiple results
+              assert results.size() == 1;
+              result = results.iterator().next();
+              record = record.setData(result.getReturnValue().getFirst());
+              acc = ite(result.getFallthroughValue(), acc, result.getReturnValue().getSecond());
+            }
+            TransferReturn ret = new TransferReturn(record.getData(), acc);
+            return ImmutableSet.of(result.setReturnValue(ret));
+      */
 
     } else if (expr instanceof Not) {
       p.debug("mkNot");
       Not n = (Not) expr;
       Set<TransferResult> results = compute(n.getExpr(), state);
-      ImmutableSet.Builder<TransferResult> builder = ImmutableSet.builder();
       for (TransferResult res : results) {
-        BDD returnedBDD = res.getReturnValue().getSecond();
-        builder.add(res.setReturnValueBDD(returnedBDD.not()));
+        res = res.setReturnValueAccepted(!res.getReturnValue().getAccepted());
+        allResults.add(res);
       }
-      return builder.build();
 
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
       Set<RoutingProtocol> rps = mp.getProtocols();
       BDD matchRPBDD = _originalRoute.anyProtocolIn(rps);
-      return ImmutableSet.of(result.setReturnValueBDD(matchRPBDD));
+      allResults.add(result.setReturnValueBDD(matchRPBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
@@ -330,7 +332,7 @@ public class TransferBDD {
       // MatchPrefixSet::evaluate obtains the prefix to match (either the destination network or
       // next-hop IP) from the original route, so we do the same here
       BDD prefixSet = matchPrefixSet(p.indent(), _conf, m, _originalRoute);
-      return ImmutableSet.of(result.setReturnValueBDD(prefixSet));
+      allResults.add(result.setReturnValueBDD(prefixSet).setReturnValueAccepted(true));
 
     } else if (expr instanceof CallExpr) {
       p.debug("CallExpr");
@@ -340,26 +342,34 @@ public class TransferBDD {
 
       // save callee state
       BDD oldReturnAssigned = result.getReturnAssignedValue();
+      BDD oldExitAssigned = result.getExitAssignedValue();
 
       TransferParam newParam =
           p.setCallContext(TransferParam.CallContext.EXPR_CALL).indent().enterScope(name);
       Set<TransferBDDState> callStates =
           compute(
-                  pol.getStatements(),
-                  ImmutableSet.of(new TransferBDDState(newParam, result.setReturnAssignedValue(_factory.zero()))));
+              pol.getStatements(),
+              ImmutableSet.of(
+                  new TransferBDDState(
+                      newParam,
+                      result
+                          .setReturnAssignedValue(_factory.zero())
+                          .setExitAssignedValue(_factory.zero()))));
 
-      ImmutableSet.Builder<TransferResult> results = ImmutableSet.builder();
       for (TransferBDDState callState : callStates) {
-        results.add(callState.getTransferResult().setReturnAssignedValue(oldReturnAssigned));
-        }
-      return results.build();
+        allResults.add(
+            callState
+                .getTransferResult()
+                .setReturnAssignedValue(oldReturnAssigned)
+                .setExitAssignedValue(oldExitAssigned));
+      }
 
     } else if (expr instanceof WithEnvironmentExpr) {
       p.debug("WithEnvironmentExpr");
       // TODO: this is not correct
       WithEnvironmentExpr we = (WithEnvironmentExpr) expr;
       // TODO: postStatements() and preStatements()
-      return compute(we.getExpr(), state);
+      allResults.addAll(compute(we.getExpr(), state));
 
     } else if (expr instanceof MatchCommunities) {
       p.debug("MatchCommunities");
@@ -372,13 +382,13 @@ public class TransferBDD {
           mc.getCommunitySetMatchExpr()
               .accept(
                   new CommunitySetMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
-      return ImmutableSet.of(result.setReturnValueBDD(mcPredicate));
+      allResults.add(result.setReturnValueBDD(mcPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchTag) {
       MatchTag mt = (MatchTag) expr;
       BDD mtBDD =
           matchIntComparison(mt.getCmp(), mt.getTag(), routeForMatching(p.getData()).getTag());
-      return ImmutableSet.of(result.setReturnValueBDD(mtBDD));
+      allResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
@@ -386,17 +396,17 @@ public class TransferBDD {
         case CallExprContext:
           p.debug("CallExprContext");
           BDD x1 = mkBDD(p.getCallContext() == TransferParam.CallContext.EXPR_CALL);
-          return ImmutableSet.of(result.setReturnValueBDD(x1));
+          allResults.add(result.setReturnValueBDD(x1).setReturnValueAccepted(true));
         case CallStatementContext:
           p.debug("CallStmtContext");
           BDD x2 = mkBDD(p.getCallContext() == TransferParam.CallContext.STMT_CALL);
-          return ImmutableSet.of(result.setReturnValueBDD(x2));
+          allResults.add(result.setReturnValueBDD(x2).setReturnValueAccepted(true));
         case True:
           p.debug("True");
-          return ImmutableSet.of(result.setReturnValueBDD(_factory.one()));
+          allResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(true));
         case False:
           p.debug("False");
-          return ImmutableSet.of(result.setReturnValueBDD(_factory.zero()));
+          allResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
         default:
           throw new UnsupportedFeatureException(b.getType().toString());
       }
@@ -407,7 +417,7 @@ public class TransferBDD {
       BDD asPathPredicate =
           matchAsPathSetExpr(
               p.indent(), _conf, legacyMatchAsPathNode.getExpr(), routeForMatching(p.getData()));
-      return ImmutableSet.of(result.setReturnValueBDD(asPathPredicate));
+      allResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchAsPath
         && ((MatchAsPath) expr).getAsPathExpr().equals(InputAsPath.instance())) {
@@ -416,11 +426,27 @@ public class TransferBDD {
           matchAsPath
               .getAsPathMatchExpr()
               .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
-      return ImmutableSet.of(result.setReturnValueBDD(asPathPredicate));
+      allResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else {
       throw new UnsupportedFeatureException(expr.toString());
     }
+
+    BDD unmatched =
+        _factory
+            .orAll(
+                allResults.stream()
+                    .map(r -> r.getReturnValue().getSecond())
+                    .collect(Collectors.toList()))
+            .not();
+    if (!unmatched.isZero()) {
+      TransferResult remaining =
+          new TransferResult(new BDDRoute(result.getReturnValue().getFirst()))
+              .setReturnValueBDD(unmatched)
+              .setReturnValueAccepted(false);
+      allResults.add(remaining);
+    }
+    return ImmutableSet.copyOf(allResults);
   }
 
   /*
@@ -437,59 +463,60 @@ public class TransferBDD {
       switch (ss.getType()) {
         case ExitAccept:
           curP.debug("ExitAccept");
-          result = exitValue(result, _factory.one());
+          result = exitValue(result, true);
           break;
 
         case ReturnTrue:
           curP.debug("ReturnTrue");
-          result = returnValue(result, _factory.one());
+          result = returnValue(result, true);
           break;
 
         case ExitReject:
           curP.debug("ExitReject");
-          result = exitValue(result, _factory.zero());
+          result = exitValue(result, false);
           break;
 
         case ReturnFalse:
           curP.debug("ReturnFalse");
-          result = returnValue(result, _factory.zero());
+          result = returnValue(result, false);
           break;
 
-        case SetDefaultActionAccept:
-          curP.debug("SetDefaultActionAccept");
-          curP = curP.setDefaultAccept(_factory.one());
-          break;
+          /* Removing cases that are not needed currently and not well tested.
+                  case SetDefaultActionAccept:
+                    curP.debug("SetDefaultActionAccept");
+                    curP = curP.setDefaultAccept(true);
+                    break;
 
-        case SetDefaultActionReject:
-          curP.debug("SetDefaultActionReject");
-          curP = curP.setDefaultAccept(_factory.zero());
-          break;
+                  case SetDefaultActionReject:
+                    curP.debug("SetDefaultActionReject");
+                    curP = curP.setDefaultAccept(false);
+                    break;
 
-        case SetLocalDefaultActionAccept:
-          curP.debug("SetLocalDefaultActionAccept");
-          curP = curP.setDefaultAcceptLocal(_factory.one());
-          break;
+                  case SetLocalDefaultActionAccept:
+                    curP.debug("SetLocalDefaultActionAccept");
+                    curP = curP.setDefaultAcceptLocal(true);
+                    break;
 
-        case SetLocalDefaultActionReject:
-          curP.debug("SetLocalDefaultActionReject");
-          curP = curP.setDefaultAcceptLocal(_factory.zero());
-          break;
+                  case SetLocalDefaultActionReject:
+                    curP.debug("SetLocalDefaultActionReject");
+                    curP = curP.setDefaultAcceptLocal(false);
+                    break;
 
-        case ReturnLocalDefaultAction:
-          curP.debug("ReturnLocalDefaultAction");
-          result = returnValue(result, curP.getDefaultAcceptLocal());
-          break;
+                  case ReturnLocalDefaultAction:
+                    curP.debug("ReturnLocalDefaultAction");
+                    result = returnValue(result, curP.getDefaultAcceptLocal());
+                    break;
 
-        case DefaultAction:
-          curP.debug("DefaultAction");
-          result = exitValue(result, curP.getDefaultAccept());
-          break;
+                  case DefaultAction:
+                    curP.debug("DefaultAction");
+                    result = exitValue(result, curP.getDefaultAccept());
+                    break;
 
-        case FallThrough:
-          curP.debug("Fallthrough");
-          result = fallthrough(result, true);
-          break;
-
+                  case FallThrough:
+                    curP.debug("Fallthrough");
+                    result = fallthrough(result, true);
+                    break;
+          */
         case Return:
           curP.debug("Return");
           result =
@@ -524,79 +551,41 @@ public class TransferBDD {
 
       Set<TransferBDDState> newStates = new HashSet<>();
       for (TransferResult guardResult : guardResults) {
-      BDD guard = guardResult.getReturnValue().getSecond();
-      BDDRoute current = guardResult.getReturnValue().getFirst();
-      curP.debug("guard: ");
+        BDD guard = guardResult.getReturnValue().getSecond();
+        BDDRoute current = guardResult.getReturnValue().getFirst();
+        boolean accepted = guardResult.getReturnValue().getAccepted();
 
-      Set<TransferBDDState> trueStates = new HashSet<>();
-        Set<TransferBDDState> falseStates = new HashSet<>();
+        TransferParam pCopy = curP.indent().setData(current);
 
-      // Symbolically execute each branch if it is feasible.
-      // Some guards are statically resolved (e.g. CallExprContext and CallStatementContext), which
-      // means that only one branch will be analyzed.  Skipping analysis of the other branch avoids
-      // signaling an error unnecessarily if we reach a route-map construct that is not currently
-      // modelled.
-      if (!guard.isZero()) {
-        curP.debug("True Branch");
-        // copy the current BDDRoute so we can separately track any updates on the two branches
-        TransferParam pTrue = curP.indent().setData(current.deepCopy());
-        trueStates =
-            compute(
-                i.getTrueStatements(),
-                ImmutableSet.of(
-                new TransferBDDState(
-                    pTrue,
-                    result.setReturnValue(new TransferReturn(pTrue.getData(), _factory.zero())))));
-      }
-      if (!guard.isOne()) {
-        curP.debug("False Branch");
-        TransferParam pFalse = curP.indent().setData(current.deepCopy());
-        falseStates =
-            compute(
-                i.getFalseStatements(),
-                ImmutableSet.of(
-                new TransferBDDState(
-                    pFalse,
-                    result.setReturnValue(new TransferReturn(pFalse.getData(), _factory.zero())))));
-      }
+        if (accepted) {
+          curP.debug("True Branch");
 
-      // compute the new states of the analysis
-      /**
-       * TODO: any updates to the default policy in the branches are lost. In general it seems we
-       * need to track a map from BDDs to policies, indicating the conditions under which each
-       * policy is the default.
-       */
-      // take into account the possibility that the branches are never reached, because the
-      // policy already returned / exited
-      // TODO: Currently we are assuming that the guard of this conditional does not return/exit
-      // from this policy.  Handling that situation requires more thought.
-      BDD alreadyReturned = unreachable(result);
-     for (TransferBDDState trueState : trueStates) {
-        TransferResult newResult = trueState.getTransferResult();
-        newResult = newResult.setReturnValueBDD(newResult.getReturnValue().getSecond().and(guard));
-        // record any updates to the default actions that occur
-        // in the "then" branch
-        TransferParam newCurP = curP.setDefaultActionsFrom(trueState.getTransferParam());
-        newResult = ite(alreadyReturned, result, newResult);
-        newCurP = ite(curP, alreadyReturned, curP, newCurP);
-        newStates.add(toTransferBDDState(newCurP, newResult));
-      }
-      for (TransferBDDState falseState : falseStates) {
-        // TODO: remove code duplication
-        TransferResult newResult = falseState.getTransferResult();
-        newResult = newResult.setReturnValueBDD(newResult.getReturnValue().getSecond().and(guard.not()));
-        // record any updates to the default actions that occur
-        // in the "else" branch
-        TransferParam newCurP = curP.setDefaultActionsFrom(falseState.getTransferParam());
-        newResult = ite(alreadyReturned, result, newResult);
-        newCurP = ite(curP, alreadyReturned, curP, newCurP);
-        newStates.add(toTransferBDDState(newCurP, newResult));
-      }
+          newStates.addAll(
+              compute(
+                  i.getTrueStatements(),
+                  ImmutableSet.of(
+                      new TransferBDDState(
+                          pCopy,
+                          result.setReturnValue(
+                              new TransferReturn(
+                                  current, result.getReturnValue().getSecond().and(guard)))))));
+        } else {
+          curP.debug("False Branch");
+          newStates.addAll(
+              compute(
+                  i.getFalseStatements(),
+                  ImmutableSet.of(
+                      new TransferBDDState(
+                          pCopy,
+                          result.setReturnValue(
+                              new TransferReturn(
+                                  current, result.getReturnValue().getSecond().and(guard)))))));
+        }
       }
 
       return ImmutableSet.copyOf(newStates);
 
-     } else if (stmt instanceof SetDefaultPolicy) {
+    } else if (stmt instanceof SetDefaultPolicy) {
       curP.debug("SetDefaultPolicy");
       curP = curP.setDefaultPolicy((SetDefaultPolicy) stmt);
 
@@ -674,12 +663,18 @@ public class TransferBDD {
           curP.indent().setCallContext(TransferParam.CallContext.STMT_CALL).enterScope(name);
       Set<TransferBDDState> callResults =
           compute(
-                  pol.getStatements(),
-                  ImmutableSet.of(new TransferBDDState(newParam, result.setReturnAssignedValue(_factory.zero()))));
-// TODO: Currently dropping the returned TransferParam on the floor
+              pol.getStatements(),
+              ImmutableSet.of(
+                  new TransferBDDState(newParam, result.setReturnAssignedValue(_factory.zero()))));
+      // TODO: Currently dropping the returned TransferParam on the floor
       TransferParam finalCurP = curP;
       // restore the original returnAssigned value
-      return callResults.stream().map(r -> toTransferBDDState(finalCurP, r.getTransferResult().setReturnAssignedValue(oldReturnAssigned))).collect(ImmutableSet.toImmutableSet());
+      return callResults.stream()
+          .map(
+              r ->
+                  toTransferBDDState(
+                      finalCurP, r.getTransferResult().setReturnAssignedValue(oldReturnAssigned)))
+          .collect(ImmutableSet.toImmutableSet());
 
     } else if (stmt instanceof BufferedStatement) {
       curP.debug("BufferedStatement");
@@ -710,18 +705,22 @@ public class TransferBDD {
 
   private Set<TransferBDDState> compute(List<Statement> statements, Set<TransferBDDState> states) {
     Set<TransferBDDState> currStates = states;
-      for (Statement stmt : statements) {
-        Set<TransferBDDState> newStates = new HashSet<>();
-        for (TransferBDDState currState : currStates) {
-          try {
-          newStates.addAll(compute(stmt, currState));
-          } catch(UnsupportedFeatureException e) {
-            // TODO: ignoring unsupported features for now
+    for (Statement stmt : statements) {
+      Set<TransferBDDState> newStates = new HashSet<>();
+      for (TransferBDDState currState : currStates) {
+        try {
+          if (unreachable(currState.getTransferResult()).isOne()) {
+            newStates.add(currState);
+          } else {
+            newStates.addAll(compute(stmt, currState));
           }
+        } catch (UnsupportedFeatureException e) {
+          // TODO: ignoring unsupported features for now
         }
-        currStates = newStates;
       }
-      return currStates;
+      currStates = newStates;
+    }
+    return currStates;
   }
 
   /** Symbolic analysis of a list of route-policy statements */
@@ -730,35 +729,40 @@ public class TransferBDD {
 
     TransferResult result = new TransferResult(curP.getData());
 
-    Set<TransferBDDState> states = compute(statements, ImmutableSet.of(new TransferBDDState(curP, result)));
+    Set<TransferBDDState> states =
+        compute(statements, ImmutableSet.of(new TransferBDDState(curP, result)));
 
     ImmutableSet.Builder<TransferResult> results = ImmutableSet.builder();
     for (TransferBDDState state : states) {
-    curP = state.getTransferParam();
-    result = state.getTransferResult();
+      curP = state.getTransferParam();
+      result = state.getTransferResult();
 
-    // If this is the outermost call, then we relate the variables
-    if (curP.getInitialCall()) {
       curP.debug("InitialCall finalizing");
       TransferReturn ret = result.getReturnValue();
       // Only accept routes that are not suppressed
       BDD finalAccepts = ret.getSecond().diff(result.getSuppressedValue());
-      result = result.setReturnValue(new TransferReturn(ret.getFirst(), finalAccepts));
+      result = result.setReturnValueBDD(finalAccepts);
+      results.add(result);
     }
-    results.add(result);
-  }
     return results.build();
-    }
+  }
 
-  @VisibleForTesting TransferResult compute(List<Statement> statements, TransferParam p) {
+  @VisibleForTesting
+  TransferResult compute(List<Statement> statements, TransferParam p) {
     Set<TransferResult> allPaths = computePaths(statements, p);
-    TransferResult result = new TransferResult(new BDDRoute(_factory, _configAtomicPredicates));
+    // by default the result says that there are no feasible paths
+    TransferResult result =
+        new TransferResult(
+            new TransferReturn(new BDDRoute(_factory, _configAtomicPredicates), _factory.zero()),
+            _factory.zero());
+    // now disjoin all of the feasible paths
     for (TransferResult path : allPaths) {
-      result = ite(path.getReturnValue().getSecond(), path, result);
+      if (path.getReturnValue().getAccepted()) {
+        result = ite(path.getReturnValue().getSecond(), path, result);
+      }
     }
     return result;
   }
-
 
   private TransferResult fallthrough(TransferResult r, boolean val) {
     BDD notReached = unreachable(r);
@@ -895,11 +899,6 @@ public class TransferBDD {
 
     return new TransferResult(
         new TransferReturn(route, accepted), suppressed, exitAsgn, fallThrough, retAsgn);
-  }
-
-  private TransferParam ite(TransferParam orig, BDD guard, TransferParam p1, TransferParam p2) {
-    return orig.setDefaultAccept(ite(guard, p1.getDefaultAccept(), p2.getDefaultAccept()))
-        .setDefaultAcceptLocal(ite(guard, p1.getDefaultAcceptLocal(), p2.getDefaultAcceptLocal()));
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
@@ -1123,23 +1122,17 @@ public class TransferBDD {
   /*
    * Create the result of reaching a return statement, returning with the given value.
    */
-  private TransferResult returnValue(TransferResult r, BDD val) {
-    BDD notReached = unreachable(r);
-    BDD b = ite(notReached, r.getReturnValue().getSecond(), val);
-    TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
-    BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), _factory.one());
-    return r.setReturnValue(ret).setReturnAssignedValue(retAsgn);
+  private TransferResult returnValue(TransferResult r, boolean accepted) {
+    return r.setReturnValue(r.getReturnValue().setAccepted(accepted))
+        .setReturnAssignedValue(_factory.one());
   }
 
   /*
    * Create the result of reaching an exit statement, returning with the given value.
    */
-  private TransferResult exitValue(TransferResult r, BDD val) {
-    BDD notReached = unreachable(r);
-    BDD b = ite(notReached, r.getReturnValue().getSecond(), val);
-    TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
-    BDD exitAsgn = ite(notReached, r.getExitAssignedValue(), _factory.one());
-    return r.setReturnValue(ret).setExitAssignedValue(exitAsgn);
+  private TransferResult exitValue(TransferResult r, boolean accepted) {
+    return r.setReturnValue(r.getReturnValue().setAccepted(accepted))
+        .setExitAssignedValue(_factory.one());
   }
 
   // Returns the appropriate route to use for matching on attributes.

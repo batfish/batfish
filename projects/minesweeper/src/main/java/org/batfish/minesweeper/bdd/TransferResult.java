@@ -60,7 +60,7 @@ public class TransferResult {
 
   // Construct a TransferResult from a BDDRoute, using the zero BDD for all BDDs
   public TransferResult(BDDRoute bddRoute) {
-    this(new TransferReturn(bddRoute, bddRoute.getFactory().zero()), bddRoute.getFactory().zero());
+    this(new TransferReturn(bddRoute, bddRoute.getFactory().one()), bddRoute.getFactory().zero());
   }
 
   public TransferResult(TransferReturn ret, BDD defaultBDD) {
@@ -116,13 +116,20 @@ public class TransferResult {
   }
 
   @Nonnull
+  public TransferResult setReturnValueAccepted(boolean newAccepted) {
+    return setReturnValue(_returnValue.setAccepted(newAccepted));
+  }
+
+  @Nonnull
   public TransferResult setReturnValueBDD(BDD newBDD) {
-    return setReturnValue(new TransferReturn(_returnValue.getFirst(), newBDD));
+    return setReturnValue(
+        new TransferReturn(_returnValue.getFirst(), newBDD, _returnValue.getAccepted()));
   }
 
   @Nonnull
   public TransferResult setReturnValueBDDRoute(BDDRoute newBDDRoute) {
-    return setReturnValue(new TransferReturn(newBDDRoute, _returnValue.getSecond()));
+    return setReturnValue(
+        new TransferReturn(newBDDRoute, _returnValue.getSecond(), _returnValue.getAccepted()));
   }
 
   @Nonnull

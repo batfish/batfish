@@ -15,8 +15,20 @@ import org.batfish.minesweeper.utils.Tuple;
  */
 public class TransferReturn extends Tuple<BDDRoute, BDD> {
 
-  TransferReturn(BDDRoute r, BDD b) {
+  private final boolean _accepted;
+  TransferReturn(BDDRoute r, BDD b, boolean accepted) {
     super(r, b);
+    _accepted = accepted;
+  }
+
+  TransferReturn(BDDRoute r, BDD b) {
+    this(r, b, false);
+  }
+
+  public boolean getAccepted() { return _accepted; }
+
+  public TransferReturn setAccepted(boolean accepted) {
+    return new TransferReturn(getFirst(), getSecond(), accepted);
   }
 
   public String debug() {
