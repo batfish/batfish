@@ -3,7 +3,12 @@ package org.batfish.minesweeper.bdd;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -38,13 +43,9 @@ import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
@@ -67,6 +68,7 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -692,6 +694,9 @@ public class TransferBDD {
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
       setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
+
+    } else if (stmt instanceof PrependAsPath) {
+      // TODO: implement me
 
     } else if (stmt instanceof TraceableStatement) {
       return compute(((TraceableStatement) stmt).getInnerStatements(), ImmutableSet.of(state));
