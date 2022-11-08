@@ -1874,9 +1874,10 @@ public class TransferBDDTest {
         tbdd.getFactory().orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
     assertEquals(expectedBDD, acceptedAnnouncements);
     for (int i = 0; i < _configAPs.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
-      // each atomic predicate for 30:40 has the 1 BDD; all others have their original values
+      // each atomic predicate for 30:40 is set if it was matched on; all others have their original
+      // values
       assertEquals(
-          ap3040.contains(i) ? outAnnouncements.getFactory().one() : aps[i],
+          ap3040.contains(i) ? expectedBDD : aps[i],
           outAnnouncements.getCommunityAtomicPredicates()[i]);
     }
 
@@ -1890,7 +1891,7 @@ public class TransferBDDTest {
     // the original route is now unconstrained
     assertTrue(acceptedAnnouncements.isOne());
     for (int i = 0; i < _configAPs.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
-      // each atomic predicate for 30:40 has the 1 BDD; all others have their original values
+      // each atomic predicate for 30:40 is set if ; all others have their original values
       assertEquals(
           ap3040.contains(i) ? outAnnouncements.getFactory().one() : aps[i],
           outAnnouncements.getCommunityAtomicPredicates()[i]);

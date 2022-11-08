@@ -397,16 +397,20 @@ public class TransferBDD {
           p.debug("CallExprContext");
           BDD x1 = mkBDD(p.getCallContext() == TransferParam.CallContext.EXPR_CALL);
           allResults.add(result.setReturnValueBDD(x1).setReturnValueAccepted(true));
+          break;
         case CallStatementContext:
           p.debug("CallStmtContext");
           BDD x2 = mkBDD(p.getCallContext() == TransferParam.CallContext.STMT_CALL);
           allResults.add(result.setReturnValueBDD(x2).setReturnValueAccepted(true));
+          break;
         case True:
           p.debug("True");
           allResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(true));
+          break;
         case False:
           p.debug("False");
           allResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
+          break;
         default:
           throw new UnsupportedFeatureException(b.getType().toString());
       }
@@ -519,9 +523,7 @@ public class TransferBDD {
           */
         case Return:
           curP.debug("Return");
-          result =
-              result.setReturnAssignedValue(
-                  ite(unreachable(result), result.getReturnAssignedValue(), _factory.one()));
+          result = result.setReturnAssignedValue(_factory.one());
           break;
 
         case Suppress:
@@ -594,8 +596,7 @@ public class TransferBDD {
       SetMetric sm = (SetMetric) stmt;
       LongExpr ie = sm.getMetric();
       MutableBDDInteger curMed = curP.getData().getMed();
-      MutableBDDInteger med =
-          ite(unreachable(result), curMed, applyLongExprModification(curP.indent(), curMed, ie));
+      MutableBDDInteger med = applyLongExprModification(curP.indent(), curMed, ie);
       curP.getData().setMed(med);
 
     } else if (stmt instanceof SetOspfMetricType) {
@@ -611,7 +612,6 @@ public class TransferBDD {
         curP.indent().debug("Value: E2");
         newValue.setValue(OspfType.E1);
       }
-      newValue = ite(unreachable(result), curP.getData().getOspfMetric(), newValue);
       curP.getData().setOspfMetric(newValue);
 
     } else if (stmt instanceof SetLocalPreference) {
@@ -620,7 +620,6 @@ public class TransferBDD {
       LongExpr ie = slp.getLocalPreference();
       MutableBDDInteger newValue =
           applyLongExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
-      newValue = ite(unreachable(result), curP.getData().getLocalPref(), newValue);
       curP.getData().setLocalPref(newValue);
 
     } else if (stmt instanceof SetTag) {
@@ -629,7 +628,6 @@ public class TransferBDD {
       LongExpr ie = st.getTag();
       MutableBDDInteger currTag = curP.getData().getTag();
       MutableBDDInteger newValue = applyLongExprModification(curP.indent(), currTag, ie);
-      newValue = ite(unreachable(result), currTag, newValue);
       curP.getData().setTag(newValue);
 
     } else if (stmt instanceof SetCommunities) {
@@ -765,9 +763,8 @@ public class TransferBDD {
   }
 
   private TransferResult fallthrough(TransferResult r, boolean val) {
-    BDD notReached = unreachable(r);
-    BDD fall = ite(notReached, r.getFallthroughValue(), mkBDD(val));
-    BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), _factory.one());
+    BDD fall = mkBDD(val);
+    BDD retAsgn = _factory.one();
     return r.setFallthroughValue(fall).setReturnAssignedValue(retAsgn);
   }
 
@@ -1064,10 +1061,8 @@ public class TransferBDD {
     BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
     for (int ap : commAPs.enumerate()) {
       curP.indent().debug("Value: %s", ap);
-      BDD comm = commAPBDDs[ap];
-      BDD newValue = ite(unreachable(result), comm, newCommVal);
-      curP.indent().debug("New Value: %s", newValue);
-      commAPBDDs[ap] = newValue;
+      curP.indent().debug("New Value: %s", newCommVal);
+      commAPBDDs[ap] = newCommVal;
     }
   }
 
@@ -1100,22 +1095,14 @@ public class TransferBDD {
             + ": "
             + stmt);
     TransferParam curP = state.getTransferParam();
-    TransferResult result = state.getTransferResult();
-    BDD alreadyUnsupported = curP.getData().getUnsupported();
-    // the conditions under which the current statement is reachable
-    BDD reachUnsupportedStatement = unreachable(result).not();
-    // we've reached an unsupported statement if either we previously reached one or
-    // the current statement is reachable
-    BDD newValue = alreadyUnsupported.or(reachUnsupportedStatement);
-    curP.getData().setUnsupported(newValue);
+    curP.getData().setUnsupported(_factory.one());
   }
 
   /*
    * Create the result of reaching a suppress or unsuppress statement.
    */
   private TransferResult suppressedValue(TransferResult r, boolean val) {
-    BDD notReached = unreachable(r);
-    BDD b = ite(notReached, r.getSuppressedValue(), mkBDD(val));
+    BDD b = mkBDD(val);
     return r.setSuppressedValue(b);
   }
 
