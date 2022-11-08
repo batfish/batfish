@@ -647,7 +647,7 @@ Cisco NX-OS.
 
 For tests, copy the pattern used by:
 
-* [projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos/BUILD](../../projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos/BUILD)
+* [//projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos:tests](../../projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos/BUILD.bazel)
 
 ### Combined parser
 
