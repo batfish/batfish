@@ -1,0 +1,12 @@
+package(
+    default_testonly = True,
+    default_visibility = ["//docs/example_code:__subpackages__"],
+)
+
+filegroup(
+    name = "testconfigs",
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD.bazel"],
+    ),
+)

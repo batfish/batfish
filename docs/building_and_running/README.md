@@ -108,22 +108,14 @@ You can run all tests in this repository by running:
 bazel test //...
 ```
 
-The above is a specific instance of the general form for running all tests in all `BUILD` files
-rooted under a specific subdirectory.
-
-For example, to run all tests in all `BUILD` files rooted at `projects/coordinator` do:
+The above is a specific instance of the general form for running all tests in all Bazel packages
+in a subtree. The above uses the entire repository `//` as the root; to test only the `coordinator`:
 
 ```
 bazel test //projects/coordinator/...
 ```
 
-To run a specific test rule from a `BUILD` file:
-
-```
-bazel test //<path-to-dir-containing-BUILD>:<name-of-test-rule>
-```
-
-For example, `projects/batfish/BUILD` has a test rule called `pmd`. To run that test, do:
+To run a specific test, just use its Bazel target:
 
 ```
 bazel test //projects/batfish:pmd

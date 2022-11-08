@@ -1,0 +1,12 @@
+package(
+    default_testonly = True,
+    default_visibility = ["//projects/allinone/src/test:__subpackages__"],
+)
+
+filegroup(
+    name = "specifiers-reachability",
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD.bazel"],
+    ),
+)
