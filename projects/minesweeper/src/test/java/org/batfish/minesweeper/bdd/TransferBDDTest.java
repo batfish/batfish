@@ -1425,6 +1425,7 @@ public class TransferBDDTest {
     assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
+   */
   @Test
   public void testUnreachableUnhandled() {
     RoutingPolicy policy =
@@ -1446,8 +1447,6 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
     assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
-
-   */
 
   @Test
   public void testBufferedStatement() {
@@ -2097,46 +2096,48 @@ public class TransferBDDTest {
   }
 
   /*
-  @Test
-  public void testUnsupportedExpression() {
-    _policyBuilder.addStatement(
-        new If(new MatchColor(0L), ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
-    RoutingPolicy policy = _policyBuilder.build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    @Test
+    public void testUnsupportedExpression() {
+      _policyBuilder.addStatement(
+          new If(new MatchColor(0L), ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+      RoutingPolicy policy = _policyBuilder.build();
+      _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
+      TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+      TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+      BDD acceptedAnnouncements = result.getSecond();
+      BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
-    expectedRoute.setUnsupported(tbdd.getFactory().one());
-    assertEquals(acceptedAnnouncements, tbdd.getFactory().zero());
-    assertEquals(outAnnouncements, expectedRoute);
-  }
+      BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
+      expectedRoute.setUnsupported(tbdd.getFactory().one());
+      assertEquals(acceptedAnnouncements, tbdd.getFactory().zero());
+      assertEquals(outAnnouncements, expectedRoute);
+    }
 
-  @Test
-  public void testUnsupportedMatchCommunities() {
-    _policyBuilder.addStatement(
-        new If(
-            new MatchCommunities(
-                // currently we only support matching on InputCommunities
-                new LiteralCommunitySet(CommunitySet.empty()),
-                new HasCommunity(AllStandardCommunities.instance())),
-            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
-    RoutingPolicy policy = _policyBuilder.build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
+    @Test
+    public void testUnsupportedMatchCommunities() {
+      _policyBuilder.addStatement(
+          new If(
+              new MatchCommunities(
+                  // currently we only support matching on InputCommunities
+                  new LiteralCommunitySet(CommunitySet.empty()),
+                  new HasCommunity(AllStandardCommunities.instance())),
+              ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+      RoutingPolicy policy = _policyBuilder.build();
+      _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
-    expectedRoute.setUnsupported(tbdd.getFactory().one());
-    assertEquals(acceptedAnnouncements, tbdd.getFactory().zero());
-    assertEquals(outAnnouncements, expectedRoute);
-  }
+      TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+      TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+      BDD acceptedAnnouncements = result.getSecond();
+      BDDRoute outAnnouncements = result.getFirst();
+
+      BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
+      expectedRoute.setUnsupported(tbdd.getFactory().one());
+      assertEquals(acceptedAnnouncements, tbdd.getFactory().zero());
+      assertEquals(outAnnouncements, expectedRoute);
+    }
+  */
 
   @Test
   public void testUnsupportedStatement() {
@@ -2225,7 +2226,7 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, tbdd.getFactory().zero());
     assertEquals(outAnnouncements, outRoute);
   }
-   */
+
   @Test
   public void testIsRelevantFor() {
     BDDRoute bddRoute = anyRoute(JFactory.init(100, 100));

@@ -695,9 +695,6 @@ public class TransferBDD {
       curP.debug("SetNextHop");
       setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
 
-    } else if (stmt instanceof PrependAsPath) {
-      // TODO: implement me
-
     } else if (stmt instanceof TraceableStatement) {
       return compute(((TraceableStatement) stmt).getInnerStatements(), ImmutableSet.of(state));
     } else {
@@ -718,7 +715,8 @@ public class TransferBDD {
             newStates.addAll(compute(stmt, currState));
           }
         } catch (UnsupportedFeatureException e) {
-          // TODO: ignoring unsupported features for now
+          unsupported(stmt, currState);
+          newStates.add(currState);
         }
       }
       currStates = newStates;
@@ -758,10 +756,19 @@ public class TransferBDD {
         new TransferResult(
             new TransferReturn(new BDDRoute(_factory, _configAtomicPredicates), _factory.zero()),
             _factory.zero());
-    // now disjoin all of the feasible paths
+    // now disjoin all of the accepting paths
     for (TransferResult path : allPaths) {
       if (path.getReturnValue().getAccepted()) {
         result = ite(path.getReturnValue().getSecond(), path, result);
+      } else {
+        // for denying paths, we still keep track of whether we hit an unsupported statement
+        BDDRoute resultRoute = result.getReturnValue().getFirst();
+        BDDRoute pathRoute = path.getReturnValue().getFirst();
+        resultRoute.setUnsupported(
+            ite(
+                path.getReturnValue().getSecond(),
+                pathRoute.getUnsupported(),
+                resultRoute.getUnsupported()));
       }
     }
     return result;
