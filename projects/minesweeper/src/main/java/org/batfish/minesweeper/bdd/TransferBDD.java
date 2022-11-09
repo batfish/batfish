@@ -68,7 +68,6 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -317,8 +316,8 @@ public class TransferBDD {
       Not n = (Not) expr;
       Set<TransferResult> results = compute(n.getExpr(), state);
       for (TransferResult res : results) {
-        res = res.setReturnValueAccepted(!res.getReturnValue().getAccepted());
-        allResults.add(res);
+        TransferResult newRes = res.setReturnValueAccepted(!res.getReturnValue().getAccepted());
+        allResults.add(newRes);
       }
 
     } else if (expr instanceof MatchProtocol) {
@@ -641,7 +640,7 @@ public class TransferBDD {
       // to its corresponding BDD variable, so we use the original route here
       CommunityAPDispositions dispositions =
           setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _originalRoute));
-      updateCommunities(dispositions, curP, result);
+      updateCommunities(dispositions, curP);
 
     } else if (stmt instanceof CallStatement) {
       /*
@@ -1067,8 +1066,7 @@ public class TransferBDD {
 
   // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
   // depending on the value of the boolean parameter.
-  private void addOrRemoveCommunityAPs(
-      IntegerSpace commAPs, TransferParam curP, TransferResult result, boolean add) {
+  private void addOrRemoveCommunityAPs(IntegerSpace commAPs, TransferParam curP, boolean add) {
     BDD newCommVal = mkBDD(add);
     BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
     for (int ap : commAPs.enumerate()) {
@@ -1079,10 +1077,9 @@ public class TransferBDD {
   }
 
   // Update community atomic predicates based on the given CommunityAPDispositions object
-  private void updateCommunities(
-      CommunityAPDispositions dispositions, TransferParam curP, TransferResult result) {
-    addOrRemoveCommunityAPs(dispositions.getMustExist(), curP, result, true);
-    addOrRemoveCommunityAPs(dispositions.getMustNotExist(), curP, result, false);
+  private void updateCommunities(CommunityAPDispositions dispositions, TransferParam curP) {
+    addOrRemoveCommunityAPs(dispositions.getMustExist(), curP, true);
+    addOrRemoveCommunityAPs(dispositions.getMustNotExist(), curP, false);
   }
 
   /**
