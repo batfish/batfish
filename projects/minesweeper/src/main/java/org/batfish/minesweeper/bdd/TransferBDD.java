@@ -220,8 +220,6 @@ public class TransferBDD {
               TransferResult resultCopy =
                   result.setReturnValueBDDRoute(result.getReturnValue().getFirst().deepCopy());
               Set<TransferResult> newResults = compute(be, toTransferBDDState(p.indent(), resultCopy));
-              // TODO: handle multiple results
-              assert newResults.size() == 1;
               TransferResult newResult = newResults.iterator().next();
               // short-circuiting: only update the result if the prior conjuncts were all true
               result = ite(acc, newResult, result);
