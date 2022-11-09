@@ -3,6 +3,8 @@ package org.batfish.minesweeper.bdd;
 import net.sf.javabdd.BDD;
 import org.batfish.minesweeper.utils.Tuple;
 
+import java.util.Objects;
+
 /**
  * The data produced by the symbolic route policy analysis performed in {@link TransferBDD}. It is a
  * pair of two things:
@@ -16,6 +18,7 @@ import org.batfish.minesweeper.utils.Tuple;
 public class TransferReturn extends Tuple<BDDRoute, BDD> {
 
   private final boolean _accepted;
+
   TransferReturn(BDDRoute r, BDD b, boolean accepted) {
     super(r, b);
     _accepted = accepted;
@@ -25,7 +28,9 @@ public class TransferReturn extends Tuple<BDDRoute, BDD> {
     this(r, b, false);
   }
 
-  public boolean getAccepted() { return _accepted; }
+  public boolean getAccepted() {
+    return _accepted;
+  }
 
   public TransferReturn setAccepted(boolean accepted) {
     return new TransferReturn(getFirst(), getSecond(), accepted);
@@ -33,5 +38,23 @@ public class TransferReturn extends Tuple<BDDRoute, BDD> {
 
   public String debug() {
     return getFirst().dot(getSecond());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof TransferReturn)) {
+      return false;
+    }
+    return super.equals(o) && _accepted == ((TransferReturn) o)._accepted;
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode() * Boolean.valueOf(_accepted).hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return "<" + getFirst() + "," + getSecond() + "," + _accepted + ">";
   }
 }
