@@ -211,7 +211,6 @@ public class TransferBDD {
       p.debug("MatchIpv4 Result: true");
       allResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(true));
 
-      // TODO: For now, removing cases that are not needed currently and not well tested.
       /*
           } else if (expr instanceof Conjunction) {
             p.debug("Conjunction");
@@ -490,7 +489,7 @@ public class TransferBDD {
           result = returnValue(result, false);
           break;
 
-          /* Removing cases that are not needed currently and not well tested.
+          /*
                   case SetDefaultActionAccept:
                     curP.debug("SetDefaultActionAccept");
                     curP = curP.setDefaultAccept(true);
@@ -718,7 +717,7 @@ public class TransferBDD {
    * Symbolic analysis of a list of route-policy statements. Returns one TransferResult per path
    * through the list of statements.
    */
-  Set<TransferResult> computePaths(List<Statement> statements, TransferParam p) {
+  private Set<TransferResult> computePaths(List<Statement> statements, TransferParam p) {
     TransferParam curP = p;
 
     TransferResult result = new TransferResult(curP.getData());

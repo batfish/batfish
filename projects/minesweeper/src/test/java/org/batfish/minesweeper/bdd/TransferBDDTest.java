@@ -1333,7 +1333,7 @@ public class TransferBDDTest {
     assertEquals(anyRoute, outAnnouncements);
   }
 
-  /*
+  /* Not supporting changes to the default action.
   @Test
   public void testConditionalDefaultAction() {
     RoutingPolicy policy =
