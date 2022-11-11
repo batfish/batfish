@@ -30,28 +30,28 @@ purpose of this section, we will assume you are writing a parser for a format ca
 example [files](example_src) for this parser. In later sections we will explain how to get Batfish
 to use this parser on files in the "Cool NOS" format.
 
-* [CoolNosLexer.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosLexer.g4)
+* [`CoolNosLexer.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosLexer.g4)
     * lexer grammar file
-* [CoolNosParser.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosParser.g4)
+* [`CoolNosParser.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosParser.g4)
     * main parser grammar file
-* [CoolNos_common.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_common.g4)
+* [`CoolNos_common.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_common.g4)
     * subordinate parser grammar file containing rules referenced by the main and other subordinate
       parser grammars
-* [CoolNos_static_routes.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_static_routes.g4)
+* [`CoolNos_static_routes.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_static_routes.g4)
     * subordinate parser grammar file containing rules for defining static routes
-* [CoolNos_system.g4](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_system.g4)
+* [`CoolNos_system.g4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNos_system.g4)
     * subordinate parser grammar file containing rules for configuring system-level properties
-* [CoolNosBaseLexer.java](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/CoolNosBaseLexer.java)
+* [`CoolNosBaseLexer.java`](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/CoolNosBaseLexer.java)
     * the base class for the generated lexer java class
-* [CoolNosCombinedParser.java](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/CoolNosCombinedParser.java)
+* [`CoolNosCombinedParser.java`](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/CoolNosCombinedParser.java)
     * Java class that wraps the functionality of the generated parser and lexer classes
-* [(Java base lexer) BUILD](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD)
-    * bazel `BUILD` file defining a library of base parser/lexer files which the generated
+* [Java base lexer](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD.bazel)
+    * bazel package defining a library of base parser/lexer files which the generated
       parser/lexer java classes extend
-* [(anltr4) BUILD](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/BUILD)
-    * bazel `BUILD` file defining a library of generated ANTLR4 java classes
-* [(Java combined parser, extractor) BUILD](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD)
-    * bazel `BUILD` file defining a library of the combined parser and extractor classes
+* [`antlr4`](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/BUILD.bazel)
+    * bazel package defining a library of generated ANTLR4 java classes
+* [Java combined parser, extractor](../example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing/BUILD.bazel)
+    * bazel package defining a library of the combined parser and extractor classes
 
 Read the rest of this section to learn about:
 
@@ -61,7 +61,7 @@ Read the rest of this section to learn about:
 
 ### Lexer
 
-The excerpts in this section are from the Cool NOS example lexer file, avaialable
+The excerpts in this section are from the Cool NOS example lexer file, available
 [here](../example_code/new_vendor/src/main/antlr4/org/batfish/grammar/cool_nos/CoolNosLexer.g4).
 
 The job of the lexer is to convert the text of a DSL into a stream of tokens to be consumed by the
@@ -629,25 +629,25 @@ tokens:
 
 This pattern would not be LL(1), so is to be avoided.
 
-### Grammar BUILD files
+### Grammar packages
 
 **This section is still in progress. Check back later for more complete instructions.**
 
-For now, if you need to write a new grammar, follow the pattern of the Cisco NXOS grammar BUILD
-files. That is, make a copy of and appropriate alterations to each of:
+For now, if you need to write a new grammar, follow the pattern of the Cisco NX-OS grammar package.
+That is, make a copy of and appropriate alterations to each of:
 
-* [antlr4/org/batfish/grammar/cisco_nxos/BUILD](../../projects/batfish/src/main/antlr4/org/batfish/grammar/cisco_nxos/BUILD)
-* [java/org/batfish/grammar/cisco_nxos/BUILD](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/BUILD)
-* [java/org/batfish/grammar/cisco_nxos/parsing/BUILD](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/parsing/BUILD)
+* [`antlr4/org/batfish/grammar/cisco_nxos/BUILD.bazel`](../../projects/batfish/src/main/antlr4/org/batfish/grammar/cisco_nxos/BUILD.bazel)
+* [`java/org/batfish/grammar/cisco_nxos/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/BUILD.bazel)
+* [`java/org/batfish/grammar/cisco_nxos/parsing/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/parsing/BUILD.bazel)
 
 in the appropriate directories created for your new grammar.
 
-Then, add appropriate references in `../../projects/batfish/BUILD`, also copying the pattern for
-Cisco NXOS.
+Then, add appropriate references to the `//projects/batfish` target, also copying the pattern for
+Cisco NX-OS.
 
 For tests, copy the pattern used by:
 
-* [projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos/BUILD](../../projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos/BUILD)
+* [`//projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos:tests`](../../projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos/BUILD.bazel)
 
 ### Combined parser
 
