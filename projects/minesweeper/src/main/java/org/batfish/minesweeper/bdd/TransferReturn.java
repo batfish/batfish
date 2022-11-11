@@ -7,13 +7,16 @@ import java.util.Objects;
 
 /**
  * The data produced by the symbolic route policy analysis performed in {@link TransferBDD}. It is a
- * pair of two things:
+ * triple representing the analysis results along a particular execution path through the route
+ * policy:
  *
  * <p>1. A {@link BDDRoute} that represents a function from input announcements to the corresponding
  * output announcements produced by the analyzed route policy.
  *
- * <p>2. A {@link BDD} that represents the set of input announcements that are accepted by the
- * analyzed route policy.
+ * <p>2. A {@link BDD} that represents the set of input announcements that take this particular
+ * path.
+ *
+ * <p>3. A boolean indicating whether the path accepts or rejects the input announcement.
  */
 public class TransferReturn extends Tuple<BDDRoute, BDD> {
 

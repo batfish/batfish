@@ -29,9 +29,9 @@ public class TransferParam {
 
   private ChainContext _chainContext;
 
-  private boolean _defaultAccept;
+  private BDD _defaultAccept;
 
-  private boolean _defaultAcceptLocal;
+  private BDD _defaultAcceptLocal;
 
   private SetDefaultPolicy _defaultPolicy;
 
@@ -43,8 +43,8 @@ public class TransferParam {
     _chainContext = ChainContext.NONE;
     _indent = 0;
     _scopes = PList.empty();
-    _defaultAccept = false;
-    _defaultAcceptLocal = false;
+    _defaultAccept = data.getFactory().zero();
+    _defaultAcceptLocal = data.getFactory().zero();
     _defaultPolicy = null;
     _debug = debug;
   }
@@ -73,11 +73,11 @@ public class TransferParam {
     return _chainContext;
   }
 
-  public boolean getDefaultAccept() {
+  public BDD getDefaultAccept() {
     return _defaultAccept;
   }
 
-  public boolean getDefaultAcceptLocal() {
+  public BDD getDefaultAcceptLocal() {
     return _defaultAcceptLocal;
   }
 
@@ -117,7 +117,7 @@ public class TransferParam {
     return ret;
   }
 
-  public TransferParam setDefaultAccept(boolean defaultAccept) {
+  public TransferParam setDefaultAccept(BDD defaultAccept) {
     TransferParam ret = new TransferParam(this);
     ret._defaultAccept = defaultAccept;
     return ret;
@@ -129,7 +129,7 @@ public class TransferParam {
     return ret;
   }
 
-  public TransferParam setDefaultAcceptLocal(boolean defaultAcceptLocal) {
+  public TransferParam setDefaultAcceptLocal(BDD defaultAcceptLocal) {
     TransferParam ret = new TransferParam(this);
     ret._defaultAcceptLocal = defaultAcceptLocal;
     return ret;

@@ -325,9 +325,6 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isZero());
 
     assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
-
-    //    assertTrue(result.getExitAssignedValue().isZero());
-    //    assertTrue(result.getReturnAssignedValue().isOne());
   }
 
   @Test
@@ -397,7 +394,8 @@ public class TransferBDDTest {
     assertEquals(anyRoute, outAnnouncements);
   }
 
-  /*
+  /* Not currently supporting directives to change the default action, so this test is removed.
+
    public void testSetDefault() {
      _policyBuilder.addStatement(Statements.SetDefaultActionAccept.toStaticStatement());
 
@@ -608,7 +606,7 @@ public class TransferBDDTest {
     assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
-  /*
+  /* Not supporting conjunctions and disjunctions currently.
   @Test
   public void testConjunction() {
     _policyBuilder.addStatement(
@@ -957,7 +955,7 @@ public class TransferBDDTest {
     assertEquals(anyRoute, outAnnouncements);
   }
 
-  /*
+  /* Not supporting conjunctions currently.
   @Test
   public void testPrefixIntersection() {
     _policyBuilder.addStatement(

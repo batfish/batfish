@@ -7,16 +7,17 @@ import net.sf.javabdd.BDD;
 /**
  * This class is used to keep track of the state of the BDD-based symbolic control-plane analysis in
  * {@link TransferBDD}. It's effectively the symbolic version of {@link
- * org.batfish.datamodel.routing_policy.Result}.
+ * org.batfish.datamodel.routing_policy.Result} but represents the result along one particular path
+ * through the route policy.
  */
 @ParametersAreNonnullByDefault
 public class TransferResult {
 
   /**
    * the symbolic route information that is ultimately returned as the result of the analysis: a
-   * pair of a BDDRoute, which represents a route policy's output announcement as a function of the
-   * input announcement; and a BDD, which represents the conditions under which a route announcement
-   * is accepted by the route policy.
+   * triple of a BDDRoute, which represents this path's output announcement as a function of the
+   * input announcement; a BDD, which represents the conditions under which this particular path is
+   * taken; and a boolean indicating whether the path ultimately accepts or rejects the announcement
    */
   @Nonnull private final TransferReturn _returnValue;
 
@@ -46,19 +47,9 @@ public class TransferResult {
   @Nonnull private final BDD _returnAssignedValue;
 
   /**
-   * Some examples of how to use the information in this object:
-   *
-   * <p>_returnValue.getSecond().and(_exitAssignedValue) represents all scenarios in which the
-   * policy exits and permits the route
-   *
-   * <p>_returnValue.getSecond().not().and(_exitAssignedValue) represents all scenarios in which the
-   * * policy exits and denies the route
-   *
-   * <p>replacing _exitAssignedValue with _returnAssignedValue in the two examples above
-   * respectively represents all scenarios in which the policy returns true/false
+   * Construct a TransferResult from a BDDRoute. By default we use TRUE as the initial path
+   * condition and FALSE as the initial value for having hit a return/exit/fallthrough statement. *
    */
-
-  // Construct a TransferResult from a BDDRoute, using the zero BDD for all BDDs
   public TransferResult(BDDRoute bddRoute) {
     this(new TransferReturn(bddRoute, bddRoute.getFactory().one()), bddRoute.getFactory().zero());
   }
