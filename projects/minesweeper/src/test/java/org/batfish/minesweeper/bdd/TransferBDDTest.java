@@ -498,46 +498,40 @@ public class TransferBDDTest {
 
   @Test
   public void testPartialReturnStatements() {
-    List<Statement> stmts =
-        ImmutableList.of(
-            new If(
-                matchPrefixSet(
-                    ImmutableList.of(
-                        new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
-                ImmutableList.of(
-                    new SetLocalPreference(new LiteralLong(2)),
-                    Statements.ExitAccept.toStaticStatement())),
-            new If(
-                matchPrefixSet(
-                    ImmutableList.of(
-                        new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
-                ImmutableList.of(
-                    new SetLocalPreference(new LiteralLong(3)),
-                    Statements.ReturnFalse.toStaticStatement())));
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            ImmutableList.of(
+                new SetLocalPreference(new LiteralLong(2)),
+                Statements.ExitAccept.toStaticStatement())));
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            ImmutableList.of(
+                new SetLocalPreference(new LiteralLong(3)),
+                Statements.ReturnFalse.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    // indenting the parameter ensures that this will not be considered a top-level call,
-    // so a default exit reject will not be added, and route updates on paths that return
-    // false will not be removed
-    TransferParam p =
-        new TransferParam(new BDDRoute(tbdd.getFactory(), _configAPs), false).indent();
-    TransferResult result = tbdd.compute(stmts, p);
+
+    TransferResult result = tbdd.compute(ImmutableSet.of());
     TransferReturn ret = result.getReturnValue();
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
 
-    BDD exitAssigned =
+    BDD accepted =
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
     BDDRoute expectedOut = new BDDRoute(anyRoute);
     MutableBDDInteger localPref2 = MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 2);
-    expectedOut.setLocalPref(localPref2.ite(exitAssigned, expectedOut.getLocalPref()));
+    expectedOut.setLocalPref(localPref2.ite(accepted, expectedOut.getLocalPref()));
 
-    assertEquals(exitAssigned, ret.getSecond());
+    assertEquals(accepted, ret.getSecond());
 
     assertEquals(expectedOut, ret.getFirst());
   }
@@ -2183,7 +2177,7 @@ public class TransferBDDTest {
   @Test
   public void testUnsupportedStaticStatement() {
     _policyBuilder
-        .addStatement(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement())
+        .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);

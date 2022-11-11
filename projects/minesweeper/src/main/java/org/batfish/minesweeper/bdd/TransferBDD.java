@@ -195,7 +195,7 @@ public class TransferBDD {
   }
 
   /*
-   * Convert a Batfish AST boolean expression to a BDD.
+   * Produce one TransferResult per path through the given boolean expression.
    * TODO: Any updates to the TransferParam in expr are lost currently
    */
   private Set<TransferResult> compute(BooleanExpr expr, TransferBDDState state)
@@ -211,11 +211,11 @@ public class TransferBDD {
       p.debug("MatchIpv4 Result: true");
       allResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(true));
 
-      /* Removing cases that are not needed currently and not well tested.
+      // TODO: For now, removing cases that are not needed currently and not well tested.
+      /*
           } else if (expr instanceof Conjunction) {
             p.debug("Conjunction");
             Conjunction c = (Conjunction) expr;
-            BDD acc = _factory.one();
             for (BooleanExpr be : c.getConjuncts()) {
               TransferResult resultCopy =
                   result.setReturnValueBDDRoute(result.getReturnValue().getFirst().deepCopy());
@@ -341,7 +341,6 @@ public class TransferBDD {
 
       // save callee state
       BDD oldReturnAssigned = result.getReturnAssignedValue();
-      BDD oldExitAssigned = result.getExitAssignedValue();
 
       TransferParam newParam =
           p.setCallContext(TransferParam.CallContext.EXPR_CALL).indent().enterScope(name);
@@ -359,8 +358,8 @@ public class TransferBDD {
         allResults.add(
             callState
                 .getTransferResult()
-                .setReturnAssignedValue(oldReturnAssigned)
-                .setExitAssignedValue(oldExitAssigned));
+                // restore the callee state
+                .setReturnAssignedValue(oldReturnAssigned));
       }
 
     } else if (expr instanceof WithEnvironmentExpr) {
@@ -435,6 +434,11 @@ public class TransferBDD {
       throw new UnsupportedFeatureException(expr.toString());
     }
 
+    // in most cases above we have only provided the path corresponding to the predicate being true
+    // so lastly, we add the path corresponding to the predicate being false
+
+    // first get a predicate representing routes that don't go down any existing path that we've
+    // created so far
     BDD unmatched =
         _factory
             .orAll(
@@ -443,6 +447,7 @@ public class TransferBDD {
                     .collect(Collectors.toList()))
             .not();
     if (!unmatched.isZero()) {
+      // then add a non-accepting path corresponding to that predicate
       TransferResult remaining =
           new TransferResult(new BDDRoute(result.getReturnValue().getFirst()))
               .setReturnValueBDD(unmatched)
@@ -454,6 +459,7 @@ public class TransferBDD {
 
   /*
    * Symbolic analysis of a single route-policy statement.
+   * Produces one TransferResult per path through the given statement.
    */
   private Set<TransferBDDState> compute(Statement stmt, TransferBDDState state)
       throws UnsupportedFeatureException {
@@ -535,11 +541,6 @@ public class TransferBDD {
           result = suppressedValue(result, false);
           break;
 
-        case SetReadIntermediateBgpAttributes:
-        case SetWriteIntermediateBgpAttributes:
-          // we already handle cases that need these directives properly
-          break;
-
         default:
           throw new UnsupportedFeatureException(ss.getType().toString());
       }
@@ -550,6 +551,7 @@ public class TransferBDD {
       Set<TransferResult> guardResults =
           compute(i.getGuard(), new TransferBDDState(curP.indent(), result));
 
+      // for each path coming from the guard, symbolically execute the appropriate branch of the If
       Set<TransferBDDState> newStates = new HashSet<>();
       for (TransferResult guardResult : guardResults) {
         BDD guard = guardResult.getReturnValue().getSecond();
@@ -557,31 +559,16 @@ public class TransferBDD {
         boolean accepted = guardResult.getReturnValue().getAccepted();
 
         TransferParam pCopy = curP.indent().setData(current);
-
-        if (accepted) {
-          curP.debug("True Branch");
-
-          newStates.addAll(
-              compute(
-                  i.getTrueStatements(),
-                  ImmutableSet.of(
-                      new TransferBDDState(
-                          pCopy,
-                          result.setReturnValue(
-                              new TransferReturn(
-                                  current, result.getReturnValue().getSecond().and(guard)))))));
-        } else {
-          curP.debug("False Branch");
-          newStates.addAll(
-              compute(
-                  i.getFalseStatements(),
-                  ImmutableSet.of(
-                      new TransferBDDState(
-                          pCopy,
-                          result.setReturnValue(
-                              new TransferReturn(
-                                  current, result.getReturnValue().getSecond().and(guard)))))));
-        }
+        List<Statement> branch = accepted ? i.getTrueStatements() : i.getFalseStatements();
+        newStates.addAll(
+            compute(
+                branch,
+                ImmutableSet.of(
+                    new TransferBDDState(
+                        pCopy,
+                        result.setReturnValue(
+                            new TransferReturn(
+                                current, result.getReturnValue().getSecond().and(guard)))))));
       }
 
       return ImmutableSet.copyOf(newStates);
@@ -700,15 +687,21 @@ public class TransferBDD {
     return ImmutableSet.of(toTransferBDDState(curP, result));
   }
 
+  /*
+   * Symbolic analysis of a list of route-policy statements.
+   * Produces one TransferBDDState per path through the given list of statements.
+   */
   private Set<TransferBDDState> compute(List<Statement> statements, Set<TransferBDDState> states) {
     Set<TransferBDDState> currStates = states;
     for (Statement stmt : statements) {
       Set<TransferBDDState> newStates = new HashSet<>();
       for (TransferBDDState currState : currStates) {
         try {
+          // if the path has already reached an exit/return then just keep it
           if (unreachable(currState.getTransferResult()).isOne()) {
             newStates.add(currState);
           } else {
+            // otherwise symbolically execute the next statement
             newStates.addAll(compute(stmt, currState));
           }
         } catch (UnsupportedFeatureException e) {
@@ -721,7 +714,10 @@ public class TransferBDD {
     return currStates;
   }
 
-  /** Symbolic analysis of a list of route-policy statements */
+  /**
+   * Symbolic analysis of a list of route-policy statements. Returns one TransferResult per path
+   * through the list of statements.
+   */
   Set<TransferResult> computePaths(List<Statement> statements, TransferParam p) {
     TransferParam curP = p;
 
@@ -745,8 +741,11 @@ public class TransferBDD {
     return results.build();
   }
 
-  @VisibleForTesting
-  TransferResult compute(List<Statement> statements, TransferParam p) {
+  /**
+   * Combines the per-path symbolic analysis results into a single TransferResult, which represents
+   * the disjunction of all accepting paths. *
+   */
+  private TransferResult compute(List<Statement> statements, TransferParam p) {
     Set<TransferResult> allPaths = computePaths(statements, p);
     // by default the result says that there are no feasible paths
     TransferResult result =
@@ -771,11 +770,13 @@ public class TransferBDD {
     return result;
   }
 
+  /*
   private TransferResult fallthrough(TransferResult r, boolean val) {
     BDD fall = mkBDD(val);
     BDD retAsgn = _factory.one();
     return r.setFallthroughValue(fall).setReturnAssignedValue(retAsgn);
   }
+   */
 
   // Create a TransferBDDState, using the BDDRoute in the given TransferResult and throwing away the
   // one that is in the given TransferParam.
@@ -1091,8 +1092,9 @@ public class TransferBDD {
     return currState.getReturnAssignedValue().or(currState.getExitAssignedValue());
   }
 
-  // If the analysis encounters a routing policy feature that is not currently supported, we log
-  // a warning and mark the output BDDRoute as having reached an unsupported statement.
+  // If the analysis encounters a routing policy feature that is not currently supported, we ignore
+  // it and keep going, but we also log a warning and mark the output BDDRoute as having reached an
+  // unsupported statement.
   private void unsupported(Statement stmt, TransferBDDState state) {
     LOGGER.warn(
         "Unsupported statement in routing policy "
@@ -1135,8 +1137,8 @@ public class TransferBDD {
   }
 
   /*
-   * Create a BDDRecord representing the symbolic output of
-   * the RoutingPolicy given the input variables.
+   * Create a TransferResult representing the symbolic output of
+   * the RoutingPolicy given the input route.
    */
   public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
