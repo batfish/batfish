@@ -2175,7 +2175,7 @@ public class TransferBDDTest {
   @Test
   public void testUnsupportedStaticStatement() {
     _policyBuilder
-        .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
+        .addStatement(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement())
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -2189,6 +2189,24 @@ public class TransferBDDTest {
     outRoute.setUnsupported(tbdd.getFactory().one());
     assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
     assertEquals(outAnnouncements, outRoute);
+  }
+
+  @Test
+  public void testSetReadIntermediateBgpAttributes() {
+    _policyBuilder
+        .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // we treat the SetReadIntermediateBgpAttributes as a no-op
+    assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
+    assertEquals(outAnnouncements, anyRoute(tbdd.getFactory()));
   }
 
   @Test

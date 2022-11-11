@@ -540,6 +540,19 @@ public class TransferBDD {
           result = suppressedValue(result, false);
           break;
 
+          /**
+           * These directives are used to ensure that Batfish handles updates like additive
+           * community sets and AS-path prepends correctly. Such updates depend on the current state
+           * of the route, rather than its initial value. For example, two additive community sets
+           * in a row should preserve both additions. This code is already modeling such updates in
+           * that way, so we can treat these directives as no-ops. NOTE: In principle there could be
+           * a form of additive community set that throws out any prior updates, in which case we
+           * would have to distinguish the two semantics. But it's unclear that is ever necessary.
+           */
+        case SetReadIntermediateBgpAttributes:
+        case SetWriteIntermediateBgpAttributes:
+          break;
+
         default:
           throw new UnsupportedFeatureException(ss.getType().toString());
       }
