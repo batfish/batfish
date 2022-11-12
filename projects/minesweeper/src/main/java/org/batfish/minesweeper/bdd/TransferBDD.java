@@ -47,6 +47,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
@@ -75,6 +76,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
@@ -615,6 +617,19 @@ public class TransferBDD {
       MutableBDDInteger newValue = applyLongExprModification(curP.indent(), currTag, ie);
       curP.getData().setTag(newValue);
 
+    } else if (stmt instanceof SetWeight) {
+      curP.debug("SetWeight");
+      SetWeight sw = (SetWeight) stmt;
+      IntExpr ie = sw.getWeight();
+      if (!(ie instanceof LiteralInt)) {
+        throw new UnsupportedFeatureException(ie.toString());
+      }
+      LiteralInt z = (LiteralInt) ie;
+      MutableBDDInteger currWeight = curP.getData().getWeight();
+      MutableBDDInteger newValue =
+          MutableBDDInteger.makeFromValue(currWeight.getFactory(), 16, z.getValue());
+      curP.getData().setWeight(newValue);
+
     } else if (stmt instanceof SetCommunities) {
       curP.debug("SetCommunities");
       SetCommunities sc = (SetCommunities) stmt;
@@ -867,6 +882,10 @@ public class TransferBDD {
     x = r1.getTag();
     y = r2.getTag();
     ret.getTag().setValue(ite(guard, x, y));
+
+    x = r1.getWeight();
+    y = r2.getWeight();
+    ret.getWeight().setValue(ite(guard, x, y));
 
     BDD[] retCommAPs = ret.getCommunityAtomicPredicates();
     BDD[] r1CommAPs = r1.getCommunityAtomicPredicates();
