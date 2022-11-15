@@ -1,6 +1,5 @@
 package org.batfish.question.routes;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.questions.BgpRouteStatus.BACKUP;
 import static org.batfish.datamodel.questions.BgpRouteStatus.BEST;
@@ -97,7 +96,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.pojo.Node;
@@ -249,7 +247,9 @@ public class RoutesAnswererUtilTest {
             .setNetwork(prefix)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
-            .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
+            // Communities deliberately not sorted.
+            .setCommunities(
+                ImmutableList.of(StandardCommunity.of(65537L), StandardCommunity.of(65534L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setPathId(1)
@@ -281,7 +281,8 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_AS_PATH, "1 2", Schema.STRING),
             hasColumn(COL_METRIC, 0, Schema.INTEGER),
             hasColumn(COL_LOCAL_PREF, 0L, Schema.LONG),
-            hasColumn(COL_COMMUNITIES, ImmutableList.of("1:1"), Schema.list(Schema.STRING)),
+            hasColumn(
+                COL_COMMUNITIES, ImmutableList.of("0:65534", "1:1"), Schema.list(Schema.STRING)),
             hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
             hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
             hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
@@ -335,7 +336,8 @@ public class RoutesAnswererUtilTest {
                 .setOriginatorIp(ip)
                 .setNextHop(NextHopIp.of(ip))
                 .setReceivedFrom(ReceivedFromIp.of(ip))
-                .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
+                .setCommunities(
+                    ImmutableList.of(StandardCommunity.of(65537L), StandardCommunity.of(65534L)))
                 .setProtocol(RoutingProtocol.BGP)
                 .build()));
     Multiset<Row> rows =
@@ -349,7 +351,7 @@ public class RoutesAnswererUtilTest {
             PrefixMatchType.EXACT);
     assertThat(
         rows.iterator().next().get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
-        equalTo(ImmutableList.of("1:1")));
+        equalTo(ImmutableList.of("0:65534", "1:1")));
   }
 
   @Test
@@ -363,7 +365,8 @@ public class RoutesAnswererUtilTest {
             .setRouteDistinguisher(RouteDistinguisher.from(ip, 1))
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
-            .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
+            .setCommunities(
+                ImmutableList.of(StandardCommunity.of(65537L), StandardCommunity.of(65534L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
@@ -399,7 +402,10 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_AS_PATH, "1 2", Schema.STRING),
                 hasColumn(COL_METRIC, 0, Schema.INTEGER),
                 hasColumn(COL_LOCAL_PREF, 0L, Schema.LONG),
-                hasColumn(COL_COMMUNITIES, ImmutableList.of("1:1"), Schema.list(Schema.STRING)),
+                hasColumn(
+                    COL_COMMUNITIES,
+                    ImmutableList.of("0:65534", "1:1"),
+                    Schema.list(Schema.STRING)),
                 hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
                 hasColumn(COL_PATH_ID, nullValue(), Schema.INTEGER),
                 hasColumn(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, equalTo(null), Schema.STRING),
@@ -1033,7 +1039,8 @@ public class RoutesAnswererUtilTest {
             // RouteRowAttribute attributes
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setClusterList(ImmutableSet.of(1L))
-            .setCommunities(CommunitySet.of(StandardCommunity.of(2L)))
+            // Communities deliberately not sorted.
+            .setCommunities(CommunitySet.of(StandardCommunity.of(3L), StandardCommunity.of(2L)))
             .setLocalPreference(3L)
             .setMetric(4L)
             .setOriginMechanism(OriginMechanism.LEARNED)
@@ -1050,10 +1057,7 @@ public class RoutesAnswererUtilTest {
         RouteRowAttribute.builder()
             .setAsPath(route.getAsPath())
             .setClusterList(route.getClusterList())
-            .setCommunities(
-                route.getCommunities().getCommunities().stream()
-                    .map(Community::toString)
-                    .collect(toImmutableList()))
+            .setCommunities(ImmutableList.of("0:2", "0:3"))
             .setLocalPreference(route.getLocalPreference())
             .setMetric(route.getMetric())
             .setOriginMechanism(OriginMechanism.LEARNED)
