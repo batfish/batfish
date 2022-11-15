@@ -16,6 +16,7 @@ import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpProcess;
@@ -96,6 +97,11 @@ public class EigrpRoutingProcessTest {
 
   @Test
   public void testRedistributeNoPolicy() {
+    EigrpMetric originalMetric =
+        ClassicMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+            .build();
+
     // Do not crash
     _routingProcess.redistribute(
         RibDelta.adding(
@@ -103,6 +109,8 @@ public class EigrpRoutingProcessTest {
                 ConnectedRoute.builder()
                     .setNetwork(Prefix.parse("1.1.1.0/24"))
                     .setNextHopInterface("Eth0")
+                    .setProcessAsn(10L)
+                    .setEigrpMetric(originalMetric)
                     .build(),
                 "vrf")));
   }
