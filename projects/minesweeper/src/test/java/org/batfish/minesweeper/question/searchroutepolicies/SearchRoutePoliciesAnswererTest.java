@@ -72,6 +72,7 @@ import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
@@ -80,6 +81,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -1456,7 +1458,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testUnsupportedStatement() {
     RoutingPolicy policy =
         _policyBuilder
-            .addStatement(new PrependAsPath(new LiteralAsList(ImmutableList.of())))
+            .addStatement(new ExcludeAsPath(new LiteralAsList(ImmutableList.of())))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
@@ -1516,7 +1518,7 @@ public class SearchRoutePoliciesAnswererTest {
                     ImmutableList.of(
                         new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 16)))),
                 ImmutableList.of(
-                    new PrependAsPath(new LiteralAsList(ImmutableList.of())),
+                    new ExcludeAsPath(new LiteralAsList(ImmutableList.of())),
                     new StaticStatement(Statements.ExitAccept))))
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
@@ -1567,7 +1569,7 @@ public class SearchRoutePoliciesAnswererTest {
             matchPrefixSet(
                 ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 16)))),
             ImmutableList.of(
-                new PrependAsPath(new LiteralAsList(ImmutableList.of())),
+                new ExcludeAsPath(new LiteralAsList(ImmutableList.of())),
                 new StaticStatement(Statements.ExitReject))));
     RoutingPolicy policy = _policyBuilder.build();
 

@@ -102,6 +102,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final MutableBDDInteger _prefixLength;
 
+  // a sequence of AS numbers that are prepended to the original AS-path
+  @Nonnull private List<Long> _prependedASes;
+
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   private MutableBDDInteger _tag;
@@ -202,6 +205,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
+    _prependedASes = new ArrayList<>();
     // Initially there are no unsupported statements encountered
     _unsupported = factory.zero();
   }
@@ -227,6 +231,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
+    _prependedASes = new ArrayList(other._prependedASes);
     _unsupported = other._unsupported.id();
   }
 
@@ -448,6 +453,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _prefixLength;
   }
 
+  public List<Long> getPrependedASes() {
+    return _prependedASes;
+  }
+
+  public void setPrependedASes(List<Long> prependedASes) {
+    _prependedASes = prependedASes;
+  }
+
   public BDDDomain<RoutingProtocol> getProtocolHistory() {
     return _protocolHistory;
   }
@@ -489,6 +502,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
               + (_asPathRegexAtomicPredicates != null
                   ? Arrays.hashCode(_asPathRegexAtomicPredicates)
                   : 0);
+      result = 31 * result + _prependedASes.hashCode();
       result = 31 * result + _unsupported.hashCode();
       _hcode = result;
     }
@@ -512,6 +526,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_nextHopSet, other._nextHopSet)
         && Objects.equals(_tag, other._tag)
         && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_prependedASes, other._prependedASes)
         && Objects.equals(_unsupported, other._unsupported);
   }
 }

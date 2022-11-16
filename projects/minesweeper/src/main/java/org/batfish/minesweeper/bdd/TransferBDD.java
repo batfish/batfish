@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.MutableBDDInteger;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.Configuration;
@@ -39,17 +41,21 @@ import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.AsExpr;
+import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -68,6 +74,7 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -678,8 +685,19 @@ public class TransferBDD {
       curP.debug("SetNextHop");
       setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
 
+    } else if (stmt instanceof PrependAsPath) {
+      curP.debug("PrependAsPath");
+      if (_useOutputAttributes) {
+        // we don't yet properly model the situation where a modified AS-path can be later matched
+        // upon, so we don't allow modifications in that case
+        throw new UnsupportedFeatureException(stmt.toString());
+      }
+      PrependAsPath pap = (PrependAsPath) stmt;
+      prependASPath(pap.getExpr(), curP.getData());
+
     } else if (stmt instanceof TraceableStatement) {
       return compute(((TraceableStatement) stmt).getInnerStatements(), ImmutableSet.of(state));
+
     } else {
       throw new UnsupportedFeatureException(stmt.toString());
     }
@@ -746,11 +764,26 @@ public class TransferBDD {
    */
   private TransferResult compute(List<Statement> statements, TransferParam p) {
     Set<TransferResult> allPaths = computePaths(statements, p);
-    // by default the result says that there are no feasible paths
+    Set<TransferResult> acceptedPaths =
+        allPaths.stream()
+            .filter(r -> r.getReturnValue().getAccepted())
+            .collect(ImmutableSet.toImmutableSet());
     TransferResult result =
         new TransferResult(
             new TransferReturn(new BDDRoute(_factory, _configAtomicPredicates), _factory.zero()),
             _factory.zero());
+    if (!acceptedPaths.isEmpty()) {
+      // Set the prepended ASes of the default result to be the same as those on an accepting path
+      // TODO: This hack is needed since we currently can't combine paths that have different
+      // prepended ASes.
+      result
+          .getReturnValue()
+          .getFirst()
+          .setPrependedASes(
+              new ArrayList<>(
+                  acceptedPaths.iterator().next().getReturnValue().getFirst().getPrependedASes()));
+    }
+
     // now disjoin all of the accepting paths
     for (TransferResult path : allPaths) {
       if (path.getReturnValue().getAccepted()) {
@@ -883,6 +916,13 @@ public class TransferBDD {
         i < _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates();
         i++) {
       retAsPathRegexAPs[i] = ite(guard, r1AsPathRegexAPs[i], r2AsPathRegexAPs[i]);
+    }
+
+    if (r1.getPrependedASes().equals(r2.getPrependedASes())) {
+      ret.setPrependedASes(new ArrayList<>(r1.getPrependedASes()));
+    } else {
+      throw new TransferBDDException(
+          "Currently all accepting paths through the route map must have the same prepended ASes");
     }
 
     ret.setUnsupported(ite(guard, r1.getUnsupported(), r2.getUnsupported()));
@@ -1060,6 +1100,24 @@ public class TransferBDD {
     }
     // record the fact that the next-hop has been explicitly set by the route-map
     route.setNextHopSet(_factory.one());
+  }
+
+  private void prependASPath(AsPathListExpr expr, BDDRoute route)
+      throws UnsupportedFeatureException {
+    // currently we only support prepending AS literals
+    if (!(expr instanceof LiteralAsList)) {
+      throw new UnsupportedFeatureException(expr.toString());
+    }
+    List<Long> prependedASes = new ArrayList<>();
+    LiteralAsList asList = (LiteralAsList) expr;
+    for (AsExpr ase : asList.getList()) {
+      if (!(ase instanceof ExplicitAs)) {
+        throw new UnsupportedFeatureException(ase.toString());
+      }
+      prependedASes.add(((ExplicitAs) ase).getAs());
+    }
+    prependedASes.addAll(route.getPrependedASes());
+    route.setPrependedASes(prependedASes);
   }
 
   // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
