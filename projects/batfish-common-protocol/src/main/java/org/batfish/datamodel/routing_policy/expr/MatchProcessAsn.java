@@ -2,7 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import java.util.Arrays;
 import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -15,11 +15,15 @@ public final class MatchProcessAsn extends BooleanExpr {
 
   private static final String PROP_PROCESS_ASN = "asn";
 
-  private final long _asn;
+  private final long[] _asn;
 
   @JsonCreator
   public MatchProcessAsn(@JsonProperty(PROP_PROCESS_ASN) long asn) {
-    _asn = asn;
+    _asn = new long[] {asn};
+  }
+
+  public MatchProcessAsn(long[] asns) {
+    _asn = asns;
   }
 
   @Override
@@ -33,7 +37,7 @@ public final class MatchProcessAsn extends BooleanExpr {
       return new Result(false);
     }
     EigrpRoute route = (EigrpRoute) environment.getOriginalRoute();
-    return new Result(route.getProcessAsn() == _asn);
+    return new Result(Arrays.stream(_asn).anyMatch(s -> s == route.getProcessAsn()));
   }
 
   @Override
@@ -49,11 +53,11 @@ public final class MatchProcessAsn extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_asn);
+    return Arrays.hashCode(_asn);
   }
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "<" + _asn + ">";
+    return getClass().getSimpleName() + "<" + Arrays.toString(_asn) + ">";
   }
 }

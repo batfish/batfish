@@ -1214,16 +1214,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
         matchProtocol = new MatchProtocol(srcProtocol);
         break;
       case OSPF:
-        matchProtocol =
-            firstNonNull(
-                (MatchProtocol)
-                    redistributionPolicy
-                        .getSpecialAttributes()
-                        .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-                // No match type means internal routes only, at least on IOS.
-                // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
-                new MatchProtocol(
-                    RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA, RoutingProtocol.OSPF_IS));
+        List<Object> obj =
+            redistributionPolicy
+                .getSpecialAttributes()
+                .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES);
+        if (obj != null && !obj.isEmpty() && obj.get(0) != null) {
+          matchProtocol = (MatchProtocol) obj.get(0);
+        } else {
+          // No match type means internal routes only, at least on IOS.
+          // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
+          matchProtocol =
+              new MatchProtocol(
+                  RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA, RoutingProtocol.OSPF_IS);
+        }
         break;
       case EIGRP:
         // key EIGRP indicates redist external too; EIGRP_EX is never used as a key

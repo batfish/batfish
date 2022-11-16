@@ -275,6 +275,7 @@ import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -431,6 +432,7 @@ import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
+import org.batfish.representation.cisco.EigrpRedistributionPolicy;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.IcmpEchoSla;
@@ -1443,6 +1445,30 @@ public final class CiscoGrammarTest {
                 .setValues(
                     EigrpMetricValues.builder().setBandwidth(200).setDelay(200_000_000L).build())
                 .build()));
+  }
+
+  /**
+   * Test EIGRP route redistribution. Confirmation test when multiple redelivery settings are made
+   * in EIGRP.
+   */
+  @Test
+  public void testIosEigrpRedistributeMultiple() {
+    String hostname = "ios-eigrp-redistribute-eigrp-multi";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    EigrpRedistributionPolicy redistributionPolicy =
+        vc.getDefaultVrf()
+            .getEigrpProcesses()
+            .get(10L)
+            .getRedistributionPolicies()
+            .get(RoutingProtocol.EIGRP);
+
+    List<Object> MatchRedistributeASList = new ArrayList<Object>(Arrays.asList(20L, 30L));
+    java.util.Map<String, List<Object>> MatchList = new java.util.TreeMap<>();
+    MatchList.put(
+        org.batfish.representation.cisco.EigrpRedistributionPolicy.EIGRP_AS_NUMBER,
+        MatchRedistributeASList);
+
+    assertThat(redistributionPolicy.getSpecialAttributes(), equalTo(MatchList));
   }
 
   @Test
@@ -6025,27 +6051,31 @@ public final class CiscoGrammarTest {
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
           vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+      List<Object> MatchProtocolList = new ArrayList<Object>();
+      MatchProtocolList.add(
+          new MatchProtocol(
+              RoutingProtocol.OSPF,
+              RoutingProtocol.OSPF_IA,
+              RoutingProtocol.OSPF_E1,
+              RoutingProtocol.OSPF_E2));
       assertThat(redistributionPolicy.getRouteMap(), equalTo("ospf2bgp"));
       assertThat(redistributionPolicy.getMetric(), equalTo(10000L));
       assertThat(
           redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-          equalTo(
-              new MatchProtocol(
-                  RoutingProtocol.OSPF,
-                  RoutingProtocol.OSPF_IA,
-                  RoutingProtocol.OSPF_E1,
-                  RoutingProtocol.OSPF_E2)));
+          equalTo(MatchProtocolList));
     }
     {
       String hostname = "ios-bgp-redistribute-ospf-match-internal";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
           vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+      List<Object> MatchProtocolList = new ArrayList<Object>();
+      MatchProtocolList.add(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA));
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(
           redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-          equalTo(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
+          equalTo(MatchProtocolList));
     }
   }
 

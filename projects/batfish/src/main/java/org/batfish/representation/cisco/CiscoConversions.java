@@ -1274,9 +1274,9 @@ public class CiscoConversions {
     if (protocol == RoutingProtocol.EIGRP) {
       matchExpr = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
 
-      Long otherAsn =
-          (Long) policy.getSpecialAttributes().get(EigrpRedistributionPolicy.EIGRP_AS_NUMBER);
-      if (otherAsn == null) {
+      List<Object> otherAsn =
+          policy.getSpecialAttributes().get(EigrpRedistributionPolicy.EIGRP_AS_NUMBER);
+      if (otherAsn == null || otherAsn.isEmpty()) {
         oldConfig
             .getWarnings()
             .redFlag(
@@ -1285,7 +1285,11 @@ public class CiscoConversions {
                     protocol, proc.getAsn()));
         return null;
       }
-      eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
+      long[] asns = new long[otherAsn.size()];
+      for (int i = 0; i < otherAsn.size(); i++) {
+        asns[i] = (long) otherAsn.get(i);
+      }
+      eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(asns));
     } else if (protocol == RoutingProtocol.ISIS_ANY) {
       matchExpr =
           new MatchProtocol(
