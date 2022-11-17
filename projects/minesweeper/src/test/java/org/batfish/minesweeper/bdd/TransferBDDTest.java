@@ -394,25 +394,43 @@ public class TransferBDDTest {
     assertEquals(anyRoute, outAnnouncements);
   }
 
-  /* Not currently supporting directives to change the default action, so this test is removed.
+  @Test
+  public void testSetDefault() {
+    _policyBuilder
+        .addStatement(Statements.SetDefaultActionAccept.toStaticStatement())
+        .addStatement(Statements.DefaultAction.toStaticStatement());
 
-   public void testSetDefault() {
-     _policyBuilder.addStatement(Statements.SetDefaultActionAccept.toStaticStatement());
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-     RoutingPolicy policy = _policyBuilder.build();
-     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
 
-     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-     BDD acceptedAnnouncements = result.getSecond();
-     BDDRoute outAnnouncements = result.getFirst();
+    assertTrue(acceptedAnnouncements.isOne());
 
-     assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
+  }
 
-     assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
-   }
+  @Test
+  public void testSetLocalDefault() {
+    _policyBuilder
+        .addStatement(Statements.SetLocalDefaultActionAccept.toStaticStatement())
+        .addStatement(Statements.ReturnLocalDefaultAction.toStaticStatement());
 
-  */
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
+  }
 
   @Test
   public void testPartialAccept() {
@@ -1333,7 +1351,6 @@ public class TransferBDDTest {
     assertEquals(anyRoute, outAnnouncements);
   }
 
-  /* Not supporting changes to the default action.
   @Test
   public void testConditionalDefaultAction() {
     RoutingPolicy policy =
@@ -1411,7 +1428,6 @@ public class TransferBDDTest {
     assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
-   */
   @Test
   public void testUnreachableUnhandled() {
     RoutingPolicy policy =

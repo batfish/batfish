@@ -489,42 +489,43 @@ public class TransferBDD {
           result = returnValue(result, false);
           break;
 
+        case SetDefaultActionAccept:
+          curP.debug("SetDefaultActionAccept");
+          curP = curP.setDefaultAccept(true);
+          break;
+
+        case SetDefaultActionReject:
+          curP.debug("SetDefaultActionReject");
+          curP = curP.setDefaultAccept(false);
+          break;
+
+        case SetLocalDefaultActionAccept:
+          curP.debug("SetLocalDefaultActionAccept");
+          curP = curP.setDefaultAcceptLocal(true);
+          break;
+
+        case SetLocalDefaultActionReject:
+          curP.debug("SetLocalDefaultActionReject");
+          curP = curP.setDefaultAcceptLocal(false);
+          break;
+
+        case ReturnLocalDefaultAction:
+          curP.debug("ReturnLocalDefaultAction");
+          result = returnValue(result, curP.getDefaultAcceptLocal());
+          break;
+
+        case DefaultAction:
+          curP.debug("DefaultAction");
+          result = exitValue(result, curP.getDefaultAccept());
+          break;
+
           /*
-                  case SetDefaultActionAccept:
-                    curP.debug("SetDefaultActionAccept");
-                    curP = curP.setDefaultAccept(true);
-                    break;
+          case FallThrough:
+            curP.debug("Fallthrough");
+            result = fallthrough(result, true);
+            break;
+             */
 
-                  case SetDefaultActionReject:
-                    curP.debug("SetDefaultActionReject");
-                    curP = curP.setDefaultAccept(false);
-                    break;
-
-                  case SetLocalDefaultActionAccept:
-                    curP.debug("SetLocalDefaultActionAccept");
-                    curP = curP.setDefaultAcceptLocal(true);
-                    break;
-
-                  case SetLocalDefaultActionReject:
-                    curP.debug("SetLocalDefaultActionReject");
-                    curP = curP.setDefaultAcceptLocal(false);
-                    break;
-
-                  case ReturnLocalDefaultAction:
-                    curP.debug("ReturnLocalDefaultAction");
-                    result = returnValue(result, curP.getDefaultAcceptLocal());
-                    break;
-
-                  case DefaultAction:
-                    curP.debug("DefaultAction");
-                    result = exitValue(result, curP.getDefaultAccept());
-                    break;
-
-                  case FallThrough:
-                    curP.debug("Fallthrough");
-                    result = fallthrough(result, true);
-                    break;
-          */
         case Return:
           curP.debug("Return");
           result = result.setReturnAssignedValue(_factory.one());
