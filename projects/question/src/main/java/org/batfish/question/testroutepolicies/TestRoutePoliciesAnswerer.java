@@ -54,6 +54,7 @@ import org.batfish.specifier.SpecifierFactories;
 public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_POLICY_NAME = "Policy_Name";
+  public static final String COL_PROPOSED_POLICY_NAME = "Proposed_Policy_Name";
   public static final String COL_INPUT_ROUTE = "Input_Route";
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
@@ -106,6 +107,21 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    */
   public static Row rowResultFor(RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
     return toRow(testPolicy(policy, inputRoute, direction));
+  }
+
+  /**
+   * Produce the difference of simulating the given route policies on the given input route.
+   *
+   * @param policy the route policy to simulate
+   * @param otherPolicy the other route policy to simulate
+   * @param inputRoute the input route for the policy
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @return a table row containing the differences of the simulation
+   */
+  public static Row diffRowResultsFor(
+      RoutingPolicy policy, RoutingPolicy otherPolicy, Bgpv4Route inputRoute, Direction direction) {
+    return toCompareRow(
+        testPolicy(policy, inputRoute, direction), testPolicy(otherPolicy, inputRoute, direction));
   }
 
   private static Result testPolicy(
@@ -307,6 +323,66 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
   }
 
+  public static TableMetadata compareMetadata() {
+    List<ColumnMetadata> columnMetadata =
+        ImmutableList.of(
+            new ColumnMetadata(COL_NODE, NODE, "The node that has the policy", true, false),
+            new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
+            new ColumnMetadata(
+                COL_PROPOSED_POLICY_NAME, STRING, "The name of the proposed policy", true, false),
+            new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
+            new ColumnMetadata(
+                baseColumnName(COL_ACTION),
+                STRING,
+                "The action of the policy on the input route",
+                false,
+                true),
+            new ColumnMetadata(
+                deltaColumnName(COL_ACTION),
+                STRING,
+                "The action of the policy on the input route",
+                false,
+                true),
+            new ColumnMetadata(
+                baseColumnName(COL_OUTPUT_ROUTE),
+                BGP_ROUTE,
+                "The output route, if any",
+                false,
+                true),
+            new ColumnMetadata(
+                deltaColumnName(COL_OUTPUT_ROUTE),
+                BGP_ROUTE,
+                "The output route, if any",
+                false,
+                true),
+            new ColumnMetadata(
+                baseColumnName(COL_TRACE),
+                Schema.list(Schema.TRACE_TREE),
+                "Route policy trace that shows which clauses/terms matched the input route. If the"
+                    + " trace is empty, either nothing matched or tracing is not yet been"
+                    + " implemented for this policy type. This is an experimental feature whose"
+                    + " content and format is subject to change.",
+                false,
+                true),
+            new ColumnMetadata(
+                deltaColumnName(COL_TRACE),
+                Schema.list(Schema.TRACE_TREE),
+                "Route policy trace that shows which clauses/terms matched the input route. If the"
+                    + " trace is empty, either nothing matched or tracing is not yet been"
+                    + " implemented for this policy type. This is an experimental feature whose"
+                    + " content and format is subject to change.",
+                false,
+                true),
+            new ColumnMetadata(
+                COL_DIFF,
+                BGP_ROUTE_DIFFS,
+                "The difference between the output routes",
+                false,
+                true));
+    return new TableMetadata(
+        columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
+  }
+
   private static Row toRow(Result result) {
     org.batfish.datamodel.questions.BgpRoute inputRoute =
         toQuestionsBgpRoute(result.getInputRoute());
@@ -355,6 +431,42 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
         .put(baseColumnName(COL_OUTPUT_ROUTE), snapshotOutputRoute)
         .put(deltaColumnName(COL_OUTPUT_ROUTE), referenceOutputRoute)
+        .put(COL_DIFF, routeDiffs)
+        .build();
+  }
+
+  private static @Nullable Row toCompareRow(Result snapshotResult, Result otherResult) {
+
+    if (snapshotResult.equals(otherResult)) {
+      return null;
+    }
+
+    org.batfish.datamodel.questions.BgpRoute snapshotOutputRoute =
+        toQuestionsBgpRoute(snapshotResult.getOutputRoute());
+    org.batfish.datamodel.questions.BgpRoute referenceOutputRoute =
+        toQuestionsBgpRoute(otherResult.getOutputRoute());
+
+    boolean equalAction = snapshotResult.getAction() == otherResult.getAction();
+    boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
+    assert !(equalAction && equalOutputRoutes);
+
+    BgpRouteDiffs routeDiffs =
+        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
+
+    RoutingPolicyId policyId = snapshotResult.getPolicyId();
+    RoutingPolicyId proposedPolicyId = otherResult.getPolicyId();
+    Bgpv4Route inputRoute = snapshotResult.getInputRoute();
+    return Row.builder()
+        .put(COL_NODE, new Node(policyId.getNode()))
+        .put(COL_POLICY_NAME, policyId.getPolicy())
+        .put(COL_PROPOSED_POLICY_NAME, proposedPolicyId.getPolicy())
+        .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
+        .put(baseColumnName(COL_ACTION), snapshotResult.getAction())
+        .put(deltaColumnName(COL_ACTION), otherResult.getAction())
+        .put(baseColumnName(COL_OUTPUT_ROUTE), snapshotOutputRoute)
+        .put(deltaColumnName(COL_OUTPUT_ROUTE), referenceOutputRoute)
+        .put(baseColumnName(COL_TRACE), snapshotResult.getTrace())
+        .put(deltaColumnName(COL_TRACE), otherResult.getTrace())
         .put(COL_DIFF, routeDiffs)
         .build();
   }

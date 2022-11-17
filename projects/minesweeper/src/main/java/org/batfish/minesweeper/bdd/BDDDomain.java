@@ -31,6 +31,12 @@ public class BDDDomain<T> {
     _integer = new MutableBDDInteger(other._integer);
   }
 
+  public BDDDomain(BDD pred, BDDDomain<T> other) {
+    _factory = other._factory;
+    _values = other._values;
+    _integer = other.getInteger().and(pred);
+  }
+
   private int numBits(List<T> values) {
     int size = values.size();
     double log = Math.log((double) size);

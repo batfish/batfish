@@ -317,6 +317,33 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         .andWith(nextHopConstraint);
   }
 
+  /**
+   * Constructs a new BDDRoute by restricting the given one to conform to the predicate pred.
+   *
+   * @param pred the predicate used to restrict the output routes
+   * @param route a symbolic route represented as a transformation on a set of routes (input).
+   */
+  public BDDRoute(BDD pred, BDDRoute route) {
+    _factory = route._factory;
+
+    // We do not need to clone the atomic predicates.
+    _asPathRegexAtomicPredicates = route._asPathRegexAtomicPredicates;
+    _communityAtomicPredicates = route._communityAtomicPredicates;
+    _prefixLength = route._prefixLength.and(pred);
+    _prefix = route.getPrefix().and(pred);
+    _nextHop = route.getNextHop().and(pred);
+    _adminDist = route.getAdminDist().and(pred);
+    _med = route.getMed().and(pred);
+    _tag = route.getTag().and(pred);
+    _localPref = route.getLocalPref().and(pred);
+    _protocolHistory = new BDDDomain<>(pred, route.getProtocolHistory());
+    _ospfMetric = new BDDDomain<>(pred, route.getOspfMetric());
+    _bitNames = route._bitNames;
+    _nextHopSet = pred.and(route.getNextHopSet());
+    _nextHopDiscarded = pred.and(route.getNextHopDiscarded());
+    _unsupported = pred.and(route.getUnsupported());
+  }
+
   /*
    * Converts a BDD to the graphviz DOT format for debugging.
    */

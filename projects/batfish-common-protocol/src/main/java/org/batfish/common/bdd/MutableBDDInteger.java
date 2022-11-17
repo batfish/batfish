@@ -171,6 +171,17 @@ public final class MutableBDDInteger extends BDDInteger {
   }
 
   /*
+   * Restrict each bit in the bitvector to the predicate pred.
+   */
+  public MutableBDDInteger and(BDD pred) {
+    MutableBDDInteger val = new MutableBDDInteger(this);
+    for (int i = 0; i < _bitvec.length; i++) {
+      val._bitvec[i] = pred.and(_bitvec[i]);
+    }
+    return val;
+  }
+
+  /*
    * Set this BDD to be equal to another BDD
    */
   public void setValue(MutableBDDInteger other) {

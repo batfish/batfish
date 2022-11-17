@@ -140,6 +140,23 @@ public class TransferBDD {
         _configAtomicPredicates.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
   }
 
+  public TransferBDD(BDDFactory factory, ConfigAtomicPredicates aps, RoutingPolicy policy) {
+    _configAtomicPredicates = aps;
+    _policy = policy;
+    _conf = policy.getOwner();
+    _statements = policy.getStatements();
+    _useOutputAttributes = Environment.useOutputAttributesFor(_conf);
+
+    _factory = factory;
+    _factory.setCacheRatio(64);
+
+    _originalRoute = new BDDRoute(_factory, aps);
+    _communityAtomicPredicates =
+        _configAtomicPredicates.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    _asPathRegexAtomicPredicates =
+        _configAtomicPredicates.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+  }
+
   /*
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
@@ -649,7 +666,7 @@ public class TransferBDD {
         newValue.setValue(OspfType.E1);
       } else {
         curP.indent().debug("Value: E2");
-        newValue.setValue(OspfType.E1);
+        newValue.setValue(OspfType.E2);
       }
       curP.getData().setOspfMetric(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
@@ -662,7 +679,6 @@ public class TransferBDD {
           applyLongExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
       curP.getData().setLocalPref(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
-
     } else if (stmt instanceof SetTag) {
       curP.debug("SetTag");
       SetTag st = (SetTag) stmt;
@@ -740,7 +756,6 @@ public class TransferBDD {
 
     } else if (stmt instanceof TraceableStatement) {
       return compute(((TraceableStatement) stmt).getInnerStatements(), ImmutableList.of(state));
-
     } else {
       throw new UnsupportedFeatureException(stmt.toString());
     }
@@ -1247,5 +1262,9 @@ public class TransferBDD {
 
   public boolean getUseOutputAttributes() {
     return _useOutputAttributes;
+  }
+
+  public RoutingPolicy getPolicy() {
+    return _policy;
   }
 }
