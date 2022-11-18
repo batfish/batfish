@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
@@ -22,26 +23,29 @@ public final class ExtendedCommunityTest {
   public void testEquals() {
     ExtendedCommunity ec = ExtendedCommunity.of(0, 2L, 123L);
     new EqualsTester()
-        .addEqualityGroup(ec, ec, ExtendedCommunity.of(0, 2L, 123L))
+        .addEqualityGroup(ec, ExtendedCommunity.of(0, 2L, 123L))
         .addEqualityGroup(
             ExtendedCommunity.of(1 << 8, 2L, 123L),
             ExtendedCommunity.of(1 << 8, Ip.parse("0.0.0.2"), 123L))
         .addEqualityGroup(ExtendedCommunity.of(0, 3L, 123L))
         .addEqualityGroup(ExtendedCommunity.of(0, 2L, 124L))
-        .addEqualityGroup(new Object())
+        .addEqualityGroup(ExtendedCommunity.opaque(true, 1, 2))
+        .addEqualityGroup(ExtendedCommunity.opaque(false, 1, 2))
+        .addEqualityGroup(ExtendedCommunity.opaque(false, 3, 2))
+        .addEqualityGroup(ExtendedCommunity.opaque(false, 3, 4))
         .testEquals();
   }
 
   @Test
-  public void testJavaSerialization() {
-    ExtendedCommunity ec = ExtendedCommunity.of(1, 2L, 123L);
-    assertThat(SerializationUtils.clone(ec), equalTo(ec));
-  }
-
-  @Test
-  public void testJsonSerialization() {
-    ExtendedCommunity ec = ExtendedCommunity.of(1, 2L, 123L);
-    assertThat(BatfishObjectMapper.clone(ec, ExtendedCommunity.class), equalTo(ec));
+  public void testSerialization() {
+    for (ExtendedCommunity ec :
+        ImmutableList.of(
+            ExtendedCommunity.of(1, 2L, 123L),
+            ExtendedCommunity.opaque(true, 1, 2),
+            ExtendedCommunity.opaque(false, 255, 0xFFFFFFFFFFFFL))) {
+      assertThat(SerializationUtils.clone(ec), equalTo(ec));
+      assertThat(BatfishObjectMapper.clone(ec, Community.class), equalTo(ec));
+    }
   }
 
   @Test
@@ -54,6 +58,10 @@ public final class ExtendedCommunityTest {
         ExtendedCommunity.parse("512:1.1:1"), equalTo(ExtendedCommunity.of(0x02 << 8, 65537, 1L)));
     assertThat(ExtendedCommunity.parse("target:1L:1"), equalTo(ExtendedCommunity.of(514, 1L, 1L)));
     assertThat(ExtendedCommunity.parse("origin:1L:1"), equalTo(ExtendedCommunity.of(515, 1L, 1L)));
+    assertThat(
+        ExtendedCommunity.parse("0x43:0x4:0x5"), equalTo(ExtendedCommunity.opaque(false, 4, 5L)));
+    assertThat(
+        ExtendedCommunity.parse("0x3:0x4:0x5"), equalTo(ExtendedCommunity.opaque(true, 4, 5L)));
   }
 
   @Test
@@ -90,6 +98,24 @@ public final class ExtendedCommunityTest {
   public void testParseLargeType() {
     thrown.expect(IllegalArgumentException.class);
     ExtendedCommunity.parse("65536:1:1");
+  }
+
+  @Test
+  public void testParseGenericNegativeType() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.parse("0x-1:0x2:0x3");
+  }
+
+  @Test
+  public void testParseGenericNegativeSubtype() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.parse("0x3:0x-4:0x5");
+  }
+
+  @Test
+  public void testParseGenericNegativeValue() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.parse("0x3:0x4:0x-5");
   }
 
   @Test
