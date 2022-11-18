@@ -312,7 +312,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   /** Name of the generated static route resolution policy, implementing IOS resolution filtering */
   public static final String RESOLUTION_POLICY_NAME = "~RESOLUTION_POLICY~";
 
-  private static final int VLAN_NORMAL_MAX_CISCO = 1005;
+  private static final int VLAN_NORMAL_MAX_CISCO = 4096;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
