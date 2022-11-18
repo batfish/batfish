@@ -7,6 +7,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,6 +64,13 @@ class RouteMapConvertor {
     _continueTargets = computeContinueTargets(routeMap);
   }
 
+  private static @Nonnull Statement callInContext(String routingPolicyName) {
+    return new If(
+        new CallExpr(routingPolicyName),
+        ImmutableList.of(ROUTE_MAP_PERMIT_STATEMENT),
+        ImmutableList.of(ROUTE_MAP_DENY_STATEMENT));
+  }
+
   @VisibleForTesting
   RoutingPolicy toRouteMap() {
     String routeMapName = _routeMap.getName();
@@ -69,8 +78,22 @@ class RouteMapConvertor {
 
     ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
     currentRoutingPolicyStatements.add(
+        Statements.SetLocalDefaultActionReject.toStaticStatement(),
         Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
         Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
+
+    // Build the top-level RoutingPolicy that corresponds to the route-map. All it does is call
+    // the first interval and return its result in a context-appropriate way.
+    int firstSequence = _routeMap.getEntries().firstKey();
+    String firstSequenceRoutingPolicyName = computeRoutingPolicyName(routeMapName, firstSequence);
+    RoutingPolicy.builder()
+        .setName(routeMapName)
+        .setOwner(_c)
+        .setStatements(ImmutableList.of(callInContext(firstSequenceRoutingPolicyName)))
+        .build();
+
+    currentRoutingPolicyName = firstSequenceRoutingPolicyName;
+
     for (RouteMapEntry currentEntry : _routeMap.getEntries().values()) {
       int currentSequence = currentEntry.getNumber();
       if (_continueTargets.contains(currentSequence)) {
@@ -88,8 +111,8 @@ class RouteMapConvertor {
       currentRoutingPolicyStatements.add(toStatement(currentEntry));
     }
     // finalize last routing policy
-    // TODO: do default action, which changes when continuing from a permit
-    currentRoutingPolicyStatements.add(ROUTE_MAP_DENY_STATEMENT);
+
+    currentRoutingPolicyStatements.add(Statements.ReturnLocalDefaultAction.toStaticStatement());
     RoutingPolicy.builder()
         .setName(currentRoutingPolicyName)
         .setOwner(_c)
@@ -111,30 +134,38 @@ class RouteMapConvertor {
         ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
   }
 
-  private Statement convertActionStatement(RouteMapEntry entry) {
+  private List<Statement> convertActionStatement(RouteMapEntry entry) {
     RouteMapContinue continueTarget = entry.getContinue();
-    Statement finalTrueStatement;
+    List<Statement> finalTrueStatements = new ArrayList<>();
+    LineAction action = entry.getAction();
     if (continueTarget != null) {
+      if (action == LineAction.PERMIT) {
+        finalTrueStatements.add(Statements.SetLocalDefaultActionAccept.toStaticStatement());
+      } else {
+        assert action == LineAction.DENY;
+        finalTrueStatements.add(Statements.SetLocalDefaultActionReject.toStaticStatement());
+      }
+
       int continueNext =
           Optional.ofNullable(continueTarget.getNext())
               .orElse(_nextSeqMap.getOrDefault(entry.getNumber(), -1));
       if (_continueTargets.contains(continueNext)) {
-        // TODO: verify correct semantics: possibly, should add two statements in this case; first
-        // should set default _action to permit/deny if this is a permit/deny entry, and second
-        // should call policy for next entry.
-        finalTrueStatement = call(computeRoutingPolicyName(_routeMap.getName(), continueNext));
+        finalTrueStatements.add(call(computeRoutingPolicyName(_routeMap.getName(), continueNext)));
       } else {
         // invalid continue target, so just deny
         // TODO: verify actual behavior
-        finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
+        finalTrueStatements.add(Statements.ReturnFalse.toStaticStatement());
       }
-    } else if (entry.getAction() == LineAction.PERMIT) {
-      finalTrueStatement = ROUTE_MAP_PERMIT_STATEMENT;
     } else {
-      assert entry.getAction() == LineAction.DENY;
-      finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
+      // No continue: on match, return the action.
+      if (action == LineAction.PERMIT) {
+        finalTrueStatements.add(Statements.ReturnTrue.toStaticStatement());
+      } else {
+        assert action == LineAction.DENY;
+        finalTrueStatements.add(Statements.ReturnFalse.toStaticStatement());
+      }
     }
-    return finalTrueStatement;
+    return finalTrueStatements;
   }
 
   @VisibleForTesting
@@ -151,7 +182,8 @@ class RouteMapConvertor {
                 entry.getSets().flatMap(m -> m.toStatements(_c, _vc, _w)),
                 // Call statement is executed after all set statements.
                 // http://docs.frrouting.org/en/latest/routemap.html#route-maps
-                Stream.of(convertCallStatement(entry), convertActionStatement(entry)))
+                Stream.concat(
+                    Stream.of(convertCallStatement(entry)), convertActionStatement(entry).stream()))
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
 
