@@ -2,7 +2,6 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
