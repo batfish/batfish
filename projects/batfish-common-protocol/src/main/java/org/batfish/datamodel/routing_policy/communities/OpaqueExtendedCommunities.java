@@ -1,7 +1,9 @@
 package org.batfish.datamodel.routing_policy.communities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 
 /**
  * Matches a {@link org.batfish.datamodel.bgp.community.Community} iff it is an opaque extended
@@ -53,5 +55,12 @@ public final class OpaqueExtendedCommunities extends CommunityMatchExpr {
   @Override
   public int hashCode() {
     return Objects.hash(_isTransitive, _subType);
+  }
+
+  @JsonCreator
+  private static @Nonnull OpaqueExtendedCommunities jsonCreator(
+      @JsonProperty(PROP_TRANSITIVE) boolean isTransitive,
+      @JsonProperty(PROP_SUBTYPE) int subType) {
+    return OpaqueExtendedCommunities.of(isTransitive, subType);
   }
 }
