@@ -404,7 +404,7 @@ public class RouteMapConvertorTest {
                     .build();
     Environment.Builder env = Environment.builder(C);
     Builder outputBuilder = Bgpv4Route.testBuilder();
-    // There are 8 paths through the route-map, let's test them all.
+    // There are 3 paths through the route-map:
     // 10 deny tag 1, continue                OR    fall-through
     // 20 permit tag 2, continue      OR    30 terminate
     {
