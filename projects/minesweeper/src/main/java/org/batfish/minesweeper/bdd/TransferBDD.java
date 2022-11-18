@@ -392,13 +392,19 @@ public class TransferBDD {
       switch (b.getType()) {
         case CallExprContext:
           p.debug("CallExprContext");
-          BDD x1 = mkBDD(p.getCallContext() == TransferParam.CallContext.EXPR_CALL);
-          allResults.add(result.setReturnValueBDD(x1).setReturnValueAccepted(true));
+          allResults.add(
+              result
+                  .setReturnValueBDD(_factory.one())
+                  .setReturnValueAccepted(
+                      p.getCallContext() == TransferParam.CallContext.EXPR_CALL));
           break;
         case CallStatementContext:
           p.debug("CallStmtContext");
-          BDD x2 = mkBDD(p.getCallContext() == TransferParam.CallContext.STMT_CALL);
-          allResults.add(result.setReturnValueBDD(x2).setReturnValueAccepted(true));
+          allResults.add(
+              result
+                  .setReturnValueBDD(_factory.one())
+                  .setReturnValueAccepted(
+                      p.getCallContext() == TransferParam.CallContext.STMT_CALL));
           break;
         case True:
           p.debug("True");
