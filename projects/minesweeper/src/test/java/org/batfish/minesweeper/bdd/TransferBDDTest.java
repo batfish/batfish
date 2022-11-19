@@ -1393,6 +1393,51 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testSetExtendedCommunityAdditive() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("5:55")))))
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(
+                            CommunitySet.of(ExtendedCommunity.parse("0:4:44"))))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // each atomic predicate for community 4:44 has the 1 BDD
+    for (int ap :
+        _configAPs
+            .getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("5:55")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+    // each atomic predicate for community 0:4:44 has the 1 BDD
+    for (int ap :
+        _configAPs
+            .getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+  }
+
+  @Test
   public void testSetLargeCommunity() {
     RoutingPolicy policy =
         _policyBuilder
