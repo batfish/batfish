@@ -42,8 +42,10 @@ import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -218,6 +220,54 @@ public class TransferBDD {
         TransferResult newRes = res.setReturnValueAccepted(!res.getReturnValue().getAccepted());
         allResults.add(newRes);
       }
+
+    } else if (expr instanceof Conjunction) {
+      Conjunction conj = (Conjunction) expr;
+      Set<TransferResult> currResults = new HashSet<>();
+      // the default result is true
+      currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(true));
+      for (BooleanExpr e : conj.getConjuncts()) {
+        Set<TransferResult> nextResults = new HashSet<>();
+        for (TransferResult curr : currResults) {
+          BDD currBDD = curr.getReturnValue().getSecond();
+          if (curr.getReturnValue().getAccepted()) {
+            nextResults.addAll(
+                compute(e, toTransferBDDState(p.indent(), curr)).stream()
+                    .map(r -> r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD)))
+                    .collect(ImmutableSet.toImmutableSet()));
+          } else {
+            // if the current state is not accepting then we've reached a false conjunct, so we
+            // short-circuit the rest of the computation
+            allResults.add(curr);
+          }
+        }
+        currResults = nextResults;
+      }
+      allResults.addAll(currResults);
+
+    } else if (expr instanceof Disjunction) {
+      Disjunction disj = (Disjunction) expr;
+      Set<TransferResult> currResults = new HashSet<>();
+      // the default result is false
+      currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
+      for (BooleanExpr e : disj.getDisjuncts()) {
+        Set<TransferResult> nextResults = new HashSet<>();
+        for (TransferResult curr : currResults) {
+          BDD currBDD = curr.getReturnValue().getSecond();
+          if (!curr.getReturnValue().getAccepted()) {
+            nextResults.addAll(
+                compute(e, toTransferBDDState(p.indent(), curr)).stream()
+                    .map(r -> r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD)))
+                    .collect(ImmutableSet.toImmutableSet()));
+          } else {
+            // if the current state is accepting then we've reached a true disjunct, so we
+            // short-circuit the rest of the computation
+            allResults.add(curr);
+          }
+        }
+        currResults = nextResults;
+      }
+      allResults.addAll(currResults);
 
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
@@ -1053,6 +1103,13 @@ public class TransferBDD {
     BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
     TransferParam p = new TransferParam(o, false);
     return compute(_statements, p);
+  }
+
+  public Set<TransferResult> computePaths(@Nullable Set<Prefix> ignoredNetworks) {
+    _ignoredNetworks = ignoredNetworks;
+    BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
+    TransferParam p = new TransferParam(o, false);
+    return computePaths(_statements, p);
   }
 
   public Map<CommunityVar, Set<Integer>> getCommunityAtomicPredicates() {
