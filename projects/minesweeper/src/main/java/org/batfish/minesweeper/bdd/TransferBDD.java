@@ -195,9 +195,13 @@ public class TransferBDD {
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  /*
-   * Produce one TransferResult per path through the given boolean expression.
-   * TODO: Any updates to the TransferParam in expr are lost currently
+  /**
+   * Produces one TransferResult per path through the given boolean expression. For most
+   * expressions, for example matching on a prefix or community, this analysis will yield exactly
+   * two paths, respectively representing the case when the expression evaluates to true and false.
+   * Some expressions, such as CallExpr, Conjunction, and Disjunction, implicitly or explicitly
+   * contain branches and so can yield more than two paths. TODO: Any updates to the TransferParam
+   * in expr are lost currently
    */
   private Set<TransferResult> compute(BooleanExpr expr, TransferBDDState state)
       throws UnsupportedFeatureException {
@@ -674,7 +678,11 @@ public class TransferBDD {
 
   /**
    * Symbolic analysis of a list of route-policy statements. Returns one TransferResult per path
-   * through the list of statements.
+   * through the list of statements. The paths are unordered, and by construction each path is
+   * unique, as each path has a unique condition under which it is taken (the BDD in the
+   * TransferResult). The particular statements executed along a given path are not included in this
+   * representation but can be reconstructed by simulating one route that takes this path using
+   * {@link org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}.
    */
   private Set<TransferResult> computePaths(List<Statement> statements, TransferParam p) {
     TransferParam curP = p;
@@ -688,7 +696,10 @@ public class TransferBDD {
     for (TransferBDDState state : states) {
       curP = state.getTransferParam();
       result = state.getTransferResult();
-
+      if (result.getReturnValue().getSecond().isZero()) {
+        // ignore infeasible paths
+        continue;
+      }
       curP.debug("InitialCall finalizing");
       TransferReturn ret = result.getReturnValue();
       // Only accept routes that are not suppressed
@@ -1105,11 +1116,17 @@ public class TransferBDD {
     return compute(_statements, p);
   }
 
-  public Set<TransferResult> computePaths(@Nullable Set<Prefix> ignoredNetworks) {
+  /**
+   * The results of symbolic route-map analysis: one {@link
+   * org.batfish.minesweeper.bdd.TransferReturn} per path through the given route map.
+   */
+  public Set<TransferReturn> computePaths(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
     TransferParam p = new TransferParam(o, false);
-    return computePaths(_statements, p);
+    return computePaths(_statements, p).stream()
+        .map(TransferResult::getReturnValue)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public Map<CommunityVar, Set<Integer>> getCommunityAtomicPredicates() {

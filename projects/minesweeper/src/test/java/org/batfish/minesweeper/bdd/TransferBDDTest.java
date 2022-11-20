@@ -201,6 +201,21 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testCaptureAllPaths() {
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
+    assertEquals(expectedPaths, paths);
+  }
+
+  @Test
   public void testCaptureNone() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
@@ -216,6 +231,21 @@ public class TransferBDDTest {
 
     // no routes are produced
     assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
+  }
+
+  @Test
+  public void testCaptureNonePaths() {
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -249,13 +279,39 @@ public class TransferBDDTest {
     BDDRoute outAnnouncements = result.getFirst();
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
-
     BDD expectedBDD =
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(anyRoute, outAnnouncements);
+  }
+
+  @Test
+  public void testOnePrefixRangePaths() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+    BDD expectedBDD =
+        isRelevantForDestination(
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, true),
+            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), false));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -481,6 +537,48 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testPartialAcceptPaths() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            ImmutableList.of(
+                new SetLocalPreference(new LiteralLong(3)),
+                Statements.ExitAccept.toStaticStatement())));
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDD if1 =
+        isRelevantForDestination(
+            anyRoute(tbdd.getFactory()),
+            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+    BDD if2 =
+        isRelevantForDestination(
+            anyRoute(tbdd.getFactory()),
+            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
+
+    BDDRoute localPref3 = anyRoute(tbdd.getFactory());
+    localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
+            new TransferReturn(localPref3, if1.not().and(if2), true),
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false));
+    assertEquals(expectedPaths, paths);
+  }
+
+  @Test
   public void testPartialReturn() {
     _policyBuilder.addStatement(
         new If(
@@ -512,6 +610,48 @@ public class TransferBDDTest {
     assertEquals(permitted, ret.getSecond());
 
     assertEquals(anyRoute, ret.getFirst());
+  }
+
+  @Test
+  public void testPartialReturnPaths() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            ImmutableList.of(
+                new SetLocalPreference(new LiteralLong(3)),
+                Statements.ReturnFalse.toStaticStatement())));
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDD if1 =
+        isRelevantForDestination(
+            anyRoute(tbdd.getFactory()),
+            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+    BDD if2 =
+        isRelevantForDestination(
+            anyRoute(tbdd.getFactory()),
+            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
+
+    BDDRoute localPref3 = anyRoute(tbdd.getFactory());
+    localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
+            new TransferReturn(localPref3, if1.not().and(if2), false),
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -583,6 +723,42 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(anyRoute, outAnnouncements);
+  }
+
+  @Test
+  public void testNestedIfPaths() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            ImmutableList.of(
+                new If(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement())))));
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD if1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+    BDD if2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(any, if1.and(if2), true),
+            new TransferReturn(any, if1.not(), false),
+            new TransferReturn(any, if1.and(if2.not()), false));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -684,7 +860,6 @@ public class TransferBDDTest {
     assertEquals(anyRoute, outAnnouncements);
   }
 
-  /* Not supporting conjunctions currently.
   @Test
   public void testPrefixIntersection() {
     _policyBuilder.addStatement(
@@ -715,8 +890,6 @@ public class TransferBDDTest {
 
     assertEquals(anyRoute, outAnnouncements);
   }
-
-   */
 
   @Test
   public void testMatchEmptyPrefixSet() {
@@ -1290,6 +1463,43 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testConjunctionPaths() {
+    _policyBuilder.addStatement(
+        new If(
+            new Conjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD conj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD conj2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(any, conj1.and(conj2), true),
+            new TransferReturn(any, conj1.not(), false),
+            new TransferReturn(any, conj1.and(conj2.not()), false));
+    assertEquals(expectedPaths, paths);
+  }
+
+  @Test
   public void testStatefulConjunction() {
     String calledPolicyName = "calledPolicy";
 
@@ -1422,6 +1632,58 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testConjunctionShortCircuitPaths() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            matchPrefixSet(
+                                ImmutableList.of(
+                                    new PrefixRange(
+                                        Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                            new CallExpr(calledPolicyName))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD conj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+
+    BDDRoute localPref300 = new BDDRoute(any);
+    MutableBDDInteger localPref = localPref300.getLocalPref();
+    localPref300.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 300));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(any, conj1.not(), true),
+            new TransferReturn(localPref300, conj1, true));
+    assertEquals(expectedPaths, paths);
+  }
+
+  @Test
   public void testEmptyConjunction() {
     _policyBuilder.addStatement(
         new If(
@@ -1472,6 +1734,43 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(anyRoute, outAnnouncements);
+  }
+
+  @Test
+  public void testDisjunctionPaths() {
+    _policyBuilder.addStatement(
+        new If(
+            new Disjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD disj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD disj2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(
+            new TransferReturn(any, disj1, true),
+            new TransferReturn(any, disj1.not().and(disj2), true),
+            new TransferReturn(any, disj1.not().and(disj2.not()), false));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -1935,6 +2234,42 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testCallStatementPaths() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_STATEMENT_CONTEXT,
+                    ImmutableList.of(new SetLocalPreference(new LiteralLong(300L)))))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new CallStatement(calledPolicyName))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute localPref300 = anyRoute(tbdd.getFactory());
+    localPref300.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
+    assertEquals(expectedPaths, paths);
+  }
+
+  @Test
   public void testCallExpr() {
     String calledPolicyName = "calledPolicy";
 
@@ -1976,6 +2311,46 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testCallExprPaths() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_EXPR_CONTEXT,
+                    ImmutableList.of(
+                        new SetLocalPreference(new LiteralLong(300L)),
+                        new StaticStatement(Statements.ReturnTrue))))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new CallExpr(calledPolicyName),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute localPref300 = anyRoute(tbdd.getFactory());
+    localPref300.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
+
+    Set<TransferReturn> expectedPaths =
+        ImmutableSet.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
+    assertEquals(expectedPaths, paths);
+  }
+
+  @Test
   public void testNestedCalls() {
     String calledPolicyName = "calledPolicy";
 
@@ -1990,7 +2365,7 @@ public class TransferBDDTest {
 
     RoutingPolicy calledPolicy2 =
         _nf.routingPolicyBuilder()
-            .setName(calledPolicyName)
+            .setName(calledPolicyName2)
             .setOwner(_baseConfig)
             .addStatement(
                 new If(
