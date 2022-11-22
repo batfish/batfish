@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -110,6 +111,7 @@ import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -208,9 +210,9 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
 
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
     assertEquals(expectedPaths, paths);
   }
@@ -241,9 +243,9 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
 
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
     assertEquals(expectedPaths, paths);
   }
@@ -300,18 +302,19 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
 
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
     BDD expectedBDD =
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    assertThat(paths, Matchers.hasSize(2));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
             new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, true),
-            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), false));
-    assertEquals(expectedPaths, paths);
+            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), false)));
   }
 
   @Test
@@ -556,7 +559,7 @@ public class TransferBDDTest {
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDD if1 =
         isRelevantForDestination(
@@ -570,12 +573,13 @@ public class TransferBDDTest {
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    assertThat(paths, Matchers.hasSize(3));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
             new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
             new TransferReturn(localPref3, if1.not().and(if2), true),
-            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false));
-    assertEquals(expectedPaths, paths);
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false)));
   }
 
   @Test
@@ -632,7 +636,7 @@ public class TransferBDDTest {
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDD if1 =
         isRelevantForDestination(
@@ -646,12 +650,13 @@ public class TransferBDDTest {
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    assertThat(paths, Matchers.hasSize(3));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
             new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
             new TransferReturn(localPref3, if1.not().and(if2), false),
-            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false));
-    assertEquals(expectedPaths, paths);
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false)));
   }
 
   @Test
@@ -742,7 +747,7 @@ public class TransferBDDTest {
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -753,12 +758,13 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    assertThat(paths, Matchers.hasSize(3));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
             new TransferReturn(any, if1.and(if2), true),
             new TransferReturn(any, if1.not(), false),
-            new TransferReturn(any, if1.and(if2.not()), false));
-    assertEquals(expectedPaths, paths);
+            new TransferReturn(any, if1.and(if2.not()), false)));
   }
 
   @Test
@@ -1480,7 +1486,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
 
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1491,12 +1497,13 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    assertThat(paths, Matchers.hasSize(3));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
             new TransferReturn(any, conj1.and(conj2), true),
             new TransferReturn(any, conj1.not(), false),
-            new TransferReturn(any, conj1.and(conj2.not()), false));
-    assertEquals(expectedPaths, paths);
+            new TransferReturn(any, conj1.and(conj2.not()), false)));
   }
 
   @Test
@@ -1664,7 +1671,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
 
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1676,11 +1683,12 @@ public class TransferBDDTest {
     MutableBDDInteger localPref = localPref300.getLocalPref();
     localPref300.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 300));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    assertThat(paths, Matchers.hasSize(2));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
             new TransferReturn(any, conj1.not(), true),
-            new TransferReturn(localPref300, conj1, true));
-    assertEquals(expectedPaths, paths);
+            new TransferReturn(localPref300, conj1, true)));
   }
 
   @Test
@@ -1754,7 +1762,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
 
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1765,12 +1773,13 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(
+    assertThat(paths, Matchers.hasSize(3));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
             new TransferReturn(any, disj1, true),
             new TransferReturn(any, disj1.not().and(disj2), true),
-            new TransferReturn(any, disj1.not().and(disj2.not()), false));
-    assertEquals(expectedPaths, paths);
+            new TransferReturn(any, disj1.not().and(disj2.not()), false)));
   }
 
   @Test
@@ -2259,13 +2268,13 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
 
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute localPref300 = anyRoute(tbdd.getFactory());
     localPref300.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
     assertEquals(expectedPaths, paths);
   }
 
@@ -2340,13 +2349,13 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
 
-    Set<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute localPref300 = anyRoute(tbdd.getFactory());
     localPref300.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
 
-    Set<TransferReturn> expectedPaths =
-        ImmutableSet.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
     assertEquals(expectedPaths, paths);
   }
 
