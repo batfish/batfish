@@ -185,7 +185,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testCaptureAll() {
+  public void testExitAccept() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -203,7 +203,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testCaptureAllPaths() {
+  public void testExitAcceptPaths() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -218,7 +218,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testCaptureNone() {
+  public void testExitReject() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -236,7 +236,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testCaptureNonePaths() {
+  public void testExitRejectPaths() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -266,7 +266,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testOnePrefixRange() {
+  public void testMatchPrefixRange() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(
@@ -291,7 +291,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testOnePrefixRangePaths() {
+  public void testMatchPrefixRangePaths() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(
