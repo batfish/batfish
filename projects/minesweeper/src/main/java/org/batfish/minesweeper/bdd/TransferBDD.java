@@ -521,8 +521,13 @@ public class TransferBDD {
 
       // for each path coming from the guard, symbolically execute the appropriate branch of the If
       List<TransferBDDState> newStates = new ArrayList<>();
+      BDD currPathCondition = result.getReturnValue().getSecond();
       for (TransferResult guardResult : guardResults) {
-        BDD guard = guardResult.getReturnValue().getSecond();
+        BDD pathCondition = currPathCondition.and(guardResult.getReturnValue().getSecond());
+        if (pathCondition.isZero()) {
+          // prune infeasible paths
+          continue;
+        }
         BDDRoute current = guardResult.getReturnValue().getFirst();
         boolean accepted = guardResult.getReturnValue().getAccepted();
 
@@ -536,9 +541,7 @@ public class TransferBDD {
                         pCopy,
                         result.setReturnValue(
                             new TransferReturn(
-                                current,
-                                result.getReturnValue().getSecond().and(guard),
-                                result.getReturnValue().getAccepted()))))));
+                                current, pathCondition, result.getReturnValue().getAccepted()))))));
       }
 
       return ImmutableList.copyOf(newStates);
