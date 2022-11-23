@@ -43,10 +43,12 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
@@ -241,7 +243,7 @@ public class TransferBDD {
                         r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
                     // if we're on a path where e evaluates to false, then this path is done;
                     // otherwise we will evaluate the next conjunct in the next iteration
-                    if (!r.getReturnValue().getAccepted()) {
+                    if (!updated.getReturnValue().getAccepted()) {
                       finalResults.add(updated);
                     } else {
                       nextResults.add(updated);
@@ -268,10 +270,88 @@ public class TransferBDD {
                         r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
                     // if we're on a path where e evaluates to true, then this path is done;
                     // otherwise we will evaluate the next disjunct in the next iteration
-                    if (r.getReturnValue().getAccepted()) {
+                    if (updated.getReturnValue().getAccepted()) {
                       finalResults.add(updated);
                     } else {
                       nextResults.add(updated);
+                    }
+                  });
+        }
+        currResults = nextResults;
+      }
+      finalResults.addAll(currResults);
+
+      // TODO: This code is here for backward-compatibility reasons but has not been tested and is
+      // not currently maintained
+    } else if (expr instanceof ConjunctionChain) {
+      p.debug("ConjunctionChain");
+      ConjunctionChain d = (ConjunctionChain) expr;
+      List<BooleanExpr> conjuncts = new ArrayList<>(d.getSubroutines());
+      if (p.getDefaultPolicy() != null) {
+        BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
+        conjuncts.add(be);
+      }
+      if (conjuncts.isEmpty()) {
+        finalResults.add(result.setReturnValueBDD(_factory.one()));
+      } else {
+        TransferParam record = p;
+        List<TransferResult> currResults = new ArrayList<>();
+        currResults.add(result);
+        for (BooleanExpr e : d.getSubroutines()) {
+          List<TransferResult> nextResults = new ArrayList<>();
+          for (TransferResult curr : currResults) {
+            TransferParam param =
+                record
+                    .setDefaultPolicy(null)
+                    .setChainContext(TransferParam.ChainContext.CONJUNCTION)
+                    .indent();
+            compute(e, toTransferBDDState(param, curr))
+                .forEach(
+                    r -> {
+                      if (r.getFallthroughValue().isOne()) {
+                        nextResults.add(r);
+                      } else {
+                        finalResults.add(r);
+                      }
+                    });
+          }
+          currResults = nextResults;
+        }
+        finalResults.addAll(currResults);
+      }
+
+      // TODO: This code is here for backward-compatibility reasons but has not been tested and is
+      // not currently maintained
+    } else if (expr instanceof FirstMatchChain) {
+      p.debug("FirstMatchChain");
+      FirstMatchChain chain = (FirstMatchChain) expr;
+      List<BooleanExpr> chainPolicies = new ArrayList<>(chain.getSubroutines());
+      if (p.getDefaultPolicy() != null) {
+        BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
+        chainPolicies.add(be);
+      }
+      if (chainPolicies.isEmpty()) {
+        // No identity for an empty FirstMatchChain; default policy should always be set.
+        throw new BatfishException("Default policy is not set");
+      }
+      TransferParam record = p;
+      List<TransferResult> currResults = new ArrayList<>();
+      currResults.add(result);
+      for (BooleanExpr e : chainPolicies) {
+        List<TransferResult> nextResults = new ArrayList<>();
+        for (TransferResult curr : currResults) {
+          TransferParam param =
+              record
+                  .setDefaultPolicy(null)
+                  .setChainContext(TransferParam.ChainContext.CONJUNCTION)
+                  .indent();
+          compute(e, toTransferBDDState(param, curr))
+              .forEach(
+                  r -> {
+                    if (r.getFallthroughValue().isOne()) {
+                      nextResults.add(r);
+                    } else {
+                      finalResults.add(r);
                     }
                   });
         }
@@ -487,12 +567,10 @@ public class TransferBDD {
           result = exitValue(result, curP.getDefaultAccept());
           return ImmutableList.of(toTransferBDDState(curP, result));
 
-          /*
-          case FallThrough:
-            curP.debug("Fallthrough");
-            result = fallthrough(result, true);
-            break;
-             */
+        case FallThrough:
+          curP.debug("Fallthrough");
+          result = fallthrough(result, true);
+          return ImmutableList.of(toTransferBDDState(curP, result));
 
         case Return:
           curP.debug("Return");
@@ -759,13 +837,10 @@ public class TransferBDD {
     return result;
   }
 
-  /*
   private TransferResult fallthrough(TransferResult r, boolean val) {
     BDD fall = mkBDD(val);
-    BDD retAsgn = _factory.one();
-    return r.setFallthroughValue(fall).setReturnAssignedValue(retAsgn);
+    return r.setFallthroughValue(fall).setReturnAssignedValue(_factory.one());
   }
-   */
 
   // Create a TransferBDDState, using the BDDRoute in the given TransferResult and throwing away the
   // one that is in the given TransferParam.
