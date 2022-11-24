@@ -403,6 +403,8 @@ COMMUNITY
   }
 ;
 
+COMMUNITY_COUNT: 'community-count';
+
 COMPATIBLE: 'compatible';
 
 COMPRESS_CONFIGURATION_FILES: 'compress-configuration-files';
@@ -1969,7 +1971,9 @@ OPTIONS: 'options';
 
 ORIGIN: 'origin';
 
+ORHIGHER: 'orhigher';
 ORLONGER: 'orlonger';
+ORLOWER: 'orlower';
 
 OSPF: 'ospf';
 

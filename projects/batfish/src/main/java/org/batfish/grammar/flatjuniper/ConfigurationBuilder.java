@@ -466,6 +466,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_community_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_conditionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_instanceContext;
@@ -869,6 +870,8 @@ import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
+import org.batfish.representation.juniper.PsFromCommunityCount;
+import org.batfish.representation.juniper.PsFromCommunityCount.Mode;
 import org.batfish.representation.juniper.PsFromCondition;
 import org.batfish.representation.juniper.PsFromFamily;
 import org.batfish.representation.juniper.PsFromInstance;
@@ -5519,6 +5522,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentPsTerm.getFroms().addFromCommunity(new PsFromCommunity(name));
     _configuration.referenceStructure(
         COMMUNITY, name, POLICY_STATEMENT_FROM_COMMUNITY, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitPopsf_community_count(Popsf_community_countContext ctx) {
+    int count = toInteger(ctx.n.uint16());
+    Mode mode = Mode.EXACT;
+    if (ctx.ORHIGHER() != null) {
+      mode = Mode.ORHIGHER;
+    } else if (ctx.ORLOWER() != null) {
+      mode = Mode.ORLOWER;
+    }
+    PsFromCommunityCount from = new PsFromCommunityCount(count, mode);
+    _currentPsTerm.getFroms().setFromCommunityCount(from);
   }
 
   @Override

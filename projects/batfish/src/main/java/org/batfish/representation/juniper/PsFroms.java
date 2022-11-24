@@ -15,6 +15,7 @@ public final class PsFroms implements Serializable {
   private final Set<PsFromAsPath> _fromAsPaths;
   private PsFromColor _fromColor;
   private final Set<PsFromCommunity> _fromCommunities;
+  private PsFromCommunityCount _fromCommunityCount;
   private final Set<PsFromCondition> _fromConditions;
   private PsFromFamily _fromFamily;
   private PsFromInstance _fromInstance;
@@ -124,6 +125,11 @@ public final class PsFroms implements Serializable {
     return _fromCommunities;
   }
 
+  @Nullable
+  PsFromCommunityCount getFromCommunityCount() {
+    return _fromCommunityCount;
+  }
+
   @VisibleForTesting
   public @Nonnull Set<PsFromCondition> getFromConditions() {
     return _fromConditions;
@@ -205,6 +211,11 @@ public final class PsFroms implements Serializable {
   public void setFromColor(@Nonnull PsFromColor fromColor) {
     _atLeastOneFrom = true;
     _fromColor = fromColor;
+  }
+
+  public void setFromCommunityCount(@Nonnull PsFromCommunityCount fromCommunityCount) {
+    _atLeastOneFrom = true;
+    _fromCommunityCount = fromCommunityCount;
   }
 
   public void setFromFamily(@Nonnull PsFromFamily fromFamily) {
