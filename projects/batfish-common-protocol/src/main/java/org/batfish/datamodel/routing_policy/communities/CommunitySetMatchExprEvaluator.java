@@ -7,6 +7,8 @@ import javax.annotation.Nonnull;
 import org.batfish.common.util.PatternProvider;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.routing_policy.expr.IntMatchExprEvaluator;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 
 /** A visitor for evaluating a {@link CommunitySetMatchExpr} under a {@link CommunityContext}. */
 public final class CommunitySetMatchExprEvaluator
@@ -79,6 +81,13 @@ public final class CommunitySetMatchExprEvaluator
       }
     }
     return false;
+  }
+
+  @Override
+  public @Nonnull Boolean visitHasSize(HasSize hasSize, CommunitySet arg) {
+    int actual = arg.getCommunities().size();
+    IntMatchExprEvaluator eval = IntMatchExprEvaluator.instance();
+    return hasSize.getExpr().accept(eval, new LiteralInt(actual));
   }
 
   private final @Nonnull CommunityContext _ctx;

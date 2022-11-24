@@ -20,4 +20,6 @@ public interface CommunitySetMatchExprVisitor<T, U> {
   T visitCommunitySetNot(CommunitySetNot communitySetNot, U arg);
 
   T visitHasCommunity(HasCommunity hasCommunity, U arg);
+
+  T visitHasSize(HasSize hasSize, U arg);
 }
