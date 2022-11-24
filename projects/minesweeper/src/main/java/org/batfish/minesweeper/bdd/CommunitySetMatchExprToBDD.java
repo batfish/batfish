@@ -23,6 +23,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprVis
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.HasSize;
 import org.batfish.minesweeper.CommunityVar;
 
 /**
@@ -137,6 +138,11 @@ public class CommunitySetMatchExprToBDD
     return arg.getTransferBDD()
         .getFactory()
         .orAll(disjuncts.mapToObj(i -> aps[i]).collect(Collectors.toList()));
+  }
+
+  @Override
+  public BDD visitHasSize(HasSize hasSize, Arg arg) {
+    throw new UnsupportedOperationException();
   }
 
   static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {

@@ -46,6 +46,7 @@ import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalA
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.HasSize;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
@@ -564,6 +565,11 @@ public final class CommunityStructuresVerifier {
     public Void visitHasCommunity(
         HasCommunity hasCommunity, CommunityStructuresVerifierContext arg) {
       hasCommunity.getExpr().accept(COMMUNITY_MATCH_EXPR_VERIFIER, arg);
+      return null;
+    }
+
+    @Override
+    public Void visitHasSize(HasSize hasSize, CommunityStructuresVerifierContext arg) {
       return null;
     }
   }
