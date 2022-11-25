@@ -3476,6 +3476,7 @@ F_NameChar
   | '-'
   | '/'
   | '.'
+  | ':'
 ;
 
 // Any number of newlines, allowing whitespace in between
