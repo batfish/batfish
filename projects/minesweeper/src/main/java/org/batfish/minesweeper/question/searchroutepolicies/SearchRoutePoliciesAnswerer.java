@@ -140,7 +140,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     BDD[] aps = r.getCommunityAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
-        configAPs.getCommunityAtomicPredicates().getAtomicPredicateAutomata();
+        configAPs.getStandardCommunityAtomicPredicates().getAtomicPredicateAutomata();
 
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
     for (int i = 0; i < aps.length; i++) {
@@ -459,7 +459,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         regexConstraintsToBDD(
             constraints.getCommunities(),
             CommunityVar::from,
-            configAPs.getCommunityAtomicPredicates(),
+            configAPs.getStandardCommunityAtomicPredicates(),
             r.getCommunityAtomicPredicates(),
             r.getFactory()));
     result.andWith(

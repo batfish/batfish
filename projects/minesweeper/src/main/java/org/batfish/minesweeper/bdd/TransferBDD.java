@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,6 +85,7 @@ import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.OspfType;
+import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
@@ -134,8 +136,16 @@ public class TransferBDD {
     _factory.setCacheRatio(64);
 
     _originalRoute = new BDDRoute(_factory, aps);
-    _communityAtomicPredicates =
-        _configAtomicPredicates.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    RegexAtomicPredicates<CommunityVar> standardCommAPs =
+        _configAtomicPredicates.getStandardCommunityAtomicPredicates();
+    _communityAtomicPredicates = new HashMap<>(standardCommAPs.getRegexAtomicPredicates());
+    int numAPs = standardCommAPs.getNumAtomicPredicates();
+    // add a new atomic predicate for each extended/large community literal
+    CommunityVar[] nonStandardCommLiterals =
+        _configAtomicPredicates.getNonStandardCommunityLiterals();
+    for (int i = 0; i < nonStandardCommLiterals.length; i++) {
+      _communityAtomicPredicates.put(nonStandardCommLiterals[i], ImmutableSet.of(numAPs + i));
+    }
     _asPathRegexAtomicPredicates =
         _configAtomicPredicates.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
   }
@@ -892,11 +902,7 @@ public class TransferBDD {
 
   @VisibleForTesting
   BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
-    BDDRoute ret =
-        new BDDRoute(
-            _factory,
-            _configAtomicPredicates.getCommunityAtomicPredicates().getNumAtomicPredicates(),
-            _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+    BDDRoute ret = new BDDRoute(_factory, _configAtomicPredicates);
 
     MutableBDDInteger x;
     MutableBDDInteger y;
@@ -936,17 +942,13 @@ public class TransferBDD {
     BDD[] retCommAPs = ret.getCommunityAtomicPredicates();
     BDD[] r1CommAPs = r1.getCommunityAtomicPredicates();
     BDD[] r2CommAPs = r2.getCommunityAtomicPredicates();
-    for (int i = 0;
-        i < _configAtomicPredicates.getCommunityAtomicPredicates().getNumAtomicPredicates();
-        i++) {
+    for (int i = 0; i < retCommAPs.length; i++) {
       retCommAPs[i] = ite(guard, r1CommAPs[i], r2CommAPs[i]);
     }
     BDD[] retAsPathRegexAPs = ret.getAsPathRegexAtomicPredicates();
     BDD[] r1AsPathRegexAPs = r1.getAsPathRegexAtomicPredicates();
     BDD[] r2AsPathRegexAPs = r2.getAsPathRegexAtomicPredicates();
-    for (int i = 0;
-        i < _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates();
-        i++) {
+    for (int i = 0; i < retAsPathRegexAPs.length; i++) {
       retAsPathRegexAPs[i] = ite(guard, r1AsPathRegexAPs[i], r2AsPathRegexAPs[i]);
     }
 
@@ -1241,7 +1243,7 @@ public class TransferBDD {
     return _factory;
   }
 
-  public ConfigAtomicPredicates getGraph() {
+  public ConfigAtomicPredicates getConfigAtomicPredicates() {
     return _configAtomicPredicates;
   }
 

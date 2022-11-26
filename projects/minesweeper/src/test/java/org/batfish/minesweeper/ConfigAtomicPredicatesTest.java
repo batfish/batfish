@@ -78,7 +78,7 @@ public class ConfigAtomicPredicatesTest {
     ConfigAtomicPredicates cap =
         new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    RegexAtomicPredicates<CommunityVar> commAPs = cap.getCommunityAtomicPredicates();
+    RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
     assertEquals(commAPs.getAtomicPredicateAutomata().size(), 1);
@@ -97,7 +97,7 @@ public class ConfigAtomicPredicatesTest {
     ConfigAtomicPredicates cap =
         new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME, null, null);
 
-    RegexAtomicPredicates<CommunityVar> commAPs = cap.getCommunityAtomicPredicates();
+    RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
     assertEquals(commAPs.getAtomicPredicateAutomata().size(), 1);
@@ -121,7 +121,7 @@ public class ConfigAtomicPredicatesTest {
             ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("30:40"))),
             ImmutableSet.of("^$"));
 
-    RegexAtomicPredicates<CommunityVar> commAPs = cap.getCommunityAtomicPredicates();
+    RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
     assertEquals(commAPs.getAtomicPredicateAutomata().size(), 2);

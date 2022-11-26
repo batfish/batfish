@@ -3,10 +3,12 @@ package org.batfish.minesweeper;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.aspath.RoutePolicyStatementAsPathCollector;
@@ -21,9 +23,12 @@ public class ConfigAtomicPredicates {
   private final Configuration _configuration;
 
   /**
-   * Atomic predicates for community literals and regexes that appear in the given configuration.
+   * Atomic predicates for standard community literals and regexes that appear in the given
+   * configuration.
    */
-  private final RegexAtomicPredicates<CommunityVar> _communityAtomicPredicates;
+  private final RegexAtomicPredicates<CommunityVar> _standardCommunityAtomicPredicates;
+
+  private final CommunityVar[] _nonStandardCommunityLiterals;
 
   /** Atomic predicates for the AS-path regexes that appear in the given configuration. */
   private final RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
@@ -56,9 +61,24 @@ public class ConfigAtomicPredicates {
       @Nullable Set<String> asPathRegexes) {
     _configuration = batfish.loadConfigurations(snapshot).get(router);
 
-    _communityAtomicPredicates =
+    Set<CommunityVar> allCommunities = findAllCommunities(communities);
+
+    Predicate<CommunityVar> isStandardCommunity =
+        cvar ->
+            cvar.getType() == CommunityVar.Type.REGEX
+                || cvar.getLiteralValue() instanceof StandardCommunity;
+
+    // compute atomic predicates for all regexes and standard community literals
+    _standardCommunityAtomicPredicates =
         new RegexAtomicPredicates<>(
-            findAllCommunities(communities), CommunityVar.ALL_STANDARD_COMMUNITIES);
+            allCommunities.stream()
+                .filter(isStandardCommunity)
+                .collect(ImmutableSet.toImmutableSet()),
+            CommunityVar.ALL_STANDARD_COMMUNITIES);
+
+    _nonStandardCommunityLiterals =
+        allCommunities.stream().filter(isStandardCommunity.negate()).toArray(CommunityVar[]::new);
+
     _asPathRegexAtomicPredicates =
         new RegexAtomicPredicates<>(
             findAllAsPathRegexes(asPathRegexes), SymbolicAsPathRegex.ALL_AS_PATHS);
@@ -133,8 +153,12 @@ public class ConfigAtomicPredicates {
     return _configuration;
   }
 
-  public RegexAtomicPredicates<CommunityVar> getCommunityAtomicPredicates() {
-    return _communityAtomicPredicates;
+  public RegexAtomicPredicates<CommunityVar> getStandardCommunityAtomicPredicates() {
+    return _standardCommunityAtomicPredicates;
+  }
+
+  public CommunityVar[] getNonStandardCommunityLiterals() {
+    return _nonStandardCommunityLiterals;
   }
 
   public RegexAtomicPredicates<SymbolicAsPathRegex> getAsPathRegexAtomicPredicates() {

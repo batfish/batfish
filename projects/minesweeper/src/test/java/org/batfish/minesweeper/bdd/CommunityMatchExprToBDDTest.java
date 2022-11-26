@@ -55,7 +55,6 @@ public class CommunityMatchExprToBDDTest {
   private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
   private Configuration _baseConfig;
-  private ConfigAtomicPredicates _configAPs;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunityMatchExprToBDD _communityMatchExprToBDD;
 
@@ -73,7 +72,7 @@ public class CommunityMatchExprToBDDTest {
 
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
-    _configAPs =
+    ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             _batfish,
             _batfish.getSnapshot(),
@@ -93,9 +92,9 @@ public class CommunityMatchExprToBDDTest {
             null);
     TransferBDD transferBDD =
         new TransferBDD(
-            _configAPs,
+            configAPs,
             nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
-    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _communityMatchExprToBDD = new CommunityMatchExprToBDD();
@@ -337,7 +336,7 @@ public class CommunityMatchExprToBDDTest {
   private BDD cvarToBDD(CommunityVar cvar) {
     BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
     Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _arg.getTransferBDD().getCommunityAtomicPredicates();
     return _arg.getTransferBDD()
         .getFactory()
         .orAll(
