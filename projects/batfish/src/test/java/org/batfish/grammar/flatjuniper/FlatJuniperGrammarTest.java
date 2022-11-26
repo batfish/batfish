@@ -4507,6 +4507,32 @@ public final class FlatJuniperGrammarTest {
             envWithRoute(c, brb.setCommunities(ImmutableSet.of(StandardCommunity.of(3L))).build()));
     assertThat(result.getBooleanValue(), equalTo(false));
 
+    /* COMMUNITY_COUNT_POLICY should accept routes with 2 or fewer communities. */
+    RoutingPolicy communityCountPolicy = c.getRoutingPolicies().get("COMMUNITY_COUNT_POLICY");
+    result =
+        communityCountPolicy.call(
+            envWithRoute(c, brb.setCommunities(ImmutableSet.of(StandardCommunity.of(1L))).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        communityCountPolicy.call(
+            envWithRoute(
+                c,
+                brb.setCommunities(
+                        ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L)))
+                    .build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        communityCountPolicy.call(
+            envWithRoute(
+                c,
+                brb.setCommunities(
+                        ImmutableSet.of(
+                            StandardCommunity.of(1L),
+                            StandardCommunity.of(2L),
+                            StandardCommunity.of(3L)))
+                    .build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
     /*
     FAMILY_POLICY should accept only inet6 (each set overwrites previous)
       set policy-options policy-statement FAMILY_POLICY term T1 from family inet
@@ -7095,11 +7121,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
     assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getVlan(), 10);
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSourceAddress(), null);
+    assertNull(c.getDefaultVrf().getLayer2Vnis().get(5010).getSourceAddress());
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSrcVrf(), "default");
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getUdpPort(), 4789);
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getVlan(), 20);
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress(), null);
+    assertNull(c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress());
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSrcVrf(), "default");
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getUdpPort(), 4789);
   }

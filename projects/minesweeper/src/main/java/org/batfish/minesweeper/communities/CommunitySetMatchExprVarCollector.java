@@ -18,6 +18,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprVis
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.HasSize;
 import org.batfish.minesweeper.CommunityVar;
 
 /** Collect all community literals and regexes in a {@link CommunitySetMatchExpr}. */
@@ -73,6 +74,11 @@ public class CommunitySetMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitHasCommunity(HasCommunity hasCommunity, Configuration arg) {
     return hasCommunity.getExpr().accept(new CommunityMatchExprVarCollector(), arg);
+  }
+
+  @Override
+  public Set<CommunityVar> visitHasSize(HasSize hasSize, Configuration arg) {
+    return ImmutableSet.of();
   }
 
   private Set<CommunityVar> visitAll(Collection<CommunitySetMatchExpr> exprs, Configuration arg) {

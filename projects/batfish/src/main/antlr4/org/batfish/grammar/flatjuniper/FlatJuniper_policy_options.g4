@@ -149,6 +149,7 @@ pops_from
       | popsf_as_path_group
       | popsf_color
       | popsf_community
+      | popsf_community_count
       | popsf_condition
       | popsf_family
       | popsf_instance
@@ -216,6 +217,10 @@ popsf_community
 :
    COMMUNITY name = junos_name
 ;
+
+community_count_number: uint16; // todo: what is the actual number?
+
+popsf_community_count: COMMUNITY_COUNT n = community_count_number (ORLOWER | ORHIGHER)?;
 
 popsf_condition: CONDITION name = junos_name;
 
