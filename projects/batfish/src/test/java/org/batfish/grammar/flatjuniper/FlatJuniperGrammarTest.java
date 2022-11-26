@@ -5156,12 +5156,12 @@ public final class FlatJuniperGrammarTest {
     JuniperConfiguration c = parseJuniperConfig("name");
     assertThat(c.getMasterLogicalSystem().getPolicyStatements(), hasKeys("XX"));
     PolicyStatement ps = c.getMasterLogicalSystem().getPolicyStatements().get("XX");
-    assertThat(ps.getTerms(), hasKeys("10/8", "Dot.Name"));
+    assertThat(ps.getTerms(), hasKeys("10/8", "Colon:Name", "Dot.Name"));
 
     assertThat(
         ((ConcreteFirewallFilter) c.getMasterLogicalSystem().getFirewallFilters().get("filterName"))
             .getTerms(),
-        hasKeys("Dot.Name", "Slash/Name"));
+        hasKeys("Colon:Name", "Dot.Name", "Slash/Name"));
   }
 
   @Test
