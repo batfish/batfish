@@ -10,6 +10,9 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator.RegexCacheKey;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.junit.Test;
 
 /** Test of {@link CommunitySetMatchExprEvaluator}. */
@@ -130,6 +133,29 @@ public final class CommunitySetMatchExprEvaluatorTest {
         hc.accept(
             EVAL, CommunitySet.of(StandardCommunity.of(1L), ExtendedCommunity.of(1, 1L, 1L))));
     assertFalse(hc.accept(EVAL, CommunitySet.empty()));
+  }
+
+  @Test
+  public void testVisitHasSize() {
+    HasSize hc = new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(2)));
+    StandardCommunity c1 = StandardCommunity.of(1);
+    StandardCommunity c2 = StandardCommunity.of(2);
+    StandardCommunity c3 = StandardCommunity.of(3);
+    ExtendedCommunity ec = ExtendedCommunity.target(4, 5);
+
+    // Accepts anything with 0-2 communities (including mixed types).
+    for (CommunitySet cs :
+        ImmutableList.of(
+            CommunitySet.of(),
+            CommunitySet.of(c1),
+            CommunitySet.of(c1, c2),
+            CommunitySet.of(c1, ec))) {
+      assertTrue(hc.accept(EVAL, cs));
+    }
+
+    // Rejects 3 communities (including mixed type)
+    assertFalse(hc.accept(EVAL, CommunitySet.of(c1, c2, c3)));
+    assertFalse(hc.accept(EVAL, CommunitySet.of(c1, c2, ec)));
   }
 
   @Test
