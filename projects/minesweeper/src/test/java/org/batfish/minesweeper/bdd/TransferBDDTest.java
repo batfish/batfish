@@ -974,6 +974,28 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testSetLocalPrefAndRejectPaths() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetLocalPreference(new LiteralLong(42)))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    // the local preference is now 42
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false));
+    assertEquals(expectedPaths, paths);
+  }
+
+  @Test
   public void testSetMetric() {
     RoutingPolicy policy =
         _policyBuilder
