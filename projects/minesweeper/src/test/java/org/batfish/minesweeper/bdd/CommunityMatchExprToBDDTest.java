@@ -33,6 +33,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
@@ -88,6 +89,9 @@ public class CommunityMatchExprToBDDTest {
                 CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1)),
                 // a vpn distinguisher extended community
                 CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)),
+                // a few opaque communities
+                CommunityVar.from(ExtendedCommunity.opaque(true, 3, 40)),
+                CommunityVar.from(ExtendedCommunity.opaque(false, 4, 50)),
                 CommunityVar.from(LargeCommunity.of(20, 20, 20))),
             null);
     TransferBDD transferBDD =
@@ -113,7 +117,9 @@ public class CommunityMatchExprToBDDTest {
                 ImmutableSet.of(
                         CommunityVar.from(ExtendedCommunity.target(1, 65555)),
                         CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1)),
-                        CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)))
+                        CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)),
+                        CommunityVar.from(ExtendedCommunity.opaque(true, 3, 40)),
+                        CommunityVar.from(ExtendedCommunity.opaque(false, 4, 50)))
                     .stream()
                     .map(this::cvarToBDD)
                     .collect(ImmutableSet.toImmutableSet()));
@@ -262,6 +268,15 @@ public class CommunityMatchExprToBDDTest {
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("20:30"));
 
     assertEquals(_arg.getBDDRoute().anyCommunity().diff(cvarToBDD(cvar2)), result);
+  }
+
+  @Test
+  public void testVisitOpaqueExtendedCommunities() {
+    BDD result =
+        _communityMatchExprToBDD.visitOpaqueExtendedCommunities(
+            OpaqueExtendedCommunities.of(true, 3), _arg);
+
+    assertEquals(cvarToBDD(CommunityVar.from(ExtendedCommunity.opaque(true, 3, 40))), result);
   }
 
   @Test

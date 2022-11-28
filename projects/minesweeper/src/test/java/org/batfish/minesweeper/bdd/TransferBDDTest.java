@@ -2288,7 +2288,7 @@ public class TransferBDDTest {
     for (int i = 0;
         i < _configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates();
         i++) {
-      // each atomic predicate for 30:40 is set if ; all others have their original values
+      // each atomic predicate for 30:40 is set; all others have their original values
       assertEquals(
           ap3040.contains(i) ? outAnnouncements.getFactory().one() : aps[i],
           outAnnouncements.getCommunityAtomicPredicates()[i]);
