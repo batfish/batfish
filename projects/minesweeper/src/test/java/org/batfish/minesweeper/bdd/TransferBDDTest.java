@@ -868,6 +868,37 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testPrefixIntersection() {
+    _policyBuilder.addStatement(
+        new If(
+            new Conjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
+    BDD expectedBDD =
+        isRelevantForDestination(
+            anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 24)));
+    assertEquals(acceptedAnnouncements, expectedBDD);
+
+    assertEquals(anyRoute, outAnnouncements);
+  }
+
+  @Test
   public void testMatchEmptyPrefixSet() {
     _policyBuilder.addStatement(
         new If(
