@@ -445,6 +445,7 @@ public class RoutesAnswererUtil {
         .put(
             COL_COMMUNITIES,
             bgpv4Route.getCommunities().getCommunities().stream()
+                .sorted()
                 .map(Community::toString)
                 .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
@@ -491,6 +492,7 @@ public class RoutesAnswererUtil {
         .put(
             COL_COMMUNITIES,
             evpnRoute.getCommunities().getCommunities().stream()
+                .sorted()
                 .map(Community::toString)
                 .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, evpnRoute.getSrcProtocol())
@@ -1057,6 +1059,7 @@ public class RoutesAnswererUtil {
         .setClusterList(route.getClusterList())
         .setCommunities(
             route.getCommunities().getCommunities().stream()
+                .sorted()
                 .map(Community::toString)
                 .collect(toImmutableList()))
         .setOriginMechanism(route.getOriginMechanism())

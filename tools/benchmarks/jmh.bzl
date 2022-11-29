@@ -37,6 +37,7 @@ def jmh_java_benchmarks(name, srcs, deps = [], tags = [], plugins = [], **kwargs
         srcs = srcs,
         main_class = "org.openjdk.jmh.Main",
         deps = deps + ["@jmh_maven//:org_openjdk_jmh_jmh_core"],
+        javacopts = ["-XepDisableAllChecks"],
         plugins = plugins + ["@batfish//tools/benchmarks:jmh_annotation_processor"],
         tags = tags,
         **kwargs
