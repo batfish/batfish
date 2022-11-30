@@ -403,6 +403,8 @@ COMMUNITY
   }
 ;
 
+COMMUNITY_COUNT: 'community-count';
+
 COMPATIBLE: 'compatible';
 
 COMPRESS_CONFIGURATION_FILES: 'compress-configuration-files';
@@ -1969,7 +1971,9 @@ OPTIONS: 'options';
 
 ORIGIN: 'origin';
 
+ORHIGHER: 'orhigher';
 ORLONGER: 'orlonger';
+ORLOWER: 'orlower';
 
 OSPF: 'ospf';
 
@@ -3472,6 +3476,7 @@ F_NameChar
   | '-'
   | '/'
   | '.'
+  | ':'
 ;
 
 // Any number of newlines, allowing whitespace in between

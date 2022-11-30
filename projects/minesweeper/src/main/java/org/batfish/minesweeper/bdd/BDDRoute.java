@@ -109,6 +109,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private MutableBDDInteger _tag;
 
+  private MutableBDDInteger _weight;
+
   // the conditions under which the analysis encounters an unsupported route-policy
   // statement/expression
   @Nonnull private BDD _unsupported;
@@ -144,6 +146,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     int numVars = factory.varNum();
     int numNeeded =
         32 * 6
+            + 16
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
@@ -172,6 +175,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("tag", 32, idx, false);
     idx += 32;
+    _weight = MutableBDDInteger.makeFromIndex(factory, 16, idx, false);
+    addBitNames("weight", 16, idx, false);
+    idx += 16;
     _adminDist = MutableBDDInteger.makeFromIndex(factory, 8, idx, false);
     addBitNames("ad", 8, idx, false);
     idx += 8;
@@ -227,6 +233,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _adminDist = new MutableBDDInteger(other._adminDist);
     _med = new MutableBDDInteger(other._med);
     _tag = new MutableBDDInteger(other._tag);
+    _weight = new MutableBDDInteger(other._weight);
     _localPref = new MutableBDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
@@ -473,6 +480,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
+  public MutableBDDInteger getWeight() {
+    return _weight;
+  }
+
+  public void setWeight(MutableBDDInteger weight) {
+    _weight = weight;
+  }
+
   public BDD getUnsupported() {
     return _unsupported;
   }
@@ -489,6 +504,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_med != null ? _med.hashCode() : 0);
       result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
       result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
+      result = 31 * result + (_weight != null ? _weight.hashCode() : 0);
       result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
       result = 31 * result + (_nextHopDiscarded != null ? _nextHopDiscarded.hashCode() : 0);
       result = 31 * result + (_nextHopSet != null ? _nextHopSet.hashCode() : 0);
@@ -525,6 +541,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
         && Objects.equals(_nextHopSet, other._nextHopSet)
         && Objects.equals(_tag, other._tag)
+        && Objects.equals(_weight, other._weight)
         && Objects.equals(_adminDist, other._adminDist)
         && Objects.equals(_prependedASes, other._prependedASes)
         && Objects.equals(_unsupported, other._unsupported);

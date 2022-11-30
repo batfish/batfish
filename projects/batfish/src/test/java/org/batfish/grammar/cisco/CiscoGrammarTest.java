@@ -7003,4 +7003,26 @@ public final class CiscoGrammarTest {
         hasReferencedStructure(
             filename, BGP_TEMPLATE_PEER_SESSION, "INDIRECT-PARENT", BGP_INHERITED_SESSION));
   }
+
+  @Test
+  public void testDownSwitchVirtualInterface() throws IOException {
+    String hostname = "ios_svi";
+
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    vc.toVendorIndependentConfigurations();
+
+    assertThat(vc.getInterfaces().get("GigabitEthernet0/0").getActive(), equalTo(false));
+    assertThat(vc.getInterfaces().get("GigabitEthernet0/1").getActive(), equalTo(false));
+    assertThat(vc.getInterfaces().get("Vlan100").getActive(), equalTo(true));
+    assertThat(vc.getInterfaces().get("Vlan3000").getActive(), equalTo(true));
+
+    // Task17 Test
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(c.getAllInterfaces().get("GigabitEthernet0/0").getActive(), equalTo(false));
+    assertThat(c.getAllInterfaces().get("GigabitEthernet0/1").getActive(), equalTo(false));
+    assertThat(c.getAllInterfaces().get("Vlan100").getActive(), equalTo(false));
+    assertThat(c.getAllInterfaces().get("Vlan3000").getActive(), equalTo(false));
+  }
 }

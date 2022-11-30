@@ -3147,6 +3147,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!froms.getFromCommunities().isEmpty()) {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromCommunities())));
     }
+    if (froms.getFromCommunityCount() != null) {
+      conj.getConjuncts().add(froms.getFromCommunityCount().toBooleanExpr(this, _c, _w));
+    }
     if (!froms.getFromConditions().isEmpty()) {
       // TODO: verify these are disjoined
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromConditions())));

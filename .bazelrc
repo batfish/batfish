@@ -1,6 +1,10 @@
 # Test targets are required to depend on our junit rather than using the one provided by Bazel
 build --explicit_java_test_deps
 
+# Error Prone warnings to enforce
+build --javacopt "-Xep:WildcardImport:ERROR"
+build --javacopt "-Xep:RemoveUnusedImports:ERROR"
+
 # Do not instrument Bazel packages that contain parboiled parsers, as this crashes.
 # TODO: this does not seem to work, but passing the exact same argument on the command line
 # makes it take effect.
