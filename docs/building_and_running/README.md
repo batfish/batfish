@@ -61,6 +61,23 @@ Do the following before doing anything
 
       `sudo ln -s bazelisk /usr/local/bin/bazel`
 
+### Note: multiple versions of Java
+
+If you have multiple versions of Java installed on your machine, the default `java`/`javac` commands may still not be using JVM 11. In that case, you can force the version of Java in use by setting `JAVA_HOME`. @dhalperi has these aliases in his `.zshrc` to control which Java is running in a given shell on macOS:
+
+```sh
+# Java options
+# j8q switches to Java 8, quietly. Could make a loud version that runs `java -version` after.
+function j8q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+}
+function j11q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 11`
+}
+# Default to Java 11.
+j11q
+```
+
 ## Installation steps
 
 1. Check out the Batfish code
