@@ -102,6 +102,7 @@ import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
@@ -974,6 +975,28 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testSetLocalPrefAndRejectPaths() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetLocalPreference(new LiteralLong(42)))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    // the local preference is now 42
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false));
+    assertEquals(expectedPaths, paths);
+  }
+
+  @Test
   public void testSetMetric() {
     RoutingPolicy policy =
         _policyBuilder
@@ -1016,6 +1039,30 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger tag = expected.getTag();
     expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+    assertEquals(expected, outAnnouncements);
+  }
+
+  @Test
+  public void testSetWeight() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetWeight(new LiteralInt(42)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // the weight is now 42
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    BDDInteger weight = expected.getWeight();
+    expected.setWeight(MutableBDDInteger.makeFromValue(weight.getFactory(), 16, 42));
     assertEquals(expected, outAnnouncements);
   }
 

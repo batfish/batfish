@@ -49,9 +49,9 @@ public class BDDRouteDiff {
     List<Difference> result = new ArrayList<>();
 
     // TODO: Ignore the OSPF metric until we add support in BgpRoute/BgpRouteDiff.
-//    if (!Objects.equals(r1.getOspfMetric(), r2.getOspfMetric())) {
-//      result.add(new Difference(r1, r2, DifferenceType.OSPF_METRIC));
-//    }
+    //    if (!Objects.equals(r1.getOspfMetric(), r2.getOspfMetric())) {
+    //      result.add(new Difference(r1, r2, DifferenceType.OSPF_METRIC));
+    //    }
     if (!Objects.equals(r1.getLocalPref(), (r2.getLocalPref()))) {
       result.add(new Difference(r1, r2, DifferenceType.LOCAL_PREF));
     }
@@ -76,10 +76,10 @@ public class BDDRouteDiff {
     if (!Objects.equals(r1.getTag(), r2.getTag())) {
       result.add(new Difference(r1, r2, DifferenceType.TAG));
     }
-    //TODO: Administrative distance is not properly supported in TRP/RouteDiff.
-//    if (!Objects.equals(r1.getAdminDist(), r2.getAdminDist())) {
-//      result.add(new Difference(r1, r2, DifferenceType.ADMIN_DIST));
-//    }
+    // TODO: Administrative distance is not properly supported in TRP/RouteDiff.
+    //    if (!Objects.equals(r1.getAdminDist(), r2.getAdminDist())) {
+    //      result.add(new Difference(r1, r2, DifferenceType.ADMIN_DIST));
+    //    }
     if (!Objects.equals(r1.getUnsupported(), r2.getUnsupported())) {
       result.add(new Difference(r1, r2, DifferenceType.UNSUPPORTED));
     }
