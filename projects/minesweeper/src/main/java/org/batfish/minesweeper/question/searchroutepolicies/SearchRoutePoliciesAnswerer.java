@@ -143,7 +143,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         configAPs.getStandardCommunityAtomicPredicates().getAtomicPredicateAutomata();
 
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
-    for (int i = 0; i < aps.length; i++) {
+
+    int numStandardAPs = configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates();
+    // handle standard community literals and regexes
+    for (int i = 0; i < numStandardAPs; i++) {
       if (aps[i].andSat(fullModel)) {
         Automaton a = apAutomata.get(i);
         // community atomic predicates should always be non-empty;
@@ -164,6 +167,14 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         } else {
           throw new BatfishException("Failed to produce a valid community for answer");
         }
+      }
+    }
+    // handle extended/large community literals
+    for (Map.Entry<Integer, CommunityVar> entry :
+        configAPs.getNonStandardCommunityLiterals().entrySet()) {
+      if (aps[entry.getKey()].andSat(fullModel)) {
+        assert entry.getValue().getLiteralValue() != null;
+        comms.add(entry.getValue().getLiteralValue());
       }
     }
     return comms.build();
