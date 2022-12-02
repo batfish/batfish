@@ -42,8 +42,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.jettison.JettisonFeature;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class Main {
@@ -52,7 +50,6 @@ public class Main {
   // been called.
   private static @Nullable Authorizer _authorizer;
   private static @Nullable BatfishLogger _logger;
-  private static @Nullable PoolMgr _poolManager;
   private static @Nullable Settings _settings;
   private static @Nullable WorkMgr _workManager;
 
@@ -68,11 +65,6 @@ public class Main {
   public static BatfishLogger getLogger() {
     checkState(_logger != null, "Error: Logger has not been configured");
     return _logger;
-  }
-
-  public static PoolMgr getPoolMgr() {
-    checkState(_poolManager != null, "Error: Pool Manager has not been configured");
-    return _poolManager;
   }
 
   @Nullable
@@ -203,55 +195,6 @@ public class Main {
     getLogger().infof("Using authorizer %s\n", _authorizer);
   }
 
-  private static void initPoolManager(BindPortFutures bindPortFutures) {
-    ResourceConfig rcPool =
-        new ResourceConfig(PoolMgrService.class)
-            .register(new JettisonFeature())
-            .register(MultiPartFeature.class);
-    HttpServer server;
-    if (_settings.getSslPoolDisable()) {
-      URI poolMgrUri =
-          UriBuilder.fromUri("http://" + _settings.getPoolBindHost())
-              .port(_settings.getServicePoolPort())
-              .build();
-
-      _logger.infof("Starting pool manager at %s\n", poolMgrUri);
-
-      server = GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
-    } else {
-      URI poolMgrUri =
-          UriBuilder.fromUri("https://" + _settings.getPoolBindHost())
-              .port(_settings.getServicePoolPort())
-              .build();
-
-      _logger.infof("Starting pool manager at %s\n", poolMgrUri);
-
-      server =
-          CommonUtil.startSslServer(
-              rcPool,
-              poolMgrUri,
-              _settings.getSslPoolKeystoreFile(),
-              _settings.getSslPoolKeystorePassword(),
-              _settings.getSslPoolTrustAllCerts(),
-              _settings.getSslPoolTruststoreFile(),
-              _settings.getSslPoolTruststorePassword(),
-              ConfigurationLocator.class,
-              Main.class);
-    }
-
-    _poolManager = new PoolMgr(_settings, _logger);
-    _poolManager.startPoolManager();
-    int selectedListenPort = server.getListeners().iterator().next().getPort();
-    URI actualPoolMgrUri =
-        UriBuilder.fromUri("http://" + _settings.getPoolBindHost())
-            .port(selectedListenPort)
-            .build();
-    _logger.infof("Started pool manager at %s\n", actualPoolMgrUri);
-    if (!bindPortFutures.getPoolPort().isDone()) {
-      bindPortFutures.getPoolPort().complete(selectedListenPort);
-    }
-  }
-
   private static void startWorkManagerService(
       Class<?> serviceClass,
       List<Class<?>> features,
@@ -324,12 +267,22 @@ public class Main {
         bindPortFutures.getWorkV2Port());
   }
 
+  @Deprecated
+  @SuppressWarnings("unused")
   public static void main(
       String[] args,
       BatfishLogger logger,
       BindPortFutures portFutures,
       WorkExecutorCreator workExecutorCreator,
-      boolean initLegacyPoolManager) {
+      boolean unused) {
+    main(args, logger, portFutures, workExecutorCreator);
+  }
+
+  public static void main(
+      String[] args,
+      BatfishLogger logger,
+      BindPortFutures portFutures,
+      WorkExecutorCreator workExecutorCreator) {
     mainInit(args);
 
     // Supply ports early if known before binding
@@ -347,8 +300,7 @@ public class Main {
     }
 
     _logger = logger;
-    mainRun(
-        portFutures, workExecutorCreator, initLegacyPoolManager, _settings.getUseLegacyWorkMgrV1());
+    mainRun(portFutures, workExecutorCreator, _settings.getUseLegacyWorkMgrV1());
   }
 
   public static void mainInit(String[] args) {
@@ -367,13 +319,9 @@ public class Main {
   private static void mainRun(
       BindPortFutures portFutures,
       WorkExecutorCreator workExecutorCreator,
-      boolean initLegacyPoolManager,
       boolean initLegacyWorkMgrV1) {
     try {
       initAuthorizer();
-      if (initLegacyPoolManager) {
-        initPoolManager(portFutures);
-      }
       initWorkManager(portFutures, workExecutorCreator, initLegacyWorkMgrV1);
     } catch (Exception e) {
       System.err.println(
