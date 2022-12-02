@@ -1,12 +1,12 @@
 package org.batfish.minesweeper.bdd;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -842,7 +842,9 @@ public class TransferBDD {
 
   /**
    * Combines the per-path symbolic analysis results into a single TransferResult, which represents
-   * the disjunction of all accepting paths. *
+   * the disjunction of accepting paths. Note that only accepting paths that perform the same
+   * sequence of prepended ASes can be combined into one {@link TransferResult} currently, so some
+   * accepting paths will be ignored.
    */
   private TransferResult compute(List<Statement> statements, TransferParam p) {
     List<TransferResult> allPaths = computePaths(statements, p);
@@ -856,9 +858,9 @@ public class TransferBDD {
             new TransferReturn(new BDDRoute(_factory, _configAtomicPredicates), _factory.zero()),
             _factory.zero());
     if (!acceptedPaths.isEmpty()) {
-      // Set the prepended ASes of the default result to be the same as those on an accepting path
-      // TODO: This hack is needed since we currently can't combine paths that have different
-      // prepended ASes.
+      // Set the prepended ASes of the default result to be the same as those on an accepting path.
+      // This hack is needed since we currently can't combine paths that have different prepended
+      // ASes.
       result
           .getReturnValue()
           .getFirst()
@@ -870,7 +872,8 @@ public class TransferBDD {
     // now disjoin all of the accepting paths
     for (TransferResult path : allPaths) {
       if (path.getReturnValue().getAccepted()) {
-        result = ite(path.getReturnValue().getSecond(), path, result);
+        // NOTE: This path will be ignored if ite() returns Optional.empty()
+        result = ite(path.getReturnValue().getSecond(), path, result).orElse(result);
       } else {
         // for denying paths, we still keep track of whether we hit an unsupported statement
         BDDRoute resultRoute = result.getReturnValue().getFirst();
@@ -938,13 +941,25 @@ public class TransferBDD {
     return result;
   }
 
-  @VisibleForTesting
-  BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
+  /**
+   * Performs an if-then-else of two {@link BDDRoute} objects. This can only be done if they have
+   * the same sequence of prepended ASes.
+   */
+  private Optional<BDDRoute> ite(BDD guard, BDDRoute r1, BDDRoute r2) {
     BDDRoute ret =
         new BDDRoute(
             _factory,
             _configAtomicPredicates.getCommunityAtomicPredicates().getNumAtomicPredicates(),
             _configAtomicPredicates.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+
+    if (!r1.getPrependedASes().equals(r2.getPrependedASes())) {
+      LOGGER.warn(
+          "Currently all accepting paths through the route map must have the same sequence of"
+              + " prepended ASes");
+      return Optional.empty();
+    }
+
+    ret.setPrependedASes(new ArrayList<>(r1.getPrependedASes()));
 
     MutableBDDInteger x;
     MutableBDDInteger y;
@@ -1002,24 +1017,27 @@ public class TransferBDD {
       retAsPathRegexAPs[i] = ite(guard, r1AsPathRegexAPs[i], r2AsPathRegexAPs[i]);
     }
 
-    if (r1.getPrependedASes().equals(r2.getPrependedASes())) {
-      ret.setPrependedASes(new ArrayList<>(r1.getPrependedASes()));
-    } else {
-      throw new TransferBDDException(
-          "Currently all accepting paths through the route map must have the same prepended ASes");
-    }
-
     ret.setUnsupported(ite(guard, r1.getUnsupported(), r2.getUnsupported()));
 
     // MutableBDDInteger i =
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
     // ret.getProtocolHistory().setInteger(i);
 
-    return ret;
+    return Optional.of(ret);
   }
 
-  TransferResult ite(BDD guard, TransferResult r1, TransferResult r2) {
-    BDDRoute route = ite(guard, r1.getReturnValue().getFirst(), r2.getReturnValue().getFirst());
+  /**
+   * Performs an if-then-else of two {@link TransferResult} objects. This is not guaranteed to
+   * succeed, since we can only combine two {@link BDDRoute} objects into one if they have the same
+   * sequence of prepended ASes.
+   */
+  private Optional<TransferResult> ite(BDD guard, TransferResult r1, TransferResult r2) {
+    Optional<BDDRoute> routeOpt =
+        ite(guard, r1.getReturnValue().getFirst(), r2.getReturnValue().getFirst());
+    if (!routeOpt.isPresent()) {
+      return Optional.empty();
+    }
+    BDDRoute route = routeOpt.get();
     BDD accepted = ite(guard, r1.getReturnValue().getSecond(), r2.getReturnValue().getSecond());
 
     BDD suppressed = ite(guard, r1.getSuppressedValue(), r2.getSuppressedValue());
@@ -1027,8 +1045,9 @@ public class TransferBDD {
     BDD retAsgn = ite(guard, r1.getReturnAssignedValue(), r2.getReturnAssignedValue());
     BDD fallThrough = ite(guard, r1.getFallthroughValue(), r2.getFallthroughValue());
 
-    return new TransferResult(
-        new TransferReturn(route, accepted), suppressed, exitAsgn, fallThrough, retAsgn);
+    return Optional.of(
+        new TransferResult(
+            new TransferReturn(route, accepted), suppressed, exitAsgn, fallThrough, retAsgn));
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
@@ -1277,9 +1296,13 @@ public class TransferBDD {
     return _useOutputAttributes ? current : _originalRoute;
   }
 
-  /*
-   * Create a TransferResult representing the symbolic output of
-   * the RoutingPolicy given the input route.
+  /**
+   * Creates a {@link TransferResult} representing the results of symbolic route-map analysis: the
+   * conditions under which a route is accepted by the route-map, along with the updates made to the
+   * route. Note that only accepting paths that perform the same sequence of prepended ASes can be
+   * combined into one {@link TransferResult} currently, so some accepting paths will be ignored.
+   * Clients of this method should instead consider using {@link TransferBDD#computePaths(Set)} to
+   * obtain a set of all paths, which avoids this limitation.
    */
   public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
