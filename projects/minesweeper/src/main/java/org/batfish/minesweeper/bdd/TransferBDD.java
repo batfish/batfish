@@ -126,20 +126,7 @@ public class TransferBDD {
   private final BDDFactory _factory;
 
   public TransferBDD(ConfigAtomicPredicates aps, RoutingPolicy policy) {
-    _configAtomicPredicates = aps;
-    _policy = policy;
-    _conf = policy.getOwner();
-    _statements = policy.getStatements();
-    _useOutputAttributes = Environment.useOutputAttributesFor(_conf);
-
-    _factory = JFactory.init(100000, 10000);
-    _factory.setCacheRatio(64);
-
-    _originalRoute = new BDDRoute(_factory, aps);
-    _communityAtomicPredicates =
-        _configAtomicPredicates.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    _asPathRegexAtomicPredicates =
-        _configAtomicPredicates.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    this(JFactory.init(100000, 10000), aps, policy);
   }
 
   public TransferBDD(BDDFactory factory, ConfigAtomicPredicates aps, RoutingPolicy policy) {
@@ -150,6 +137,7 @@ public class TransferBDD {
     _useOutputAttributes = Environment.useOutputAttributesFor(_conf);
 
     _factory = factory;
+    _factory.setCacheRatio(64);
 
     _originalRoute = new BDDRoute(_factory, aps);
     _communityAtomicPredicates =
