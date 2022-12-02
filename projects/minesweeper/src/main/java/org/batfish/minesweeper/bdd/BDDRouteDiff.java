@@ -42,6 +42,7 @@ public class BDDRouteDiff {
     NEXTHOP_SET,
     TAG,
     ADMIN_DIST,
+    WEIGHT,
     UNSUPPORTED
   }
 
@@ -80,6 +81,9 @@ public class BDDRouteDiff {
     //    if (!Objects.equals(r1.getAdminDist(), r2.getAdminDist())) {
     //      result.add(new Difference(r1, r2, DifferenceType.ADMIN_DIST));
     //    }
+    if (!Objects.equals(r1.getWeight(), r2.getWeight())) {
+      result.add(new Difference(r1, r2, DifferenceType.WEIGHT));
+    }
     if (!Objects.equals(r1.getUnsupported(), r2.getUnsupported())) {
       result.add(new Difference(r1, r2, DifferenceType.UNSUPPORTED));
     }

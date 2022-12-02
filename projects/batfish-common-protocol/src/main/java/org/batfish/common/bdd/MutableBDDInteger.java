@@ -170,8 +170,9 @@ public final class MutableBDDInteger extends BDDInteger {
     return val;
   }
 
-  /*
-   * Restrict each bit in the bitvector to the predicate pred.
+  /**
+   * @param pred a predicate
+   * @return the same bitvector but restricted by pred.
    */
   public MutableBDDInteger and(BDD pred) {
     MutableBDDInteger val = new MutableBDDInteger(this);

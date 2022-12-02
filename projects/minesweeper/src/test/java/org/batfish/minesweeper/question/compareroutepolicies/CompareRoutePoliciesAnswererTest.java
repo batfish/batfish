@@ -41,6 +41,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
@@ -77,6 +79,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -84,6 +87,7 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -103,6 +107,8 @@ public class CompareRoutePoliciesAnswererTest {
   private static final String AS_PATH_1 = "asPath1";
   private static final String AS_PATH_2 = "asPath2";
   private static final String COMMUNITY_LIST_1 = "comm1";
+  private static final String PFX_LST_1 = "pfx1";
+  private static final String PFX_LST_2 = "pfx2";
 
   private static final Environment.Direction DEFAULT_DIRECTION = Environment.Direction.IN;
 
@@ -163,6 +169,20 @@ public class CompareRoutePoliciesAnswererTest {
     baseConfig.setAsPathAccessLists(ImmutableMap.of(AS_PATH_1, asPath1, AS_PATH_2, asPath2));
     CommunitySet comm1 = CommunitySet.of(StandardCommunity.of(0, 0));
     baseConfig.setCommunitySets(ImmutableMap.of(COMMUNITY_LIST_1, comm1));
+
+    RouteFilterList f1 =
+        new RouteFilterList(
+            PFX_LST_1,
+            ImmutableList.of(
+                new RouteFilterLine(PERMIT, PrefixRange.fromPrefix(Prefix.parse("10.0.0.0/32"))),
+                new RouteFilterLine(PERMIT, PrefixRange.fromPrefix(Prefix.parse("10.0.0.1/32")))));
+    RouteFilterList f2 =
+        new RouteFilterList(
+            PFX_LST_2,
+            ImmutableList.of(
+                new RouteFilterLine(PERMIT, PrefixRange.fromPrefix(Prefix.parse("10.0.0.0/31")))));
+
+    baseConfig.setRouteFilterLists(ImmutableMap.of(PFX_LST_1, f1, PFX_LST_2, f2));
 
     nf.vrfBuilder().setOwner(baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
     _policyBuilder_1 = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_1_NAME);
@@ -362,6 +382,44 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRouteDiffs diff =
         new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "1", "0")));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_1_NAME), Schema.STRING),
+                hasColumn(COL_PROPOSED_POLICY_NAME, equalTo(POLICY_2_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, anything(), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that differences in weight are detected. */
+  @Test
+  public void testWeightDifference() {
+    RoutingPolicy policy1 =
+        _policyBuilder_1
+            .addStatement(new SetWeight(new LiteralInt(10)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    RoutingPolicy policy2 =
+        _policyBuilder_2
+            .addStatement(new SetWeight(new LiteralInt(0)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    CompareRoutePoliciesQuestion question =
+        new CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy1.getName(), policy2.getName(), HOSTNAME);
+    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_WEIGHT, "0", "10")));
 
     assertThat(
         answer.getRows().getData(),
@@ -647,6 +705,82 @@ public class CompareRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(POLICY_1_NAME), Schema.STRING),
                 hasColumn(COL_PROPOSED_POLICY_NAME, equalTo(POLICY_2_NAME), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests differences from Prefix Matching. */
+  @Test
+  public void testMatchPrefixesSplit() {
+    RoutingPolicy policy1 =
+        _policyBuilder_1
+            .addStatement(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet(PFX_LST_1)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+    RoutingPolicy policy2 =
+        _policyBuilder_2
+            .addStatement(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet(PFX_LST_2)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    CompareRoutePoliciesQuestion question =
+        new CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy1.getName(), policy2.getName(), HOSTNAME);
+    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    BgpRoute inputRoute_1 =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/32"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setCommunities(ImmutableSet.of())
+            .build();
+
+    BgpRoute inputRoute_2 =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/31"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setCommunities(ImmutableSet.of())
+            .build();
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_1_NAME), Schema.STRING),
+                hasColumn(COL_PROPOSED_POLICY_NAME, equalTo(POLICY_2_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute_1), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS)),
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_1_NAME), Schema.STRING),
+                hasColumn(COL_PROPOSED_POLICY_NAME, equalTo(POLICY_2_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute_2), Schema.BGP_ROUTE),
                 hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
                 hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),

@@ -31,6 +31,10 @@ public class BDDDomain<T> {
     _integer = new MutableBDDInteger(other._integer);
   }
 
+  /**
+   * @param pred a predicate based on which the given BDDDomain is restricted.
+   * @param other A BDDDomain
+   */
   public BDDDomain(BDD pred, BDDDomain<T> other) {
     _factory = other._factory;
     _values = other._values;
