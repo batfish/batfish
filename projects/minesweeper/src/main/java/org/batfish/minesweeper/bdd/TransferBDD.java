@@ -139,13 +139,10 @@ public class TransferBDD {
     RegexAtomicPredicates<CommunityVar> standardCommAPs =
         _configAtomicPredicates.getStandardCommunityAtomicPredicates();
     _communityAtomicPredicates = new HashMap<>(standardCommAPs.getRegexAtomicPredicates());
-    int numAPs = standardCommAPs.getNumAtomicPredicates();
-    // add a new atomic predicate for each extended/large community literal
-    CommunityVar[] nonStandardCommLiterals =
-        _configAtomicPredicates.getNonStandardCommunityLiterals();
-    for (int i = 0; i < nonStandardCommLiterals.length; i++) {
-      _communityAtomicPredicates.put(nonStandardCommLiterals[i], ImmutableSet.of(numAPs + i));
-    }
+    // add the atomic predicates for the extended/large community literals
+    _configAtomicPredicates
+        .getNonStandardCommunityLiterals()
+        .forEach((key, value) -> _communityAtomicPredicates.put(value, ImmutableSet.of(key)));
     _asPathRegexAtomicPredicates =
         _configAtomicPredicates.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
   }

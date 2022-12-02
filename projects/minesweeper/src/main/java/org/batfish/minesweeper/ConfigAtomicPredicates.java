@@ -1,7 +1,9 @@
 package org.batfish.minesweeper;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -28,7 +30,11 @@ public class ConfigAtomicPredicates {
    */
   private final RegexAtomicPredicates<CommunityVar> _standardCommunityAtomicPredicates;
 
-  private final CommunityVar[] _nonStandardCommunityLiterals;
+  /**
+   * Each extended/large community literal that appears in the given configuration is assigned a
+   * unique atomic predicate.
+   */
+  private final Map<Integer, CommunityVar> _nonStandardCommunityLiterals = new HashMap<>();
 
   /** Atomic predicates for the AS-path regexes that appear in the given configuration. */
   private final RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
@@ -76,8 +82,12 @@ public class ConfigAtomicPredicates {
                 .collect(ImmutableSet.toImmutableSet()),
             CommunityVar.ALL_STANDARD_COMMUNITIES);
 
-    _nonStandardCommunityLiterals =
+    CommunityVar[] nonStandardCommunityVars =
         allCommunities.stream().filter(isStandardCommunity.negate()).toArray(CommunityVar[]::new);
+    int numAPs = _standardCommunityAtomicPredicates.getNumAtomicPredicates();
+    for (int i = 0; i < nonStandardCommunityVars.length; i++) {
+      _nonStandardCommunityLiterals.put(i + numAPs, nonStandardCommunityVars[i]);
+    }
 
     _asPathRegexAtomicPredicates =
         new RegexAtomicPredicates<>(
@@ -157,7 +167,7 @@ public class ConfigAtomicPredicates {
     return _standardCommunityAtomicPredicates;
   }
 
-  public CommunityVar[] getNonStandardCommunityLiterals() {
+  public Map<Integer, CommunityVar> getNonStandardCommunityLiterals() {
     return _nonStandardCommunityLiterals;
   }
 

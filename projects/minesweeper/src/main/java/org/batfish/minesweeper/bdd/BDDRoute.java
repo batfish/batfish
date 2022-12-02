@@ -125,7 +125,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     this(
         factory,
         aps.getStandardCommunityAtomicPredicates().getNumAtomicPredicates()
-            + aps.getNonStandardCommunityLiterals().length,
+            + aps.getNonStandardCommunityLiterals().size(),
         aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
   }
 
