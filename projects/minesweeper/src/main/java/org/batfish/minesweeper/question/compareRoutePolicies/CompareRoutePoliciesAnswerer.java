@@ -141,6 +141,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         case NEXTHOP_SET:
         case TAG:
         case ADMIN_DIST:
+        case WEIGHT:
         case UNSUPPORTED:
           break;
         case COMMUNITIES:
