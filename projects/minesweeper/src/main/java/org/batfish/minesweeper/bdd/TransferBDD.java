@@ -976,6 +976,10 @@ public class TransferBDD {
 
     ret.setUnsupported(ite(guard, r1.getUnsupported(), r2.getUnsupported()));
 
+    MutableBDDInteger i =
+        ite(guard, r1.getOspfMetric().getInteger(), r2.getOspfMetric().getInteger());
+    ret.getOspfMetric().setInteger(i);
+
     // MutableBDDInteger i =
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
     // ret.getProtocolHistory().setInteger(i);

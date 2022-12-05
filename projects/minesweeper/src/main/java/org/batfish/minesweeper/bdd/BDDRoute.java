@@ -246,9 +246,21 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDDRoute(BDD pred, BDDRoute route) {
     _factory = route._factory;
 
-    // We do not need to clone the atomic predicates.
-    _asPathRegexAtomicPredicates = route._asPathRegexAtomicPredicates;
-    _communityAtomicPredicates = route._communityAtomicPredicates;
+    // Create fresh arrays for atomic predicates
+    BDD[] asPathAtomicPredicates = new BDD[route._asPathRegexAtomicPredicates.length];
+    BDD[] communityAtomicPredicates = new BDD[route._communityAtomicPredicates.length];
+
+    // Intersect each atomic predicate with pred.
+    for (int i = 0; i < asPathAtomicPredicates.length; i++) {
+      asPathAtomicPredicates[i] = route._asPathRegexAtomicPredicates[i].and(pred);
+    }
+
+    for (int i = 0; i < communityAtomicPredicates.length; i++) {
+      communityAtomicPredicates[i] = route._communityAtomicPredicates[i].and(pred);
+    }
+
+    _asPathRegexAtomicPredicates = asPathAtomicPredicates;
+    _communityAtomicPredicates = communityAtomicPredicates;
     _prefixLength = route._prefixLength.and(pred);
     _prefix = route.getPrefix().and(pred);
     _nextHop = route.getNextHop().and(pred);

@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.question.compareRoutePolicies;
 
+import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.diffRowResultsFor;
@@ -123,6 +124,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   /**
    * @param factory the BDD factory used for this analysis
    * @param diffs A list of differences found between two output routes.
+   * @param r1 the first of the two output routes that were compared
+   * @param r2 the second of the two output routes that were compared
    * @return A BDD that denotes at least one of the differences in the given diffs list. Only
    *     capturing differences in communities and as-path for now; the rest are not necessary
    *     because they do not have additive semantics, like "set community additive" and "set as-path
@@ -130,9 +133,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    *     check)
    */
   private BDD counterExampleOutputConstraints(
-      BDDFactory factory, List<BDDRouteDiff.Difference> diffs) {
-    for (BDDRouteDiff.Difference d : diffs) {
-      switch (d.getType()) {
+      BDDFactory factory, List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2) {
+    for (BDDRouteDiff.DifferenceType d : diffs) {
+      switch (d) {
         case OSPF_METRIC:
         case LOCAL_PREF:
         case MED:
@@ -145,8 +148,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         case UNSUPPORTED:
           break;
         case COMMUNITIES:
-          BDD[] communityAtomicPredicates = d.getR1().getCommunityAtomicPredicates();
-          BDD[] otherCommunityAtomicPredicates = d.getR2().getCommunityAtomicPredicates();
+          BDD[] communityAtomicPredicates = r1.getCommunityAtomicPredicates();
+          BDD[] otherCommunityAtomicPredicates = r2.getCommunityAtomicPredicates();
           for (int i = 0; i < communityAtomicPredicates.length; i++) {
             BDD outConstraint = communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]);
             // If there is a scenario where the two outputs differ at this community then ensure
@@ -157,8 +160,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             }
           }
         case AS_PATH:
-          BDD[] asPathAtomicPredicates = d.getR1().getAsPathRegexAtomicPredicates();
-          BDD[] otherAsPathAtomicPredicates = d.getR2().getAsPathRegexAtomicPredicates();
+          BDD[] asPathAtomicPredicates = r1.getAsPathRegexAtomicPredicates();
+          BDD[] otherAsPathAtomicPredicates = r2.getAsPathRegexAtomicPredicates();
           for (int i = 0; i < asPathAtomicPredicates.length; i++) {
             BDD outConstraint = asPathAtomicPredicates[i].xor(otherAsPathAtomicPredicates[i]);
             // If there is a scenario where the two outputs differ at this community then ensure
@@ -181,7 +184,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @param configAPs an object providing the atomic predicates for the policy's owner configuration
    * @return a set of differences
    */
-  private Set<Row> comparePolicies(
+  private List<Row> comparePolicies(
       RoutingPolicy policy, RoutingPolicy proposedPolicy, ConfigAtomicPredicates configAPs) {
     // The set of differences if any.
     Set<BDD> differences = new HashSet<>();
@@ -197,7 +200,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     List<TransferReturn> paths = computePaths(tBDD);
     // The set of paths for the proposed policy
     List<TransferReturn> otherPaths = computePaths(otherTBDD);
-    BDDRouteDiff pathDiff = new BDDRouteDiff();
 
     // Potential optimization: if a set of input routes between the two paths is the same then we
     // only need to validate
@@ -220,16 +222,19 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
           } else {
             // If both policies perform the same action, then check that their outputs match.
             // We compute the outputs of interest, by restricting the sets of output routes to the
-            // intersection
-            // of the input routes and then comparing them.
-            BDDRoute outputRoutes = new BDDRoute(intersection, path.getFirst());
-            BDDRoute outputRoutesOther = new BDDRoute(intersection, otherPath.getFirst());
-            List<BDDRouteDiff.Difference> diff =
-                pathDiff.computeDifferences(outputRoutes, outputRoutesOther);
-            // Compute any constraints on the output routes.
-            BDD outputConstraints = counterExampleOutputConstraints(factory, diff);
-            if (!diff.isEmpty()) {
-              differences.add(intersection.and(outputConstraints));
+            // intersection of the input routes and then comparing them.
+            // We only need to compare the outputs if the routes were permitted.
+            if (path.getAccepted()) {
+              BDDRoute outputRoutes = new BDDRoute(intersection, path.getFirst());
+              BDDRoute outputRoutesOther = new BDDRoute(intersection, otherPath.getFirst());
+              List<BDDRouteDiff.DifferenceType> diff =
+                  computeDifferences(outputRoutes, outputRoutesOther);
+              // Compute any constraints on the output routes.
+              BDD outputConstraints =
+                  counterExampleOutputConstraints(factory, diff, outputRoutes, outputRoutesOther);
+              if (!diff.isEmpty()) {
+                differences.add(intersection.and(outputConstraints));
+              }
             }
           }
         }
@@ -237,7 +242,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     }
     return differences.stream()
         .map(intersection -> constraintsToResults(intersection, policy, proposedPolicy, configAPs))
-        .collect(Collectors.toSet());
+        .collect(Collectors.toList());
   }
 
   /**
@@ -285,7 +290,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
                         _proposedPolicySpecifier.resolve(node, context),
                         snapshot))
             .collect(ImmutableList.toImmutableList());
-
     TableAnswerElement answerElement =
         new TableAnswerElement(TestRoutePoliciesAnswerer.compareMetadata());
     answerElement.postProcessAnswer(_question, rows);
