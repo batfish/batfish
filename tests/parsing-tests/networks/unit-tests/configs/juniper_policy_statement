@@ -44,4 +44,4 @@ set policy-options policy-statement POLICY-NAME from protocol evpn
 set policy-options as-path ORIGINATED_IN_65535 ".* 65535"
 set policy-options as-path UNUSED_ORIGINATED_IN_65535 ".* 65535"
 set policy-options as-path-group AS_PATH_GROUP as-path ASN714 ".* 714$"
-set policy-options as-path-group AS_PATH_GROUP as-path ASN715 ".* 715$"
+set policy-options as-path-group AS_PATH_GROUP as-path ASN715 "!.*"
