@@ -50,6 +50,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AS_PATH_GROUP_AS_PATH_SELF_REFERENCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.AS_PATH_GROUP_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPORT_POLICY;
@@ -868,6 +869,7 @@ import org.batfish.representation.juniper.PathSelectionMode;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
+import org.batfish.representation.juniper.PsFromAsPathGroup;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
 import org.batfish.representation.juniper.PsFromCommunityCount;
@@ -3001,7 +3003,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPo_as_path_group(Po_as_path_groupContext ctx) {
-    _currentAsPathGroup = null;
+      String name = toString(ctx.name);
+      _configuration.referenceStructure(
+              AS_PATH_GROUP, name, AS_PATH_GROUP_SELF_REFERENCE, getLine(ctx.name.getStart()));
+      _currentAsPathGroup = null;
   }
 
   @Override
@@ -5504,10 +5509,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopsf_as_path_group(Popsf_as_path_groupContext ctx) {
     String name = toString(ctx.name);
+    _currentPsTerm.getFroms().addFromAsPathGroup(new PsFromAsPathGroup(name));
     _configuration.referenceStructure(
         AS_PATH_GROUP, name, POLICY_STATEMENT_FROM_AS_PATH_GROUP, getLine(ctx.getStart()));
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
-    todo(ctx);
   }
 
   @Override

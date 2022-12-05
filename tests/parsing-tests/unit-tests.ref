@@ -57253,7 +57253,41 @@
             "              name = (junos_name*",
             "                NAME:'UNUSED_ORIGINATED_IN_65535'  <== mode:M_AsPathDefinitionName)",
             "              regex = AS_PATH_REGEX:'.* 65535'  <== mode:M_AsPathDefinitionRegexQuoted)))))",
-            "    NEWLINE:'\\n\\n')",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_as_path_group",
+            "              AS_PATH_GROUP:'as-path-group'",
+            "              name = (junos_name*",
+            "                NAME:'AS_PATH_GROUP'  <== mode:M_Name)",
+            "              (poapg_as_path",
+            "                AS_PATH:'as-path'",
+            "                name = (junos_name*",
+            "                  NAME:'ASN714'  <== mode:M_AsPathDefinitionName)",
+            "                regex = AS_PATH_REGEX:'.* 714$'  <== mode:M_AsPathDefinitionRegexQuoted))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_as_path_group",
+            "              AS_PATH_GROUP:'as-path-group'",
+            "              name = (junos_name*",
+            "                NAME:'AS_PATH_GROUP'  <== mode:M_Name)",
+            "              (poapg_as_path",
+            "                AS_PATH:'as-path'",
+            "                name = (junos_name*",
+            "                  NAME:'ASN715'  <== mode:M_AsPathDefinitionName)",
+            "                regex = AS_PATH_REGEX:'.* 715$'  <== mode:M_AsPathDefinitionRegexQuoted))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -70556,12 +70590,6 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 4,
-              "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "as-path-group AS_PATH_GROUP"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 18,
               "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "protocol access-internal"
@@ -74395,6 +74423,22 @@
             "UNUSED_ORIGINATED_IN_65535" : {
               "definitionLines" : "45",
               "numReferrers" : 0
+            }
+          },
+          "as-path-group" : {
+            "AS_PATH_GROUP" : {
+              "definitionLines" : "46-47",
+              "numReferrers" : 0
+            }
+          },
+          "as-path-group as-path" : {
+            "ASN714" : {
+              "definitionLines" : "46",
+              "numReferrers" : 1
+            },
+            "ASN715" : {
+              "definitionLines" : "47",
+              "numReferrers" : 1
             }
           },
           "policy-statement" : {
@@ -80907,6 +80951,14 @@
           }
         },
         "configs/juniper_as_path_group" : {
+          "as-path-group" : {
+            "AS_PATH_GROUP1" : {
+              "as-path-group" : [
+                5,
+                6
+              ]
+            }
+          },
           "as-path-group as-path" : {
             "AS_PATH_REGEX_NAME1" : {
               "as-path-group as-path" : [
@@ -81469,8 +81521,24 @@
           },
           "as-path-group" : {
             "AS_PATH_GROUP" : {
+              "as-path-group" : [
+                46,
+                47
+              ],
               "policy-statement from as-path-group" : [
                 4
+              ]
+            }
+          },
+          "as-path-group as-path" : {
+            "ASN714" : {
+              "as-path-group as-path" : [
+                46
+              ]
+            },
+            "ASN715" : {
+              "as-path-group as-path" : [
+                47
               ]
             }
           },

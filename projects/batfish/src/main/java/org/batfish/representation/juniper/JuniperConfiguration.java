@@ -3141,6 +3141,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!froms.getFromAsPaths().isEmpty()) {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromAsPaths())));
     }
+    if (!froms.getFromAsPathGroups().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromAsPathGroups())));
+    }
     if (froms.getFromColor() != null) {
       conj.getConjuncts().add(froms.getFromColor().toBooleanExpr(this, _c, _w));
     }
