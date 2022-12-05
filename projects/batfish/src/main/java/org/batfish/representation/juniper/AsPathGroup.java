@@ -1,8 +1,6 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
@@ -26,11 +24,5 @@ public class AsPathGroup implements Serializable {
 
   public @Nonnull String getName() {
     return _name;
-  }
-
-  public @Nonnull List<String> getAsPathRegexes() {
-    List<String> regexes = new ArrayList<>();
-    _asPaths.values().forEach(asPath -> regexes.add(asPath.getRegex()));
-    return regexes;
   }
 }

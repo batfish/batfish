@@ -8,7 +8,6 @@ public enum JuniperStructureUsage implements StructureUsage {
   AGGREGATE_ROUTE_POLICY("aggregate route policy"),
   APPLICATION_SET_MEMBER_APPLICATION("application-set member application"),
   APPLICATION_SET_MEMBER_APPLICATION_SET("application-set member application-set"),
-  AS_PATH_GROUP_SELF_REFERENCE("as-path-group"),
   AS_PATH_GROUP_AS_PATH_SELF_REFERENCE("as-path-group as-path"),
   AUTHENTICATION_KEY_CHAINS_POLICY("authentication-key-chains policy"),
   BGP_ALLOW("bgp group allow"),

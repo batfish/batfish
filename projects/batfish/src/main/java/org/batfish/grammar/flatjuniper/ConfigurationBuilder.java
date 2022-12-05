@@ -50,7 +50,6 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AS_PATH_GROUP_AS_PATH_SELF_REFERENCE;
-import static org.batfish.representation.juniper.JuniperStructureUsage.AS_PATH_GROUP_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPORT_POLICY;
@@ -3003,10 +3002,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPo_as_path_group(Po_as_path_groupContext ctx) {
-      String name = toString(ctx.name);
-      _configuration.referenceStructure(
-              AS_PATH_GROUP, name, AS_PATH_GROUP_SELF_REFERENCE, getLine(ctx.name.getStart()));
-      _currentAsPathGroup = null;
+    _currentAsPathGroup = null;
   }
 
   @Override

@@ -3142,6 +3142,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromAsPaths())));
     }
     if (!froms.getFromAsPathGroups().isEmpty()) {
+      // TODO: Figure out how it works when both as-path and as-path-group present
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromAsPathGroups())));
     }
     if (froms.getFromColor() != null) {

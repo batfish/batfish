@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.representation.juniper.parboiled.AsPathRegex.convertToJavaRegex;
+
 import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,46 +14,42 @@ import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 
 public final class PsFromAsPathGroup extends PsFrom {
-    private final String _asPathGroupName;
+  private final String _asPathGroupName;
 
-    public PsFromAsPathGroup(String asPathGroupName) {
-        _asPathGroupName = asPathGroupName;
+  public PsFromAsPathGroup(String asPathGroupName) {
+    _asPathGroupName = asPathGroupName;
+  }
+
+  @Override
+  public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
+    Map<String, AsPathGroup> asPathGroups = jc.getMasterLogicalSystem().getAsPathGroups();
+    return toBooleanExpr(asPathGroups.get(_asPathGroupName), warnings);
+  }
+
+  @VisibleForTesting
+  static BooleanExpr toBooleanExpr(@Nullable AsPathGroup asPathGroup, Warnings w) {
+    if (asPathGroup == null) {
+      // Undefined reference, return false.
+      return BooleanExprs.FALSE;
     }
-
-    @Override
-    public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
-        Map<String, AsPathGroup> asPathGroups = jc.getMasterLogicalSystem().getAsPathGroups();
-        return toBooleanExpr(asPathGroups.get(_asPathGroupName), warnings);
+    List<BooleanExpr> asPaths = new ArrayList<>();
+    for (NamedAsPath namedAsPath : asPathGroup.getAsPaths().values()) {
+      try {
+        String convertedVIRegex = convertToJavaRegex(namedAsPath.getRegex());
+        asPaths.add(MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(convertedVIRegex)));
+      } catch (Exception e) {
+        w.redFlag(
+            String.format(
+                "Error converting Juniper as-path-group regex %s, will assume no paths match"
+                    + " instead: %s.",
+                asPathGroup.getName(), e.getMessage()));
+        /* Handle error, add false to the list instead */
+        asPaths.add(BooleanExprs.FALSE);
+      }
     }
-
-    @VisibleForTesting
-    static BooleanExpr toBooleanExpr(@Nullable AsPathGroup asPathGroup, Warnings w) {
-        if (asPathGroup == null) {
-            // Undefined reference, return false.
-            return BooleanExprs.FALSE;
-        }
-        try {
-            List<String> javaRegex = new ArrayList<>();
-            asPathGroup
-                    .getAsPathRegexes()
-                    .forEach(
-                            regex ->
-                                    javaRegex.add(
-                                            org.batfish.representation.juniper.parboiled.AsPathRegex.convertToJavaRegex(
-                                                    regex)));
-            String ORedRegexes = String.join(" | ", javaRegex);
-
-            return MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ORedRegexes));
-        } catch (Exception e) {
-            w.redFlag(
-                    String.format(
-                            "Error converting Juniper as-path-group regex %s, will assume no paths match instead:"
-                                    + " %s.",
-                            asPathGroup.getName(), e.getMessage()));
-            /* Handle error, return false instead. */
-            return BooleanExprs.FALSE;
-        }
-    }
+    return new Disjunction(asPaths);
+  }
 }
