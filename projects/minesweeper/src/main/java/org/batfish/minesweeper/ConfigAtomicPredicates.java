@@ -69,6 +69,7 @@ public class ConfigAtomicPredicates {
 
     Set<CommunityVar> allCommunities = findAllCommunities(communities);
 
+    // currently we only support regex matching for standard communities
     Predicate<CommunityVar> isStandardCommunity =
         cvar ->
             cvar.getType() == CommunityVar.Type.REGEX
