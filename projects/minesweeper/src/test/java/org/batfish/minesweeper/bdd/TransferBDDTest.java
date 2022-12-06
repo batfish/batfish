@@ -73,6 +73,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
@@ -95,6 +96,7 @@ import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
+import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
@@ -2570,7 +2572,7 @@ public class TransferBDDTest {
   @Test
   public void testUnsupportedStatement() {
     _policyBuilder
-        .addStatement(new PrependAsPath(new LiteralAsList(ImmutableList.of())))
+        .addStatement(new ExcludeAsPath(new LiteralAsList(ImmutableList.of())))
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -2582,6 +2584,47 @@ public class TransferBDDTest {
 
     BDDRoute outRoute = anyRoute(tbdd.getFactory());
     outRoute.setUnsupported(tbdd.getFactory().one());
+    assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
+    assertEquals(outAnnouncements, outRoute);
+  }
+
+  @Test
+  public void testPrependAsPath() {
+    _policyBuilder
+        .addStatement(new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(42L)))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute outRoute = anyRoute(tbdd.getFactory());
+    outRoute.setPrependedASes(ImmutableList.of(42L));
+    assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
+    assertEquals(outAnnouncements, outRoute);
+  }
+
+  @Test
+  public void testPrependAsPaths() {
+    _policyBuilder
+        .addStatement(new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(42L)))))
+        .addStatement(
+            new PrependAsPath(
+                new LiteralAsList(ImmutableList.of(new ExplicitAs(44L), new ExplicitAs(4L)))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute outRoute = anyRoute(tbdd.getFactory());
+    outRoute.setPrependedASes(ImmutableList.of(44L, 4L, 42L));
     assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
     assertEquals(outAnnouncements, outRoute);
   }
