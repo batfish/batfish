@@ -868,6 +868,7 @@ import org.batfish.representation.juniper.PathSelectionMode;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
+import org.batfish.representation.juniper.PsFromAsPathGroup;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
 import org.batfish.representation.juniper.PsFromCommunityCount;
@@ -5504,10 +5505,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopsf_as_path_group(Popsf_as_path_groupContext ctx) {
     String name = toString(ctx.name);
+    _currentPsTerm.getFroms().addFromAsPathGroup(new PsFromAsPathGroup(name));
     _configuration.referenceStructure(
         AS_PATH_GROUP, name, POLICY_STATEMENT_FROM_AS_PATH_GROUP, getLine(ctx.getStart()));
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
-    todo(ctx);
   }
 
   @Override
