@@ -61,6 +61,25 @@ Do the following before doing anything
 
       `sudo ln -s bazelisk /usr/local/bin/bazel`
 
+### Note: multiple versions of Java
+
+If you have multiple versions of Java installed on your machine, the default `java`/`javac` commands may still not be
+using JVM 11. In that case, you can force the version of Java in use by setting `JAVA_HOME`. @dhalperi has these aliases
+in his `.zshrc` to control which Java is running in a given shell on macOS:
+
+```sh
+# Java options
+# j8q switches to Java 8, quietly. Could make a loud version that runs `java -version` after.
+function j8q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+}
+function j11q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 11`
+}
+# Default to Java 11.
+j11q
+```
+
 ## Installation steps
 
 1. Check out the Batfish code
@@ -139,6 +158,27 @@ do:
 ```
 bazel test --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistNetwork$ -- //projects/coordinator:coordinator_tests
 ```
+
+## Dependency management and upgrades
+
+We use Bazel's [`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external) to manage our Java dependencies
+from Maven. Refer to that
+project's [documentation](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson)
+to understand how it works, how Maven dependencies are versioned and captured in `maven_install.json`, and
+other information.
+
+Commonly, some Java library will have a CVE and we will want to upgrade our dependence on it. While the true reference
+for upgrading should be
+the [`rules_jvm_external` instructions on re-pinning](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson),
+here is a summary of the steps involved:
+
+1. Edit [`library_deps.bzl`](https://github.com/batfish/batfish/blob/master/library_deps.bzl) to update the version of
+   the library used to a non-vulnerable release.
+2. Run [`bazel run @unpinned_maven//:pin`](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson)
+   to re-generate `maven_install.json`.
+3. Manually review the changes (e.g., with `git diff`) to ensure all needed upgrades are achieved.
+4. Run all the tests (e.g., `bazel test //...`) to ensure that Batfish still builds and the tests still pass.
+5. Submit a PR to this repository as usual.
 
 ## Building a deployable batfish or allinone docker image
 
