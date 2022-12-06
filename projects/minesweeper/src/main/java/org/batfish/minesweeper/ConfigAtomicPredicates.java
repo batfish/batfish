@@ -82,6 +82,7 @@ public class ConfigAtomicPredicates {
                 .collect(ImmutableSet.toImmutableSet()),
             CommunityVar.ALL_STANDARD_COMMUNITIES);
 
+    // assign an atomic predicate to each extended/large community literal
     CommunityVar[] nonStandardCommunityVars =
         allCommunities.stream().filter(isStandardCommunity.negate()).toArray(CommunityVar[]::new);
     int numAPs = _standardCommunityAtomicPredicates.getNumAtomicPredicates();
