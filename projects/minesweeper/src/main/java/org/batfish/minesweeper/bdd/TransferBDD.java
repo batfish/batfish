@@ -1,6 +1,5 @@
 package org.batfish.minesweeper.bdd;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -8,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -39,6 +39,8 @@ import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.AsExpr;
+import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -48,12 +50,15 @@ import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -72,6 +77,7 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -79,6 +85,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
@@ -679,6 +686,20 @@ public class TransferBDD {
       curP.getData().setTag(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
+    } else if (stmt instanceof SetWeight) {
+      curP.debug("SetWeight");
+      SetWeight sw = (SetWeight) stmt;
+      IntExpr ie = sw.getWeight();
+      if (!(ie instanceof LiteralInt)) {
+        throw new UnsupportedFeatureException(ie.toString());
+      }
+      LiteralInt z = (LiteralInt) ie;
+      MutableBDDInteger currWeight = curP.getData().getWeight();
+      MutableBDDInteger newValue =
+          MutableBDDInteger.makeFromValue(currWeight.getFactory(), 16, z.getValue());
+      curP.getData().setWeight(newValue);
+      return ImmutableList.of(toTransferBDDState(curP, result));
+
     } else if (stmt instanceof SetCommunities) {
       curP.debug("SetCommunities");
       SetCommunities sc = (SetCommunities) stmt;
@@ -743,6 +764,17 @@ public class TransferBDD {
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
       setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
+      return ImmutableList.of(toTransferBDDState(curP, result));
+
+    } else if (stmt instanceof PrependAsPath) {
+      curP.debug("PrependAsPath");
+      if (_useOutputAttributes) {
+        // we don't yet properly model the situation where a modified AS-path can be later matched
+        // upon, so we don't allow modifications in that case
+        throw new UnsupportedFeatureException(stmt.toString());
+      }
+      PrependAsPath pap = (PrependAsPath) stmt;
+      prependASPath(pap.getExpr(), curP.getData());
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof TraceableStatement) {
@@ -817,19 +849,38 @@ public class TransferBDD {
 
   /**
    * Combines the per-path symbolic analysis results into a single TransferResult, which represents
-   * the disjunction of all accepting paths. *
+   * the disjunction of accepting paths. Note that only accepting paths that perform the same
+   * sequence of prepended ASes can be combined into one {@link TransferResult} currently, so some
+   * accepting paths will be ignored.
    */
   private TransferResult compute(List<Statement> statements, TransferParam p) {
     List<TransferResult> allPaths = computePaths(statements, p);
+    List<TransferResult> acceptedPaths =
+        allPaths.stream()
+            .filter(r -> r.getReturnValue().getAccepted())
+            .collect(ImmutableList.toImmutableList());
     // by default the result says that there are no feasible paths
     TransferResult result =
         new TransferResult(
             new TransferReturn(new BDDRoute(_factory, _configAtomicPredicates), _factory.zero()),
             _factory.zero());
+    if (!acceptedPaths.isEmpty()) {
+      // Set the prepended ASes of the default result to be the same as those on an accepting path.
+      // This hack is needed since we currently can't combine paths that have different prepended
+      // ASes.
+      result
+          .getReturnValue()
+          .getFirst()
+          .setPrependedASes(
+              new ArrayList<>(
+                  acceptedPaths.iterator().next().getReturnValue().getFirst().getPrependedASes()));
+    }
+
     // now disjoin all of the accepting paths
     for (TransferResult path : allPaths) {
       if (path.getReturnValue().getAccepted()) {
-        result = ite(path.getReturnValue().getSecond(), path, result);
+        // NOTE: This path will be ignored if ite() returns Optional.empty()
+        result = ite(path.getReturnValue().getSecond(), path, result).orElse(result);
       } else {
         // for denying paths, we still keep track of whether we hit an unsupported statement
         BDDRoute resultRoute = result.getReturnValue().getFirst();
@@ -897,9 +948,21 @@ public class TransferBDD {
     return result;
   }
 
-  @VisibleForTesting
-  BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
+  /**
+   * Performs an if-then-else of two {@link BDDRoute} objects. This can only be done if they have
+   * the same sequence of prepended ASes.
+   */
+  private Optional<BDDRoute> ite(BDD guard, BDDRoute r1, BDDRoute r2) {
     BDDRoute ret = new BDDRoute(_factory, _configAtomicPredicates);
+
+    if (!r1.getPrependedASes().equals(r2.getPrependedASes())) {
+      LOGGER.warn(
+          "Currently all accepting paths through the route map must have the same sequence of"
+              + " prepended ASes");
+      return Optional.empty();
+    }
+
+    ret.setPrependedASes(new ArrayList<>(r1.getPrependedASes()));
 
     MutableBDDInteger x;
     MutableBDDInteger y;
@@ -936,6 +999,10 @@ public class TransferBDD {
     y = r2.getTag();
     ret.getTag().setValue(ite(guard, x, y));
 
+    x = r1.getWeight();
+    y = r2.getWeight();
+    ret.getWeight().setValue(ite(guard, x, y));
+
     BDD[] retCommAPs = ret.getCommunityAtomicPredicates();
     BDD[] r1CommAPs = r1.getCommunityAtomicPredicates();
     BDD[] r2CommAPs = r2.getCommunityAtomicPredicates();
@@ -955,11 +1022,21 @@ public class TransferBDD {
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
     // ret.getProtocolHistory().setInteger(i);
 
-    return ret;
+    return Optional.of(ret);
   }
 
-  TransferResult ite(BDD guard, TransferResult r1, TransferResult r2) {
-    BDDRoute route = ite(guard, r1.getReturnValue().getFirst(), r2.getReturnValue().getFirst());
+  /**
+   * Performs an if-then-else of two {@link TransferResult} objects. This is not guaranteed to
+   * succeed, since we can only combine two {@link BDDRoute} objects into one if they have the same
+   * sequence of prepended ASes.
+   */
+  private Optional<TransferResult> ite(BDD guard, TransferResult r1, TransferResult r2) {
+    Optional<BDDRoute> routeOpt =
+        ite(guard, r1.getReturnValue().getFirst(), r2.getReturnValue().getFirst());
+    if (!routeOpt.isPresent()) {
+      return Optional.empty();
+    }
+    BDDRoute route = routeOpt.get();
     BDD accepted = ite(guard, r1.getReturnValue().getSecond(), r2.getReturnValue().getSecond());
 
     BDD suppressed = ite(guard, r1.getSuppressedValue(), r2.getSuppressedValue());
@@ -967,8 +1044,9 @@ public class TransferBDD {
     BDD retAsgn = ite(guard, r1.getReturnAssignedValue(), r2.getReturnAssignedValue());
     BDD fallThrough = ite(guard, r1.getFallthroughValue(), r2.getFallthroughValue());
 
-    return new TransferResult(
-        new TransferReturn(route, accepted), suppressed, exitAsgn, fallThrough, retAsgn);
+    return Optional.of(
+        new TransferResult(
+            new TransferReturn(route, accepted), suppressed, exitAsgn, fallThrough, retAsgn));
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
@@ -1126,6 +1204,24 @@ public class TransferBDD {
     route.setNextHopSet(_factory.one());
   }
 
+  private void prependASPath(AsPathListExpr expr, BDDRoute route)
+      throws UnsupportedFeatureException {
+    // currently we only support prepending AS literals
+    if (!(expr instanceof LiteralAsList)) {
+      throw new UnsupportedFeatureException(expr.toString());
+    }
+    List<Long> prependedASes = new ArrayList<>();
+    LiteralAsList asList = (LiteralAsList) expr;
+    for (AsExpr ase : asList.getList()) {
+      if (!(ase instanceof ExplicitAs)) {
+        throw new UnsupportedFeatureException(ase.toString());
+      }
+      prependedASes.add(((ExplicitAs) ase).getAs());
+    }
+    prependedASes.addAll(route.getPrependedASes());
+    route.setPrependedASes(prependedASes);
+  }
+
   // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
   // depending on the value of the boolean parameter.
   private void addOrRemoveCommunityAPs(IntegerSpace commAPs, TransferParam curP, boolean add) {
@@ -1199,9 +1295,13 @@ public class TransferBDD {
     return _useOutputAttributes ? current : _originalRoute;
   }
 
-  /*
-   * Create a TransferResult representing the symbolic output of
-   * the RoutingPolicy given the input route.
+  /**
+   * Creates a {@link TransferResult} representing the results of symbolic route-map analysis: the
+   * conditions under which a route is accepted by the route-map, along with the updates made to the
+   * route. Note that only accepting paths that perform the same sequence of prepended ASes can be
+   * combined into one {@link TransferResult} currently, so some accepting paths will be ignored.
+   * Clients of this method should instead consider using {@link TransferBDD#computePaths(Set)} to
+   * obtain a set of all paths, which avoids this limitation.
    */
   public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;

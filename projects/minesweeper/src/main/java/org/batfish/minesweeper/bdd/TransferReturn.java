@@ -8,8 +8,12 @@ import org.batfish.minesweeper.utils.Tuple;
  * triple representing the analysis results along a particular execution path through the route
  * policy:
  *
- * <p>1. A {@link BDDRoute} that represents a function from input announcements to the corresponding
- * output announcements produced by the analyzed route policy.
+ * <p>1. A {@link BDDRoute} that represents a function from an input announcement to the
+ * corresponding output announcement produced by the analyzed route policy on this particular path.
+ * Note that even if the path ends up rejecting the given route, we still record all route updates
+ * that occur. We also record whether the path encountered a statement that the {@link TransferBDD}
+ * analysis does not currently support, which indicates that the analysis results may not be
+ * accurate.
  *
  * <p>2. A {@link BDD} that represents the set of input announcements that take this particular
  * path.
