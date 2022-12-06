@@ -291,6 +291,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopSet = pred.and(route.getNextHopSet());
     _nextHopDiscarded = pred.and(route.getNextHopDiscarded());
     _unsupported = pred.and(route.getUnsupported());
+    _prependedASes = new ArrayList<>(route.getPrependedASes());
   }
 
   /*

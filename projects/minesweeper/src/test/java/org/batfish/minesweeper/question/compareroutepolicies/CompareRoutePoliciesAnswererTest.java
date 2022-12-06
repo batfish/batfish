@@ -70,17 +70,20 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -604,6 +607,120 @@ public class CompareRoutePoliciesAnswererTest {
                 hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that differences caused by AS-path prepends are detected. */
+  @Test
+  public void testSetAsPathPrepend() {
+    RoutingPolicy policy1 =
+        _policyBuilder_1
+            .addStatement(
+                new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(42L)))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    RoutingPolicy policy2 =
+        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+
+    CompareRoutePoliciesQuestion question =
+        new CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy1.getName(), policy2.getName(), HOSTNAME);
+    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "[]", "[42]")));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_1_NAME), Schema.STRING),
+                hasColumn(COL_PROPOSED_POLICY_NAME, equalTo(POLICY_2_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, anything(), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that differences caused by AS-path prepends are detected. */
+  @Test
+  public void testMatchSetAsPath() {
+    RoutingPolicy policy1 =
+        _policyBuilder_1
+            .addStatement(
+                new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(40L)))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    RoutingPolicy policy2 =
+        _policyBuilder_2
+            .addStatement(
+                new If(
+                    new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    CompareRoutePoliciesQuestion question =
+        new CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy1.getName(), policy2.getName(), HOSTNAME);
+    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRouteDiffs diff_1 =
+        new BgpRouteDiffs(
+            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "[40]", "[40, 40]")));
+
+    BgpRoute inputRoute_1 =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setCommunities(ImmutableSet.of())
+            .setAsPath(AsPath.ofSingletonAsSets(40L))
+            .build();
+
+    BgpRoute inputRoute_2 =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setCommunities(ImmutableSet.of())
+            .setAsPath(AsPath.empty())
+            .build();
+
+    BgpRouteDiffs diff_2 = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_1_NAME), Schema.STRING),
+                hasColumn(COL_PROPOSED_POLICY_NAME, equalTo(POLICY_2_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute_1), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff_1), Schema.BGP_ROUTE_DIFFS)),
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_1_NAME), Schema.STRING),
+                hasColumn(COL_PROPOSED_POLICY_NAME, equalTo(POLICY_2_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute_2), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff_2), Schema.BGP_ROUTE_DIFFS))));
   }
 
   /** Tests differences resulting from different treatment of incoming route's AS path. */

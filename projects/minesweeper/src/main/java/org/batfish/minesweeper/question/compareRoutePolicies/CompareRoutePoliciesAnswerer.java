@@ -9,7 +9,7 @@ import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -187,7 +187,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   private List<Row> comparePolicies(
       RoutingPolicy policy, RoutingPolicy proposedPolicy, ConfigAtomicPredicates configAPs) {
     // The set of differences if any.
-    Set<BDD> differences = new HashSet<>();
+    List<BDD> differences = new ArrayList<>();
 
     BDDFactory factory = JFactory.init(100000, 10000);
     TransferBDD tBDD = new TransferBDD(factory, configAPs, policy);
@@ -255,8 +255,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    */
   private Stream<Row> comparePoliciesForNode(
       String node,
-      Set<RoutingPolicy> policies,
-      Set<RoutingPolicy> proposedPolicies,
+      Stream<RoutingPolicy> policies,
+      Stream<RoutingPolicy> proposedPolicies,
       NetworkSnapshot snapshot) {
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
@@ -268,26 +268,26 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
                 .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes);
 
-    return policies.stream()
-        .flatMap(
-            policy ->
-                proposedPolicies.stream()
-                    .flatMap(
-                        proposedPolicy ->
-                            comparePolicies(policy, proposedPolicy, configAPs).stream()));
+    return policies.flatMap(
+        policy ->
+            proposedPolicies.flatMap(
+                proposedPolicy -> comparePolicies(policy, proposedPolicy, configAPs).stream()));
   }
 
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
+
+    // Using stream.sorted() to ensure consistent order.
     List<Row> rows =
         _nodeSpecifier.resolve(context).stream()
+            .sorted()
             .flatMap(
                 node ->
                     comparePoliciesForNode(
                         node,
-                        _policySpecifier.resolve(node, context),
-                        _proposedPolicySpecifier.resolve(node, context),
+                        _policySpecifier.resolve(node, context).stream().sorted(),
+                        _proposedPolicySpecifier.resolve(node, context).stream().sorted(),
                         snapshot))
             .collect(ImmutableList.toImmutableList());
     TableAnswerElement answerElement =

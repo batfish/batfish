@@ -36,7 +36,7 @@ public final class BDDRouteDiff {
     if (!Arrays.equals(r1.getCommunityAtomicPredicates(), r2.getCommunityAtomicPredicates())) {
       result.add(DifferenceType.COMMUNITIES);
     }
-    if (!Arrays.equals(r1.getAsPathRegexAtomicPredicates(), r2.getAsPathRegexAtomicPredicates())) {
+    if (!Objects.equals(r1.getPrependedASes(), r2.getPrependedASes())) {
       result.add(DifferenceType.AS_PATH);
     }
     if (!Objects.equals(r1.getMed(), r2.getMed())) {
