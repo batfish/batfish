@@ -10,6 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -84,24 +86,25 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * Convert the results of symbolic route analysis into an answer to this question, if the
    * resulting constraints are satisfiable.
    *
-   * @param constraints intersection of the input and output constraints provided as part of the
-   *     question and the constraints on a solution that come from the symbolic route analysis
    * @param policy the first route policy that was analyzed
    * @param otherPolicy the second route policy that was analyzed
-   * @param configAPs an object that provides information about the community and as-path atomic
-   *     predicates
-   * @return the concrete input route and (if the desired action is PERMIT) the concrete output
+   * @return the concrete input route and, if the desired action is PERMIT, the concrete output
    *     routes resulting from analyzing the given policies.
    */
-  private Row constraintsToResults(
-      BDD constraints,
-      RoutingPolicy policy,
-      RoutingPolicy otherPolicy,
-      ConfigAtomicPredicates configAPs) {
+  private Row computeDifferencesForInputRoute(
+      RoutingPolicy policy, RoutingPolicy otherPolicy, Bgpv4Route inRoute) {
+    return diffRowResultsFor(policy, otherPolicy, inRoute, _direction);
+  }
+
+  /**
+   * @param constraints Logical constraints that describe a set of routes.
+   * @param configAPs the atomic predicates used for communities/as-paths.
+   * @return An input route that conforms to the given constraints.
+   */
+  private Bgpv4Route constraintsToInputs(BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
     BDD fullModel = constraintsToModel(constraints, configAPs);
-    Bgpv4Route inRoute = satAssignmentToInputRoute(fullModel, configAPs);
-    return diffRowResultsFor(policy, otherPolicy, inRoute, _direction);
+    return satAssignmentToInputRoute(fullModel, configAPs);
   }
 
   /**
@@ -241,7 +244,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       }
     }
     return differences.stream()
-        .map(intersection -> constraintsToResults(intersection, policy, proposedPolicy, configAPs))
+        .map(intersection -> constraintsToInputs(intersection, configAPs))
+        .sorted(Comparator.comparing(AbstractRoute::getNetwork))
+        .map(r -> computeDifferencesForInputRoute(policy, proposedPolicy, r))
         .collect(Collectors.toList());
   }
 
