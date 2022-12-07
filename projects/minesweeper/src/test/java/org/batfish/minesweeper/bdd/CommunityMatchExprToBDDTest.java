@@ -33,6 +33,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
@@ -55,7 +56,6 @@ public class CommunityMatchExprToBDDTest {
   private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
   private Configuration _baseConfig;
-  private ConfigAtomicPredicates _configAPs;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunityMatchExprToBDD _communityMatchExprToBDD;
 
@@ -73,7 +73,7 @@ public class CommunityMatchExprToBDDTest {
 
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
-    _configAPs =
+    ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             _batfish,
             _batfish.getSnapshot(),
@@ -89,13 +89,16 @@ public class CommunityMatchExprToBDDTest {
                 CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1)),
                 // a vpn distinguisher extended community
                 CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)),
+                // a few opaque communities
+                CommunityVar.from(ExtendedCommunity.opaque(true, 3, 40)),
+                CommunityVar.from(ExtendedCommunity.opaque(false, 4, 50)),
                 CommunityVar.from(LargeCommunity.of(20, 20, 20))),
             null);
     TransferBDD transferBDD =
         new TransferBDD(
-            _configAPs,
+            configAPs,
             nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
-    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _communityMatchExprToBDD = new CommunityMatchExprToBDD();
@@ -114,7 +117,9 @@ public class CommunityMatchExprToBDDTest {
                 ImmutableSet.of(
                         CommunityVar.from(ExtendedCommunity.target(1, 65555)),
                         CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1)),
-                        CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)))
+                        CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)),
+                        CommunityVar.from(ExtendedCommunity.opaque(true, 3, 40)),
+                        CommunityVar.from(ExtendedCommunity.opaque(false, 4, 50)))
                     .stream()
                     .map(this::cvarToBDD)
                     .collect(ImmutableSet.toImmutableSet()));
@@ -266,6 +271,15 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
+  public void testVisitOpaqueExtendedCommunities() {
+    BDD result =
+        _communityMatchExprToBDD.visitOpaqueExtendedCommunities(
+            OpaqueExtendedCommunities.of(true, 3), _arg);
+
+    assertEquals(cvarToBDD(CommunityVar.from(ExtendedCommunity.opaque(true, 3, 40))), result);
+  }
+
+  @Test
   public void testVisitRouteTargetExtendedCommunities() {
     BDD result =
         _communityMatchExprToBDD.visitRouteTargetExtendedCommunities(
@@ -337,7 +351,7 @@ public class CommunityMatchExprToBDDTest {
   private BDD cvarToBDD(CommunityVar cvar) {
     BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
     Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _arg.getTransferBDD().getCommunityAtomicPredicates();
     return _arg.getTransferBDD()
         .getFactory()
         .orAll(
