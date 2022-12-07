@@ -30,7 +30,7 @@ public final class BDDRouteDiff {
     //    if (!Objects.equals(r1.getOspfMetric(), r2.getOspfMetric())) {
     //      result.add(DifferenceType.OSPF_METRIC);
     //    }
-    if (!Objects.equals(r1.getLocalPref(), (r2.getLocalPref()))) {
+    if (!Objects.equals(r1.getLocalPref(), r2.getLocalPref())) {
       result.add(DifferenceType.LOCAL_PREF);
     }
     if (!Arrays.equals(r1.getCommunityAtomicPredicates(), r2.getCommunityAtomicPredicates())) {

@@ -113,15 +113,19 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * Produce the difference of simulating the given route policies on the given input route.
    *
    * @param policy the route policy to simulate
-   * @param otherPolicy the other route policy to simulate
+   * @param proposedPolicy the other route policy to simulate
    * @param inputRoute the input route for the policy
    * @param direction whether the policy is used on import or export (IN or OUT)
    * @return a table row containing the differences of the simulation
    */
   public static Row diffRowResultsFor(
-      RoutingPolicy policy, RoutingPolicy otherPolicy, Bgpv4Route inputRoute, Direction direction) {
+      RoutingPolicy policy,
+      RoutingPolicy proposedPolicy,
+      Bgpv4Route inputRoute,
+      Direction direction) {
     return toCompareRow(
-        testPolicy(policy, inputRoute, direction), testPolicy(otherPolicy, inputRoute, direction));
+        testPolicy(policy, inputRoute, direction),
+        testPolicy(proposedPolicy, inputRoute, direction));
   }
 
   private static Result testPolicy(
@@ -435,38 +439,38 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  private static @Nullable Row toCompareRow(Result snapshotResult, Result otherResult) {
+  private static @Nullable Row toCompareRow(Result currentResult, Result proposedResult) {
 
-    if (snapshotResult.equals(otherResult)) {
+    if (currentResult.equals(proposedResult)) {
       return null;
     }
 
-    org.batfish.datamodel.questions.BgpRoute snapshotOutputRoute =
-        toQuestionsBgpRoute(snapshotResult.getOutputRoute());
-    org.batfish.datamodel.questions.BgpRoute referenceOutputRoute =
-        toQuestionsBgpRoute(otherResult.getOutputRoute());
+    org.batfish.datamodel.questions.BgpRoute currentOutputRoute =
+        toQuestionsBgpRoute(currentResult.getOutputRoute());
+    org.batfish.datamodel.questions.BgpRoute proposedOutputRoute =
+        toQuestionsBgpRoute(proposedResult.getOutputRoute());
 
-    boolean equalAction = snapshotResult.getAction() == otherResult.getAction();
-    boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
+    boolean equalAction = currentResult.getAction() == proposedResult.getAction();
+    boolean equalOutputRoutes = Objects.equals(currentOutputRoute, proposedOutputRoute);
     assert !(equalAction && equalOutputRoutes);
 
     BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
+        new BgpRouteDiffs(routeDiffs(currentOutputRoute, proposedOutputRoute));
 
-    RoutingPolicyId policyId = snapshotResult.getPolicyId();
-    RoutingPolicyId proposedPolicyId = otherResult.getPolicyId();
-    Bgpv4Route inputRoute = snapshotResult.getInputRoute();
+    RoutingPolicyId policyId = currentResult.getPolicyId();
+    RoutingPolicyId proposedPolicyId = proposedResult.getPolicyId();
+    Bgpv4Route inputRoute = currentResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
         .put(COL_PROPOSED_POLICY_NAME, proposedPolicyId.getPolicy())
         .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
-        .put(baseColumnName(COL_ACTION), snapshotResult.getAction())
-        .put(deltaColumnName(COL_ACTION), otherResult.getAction())
-        .put(baseColumnName(COL_OUTPUT_ROUTE), snapshotOutputRoute)
-        .put(deltaColumnName(COL_OUTPUT_ROUTE), referenceOutputRoute)
-        .put(baseColumnName(COL_TRACE), snapshotResult.getTrace())
-        .put(deltaColumnName(COL_TRACE), otherResult.getTrace())
+        .put(deltaColumnName(COL_ACTION), currentResult.getAction())
+        .put(baseColumnName(COL_ACTION), proposedResult.getAction())
+        .put(deltaColumnName(COL_OUTPUT_ROUTE), currentOutputRoute)
+        .put(baseColumnName(COL_OUTPUT_ROUTE), proposedOutputRoute)
+        .put(deltaColumnName(COL_TRACE), currentResult.getTrace())
+        .put(baseColumnName(COL_TRACE), proposedResult.getTrace())
         .put(COL_DIFF, routeDiffs)
         .build();
   }

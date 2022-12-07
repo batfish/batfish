@@ -87,13 +87,13 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * resulting constraints are satisfiable.
    *
    * @param policy the first route policy that was analyzed
-   * @param otherPolicy the second route policy that was analyzed
+   * @param proposedPolicy the second route policy that was analyzed
    * @return the concrete input route and, if the desired action is PERMIT, the concrete output
    *     routes resulting from analyzing the given policies.
    */
   private Row computeDifferencesForInputRoute(
-      RoutingPolicy policy, RoutingPolicy otherPolicy, Bgpv4Route inRoute) {
-    return diffRowResultsFor(policy, otherPolicy, inRoute, _direction);
+      RoutingPolicy policy, RoutingPolicy proposedPolicy, Bgpv4Route inRoute) {
+    return diffRowResultsFor(policy, proposedPolicy, inRoute, _direction);
   }
 
   /**
@@ -137,6 +137,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    */
   private BDD counterExampleOutputConstraints(
       BDDFactory factory, List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2) {
+    BDD acc = factory.zero();
     for (BDDRouteDiff.DifferenceType d : diffs) {
       switch (d) {
         case OSPF_METRIC:
@@ -158,9 +159,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             // If there is a scenario where the two outputs differ at this community then ensure
             // this scenario
             // manifests during model generation.
-            if (!outConstraint.isZero()) {
-              return outConstraint;
-            }
+            acc = acc.or(outConstraint);
           }
         case AS_PATH:
           BDD[] asPathAtomicPredicates = r1.getAsPathRegexAtomicPredicates();
@@ -170,13 +169,17 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             // If there is a scenario where the two outputs differ at this community then ensure
             // this scenario
             // manifests during model generation.
-            if (!outConstraint.isZero()) {
-              return outConstraint;
-            }
+            acc = acc.or(outConstraint);
           }
       }
     }
-    return factory.one();
+    if (!acc.isZero()) {
+      // If we have accumulated some constraints from the output routes then return these
+      return acc;
+    } else {
+      // otherwise return true.
+      return factory.one();
+    }
   }
 
   /**

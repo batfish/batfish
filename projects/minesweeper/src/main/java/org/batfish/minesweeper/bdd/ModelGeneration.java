@@ -58,11 +58,11 @@ public class ModelGeneration {
    * @return a set of communities
    */
   static Set<Community> satAssignmentToCommunities(
-          BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
+      BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
     BDD[] aps = r.getCommunityAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
-            configAPs.getStandardCommunityAtomicPredicates().getAtomicPredicateAutomata();
+        configAPs.getStandardCommunityAtomicPredicates().getAtomicPredicateAutomata();
 
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
 
@@ -78,9 +78,9 @@ public class ModelGeneration {
         // community automata should only accept strings with this property;
         // see CommunityVar::toAutomaton
         checkState(
-                str.startsWith("^") && str.endsWith("$"),
-                "Community example %s has an unexpected format",
-                str);
+            str.startsWith("^") && str.endsWith("$"),
+            "Community example %s has an unexpected format",
+            str);
         // strip off the leading ^ and trailing $
         str = str.substring(1, str.length() - 1);
         Optional<Community> exampleOpt = stringToCommunity(str);
@@ -93,7 +93,7 @@ public class ModelGeneration {
     }
     // handle extended/large community literals
     for (Map.Entry<Integer, CommunityVar> entry :
-            configAPs.getNonStandardCommunityLiterals().entrySet()) {
+        configAPs.getNonStandardCommunityLiterals().entrySet()) {
       if (aps[entry.getKey()].andSat(fullModel)) {
         assert entry.getValue().getLiteralValue() != null;
         comms.add(entry.getValue().getLiteralValue());
@@ -115,19 +115,19 @@ public class ModelGeneration {
 
     BDD[] aps = r.getAsPathRegexAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
-            configAPs.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
+        configAPs.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
 
     // find all atomic predicates that are required to be true in the given model
     List<Integer> trueAPs =
-            IntStream.range(0, configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
-                    .filter(i -> aps[i].andSat(fullModel))
-                    .boxed()
-                    .collect(Collectors.toList());
+        IntStream.range(0, configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
+            .filter(i -> aps[i].andSat(fullModel))
+            .boxed()
+            .collect(Collectors.toList());
 
     // since atomic predicates are disjoint, at most one of them should be true in the model
     checkState(
-            trueAPs.size() <= 1,
-            "Error in symbolic AS-path analysis: at most one atomic predicate should be true");
+        trueAPs.size() <= 1,
+        "Error in symbolic AS-path analysis: at most one atomic predicate should be true");
 
     // create an automaton for the language of AS-paths that are true in the model
     Automaton asPathRegexAutomaton = SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton();
@@ -139,9 +139,9 @@ public class ModelGeneration {
     // As-path regex automata should only accept strings with this property;
     // see SymbolicAsPathRegex::toAutomaton
     checkState(
-            asPathStr.startsWith("^^") && asPathStr.endsWith("$"),
-            "AS-path example %s has an unexpected format",
-            asPathStr);
+        asPathStr.startsWith("^^") && asPathStr.endsWith("$"),
+        "AS-path example %s has an unexpected format",
+        asPathStr);
     // strip off the leading ^^ and trailing $
     asPathStr = asPathStr.substring(2, asPathStr.length() - 1);
     // the string is a space-separated list of numbers; convert them to a list of numbers
@@ -151,10 +151,10 @@ public class ModelGeneration {
     } else {
       try {
         asns =
-                Arrays.stream(asPathStr.split(" "))
-                        .mapToLong(Long::valueOf)
-                        .boxed()
-                        .collect(Collectors.toList());
+            Arrays.stream(asPathStr.split(" "))
+                .mapToLong(Long::valueOf)
+                .boxed()
+                .collect(Collectors.toList());
       } catch (NumberFormatException nfe) {
         throw new BatfishException("Failed to produce a valid AS path for answer");
       }
@@ -171,13 +171,13 @@ public class ModelGeneration {
    * @return a route
    */
   public static Bgpv4Route satAssignmentToInputRoute(
-          BDD fullModel, ConfigAtomicPredicates configAPs) {
+      BDD fullModel, ConfigAtomicPredicates configAPs) {
     Bgpv4Route.Builder builder =
-            Bgpv4Route.builder()
-                    .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
-                    .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
-                    .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */
-                    .setOriginType(OriginType.IGP) /* dummy value until supported */;
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
+            .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
+            .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */
+            .setOriginType(OriginType.IGP) /* dummy value until supported */;
 
     BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 
