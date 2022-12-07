@@ -869,7 +869,6 @@ public class TransferBDDTest {
     assertEquals(anyRoute, outAnnouncements);
   }
 
-  /* Not supporting conjunctions currently.
   @Test
   public void testPrefixIntersection() {
     _policyBuilder.addStatement(
@@ -900,8 +899,6 @@ public class TransferBDDTest {
 
     assertEquals(anyRoute, outAnnouncements);
   }
-
-   */
 
   @Test
   public void testMatchEmptyPrefixSet() {
