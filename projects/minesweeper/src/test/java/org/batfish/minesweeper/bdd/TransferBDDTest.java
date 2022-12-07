@@ -1936,9 +1936,7 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 4:44 has the 0 BDD
     for (int ap :
-        _configAPs
-            .getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
+        tbdd.getCommunityAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
           outAnnouncements.getFactory().zero(),
@@ -1947,9 +1945,7 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 3:33 is unchanged
     for (int ap :
-        _configAPs
-            .getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
+        tbdd.getCommunityAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
           anyRoute.getCommunityAtomicPredicates()[ap],
@@ -1989,18 +1985,14 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
-        _configAPs
-            .getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
+        tbdd.getCommunityAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
           outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
     // each atomic predicate for community 3:33 is unchanged
     for (int ap :
-        _configAPs
-            .getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
+        tbdd.getCommunityAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
           anyRoute.getCommunityAtomicPredicates()[ap],
@@ -2017,7 +2009,15 @@ public class TransferBDDTest {
                     new LiteralCommunitySet(CommunitySet.of(ExtendedCommunity.parse("0:4:44")))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    _configAPs =
+        new ConfigAtomicPredicates(
+            _batfish,
+            _batfish.getSnapshot(),
+            HOSTNAME,
+            // make sure that the standard community 4:44 is not confused with the extended
+            // community 0:4:44
+            ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("4:44"))),
+            null);
 
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
@@ -2029,9 +2029,96 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int ap :
-        _configAPs
-            .getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
+        tbdd.getCommunityAtomicPredicates()
+            .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+
+    // each atomic predicate for community 4:44 is zero
+    for (int ap :
+        tbdd.getCommunityAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().zero(),
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+  }
+
+  @Test
+  public void testSetExtendedCommunityAdditive() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("5:55")))))
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(
+                            CommunitySet.of(ExtendedCommunity.parse("0:4:44"))))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // each atomic predicate for community 4:44 has the 1 BDD
+    for (int ap :
+        tbdd.getCommunityAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("5:55")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+    // each atomic predicate for community 0:4:44 has the 1 BDD
+    for (int ap :
+        tbdd.getCommunityAtomicPredicates()
+            .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+  }
+
+  @Test
+  public void testSetExtendedCommunityNotAdditive() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("5:55")))))
+            .addStatement(
+                new SetCommunities(
+                    new LiteralCommunitySet(CommunitySet.of(ExtendedCommunity.parse("0:4:44")))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // each atomic predicate for community 4:44 has the 0 BDD
+    for (int ap :
+        tbdd.getCommunityAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("5:55")))) {
+      assertEquals(
+          outAnnouncements.getFactory().zero(),
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+    // each atomic predicate for community 0:4:44 has the 1 BDD
+    for (int ap :
+        tbdd.getCommunityAtomicPredicates()
             .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
       assertEquals(
           outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
@@ -2059,10 +2146,7 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int ap :
-        _configAPs
-            .getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
-            .get(CommunityVar.from(LargeCommunity.of(10, 20, 30)))) {
+        tbdd.getCommunityAtomicPredicates().get(CommunityVar.from(LargeCommunity.of(10, 20, 30)))) {
       assertEquals(
           outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
@@ -2093,10 +2177,12 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     Map<CommunityVar, Set<Integer>> regexAPs =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getStandardCommunityAtomicPredicates().getRegexAtomicPredicates();
     Set<Integer> aps3040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("30:40")));
     Set<Integer> aps4040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("40:40")));
-    for (int i = 0; i < _configAPs.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
+    for (int i = 0;
+        i < _configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates();
+        i++) {
 
       // each atomic predicate for 30:40 or 40:40 has the 1 BDD; all others have the 0 BDD
       assertEquals(
@@ -2133,7 +2219,7 @@ public class TransferBDDTest {
     // get the atomic predicates that correspond to ^30:
     Set<Integer> ap30 =
         _configAPs
-            .getCommunityAtomicPredicates()
+            .getStandardCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from("^30:"));
 
@@ -2175,12 +2261,12 @@ public class TransferBDDTest {
     // only the APs that belong to both ^30: and :20$ should be allowed
     Set<Integer> ap30 =
         _configAPs
-            .getCommunityAtomicPredicates()
+            .getStandardCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from("^30:"));
     Set<Integer> ap20 =
         _configAPs
-            .getCommunityAtomicPredicates()
+            .getStandardCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from(":20$"));
 
@@ -2221,7 +2307,7 @@ public class TransferBDDTest {
     // get the atomic predicates that correspond to 30:40
     Set<Integer> ap3040 =
         _configAPs
-            .getCommunityAtomicPredicates()
+            .getStandardCommunityAtomicPredicates()
             .getRegexAtomicPredicates()
             .get(CommunityVar.from(comm));
 
@@ -2229,7 +2315,9 @@ public class TransferBDDTest {
     BDD expectedBDD =
         tbdd.getFactory().orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
     assertEquals(expectedBDD, acceptedAnnouncements);
-    for (int i = 0; i < _configAPs.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
+    for (int i = 0;
+        i < _configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates();
+        i++) {
       // each atomic predicate for 30:40 is set if it was matched on; all others have their original
       // values
       assertEquals(
@@ -2246,8 +2334,10 @@ public class TransferBDDTest {
     outAnnouncements = result.getFirst();
     // the original route is now unconstrained
     assertTrue(acceptedAnnouncements.isOne());
-    for (int i = 0; i < _configAPs.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
-      // each atomic predicate for 30:40 is set if ; all others have their original values
+    for (int i = 0;
+        i < _configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates();
+        i++) {
+      // each atomic predicate for 30:40 is set; all others have their original values
       assertEquals(
           ap3040.contains(i) ? outAnnouncements.getFactory().one() : aps[i],
           outAnnouncements.getCommunityAtomicPredicates()[i]);
