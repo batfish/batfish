@@ -102,9 +102,25 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final MutableBDDInteger _prefixLength;
 
+  /**
+   * A sequence of AS numbers that is prepended to the original AS-path. The use of a fully concrete
+   * value here is sufficient to accurately represent the effects of a single execution path through
+   * a route map, since any single path encounters a fixed set of AS-path prepend statements. Hence
+   * this representation is sufficient to support {@link TransferBDD#computePaths(Set)}, which
+   * produces on BDDRoute per execution path. However, this representation precludes the use of a
+   * BDDRoute to accurately represent the effects of multiple execution paths, unless those paths
+   * prepend the same exact sequence of ASes to the AS-path. That means that {@link
+   * TransferBDD#compute(Set)} cannot always return a precise BDDRoute. TODO: In the future it
+   * probably makes the most sense to remove that method and migrate its clients to use {@link
+   * TransferBDD#computePaths(Set)} instead.
+   */
+  @Nonnull private List<Long> _prependedASes;
+
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   private MutableBDDInteger _tag;
+
+  private MutableBDDInteger _weight;
 
   // the conditions under which the analysis encounters an unsupported route-policy
   // statement/expression
@@ -124,7 +140,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDDRoute(BDDFactory factory, ConfigAtomicPredicates aps) {
     this(
         factory,
-        aps.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+        aps.getStandardCommunityAtomicPredicates().getNumAtomicPredicates()
+            + aps.getNonStandardCommunityLiterals().size(),
         aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
   }
 
@@ -141,6 +158,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     int numVars = factory.varNum();
     int numNeeded =
         32 * 6
+            + 16
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
@@ -169,6 +187,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("tag", 32, idx, false);
     idx += 32;
+    _weight = MutableBDDInteger.makeFromIndex(factory, 16, idx, false);
+    addBitNames("weight", 16, idx, false);
+    idx += 16;
     _adminDist = MutableBDDInteger.makeFromIndex(factory, 8, idx, false);
     addBitNames("ad", 8, idx, false);
     idx += 8;
@@ -202,6 +223,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
+    _prependedASes = new ArrayList<>();
     // Initially there are no unsupported statements encountered
     _unsupported = factory.zero();
   }
@@ -223,10 +245,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _adminDist = new MutableBDDInteger(other._adminDist);
     _med = new MutableBDDInteger(other._med);
     _tag = new MutableBDDInteger(other._tag);
+    _weight = new MutableBDDInteger(other._weight);
     _localPref = new MutableBDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
+    _prependedASes = new ArrayList(other._prependedASes);
     _unsupported = other._unsupported.id();
   }
 
@@ -448,6 +472,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _prefixLength;
   }
 
+  public List<Long> getPrependedASes() {
+    return _prependedASes;
+  }
+
+  public void setPrependedASes(List<Long> prependedASes) {
+    _prependedASes = prependedASes;
+  }
+
   public BDDDomain<RoutingProtocol> getProtocolHistory() {
     return _protocolHistory;
   }
@@ -458,6 +490,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   public void setTag(MutableBDDInteger tag) {
     _tag = tag;
+  }
+
+  public MutableBDDInteger getWeight() {
+    return _weight;
+  }
+
+  public void setWeight(MutableBDDInteger weight) {
+    _weight = weight;
   }
 
   public BDD getUnsupported() {
@@ -476,6 +516,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_med != null ? _med.hashCode() : 0);
       result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
       result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
+      result = 31 * result + (_weight != null ? _weight.hashCode() : 0);
       result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
       result = 31 * result + (_nextHopDiscarded != null ? _nextHopDiscarded.hashCode() : 0);
       result = 31 * result + (_nextHopSet != null ? _nextHopSet.hashCode() : 0);
@@ -489,6 +530,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
               + (_asPathRegexAtomicPredicates != null
                   ? Arrays.hashCode(_asPathRegexAtomicPredicates)
                   : 0);
+      result = 31 * result + _prependedASes.hashCode();
       result = 31 * result + _unsupported.hashCode();
       _hcode = result;
     }
@@ -511,7 +553,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
         && Objects.equals(_nextHopSet, other._nextHopSet)
         && Objects.equals(_tag, other._tag)
+        && Objects.equals(_weight, other._weight)
         && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_prependedASes, other._prependedASes)
         && Objects.equals(_unsupported, other._unsupported);
   }
 }

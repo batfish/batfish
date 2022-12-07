@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import java.math.BigInteger;
 import java.util.Objects;
 import java.util.Optional;
@@ -65,6 +66,19 @@ public final class ExtendedCommunity extends Community {
 
     String[] parts = communityStr.trim().split(":");
     checkArgument(parts.length == 3, "Invalid extended community string: %s", communityStr);
+    if (parts[0].startsWith("0x") && parts[1].startsWith("0x") && parts[2].startsWith("0x")) {
+      // Not custom printed like the kind of extcomms that have gaLong.
+      @Nullable Integer type = Ints.tryParse(parts[0].substring(2), 16);
+      checkArgument(
+          type != null && type >= 0, "Invalid extended community string: %s", communityStr);
+      @Nullable Integer subtype = Ints.tryParse(parts[1].substring(2), 16);
+      checkArgument(
+          subtype != null && subtype >= 0, "Invalid extended community string: %s", communityStr);
+      @Nullable Long value = Longs.tryParse(parts[2].substring(2), 16);
+      checkArgument(
+          value != null && value >= 0, "Invalid extended community string: %s", communityStr);
+      return new ExtendedCommunity(type, subtype, value);
+    }
     long gaLong;
     long laLong;
     String subType = parts[0].toLowerCase();

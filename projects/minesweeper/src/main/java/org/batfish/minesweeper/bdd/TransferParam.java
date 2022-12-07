@@ -2,7 +2,6 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.errorprone.annotations.FormatMethod;
 import javax.annotation.Nullable;
-import net.sf.javabdd.BDD;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.minesweeper.collections.PList;
 
