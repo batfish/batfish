@@ -159,7 +159,7 @@ public class CommunitySetExprToBDDTest {
   private BDD cvarToBDD(CommunityVar cvar) {
     BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
     Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getStandardCommunityAtomicPredicates().getRegexAtomicPredicates();
     return _arg.getTransferBDD()
         .getFactory()
         .orAll(

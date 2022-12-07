@@ -265,7 +265,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         regexConstraintsToBDD(
             constraints.getCommunities(),
             CommunityVar::from,
-            configAPs.getCommunityAtomicPredicates(),
+            configAPs.getStandardCommunityAtomicPredicates(),
             r.getCommunityAtomicPredicates(),
             r.getFactory()));
     result.andWith(
