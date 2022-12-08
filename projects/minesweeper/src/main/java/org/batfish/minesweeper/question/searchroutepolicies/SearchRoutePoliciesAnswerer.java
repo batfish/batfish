@@ -494,10 +494,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @return an optional result, if a behavior of interest was found
    */
   private Optional<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
-    TransferReturn result;
+    List<TransferReturn> paths;
+    TransferBDD tbdd;
     try {
-      TransferBDD tbdd = new TransferBDD(configAPs, policy);
-      result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+      tbdd = new TransferBDD(configAPs, policy);
+      paths = tbdd.computePaths(ImmutableSet.of());
     } catch (Exception e) {
       throw new BatfishException(
           "Unexpected error analyzing policy "
@@ -506,24 +507,34 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
               + policy.getOwner().getHostname(),
           e);
     }
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outputRoute = result.getFirst();
-    BDD intersection;
+    // consider only the subset of paths that have the desired action (permit or deny)
+    List<TransferReturn> relevantPaths =
+        paths.stream()
+            .filter(p -> p.getAccepted() == (_action == PERMIT))
+            .collect(ImmutableList.toImmutableList());
     BDD inConstraints =
         routeConstraintsToBDD(
-            _inputConstraints, new BDDRoute(outputRoute.getFactory(), configAPs), false, configAPs);
-    if (_action == PERMIT) {
-      // incorporate the constraints on the output route as well
-      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, true, configAPs);
-      intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
-    } else {
-      intersection = acceptedAnnouncements.not().and(inConstraints);
+            _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, configAPs);
+    for (TransferReturn path : relevantPaths) {
+      BDD acceptedAnnouncements = path.getSecond();
+      BDDRoute outputRoute = path.getFirst();
+      BDD intersection = acceptedAnnouncements.and(inConstraints);
+      if (_action == PERMIT) {
+        // incorporate the constraints on the output route as well
+        BDD outConstraints =
+            routeConstraintsToBDD(_outputConstraints, outputRoute, true, configAPs);
+        intersection = intersection.and(outConstraints);
+      }
+      // only search for models on paths where no unsupported route-policy feature was encountered
+      intersection = intersection.andWith(outputRoute.getUnsupported().not());
+
+      Optional<Row> result = constraintsToResult(intersection, policy, configAPs);
+      if (result.isPresent()) {
+        // return the first result we find
+        return result;
+      }
     }
-
-    // only search for models on paths where no unsupported route-policy feature was encountered
-    intersection = intersection.andWith(outputRoute.getUnsupported().not());
-
-    return constraintsToResult(intersection, policy, configAPs);
+    return Optional.empty();
   }
 
   /**
