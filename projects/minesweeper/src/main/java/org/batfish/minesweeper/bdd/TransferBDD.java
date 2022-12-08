@@ -605,6 +605,43 @@ public class TransferBDD {
           result = suppressedValue(result, false);
           return ImmutableList.of(toTransferBDDState(curP, result));
 
+          /**
+           * These directives are used by the Batfish route simulation to properly handle route
+           * updates that implicitly involve both a "read" and a "write". For example, Batfish
+           * models an additive community set of 40:40 as a write of (InputCommunities U 40:40). But
+           * here InputCommunities should refer not to the communities of the original route, but
+           * rather to the current community set that is being built for the output route.
+           * Otherwise, for example, if two additive community set statements happen in a row then
+           * the effects of the first one will not be preserved. The same issue arises for community
+           * deletions as well as for things like AS-path prepending.
+           *
+           * <p>To that end, the route simulation introduces a notion of "intermediate" BGP
+           * attributes, which reflect prior updates, and the directives below control
+           * reading/writing to those attributes. For example, to properly account for an additive
+           * community set statement, the route simulation should read from and write to the
+           * intermediate attributes.
+           *
+           * <p>This code, {@link TransferBDD}, models read-write updates properly without need for
+           * the notion of intermediate attributes. For example, the {@link SetCommunitiesVisitor}
+           * produces a set of deltas (e.g., communities that should be set/unset), and the {@link
+           * TransferBDD#updateCommunities(CommunityAPDispositions, TransferParam)} method then
+           * applies these deltas to the (symbolic) community set that is currently being built for
+           * the output route. Because we have no need for a notion of intermediate attributes, we
+           * treat the associated directives as no-ops.
+           *
+           * <p>NOTE: In principle these directives can allow for a wide range of semantics to be
+           * expressed. For example, they could be used to express a form of additive community set
+           * that should read from the original set of input communities but write to the
+           * intermediate ones. If they are ever used for a new purpose like that, then we would
+           * have to update this analysis appropriately. But from discussions it seems more likely
+           * that the notion of intermediate attributes will be reconsidered altogether in the
+           * future.
+           */
+        case SetReadIntermediateBgpAttributes:
+        case SetWriteIntermediateBgpAttributes:
+        case UnsetWriteIntermediateBgpAttributes:
+          return ImmutableList.of(toTransferBDDState(curP, result));
+
         default:
           throw new UnsupportedFeatureException(ss.getType().toString());
       }

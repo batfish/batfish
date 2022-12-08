@@ -2048,6 +2048,142 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testAddDeleteCommunity() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("5:55"))))))
+            .addStatement(
+                new SetCommunities(
+                    new CommunitySetDifference(
+                        InputCommunities.instance(),
+                        new CommunityIs(StandardCommunity.parse("4:44")))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _configAPs =
+        new ConfigAtomicPredicates(
+            _batfish,
+            _batfish.getSnapshot(),
+            HOSTNAME,
+            // add another community to be tracked by the analysis
+            ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("3:33"))),
+            null);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // each atomic predicate for community 4:44 has the 0 BDD
+    for (int ap :
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().zero(),
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+
+    // each atomic predicate for community 5:55 has the 1 BDD
+    for (int ap :
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("5:55")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+
+    // each atomic predicate for community 3:33 is unchanged
+    for (int ap :
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
+      assertEquals(
+          anyRoute.getCommunityAtomicPredicates()[ap],
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+  }
+
+  @Test
+  public void testAddCommunitiesTwice() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("4:44"))))))
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("5:55"))))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs =
+        new ConfigAtomicPredicates(
+            _batfish,
+            _batfish.getSnapshot(),
+            HOSTNAME,
+            // add another community to be tracked by the analysis
+            ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("3:33"))),
+            null);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
+
+    // each atomic predicate for community 4:44 has the 1 BDD
+    for (int ap :
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+
+    // each atomic predicate for community 5:55 has the 1 BDD
+    for (int ap :
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("5:55")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+
+    // each atomic predicate for community 3:33 is unchanged
+    for (int ap :
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
+      assertEquals(
+          anyRoute.getCommunityAtomicPredicates()[ap],
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+  }
+
+  @Test
   public void testSetExtendedCommunity() {
     RoutingPolicy policy =
         _policyBuilder
@@ -2800,7 +2936,7 @@ public class TransferBDDTest {
   @Test
   public void testUnsupportedStaticStatement() {
     _policyBuilder
-        .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
+        .addStatement(Statements.RemovePrivateAs.toStaticStatement())
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -2814,6 +2950,24 @@ public class TransferBDDTest {
     outRoute.setUnsupported(tbdd.getFactory().one());
     assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
     assertEquals(outAnnouncements, outRoute);
+  }
+
+  @Test
+  public void testSetReadIntermediateBgpAttributes() {
+    _policyBuilder
+        .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // we treat the SetReadIntermediateBgpAttributes as a no-op
+    assertEquals(acceptedAnnouncements, tbdd.getFactory().one());
+    assertEquals(outAnnouncements, anyRoute(tbdd.getFactory()));
   }
 
   @Test
