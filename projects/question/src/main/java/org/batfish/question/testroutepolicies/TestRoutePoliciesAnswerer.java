@@ -112,20 +112,20 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   /**
    * Produce the difference of simulating the given route policies on the given input route.
    *
-   * @param policy the route policy to simulate
+   * @param referencePolicy the route policy to simulate
    * @param proposedPolicy the other route policy to simulate
    * @param inputRoute the input route for the policy
    * @param direction whether the policy is used on import or export (IN or OUT)
    * @return a table row containing the differences of the simulation
    */
   public static Row diffRowResultsFor(
-      RoutingPolicy policy,
+      RoutingPolicy referencePolicy,
       RoutingPolicy proposedPolicy,
       Bgpv4Route inputRoute,
       Direction direction) {
     return toCompareRow(
-        testPolicy(policy, inputRoute, direction),
-        testPolicy(proposedPolicy, inputRoute, direction));
+        testPolicy(proposedPolicy, inputRoute, direction),
+        testPolicy(referencePolicy, inputRoute, direction));
   }
 
   private static Result testPolicy(
@@ -439,38 +439,43 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  private static @Nullable Row toCompareRow(Result currentResult, Result proposedResult) {
+  /**
+   * @param referenceResult the result from the reference snapshot
+   * @param snapshotResult the result from the current snapshot.
+   * @return A row that includes the comparison of the two results.
+   */
+  private static @Nullable Row toCompareRow(Result snapshotResult, Result referenceResult) {
 
-    if (currentResult.equals(proposedResult)) {
+    if (referenceResult.equals(snapshotResult)) {
       return null;
     }
 
-    org.batfish.datamodel.questions.BgpRoute currentOutputRoute =
-        toQuestionsBgpRoute(currentResult.getOutputRoute());
-    org.batfish.datamodel.questions.BgpRoute proposedOutputRoute =
-        toQuestionsBgpRoute(proposedResult.getOutputRoute());
+    org.batfish.datamodel.questions.BgpRoute referenceOutputRoute =
+        toQuestionsBgpRoute(referenceResult.getOutputRoute());
+    org.batfish.datamodel.questions.BgpRoute snapshotOutputRoute =
+        toQuestionsBgpRoute(snapshotResult.getOutputRoute());
 
-    boolean equalAction = currentResult.getAction() == proposedResult.getAction();
-    boolean equalOutputRoutes = Objects.equals(currentOutputRoute, proposedOutputRoute);
+    boolean equalAction = referenceResult.getAction() == snapshotResult.getAction();
+    boolean equalOutputRoutes = Objects.equals(referenceOutputRoute, snapshotOutputRoute);
     assert !(equalAction && equalOutputRoutes);
 
     BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(currentOutputRoute, proposedOutputRoute));
+        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
 
-    RoutingPolicyId policyId = currentResult.getPolicyId();
-    RoutingPolicyId proposedPolicyId = proposedResult.getPolicyId();
-    Bgpv4Route inputRoute = currentResult.getInputRoute();
+    RoutingPolicyId policyId = referenceResult.getPolicyId();
+    RoutingPolicyId proposedPolicyId = snapshotResult.getPolicyId();
+    Bgpv4Route inputRoute = referenceResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
         .put(COL_PROPOSED_POLICY_NAME, proposedPolicyId.getPolicy())
         .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
-        .put(deltaColumnName(COL_ACTION), currentResult.getAction())
-        .put(baseColumnName(COL_ACTION), proposedResult.getAction())
-        .put(deltaColumnName(COL_OUTPUT_ROUTE), currentOutputRoute)
-        .put(baseColumnName(COL_OUTPUT_ROUTE), proposedOutputRoute)
-        .put(deltaColumnName(COL_TRACE), currentResult.getTrace())
-        .put(baseColumnName(COL_TRACE), proposedResult.getTrace())
+        .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
+        .put(baseColumnName(COL_ACTION), snapshotResult.getAction())
+        .put(deltaColumnName(COL_OUTPUT_ROUTE), referenceOutputRoute)
+        .put(baseColumnName(COL_OUTPUT_ROUTE), snapshotOutputRoute)
+        .put(deltaColumnName(COL_TRACE), referenceResult.getTrace())
+        .put(baseColumnName(COL_TRACE), snapshotResult.getTrace())
         .put(COL_DIFF, routeDiffs)
         .build();
   }
