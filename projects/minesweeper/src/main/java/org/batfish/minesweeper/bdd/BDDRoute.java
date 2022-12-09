@@ -254,6 +254,47 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _unsupported = other._unsupported.id();
   }
 
+  /**
+   * Constructs a new BDDRoute by restricting the given one to conform to the predicate pred.
+   *
+   * @param pred the predicate used to restrict the output routes
+   * @param route a symbolic route represented as a transformation on a set of routes (input).
+   */
+  public BDDRoute(BDD pred, BDDRoute route) {
+    _factory = route._factory;
+
+    // Create fresh arrays for atomic predicates
+    BDD[] asPathAtomicPredicates = new BDD[route._asPathRegexAtomicPredicates.length];
+    BDD[] communityAtomicPredicates = new BDD[route._communityAtomicPredicates.length];
+
+    // Intersect each atomic predicate with pred.
+    for (int i = 0; i < asPathAtomicPredicates.length; i++) {
+      asPathAtomicPredicates[i] = route._asPathRegexAtomicPredicates[i].and(pred);
+    }
+
+    for (int i = 0; i < communityAtomicPredicates.length; i++) {
+      communityAtomicPredicates[i] = route._communityAtomicPredicates[i].and(pred);
+    }
+
+    _asPathRegexAtomicPredicates = asPathAtomicPredicates;
+    _communityAtomicPredicates = communityAtomicPredicates;
+    _prefixLength = route._prefixLength.and(pred);
+    _prefix = route.getPrefix().and(pred);
+    _nextHop = route.getNextHop().and(pred);
+    _adminDist = route.getAdminDist().and(pred);
+    _med = route.getMed().and(pred);
+    _tag = route.getTag().and(pred);
+    _localPref = route.getLocalPref().and(pred);
+    _weight = route.getWeight().and(pred);
+    _protocolHistory = new BDDDomain<>(pred, route.getProtocolHistory());
+    _ospfMetric = new BDDDomain<>(pred, route.getOspfMetric());
+    _bitNames = route._bitNames;
+    _nextHopSet = pred.and(route.getNextHopSet());
+    _nextHopDiscarded = pred.and(route.getNextHopDiscarded());
+    _unsupported = pred.and(route.getUnsupported());
+    _prependedASes = new ArrayList<>(route.getPrependedASes());
+  }
+
   /*
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
