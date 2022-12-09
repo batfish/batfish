@@ -47,6 +47,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
@@ -103,6 +104,7 @@ import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -111,6 +113,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -996,6 +999,50 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false));
     assertEquals(expectedPaths, paths);
+  }
+
+  @Test
+  public void testSetOpsfMetricType_1() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetOspfMetricType(OspfMetricType.E1))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDDRoute anyRoute = new BDDRoute(result.getFirst());
+
+    anyRoute.getOspfMetric().setValue(OspfType.E1);
+    assertEquals(result.getFirst().getOspfMetric(), anyRoute.getOspfMetric());
+  }
+
+  @Test
+  public void testSetOpsfMetricType_2() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetOspfMetricType(OspfMetricType.E2))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDDRoute anyRoute = new BDDRoute(result.getFirst());
+
+    anyRoute.getOspfMetric().setValue(OspfType.E2);
+    assertEquals(result.getFirst().getOspfMetric(), anyRoute.getOspfMetric());
   }
 
   @Test

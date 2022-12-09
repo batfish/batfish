@@ -133,13 +133,17 @@ public class TransferBDD {
   private final BDDFactory _factory;
 
   public TransferBDD(ConfigAtomicPredicates aps, RoutingPolicy policy) {
+    this(JFactory.init(100000, 10000), aps, policy);
+  }
+
+  public TransferBDD(BDDFactory factory, ConfigAtomicPredicates aps, RoutingPolicy policy) {
     _configAtomicPredicates = aps;
     _policy = policy;
     _conf = policy.getOwner();
     _statements = policy.getStatements();
     _useOutputAttributes = Environment.useOutputAttributesFor(_conf);
 
-    _factory = JFactory.init(100000, 10000);
+    _factory = factory;
     _factory.setCacheRatio(64);
 
     _originalRoute = new BDDRoute(_factory, aps);
@@ -700,7 +704,7 @@ public class TransferBDD {
         newValue.setValue(OspfType.E1);
       } else {
         curP.indent().debug("Value: E2");
-        newValue.setValue(OspfType.E1);
+        newValue.setValue(OspfType.E2);
       }
       curP.getData().setOspfMetric(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
@@ -1055,6 +1059,10 @@ public class TransferBDD {
 
     ret.setUnsupported(ite(guard, r1.getUnsupported(), r2.getUnsupported()));
 
+    MutableBDDInteger i =
+        ite(guard, r1.getOspfMetric().getInteger(), r2.getOspfMetric().getInteger());
+    ret.getOspfMetric().setInteger(i);
+
     // MutableBDDInteger i =
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
     // ret.getProtocolHistory().setInteger(i);
@@ -1383,5 +1391,9 @@ public class TransferBDD {
 
   public boolean getUseOutputAttributes() {
     return _useOutputAttributes;
+  }
+
+  public RoutingPolicy getPolicy() {
+    return _policy;
   }
 }
