@@ -41,9 +41,6 @@ junit_tests(
     name = "coordinator_tests",
     size = "medium",
     srcs = glob(["**/*Test.java"]),
-    runtime_deps = [
-        "@maven//:org_xerial_sqlite_jdbc",
-    ],
     deps = [
         ":coordinator_testlib",
         "//projects/batfish-common-protocol:common",
@@ -62,8 +59,6 @@ junit_tests(
         "@maven//:org_codehaus_jettison_jettison",
         "@maven//:org_glassfish_jersey_core_jersey_client",
         "@maven//:org_glassfish_jersey_core_jersey_server",
-        "@maven//:org_glassfish_jersey_media_jersey_media_json_jettison",
-        "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
         "@maven//:org_glassfish_jersey_test_framework_jersey_test_framework_core",
         "@maven//:org_hamcrest_hamcrest",
     ],
