@@ -27,8 +27,6 @@ import org.batfish.datamodel.InitializationMetadata;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 // the design of this WorkQueueMgr is such that all synchronization sits here
 // individual queues do not need to be synchronized
@@ -281,23 +279,6 @@ public class WorkQueueMgr {
       default:
         return -1;
     }
-  }
-
-  public synchronized JSONObject getStatusJson() throws JSONException {
-
-    JSONObject jObject = new JSONObject();
-
-    jObject.put("incomplete-works", _queueIncompleteWork.getLength());
-    for (QueuedWork work : _queueIncompleteWork) {
-      jObject.put(work.getId().toString(), work.toString());
-    }
-
-    jObject.put("completed-works", _queueCompletedWork.getLength());
-    for (QueuedWork work : _queueCompletedWork) {
-      jObject.put(work.getId().toString(), work.toString());
-    }
-
-    return jObject;
   }
 
   public synchronized QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
