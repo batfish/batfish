@@ -3,7 +3,6 @@ package org.batfish.client;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,9 +35,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.version.BatfishVersion;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 public class BfCoordWorkHelper {
 
@@ -58,15 +54,6 @@ public class BfCoordWorkHelper {
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       throw new BatfishException("Failed to create HTTP client", e);
     }
-  }
-
-  private static void addFileMultiPart(MultiPart multiPart, String key, String filename) {
-    multiPart.bodyPart(
-        new FormDataBodyPart(key, new File(filename), MediaType.APPLICATION_OCTET_STREAM_TYPE));
-  }
-
-  private static void addTextMultiPart(MultiPart multiPart, String key, String value) {
-    multiPart.bodyPart(new FormDataBodyPart(key, value, MediaType.TEXT_PLAIN_TYPE));
   }
 
   public boolean delNetwork(String networkName) {
@@ -93,7 +80,7 @@ public class BfCoordWorkHelper {
   }
 
   private ClientBuilder getClientBuilder() {
-    return CommonUtil.createHttpClientBuilder().register(MultiPartFeature.class);
+    return CommonUtil.createHttpClientBuilder();
   }
 
   /**
