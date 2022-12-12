@@ -871,7 +871,6 @@ public class TransferBDD {
         continue;
       }
       curP.debug("InitialCall finalizing");
-      TransferReturn ret = result.getReturnValue();
       // Only accept routes that are not suppressed
       if (result.getSuppressedValue()) {
         result = result.setReturnValueAccepted(false);
@@ -1059,7 +1058,7 @@ public class TransferBDD {
 
   private void setNextHop(NextHopExpr expr, BDDRoute route) throws UnsupportedFeatureException {
     if (expr instanceof DiscardNextHop) {
-      route.setNextHopDiscarded(_factory.one());
+      route.setNextHopDiscarded(true);
     } else if (expr instanceof IpNextHop && ((IpNextHop) expr).getIps().size() == 1) {
       List<Ip> ips = ((IpNextHop) expr).getIps();
       Ip ip = ips.get(0);
@@ -1068,7 +1067,7 @@ public class TransferBDD {
       throw new UnsupportedFeatureException(expr.toString());
     }
     // record the fact that the next-hop has been explicitly set by the route-map
-    route.setNextHopSet(_factory.one());
+    route.setNextHopSet(true);
   }
 
   private void prependASPath(AsPathListExpr expr, BDDRoute route)
@@ -1130,7 +1129,7 @@ public class TransferBDD {
             + ": "
             + stmt);
     TransferParam curP = state.getTransferParam();
-    curP.getData().setUnsupported(_factory.one());
+    curP.getData().setUnsupported(true);
   }
 
   /*

@@ -3,6 +3,7 @@ package org.batfish.minesweeper.bdd;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.math.IntMath;
+import com.google.common.primitives.Booleans;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,8 +94,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   // to properly determine the next-hop IP that results from each path through a given route-map we
   // need to track a few more pieces of information:  whether the next-hop is explicitly discarded
   // by the route-map and whether the next-hop is explicitly set by the route-map
-  private BDD _nextHopDiscarded;
-  private BDD _nextHopSet;
+  private boolean _nextHopDiscarded;
+  private boolean _nextHopSet;
 
   private BDDDomain<OspfType> _ospfMetric;
 
@@ -109,10 +110,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * this representation is sufficient to support {@link TransferBDD#computePaths(Set)}, which
    * produces on BDDRoute per execution path. However, this representation precludes the use of a
    * BDDRoute to accurately represent the effects of multiple execution paths, unless those paths
-   * prepend the same exact sequence of ASes to the AS-path. That means that {@link
-   * TransferBDD#compute(Set)} cannot always return a precise BDDRoute. TODO: In the future it
-   * probably makes the most sense to remove that method and migrate its clients to use {@link
-   * TransferBDD#computePaths(Set)} instead.
+   * prepend the same exact sequence of ASes to the AS-path.
    */
   @Nonnull private List<Long> _prependedASes;
 
@@ -122,9 +120,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private MutableBDDInteger _weight;
 
-  // the conditions under which the analysis encounters an unsupported route-policy
+  // whether the analysis encountered an unsupported route-policy
   // statement/expression
-  @Nonnull private BDD _unsupported;
+  private boolean _unsupported;
 
   /**
    * The routing protocols allowed in a BGP route announcement (see {@link
@@ -182,8 +180,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHop = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("nextHop", 32, idx, false);
     idx += 32;
-    _nextHopSet = factory.zero();
-    _nextHopDiscarded = factory.zero();
+    _nextHopSet = false;
+    _nextHopDiscarded = false;
     _tag = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("tag", 32, idx, false);
     idx += 32;
@@ -225,7 +223,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     addBitNames("ospfMetric", len, idx, false);
     _prependedASes = new ArrayList<>();
     // Initially there are no unsupported statements encountered
-    _unsupported = factory.zero();
+    _unsupported = false;
   }
 
   /*
@@ -240,8 +238,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _prefixLength = new MutableBDDInteger(other._prefixLength);
     _prefix = new MutableBDDInteger(other._prefix);
     _nextHop = new MutableBDDInteger(other._nextHop);
-    _nextHopSet = other._nextHopSet.id();
-    _nextHopDiscarded = other._nextHopDiscarded.id();
+    _nextHopSet = other._nextHopSet;
+    _nextHopDiscarded = other._nextHopDiscarded;
     _adminDist = new MutableBDDInteger(other._adminDist);
     _med = new MutableBDDInteger(other._med);
     _tag = new MutableBDDInteger(other._tag);
@@ -251,7 +249,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
     _prependedASes = new ArrayList(other._prependedASes);
-    _unsupported = other._unsupported.id();
+    _unsupported = other._unsupported;
   }
 
   /*
@@ -440,19 +438,19 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHop = nextHop;
   }
 
-  public BDD getNextHopDiscarded() {
+  public boolean getNextHopDiscarded() {
     return _nextHopDiscarded;
   }
 
-  public void setNextHopDiscarded(BDD nextHopDiscarded) {
+  public void setNextHopDiscarded(boolean nextHopDiscarded) {
     _nextHopDiscarded = nextHopDiscarded;
   }
 
-  public BDD getNextHopSet() {
+  public boolean getNextHopSet() {
     return _nextHopSet;
   }
 
-  public void setNextHopSet(BDD nextHopSet) {
+  public void setNextHopSet(boolean nextHopSet) {
     _nextHopSet = nextHopSet;
   }
 
@@ -500,11 +498,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _weight = weight;
   }
 
-  public BDD getUnsupported() {
+  public boolean getUnsupported() {
     return _unsupported;
   }
 
-  public void setUnsupported(@Nonnull BDD unsupported) {
+  public void setUnsupported(boolean unsupported) {
     _unsupported = unsupported;
   }
 
@@ -518,8 +516,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
       result = 31 * result + (_weight != null ? _weight.hashCode() : 0);
       result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
-      result = 31 * result + (_nextHopDiscarded != null ? _nextHopDiscarded.hashCode() : 0);
-      result = 31 * result + (_nextHopSet != null ? _nextHopSet.hashCode() : 0);
+      result = 31 * result + Booleans.hashCode(_nextHopDiscarded);
+      result = 31 * result + Booleans.hashCode(_nextHopSet);
       result =
           31 * result
               + (_communityAtomicPredicates != null
@@ -531,7 +529,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
                   ? Arrays.hashCode(_asPathRegexAtomicPredicates)
                   : 0);
       result = 31 * result + _prependedASes.hashCode();
-      result = 31 * result + _unsupported.hashCode();
+      result = 31 * result + Boolean.hashCode(_unsupported);
       _hcode = result;
     }
     return _hcode;

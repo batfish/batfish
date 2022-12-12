@@ -383,11 +383,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD nextHopBDD = r.getNextHop().toBDD(optNextHopIp.get());
       if (outputRoute) {
         // make sure that the next hop was not discarded by the route map
-        nextHopBDD = nextHopBDD.and(r.getNextHopDiscarded().not());
-        if (_direction == Environment.Direction.OUT) {
+        if (r.getNextHopDiscarded()) {
+          return r.getFactory().zero();
+        }
+        if (_direction == Environment.Direction.OUT && !r.getNextHopSet()) {
           // in the OUT direction we can only use the next-hop IP in the route
           // if the route-map explicitly sets it
-          nextHopBDD = nextHopBDD.and(r.getNextHopSet());
+          return r.getFactory().zero();
         }
       }
       return nextHopBDD;
@@ -511,6 +513,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     List<TransferReturn> relevantPaths =
         paths.stream()
             .filter(p -> p.getAccepted() == (_action == PERMIT))
+            // only search for models on paths where no unsupported route-policy feature was
+            // encountered
+            .filter(p -> !p.getFirst().getUnsupported())
             .collect(ImmutableList.toImmutableList());
     BDD inConstraints =
         routeConstraintsToBDD(
@@ -525,8 +530,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             routeConstraintsToBDD(_outputConstraints, outputRoute, true, configAPs);
         intersection = intersection.and(outConstraints);
       }
-      // only search for models on paths where no unsupported route-policy feature was encountered
-      intersection = intersection.andWith(outputRoute.getUnsupported().not());
 
       Optional<Row> result = constraintsToResult(intersection, policy, configAPs);
       if (result.isPresent()) {
