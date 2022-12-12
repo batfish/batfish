@@ -1,5 +1,6 @@
 ! THIS IS A COOL NOS FILE
 
+log syslog
 system host-name cool.nos.host-name
 ! The following will be rejected since they violate the Cool NOS hostname restrictions.
 system host-name underscores_not_allowed

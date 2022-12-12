@@ -629,6 +629,49 @@ tokens:
 
 This pattern would not be LL(1), so is to be avoided.
 
+Also note that `ssy_host_name` and `ssy_login_banner` both end in NEWLINE. 
+A pattern to avoid is putting the NEWLINE in a parent node:
+
+```
+// BAD
+
+s_system
+:
+SYSTEM
+  (
+    ssy_host_name
+    | ssy_login_banner
+  ) NEWLINE
+;
+...
+ssy_login_banner: LOGIN_BANNER banner = string;
+...
+```
+This is less efficient for recovery.
+
+If a rule is added with no current plans for further implementation (use in extraction or conversion), the rule should end in "_null".
+This allows it to be captured by the SilentSyntaxListener.
+
+For example, a line "log syslog" has been added, which does not affect current Batfish models.
+To avoid creating a parse warning every time this line appears, parsing support is added for it.
+Since nothing in extraction needed to change, the rule was added with "_null":
+
+```
+statement
+:
+  s_log_null
+  | s_static_routes
+  | s_system
+;
+
+s_log_null
+:
+  LOG SYSLOG NEWLINE
+;
+```
+
+Note that the "_null" indicator should always be added to the leaf rule.
+
 ### Grammar packages
 
 **This section is still in progress. Check back later for more complete instructions.**

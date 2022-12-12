@@ -19,9 +19,11 @@ ETHERNET: 'ethernet';
 GATEWAY: 'gateway';
 HOST_NAME: 'host-name' -> pushMode(M_String);
 INTERFACE: 'interface';
+LOG: 'log';
 LOGIN_BANNER: 'login-banner';
 MODIFY: 'modify';
 STATIC_ROUTES: 'static-routes';
+SYSLOG: 'syslog';
 SYSTEM: 'system';
 VLAN: 'vlan';
 
