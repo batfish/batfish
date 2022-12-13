@@ -24,6 +24,8 @@ public final class SearchRoutePoliciesQuestion extends Question {
   private static final String PROP_POLICIES = "policies";
   private static final String PROP_ACTION = "action";
 
+  private static final String PROP_PER_PATH = "perPath";
+
   @VisibleForTesting
   static final BgpRouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
       BgpRouteConstraints.builder().build();
@@ -40,6 +42,9 @@ public final class SearchRoutePoliciesQuestion extends Question {
   @Nonnull private final BgpRouteConstraints _outputConstraints;
   @Nonnull private final Action _action;
 
+  // if set, the analysis is run separately on each execution path in the given route map
+  private final boolean _perPath;
+
   public enum Action {
     DENY,
     PERMIT
@@ -52,7 +57,8 @@ public final class SearchRoutePoliciesQuestion extends Question {
         DEFAULT_ROUTE_CONSTRAINTS,
         null,
         null,
-        DEFAULT_ACTION);
+        DEFAULT_ACTION,
+        false);
   }
 
   public SearchRoutePoliciesQuestion(
@@ -61,7 +67,8 @@ public final class SearchRoutePoliciesQuestion extends Question {
       BgpRouteConstraints outputConstraints,
       @Nullable String nodes,
       @Nullable String policies,
-      Action action) {
+      Action action,
+      boolean perPath) {
     checkArgument(
         action == Action.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
         "Output route constraints can only be provided when the action is 'permit'");
@@ -74,6 +81,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
     _inputConstraints = inputConstraints;
     _outputConstraints = outputConstraints;
     _action = action;
+    _perPath = perPath;
   }
 
   @JsonCreator
@@ -83,14 +91,16 @@ public final class SearchRoutePoliciesQuestion extends Question {
       @Nullable @JsonProperty(PROP_OUTPUT_CONSTRAINTS) BgpRouteConstraints outputConstraints,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_POLICIES) String policies,
-      @Nullable @JsonProperty(PROP_ACTION) Action action) {
+      @Nullable @JsonProperty(PROP_ACTION) Action action,
+      @JsonProperty(PROP_PER_PATH) boolean perPath) {
     return new SearchRoutePoliciesQuestion(
         firstNonNull(direction, DEFAULT_DIRECTION),
         firstNonNull(inputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
         firstNonNull(outputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
         nodes,
         policies,
-        firstNonNull(action, DEFAULT_ACTION));
+        firstNonNull(action, DEFAULT_ACTION),
+        perPath);
   }
 
   @JsonIgnore
@@ -140,5 +150,11 @@ public final class SearchRoutePoliciesQuestion extends Question {
   @Nonnull
   public Action getAction() {
     return _action;
+  }
+
+  @JsonProperty(PROP_PER_PATH)
+  @Nonnull
+  public boolean getPerPath() {
+    return _perPath;
   }
 }
