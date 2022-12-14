@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
-import org.batfish.common.CoordConsts;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
@@ -24,12 +23,6 @@ import org.batfish.version.Versioned;
 public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final String ARG_CHECK_BGP_REACHABILITY = "checkbgpsessionreachability";
-
-  public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
-
-  public static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
-
-  public static final String ARG_COORDINATOR_REGISTER = "register";
 
   private static final String ARG_DATAPLANE_ENGINE_NAME = "dataplaneengine";
 
@@ -71,20 +64,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_SEQUENTIAL = "sequential";
 
-  private static final String ARG_SERVICE_BIND_HOST = "servicebindhost";
-
-  public static final String ARG_SERVICE_HOST = "servicehost";
-
-  public static final String ARG_SERVICE_NAME = "servicename";
-
-  public static final String ARG_SERVICE_PORT = "serviceport";
-
-  private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
-
-  private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
-
-  public static final String ARG_TRACING_ENABLE = "tracingenable";
-
   private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
 
   private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
@@ -92,8 +71,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private static final String ARG_TIMESTAMP = "timestamp";
 
   private static final String ARG_VERSION = "version";
-
-  private static final String ARGNAME_HOSTNAME = "hostname";
 
   private static final String ARGNAME_LOG_LEVEL = "level-name";
 
@@ -103,12 +80,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARGNAME_PATH = "path";
 
-  private static final String ARGNAME_PORT = "port";
-
   private static final String ARGNAME_STRINGS = "string..";
-
-  private static final String DEPRECATED_ARG_DESC =
-      "(ignored, provided for backwards compatibility)";
 
   private static final String EXECUTABLE_NAME = "batfish";
 
@@ -180,18 +152,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   public NetworkId getContainer() {
     String id = _config.getString(BfConsts.ARG_CONTAINER);
     return id != null ? new NetworkId(id) : null;
-  }
-
-  public String getCoordinatorHost() {
-    return _config.getString(ARG_COORDINATOR_HOST);
-  }
-
-  public int getCoordinatorPoolPort() {
-    return _config.getInt(ARG_COORDINATOR_POOL_PORT);
-  }
-
-  public boolean getCoordinatorRegister() {
-    return _config.getBoolean(ARG_COORDINATOR_REGISTER);
   }
 
   public boolean getDataPlane() {
@@ -326,22 +286,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
   }
 
-  public String getServiceBindHost() {
-    return _config.getString(ARG_SERVICE_BIND_HOST);
-  }
-
-  public String getServiceHost() {
-    return _config.getString(ARG_SERVICE_HOST);
-  }
-
-  public String getServiceName() {
-    return _config.getString(ARG_SERVICE_NAME);
-  }
-
-  public int getServicePort() {
-    return _config.getInt(ARG_SERVICE_PORT);
-  }
-
   public boolean getShuffleJobs() {
     return !_config.getBoolean(ARG_NO_SHUFFLE);
   }
@@ -386,18 +330,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(ARG_TIMESTAMP);
   }
 
-  public String getTracingAgentHost() {
-    return _config.getString(ARG_TRACING_AGENT_HOST);
-  }
-
-  public Integer getTracingAgentPort() {
-    return _config.getInt(ARG_TRACING_AGENT_PORT);
-  }
-
-  public boolean getTracingEnable() {
-    return _config.getBoolean(ARG_TRACING_ENABLE);
-  }
-
   public boolean getVerboseParse() {
     return _config.getBoolean(BfConsts.ARG_VERBOSE_PARSE);
   }
@@ -433,9 +365,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, false);
     setDefaultProperty(CAN_EXECUTE, true);
     setDefaultProperty(BfConsts.ARG_CONTAINER, null);
-    setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
-    setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
-    setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
@@ -466,19 +395,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
     setDefaultProperty(ARG_RUN_MODE, RunMode.WORKER.toString());
     setDefaultProperty(ARG_SEQUENTIAL, false);
-    setDefaultProperty(ARG_SERVICE_BIND_HOST, "localhost");
-    setDefaultProperty(ARG_SERVICE_HOST, "localhost");
-    setDefaultProperty(ARG_SERVICE_NAME, "worker-service");
-    setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
     setDefaultProperty(BfConsts.ARG_SNAPSHOT_NAME, null);
     setDefaultProperty(BfConsts.ARG_STORAGE_BASE, null);
     setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
     setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
     setDefaultProperty(ARG_TIMESTAMP, false);
-    setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
-    setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
-    setDefaultProperty(ARG_TRACING_ENABLE, false);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
     setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
@@ -532,15 +454,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "whether to check BGP session reachability during data plane computation");
 
     addOption(BfConsts.ARG_CONTAINER, "ID of network", ARGNAME_NAME);
-
-    addOption(
-        ARG_COORDINATOR_HOST,
-        "hostname of coordinator for registration when running as service",
-        ARGNAME_HOSTNAME);
-
-    addOption(ARG_COORDINATOR_POOL_PORT, "coordinator pool manager listening port", ARGNAME_PORT);
-
-    addBooleanOption(ARG_COORDINATOR_REGISTER, "register service with coordinator on startup");
 
     addListOption(ARG_DEBUG_FLAGS, "a list of flags to enable debugging code", "debug flags");
 
@@ -636,17 +549,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(ARG_SEQUENTIAL, "force sequential operation");
 
-    addOption(
-        ARG_SERVICE_BIND_HOST,
-        "local hostname used bind service (default is 0.0.0.0 which listens on all interfaces)",
-        ARGNAME_HOSTNAME);
-
-    addOption(ARG_SERVICE_HOST, "local hostname to report to coordinator", ARGNAME_HOSTNAME);
-
-    addOption(ARG_SERVICE_NAME, "service name", "service_name");
-
-    addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
-
     addOption(BfConsts.ARG_SNAPSHOT_NAME, "name of snapshot", ARGNAME_NAME);
 
     addOption(BfConsts.ARG_STORAGE_BASE, "path to the storage base", ARGNAME_PATH);
@@ -664,12 +566,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(ARG_THROW_ON_PARSER_ERROR, "throw exception immediately on parser error");
 
     addBooleanOption(ARG_TIMESTAMP, "print timestamps in log messages");
-
-    addOption(ARG_TRACING_AGENT_HOST, "jaeger agent host", "jaeger_agent_host");
-
-    addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
-
-    addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
 
     addBooleanOption(
         BfConsts.ARG_VERBOSE_PARSE,
@@ -696,6 +592,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         new String[] {
           "analysisname",
           "analyze",
+          "coordinatorhost",
+          "coordinatorpoolport",
           "deltaenv",
           "diffactive",
           "enable_cisco_nx_parser",
@@ -711,6 +609,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "pedanticsuppress",
           "ppa",
           "redflagsuppress",
+          "servicebindhost",
+          "servicehost",
+          "servicename",
+          "serviceport",
           "ssldisable",
           "sslkeystorefile",
           "sslkeystorepassword",
@@ -718,13 +620,18 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "ssltruststorefile",
           "ssltruststorepassword",
           "stext",
+          "tracingagenthost",
+          "tracingagentport",
           "unimplementedsuppress",
           "venv",
           "z3timeout",
         }) {
       addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
     }
-    for (String deprecatedBooleanArg : new String[] {"gs"}) {
+    for (String deprecatedBooleanArg :
+        new String[] {
+          "gs", "register", "tracingenable",
+        }) {
       addBooleanOption(deprecatedBooleanArg, DEPRECATED_ARG_DESC);
     }
   }
@@ -758,9 +665,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
     getBooleanOptionValue(ARG_CHECK_BGP_REACHABILITY);
     getStringOptionValue(BfConsts.ARG_CONTAINER);
-    getStringOptionValue(ARG_COORDINATOR_HOST);
-    getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
-    getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
     getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
     getStringListOptionValue(ARG_DEBUG_FLAGS);
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
@@ -789,10 +693,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_SEQUENTIAL);
     getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
     getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
-    getStringOptionValue(ARG_SERVICE_BIND_HOST);
-    getStringOptionValue(ARG_SERVICE_HOST);
-    getStringOptionValue(ARG_SERVICE_NAME);
-    getIntOptionValue(ARG_SERVICE_PORT);
     getBooleanOptionValue(ARG_NO_SHUFFLE);
     getBooleanOptionValue(ARG_PARSE_REUSE);
     getStringOptionValue(BfConsts.ARG_SNAPSHOT_NAME);
@@ -802,9 +702,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
     getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);
     getBooleanOptionValue(ARG_TIMESTAMP);
-    getStringOptionValue(ARG_TRACING_AGENT_HOST);
-    getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
-    getBooleanOptionValue(ARG_TRACING_ENABLE);
     getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
     getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
   }
