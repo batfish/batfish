@@ -3,7 +3,6 @@ package org.batfish.minesweeper.bdd;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.math.IntMath;
-import com.google.common.primitives.Booleans;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -557,8 +556,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
       result = 31 * result + (_weight != null ? _weight.hashCode() : 0);
       result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
-      result = 31 * result + Booleans.hashCode(_nextHopDiscarded);
-      result = 31 * result + Booleans.hashCode(_nextHopSet);
+      result = 31 * result + Boolean.hashCode(_nextHopDiscarded);
+      result = 31 * result + Boolean.hashCode(_nextHopSet);
       result =
           31 * result
               + (_communityAtomicPredicates != null
