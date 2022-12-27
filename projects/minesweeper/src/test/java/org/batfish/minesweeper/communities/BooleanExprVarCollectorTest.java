@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
 import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.utils.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -67,7 +69,8 @@ public class BooleanExprVarCollectorTest {
                 new MatchCommunities(
                     InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM2)))));
 
-    Set<CommunityVar> result = _varCollector.visitConjunction(c, _baseConfig);
+    Set<CommunityVar> result =
+        _varCollector.visitConjunction(c, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<CommunityVar> expected =
         ImmutableSet.of(CommunityVar.from(COMM1), CommunityVar.from(COMM2));
@@ -86,7 +89,8 @@ public class BooleanExprVarCollectorTest {
                 new MatchCommunities(
                     InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM2)))));
 
-    Set<CommunityVar> result = _varCollector.visitConjunctionChain(cc, _baseConfig);
+    Set<CommunityVar> result =
+        _varCollector.visitConjunctionChain(cc, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<CommunityVar> expected =
         ImmutableSet.of(CommunityVar.from(COMM1), CommunityVar.from(COMM2));
@@ -105,7 +109,8 @@ public class BooleanExprVarCollectorTest {
                 new MatchCommunities(
                     InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM2)))));
 
-    Set<CommunityVar> result = _varCollector.visitDisjunction(d, _baseConfig);
+    Set<CommunityVar> result =
+        _varCollector.visitDisjunction(d, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<CommunityVar> expected =
         ImmutableSet.of(CommunityVar.from(COMM1), CommunityVar.from(COMM2));
@@ -124,7 +129,8 @@ public class BooleanExprVarCollectorTest {
                 new MatchCommunities(
                     InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM2)))));
 
-    Set<CommunityVar> result = _varCollector.visitFirstMatchChain(fmc, _baseConfig);
+    Set<CommunityVar> result =
+        _varCollector.visitFirstMatchChain(fmc, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<CommunityVar> expected =
         ImmutableSet.of(CommunityVar.from(COMM1), CommunityVar.from(COMM2));
@@ -138,7 +144,10 @@ public class BooleanExprVarCollectorTest {
         new RibIntersectsPrefixSpace(
             MainRib.instance(), new ExplicitPrefixSet(new PrefixSpace(ImmutableList.of())));
 
-    assertThat(_varCollector.visitRibIntersectsPrefixSpace(expr, _baseConfig), empty());
+    assertThat(
+        _varCollector.visitRibIntersectsPrefixSpace(
+            expr, new Tuple<>(new HashSet<>(), _baseConfig)),
+        empty());
   }
 
   @Test
@@ -149,7 +158,8 @@ public class BooleanExprVarCollectorTest {
             new LiteralCommunitySet(CommunitySet.of(COMM1)),
             new HasCommunity(new CommunityIs(COMM2)));
 
-    Set<CommunityVar> result = _varCollector.visitMatchCommunities(mc, _baseConfig);
+    Set<CommunityVar> result =
+        _varCollector.visitMatchCommunities(mc, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<CommunityVar> expected =
         ImmutableSet.of(CommunityVar.from(COMM1), CommunityVar.from(COMM2));
@@ -165,7 +175,7 @@ public class BooleanExprVarCollectorTest {
             new MatchCommunities(
                 InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM1))));
 
-    Set<CommunityVar> result = _varCollector.visitNot(n, _baseConfig);
+    Set<CommunityVar> result = _varCollector.visitNot(n, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<CommunityVar> expected = ImmutableSet.of(CommunityVar.from(COMM1));
 
@@ -189,7 +199,8 @@ public class BooleanExprVarCollectorTest {
     wee.setPostTrueStatements(
         ImmutableList.of(new SetCommunities(new LiteralCommunitySet(CommunitySet.of(comm4)))));
 
-    Set<CommunityVar> result = _varCollector.visitWithEnvironmentExpr(wee, _baseConfig);
+    Set<CommunityVar> result =
+        _varCollector.visitWithEnvironmentExpr(wee, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<CommunityVar> expected =
         ImmutableSet.of(COMM1, COMM2, comm3, comm4).stream()
