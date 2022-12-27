@@ -359,7 +359,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _communityRegexes.stream()
                 .map(CommunityVar::from)
                 .collect(ImmutableSet.toImmutableSet()),
-            _asPathRegexes);
+            _asPathRegexes,
+            policies);
 
     return policies.stream().flatMap(policy -> searchPolicy(policy, configAPs).stream());
   }

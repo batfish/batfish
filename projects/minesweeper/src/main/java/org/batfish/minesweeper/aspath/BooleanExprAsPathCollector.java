@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.aspath;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -42,83 +43,101 @@ import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.utils.Tuple;
 
 /** Collect all AS-path regexes in a {@link BooleanExpr}. */
 @ParametersAreNonnullByDefault
 public class BooleanExprAsPathCollector
-    implements BooleanExprVisitor<Set<SymbolicAsPathRegex>, Configuration> {
+    implements BooleanExprVisitor<Set<SymbolicAsPathRegex>, Tuple<Set<String>, Configuration>> {
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchClusterListLength(
-      MatchClusterListLength matchClusterListLength, Configuration arg) {
+      MatchClusterListLength matchClusterListLength, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitBooleanExprs(
-      StaticBooleanExpr staticBooleanExpr, Configuration arg) {
+      StaticBooleanExpr staticBooleanExpr, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitCallExpr(CallExpr callExpr, Configuration arg) {
-    /* we already visit all route policies in a configuration (see Graph::findAsPathRegexes), so no
-    need to recurse to the callee policy */
-    return ImmutableSet.of();
+  public Set<SymbolicAsPathRegex> visitCallExpr(
+      CallExpr callExpr, Tuple<Set<String>, Configuration> arg) {
+    if (arg.getFirst().contains(callExpr.getCalledPolicyName())) {
+      // If we have already visited this policy then don't visit again
+      return ImmutableSet.of();
+    }
+    // Otherwise update the set of seen policies and recurse.
+    Set<String> newSeen = new HashSet<>(arg.getFirst());
+    newSeen.add(callExpr.getCalledPolicyName());
+
+    return new RoutePolicyStatementAsPathCollector()
+        .visitAll(
+            arg.getSecond()
+                .getRoutingPolicies()
+                .get(callExpr.getCalledPolicyName())
+                .getStatements(),
+            new Tuple<>(newSeen, arg.getSecond()));
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitConjunction(Conjunction conjunction, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitConjunction(
+      Conjunction conjunction, Tuple<Set<String>, Configuration> arg) {
     return visitAll(conjunction.getConjuncts(), arg);
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitConjunctionChain(
-      ConjunctionChain conjunctionChain, Configuration arg) {
+      ConjunctionChain conjunctionChain, Tuple<Set<String>, Configuration> arg) {
     return visitAll(conjunctionChain.getSubroutines(), arg);
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitDisjunction(Disjunction disjunction, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitDisjunction(
+      Disjunction disjunction, Tuple<Set<String>, Configuration> arg) {
     return visitAll(disjunction.getDisjuncts(), arg);
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitFirstMatchChain(
-      FirstMatchChain firstMatchChain, Configuration arg) {
+      FirstMatchChain firstMatchChain, Tuple<Set<String>, Configuration> arg) {
     return visitAll(firstMatchChain.getSubroutines(), arg);
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitRibIntersectsPrefixSpace(
-      RibIntersectsPrefixSpace ribIntersectsPrefixSpace, Configuration arg) {
+      RibIntersectsPrefixSpace ribIntersectsPrefixSpace, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitHasRoute(HasRoute hasRoute, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitHasRoute(
+      HasRoute hasRoute, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitMatchAsPath(MatchAsPath matchAsPath, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitMatchAsPath(
+      MatchAsPath matchAsPath, Tuple<Set<String>, Configuration> arg) {
     AsPathMatchExpr matchExpr = matchAsPath.getAsPathMatchExpr();
-    return matchExpr.accept(new AsPathMatchExprAsPathCollector(), arg);
+    return matchExpr.accept(new AsPathMatchExprAsPathCollector(), arg.getSecond());
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchBgpSessionType(
-      MatchBgpSessionType matchBgpSessionType, Configuration arg) {
+      MatchBgpSessionType matchBgpSessionType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchLegacyAsPath(
-      LegacyMatchAsPath legacyMatchAsPath, Configuration arg) {
+      LegacyMatchAsPath legacyMatchAsPath, Tuple<Set<String>, Configuration> arg) {
     AsPathSetExpr expr = legacyMatchAsPath.getExpr();
     if (expr instanceof NamedAsPathSet) {
       NamedAsPathSet namedSet = (NamedAsPathSet) expr;
-      AsPathAccessList list = arg.getAsPathAccessLists().get(namedSet.getName());
+      AsPathAccessList list = arg.getSecond().getAsPathAccessLists().get(namedSet.getName());
       // conversion to VI should guarantee list is not null
       assert list != null;
       return list.getLines().stream()
@@ -131,99 +150,104 @@ public class BooleanExprAsPathCollector
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitMatchColor(MatchColor matchColor, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitMatchColor(
+      MatchColor matchColor, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchCommunities(
-      MatchCommunities matchCommunities, Configuration arg) {
+      MatchCommunities matchCommunities, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchInterface(
-      MatchInterface matchInterface, Configuration arg) {
+      MatchInterface matchInterface, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitMatchIpv4(MatchIpv4 matchIpv4, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitMatchIpv4(
+      MatchIpv4 matchIpv4, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchLocalPreference(
-      MatchLocalPreference matchLocalPreference, Configuration arg) {
+      MatchLocalPreference matchLocalPreference, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchLocalRouteSourcePrefixLength(
-      MatchLocalRouteSourcePrefixLength matchLocalRouteSourcePrefixLength, Configuration arg) {
+      MatchLocalRouteSourcePrefixLength matchLocalRouteSourcePrefixLength,
+      Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitMatchMetric(MatchMetric matchMetric, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitMatchMetric(
+      MatchMetric matchMetric, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchPrefixSet(
-      MatchPrefixSet matchPrefixSet, Configuration arg) {
+      MatchPrefixSet matchPrefixSet, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchProcessAsn(
-      MatchProcessAsn matchProcessAsn, Configuration arg) {
+      MatchProcessAsn matchProcessAsn, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchProtocol(
-      MatchProtocol matchProtocol, Configuration arg) {
+      MatchProtocol matchProtocol, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchRouteType(
-      MatchRouteType matchRouteType, Configuration arg) {
+      MatchRouteType matchRouteType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchSourceProtocol(
-      MatchSourceProtocol matchSourceProtocol, Configuration arg) {
+      MatchSourceProtocol matchSourceProtocol, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchSourceVrf(
-      MatchSourceVrf matchSourceVrf, Configuration arg) {
+      MatchSourceVrf matchSourceVrf, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitMatchTag(MatchTag matchTag, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitMatchTag(
+      MatchTag matchTag, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitNot(Not not, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitNot(Not not, Tuple<Set<String>, Configuration> arg) {
     return not.getExpr().accept(this, arg);
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitRouteIsClassful(
-      RouteIsClassful routeIsClassful, Configuration arg) {
+      RouteIsClassful routeIsClassful, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitWithEnvironmentExpr(
-      WithEnvironmentExpr withEnvironmentExpr, Configuration arg) {
+      WithEnvironmentExpr withEnvironmentExpr, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.<SymbolicAsPathRegex>builder()
         .addAll(withEnvironmentExpr.getExpr().accept(this, arg))
         .addAll(
@@ -238,7 +262,8 @@ public class BooleanExprAsPathCollector
         .build();
   }
 
-  private Set<SymbolicAsPathRegex> visitAll(List<BooleanExpr> exprs, Configuration arg) {
+  private Set<SymbolicAsPathRegex> visitAll(
+      List<BooleanExpr> exprs, Tuple<Set<String>, Configuration> arg) {
     return exprs.stream()
         .flatMap(expr -> expr.accept(this, arg).stream())
         .collect(ImmutableSet.toImmutableSet());
