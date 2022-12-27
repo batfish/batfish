@@ -266,6 +266,13 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       Stream<RoutingPolicy> policies,
       Stream<RoutingPolicy> proposedPolicies,
       NetworkSnapshot snapshot) {
+    List<RoutingPolicy> policiesList = policies.collect(Collectors.toList());
+    List<RoutingPolicy> proposedPoliciesList = proposedPolicies.collect(Collectors.toList());
+
+    // Compute AtomicPredicates for both policies and proposedPolicies.
+    List<RoutingPolicy> allPolicies = new ArrayList<>(policiesList);
+    allPolicies.addAll(proposedPoliciesList);
+
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             _batfish,
@@ -274,12 +281,16 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             _communityRegexes.stream()
                 .map(CommunityVar::from)
                 .collect(ImmutableSet.toImmutableSet()),
-            _asPathRegexes);
+            _asPathRegexes,
+            allPolicies);
 
-    return policies.flatMap(
-        policy ->
-            proposedPolicies.flatMap(
-                proposedPolicy -> comparePolicies(policy, proposedPolicy, configAPs).stream()));
+    return policiesList.stream()
+        .flatMap(
+            policy ->
+                proposedPoliciesList.stream()
+                    .flatMap(
+                        proposedPolicy ->
+                            comparePolicies(policy, proposedPolicy, configAPs).stream()));
   }
 
   @Override

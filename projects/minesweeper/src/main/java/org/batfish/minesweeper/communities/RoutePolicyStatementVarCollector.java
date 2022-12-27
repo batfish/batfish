@@ -47,9 +47,8 @@ public class RoutePolicyStatementVarCollector
 
   @Override
   public Set<CommunityVar> visitCallStatement(CallStatement callStatement, Configuration arg) {
-    // no need to check the callee here because we already execute this visitor on every statement
-    // of every route policy (see Graph::findAllCommunities)
-    return ImmutableSet.of();
+    return visitAll(
+        arg.getRoutingPolicies().get(callStatement.getCalledPolicyName()).getStatements(), arg);
   }
 
   @Override

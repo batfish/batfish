@@ -62,9 +62,10 @@ public class BooleanExprAsPathCollector
 
   @Override
   public Set<SymbolicAsPathRegex> visitCallExpr(CallExpr callExpr, Configuration arg) {
-    /* we already visit all route policies in a configuration (see Graph::findAsPathRegexes), so no
-    need to recurse to the callee policy */
-    return ImmutableSet.of();
+    // Recurse and collect the as-path regexes of the callee.
+    return new RoutePolicyStatementAsPathCollector()
+        .visitAll(
+            arg.getRoutingPolicies().get(callExpr.getCalledPolicyName()).getStatements(), arg);
   }
 
   @Override

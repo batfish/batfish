@@ -48,9 +48,9 @@ public class RoutePolicyStatementAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitCallStatement(
       CallStatement callStatement, Configuration arg) {
-    // no need to check the callee here because we already execute this visitor on every statement
-    // of every route policy (see Graph::findAsPathRegexes)
-    return ImmutableSet.of();
+    // Recurse and collect the as-path regexes of the callee.
+    return visitAll(
+        arg.getRoutingPolicies().get(callStatement.getCalledPolicyName()).getStatements(), arg);
   }
 
   @Override

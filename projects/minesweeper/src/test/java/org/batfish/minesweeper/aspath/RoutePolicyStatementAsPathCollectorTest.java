@@ -3,6 +3,7 @@ package org.batfish.minesweeper.aspath;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
@@ -19,6 +21,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -31,6 +34,7 @@ import org.junit.Test;
 public class RoutePolicyStatementAsPathCollectorTest {
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
+  private NetworkFactory _nf;
   private RoutePolicyStatementAsPathCollector _asPathCollector;
 
   private static final String ASPATH1 = " 40$";
@@ -45,13 +49,13 @@ public class RoutePolicyStatementAsPathCollectorTest {
 
   @Before
   public void setup() {
-    NetworkFactory nf = new NetworkFactory();
+    _nf = new NetworkFactory();
     Configuration.Builder cb =
-        nf.configurationBuilder()
+        _nf.configurationBuilder()
             .setHostname(HOSTNAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _baseConfig = cb.build();
-    nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
+    _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
     _asPathCollector = new RoutePolicyStatementAsPathCollector();
   }
@@ -113,5 +117,39 @@ public class RoutePolicyStatementAsPathCollectorTest {
 
     assertEquals(
         ImmutableSet.of(), _asPathCollector.visitExcludeAsPath(excludeAsPath, _baseConfig));
+  }
+
+  @Test
+  public void testVisitCallStatement() {
+    String calledPolicyName = "calledPolicy";
+
+    BufferedStatement bs =
+        new BufferedStatement(
+            new If(
+                makeMatchAsPath(ImmutableList.of(ASPATH1, ASPATH2)),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(bs)
+            .build();
+
+    RoutingPolicy policy =
+        _nf.routingPolicyBuilder()
+            .setName("BASE_POLICY")
+            .addStatement(new CallStatement(calledPolicyName))
+            .addStatement(new Statements.StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, "BASE_POLICY", policy));
+
+    Set<SymbolicAsPathRegex> bufferedStmtResult =
+        _asPathCollector.visitBufferedStatement(bs, _baseConfig);
+    Set<SymbolicAsPathRegex> callStmtResult =
+        _asPathCollector.visitAll(policy.getStatements(), _baseConfig);
+    assertEquals(bufferedStmtResult, callStmtResult);
   }
 }

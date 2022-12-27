@@ -57,9 +57,9 @@ public class BooleanExprVarCollector
 
   @Override
   public Set<CommunityVar> visitCallExpr(CallExpr callExpr, Configuration arg) {
-    /* we already visit all route policies in a configuration (see Graph::findAllCommunities), so no
-    need to recurse to the callee policy */
-    return ImmutableSet.of();
+    return new RoutePolicyStatementVarCollector()
+        .visitAll(
+            arg.getRoutingPolicies().get(callExpr.getCalledPolicyName()).getStatements(), arg);
   }
 
   @Override
