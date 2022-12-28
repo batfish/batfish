@@ -629,6 +629,28 @@ tokens:
 
 This pattern would not be LL(1), so is to be avoided.
 
+#### Parser rule NEWLINE
+
+Also note that `ssy_host_name` and `ssy_login_banner` both end in `NEWLINE`. 
+A pattern to avoid is putting the `NEWLINE` in a parent node:
+
+```
+// BAD
+
+s_system
+:
+SYSTEM
+  (
+    ssy_host_name
+    | ssy_login_banner
+  ) NEWLINE
+;
+...
+ssy_login_banner: LOGIN_BANNER banner = string;
+...
+```
+This makes the parser more fragile and can break recovery in the event that a child rule is only partially recognized.
+
 ### Grammar packages
 
 **This section is still in progress. Check back later for more complete instructions.**
