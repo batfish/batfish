@@ -974,7 +974,6 @@ import org.batfish.representation.arista.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.arista.eos.AristaBgpNeighborAddressFamily;
-import org.batfish.representation.arista.eos.AristaBgpNeighborDefaultOriginate;
 import org.batfish.representation.arista.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.arista.eos.AristaBgpPeerFilter;
 import org.batfish.representation.arista.eos.AristaBgpPeerFilterLine;
@@ -2514,13 +2513,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbafnc_default_originate(Eos_rbafnc_default_originateContext ctx) {
-    String map = ctx.name == null ? null : ctx.name.getText();
-    _currentAristaBgpNeighborAddressFamily.setDefaultOriginate(
-        AristaBgpNeighborDefaultOriginate.routeMap(map));
-    if (map != null) {
+    boolean always = ctx.ALWAYS() != null;
+    @Nullable String routeMap = null;
+    if (ctx.rm != null) {
+      routeMap = ctx.rm.getText();
       _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
+          ROUTE_MAP, routeMap, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
     }
+    AristaBgpDefaultOriginate defaultOriginate =
+        AristaBgpDefaultOriginate.enabled(always, routeMap);
+    _currentAristaBgpNeighborAddressFamily.setDefaultOriginate(defaultOriginate);
   }
 
   @Override
@@ -2617,7 +2619,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbafnonc_default_originate(Eos_rbafnonc_default_originateContext ctx) {
     _currentAristaBgpNeighborAddressFamily.setDefaultOriginate(
-        AristaBgpNeighborDefaultOriginate.disabled());
+        AristaBgpDefaultOriginate.disabled());
   }
 
   @Override
@@ -2869,7 +2871,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           ROUTE_MAP, routeMap, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
     }
     AristaBgpDefaultOriginate defaultOriginate =
-        new AristaBgpDefaultOriginate(true, always, routeMap);
+        AristaBgpDefaultOriginate.enabled(always, routeMap);
     _currentAristaBgpNeighbor.setDefaultOriginate(defaultOriginate);
   }
 
@@ -3165,8 +3167,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbinon_default_originate(Eos_rbinon_default_originateContext ctx) {
-    _currentAristaBgpNeighbor.setDefaultOriginate(
-        new AristaBgpDefaultOriginate(false, false, null));
+    _currentAristaBgpNeighbor.setDefaultOriginate(AristaBgpDefaultOriginate.disabled());
   }
 
   @Override
