@@ -1107,7 +1107,10 @@ eos_rbafnc_additional_paths
 
 eos_rbafnc_default_originate
 :
-  DEFAULT_ORIGINATE (name = variable)? NEWLINE
+  DEFAULT_ORIGINATE (
+    always = ALWAYS
+    | ROUTE_MAP rm = variable
+  )* NEWLINE
 ;
 
 eos_rbafnc_graceful_restart
@@ -1762,7 +1765,7 @@ eos_rbinc_default_originate
 :
   DEFAULT_ORIGINATE
   (
-    ALWAYS
+    always = ALWAYS
     | ROUTE_MAP rm = variable
   )* NEWLINE
 ;
