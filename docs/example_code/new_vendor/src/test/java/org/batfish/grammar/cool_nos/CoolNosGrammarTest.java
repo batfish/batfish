@@ -107,6 +107,12 @@ public final class CoolNosGrammarTest {
             hasComment("Attempt to delete non-existent static route with prefix 192.168.2.2/32")));
   }
 
+  @Test
+  public void testLogSyslog() {
+    String hostname = "cool.nos.null-rule";
+    parseVendorConfig(hostname);
+  }
+
   // TODO: helpful conversion tests without having to alter VendorConfigurationFormatDetector
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
