@@ -93,8 +93,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .build();
     _asPathRegexes =
         ImmutableSet.<String>builder()
+            // AS-path output constraints are handled in a different way, to deal properly with
+            // AS-path prepending
             .addAll(_inputConstraints.getAsPath().getAllRegexes())
-            .addAll(_outputConstraints.getAsPath().getAllRegexes())
             .build();
   }
 
@@ -242,6 +243,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return positiveConstraints.diffWith(negativeConstraints);
   }
 
+  /*  private BDD outputAsPathConstraintsToBDD(RegexConstraints asPathRegexes, ConfigAtomicPredicates configAPs, BDDRoute r) {
+      Map<Integer, Automaton> asPathAutomata = configAPs.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
+
+    }
+  */
+
   private BDD protocolSetToBDD(Set<RoutingProtocol> protocolSet, BDDRoute bddRoute) {
     if (protocolSet.isEmpty()) {
       return bddRoute.getFactory().one();
@@ -274,7 +281,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             r.getCommunityAtomicPredicates(),
             r.getFactory()));
     result.andWith(
-        regexConstraintsToBDD(
+        /* outputRoute ?
+        outputAsPathConstraintsToBDD(constraints.getAsPath(), configAPs, r); */ regexConstraintsToBDD(
             constraints.getAsPath(),
             SymbolicAsPathRegex::new,
             configAPs.getAsPathRegexAtomicPredicates(),
@@ -323,14 +331,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD acceptedAnnouncements = path.getSecond();
       BDDRoute outputRoute = path.getFirst();
       BDD intersection = acceptedAnnouncements.and(inConstraints);
+      ConfigAtomicPredicates outConfigAPs = new ConfigAtomicPredicates(configAPs);
       if (_action == PERMIT) {
         // incorporate the constraints on the output route as well
         BDD outConstraints =
-            routeConstraintsToBDD(_outputConstraints, outputRoute, true, configAPs);
+            routeConstraintsToBDD(_outputConstraints, outputRoute, true, outConfigAPs);
         intersection = intersection.and(outConstraints);
       }
 
-      Optional<Row> result = constraintsToResult(intersection, policy, configAPs);
+      Optional<Row> result = constraintsToResult(intersection, policy, outConfigAPs);
       if (result.isPresent()) {
         builder.add(result.get());
         if (!_perPath) {

@@ -6,6 +6,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import dk.brics.automaton.Automaton;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -55,6 +56,13 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   public RegexAtomicPredicates(Set<T> regexes, T trueRegex) {
     _regexes = ImmutableSet.<T>builder().addAll(regexes).add(trueRegex).build();
     initAtomicPredicates();
+  }
+
+  public RegexAtomicPredicates(RegexAtomicPredicates<T> other) {
+    _regexes = new HashSet<>(other._regexes);
+    _numAtomicPredicates = other._numAtomicPredicates;
+    _regexAtomicPredicates = new HashMap<>(other._regexAtomicPredicates);
+    _atomicPredicateAutomata = new HashMap<>(other._atomicPredicateAutomata);
   }
 
   private void initAtomicPredicates() {

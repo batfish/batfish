@@ -34,7 +34,7 @@ public class ConfigAtomicPredicates {
    * Each extended/large community literal that appears in the given configuration is assigned a
    * unique atomic predicate.
    */
-  private final Map<Integer, CommunityVar> _nonStandardCommunityLiterals = new HashMap<>();
+  private final Map<Integer, CommunityVar> _nonStandardCommunityLiterals;
 
   /** Atomic predicates for the AS-path regexes that appear in the given configuration. */
   private final RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
@@ -87,6 +87,7 @@ public class ConfigAtomicPredicates {
     CommunityVar[] nonStandardCommunityVars =
         allCommunities.stream().filter(isStandardCommunity.negate()).toArray(CommunityVar[]::new);
     int numAPs = _standardCommunityAtomicPredicates.getNumAtomicPredicates();
+    _nonStandardCommunityLiterals = new HashMap<>();
     for (int i = 0; i < nonStandardCommunityVars.length; i++) {
       _nonStandardCommunityLiterals.put(i + numAPs, nonStandardCommunityVars[i]);
     }
@@ -94,6 +95,14 @@ public class ConfigAtomicPredicates {
     _asPathRegexAtomicPredicates =
         new RegexAtomicPredicates<>(
             findAllAsPathRegexes(asPathRegexes), SymbolicAsPathRegex.ALL_AS_PATHS);
+  }
+
+  public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
+    _configuration = other._configuration;
+    _standardCommunityAtomicPredicates =
+        new RegexAtomicPredicates<>(other._standardCommunityAtomicPredicates);
+    _nonStandardCommunityLiterals = new HashMap<>(other._nonStandardCommunityLiterals);
+    _asPathRegexAtomicPredicates = new RegexAtomicPredicates<>(other._asPathRegexAtomicPredicates);
   }
 
   /**
