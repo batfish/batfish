@@ -37,7 +37,7 @@ public class ConfigAtomicPredicates {
   private final Map<Integer, CommunityVar> _nonStandardCommunityLiterals;
 
   /** Atomic predicates for the AS-path regexes that appear in the given configuration. */
-  private final RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
+  private final AsPathRegexAtomicPredicates _asPathRegexAtomicPredicates;
 
   /**
    * Compute atomic predicates for the given router's configuration.
@@ -93,8 +93,7 @@ public class ConfigAtomicPredicates {
     }
 
     _asPathRegexAtomicPredicates =
-        new RegexAtomicPredicates<>(
-            findAllAsPathRegexes(asPathRegexes), SymbolicAsPathRegex.ALL_AS_PATHS);
+        new AsPathRegexAtomicPredicates(findAllAsPathRegexes(asPathRegexes));
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
@@ -102,7 +101,8 @@ public class ConfigAtomicPredicates {
     _standardCommunityAtomicPredicates =
         new RegexAtomicPredicates<>(other._standardCommunityAtomicPredicates);
     _nonStandardCommunityLiterals = new HashMap<>(other._nonStandardCommunityLiterals);
-    _asPathRegexAtomicPredicates = new RegexAtomicPredicates<>(other._asPathRegexAtomicPredicates);
+    _asPathRegexAtomicPredicates =
+        new AsPathRegexAtomicPredicates(other._asPathRegexAtomicPredicates);
   }
 
   /**
@@ -182,7 +182,7 @@ public class ConfigAtomicPredicates {
     return _nonStandardCommunityLiterals;
   }
 
-  public RegexAtomicPredicates<SymbolicAsPathRegex> getAsPathRegexAtomicPredicates() {
+  public AsPathRegexAtomicPredicates getAsPathRegexAtomicPredicates() {
     return _asPathRegexAtomicPredicates;
   }
 }
