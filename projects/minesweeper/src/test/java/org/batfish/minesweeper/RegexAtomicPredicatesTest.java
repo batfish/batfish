@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -103,5 +104,25 @@ public class RegexAtomicPredicatesTest {
     assertThat(
         asPathAPs.getRegexAtomicPredicates(),
         hasEntry(equalTo(new SymbolicAsPathRegex(".*")), iterableWithSize(5)));
+  }
+
+  @Test
+  public void testCopyConstructor() {
+    Set<CommunityVar> cvars =
+        ImmutableSet.of(
+            CommunityVar.from("^2[0-3]:40$"),
+            CommunityVar.from("^21:4[0-3]$"),
+            CommunityVar.from(StandardCommunity.parse("20:40")),
+            CommunityVar.from(StandardCommunity.parse("22:22")));
+
+    RegexAtomicPredicates<CommunityVar> commAPs =
+        new RegexAtomicPredicates<>(cvars, CommunityVar.ALL_STANDARD_COMMUNITIES);
+
+    RegexAtomicPredicates<CommunityVar> copy = new RegexAtomicPredicates<>(commAPs);
+
+    assertEquals(commAPs, copy);
+    assertNotSame(commAPs.getRegexes(), copy.getRegexes());
+    assertNotSame(commAPs.getRegexAtomicPredicates(), copy.getRegexAtomicPredicates());
+    assertNotSame(commAPs.getAtomicPredicateAutomata(), copy.getAtomicPredicateAutomata());
   }
 }

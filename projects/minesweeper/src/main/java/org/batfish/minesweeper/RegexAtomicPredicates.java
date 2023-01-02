@@ -8,6 +8,7 @@ import dk.brics.automaton.Automaton;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -130,7 +131,30 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   }
 
   @Nonnull
+  public Set<T> getRegexes() {
+    return _regexes;
+  }
+
+  @Nonnull
   public Map<T, Set<Integer>> getRegexAtomicPredicates() {
     return _regexAtomicPredicates;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof RegexAtomicPredicates)) {
+      return false;
+    }
+    RegexAtomicPredicates<?> other = (RegexAtomicPredicates<?>) o;
+    return Objects.equals(_regexes, other._regexes)
+        && _numAtomicPredicates == other._numAtomicPredicates
+        && Objects.equals(_regexAtomicPredicates, other._regexAtomicPredicates)
+        && Objects.equals(_atomicPredicateAutomata, other._atomicPredicateAutomata);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _regexes, _numAtomicPredicates, _regexAtomicPredicates, _atomicPredicateAutomata);
   }
 }

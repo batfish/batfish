@@ -2,12 +2,10 @@ package org.batfish.minesweeper;
 
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import org.batfish.minesweeper.question.searchroutepolicies.RegexConstraint;
 import org.batfish.minesweeper.question.searchroutepolicies.RegexConstraints;
 
@@ -18,40 +16,38 @@ import org.batfish.minesweeper.question.searchroutepolicies.RegexConstraints;
  */
 public class AsPathRegexAtomicPredicates extends RegexAtomicPredicates<SymbolicAsPathRegex> {
 
-  @Nonnull private final List<Long> _prependedAses;
-
   public AsPathRegexAtomicPredicates(Set<SymbolicAsPathRegex> regexes) {
     super(regexes, SymbolicAsPathRegex.ALL_AS_PATHS);
-    _prependedAses = new LinkedList<>();
   }
 
   public AsPathRegexAtomicPredicates(AsPathRegexAtomicPredicates other) {
     super(other);
-    _prependedAses = new LinkedList<>(other._prependedAses);
   }
 
   public void prependAPs(List<Long> prepended) {
     if (prepended.isEmpty()) {
       return;
     }
-    _prependedAses.addAll(0, prepended);
     Map<Integer, Automaton> apAutomata = this.getAtomicPredicateAutomata();
     List<String> prepends =
         prepended.stream().map(l -> Long.toString(l)).collect(Collectors.toList());
-    // we separately consider the cases of whether we are prepending to an empty AS-path or a
-    // non-empty one, since the regex that we have to produce is different for each case
-    Automaton prependToEmptyAutomaton = new RegExp("^^" + String.join(" ", prepends)).toAutomaton();
-    Automaton prependToNonemptyAutomaton =
-        new RegExp("^^" + String.join(" ", prepends) + " ").toAutomaton();
+    // we separately consider the case of prepending to an empty AS-path and a non-empty one, since
+    // the regex that we have to produce is different for each case
+    String prependStr = "^^" + String.join(" ", prepends);
+    Automaton prependToEmptyAutomaton = new RegExp(prependStr).toAutomaton();
+    Automaton prependToNonemptyAutomaton = new RegExp(prependStr + " ").toAutomaton();
     for (Integer i : apAutomata.keySet()) {
       // remove the leading ^ characters
       Automaton iA = apAutomata.get(i).subst('^', "");
-      // concatenate the prepends to the front, handling empty and non-empty AS-paths separately
+      // concatenate the prepends to the front, handling empty and non-empty AS-paths separately.
       Automaton iAPrependOnly =
           prependToEmptyAutomaton.concatenate(iA.intersection(new RegExp("$").toAutomaton()));
       Automaton iAPrependPlus =
           prependToNonemptyAutomaton.concatenate(iA.intersection(new RegExp(".+$").toAutomaton()));
-      // replace the original automaton with the union of these new automata
+      // replace the original automaton with the union of these new automata.
+      // if the original automaton does not include empty (non-empty) AS paths then iAPrependOnly
+      // (iAPrependPlus) will not represent legal AS paths. intersecting with an automaton
+      // representing all legal AS paths addresses that issue.
       apAutomata.replace(
           i,
           iAPrependOnly

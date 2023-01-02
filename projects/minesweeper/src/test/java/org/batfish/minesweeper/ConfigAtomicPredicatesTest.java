@@ -2,6 +2,7 @@ package org.batfish.minesweeper;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -167,5 +168,24 @@ public class ConfigAtomicPredicatesTest {
     assertThat(
         asAPs.getAtomicPredicateAutomata().values(),
         hasItem(new SymbolicAsPathRegex("^$").toAutomaton()));
+  }
+
+  @Test
+  public void testCopyConstructor() {
+    ConfigAtomicPredicates cap =
+        new ConfigAtomicPredicates(
+            _batfish,
+            _batfish.getSnapshot(),
+            HOSTNAME,
+            ImmutableSet.of(CommunityVar.from(ExtendedCommunity.parse("0:30:40"))),
+            ImmutableSet.of("^$"));
+
+    ConfigAtomicPredicates copy = new ConfigAtomicPredicates(cap);
+
+    assertEquals(cap, copy);
+    assertNotSame(
+        cap.getStandardCommunityAtomicPredicates(), copy.getStandardCommunityAtomicPredicates());
+    assertNotSame(cap.getNonStandardCommunityLiterals(), copy.getNonStandardCommunityLiterals());
+    assertNotSame(cap.getAsPathRegexAtomicPredicates(), copy.getAsPathRegexAtomicPredicates());
   }
 }
