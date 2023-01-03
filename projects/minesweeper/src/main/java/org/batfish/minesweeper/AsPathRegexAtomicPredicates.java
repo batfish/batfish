@@ -24,6 +24,12 @@ public class AsPathRegexAtomicPredicates extends RegexAtomicPredicates<SymbolicA
     super(other);
   }
 
+  /**
+   * Updates the automaton for each AS-path atomic predicate to incorporate the given list of
+   * prepended ASes. That is, each automaton A is replaced by a new automaton A' such that if A
+   * accepts the as-path P, then A' accepts the AS-path L+P, where L is the given list of prepended
+   * ASes.
+   */
   public void prependAPs(List<Long> prepended) {
     if (prepended.isEmpty()) {
       return;
@@ -56,6 +62,12 @@ public class AsPathRegexAtomicPredicates extends RegexAtomicPredicates<SymbolicA
     }
   }
 
+  /**
+   * Updates the automaton for each AS-path atomic predicate to incorporate the given regex
+   * constraints. First, an automaton C is created that represents the regex constraints (see {@link
+   * RegexConstraints} for the semantics). Then the automaton A for each AS-path atomic predicate is
+   * replaced by an automaton representing the intersection of A and C.
+   */
   public void constrainAPs(RegexConstraints regexes) {
     if (regexes.isEmpty()) {
       return;
