@@ -63,6 +63,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final RoutingPolicySpecifier _policySpecifier;
   @Nonnull private final Action _action;
 
+  private final boolean _perPath;
+
   @Nonnull private final Set<String> _communityRegexes;
   @Nonnull private final Set<String> _asPathRegexes;
 
@@ -78,6 +80,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
             question.getPolicies(), ALL_ROUTING_POLICIES);
     _action = question.getAction();
+    _perPath = question.getPerPath();
 
     // in the future, it may improve performance to combine all input community regexes
     // into a single regex representing their disjunction, and similarly for all output
@@ -178,11 +181,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD nextHopBDD = r.getNextHop().toBDD(optNextHopIp.get());
       if (outputRoute) {
         // make sure that the next hop was not discarded by the route map
-        nextHopBDD = nextHopBDD.and(r.getNextHopDiscarded().not());
-        if (_direction == Environment.Direction.OUT) {
+        if (r.getNextHopDiscarded()) {
+          return r.getFactory().zero();
+        }
+        if (_direction == Environment.Direction.OUT && !r.getNextHopSet()) {
           // in the OUT direction we can only use the next-hop IP in the route
           // if the route-map explicitly sets it
-          nextHopBDD = nextHopBDD.and(r.getNextHopSet());
+          return r.getFactory().zero();
         }
       }
       return nextHopBDD;
@@ -288,11 +293,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param configAPs an object providing the atomic predicates for the policy's owner configuration
    * @return an optional result, if a behavior of interest was found
    */
-  private Optional<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
-    TransferReturn result;
+  private List<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
+    List<TransferReturn> paths;
+    TransferBDD tbdd;
     try {
-      TransferBDD tbdd = new TransferBDD(configAPs, policy);
-      result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+      tbdd = new TransferBDD(configAPs, policy);
+      paths = tbdd.computePaths(ImmutableSet.of());
     } catch (Exception e) {
       throw new BatfishException(
           "Unexpected error analyzing policy "
@@ -301,24 +307,39 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
               + policy.getOwner().getHostname(),
           e);
     }
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outputRoute = result.getFirst();
-    BDD intersection;
+    // consider only the subset of paths that have the desired action (permit or deny)
+    List<TransferReturn> relevantPaths =
+        paths.stream()
+            .filter(p -> p.getAccepted() == (_action == PERMIT))
+            // only search for models on paths where no unsupported route-policy feature was
+            // encountered
+            .filter(p -> !p.getFirst().getUnsupported())
+            .collect(ImmutableList.toImmutableList());
     BDD inConstraints =
         routeConstraintsToBDD(
-            _inputConstraints, new BDDRoute(outputRoute.getFactory(), configAPs), false, configAPs);
-    if (_action == PERMIT) {
-      // incorporate the constraints on the output route as well
-      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, true, configAPs);
-      intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
-    } else {
-      intersection = acceptedAnnouncements.not().and(inConstraints);
+            _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, configAPs);
+    ImmutableList.Builder<Row> builder = ImmutableList.builder();
+    for (TransferReturn path : relevantPaths) {
+      BDD pathAnnouncements = path.getSecond();
+      BDDRoute outputRoute = path.getFirst();
+      BDD intersection = pathAnnouncements.and(inConstraints);
+      if (_action == PERMIT) {
+        // incorporate the constraints on the output route as well
+        BDD outConstraints =
+            routeConstraintsToBDD(_outputConstraints, outputRoute, true, configAPs);
+        intersection = intersection.and(outConstraints);
+      }
+
+      Optional<Row> result = constraintsToResult(intersection, policy, configAPs);
+      if (result.isPresent()) {
+        builder.add(result.get());
+        if (!_perPath) {
+          // return the first result we find
+          break;
+        }
+      }
     }
-
-    // only search for models on paths where no unsupported route-policy feature was encountered
-    intersection = intersection.andWith(outputRoute.getUnsupported().not());
-
-    return constraintsToResult(intersection, policy, configAPs);
+    return builder.build();
   }
 
   /**
@@ -340,10 +361,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes);
 
-    return policies.stream()
-        .map(policy -> searchPolicy(policy, configAPs))
-        .filter(Optional::isPresent)
-        .map(Optional::get);
+    return policies.stream().flatMap(policy -> searchPolicy(policy, configAPs).stream());
   }
 
   @Override
