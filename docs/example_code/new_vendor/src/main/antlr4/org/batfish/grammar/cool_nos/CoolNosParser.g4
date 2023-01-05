@@ -18,6 +18,12 @@ cool_nos_configuration
 
 statement
 :
-  s_static_routes
+  s_log_null
+  | s_static_routes
   | s_system
+;
+
+s_log_null
+:
+  LOG SYSLOG NEWLINE
 ;
