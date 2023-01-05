@@ -22,52 +22,48 @@ public class TransferResult {
   @Nonnull private final TransferReturn _returnValue;
 
   /**
-   * The set of route announcements that should be suppressed (i.e., not announced). Route
+   * Whether the routes that go down this path should be suppressed (i.e., not announced). Route
    * suppression happens due to aggregation, and this is represented by the {@link
    * org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement} Suppress, but routes
    * can also be explicitly unsuppressed with Unsuppress.
    */
-  @Nonnull private final BDD _suppressedValue;
+  private final boolean _suppressedValue;
 
   /**
    * The following three fields are used to ensure that the analysis accurately identifies all and
    * only feasible execution paths through a route policy.
    */
 
-  /* predicate indicating when the analysis has hit a fall-through condition in the policy
+  /* boolean indicating that the analysis has hit a fall-through condition in the policy
   being analyzed, meaning that control flow should continue to the next policy */
-  @Nonnull private final BDD _fallthroughValue;
+  private final boolean _fallthroughValue;
 
-  /* predicate indicating when the analysis has hit an exit condition in the policy
+  /* boolean indicating that the analysis has hit an exit condition in the policy
   being analyzed, which represents the termination of the execution */
-  @Nonnull private final BDD _exitAssignedValue;
+  private final boolean _exitAssignedValue;
 
-  /* predicate indicating when the analysis has hit a return condition in the policy
+  /* boolean indicating that the analysis has hit a return condition in the policy
   being analyzed, which represents the termination of a nested call to a routing policy */
-  @Nonnull private final BDD _returnAssignedValue;
+  private final boolean _returnAssignedValue;
 
   /**
    * Construct a TransferResult from a BDDRoute. By default we use TRUE as the initial path
    * condition and FALSE as the initial value for having hit a return/exit/fallthrough statement. *
    */
   public TransferResult(BDDRoute bddRoute) {
-    this(new TransferReturn(bddRoute, bddRoute.getFactory().one()), bddRoute.getFactory().zero());
+    this(new TransferReturn(bddRoute, bddRoute.getFactory().one()), false);
   }
 
-  public TransferResult(TransferReturn ret, BDD defaultBDD) {
-    this(ret, defaultBDD, defaultBDD, defaultBDD, defaultBDD);
+  public TransferResult(TransferReturn ret, boolean defaultVal) {
+    this(ret, defaultVal, defaultVal, defaultVal, defaultVal);
   }
 
   public TransferResult(
       TransferReturn retVal,
-      BDD suppressedValue,
-      BDD exitAssignedValue,
-      BDD fallThroughValue,
-      BDD returnAssignedValue) {
-    assert !exitAssignedValue.andSat(returnAssignedValue)
-        : "the predicates for exiting and returning should be disjoint";
-    assert !fallThroughValue.diffSat(returnAssignedValue)
-        : "the predicate for signaling a fall-through should imply the predicate for returning";
+      boolean suppressedValue,
+      boolean exitAssignedValue,
+      boolean fallThroughValue,
+      boolean returnAssignedValue) {
     _suppressedValue = suppressedValue;
     _returnValue = retVal;
     _exitAssignedValue = exitAssignedValue;
@@ -81,22 +77,22 @@ public class TransferResult {
   }
 
   @Nonnull
-  public BDD getSuppressedValue() {
+  public boolean getSuppressedValue() {
     return _suppressedValue;
   }
 
   @Nonnull
-  public BDD getFallthroughValue() {
+  public boolean getFallthroughValue() {
     return _fallthroughValue;
   }
 
   @Nonnull
-  public BDD getExitAssignedValue() {
+  public boolean getExitAssignedValue() {
     return _exitAssignedValue;
   }
 
   @Nonnull
-  public BDD getReturnAssignedValue() {
+  public boolean getReturnAssignedValue() {
     return _returnAssignedValue;
   }
 
@@ -124,25 +120,25 @@ public class TransferResult {
   }
 
   @Nonnull
-  public TransferResult setSuppressedValue(BDD suppressedValue) {
+  public TransferResult setSuppressedValue(boolean suppressedValue) {
     return new TransferResult(
         _returnValue, suppressedValue, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
   }
 
   @Nonnull
-  public TransferResult setExitAssignedValue(BDD exitAssignedValue) {
+  public TransferResult setExitAssignedValue(boolean exitAssignedValue) {
     return new TransferResult(
         _returnValue, _suppressedValue, exitAssignedValue, _fallthroughValue, _returnAssignedValue);
   }
 
   @Nonnull
-  public TransferResult setFallthroughValue(BDD fallthroughValue) {
+  public TransferResult setFallthroughValue(boolean fallthroughValue) {
     return new TransferResult(
         _returnValue, _suppressedValue, _exitAssignedValue, fallthroughValue, _returnAssignedValue);
   }
 
   @Nonnull
-  public TransferResult setReturnAssignedValue(BDD returnAssignedValue) {
+  public TransferResult setReturnAssignedValue(boolean returnAssignedValue) {
     return new TransferResult(
         _returnValue, _suppressedValue, _exitAssignedValue, _fallthroughValue, returnAssignedValue);
   }

@@ -6,6 +6,7 @@
     "inputConstraints": "${inputConstraints}",
     "action": "${action}",
     "outputConstraints": "${outputConstraints}",
+    "perPath": "${perPath}",
     "instance": {
         "description": "Finds route announcements for which a route policy has a particular behavior.",
         "instanceName": "searchRoutePolicies",
@@ -15,7 +16,8 @@
             "policies",
             "inputConstraints",
             "action",
-            "outputConstraints"
+            "outputConstraints",
+            "perPath"
         ],
         "tags": [
             "routing"
@@ -50,6 +52,12 @@
                 "type": "bgpRouteConstraints",
                 "optional": true,
                 "displayName": "Output Constraints"
+            },
+            "perPath": {
+                "description": "Run the analysis separately for each execution path of a route map",
+                "type": "boolean",
+                "optional": true,
+                "displayName": "Per-Path"
             }
         }
     }
