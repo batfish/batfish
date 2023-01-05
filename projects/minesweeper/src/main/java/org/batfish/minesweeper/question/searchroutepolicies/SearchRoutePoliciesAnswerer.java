@@ -320,9 +320,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, configAPs);
     ImmutableList.Builder<Row> builder = ImmutableList.builder();
     for (TransferReturn path : relevantPaths) {
-      BDD acceptedAnnouncements = path.getSecond();
+      BDD pathAnnouncements = path.getSecond();
       BDDRoute outputRoute = path.getFirst();
-      BDD intersection = acceptedAnnouncements.and(inConstraints);
+      BDD intersection = pathAnnouncements.and(inConstraints);
       if (_action == PERMIT) {
         // incorporate the constraints on the output route as well
         BDD outConstraints =
