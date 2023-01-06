@@ -109,6 +109,15 @@ a stage's purpose, inputs, outputs, and how to modify it, click on its name.
           reflected in the output of traceroute or reachability type questions, e.g. a hop in a
           trace is going to the wrong set of neighbors.
 
+#### States of config support and accompanying warnings:
+Based on how far into the above steps implementation has gone, a config line could be in any of the following states:
+
+1. Not in the grammar at all (unrecognized)
+2. In the grammar, but never needs to be extracted: silently ignored, but we add [_null suffix](parsing/README.md#ending-rules-in-_null) to indicate it.
+3. In the grammar, not implemented yet, but known to be wrong if used. In this case, we warn, with things like [todo(...)](extraction/README.md#Unimplemented-warnings-in-extraction)  or [warn(...)](extraction/README.md#Validating-and-converting-parse-tree-nodes-with-variable-text) at extraction time.
+4. In the grammar and extracted, but depending on how it's used may not be supported correctly. In that case, we warn during conversion (Warnings#redFlag typically) if we can tell that it's not supported. If we can't tell, we warn unconditionally (and try to come up with a better system).
+5. Fully implemented. No warnings.
+
 ### Asking questions about the network
 
 The types of questions you can ask about a network are
