@@ -375,9 +375,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, configAPs);
     ImmutableList.Builder<Row> builder = ImmutableList.builder();
     for (TransferReturn path : relevantPaths) {
-      BDD acceptedAnnouncements = path.getSecond();
+      BDD pathAnnouncements = path.getSecond();
       BDDRoute outputRoute = path.getFirst();
-      BDD intersection = acceptedAnnouncements.and(inConstraints);
+      BDD intersection = pathAnnouncements.and(inConstraints);
       // make a copy of the config atomic predicates, since the process of creating the constraints
       // on the output route can modify them, in order to handle AS-path constraints in the presence
       // of AS prepending
