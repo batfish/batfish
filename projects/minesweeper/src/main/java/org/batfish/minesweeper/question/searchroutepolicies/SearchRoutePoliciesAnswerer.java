@@ -264,8 +264,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Update AS-path regex atomic predicates to incorporate the given AS-path constraints on the
-   * output route, and return a BDD representing AS-path regexes that satisfy these constraints.
+   * Updates the AS-path regex atomic predicates to incorporate the given AS-path constraints on the
+   * output route. Then returns a BDD representing the AS-path regexes that satisfy these
+   * constraints.
    *
    * @param asPathRegexes the user-defined regex constraints on the output AS path
    * @param configAPs object containing the AS-path atomic predicates; these atomic predicates are
@@ -273,7 +274,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    *     into account any AS prepending that occurs along the current execution path
    * @param r the {@link BDDRoute} representing the symbolic output route on the current execution
    *     path
-   * @return the regex constraints as a BDD
+   * @return a BDD representing atomic predicates that satisfy the given regex constraints
    */
   private BDD outputAsPathConstraintsToBDDAndUpdatedAPs(
       RegexConstraints asPathRegexes, ConfigAtomicPredicates configAPs, BDDRoute r) {
