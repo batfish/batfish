@@ -1,0 +1,19 @@
+Current configuration : 12345 bytes
+!
+! Last configuration change at 13:48:46 PST Sat Jan 7 2023 by user
+! NVRAM config last updated at 13:48:48 PST Sat Jan 7 2023 by user
+!
+version 17.3
+!
+hostname interface-parsing
+!
+interface Vlan75
+ mac-address abcd.df01.2345
+ ip dhcp relay information option server-id-override
+ ip dhcp relay source-interface Loopback0
+ ip address 10.1.2.3 255.255.255.224
+ ip helper-address 20.1.1.1
+ load-interval 30
+ no autostate
+ description Made it to the end of Vlan75
+!

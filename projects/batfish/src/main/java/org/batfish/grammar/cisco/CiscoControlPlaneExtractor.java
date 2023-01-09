@@ -188,6 +188,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_DHCP_RELAY_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP;
@@ -645,11 +646,12 @@ import org.batfish.grammar.cisco.CiscoParser.If_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_zone_memberContext;
-import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmpsg_aclContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifipdhcpr_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifipdhcpr_clientContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifipdhcpr_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_modeContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_protectionContext;
@@ -5792,7 +5794,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
+  public void exitIfipdhcpr_address(Ifipdhcpr_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip address = toIp(ctx.address);
       iface.getDhcpRelayAddresses().add(address);
@@ -5800,10 +5802,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
+  public void exitIfipdhcpr_client(Ifipdhcpr_clientContext ctx) {
     for (Interface iface : _currentInterfaces) {
       iface.setDhcpRelayClient(true);
     }
+  }
+
+  @Override
+  public void exitIfipdhcpr_source_interface(Ifipdhcpr_source_interfaceContext ctx) {
+    String iface = toString(ctx.iname);
+    _configuration.referenceStructure(
+        INTERFACE, iface, INTERFACE_IP_DHCP_RELAY_SOURCE_INTERFACE, ctx.getStart().getLine());
   }
 
   @Override

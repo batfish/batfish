@@ -4507,6 +4507,12 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testInterfaceParsing() throws IOException {
+    Configuration c = parseConfig("interface-parsing");
+    assertThat(c, hasInterface("Vlan75", hasDescription("Made it to the end of Vlan75")));
+  }
+
+  @Test
   public void testIosOspfPassive() throws IOException {
     String testrigName = "ios-ospf-passive";
     String host1name = "ios-ospf-passive1";
