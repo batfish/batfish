@@ -142,6 +142,7 @@ if_ip
     if_ip_address_dhcp
     | if_ip_authentication
     | if_ip_cef
+    | if_ip_dhcp
     | if_ip_flow_monitor
     | if_ip_hello_interval
     | if_ip_helper_address
@@ -257,10 +258,10 @@ if_ip_cef
 
 if_ip_dhcp
 :
-   NO? IP DHCP
+   DHCP
    (
-      ifdhcp_null
-      | ifdhcp_relay
+      ifipdhcp_null
+      | ifipdhcp_relay
    )
 ;
 
@@ -638,6 +639,7 @@ if_no_ip
   IP
   (
     if_no_ip_address
+    | if_no_ip_dhcp
     | if_no_ip_flowspec
   )
 ;
@@ -645,6 +647,51 @@ if_no_ip
 if_no_ip_address
 :
    ADDRESS NEWLINE
+;
+
+if_no_ip_dhcp
+:
+   DHCP
+   (
+      ifnoipdhcp_null
+      | ifnoipdhcp_relay
+   )
+;
+
+ifnoipdhcp_null
+:
+   (
+      SMART_RELAY
+      | SNOOPING
+   ) null_rest_of_line
+;
+
+ifnoipdhcp_relay
+:
+   RELAY
+   (
+      ifnoipdhcpr_address
+      | ifnoipdhcpr_client
+      | ifnoipdhcpr_null
+   )
+;
+
+ifnoipdhcpr_address
+:
+   ADDRESS NEWLINE
+;
+
+ifnoipdhcpr_client
+:
+   CLIENT NEWLINE
+;
+
+ifnoipdhcpr_null
+:
+   (
+      INFORMATION
+      | SUBNET_BROADCAST
+   ) null_rest_of_line
 ;
 
 if_no_ip_flowspec
@@ -1478,7 +1525,7 @@ if_zone_member
    ZONE_MEMBER SECURITY? name = variable_permissive NEWLINE
 ;
 
-ifdhcp_null
+ifipdhcp_null
 :
    (
       SMART_RELAY
@@ -1486,32 +1533,38 @@ ifdhcp_null
    ) null_rest_of_line
 ;
 
-ifdhcp_relay
+ifipdhcp_relay
 :
    RELAY
    (
-      ifdhcpr_address
-      | ifdhcpr_client
-      | ifdhcpr_null
+      ifipdhcpr_address
+      | ifipdhcpr_client
+      | ifipdhcpr_null
+      | ifipdhcpr_source_interface
    )
 ;
 
-ifdhcpr_address
+ifipdhcpr_address
 :
    ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
-ifdhcpr_client
+ifipdhcpr_client
 :
    CLIENT NEWLINE
 ;
 
-ifdhcpr_null
+ifipdhcpr_null
 :
    (
       INFORMATION
       | SUBNET_BROADCAST
    ) null_rest_of_line
+;
+
+ifipdhcpr_source_interface
+:
+  SOURCE_INTERFACE iname = interface_name NEWLINE
 ;
 
 ifigmp_access_group
@@ -1727,7 +1780,6 @@ if_inner
    | if_ip_access_group
    | if_ip_address
    | if_ip_address_secondary
-   | if_ip_dhcp
    | if_ip_forward
    | if_ip_igmp
    | if_ip_ospf_cost

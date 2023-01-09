@@ -2944,6 +2944,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
         CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE,
+        CiscoStructureUsage.INTERFACE_IP_DHCP_RELAY_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
         CiscoStructureUsage.IP_NAT_INSIDE_SOURCE,
         CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
