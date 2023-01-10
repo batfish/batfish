@@ -18,9 +18,15 @@ cool_nos_configuration
 
 statement
 :
-  s_log_null
+  s_line
+  | s_log_null
   | s_static_routes
   | s_system
+;
+
+s_line
+:
+  LINE VTY NEWLINE
 ;
 
 s_log_null
