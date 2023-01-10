@@ -22,6 +22,7 @@ import org.batfish.grammar.cool_nos.CoolNosParser.Host_nameContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Interface_nameContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ipv4_addressContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ipv4_prefixContext;
+import org.batfish.grammar.cool_nos.CoolNosParser.S_lineContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ss_addContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ss_deleteContext;
 import org.batfish.grammar.cool_nos.CoolNosParser.Ss_disableContext;
@@ -144,6 +145,11 @@ public final class CoolNosConfigurationBuilder extends CoolNosParserBaseListener
   @Override
   public void exitSs_disable(Ss_disableContext ctx) {
     _currentStaticRoute.setEnable(false);
+  }
+
+  @Override
+  public void exitS_line(S_lineContext ctx) {
+    todo(ctx);
   }
 
   private @Nonnull Optional<String> toString(

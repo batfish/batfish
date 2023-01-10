@@ -22,6 +22,17 @@ have a good foundation and be better prepared to:
 * understand build errors and test failures you encounter while making changes
 * respond and react competently to review comments on your pull requests
 
+## States of config support and accompanying warnings:
+Based on how far implementation goes, a config line should be in one of the following states:
+
+1. Not parsed (in the grammar) at all: unrecognized.
+2. In the grammar, but never needs to be extracted: silently ignored, but we add [_null suffix](#ending-rules-in-_null) to indicate it.
+3. In the grammar, not implemented yet, but known to be wrong if used. In this case, we warn, with things like [todo(...)](../extraction/README.md#Unimplemented-warnings-in-extraction)  or [warn(...)](../extraction/README.md#Validating-and-converting-parse-tree-nodes-with-variable-text) at extraction time. See `todo` and `warn` functions in [BatfishListener.java](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/grammar/BatfishListener.java)
+4. In the grammar and extracted, but depending on how it's used may not be supported correctly. In that case, we warn during conversion (Warnings#redFlag typically) if we can tell that it's not supported. If we can't tell, we warn unconditionally (and try to come up with a better system).
+5. Fully implemented. No warnings.
+
+It is important to identify which state a line should be in before parsing, so that all unimplemented constructs have appropriate indicators. 
+
 ## Batfish DSL parsing
 
 Within the Batfish repository, Batfish DSL parsers are divided into several components. For the
