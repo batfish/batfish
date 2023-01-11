@@ -115,10 +115,10 @@ http_jar(
 # Buildifier
 http_archive(
     name = "buildifier_prebuilt",
-    sha256 = "b3fd85ae7e45c2f36bce52cfdbdb6c20261761ea5928d1686edc8873b0d0dad0",
-    strip_prefix = "buildifier-prebuilt-5.1.0",
+    sha256 = "95387c9dded7f8e3bdd4c598bc2ca4fbb6366cb214fa52e7d7b689eb2f421e01",
+    strip_prefix = "buildifier-prebuilt-6.0.0",
     urls = [
-        "http://github.com/keith/buildifier-prebuilt/archive/5.1.0.tar.gz",
+        "http://github.com/keith/buildifier-prebuilt/archive/6.0.0.tar.gz",
     ],
 )
 
