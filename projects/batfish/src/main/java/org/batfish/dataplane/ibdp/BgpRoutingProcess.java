@@ -75,6 +75,7 @@ import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.OriginMechanism;
@@ -266,6 +267,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Keep track of EVPN type 3 routes initialized from our own VNI settings */
   @Nonnull private RibDelta<EvpnType3Route> _evpnInitializationDelta;
 
+  /**
+   * Delta builder for vendors that announce networks to all neighbors regardless of whether they
+   * have that network in their main RIB
+   */
+  @Nonnull
+  private RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibIndependentNetworkInitializationDelta;
+
   /** Delta builder for routes that must be propagated to the main RIB */
   @Nonnull private RibDelta.Builder<BgpRoute<?, ?>> _toMainRib = RibDelta.builder();
 
@@ -406,6 +414,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             clusterListAsIbgpCost,
             _process.getLocalOriginationTypeTieBreaker());
     _evpnInitializationDelta = RibDelta.empty();
+    _mainRibIndependentNetworkInitializationDelta = RibDelta.empty();
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
     _aggregates = new PrefixTrieMultiMap<>();
     _process.getAggregates().forEach(_aggregates::put);
@@ -421,6 +430,25 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   public void initialize(Node n) {
     _initialized = true;
     initLocalEvpnRoutes();
+    initMainRibIndependentNetworkRoutes();
+  }
+
+  /** Initialize routes that will be announced to BGP neighbors regardless of main RIB */
+  public void initMainRibIndependentNetworkRoutes() {
+    if (_process.getMainRibIndependentNetworkPolicy() == null) {
+      return;
+    }
+
+    Builder<AnnotatedRoute<AbstractRoute>> initializationBuilder = RibDelta.builder();
+    _process
+        .getNetworkStatements()
+        .forEach(
+            network -> {
+              AnnotatedRoute<AbstractRoute> route =
+                  annotateRoute(KernelRoute.builder().setNetwork(network).build());
+              initializationBuilder.add(route);
+            });
+    _mainRibIndependentNetworkInitializationDelta = initializationBuilder.build();
   }
 
   /** Returns true if this process has been initialized */
@@ -559,6 +587,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _evpnInitializationDelta = RibDelta.empty();
     }
 
+    if (!_mainRibIndependentNetworkInitializationDelta.isEmpty()
+        && _process.getMainRibIndependentNetworkPolicy() != null) {
+      _mainRibIndependentNetworkInitializationDelta
+          .getActions()
+          .forEach(
+              a ->
+                  redistributeRouteToBgpRib(
+                      a,
+                      _policies.get(_process.getMainRibIndependentNetworkPolicy()).get(),
+                      NETWORK));
+      _mainRibIndependentNetworkInitializationDelta = RibDelta.empty();
+    }
+
     /*
      If we have any new edges, send out our RIB state to them.
      EVPN only
@@ -648,8 +689,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /**
-   * Convert the advertised main RIB route to a BGP route and run it through the provided policy. If
-   * it passes, apply the advertisement to the BGP RIB (i.e. merge or withdraw the route) and update
+   * Convert the advertised route to a BGP route and run it through the provided policy. If it
+   * passes, apply the advertisement to the BGP RIB (i.e. merge or withdraw the route) and update
    * BGP delta builders.
    */
   private void redistributeRouteToBgpRib(
