@@ -628,6 +628,43 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
+  public void testMainRibIndependentNetworkPolicy() {
+    Prefix prefix1 = Prefix.strict("10.0.0.0/8");
+    RoutingPolicy policyNetwork =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("main_rib_independent")
+            .addStatement(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(),
+                        new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix1)))),
+                    ImmutableList.of(
+                        new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                        Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build();
+    // If BGP has a redistribution or network policy, config must export from BGP RIB
+    _c.setExportBgpFromBgpRib(true);
+
+    _bgpProcess.setMainRibIndependentNetworkPolicy(policyNetwork.getName());
+    _bgpProcess.addUnconditionalNetworkStatements(prefix1);
+
+    _routingProcess =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
+
+    Node node = new Node(_c);
+    _routingProcess.initialize(node);
+    _routingProcess.executeIteration(ImmutableMap.of());
+    assertThat(
+        _routingProcess._bgpv4Rib.getRoutes(),
+        contains(
+            isBgpv4RouteThat(
+                allOf(hasPrefix(prefix1), hasProtocol(RoutingProtocol.BGP), isNonRouting(true)))));
+  }
+
+  @Test
   public void testCrossVrfImport() {
     // Make up a policy
     Prefix allowedPrefix1 = Prefix.parse("1.1.1.0/24");
