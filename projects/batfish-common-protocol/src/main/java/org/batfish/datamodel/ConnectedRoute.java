@@ -9,7 +9,6 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 
 /**
@@ -19,14 +18,6 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 @ParametersAreNonnullByDefault
 public final class ConnectedRoute extends AbstractRoute {
 
-  static final String PROP_EIGRP_METRIC = "eigrp-metric";
-  static final String PROP_PROCESS_ASN = "process-asn";
-
-  /** AS number of the EIGRP process that installed this route in the RIB */
-  @Nullable final long _processAsn;
-
-  @Nonnull final EigrpMetric _metric;
-
   @JsonCreator
   @SuppressWarnings("unused")
   private static ConnectedRoute create(
@@ -34,19 +25,10 @@ public final class ConnectedRoute extends AbstractRoute {
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) String nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
-      @JsonProperty(PROP_TAG) long tag,
-      @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
-      @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn) {
+      @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create connected route: missing %s", PROP_NETWORK);
-    checkArgument(
-        processAsn != null, "Cannot create connected route: missing %s", PROP_PROCESS_ASN);
     return new ConnectedRoute(
-        network,
-        firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-        adminCost,
-        tag,
-        metric,
-        processAsn);
+        network, firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE), adminCost, tag);
   }
 
   /** Create a connected route with admin cost of 0 */
@@ -58,17 +40,6 @@ public final class ConnectedRoute extends AbstractRoute {
     this(network, nextHopInterface, adminCost, Route.UNSET_ROUTE_TAG);
   }
 
-  @JsonProperty(PROP_EIGRP_METRIC)
-  @Nonnull
-  public final EigrpMetric getEigrpMetric() {
-    return _metric;
-  }
-
-  @JsonProperty(PROP_PROCESS_ASN)
-  public long getProcessAsn() {
-    return _processAsn;
-  }
-
   @Override
   public String toString() {
     return "ConnectedRoute{"
@@ -78,28 +49,12 @@ public final class ConnectedRoute extends AbstractRoute {
         + _admin
         + ", _tag="
         + _tag
-        + ", _metric"
-        + _metric
-        + ", _processAsn="
-        + _processAsn
         + '}';
   }
 
   public ConnectedRoute(Prefix network, String nextHopInterface, int adminCost, long tag) {
-    this(network, nextHopInterface, adminCost, tag, null, -1);
-  }
-
-  public ConnectedRoute(
-      Prefix network,
-      String nextHopInterface,
-      int adminCost,
-      long tag,
-      @Nullable EigrpMetric metric,
-      long processAsn) {
     super(network, adminCost, tag, false, false);
-    _metric = metric;
     _nextHop = NextHopInterface.of(nextHopInterface);
-    _processAsn = processAsn;
   }
 
   @Override
@@ -114,8 +69,6 @@ public final class ConnectedRoute extends AbstractRoute {
 
   /** Builder for {@link ConnectedRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, ConnectedRoute> {
-    @Nullable protected Long _processAsn;
-    @Nullable protected EigrpMetric _eigrpMetric;
 
     @Nonnull
     @Override
@@ -124,28 +77,8 @@ public final class ConnectedRoute extends AbstractRoute {
           _nextHop != null && _nextHop instanceof NextHopInterface,
           "ConnectedRoute must have %s",
           PROP_NEXT_HOP_INTERFACE);
-      if (_eigrpMetric == null || _processAsn == null) {
-        return new ConnectedRoute(
-            getNetwork(), ((NextHopInterface) _nextHop).getInterfaceName(), getAdmin(), getTag());
-      }
-
       return new ConnectedRoute(
-          getNetwork(),
-          ((NextHopInterface) _nextHop).getInterfaceName(),
-          getAdmin(),
-          getTag(),
-          _eigrpMetric,
-          _processAsn);
-    }
-
-    public Builder setProcessAsn(@Nullable Long processAsn) {
-      _processAsn = processAsn;
-      return this;
-    }
-
-    public Builder setEigrpMetric(@Nonnull EigrpMetric metric) {
-      _eigrpMetric = metric;
-      return this;
+          getNetwork(), ((NextHopInterface) _nextHop).getInterfaceName(), getAdmin(), getTag());
     }
 
     @Nonnull

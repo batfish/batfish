@@ -121,6 +121,23 @@ public class VirtualRouterTest {
             ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
   }
 
+  private static void addEigrp(Configuration c) {
+    EigrpMetric metric =
+        WideMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
+            .build();
+    EigrpInterfaceSettings eigrpInterfaceSettings =
+        EigrpInterfaceSettings.builder()
+            .setAsn(1L)
+            .setEnabled(true)
+            .setMetric(metric)
+            .setExportPolicy("ep")
+            .build();
+
+    c.getActiveInterfaces().values().stream()
+        .forEach(iface -> iface.setEigrp(eigrpInterfaceSettings));
+  }
+
   private static VirtualRouter makeF5VirtualRouter(String hostname) {
     Node n = TestUtils.makeF5Router(hostname);
     return n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME);
@@ -857,19 +874,6 @@ public class VirtualRouterTest {
     String nextHopInterface = "Eth0";
     ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
     Prefix prefix = address.getPrefix();
-    EigrpMetric originalMetric =
-        ClassicMetric.builder()
-            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
-            .build();
-    EigrpInterfaceSettings originalEigrpInterfaceSettings =
-        EigrpInterfaceSettings.builder()
-            .setAsn(10L)
-            .setEnabled(true)
-            .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
-            .setImportPolicy("IMPORT-POLICY")
-            .setMetric(originalMetric)
-            .setPassive(true)
-            .build();
 
     assertThat(
         generateConnectedRoute(address, nextHopInterface, null),
@@ -887,21 +891,6 @@ public class VirtualRouterTest {
                 .setNetwork(prefix)
                 .setNextHopInterface(nextHopInterface)
                 .setTag(7L)
-                .build()));
-
-    assertThat(
-        generateConnectedRoute(
-            address,
-            nextHopInterface,
-            ConnectedRouteMetadata.builder().setTag(7).build(),
-            originalEigrpInterfaceSettings),
-        equalTo(
-            ConnectedRoute.builder()
-                .setNetwork(prefix)
-                .setNextHopInterface(nextHopInterface)
-                .setTag(7L)
-                .setProcessAsn(10L)
-                .setEigrpMetric(originalMetric)
                 .build()));
   }
 
@@ -999,6 +988,36 @@ public class VirtualRouterTest {
     vr.initForIgpComputation(emptyTopology);
 
     assertNotEquals(vrInitialHashcode, vr.computeIterationHashCode());
+  }
+
+  @Test
+  public void testInitConnectedRibForIosEigrp() {
+    EigrpMetric metric =
+        WideMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
+            .build();
+    EigrpInterfaceSettings eigrpInterfaceSettings =
+        EigrpInterfaceSettings.builder()
+            .setAsn(1L)
+            .setEnabled(true)
+            .setMetric(metric)
+            .setExportPolicy("ep")
+            .build();
+
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+    vr.getConfiguration().getActiveInterfaces().values().stream()
+        .forEach(iface -> iface.setEigrp(eigrpInterfaceSettings));
+    vr.initRibs();
+
+    // Test
+    vr.initConnectedRib();
+
+    Map<String, EigrpInterfaceSettings> eis =
+        vr.getConfiguration().getGeneratedEigrpInterfaceSettings();
+    System.out.println(eis);
+    exampleInterfaceAddresses.keySet().stream()
+        .forEach(ifaceName -> assertThat(eis.get(ifaceName), equalTo(eigrpInterfaceSettings)));
   }
 
   private static class TestIpOwners extends IpOwnersBaseImpl {

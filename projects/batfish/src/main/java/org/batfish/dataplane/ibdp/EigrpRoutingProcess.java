@@ -575,8 +575,12 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     if (unannotatedPotentialRoute instanceof EigrpRoute) {
       outputRouteBuilder.setEigrpMetric(((EigrpRoute) unannotatedPotentialRoute).getEigrpMetric());
     } else if (unannotatedPotentialRoute instanceof ConnectedRoute) {
-      outputRouteBuilder.setEigrpMetric(
-          ((ConnectedRoute) unannotatedPotentialRoute).getEigrpMetric());
+      Configuration c = exportPolicy.getOwner();
+      String nextHopInterface = unannotatedPotentialRoute.getNextHopInterface();
+      if (c.getGeneratedEigrpInterfaceSettings().containsKey(nextHopInterface)) {
+        outputRouteBuilder.setEigrpMetric(
+            c.getGeneratedEigrpInterfaceSettings().get(nextHopInterface).getMetric());
+      }
     }
 
     if (!exportPolicy.process(potentialExportRoute, outputRouteBuilder, _process, Direction.OUT)) {

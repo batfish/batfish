@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -34,8 +35,18 @@ public final class MatchProcessAsn extends BooleanExpr {
       EigrpRoute route = (EigrpRoute) environment.getOriginalRoute();
       return new Result(route.getProcessAsn() == _asn);
     } else if (environment.getOriginalRoute() instanceof ConnectedRoute) {
-      ConnectedRoute route = (ConnectedRoute) environment.getOriginalRoute();
-      return new Result(route.getProcessAsn() == _asn);
+      assert !environment
+          .getRoutingPolicies()
+          .containsKey(environment.getEigrpProcess().getRedistributionPolicy());
+      Configuration c =
+          environment
+              .getRoutingPolicies()
+              .get(environment.getEigrpProcess().getRedistributionPolicy())
+              .getOwner();
+      String nextHopInterface = environment.getOriginalRoute().getNextHopInterface();
+      assert !c.getGeneratedEigrpInterfaceSettings().containsKey(nextHopInterface);
+      return new Result(
+          c.getGeneratedEigrpInterfaceSettings().get(nextHopInterface).getAsn() == _asn);
     }
 
     return new Result(false);

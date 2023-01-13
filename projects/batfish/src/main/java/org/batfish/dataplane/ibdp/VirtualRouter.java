@@ -90,7 +90,6 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
-import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -793,9 +792,18 @@ public final class VirtualRouter {
     return iface.getAllConcreteAddresses().stream()
         .filter(addr -> shouldGenerateConnectedRoute(iface.getAddressMetadata().get(addr)))
         .map(
-            addr ->
-                generateConnectedRoute(
-                    addr, iface.getName(), iface.getAddressMetadata().get(addr), iface.getEigrp()));
+            addr -> {
+              ConnectedRoute route =
+                  generateConnectedRoute(
+                      addr, iface.getName(), iface.getAddressMetadata().get(addr));
+              if (iface.getEigrp() != null && iface.getEigrp().getEnabled()) {
+                iface
+                    .getOwner()
+                    .getGeneratedEigrpInterfaceSettings()
+                    .put(route.getNextHopInterface(), iface.getEigrp());
+              }
+              return route;
+            });
   }
 
   /**
@@ -821,16 +829,6 @@ public final class VirtualRouter {
       @Nonnull ConcreteInterfaceAddress address,
       @Nonnull String ifaceName,
       @Nullable ConnectedRouteMetadata metadata) {
-    return generateConnectedRoute(address, ifaceName, metadata, null);
-  }
-
-  @VisibleForTesting
-  @Nonnull
-  static ConnectedRoute generateConnectedRoute(
-      @Nonnull ConcreteInterfaceAddress address,
-      @Nonnull String ifaceName,
-      @Nullable ConnectedRouteMetadata metadata,
-      @Nullable EigrpInterfaceSettings eigrp) {
     ConnectedRoute.Builder builder =
         ConnectedRoute.builder().setNetwork(address.getPrefix()).setNextHopInterface(ifaceName);
     if (metadata != null) {
@@ -840,10 +838,6 @@ public final class VirtualRouter {
       if (metadata.getTag() != null) {
         builder.setTag(metadata.getTag());
       }
-    }
-    if (eigrp != null) {
-      builder.setProcessAsn(eigrp.getAsn());
-      builder.setEigrpMetric(eigrp.getMetric());
     }
     return builder.build();
   }
