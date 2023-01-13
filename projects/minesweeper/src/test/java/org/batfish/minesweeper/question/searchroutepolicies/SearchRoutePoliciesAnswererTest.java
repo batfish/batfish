@@ -1740,8 +1740,31 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    // there are no answers because all paths go through an unsupported statement (PrependAsPath)
-    assertEquals(answer.getRows().size(), 0);
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            // the solver will produce the lowest possible value for a field, which is 0.0.0.1 for
+            // the next-hop since it is constrained to not be 0.0.0.0
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    // the unsupported statement is ignored, so we still get an answer
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -1772,52 +1795,21 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    // there are no answers because all paths go through the unsupported If guard
-    assertEquals(answer.getRows().size(), 0);
-  }
-
-  @Test
-  public void testUnsupportedStatementAvoid() {
-    _policyBuilder
-        .addStatement(
-            new If(
-                matchPrefixSet(
-                    ImmutableList.of(
-                        new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 16)))),
-                ImmutableList.of(
-                    new ExcludeAsPath(new LiteralAsList(ImmutableList.of())),
-                    new StaticStatement(Statements.ExitAccept))))
-        .addStatement(new StaticStatement(Statements.ExitAccept));
-    RoutingPolicy policy = _policyBuilder.build();
-
-    PrefixRange prefixRange = new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 24));
-
-    SearchRoutePoliciesQuestion question =
-        new SearchRoutePoliciesQuestion(
-            DEFAULT_DIRECTION,
-            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
-            EMPTY_CONSTRAINTS,
-            HOSTNAME,
-            policy.getName(),
-            Action.PERMIT,
-            false);
-    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
-
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
-
     BgpRoute inputRoute =
         BgpRoute.builder()
-            // the model will avoid the path containing the unsupported PrependAsPath statement
-            .setNetwork(Prefix.parse("1.0.0.0/24"))
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            // the solver will produce the lowest possible value for a field, which is 0.0.0.1 for
+            // the next-hop since it is constrained to not be 0.0.0.0
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
 
+    // the entire if statement is ignored since its guard contains an unsupported expression
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -1828,55 +1820,6 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
-  }
-
-  @Test
-  public void testUnsupportedStatementDeny() {
-    _policyBuilder.addStatement(
-        new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 16)))),
-            ImmutableList.of(
-                new ExcludeAsPath(new LiteralAsList(ImmutableList.of())),
-                new StaticStatement(Statements.ExitReject))));
-    RoutingPolicy policy = _policyBuilder.build();
-
-    PrefixRange prefixRange = new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 24));
-
-    SearchRoutePoliciesQuestion question =
-        new SearchRoutePoliciesQuestion(
-            DEFAULT_DIRECTION,
-            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
-            EMPTY_CONSTRAINTS,
-            HOSTNAME,
-            policy.getName(),
-            Action.DENY,
-            false);
-    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
-
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
-
-    BgpRoute inputRoute =
-        BgpRoute.builder()
-            // the model will avoid the path containing the unsupported PrependAsPath statement
-            .setNetwork(Prefix.parse("1.0.0.0/24"))
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP)
-            .setNextHopIp(Ip.parse("0.0.0.1"))
-            .build();
-
-    assertThat(
-        answer.getRows().getData(),
-        Matchers.contains(
-            allOf(
-                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
-                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
-                hasColumn(COL_ACTION, equalTo(DENY.toString()), Schema.STRING),
-                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, nullValue(), Schema.BGP_ROUTE),
-                hasColumn(COL_DIFF, nullValue(), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test

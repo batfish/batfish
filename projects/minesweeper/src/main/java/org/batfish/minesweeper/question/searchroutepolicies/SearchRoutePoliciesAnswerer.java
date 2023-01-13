@@ -311,9 +311,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     List<TransferReturn> relevantPaths =
         paths.stream()
             .filter(p -> p.getAccepted() == (_action == PERMIT))
-            // only search for models on paths where no unsupported route-policy feature was
-            // encountered
-            .filter(p -> !p.getFirst().getUnsupported())
             .collect(ImmutableList.toImmutableList());
     BDD inConstraints =
         routeConstraintsToBDD(
