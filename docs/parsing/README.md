@@ -22,6 +22,17 @@ have a good foundation and be better prepared to:
 * understand build errors and test failures you encounter while making changes
 * respond and react competently to review comments on your pull requests
 
+## States of config support and accompanying warnings:
+Based on how far implementation goes, a config line should be in one of the following states:
+
+1. Not parsed (in the grammar) at all: unrecognized.
+2. In the grammar, but never needs to be extracted: silently ignored, but we add [_null suffix](#ending-rules-in-_null) to indicate it.
+3. In the grammar, not implemented yet, but known to be wrong if used. In this case, we warn, with things like [todo(...)](../extraction/README.md#Unimplemented-warnings-in-extraction)  or [warn(...)](../extraction/README.md#Validating-and-converting-parse-tree-nodes-with-variable-text) at extraction time. See `todo` and `warn` functions in [BatfishListener.java](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/grammar/BatfishListener.java)
+4. In the grammar and extracted, but depending on how it's used may not be supported correctly. In that case, we warn during conversion (Warnings#redFlag typically) if we can tell that it's not supported. If we can't tell, we warn unconditionally (and try to come up with a better system).
+5. Fully implemented. No warnings.
+
+It is important to identify which state a line should be in before parsing, so that all unimplemented constructs have appropriate indicators. 
+
 ## Batfish DSL parsing
 
 Within the Batfish repository, Batfish DSL parsers are divided into several components. For the
@@ -628,6 +639,63 @@ tokens:
 2. `HOST_NAME` or `LOGIN_BANNER`
 
 This pattern would not be LL(1), so is to be avoided.
+
+#### Parser rule NEWLINE
+
+Also note that `ssy_host_name` and `ssy_login_banner` both end in `NEWLINE`. 
+A pattern to avoid is putting the `NEWLINE` in a parent node:
+
+```
+// BAD
+
+s_system
+:
+SYSTEM
+  (
+    ssy_host_name
+    | ssy_login_banner
+  ) NEWLINE
+;
+...
+ssy_login_banner: LOGIN_BANNER banner = string;
+...
+```
+This makes the parser more fragile and can break recovery in the event that a child rule is only partially recognized.
+
+#### Ending rules in `_null`
+If a rule is added with no current plans for further implementation (use in extraction or conversion), the rule should end in `_null`.
+This allows it to be captured by the SilentSyntaxListener.
+
+For example, a line `log syslog` has been added, which does not affect current Batfish models.
+To avoid creating a parse warning every time this line appears, parsing support is added for it.
+Since nothing in extraction needed to change, the rule was added with `_null`:
+
+```
+statement
+:
+  s_log_null
+  | s_static_routes
+  | s_system
+;
+
+s_log_null
+:
+  LOG SYSLOG NEWLINE
+;
+```
+
+Note that the `_null` indicator should always be added to the leaf rule. For example, if `log syslog` was to be ignored, but `log access-list ACL` was to implemented (in order to track the use of ACL) we would have something like:
+
+```
+s_log
+:
+  LOG
+  (
+    sl_access_list
+    | sl_syslog_null
+  )
+;
+```
 
 ### Grammar packages
 

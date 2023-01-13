@@ -312,8 +312,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
   /** Name of the generated static route resolution policy, implementing IOS resolution filtering */
   public static final String RESOLUTION_POLICY_NAME = "~RESOLUTION_POLICY~";
 
-  private static final int VLAN_NORMAL_MAX_CISCO = 1005;
+  /** Maximum VLAN number for which autostate is applied by default on IOS */
+  private static final int VLAN_NORMAL_MAX_CISCO = 4096;
 
+  /** Minimum VLAN number for which autostate is applied by default on IOS */
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
   public static String computeBgpDefaultRouteExportPolicyName(String vrf, String peer) {
@@ -2942,6 +2944,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
         CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE,
+        CiscoStructureUsage.INTERFACE_IP_DHCP_RELAY_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
         CiscoStructureUsage.IP_NAT_INSIDE_SOURCE,
         CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,

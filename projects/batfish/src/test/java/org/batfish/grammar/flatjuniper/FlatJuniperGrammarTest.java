@@ -4507,6 +4507,32 @@ public final class FlatJuniperGrammarTest {
             envWithRoute(c, brb.setCommunities(ImmutableSet.of(StandardCommunity.of(3L))).build()));
     assertThat(result.getBooleanValue(), equalTo(false));
 
+    /* COMMUNITY_COUNT_POLICY should accept routes with 2 or fewer communities. */
+    RoutingPolicy communityCountPolicy = c.getRoutingPolicies().get("COMMUNITY_COUNT_POLICY");
+    result =
+        communityCountPolicy.call(
+            envWithRoute(c, brb.setCommunities(ImmutableSet.of(StandardCommunity.of(1L))).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        communityCountPolicy.call(
+            envWithRoute(
+                c,
+                brb.setCommunities(
+                        ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L)))
+                    .build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        communityCountPolicy.call(
+            envWithRoute(
+                c,
+                brb.setCommunities(
+                        ImmutableSet.of(
+                            StandardCommunity.of(1L),
+                            StandardCommunity.of(2L),
+                            StandardCommunity.of(3L)))
+                    .build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
     /*
     FAMILY_POLICY should accept only inet6 (each set overwrites previous)
       set policy-options policy-statement FAMILY_POLICY term T1 from family inet
@@ -4683,6 +4709,33 @@ public final class FlatJuniperGrammarTest {
     result = tagPolicy.call(Environment.builder(c).setOutputRoute(srb.setTag(2L)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
     result = tagPolicy.call(Environment.builder(c).setOutputRoute(srb.setTag(3L)).build());
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    /*
+    AS_PATH_GROUP_POLICY should accept routes from as-path within as-path-group
+    set policy-options policy-statement AS_PATH_GROUP_POLICY term T1 from as-path-group AS_PATH_GROUP
+    */
+    RoutingPolicy asPathGroupPolicy = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY");
+    Bgpv4Route.Builder test =
+        Bgpv4Route.testBuilder()
+            .setAdmin(100)
+            .setNetwork(testPrefix)
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
+    result =
+        asPathGroupPolicy.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(1L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+
+    result =
+        asPathGroupPolicy.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(2L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+
+    result =
+        asPathGroupPolicy.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(3L)).build()));
     assertThat(result.getBooleanValue(), equalTo(false));
   }
 
@@ -5130,12 +5183,12 @@ public final class FlatJuniperGrammarTest {
     JuniperConfiguration c = parseJuniperConfig("name");
     assertThat(c.getMasterLogicalSystem().getPolicyStatements(), hasKeys("XX"));
     PolicyStatement ps = c.getMasterLogicalSystem().getPolicyStatements().get("XX");
-    assertThat(ps.getTerms(), hasKeys("10/8", "Dot.Name"));
+    assertThat(ps.getTerms(), hasKeys("10/8", "Colon:Name", "Dot.Name"));
 
     assertThat(
         ((ConcreteFirewallFilter) c.getMasterLogicalSystem().getFirewallFilters().get("filterName"))
             .getTerms(),
-        hasKeys("Dot.Name", "Slash/Name"));
+        hasKeys("Colon:Name", "Dot.Name", "Slash/Name"));
   }
 
   @Test
@@ -7095,11 +7148,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
     assertThat(c, hasInterface("xe-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getVlan(), 10);
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSourceAddress(), null);
+    assertNull(c.getDefaultVrf().getLayer2Vnis().get(5010).getSourceAddress());
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSrcVrf(), "default");
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getUdpPort(), 4789);
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getVlan(), 20);
-    assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress(), null);
+    assertNull(c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress());
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getSrcVrf(), "default");
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getUdpPort(), 4789);
   }

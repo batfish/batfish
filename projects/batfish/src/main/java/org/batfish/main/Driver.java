@@ -3,21 +3,15 @@ package org.batfish.main;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.core.UriBuilder;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishWorkerService;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CleanBatfishException;
-import org.batfish.common.CoordConsts;
 import org.batfish.common.LaunchResult;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
@@ -25,11 +19,7 @@ import org.batfish.common.Task;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.version.BatfishVersion;
 import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.jettison.JettisonFeature;
-import org.glassfish.jersey.server.ResourceConfig;
 
 @SuppressWarnings("restriction")
 public class Driver {
@@ -43,17 +33,9 @@ public class Driver {
 
   private static boolean _idle = true;
 
-  private static Date _lastPollFromCoordinator = new Date();
-
   private static BatfishLogger _mainLogger = null;
 
   private static Settings _mainSettings = null;
-
-  private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
-
-  private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30 secs
-
-  private static final int COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS = 1 * 1000; // 1 sec
 
   static Logger httpServerLogger = Logger.getLogger(HttpServer.class.getName());
 
@@ -69,19 +51,16 @@ public class Driver {
     return false;
   }
 
-  public static synchronized boolean getIdle() {
-    _lastPollFromCoordinator = new Date();
-    return _idle;
+  @Deprecated
+  @SuppressWarnings("unused")
+  public static void main(String[] args, BatfishLogger logger, boolean unused) {
+    main(args, logger);
   }
 
-  public static BatfishLogger getMainLogger() {
-    return _mainLogger;
-  }
-
-  public static void main(String[] args, BatfishLogger logger, boolean initLegacyWorkerService) {
+  public static void main(String[] args, BatfishLogger logger) {
     mainInit(args);
     _mainLogger = logger;
-    mainRun(initLegacyWorkerService);
+    mainRun();
   }
 
   private static void mainInit(String[] args) {
@@ -96,7 +75,7 @@ public class Driver {
     }
   }
 
-  private static void mainRun(boolean initLegacyWorkerService) {
+  private static void mainRun() {
     System.setErr(_mainLogger.getPrintStream());
     System.setOut(_mainLogger.getPrintStream());
     _mainSettings.setLogger(_mainLogger);
@@ -105,9 +84,6 @@ public class Driver {
         mainRunWorker();
         break;
       case WORKSERVICE:
-        if (initLegacyWorkerService) {
-          mainRunWorkService();
-        }
         break;
       default:
         System.err.println(
@@ -149,76 +125,8 @@ public class Driver {
         }
       };
 
-  private static void mainRunWorkService() {
-    String baseUrl = String.format("http://%s", _mainSettings.getServiceBindHost());
-    URI baseUri = UriBuilder.fromUri(baseUrl).port(_mainSettings.getServicePort()).build();
-    _mainLogger.debug(String.format("Starting server at %s\n", baseUri));
-    ResourceConfig rc = new ResourceConfig(Service.class).register(new JettisonFeature());
-    try {
-      HttpServer server;
-      server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
-      int selectedListenPort = server.getListeners().iterator().next().getPort();
-      if (_mainSettings.getCoordinatorRegister()) {
-        // this function does not return until registration succeeds
-        registerWithCoordinatorPersistent(selectedListenPort);
-      }
-
-      // sleep indefinitely, check for coordinator each time
-      while (true) {
-        Thread.sleep(COORDINATOR_CHECK_INTERVAL_MS);
-        /*
-         * every time we wake up, we check if the coordinator has polled us recently
-         * if not, re-register the service. the coordinator might have died and come back.
-         */
-        if (_mainSettings.getCoordinatorRegister()
-            && new Date().getTime() - _lastPollFromCoordinator.getTime()
-                > COORDINATOR_POLL_TIMEOUT_MS) {
-          // this function does not return until registration succeeds
-          registerWithCoordinatorPersistent(selectedListenPort);
-        }
-      }
-    } catch (ProcessingException e) {
-      String msg = "FATAL ERROR: " + e.getMessage() + "\n";
-      _mainLogger.error(msg);
-      System.exit(1);
-    } catch (Exception ex) {
-      String stackTrace = Throwables.getStackTraceAsString(ex);
-      _mainLogger.error(stackTrace);
-      System.exit(1);
-    }
-  }
-
   private static synchronized void makeIdle() {
     _idle = true;
-  }
-
-  private static boolean registerWithCoordinator(String poolRegUrl, int listenPort) {
-    Map<String, String> params = new HashMap<>();
-    params.put(CoordConsts.SVC_KEY_ADD_WORKER, _mainSettings.getServiceHost() + ":" + listenPort);
-    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
-
-    Object response = CoordinatorClient.talkToCoordinator(poolRegUrl, params, _mainLogger);
-    return response != null;
-  }
-
-  private static void registerWithCoordinatorPersistent(int listenPort)
-      throws InterruptedException {
-    boolean registrationSuccess;
-
-    String poolRegUrl =
-        String.format(
-            "http://%s:%s%s/%s",
-            _mainSettings.getCoordinatorHost(),
-            +_mainSettings.getCoordinatorPoolPort(),
-            CoordConsts.SVC_CFG_POOL_MGR,
-            CoordConsts.SVC_RSC_POOL_UPDATE);
-
-    do {
-      registrationSuccess = registerWithCoordinator(poolRegUrl, listenPort);
-      if (!registrationSuccess) {
-        Thread.sleep(COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS);
-      }
-    } while (!registrationSuccess);
   }
 
   @SuppressWarnings("deprecation")

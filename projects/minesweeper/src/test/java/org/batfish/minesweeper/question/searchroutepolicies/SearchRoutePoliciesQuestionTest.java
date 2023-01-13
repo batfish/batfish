@@ -19,6 +19,7 @@ public class SearchRoutePoliciesQuestionTest {
         BgpRouteConstraints.builder().setMed(LongSpace.of(3)).build(),
         null,
         null,
-        SearchRoutePoliciesQuestion.Action.DENY);
+        SearchRoutePoliciesQuestion.Action.DENY,
+        false);
   }
 }

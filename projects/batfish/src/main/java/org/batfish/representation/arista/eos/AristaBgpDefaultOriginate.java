@@ -1,22 +1,31 @@
 package org.batfish.representation.arista.eos;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.Serializable;
 import javax.annotation.Nullable;
 
 /** Configuration for origination of default routes */
 public final class AristaBgpDefaultOriginate implements Serializable {
+  /**
+   * Whether this neighbor is configured to originate a default route even if there isn't one in the
+   * main RIB.
+   */
   private final boolean _always;
+  /** Whether this neighbor is configured to originate a default route. */
   private final boolean _enabled;
+  /** If {@link #getEnabled()} is true, an optional route-map applied. */
   @Nullable private final String _routeMap;
 
-  public AristaBgpDefaultOriginate(boolean enabled, boolean always, @Nullable String routeMap) {
-    checkArgument(
-        enabled || (!always && routeMap == null),
-        "Cannot both be disabled and have always or routeMap set");
-    _always = always;
+  public static AristaBgpDefaultOriginate disabled() {
+    return new AristaBgpDefaultOriginate(false, false, null);
+  }
+
+  public static AristaBgpDefaultOriginate enabled(boolean always, @Nullable String routeMap) {
+    return new AristaBgpDefaultOriginate(true, always, routeMap);
+  }
+
+  private AristaBgpDefaultOriginate(boolean enabled, boolean always, @Nullable String routeMap) {
     _enabled = enabled;
+    _always = always;
     _routeMap = routeMap;
   }
 
@@ -28,8 +37,7 @@ public final class AristaBgpDefaultOriginate implements Serializable {
     return _enabled;
   }
 
-  @Nullable
-  public String getRouteMap() {
+  public @Nullable String getRouteMap() {
     return _routeMap;
   }
 }
