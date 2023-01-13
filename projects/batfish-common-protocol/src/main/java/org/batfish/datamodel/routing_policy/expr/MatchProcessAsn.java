@@ -35,16 +35,20 @@ public final class MatchProcessAsn extends BooleanExpr {
       EigrpRoute route = (EigrpRoute) environment.getOriginalRoute();
       return new Result(route.getProcessAsn() == _asn);
     } else if (environment.getOriginalRoute() instanceof ConnectedRoute) {
-      assert !environment
+      if (!environment
           .getRoutingPolicies()
-          .containsKey(environment.getEigrpProcess().getRedistributionPolicy());
+          .containsKey(environment.getEigrpProcess().getRedistributionPolicy())) {
+        return new Result(false);
+      }
       Configuration c =
           environment
               .getRoutingPolicies()
               .get(environment.getEigrpProcess().getRedistributionPolicy())
               .getOwner();
       String nextHopInterface = environment.getOriginalRoute().getNextHopInterface();
-      assert !c.getGeneratedEigrpInterfaceSettings().containsKey(nextHopInterface);
+      if (!c.getGeneratedEigrpInterfaceSettings().containsKey(nextHopInterface)) {
+        return new Result(false);
+      }
       return new Result(
           c.getGeneratedEigrpInterfaceSettings().get(nextHopInterface).getAsn() == _asn);
     }
