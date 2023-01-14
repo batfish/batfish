@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.LOOPBACK;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpMainRibIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
@@ -82,6 +83,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -476,13 +478,14 @@ public final class FrrConversionsTest {
 
     // generation policy exists
     assertTrue(viBgp.getOriginationSpace().containsPrefix(prefix));
+    assertTrue(viBgp.getUnconditionalNetworkStatements().contains(prefix));
 
     // the prefix is allowed to leave
-    AbstractRoute route = new ConnectedRoute(prefix, "dummy");
+    AbstractRoute route = KernelRoute.builder().setNetwork(prefix).build();
     assertTrue(
         viConfig
             .getRoutingPolicies()
-            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpMainRibIndependentNetworkPolicyName(DEFAULT_VRF_NAME))
             .process(
                 route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
@@ -521,12 +524,12 @@ public final class FrrConversionsTest {
     toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
 
     // the prefix is allowed to leave
-    AbstractRoute route = new ConnectedRoute(prefix, "dummy");
+    AbstractRoute route = KernelRoute.builder().setNetwork(prefix).build();
     Builder builder = Bgpv4Route.testBuilder();
     assertTrue(
         viConfig
             .getRoutingPolicies()
-            .get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpMainRibIndependentNetworkPolicyName(DEFAULT_VRF_NAME))
             .process(route, builder.setNetwork(route.getNetwork()), Direction.OUT));
     assertThat(builder, hasCommunities(community));
   }
@@ -557,13 +560,14 @@ public final class FrrConversionsTest {
 
     // generation policy exists
     assertFalse(viBgp.getOriginationSpace().containsPrefix(prefix));
+    assertFalse(viBgp.getUnconditionalNetworkStatements().contains(prefix));
 
     // the prefix is blocked
-    AbstractRoute route = new ConnectedRoute(prefix, "dummy");
+    AbstractRoute route = KernelRoute.builder().setNetwork(prefix).build();
     assertFalse(
         viConfig
             .getRoutingPolicies()
-            .get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpMainRibIndependentNetworkPolicyName(DEFAULT_VRF_NAME))
             .process(
                 route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }

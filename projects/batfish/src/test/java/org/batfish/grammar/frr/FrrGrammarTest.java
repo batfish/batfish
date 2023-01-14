@@ -4,6 +4,7 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
+import static org.batfish.datamodel.Names.generatedBgpMainRibIndependentNetworkPolicyName;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
@@ -86,6 +87,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -2055,6 +2057,34 @@ public class FrrGrammarTest {
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getNetworks(),
         equalTo(ImmutableMap.of(network, new BgpNetwork(network))));
+  }
+
+  @Test
+  public void testNetworkConversion() throws IOException {
+    parseLines("router bgp 10000", "network 10.0.0.0/24");
+    Configuration c = _config.toVendorIndependentConfigurations().get(0);
+    assertThat(
+        c.getDefaultVrf().getBgpProcess().getUnconditionalNetworkStatements(),
+        contains(Prefix.strict("10.0.0.0/24")));
+
+    String networkPolicyName = generatedBgpMainRibIndependentNetworkPolicyName(DEFAULT_VRF_NAME);
+
+    Prefix networkMatching = Prefix.strict("10.0.0.0/24");
+    Prefix networkNotMatching = Prefix.strict("10.0.1.0/24");
+
+    assertThat(c.getRoutingPolicies(), hasKey(networkPolicyName));
+    assertThat(
+        c.getDefaultVrf().getBgpProcess().getMainRibIndependentNetworkPolicy(),
+        equalTo(networkPolicyName));
+
+    KernelRoute routeNetworkMatch =
+        org.batfish.datamodel.KernelRoute.builder().setNetwork(networkMatching).build();
+    KernelRoute routeNetworkNoMatch =
+        org.batfish.datamodel.KernelRoute.builder().setNetwork(networkNotMatching).build();
+
+    RoutingPolicy networkPolicy = c.getRoutingPolicies().get(networkPolicyName);
+    assertTrue(networkPolicy.processReadOnly(routeNetworkMatch));
+    assertFalse(networkPolicy.processReadOnly(routeNetworkNoMatch));
   }
 
   @Test
