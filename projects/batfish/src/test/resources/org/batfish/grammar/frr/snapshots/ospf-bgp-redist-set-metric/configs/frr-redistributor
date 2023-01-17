@@ -20,7 +20,6 @@ interface swp1
 !
 router bgp 2
  bgp router-id 2.2.2.2
- network 10.2.2.2/32
  neighbor 10.1.1.1 remote-as 1
 !
 router ospf
