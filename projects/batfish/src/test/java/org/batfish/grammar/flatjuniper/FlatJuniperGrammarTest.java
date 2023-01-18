@@ -7578,6 +7578,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testApplyGroupsRoutingInstancesParsing() {
+    Configuration c = parseConfig("apply-groups-routing-instances");
+    assertThat(c, hasVrf("FOO", hasStaticRoutes(contains(hasPrefix(Prefix.parse("1.1.1.0/24"))))));
+  }
+
+  @Test
   public void testDefineStructureFromNested() throws IOException {
     String hostname = "define-structure-from-nested";
     Batfish batfish = getBatfishForConfigurationNames(hostname);

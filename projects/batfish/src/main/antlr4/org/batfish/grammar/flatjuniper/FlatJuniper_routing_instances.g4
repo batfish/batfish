@@ -731,7 +731,11 @@ rosrqnhc_tag
 
 s_routing_instances
 :
-   ROUTING_INSTANCES ri_named_routing_instance
+   ROUTING_INSTANCES
+   (
+      apply
+      | ri_named_routing_instance
+   )
 ;
 
 s_routing_options
