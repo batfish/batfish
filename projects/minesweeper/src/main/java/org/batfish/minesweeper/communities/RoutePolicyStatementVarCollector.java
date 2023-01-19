@@ -34,31 +34,43 @@ import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.utils.Tuple;
 
 /** Collect all community literals and regexes in a route-policy {@link Statement}. */
 @ParametersAreNonnullByDefault
 public class RoutePolicyStatementVarCollector
-    implements StatementVisitor<Set<CommunityVar>, Configuration> {
+    implements StatementVisitor<Set<CommunityVar>, Tuple<Set<String>, Configuration>> {
   @Override
   public Set<CommunityVar> visitBufferedStatement(
-      BufferedStatement bufferedStatement, Configuration arg) {
+      BufferedStatement bufferedStatement, Tuple<Set<String>, Configuration> arg) {
     return bufferedStatement.getStatement().accept(this, arg);
   }
 
   @Override
-  public Set<CommunityVar> visitCallStatement(CallStatement callStatement, Configuration arg) {
-    // no need to check the callee here because we already execute this visitor on every statement
-    // of every route policy (see Graph::findAllCommunities)
+  public Set<CommunityVar> visitCallStatement(
+      CallStatement callStatement, Tuple<Set<String>, Configuration> arg) {
+    if (arg.getFirst().contains(callStatement.getCalledPolicyName())) {
+      // If we have already visited this policy then don't visit again
+      return ImmutableSet.of();
+    }
+    // Otherwise update the set of seen policies and continue.
+    arg.getFirst().add(callStatement.getCalledPolicyName());
+
+    return visitAll(
+        arg.getSecond()
+            .getRoutingPolicies()
+            .get(callStatement.getCalledPolicyName())
+            .getStatements(),
+        arg);
+  }
+
+  @Override
+  public Set<CommunityVar> visitComment(Comment comment, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitComment(Comment comment, Configuration arg) {
-    return ImmutableSet.of();
-  }
-
-  @Override
-  public Set<CommunityVar> visitIf(If if1, Configuration arg) {
+  public Set<CommunityVar> visitIf(If if1, Tuple<Set<String>, Configuration> arg) {
     ImmutableSet.Builder<CommunityVar> builder = ImmutableSet.builder();
     return builder
         .addAll(if1.getGuard().accept(new BooleanExprVarCollector(), arg))
@@ -68,7 +80,8 @@ public class RoutePolicyStatementVarCollector
   }
 
   @Override
-  public Set<CommunityVar> visitPrependAsPath(PrependAsPath prependAsPath, Configuration arg) {
+  public Set<CommunityVar> visitPrependAsPath(
+      PrependAsPath prependAsPath, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
@@ -79,117 +92,130 @@ public class RoutePolicyStatementVarCollector
   }
 
   @Override
-  public Set<CommunityVar> visitExcludeAsPath(ExcludeAsPath excludeAsPath, Configuration arg) {
+  public Set<CommunityVar> visitExcludeAsPath(
+      ExcludeAsPath excludeAsPath, Tuple<Set<String>, Configuration> arg) {
     // if/when TransferBDD gets updated to support AS-path excluding, this will have to be updated
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitRemoveTunnelEncapsulationAttribute(
-      RemoveTunnelEncapsulationAttribute removeTunnelAttribute, Configuration arg) {
+      RemoveTunnelEncapsulationAttribute removeTunnelAttribute,
+      Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitSetAdministrativeCost(
-      SetAdministrativeCost setAdministrativeCost, Configuration arg) {
+      SetAdministrativeCost setAdministrativeCost, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetCommunities(SetCommunities setCommunities, Configuration arg) {
-    return setCommunities.getCommunitySetExpr().accept(new CommunitySetExprVarCollector(), arg);
+  public Set<CommunityVar> visitSetCommunities(
+      SetCommunities setCommunities, Tuple<Set<String>, Configuration> arg) {
+    return setCommunities
+        .getCommunitySetExpr()
+        .accept(new CommunitySetExprVarCollector(), arg.getSecond());
   }
 
   @Override
   public Set<CommunityVar> visitSetDefaultPolicy(
-      SetDefaultPolicy setDefaultPolicy, Configuration arg) {
+      SetDefaultPolicy setDefaultPolicy, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetEigrpMetric(SetEigrpMetric setEigrpMetric, Configuration arg) {
+  public Set<CommunityVar> visitSetEigrpMetric(
+      SetEigrpMetric setEigrpMetric, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetIsisLevel(SetIsisLevel setIsisLevel, Configuration arg) {
+  public Set<CommunityVar> visitSetIsisLevel(
+      SetIsisLevel setIsisLevel, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitSetIsisMetricType(
-      SetIsisMetricType setIsisMetricType, Configuration arg) {
+      SetIsisMetricType setIsisMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitSetLocalPreference(
-      SetLocalPreference setLocalPreference, Configuration arg) {
+      SetLocalPreference setLocalPreference, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetMetric(SetMetric setMetric, Configuration arg) {
+  public Set<CommunityVar> visitSetMetric(
+      SetMetric setMetric, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetNextHop(SetNextHop setNextHop, Configuration arg) {
+  public Set<CommunityVar> visitSetNextHop(
+      SetNextHop setNextHop, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetOrigin(SetOrigin setOrigin, Configuration arg) {
+  public Set<CommunityVar> visitSetOrigin(
+      SetOrigin setOrigin, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitSetOspfMetricType(
-      SetOspfMetricType setOspfMetricType, Configuration arg) {
+      SetOspfMetricType setOspfMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetTag(SetTag setTag, Configuration arg) {
+  public Set<CommunityVar> visitSetTag(SetTag setTag, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetDefaultTag(SetDefaultTag setDefaultTag, Configuration arg) {
+  public Set<CommunityVar> visitSetDefaultTag(
+      SetDefaultTag setDefaultTag, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitSetTunnelEncapsulationAttribute(
-      SetTunnelEncapsulationAttribute setTunnelAttribute, Configuration arg) {
+      SetTunnelEncapsulationAttribute setTunnelAttribute, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitSetVarMetricType(
-      SetVarMetricType setVarMetricType, Configuration arg) {
+      SetVarMetricType setVarMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitSetWeight(SetWeight setWeight, Configuration arg) {
+  public Set<CommunityVar> visitSetWeight(
+      SetWeight setWeight, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitStaticStatement(
-      StaticStatement staticStatement, Configuration arg) {
+      StaticStatement staticStatement, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitTraceableStatement(
-      TraceableStatement traceableStatement, Configuration arg) {
+      TraceableStatement traceableStatement, Tuple<Set<String>, Configuration> arg) {
     return visitAll(traceableStatement.getInnerStatements(), arg);
   }
 
-  public Set<CommunityVar> visitAll(List<Statement> statements, Configuration arg) {
+  public Set<CommunityVar> visitAll(
+      List<Statement> statements, Tuple<Set<String>, Configuration> arg) {
     return statements.stream()
         .flatMap(stmt -> stmt.accept(this, arg).stream())
         .collect(ImmutableSet.toImmutableSet());
