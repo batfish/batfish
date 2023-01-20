@@ -215,6 +215,7 @@ public class BgpProcess implements Serializable {
   private static final String PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER = "networkNextHopIpTieBreaker";
   private static final String PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER =
       "redistributeNextHopIpTieBreaker";
+  private static final String PROP_TRACKS = "tracks";
 
   @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
@@ -258,6 +259,8 @@ public class BgpProcess implements Serializable {
   private final @Nonnull NextHopIpTieBreaker _networkNextHopIpTieBreaker;
   private final @Nonnull NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
 
+  private @Nonnull Set<String> _tracks;
+
   /**
    * a list of prefixes from bgp network statements that will be unconditionally advertised if
    * _mainRibIndependentNetworkPolicy is set
@@ -296,6 +299,7 @@ public class BgpProcess implements Serializable {
     _networkNextHopIpTieBreaker = networkNextHopIpTieBreaker;
     _redistributeNextHopIpTieBreaker = redistributeNextHopIpTieBreaker;
     _unconditionalNetworkStatements = new ArrayList<>();
+    _tracks = ImmutableSet.of();
   }
 
   @JsonCreator
@@ -674,5 +678,16 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER)
   public @Nonnull NextHopIpTieBreaker getRedistributeNextHopIpTieBreaker() {
     return _redistributeNextHopIpTieBreaker;
+  }
+
+  /** Names of tracks for which routes must be re-evaluated against policy upon a state change. */
+  @JsonProperty(PROP_TRACKS)
+  public @Nonnull Set<String> getTracks() {
+    return _tracks;
+  }
+
+  @JsonProperty(PROP_TRACKS)
+  public void setTracks(@Nonnull Set<String> tracks) {
+    _tracks = tracks;
   }
 }

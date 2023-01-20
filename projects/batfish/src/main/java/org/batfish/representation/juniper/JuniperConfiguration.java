@@ -14,7 +14,6 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
-import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
 import static org.batfish.representation.juniper.EthernetSwitching.DEFAULT_VLAN_MEMBER;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
@@ -169,14 +168,13 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -186,6 +184,8 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
+import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -232,7 +232,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  public static @Nonnull String computeConditionRoutingPolicyName(@Nonnull String conditionName) {
+  public static @Nonnull String computeConditionTrackName(@Nonnull String conditionName) {
     return String.format("~CONDITION~%s", conditionName);
   }
 
@@ -445,6 +445,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setEbgpAdminCost(ebgpAdmin)
             .setIbgpAdminCost(ibgpAdmin)
             .build();
+
+    // TODO: something more granular
+    if (!_masterLogicalSystem.getConditions().isEmpty()) {
+      proc.setTracks(
+          _masterLogicalSystem.getConditions().keySet().stream()
+              .map(JuniperConfiguration::computeConditionTrackName)
+              .collect(ImmutableSet.toImmutableSet()));
+    }
+
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;
@@ -3031,31 +3040,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return new PacketPolicy(filter.getName(), builder.build(), new Return(Drop.instance()));
   }
 
-  private @Nonnull RoutingPolicy toRoutingPolicy(@Nonnull Condition condition) {
-    String name = computeConditionRoutingPolicyName(condition.getName());
-    RoutingPolicy rp = new RoutingPolicy(name, _c);
-    If top = new If();
-    top.getTrueStatements().add(ReturnTrue.toStaticStatement());
-    top.getFalseStatements().add(ReturnFalse.toStaticStatement());
-    top.setGuard(toBooleanExpr(condition));
-    rp.getStatements().add(top);
-    return rp;
-  }
-
   private @Nonnull BooleanExpr toBooleanExpr(@Nonnull Condition condition) {
-    IfRouteExists ifr = condition.getIfRouteExists();
-    if (ifr == null) {
-      // TODO: verify empty condition means true
-      return BooleanExprs.TRUE;
-    }
-    Prefix prefix = ifr.getPrefix();
-    if (prefix == null) {
-      // TODO: verify missing prefix means true
-      return BooleanExprs.TRUE;
-    }
-    return new RibIntersectsPrefixSpace(
-        MainRib.instance() /* TODO: handle table other than inet.0 */,
-        new ExplicitPrefixSet((new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
+    return new TrackSucceeded(computeConditionTrackName(condition.getName()));
   }
 
   @VisibleForTesting
@@ -3566,14 +3552,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // convert interfaces. Before policies because some policies depend on interfaces
     convertInterfaces();
 
-    // convert conditions to RoutingPolicy objects
+    // convert conditions to TrackMethod objects
     _masterLogicalSystem
         .getConditions()
         .forEach(
-            (conditionName, condition) -> {
-              RoutingPolicy rp = toRoutingPolicy(condition);
-              _c.getRoutingPolicies().put(rp.getName(), rp);
-            });
+            (conditionName, condition) ->
+                _c.getTrackingGroups()
+                    .put(computeConditionTrackName(conditionName), toTrackMethod(condition)));
 
     // convert policy-statements to RoutingPolicy objects
     for (Entry<String, PolicyStatement> e : _masterLogicalSystem.getPolicyStatements().entrySet()) {
@@ -3934,6 +3919,32 @@ public final class JuniperConfiguration extends VendorConfiguration {
     convertVxlan();
 
     return _c;
+  }
+
+  private @Nonnull TrackMethod toTrackMethod(Condition condition) {
+    IfRouteExists ifr = condition.getIfRouteExists();
+    if (ifr == null) {
+      // TODO: verify empty condition means true
+      return TrackMethods.alwaysTrue();
+    }
+    Prefix prefix = ifr.getPrefix();
+    if (prefix == null) {
+      // TODO: verify missing prefix means true
+      return TrackMethods.alwaysTrue();
+    }
+    String table = ifr.getTable();
+    String vrf;
+    if (table == null) {
+      vrf = Configuration.DEFAULT_VRF_NAME;
+    } else {
+      RibId ribId = toRibId(getHostname(), table, _w);
+      if (ribId == null) {
+        // unsupported RIB type, already warned in toRibId
+        return TrackMethods.alwaysTrue();
+      }
+      vrf = ribId.getVrfName();
+    }
+    return TrackMethods.route(prefix, ImmutableSet.of(), vrf);
   }
 
   private void applyBridgeDomainVlanIds(Map<String, Integer> irbVlanIds) {

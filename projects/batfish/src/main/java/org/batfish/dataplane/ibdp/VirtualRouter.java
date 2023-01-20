@@ -2,6 +2,7 @@ package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.alwaysFalse;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
@@ -38,13 +39,11 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AbstractRoute;
@@ -66,7 +65,6 @@ import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.HmmRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -76,7 +74,6 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
@@ -107,15 +104,12 @@ import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.MainRib;
-import org.batfish.datamodel.routing_policy.expr.RibExpr;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackMethodEvaluator;
-import org.batfish.datamodel.visitors.RibExprVisitor;
+import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
-import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.ConnectedRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
@@ -131,32 +125,6 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 
 public final class VirtualRouter {
-
-  /** Visitor that evaluates a {@link RibExpr}, yielding an {@link AbstractRib} . */
-  @ParametersAreNonnullByDefault
-  public static final class RibExprEvaluator
-      implements RibExprVisitor<GenericRibReadOnly<?>, Void>,
-          BiFunction<RibExpr, PrefixSpace, Boolean> {
-
-    public RibExprEvaluator(GenericRibReadOnly<?> mainRib) {
-      // TODO: cleaner construction, especially when multiple RIBs might be required
-      _mainRib = mainRib;
-    }
-
-    @Nonnull
-    @Override
-    public GenericRibReadOnly<?> visitMainRib(MainRib mainRib, Void arg) {
-      return _mainRib;
-    }
-
-    private final GenericRibReadOnly<?> _mainRib;
-
-    @Override
-    public Boolean apply(RibExpr ribExpr, PrefixSpace prefixSpace) {
-      GenericRibReadOnly<?> rib = ribExpr.accept(this, null);
-      return rib.intersectsPrefixSpace(prefixSpace);
-    }
-  }
 
   /** The BGP routing process. {@code null} if BGP is not configured for this VRF */
   @Nullable BgpRoutingProcess _bgpRoutingProcess;
@@ -250,8 +218,6 @@ public final class VirtualRouter {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
-  @Nonnull private final RibExprEvaluator _ribExprEvaluator;
-
   @Nonnull
   private final ResolutionRestriction<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
 
@@ -286,7 +252,6 @@ public final class VirtualRouter {
           new BgpRoutingProcess(
               _vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY, _prefixTracer);
     }
-    _ribExprEvaluator = new RibExprEvaluator(_mainRib);
     _hmmRoutes = ImmutableList.of();
     _kernelConditionalRoutes = ImmutableList.of();
   }
@@ -435,7 +400,7 @@ public final class VirtualRouter {
         .map(
             route -> {
               AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
-              boolean accept = policy.process(route, builder, IN, _ribExprEvaluator);
+              boolean accept = policy.process(route, builder, IN, alwaysFalse());
               return accept ? new AnnotatedRoute<AbstractRoute>(builder.build(), _name) : null;
             })
         .filter(Objects::nonNull)
@@ -465,13 +430,15 @@ public final class VirtualRouter {
    *
    * @param topologyContext The various network topologies
    */
-  void initForEgpComputationWithNewTopology(TopologyContext topologyContext) {
+  void initForEgpComputationWithNewTopology(
+      TopologyContext topologyContext, TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     assert _mainRibRouteDeltaBuilder.isEmpty(); // or else invariant is not maintained
 
     initQueuesAndDeltaBuilders(topologyContext);
     if (_bgpRoutingProcess != null) {
-      // If the process exists, update the topology
+      // If the process exists, update the topology and BGP track states
       _bgpRoutingProcess.updateTopology(topologyContext.getBgpTopology());
+      _bgpRoutingProcess.updateWatchedTrackStates(trackMethodEvaluatorProvider);
     }
   }
 
@@ -567,7 +534,7 @@ public final class VirtualRouter {
           policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
-              gr, generationPolicy, _mainRib.getTypedRoutes(), _ribExprEvaluator);
+              gr, generationPolicy, _mainRib.getTypedRoutes(), null);
 
       if (grb != null) {
         // Routes have been changed
@@ -1379,7 +1346,7 @@ public final class VirtualRouter {
     importRib(_ripInternalRib, _ripInternalStagingRib);
   }
 
-  /** Re-initialize RIBs (at the start of each iteration). */
+  /** Re-initialize RIBs (at the start of each iteration) and process-specific track states. */
   void reinitForNewIteration() {
     /*
      * RIBs not read from can just be re-initialized
@@ -1503,7 +1470,7 @@ public final class VirtualRouter {
                   ra -> {
                     AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
                     AbstractRouteBuilder<?, ?> routeBuilder = annotatedRoute.getRoute().toBuilder();
-                    if (policy.process(annotatedRoute, routeBuilder, IN, _ribExprEvaluator)) {
+                    if (policy.process(annotatedRoute, routeBuilder, IN, alwaysFalse())) {
                       // Preserve original route's source VRF
                       return ra.toBuilder()
                           .setRoute(

@@ -1,13 +1,13 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionTrackName;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 
 /** Represents a "from condition" line in a {@link PsTerm} */
 @ParametersAreNonnullByDefault
@@ -23,7 +23,7 @@ public final class PsFromCondition extends PsFrom {
 
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
-    return new CallExpr(computeConditionRoutingPolicyName(_name));
+    return new TrackSucceeded(computeConditionTrackName(_name));
   }
 
   @Override
