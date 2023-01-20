@@ -742,6 +742,7 @@ public final class ConvertConfigurationJobTest {
         w.getRedFlagWarnings(),
         containsInAnyOrder(
             hasText(
-                "Removing reference to undefined track 'absent' in BGP process for vrf 'default'")));
+                "Removing reference to undefined track 'absent' in BGP process for vrf"
+                    + " 'default'")));
   }
 }
