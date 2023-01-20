@@ -11,7 +11,6 @@ import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
@@ -24,11 +23,9 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.utils.Tuple;
@@ -139,14 +136,10 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitRibIntersectsPrefixSpace() {
-    RibIntersectsPrefixSpace expr =
-        new RibIntersectsPrefixSpace(
-            MainRib.instance(), new ExplicitPrefixSet(new PrefixSpace(ImmutableList.of())));
-
+  public void testVisitTrackSucceeded() {
     assertThat(
-        _varCollector.visitRibIntersectsPrefixSpace(
-            expr, new Tuple<>(new HashSet<>(), _baseConfig)),
+        _varCollector.visitTrackSucceeded(
+            new TrackSucceeded("foo"), new Tuple<>(new HashSet<>(), _baseConfig)),
         empty());
   }
 
