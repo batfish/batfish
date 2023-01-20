@@ -30,6 +30,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -55,6 +56,8 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -64,6 +67,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.job.ConvertConfigurationJob.CollectIpSpaceReferences;
 import org.batfish.representation.cisco.CiscoConfiguration;
@@ -703,5 +707,41 @@ public final class ConvertConfigurationJobTest {
 
     // Matching defined structure, should not fail assertion
     assertVendorStructureIdsValid(c, vc, w);
+  }
+
+  @Test
+  public void testRemoveUndefinedTrackReferences() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess proc =
+        BgpProcess.builder()
+            .setRouterId(Ip.ZERO)
+            .setEbgpAdminCost(1)
+            .setIbgpAdminCost(1)
+            .setLocalAdminCost(1)
+            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .build();
+    v.setBgpProcess(proc);
+    proc.setTracks(ImmutableSet.of("absent", "present"));
+    c.setTrackingGroups(ImmutableMap.of("present", TrackMethods.alwaysTrue()));
+
+    Warnings w = new Warnings(false, true, false);
+    VendorConfiguration vc = baseVendorConfig();
+    finalizeConfiguration(c, vc, w);
+
+    assertThat(proc.getTracks(), contains("present"));
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText(
+                "Removing reference to undefined track 'absent' in BGP process for vrf 'default'")));
   }
 }
