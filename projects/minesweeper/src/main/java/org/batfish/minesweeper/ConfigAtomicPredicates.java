@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -185,27 +184,5 @@ public class ConfigAtomicPredicates {
 
   public AsPathRegexAtomicPredicates getAsPathRegexAtomicPredicates() {
     return _asPathRegexAtomicPredicates;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof ConfigAtomicPredicates)) {
-      return false;
-    }
-    ConfigAtomicPredicates other = (ConfigAtomicPredicates) o;
-    return Objects.equals(_configuration, other._configuration)
-        && Objects.equals(
-            _standardCommunityAtomicPredicates, other._standardCommunityAtomicPredicates)
-        && Objects.equals(_nonStandardCommunityLiterals, other._nonStandardCommunityLiterals)
-        && Objects.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        _configuration,
-        _standardCommunityAtomicPredicates,
-        _nonStandardCommunityLiterals,
-        _asPathRegexAtomicPredicates);
   }
 }

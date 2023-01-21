@@ -1,14 +1,13 @@
 package org.batfish.minesweeper;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import dk.brics.automaton.Automaton;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -62,8 +61,8 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   public RegexAtomicPredicates(RegexAtomicPredicates<T> other) {
     _regexes = new HashSet<>(other._regexes);
     _numAtomicPredicates = other._numAtomicPredicates;
-    _regexAtomicPredicates = new HashMap<>(other._regexAtomicPredicates);
-    _atomicPredicateAutomata = new HashMap<>(other._atomicPredicateAutomata);
+    _regexAtomicPredicates = other._regexAtomicPredicates;
+    _atomicPredicateAutomata = other._atomicPredicateAutomata;
   }
 
   private void initAtomicPredicates() {
@@ -109,16 +108,20 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
     // assign a unique integer to each automaton.
     // create a mapping from each integer to its corresponding automaton
     // and a mapping from each regex to its corresponding set of integers.
-    _atomicPredicateAutomata = new HashMap<>();
+    ImmutableMap.Builder<Integer, Automaton> builder = ImmutableMap.builder();
     SetMultimap<Integer, T> iToR = HashMultimap.create();
     int i = 0;
     for (Automaton a : mmap.keySet()) {
-      _atomicPredicateAutomata.put(i, a);
+      builder.put(i, a);
       iToR.putAll(i, mmap.get(a));
       i++;
     }
     _numAtomicPredicates = i;
-    _regexAtomicPredicates = Multimaps.asMap(Multimaps.invertFrom(iToR, HashMultimap.create()));
+    _atomicPredicateAutomata = builder.build();
+    _regexAtomicPredicates =
+        ImmutableMap.<T, Set<Integer>>builder()
+            .putAll(Multimaps.asMap(Multimaps.invertFrom(iToR, HashMultimap.create())))
+            .build();
   }
 
   public int getNumAtomicPredicates() {
@@ -130,6 +133,11 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
     return _atomicPredicateAutomata;
   }
 
+  protected void setAtomicPredicateAutomata(Map<Integer, Automaton> apAutomata) {
+    _atomicPredicateAutomata =
+        ImmutableMap.<Integer, Automaton>builder().putAll(apAutomata).build();
+  }
+
   @Nonnull
   public Set<T> getRegexes() {
     return _regexes;
@@ -138,23 +146,5 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   @Nonnull
   public Map<T, Set<Integer>> getRegexAtomicPredicates() {
     return _regexAtomicPredicates;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof RegexAtomicPredicates)) {
-      return false;
-    }
-    RegexAtomicPredicates<?> other = (RegexAtomicPredicates<?>) o;
-    return Objects.equals(_regexes, other._regexes)
-        && _numAtomicPredicates == other._numAtomicPredicates
-        && Objects.equals(_regexAtomicPredicates, other._regexAtomicPredicates)
-        && Objects.equals(_atomicPredicateAutomata, other._atomicPredicateAutomata);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        _regexes, _numAtomicPredicates, _regexAtomicPredicates, _atomicPredicateAutomata);
   }
 }

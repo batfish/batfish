@@ -182,7 +182,6 @@ public class ConfigAtomicPredicatesTest {
 
     ConfigAtomicPredicates copy = new ConfigAtomicPredicates(cap);
 
-    assertEquals(cap, copy);
     assertNotSame(
         cap.getStandardCommunityAtomicPredicates(), copy.getStandardCommunityAtomicPredicates());
     assertNotSame(cap.getNonStandardCommunityLiterals(), copy.getNonStandardCommunityLiterals());

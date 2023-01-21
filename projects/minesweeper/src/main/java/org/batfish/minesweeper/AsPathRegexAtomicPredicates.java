@@ -2,6 +2,7 @@ package org.batfish.minesweeper;
 
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class AsPathRegexAtomicPredicates extends RegexAtomicPredicates<SymbolicA
     if (prepended.isEmpty()) {
       return;
     }
-    Map<Integer, Automaton> apAutomata = this.getAtomicPredicateAutomata();
+    Map<Integer, Automaton> apAutomata = new HashMap<>(this.getAtomicPredicateAutomata());
     List<String> prepends =
         prepended.stream().map(l -> Long.toString(l)).collect(Collectors.toList());
     // we separately consider the case of prepending to an empty AS-path and a non-empty one, since
@@ -60,6 +61,7 @@ public class AsPathRegexAtomicPredicates extends RegexAtomicPredicates<SymbolicA
               .union(iAPrependPlus)
               .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton()));
     }
+    this.setAtomicPredicateAutomata(apAutomata);
   }
 
   /**
@@ -94,10 +96,11 @@ public class AsPathRegexAtomicPredicates extends RegexAtomicPredicates<SymbolicA
 
     Automaton constraint = positiveConstraints.intersection(negativeConstraints.complement());
 
-    Map<Integer, Automaton> apAutomata = this.getAtomicPredicateAutomata();
+    Map<Integer, Automaton> apAutomata = new HashMap<>(this.getAtomicPredicateAutomata());
     for (Integer i : apAutomata.keySet()) {
       Automaton iA = apAutomata.get(i);
       apAutomata.replace(i, iA.intersection(constraint));
     }
+    this.setAtomicPredicateAutomata(apAutomata);
   }
 }

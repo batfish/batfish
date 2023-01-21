@@ -1,7 +1,6 @@
 package org.batfish.minesweeper;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -29,7 +28,9 @@ public class AsPathRegexAtomicPredicatesTest {
     RegexAtomicPredicates<SymbolicAsPathRegex> orig =
         new RegexAtomicPredicates<>(asPathRegexes, SymbolicAsPathRegex.ALL_AS_PATHS);
 
-    assertEquals(orig, asPathAPs);
+    assertEquals(orig.getAtomicPredicateAutomata(), asPathAPs.getAtomicPredicateAutomata());
+    assertEquals(orig.getRegexAtomicPredicates(), asPathAPs.getRegexAtomicPredicates());
+    assertEquals(orig.getNumAtomicPredicates(), asPathAPs.getNumAtomicPredicates());
   }
 
   @Test
@@ -44,10 +45,9 @@ public class AsPathRegexAtomicPredicatesTest {
 
     AsPathRegexAtomicPredicates copy = new AsPathRegexAtomicPredicates(asPathAPs);
 
-    assertEquals(asPathAPs, copy);
-    assertNotSame(asPathAPs.getRegexes(), copy.getRegexes());
-    assertNotSame(asPathAPs.getRegexAtomicPredicates(), copy.getRegexAtomicPredicates());
-    assertNotSame(asPathAPs.getAtomicPredicateAutomata(), copy.getAtomicPredicateAutomata());
+    assertEquals(asPathAPs.getRegexes(), copy.getRegexes());
+    assertEquals(asPathAPs.getRegexAtomicPredicates(), copy.getRegexAtomicPredicates());
+    assertEquals(asPathAPs.getAtomicPredicateAutomata(), copy.getAtomicPredicateAutomata());
   }
 
   @Test
@@ -70,7 +70,7 @@ public class AsPathRegexAtomicPredicatesTest {
 
     AsPathRegexAtomicPredicates copy1 = new AsPathRegexAtomicPredicates(twoAPs);
     copy1.prependAPs(ImmutableList.of());
-    assertEquals(twoAPs, copy1);
+    assertEquals(twoAPs.getAtomicPredicateAutomata(), copy1.getAtomicPredicateAutomata());
 
     AsPathRegexAtomicPredicates copy2 = new AsPathRegexAtomicPredicates(twoAPs);
     copy2.prependAPs(ImmutableList.of(10L, 20L));
@@ -91,7 +91,7 @@ public class AsPathRegexAtomicPredicatesTest {
 
     AsPathRegexAtomicPredicates copy1 = new AsPathRegexAtomicPredicates(twoAPs);
     copy1.constrainAPs(new RegexConstraints());
-    assertEquals(twoAPs, copy1);
+    assertEquals(twoAPs.getAtomicPredicateAutomata(), copy1.getAtomicPredicateAutomata());
 
     AsPathRegexAtomicPredicates copy2 = new AsPathRegexAtomicPredicates(twoAPs);
     copy2.constrainAPs(
