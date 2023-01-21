@@ -34,32 +34,44 @@ import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.utils.Tuple;
 
 /** Collect all AS-path regexes in a route-policy {@link Statement}. */
 @ParametersAreNonnullByDefault
 public class RoutePolicyStatementAsPathCollector
-    implements StatementVisitor<Set<SymbolicAsPathRegex>, Configuration> {
+    implements StatementVisitor<Set<SymbolicAsPathRegex>, Tuple<Set<String>, Configuration>> {
   @Override
   public Set<SymbolicAsPathRegex> visitBufferedStatement(
-      BufferedStatement bufferedStatement, Configuration arg) {
+      BufferedStatement bufferedStatement, Tuple<Set<String>, Configuration> arg) {
     return bufferedStatement.getStatement().accept(this, arg);
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitCallStatement(
-      CallStatement callStatement, Configuration arg) {
-    // no need to check the callee here because we already execute this visitor on every statement
-    // of every route policy (see Graph::findAsPathRegexes)
+      CallStatement callStatement, Tuple<Set<String>, Configuration> arg) {
+    if (arg.getFirst().contains(callStatement.getCalledPolicyName())) {
+      // If we have already visited this policy then don't visit again
+      return ImmutableSet.of();
+    }
+    // Otherwise update the set of seen policies and recurse.
+    arg.getFirst().add(callStatement.getCalledPolicyName());
+
+    return visitAll(
+        arg.getSecond()
+            .getRoutingPolicies()
+            .get(callStatement.getCalledPolicyName())
+            .getStatements(),
+        arg);
+  }
+
+  @Override
+  public Set<SymbolicAsPathRegex> visitComment(
+      Comment comment, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitComment(Comment comment, Configuration arg) {
-    return ImmutableSet.of();
-  }
-
-  @Override
-  public Set<SymbolicAsPathRegex> visitIf(If if1, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitIf(If if1, Tuple<Set<String>, Configuration> arg) {
     ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
     return builder
         .addAll(if1.getGuard().accept(new BooleanExprAsPathCollector(), arg))
@@ -70,7 +82,7 @@ public class RoutePolicyStatementAsPathCollector
 
   @Override
   public Set<SymbolicAsPathRegex> visitPrependAsPath(
-      PrependAsPath prependAsPath, Configuration arg) {
+      PrependAsPath prependAsPath, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
@@ -84,120 +96,128 @@ public class RoutePolicyStatementAsPathCollector
 
   @Override
   public Set<SymbolicAsPathRegex> visitExcludeAsPath(
-      ExcludeAsPath excludeAsPath, Configuration arg) {
+      ExcludeAsPath excludeAsPath, Tuple<Set<String>, Configuration> arg) {
     // if/when TransferBDD gets updated to support AS-path excluding, this will have to be updated
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitRemoveTunnelEncapsulationAttribute(
-      RemoveTunnelEncapsulationAttribute removeTunnelAttribute, Configuration arg) {
+      RemoveTunnelEncapsulationAttribute removeTunnelAttribute,
+      Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetAdministrativeCost(
-      SetAdministrativeCost setAdministrativeCost, Configuration arg) {
+      SetAdministrativeCost setAdministrativeCost, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetCommunities(
-      SetCommunities setCommunities, Configuration arg) {
+      SetCommunities setCommunities, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetDefaultPolicy(
-      SetDefaultPolicy setDefaultPolicy, Configuration arg) {
+      SetDefaultPolicy setDefaultPolicy, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetEigrpMetric(
-      SetEigrpMetric setEigrpMetric, Configuration arg) {
+      SetEigrpMetric setEigrpMetric, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitSetIsisLevel(SetIsisLevel setIsisLevel, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitSetIsisLevel(
+      SetIsisLevel setIsisLevel, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetIsisMetricType(
-      SetIsisMetricType setIsisMetricType, Configuration arg) {
+      SetIsisMetricType setIsisMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetLocalPreference(
-      SetLocalPreference setLocalPreference, Configuration arg) {
+      SetLocalPreference setLocalPreference, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitSetMetric(SetMetric setMetric, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitSetMetric(
+      SetMetric setMetric, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitSetNextHop(SetNextHop setNextHop, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitSetNextHop(
+      SetNextHop setNextHop, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitSetOrigin(SetOrigin setOrigin, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitSetOrigin(
+      SetOrigin setOrigin, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetOspfMetricType(
-      SetOspfMetricType setOspfMetricType, Configuration arg) {
+      SetOspfMetricType setOspfMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitSetTag(SetTag setTag, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitSetTag(
+      SetTag setTag, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetDefaultTag(
-      SetDefaultTag setDefaultTag, Configuration arg) {
+      SetDefaultTag setDefaultTag, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetTunnelEncapsulationAttribute(
-      SetTunnelEncapsulationAttribute setTunnelAttribute, Configuration arg) {
+      SetTunnelEncapsulationAttribute setTunnelAttribute, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitSetVarMetricType(
-      SetVarMetricType setVarMetricType, Configuration arg) {
+      SetVarMetricType setVarMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitSetWeight(SetWeight setWeight, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitSetWeight(
+      SetWeight setWeight, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitStaticStatement(
-      StaticStatement staticStatement, Configuration arg) {
+      StaticStatement staticStatement, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<SymbolicAsPathRegex> visitTraceableStatement(
-      TraceableStatement traceableStatement, Configuration arg) {
+      TraceableStatement traceableStatement, Tuple<Set<String>, Configuration> arg) {
     return visitAll(traceableStatement.getInnerStatements(), arg);
   }
 
-  public Set<SymbolicAsPathRegex> visitAll(List<Statement> statements, Configuration arg) {
+  public Set<SymbolicAsPathRegex> visitAll(
+      List<Statement> statements, Tuple<Set<String>, Configuration> arg) {
     return statements.stream()
         .flatMap(stmt -> stmt.accept(this, arg).stream())
         .collect(ImmutableSet.toImmutableSet());

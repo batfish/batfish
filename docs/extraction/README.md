@@ -291,3 +291,25 @@ parse tree nodes (subclasses of `ParserRuleContext`). This has multiple benefits
 * If the type of a child node (or alias of a child node) changes, the converter-calling code will no
   longer compile. You will immediately see where changes need to be made, rather than having to wait
   for a test to fail, or worse - something to fail in production.
+
+### Unimplemented warnings in extraction
+Sometimes there are cases where a line has been added to the grammar, but it still needs further implementation. 
+In these cases, we still want to leave a warning for this line. 
+
+A generic `todo` in extraction automatically adds an unimplemented warning:
+
+```
+  @Override
+  public void exitS_line(S_lineContext ctx) {
+    todo(ctx);
+  }
+```
+
+or alternatively, add a custom warning, to give further details:
+
+```
+...
+warn(ctx, "This line is unimplemented for reasons");
+...
+```
+

@@ -47,13 +47,16 @@ Do the following before doing anything
 1. Install Java 11 and corresponding debug symbols
     - `sudo apt install openjdk-11-jdk openjdk-11-dbg`
 
+1. If you don't already have it, install `wget`:
+    - `sudo apt-get install wget`
+
 2. If you don't already have it, install Bazelisk.
     - Open the [bazelisk release page](https://github.com/bazelbuild/bazelisk/releases)
     - Copy the link for the `bazelisk-linux-amd64` release asset for the latest version
     - Download and install bazelisk using the copied link (example url below is for `v1.12.2`, but
       you should use the latest version):
 
-      `curl -s https://github.com/bazelbuild/bazelisk/releases/download/v1.12.2/bazelisk-linux-amd64 | sudo tee /usr/local/bin/bazelisk`
+      `wget -O- https://github.com/bazelbuild/bazelisk/releases/download/v1.12.2/bazelisk-linux-amd64 | sudo tee /usr/local/bin/bazelisk > /dev/null`
     - Make bazelisk executable:
 
       `sudo chmod +x /usr/local/bin/bazelisk`

@@ -4,7 +4,12 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
+import static org.batfish.datamodel.Names.generatedBgpMainRibIndependentNetworkPolicyName;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
@@ -86,6 +91,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -101,7 +107,9 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -2058,6 +2066,42 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testNetworkConversion() throws IOException {
+    parseLines("router bgp 10000", "network 10.0.0.0/24");
+    Configuration c = _config.toVendorIndependentConfigurations().get(0);
+    assertThat(
+        c.getDefaultVrf().getBgpProcess().getUnconditionalNetworkStatements(),
+        contains(Prefix.strict("10.0.0.0/24")));
+
+    String networkPolicyName = generatedBgpMainRibIndependentNetworkPolicyName(DEFAULT_VRF_NAME);
+
+    Prefix networkMatching = Prefix.strict("10.0.0.0/24");
+    Prefix networkNotMatching = Prefix.strict("10.0.1.0/24");
+
+    assertThat(c.getRoutingPolicies(), hasKey(networkPolicyName));
+    assertThat(
+        c.getDefaultVrf().getBgpProcess().getMainRibIndependentNetworkPolicy(),
+        equalTo(networkPolicyName));
+
+    KernelRoute routeNetworkMatch =
+        org.batfish.datamodel.KernelRoute.builder().setNetwork(networkMatching).build();
+    KernelRoute routeNetworkNoMatch =
+        org.batfish.datamodel.KernelRoute.builder().setNetwork(networkNotMatching).build();
+
+    Bgpv4Route.Builder bgpRoute = Bgpv4Route.testBuilder().setNetwork(networkMatching);
+    RoutingPolicy networkPolicy = c.getRoutingPolicies().get(networkPolicyName);
+    assertTrue(
+        networkPolicy.processBgpRoute(
+            routeNetworkMatch, bgpRoute, null, Environment.Direction.OUT, null));
+    // check properties set by the policy
+    assertThat(
+        bgpRoute.build(),
+        isBgpv4RouteThat(allOf(hasWeight(32768), hasNextHop(NextHopDiscard.instance()))));
+
+    assertFalse(networkPolicy.processReadOnly(routeNetworkNoMatch));
+  }
+
+  @Test
   public void testBgpNetworkWithRouteMap() {
     Prefix network = Prefix.parse("10.0.0.0/8");
     parseLines("router bgp 10000", "network 10.0.0.0/8 route-map FOO");
@@ -2948,6 +2992,42 @@ public class FrrGrammarTest {
     assertThat(
         dp.getRibs().get("frr-t2-r2", DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.8.0.0/20")))));
+  }
+
+  @Test
+  public void testMainRibIndependentNetworkStatements() throws IOException {
+    String snapshotName = "main-rib-independent-network-statement";
+    List<String> configurationNames = ImmutableList.of("frr-network");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+
+    assertThat(dp.getRibs().get("frr-network", DEFAULT_VRF_NAME).getRoutes(), empty());
+
+    assertThat(
+        dp.getBgpRoutes().get("frr-network", DEFAULT_VRF_NAME),
+        containsInAnyOrder(
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(Prefix.parse("10.2.2.2/32")),
+                    hasWeight(32768),
+                    hasNextHop(NextHopDiscard.instance()),
+                    hasMetric(0L),
+                    isNonRouting(true))),
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(Prefix.parse("10.3.3.3/32")),
+                    hasWeight(32768),
+                    hasNextHop(NextHopDiscard.instance()),
+                    hasMetric(10000L),
+                    isNonRouting(true)))));
   }
 
   @Test

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
 import java.util.Set;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -26,6 +27,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.utils.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,7 +63,8 @@ public class BooleanExprAsPathCollectorTest {
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
 
-    Set<SymbolicAsPathRegex> result = _collector.visitConjunction(c, _baseConfig);
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitConjunction(c, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected =
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2));
@@ -78,7 +81,8 @@ public class BooleanExprAsPathCollectorTest {
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
 
-    Set<SymbolicAsPathRegex> result = _collector.visitConjunctionChain(cc, _baseConfig);
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitConjunctionChain(cc, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected =
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2));
@@ -95,7 +99,8 @@ public class BooleanExprAsPathCollectorTest {
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
 
-    Set<SymbolicAsPathRegex> result = _collector.visitDisjunction(d, _baseConfig);
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitDisjunction(d, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected =
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2));
@@ -112,7 +117,8 @@ public class BooleanExprAsPathCollectorTest {
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
 
-    Set<SymbolicAsPathRegex> result = _collector.visitFirstMatchChain(fmc, _baseConfig);
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitFirstMatchChain(fmc, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected =
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2));
@@ -125,7 +131,8 @@ public class BooleanExprAsPathCollectorTest {
 
     MatchAsPath matchAsPath = MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1));
 
-    Set<SymbolicAsPathRegex> result = _collector.visitMatchAsPath(matchAsPath, _baseConfig);
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitMatchAsPath(matchAsPath, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected = ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1));
 
@@ -148,7 +155,8 @@ public class BooleanExprAsPathCollectorTest {
 
     LegacyMatchAsPath matchAsPath = new LegacyMatchAsPath(new NamedAsPathSet(asPathName));
 
-    Set<SymbolicAsPathRegex> result = _collector.visitMatchLegacyAsPath(matchAsPath, _baseConfig);
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitMatchLegacyAsPath(matchAsPath, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected =
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2));
@@ -166,7 +174,8 @@ public class BooleanExprAsPathCollectorTest {
                 AsPathMatchAny.of(
                     ImmutableList.of(AsPathMatchRegex.of(ASPATH1), AsPathMatchRegex.of(ASPATH2)))));
 
-    Set<SymbolicAsPathRegex> result = _collector.visitNot(n, _baseConfig);
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitNot(n, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected =
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2));
@@ -198,7 +207,8 @@ public class BooleanExprAsPathCollectorTest {
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(asPath4)),
                 ImmutableList.of())));
 
-    Set<SymbolicAsPathRegex> result = _collector.visitWithEnvironmentExpr(wee, _baseConfig);
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitWithEnvironmentExpr(wee, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected =
         ImmutableSet.of(ASPATH1, ASPATH2, asPath3, asPath4).stream()
