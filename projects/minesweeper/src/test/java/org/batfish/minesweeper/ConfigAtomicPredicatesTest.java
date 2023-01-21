@@ -197,7 +197,8 @@ public class ConfigAtomicPredicatesTest {
     assertNotSame(cap.getNonStandardCommunityLiterals(), copy.getNonStandardCommunityLiterals());
     assertNotSame(cap.getAsPathRegexAtomicPredicates(), copy.getAsPathRegexAtomicPredicates());
   }
-  
+
+  @Test
   public void testCallStatement() {
 
     RoutingPolicy firstPolicy =

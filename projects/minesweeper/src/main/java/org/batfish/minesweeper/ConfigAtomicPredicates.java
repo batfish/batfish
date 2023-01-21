@@ -62,6 +62,24 @@ public class ConfigAtomicPredicates {
    * @param router the name of the router whose configuration is being analyzed
    * @param communities additional community regexes to track, from user-defined constraints
    * @param asPathRegexes additional as-path regexes to track, from user-defined constraints
+   */
+  public ConfigAtomicPredicates(
+      IBatfish batfish,
+      NetworkSnapshot snapshot,
+      String router,
+      @Nullable Set<CommunityVar> communities,
+      @Nullable Set<String> asPathRegexes) {
+    this(batfish, snapshot, router, communities, asPathRegexes, null);
+  }
+
+  /**
+   * Compute atomic predicates for the given router's configuration.
+   *
+   * @param batfish the batfish object
+   * @param snapshot the current snapshot
+   * @param router the name of the router whose configuration is being analyzed
+   * @param communities additional community regexes to track, from user-defined constraints
+   * @param asPathRegexes additional as-path regexes to track, from user-defined constraints
    * @param policies the set of policies to create AtomicPredicates for
    */
   public ConfigAtomicPredicates(
@@ -100,7 +118,7 @@ public class ConfigAtomicPredicates {
       _nonStandardCommunityLiterals.put(i + numAPs, nonStandardCommunityVars[i]);
     }
     _asPathRegexAtomicPredicates =
-        new AsPathRegexAtomicPredicates(findAllAsPathRegexes(asPathRegexes));
+        new AsPathRegexAtomicPredicates(findAllAsPathRegexes(asPathRegexes, usedPolicies));
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
