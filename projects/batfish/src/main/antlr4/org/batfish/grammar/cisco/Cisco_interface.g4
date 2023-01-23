@@ -1312,7 +1312,7 @@ if_standby
 
 standby_group
 :
-  group = uint8
+  group = standby_group_number
   (
     standby_group_authentication
     | standby_group_ip
@@ -1321,6 +1321,13 @@ standby_group
     | standby_group_timers
     | standby_group_track
   )
+;
+
+standby_group_number
+:
+  // 0-255 for standby version 1
+  // 0-4095 for standby version 2
+  uint16
 ;
 
 standby_group_authentication
@@ -1378,7 +1385,13 @@ standby_group_track
 
 standby_version
 :
-  VERSION version = variable_permissive
+  VERSION version = standby_version_number
+;
+
+standby_version_number
+:
+  STANDBY_VERSION_1
+  | STANDBY_VERSION_2
 ;
 
 if_switchport
