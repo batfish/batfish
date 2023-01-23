@@ -8,6 +8,7 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,10 +28,8 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.batfish.datamodel.routing_policy.expr.RibExpr;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.trace.Tracer;
 
@@ -233,9 +232,8 @@ public class RoutingPolicy implements Serializable {
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       Direction direction,
-      BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
-    return process(
-        inputRoute, outputRoute, null, null, direction, ribIntersectsPrefixSpaceEvaluator, null);
+      Predicate<String> successfulTrack) {
+    return process(inputRoute, outputRoute, null, null, direction, successfulTrack, null);
   }
 
   public boolean process(
@@ -251,15 +249,8 @@ public class RoutingPolicy implements Serializable {
       @Nonnull AbstractRouteBuilder<?, ?> outputRoute,
       @Nonnull EigrpProcess eigrpProcess,
       Direction direction,
-      BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
-    return process(
-        inputRoute,
-        outputRoute,
-        null,
-        eigrpProcess,
-        direction,
-        ribIntersectsPrefixSpaceEvaluator,
-        null);
+      Predicate<String> successfulTrack) {
+    return process(inputRoute, outputRoute, null, eigrpProcess, direction, successfulTrack, null);
   }
 
   /**
@@ -270,25 +261,18 @@ public class RoutingPolicy implements Serializable {
    * @param sessionProperties {@link BgpSessionProperties} representing the session for the local
    *     node. In other words, local properties should be TAIL and remote properties should be HEAD.
    * @param direction {@link Direction} in which route is being sent
-   * @param ribIntersectsPrefixSpaceEvaluator function that evaluates whether there is any
-   *     intersection between the prefixes of the routes in the RIB represented by a provided {@link
-   *     RibExpr} and a provided {@link PrefixSpace}
+   * @param successfulTrack whether a named track should be considered successful. If {@code null},
+   *     defaults to {@link Predicates#alwaysFalse()}.
    */
   public boolean processBgpRoute(
       AbstractRouteDecorator inputRoute,
       BgpRoute.Builder<?, ?> outputRoute,
       @Nullable BgpSessionProperties sessionProperties,
       Direction direction,
-      @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
+      @Nullable Predicate<String> successfulTrack) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     return process(
-        inputRoute,
-        outputRoute,
-        sessionProperties,
-        null,
-        direction,
-        ribIntersectsPrefixSpaceEvaluator,
-        null);
+        inputRoute, outputRoute, sessionProperties, null, direction, successfulTrack, null);
   }
 
   private boolean process(
@@ -297,7 +281,7 @@ public class RoutingPolicy implements Serializable {
       @Nullable BgpSessionProperties bgpSessionProperties,
       @Nullable EigrpProcess eigrpProcess,
       Direction direction,
-      @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator,
+      @Nullable Predicate<String> successfulTrack,
       @Nullable Tracer tracer) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
@@ -307,7 +291,7 @@ public class RoutingPolicy implements Serializable {
             .setOutputRoute(outputRoute)
             .setDirection(direction)
             .setEigrpProcess(eigrpProcess)
-            .setRibIntersectsPrefixSpaceEvaluator(ribIntersectsPrefixSpaceEvaluator)
+            .setSuccessfulTrack(successfulTrack)
             .setTracer(tracer)
             .build();
     Result result = call(environment);

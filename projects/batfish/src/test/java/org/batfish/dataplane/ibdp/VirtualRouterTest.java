@@ -636,7 +636,8 @@ public class VirtualRouterTest {
                         .setBgpTopology(bgpTopology)
                         .setEigrpTopology(eigrpTopology)
                         .setIsisTopology(initialIsisTopology)
-                        .build()));
+                        .build(),
+                    PreDataPlaneTrackMethodEvaluator::new));
 
     // Assert that queues are empty as there are no OSPF, BGP, EIGRP, nor IS-IS processes if the
     // topologies are empty
@@ -660,7 +661,8 @@ public class VirtualRouterTest {
                   .setBgpTopology(bgpTopology2)
                   .setEigrpTopology(eigrpTopology)
                   .setIsisTopology(isisTopology)
-                  .build());
+                  .build(),
+              PreDataPlaneTrackMethodEvaluator::new);
     }
     // Assert that queues are initialized
     vrs.values()

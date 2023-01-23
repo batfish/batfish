@@ -1,0 +1,20 @@
+#
+set system host-name s22
+#
+set routing-options static route 2.0.0.0/32 discard
+#
+# s22 <-> s21
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.22.1/31
+#
+set policy-options policy-statement to-s21 term t1 from protocol static
+set policy-options policy-statement to-s21 term t1 then accept
+set policy-options policy-statement to-s21 term t2 then reject
+set policy-options policy-statement from-s21 term t1 then reject
+#
+set routing-options router-id 10.10.0.22
+set routing-options autonomous-system 22
+set protocols bgp group s21 peer-as 2
+set protocols bgp group s21 export to-s21
+set protocols bgp group s21 import from-s21
+set protocols bgp group s21 neighbor 10.0.22.0
+#

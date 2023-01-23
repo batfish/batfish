@@ -1,0 +1,27 @@
+#
+set system host-name s21
+#
+# s21 <-> c
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.2.1/31
+# s21 <-> s22
+set interfaces xe-0/0/1 unit 0 family inet address 10.0.22.0/31
+#
+set policy-options policy-statement to-c term t1 from route-filter 2.0.0.0/32 exact
+set policy-options policy-statement to-c term t1 then accept
+set policy-options policy-statement to-c term t2 then reject
+set policy-options policy-statement from-c term t then reject
+#
+set policy-options policy-statement to-s22 term t then reject
+set policy-options policy-statement from-s22 term t then accept
+#
+set routing-options router-id 10.10.0.2
+set routing-options autonomous-system 2
+set protocols bgp group c peer-as 3
+set protocols bgp group c export to-c
+set protocols bgp group c import from-c
+set protocols bgp group c neighbor 10.0.2.0
+set protocols bgp group s22 peer-as 22
+set protocols bgp group s22 export to-s22
+set protocols bgp group s22 import from-s22
+set protocols bgp group s22 neighbor 10.0.22.1
+#
