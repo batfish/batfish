@@ -709,6 +709,8 @@ public final class FrrConversions {
                     (ipv4UnicastAddressFamily != null
                         && (firstNonNull(ipv4UnicastAddressFamily.getAllowAsIn(), 0) > 0)))
                 .setAllowRemoteAsOut(ALWAYS) // no outgoing remote-as check on Cumulus
+                // Based on result from https://github.com/batfish/batfish/issues/8588
+                .setAdvertiseInactive(true)
                 .build())
         .setExportPolicy(exportRoutingPolicy.getName())
         .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
