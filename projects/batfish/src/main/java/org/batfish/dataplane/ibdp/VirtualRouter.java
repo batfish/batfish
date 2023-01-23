@@ -429,6 +429,9 @@ public final class VirtualRouter {
    * <p>Must be called between rounds, aka, all delta builder should be empty.
    *
    * @param topologyContext The various network topologies
+   * @param trackMethodEvaluatorProvider current data plane iteration's {@link
+   *     TrackMethodEvaluatorProvider} used for computing the iteration's values for BGP-watched
+   *     tracks
    */
   void initForEgpComputationWithNewTopology(
       TopologyContext topologyContext, TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {

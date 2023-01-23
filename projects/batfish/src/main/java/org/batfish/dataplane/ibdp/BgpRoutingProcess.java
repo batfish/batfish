@@ -301,11 +301,34 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   private final RibDelta.Builder<EvpnType5Route> _evpnType5Advertisements = RibDelta.builder();
 
+  /**
+   * The values of BGP-process-specific watched tracks for the current iteration. Used with {@link
+   * #_successfulWatchedTracksPrev} to compute {@link #_successfulWatchedTracksChanged}, and passed
+   * to BGP routing policy evaluation for policies that reference tracks.
+   *
+   * <p>Since this node may be pulled from prior to its own execution in the BGP schedule, this
+   * field must be updated prior to the running of schedules.
+   */
   private @Nonnull Set<String> _successfulWatchedTracks;
+
+  /**
+   * The values of BGP-process-specific watched tracks for the prior iteration. Used with {@link
+   * #_successfulWatchedTracks} to compute {@link #_successfulWatchedTracksChanged}.
+   *
+   * <p>Since this node may be pulled from prior to its own execution in the BGP schedule, this
+   * field must be updated prior to the running of schedules.
+   */
   private @Nonnull Set<String> _successfulWatchedTracksPrev;
 
-  // Helper to avoid recomputation of track states for each neighbor pulling from this process in a
-  // given iteration
+  /**
+   * Helper to avoid recomputation of track states for each neighbor pulling from this process in a
+   * given iteration. Used to determine whether to re-evaluate all routes on export rather than just
+   * routes from deltas. Computed by comparing {@link #_successfulWatchedTracks} and {@link
+   * #_successfulWatchedTracksPrev}.
+   *
+   * <p>Since this node may be pulled from prior to its own execution in the BGP schedule, this
+   * field must be updated prior to the running of schedules.
+   */
   private boolean _successfulWatchedTracksChanged;
 
   private static final Logger LOGGER = LogManager.getLogger(BgpRoutingProcess.class);
@@ -2415,7 +2438,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    *
    * <p>If track states have changed, also updates previous main RIB pointer for vendors that do not
    * export from BGP RIB. This is done so that main RIB routes can be re-evaluated given the track
-   * state changes.
+   * state changes. Since the updated fields may be used prior to this node's own execution
+   * schedule, this method must be called prior to any new main RIB updates for this iteration.
    */
   void updateWatchedTrackStates(TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     // Record the previous track states so we can tell if any track state changed
@@ -2424,6 +2448,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _successfulWatchedTracksChanged =
         !_successfulWatchedTracks.equals(_successfulWatchedTracksPrev);
     if (_successfulWatchedTracksChanged && !_exportFromBgpRib) {
+      // Sanity check that we are calling this method prior to its own execution schedule in the
+      // iteration, and prior to any other node's execution schedule that touches this node.
       assert _bgpv4DeltaBuilder.isEmpty();
       assert _ebgpv4DeltaBuilder.isEmpty();
       assert _bgpv4DeltaBestPathBuilder.isEmpty();

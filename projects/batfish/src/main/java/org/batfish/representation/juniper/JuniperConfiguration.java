@@ -446,7 +446,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setIbgpAdminCost(ibgpAdmin)
             .build();
 
-    // TODO: something more granular
+    // https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/topic-map/basic-routing-policies.html#id-conditional-advertisement-and-import-policy-routing-table-with-certain-match-conditions
+    // TODO: To avoid unnecessary route re-evaluation, only record conditions actually used by BGP
+    //       export policies. In practice, though, conditions are unlikely to be defined unless they
+    //       are used in some export policy.
     if (!_masterLogicalSystem.getConditions().isEmpty()) {
       proc.setTracks(
           _masterLogicalSystem.getConditions().keySet().stream()
