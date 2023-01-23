@@ -45,6 +45,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -582,6 +583,36 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     removeUndefinedVrrpTrackReferences(c, w);
     removeUndefinedHsrpTrackReferences(c, w);
     removeUndefinedStaticRouteTrackReferences(c, w);
+    removeUndefinedBgpProcessTrackReferences(c, w);
+  }
+
+  private static void removeUndefinedBgpProcessTrackReferences(Configuration c, Warnings w) {
+    c.getVrfs()
+        .forEach(
+            (vrfName, vrf) -> {
+              BgpProcess proc = vrf.getBgpProcess();
+              if (proc == null) {
+                // nothing to check
+                return;
+              }
+              if (proc.getTracks().stream().allMatch(c.getTrackingGroups()::containsKey)) {
+                // all good
+                return;
+              }
+              // At least one undefined track
+              ImmutableSet.Builder<String> definedTracks = ImmutableSet.builder();
+              for (String trackName : proc.getTracks()) {
+                if (c.getTrackingGroups().containsKey(trackName)) {
+                  definedTracks.add(trackName);
+                } else {
+                  w.redFlag(
+                      String.format(
+                          "Removing reference to undefined track '%s' in BGP process for vrf '%s'",
+                          trackName, vrfName));
+                }
+              }
+              proc.setTracks(definedTracks.build());
+            });
   }
 
   private static void removeUndefinedStaticRouteTrackReferences(Configuration c, Warnings w) {

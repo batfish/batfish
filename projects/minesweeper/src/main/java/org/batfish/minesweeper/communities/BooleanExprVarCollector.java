@@ -33,8 +33,8 @@ import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.utils.Tuple;
@@ -99,11 +99,9 @@ public class BooleanExprVarCollector
   }
 
   @Override
-  public Set<CommunityVar> visitRibIntersectsPrefixSpace(
-      RibIntersectsPrefixSpace ribIntersectsPrefixSpace, Tuple<Set<String>, Configuration> arg) {
-    return ribIntersectsPrefixSpace
-        .getRibExpr()
-        .accept(RibExprVarCollector.instance(), arg.getSecond());
+  public Set<CommunityVar> visitTrackSucceeded(
+      TrackSucceeded trackSucceeded, Tuple<Set<String>, Configuration> arg) {
+    return ImmutableSet.of();
   }
 
   @Override

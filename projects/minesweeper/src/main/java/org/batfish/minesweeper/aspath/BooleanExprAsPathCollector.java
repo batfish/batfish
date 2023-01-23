@@ -38,8 +38,8 @@ import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.utils.Tuple;
@@ -105,8 +105,8 @@ public class BooleanExprAsPathCollector
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitRibIntersectsPrefixSpace(
-      RibIntersectsPrefixSpace ribIntersectsPrefixSpace, Tuple<Set<String>, Configuration> arg) {
+  public Set<SymbolicAsPathRegex> visitTrackSucceeded(
+      TrackSucceeded trackSucceeded, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 

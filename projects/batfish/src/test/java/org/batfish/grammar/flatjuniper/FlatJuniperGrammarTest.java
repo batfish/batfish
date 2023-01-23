@@ -151,7 +151,7 @@ import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
-import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionTrackName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
@@ -367,6 +367,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
+import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -7276,36 +7277,41 @@ public final class FlatJuniperGrammarTest {
             .getFromConditions(),
         contains(new PsFromCondition("c1")));
     assertThat(jc.getMasterLogicalSystem().getConditions(), hasKeys("c1", "c2"));
-    Condition c = jc.getMasterLogicalSystem().getConditions().get("c1");
-    assertThat(c.getIfRouteExists(), notNullValue());
-    assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.strict("1.0.0.0/24")));
-    assertThat(c.getIfRouteExists().getTable(), equalTo("inet.0"));
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c1");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.strict("1.0.0.0/24")));
+      assertThat(c.getIfRouteExists().getTable(), equalTo("inet.0"));
+    }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c2");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.strict("2.0.0.0/24")));
+      assertThat(c.getIfRouteExists().getTable(), equalTo("ri2.inet.0"));
+    }
   }
 
   @Test
   public void testConditionConversion() {
     String hostname = "juniper-condition";
-    String rpName = computeConditionRoutingPolicyName("c1");
+    String c1TrackName = computeConditionTrackName("c1");
+    String c2TrackName = computeConditionTrackName("c2");
     Configuration c = parseConfig(hostname);
-    assertThat(c.getRoutingPolicies(), hasKey(rpName));
-    RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
 
-    // should crash outside of data plane generation
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot check RIB routes; RIB state is not available at this time.");
-    rp.process(new ConnectedRoute(Prefix.ZERO, "blah"), Bgpv4Route.builder(), Direction.OUT);
-  }
+    // Conditions should be converted to tracks
+    assertThat(c.getTrackingGroups(), hasKeys(c1TrackName, c2TrackName));
+    assertThat(
+        c.getTrackingGroups().get(c1TrackName),
+        equalTo(
+            TrackMethods.route(Prefix.strict("1.0.0.0/24"), ImmutableSet.of(), DEFAULT_VRF_NAME)));
+    assertThat(
+        c.getTrackingGroups().get(c2TrackName),
+        equalTo(TrackMethods.route(Prefix.strict("2.0.0.0/24"), ImmutableSet.of(), "ri2")));
 
-  @Test
-  public void testConditionBehavior() throws IOException {
-    String hostname = "juniper-condition";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
-    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname, DEFAULT_VRF_NAME).getRoutes();
-
-    assertThat(mainRibRoutes, hasItem(hasPrefix(Prefix.strict("1.0.0.0/16"))));
-    assertThat(mainRibRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    // BGP process should watch tracks for conditions
+    assertThat(
+        c.getDefaultVrf().getBgpProcess().getTracks(),
+        containsInAnyOrder(c1TrackName, c2TrackName));
   }
 
   @Test
