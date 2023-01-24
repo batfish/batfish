@@ -164,7 +164,7 @@ public class Interface implements Serializable {
 
   private Map<Integer, HsrpGroup> _hsrpGroups;
 
-  private String _hsrpVersion;
+  private HsrpVersion _hsrpVersion;
 
   private String _incomingFilter;
 
@@ -379,7 +379,7 @@ public class Interface implements Serializable {
     return _hsrpGroups;
   }
 
-  public String getHsrpVersion() {
+  public HsrpVersion getHsrpVersion() {
     return _hsrpVersion;
   }
 
@@ -696,7 +696,7 @@ public class Interface implements Serializable {
     _securityZone = securityZone;
   }
 
-  public void setHsrpVersion(String hsrpVersion) {
+  public void setHsrpVersion(HsrpVersion hsrpVersion) {
     _hsrpVersion = hsrpVersion;
   }
 }

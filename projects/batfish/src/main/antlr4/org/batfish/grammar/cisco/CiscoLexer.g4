@@ -42,6 +42,8 @@ tokens {
    SELF_SIGNED,
    SLA_NUMBER,
    SLIP_PPP,
+   STANDBY_VERSION_1,
+   STANDBY_VERSION_2,
    STATEFUL_DOT1X,
    STATEFUL_KERBEROS,
    STATEFUL_NTLM,
@@ -6220,7 +6222,15 @@ VERIFY: 'verify';
 
 VERIFY_DATA: 'verify-data';
 
-VERSION: 'version';
+VERSION
+:
+ 'version'
+ {
+   if (lastTokenType() == STANDBY) {
+     pushMode(M_StandbyVersion);
+   }
+ }
+;
 
 VIDEO: 'video';
 
@@ -8412,3 +8422,9 @@ M_Sla_SLA_NUMBER: F_Uint31 -> type(SLA_NUMBER), popMode;
 M_Sla_ETHERNET_MONITOR: 'ethernet-monitor' -> type(ETHERNET_MONITOR);
 M_Sla_SCHEDULE: 'schedule' -> type(SCHEDULE);
 M_Sla_NOT_SLA_NUMBER: F_NonWhitespace+ {less();} -> popMode; // try again in default mode
+
+mode M_StandbyVersion;
+M_StandbyVersion_WS: F_Whitespace+ -> skip;
+M_StandbyVersion_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_StandbyVersion_STANDBY_VERSION_1: '1' -> type(STANDBY_VERSION_1), popMode;
+M_StandbyVersion_STANDBY_VERSION_2: '2' -> type(STANDBY_VERSION_2), popMode;
