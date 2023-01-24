@@ -50,8 +50,10 @@ import org.batfish.specifier.SpecifierFactories;
 public final class CompareRoutePoliciesAnswerer extends Answerer {
 
   @Nonnull private final Environment.Direction _direction;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
 
+  @Nonnull private final String _policySpecifierString;
+  @Nonnull private final String _proposedPolicySpecifierString;
+  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
   @Nonnull private final RoutingPolicySpecifier _proposedPolicySpecifier;
 
   @Nonnull private final NodeSpecifier _nodeSpecifier;
@@ -66,13 +68,15 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             question.getNodes(), AllNodesNodeSpecifier.INSTANCE);
     _direction = question.getDirection();
 
+    _policySpecifierString = question.getPolicy();
     _policySpecifier =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
-            question.getPolicy(), ALL_ROUTING_POLICIES);
+            _policySpecifierString, ALL_ROUTING_POLICIES);
 
+    _proposedPolicySpecifierString = question.getProposedPolicy();
     _proposedPolicySpecifier =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
-            question.getProposedPolicy(), ALL_ROUTING_POLICIES);
+            _proposedPolicySpecifierString, ALL_ROUTING_POLICIES);
 
     // in the future, it may improve performance to combine all input community regexes
     // into a single regex representing their disjunction, and similarly for all output
@@ -268,6 +272,16 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       NetworkSnapshot snapshot) {
     List<RoutingPolicy> policiesList = policies.collect(Collectors.toList());
     List<RoutingPolicy> proposedPoliciesList = proposedPolicies.collect(Collectors.toList());
+
+    if (policiesList.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format("Could not find policy matching %s", _policySpecifierString));
+    }
+    if (proposedPoliciesList.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Could not find proposed policy matching %s", _proposedPolicySpecifierString));
+    }
 
     // Compute AtomicPredicates for both policies and proposedPolicies.
     List<RoutingPolicy> allPolicies = new ArrayList<>(policiesList);
