@@ -56,6 +56,10 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
     super(regex);
   }
 
+  public SymbolicAsPathRegex union(SymbolicAsPathRegex other) {
+    return new SymbolicAsPathRegex("(" + this._regex + ")|(" + other.getRegex() + ")");
+  }
+
   /**
    * Convert this community variable into an equivalent finite-state automaton.
    *

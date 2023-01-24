@@ -3,6 +3,7 @@ package org.batfish.minesweeper.aspath;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -95,7 +96,21 @@ public class BooleanExprAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitDisjunction(
       Disjunction disjunction, Tuple<Set<String>, Configuration> arg) {
-    return visitAll(disjunction.getDisjuncts(), arg);
+    Set<SymbolicAsPathRegex> disjuncts = visitAll(disjunction.getDisjuncts(), arg);
+    if (disjunction.getDisjuncts().stream().allMatch(d -> d instanceof MatchAsPath)) {
+      List<SymbolicAsPathRegex> disjuncts_list = disjuncts.stream().collect(Collectors.toList());
+      if (disjuncts_list.isEmpty()) {
+        return ImmutableSet.of();
+      }
+
+      SymbolicAsPathRegex acc = disjuncts_list.get(0);
+      for (int i = 1; i < disjuncts_list.size(); i++) {
+        acc = acc.union(disjuncts_list.get(i));
+      }
+      return ImmutableSet.of(acc);
+    } else {
+      return disjuncts;
+    }
   }
 
   @Override
