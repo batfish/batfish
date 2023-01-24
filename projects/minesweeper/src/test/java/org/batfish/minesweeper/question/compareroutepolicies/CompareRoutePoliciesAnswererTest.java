@@ -1161,4 +1161,24 @@ public class CompareRoutePoliciesAnswererTest {
                 hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testRejectMissingOriginalPolicy() {
+    _policyBuilder_2.build();
+    CompareRoutePoliciesQuestion question =
+        new CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, "does not exist", POLICY_2_NAME, HOSTNAME);
+    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    answerer.answer(_batfish.getSnapshot());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testRejectMissingProposedPolicy() {
+    _policyBuilder_1.build();
+    CompareRoutePoliciesQuestion question =
+        new CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, POLICY_1_NAME, "does not exist", HOSTNAME);
+    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    answerer.answer(_batfish.getSnapshot());
+  }
 }
