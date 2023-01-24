@@ -189,6 +189,7 @@ public class ModelGeneration {
     builder.setAdmin(r.getAdminDist().satAssignmentToInt(fullModel));
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
+    builder.setWeight(r.getWeight().satAssignmentToInt(fullModel));
     builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
@@ -206,6 +207,23 @@ public class ModelGeneration {
     return builder.build();
   }
 
+  /**
+   * Tries to "add" constraint c to constraints; if the result is not inconsistent returns it,
+   * otherwise returns constraints.
+   *
+   * @param c a constraint expressed as a BDD
+   * @param constraints the set of constraints to augment
+   * @return the augmented constraints if consistent, otherwise the original constraints.
+   */
+  private static BDD tryAddingConstraint(BDD c, BDD constraints) {
+    BDD augmentedConstraints = constraints.and(c);
+    if (!augmentedConstraints.isZero()) {
+      return augmentedConstraints;
+    } else {
+      return constraints;
+    }
+  }
+
   // Produces a full model of the given constraints, which represents a concrete route announcement
   // that is consistent with the constraints.  The protocol defaults to BGP if it is consistent with
   // the constraints.  The same approach could be used to provide default values for other fields in
@@ -214,11 +232,9 @@ public class ModelGeneration {
     BDDRoute route = new BDDRoute(constraints.getFactory(), configAPs);
     // set the protocol field to BGP if it is consistent with the constraints
     BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
-    BDD augmentedConstraints = constraints.and(isBGP);
-    if (!augmentedConstraints.isZero()) {
-      return augmentedConstraints.fullSatOne();
-    } else {
-      return constraints.fullSatOne();
-    }
+    BDD defaultLP = route.getLocalPref().value(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE);
+    BDD augmentedConstraints = tryAddingConstraint(isBGP, constraints);
+    augmentedConstraints = tryAddingConstraint(defaultLP, augmentedConstraints);
+    return augmentedConstraints.fullSatOne();
   }
 }

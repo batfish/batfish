@@ -38,6 +38,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -226,6 +227,7 @@ public class SearchRoutePoliciesAnswererTest {
             // the solver will produce the lowest possible value for a field, which is 0.0.0.1 for
             // the next-hop since it is constrained to not be 0.0.0.0
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -268,6 +270,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRoute outputRoute = inputRoute.toBuilder().setNextHopIp(Ip.AUTO).build();
@@ -317,6 +320,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -361,6 +365,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -431,6 +436,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -477,6 +483,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -525,6 +532,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(
                 ImmutableSet.of(StandardCommunity.of(40, 33), StandardCommunity.of(3, 44)))
             .build();
@@ -606,6 +614,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of(StandardCommunity.of(1, 40)))
             .build();
 
@@ -617,6 +626,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of(StandardCommunity.of(2, 40)))
             .build();
 
@@ -666,6 +676,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
 
@@ -677,6 +688,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of(ExtendedCommunity.parse("0:2:40")))
             .build();
 
@@ -727,6 +739,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of(ExtendedCommunity.parse("0:2:40")))
             .build();
 
@@ -738,6 +751,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of(ExtendedCommunity.parse("0:2:40")))
             .build();
 
@@ -813,6 +827,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -886,6 +901,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -935,6 +951,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -984,6 +1001,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1036,6 +1054,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1088,6 +1107,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1136,6 +1156,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     assertThat(
@@ -1292,6 +1313,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRoute outputRoute =
@@ -1307,7 +1329,11 @@ public class SearchRoutePoliciesAnswererTest {
 
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
-            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_LOCAL_PREFERENCE, "0", "3")));
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_LOCAL_PREFERENCE,
+                    Long.toString(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE),
+                    "3")));
 
     assertThat(
         answer.getRows().getData(),
@@ -1351,6 +1377,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRoute outputRoute =
@@ -1362,6 +1389,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff =
@@ -1408,6 +1436,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRoute outputRoute =
@@ -1419,6 +1448,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff =
@@ -1473,6 +1503,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1543,6 +1574,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setNextHopIp(Ip.parse("1.0.0.0"))
             .build();
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1605,6 +1637,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
     BgpRoute outputRoute = inputRoute.toBuilder().setNextHopIp(ip).build();
     BgpRouteDiffs diff =
@@ -1703,6 +1736,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1814,6 +1848,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1865,6 +1900,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     assertThat(
@@ -1909,6 +1945,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRoute inputRoute2 =
@@ -1919,6 +1956,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1972,6 +2010,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     BgpRoute inputRoute2 =
@@ -1982,6 +2021,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
     assertEquals(answer.getRows().size(), 2);
