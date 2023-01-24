@@ -189,7 +189,6 @@ public class ModelGeneration {
     builder.setAdmin(r.getAdminDist().satAssignmentToInt(fullModel));
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
-    builder.setWeight(r.getWeight().satAssignmentToInt(fullModel));
     builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
@@ -233,8 +232,32 @@ public class ModelGeneration {
     // set the protocol field to BGP if it is consistent with the constraints
     BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
     BDD defaultLP = route.getLocalPref().value(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE);
+
+    // Set the prefixes to one of the well-known ones
+    BDD googlePrefix =
+        route
+            .getPrefix()
+            .value(Ip.parse("8.8.8.0").asLong())
+            .and(route.getPrefixLength().value(24));
+    BDD amazonPrefix =
+        route
+            .getPrefix()
+            .value(Ip.parse("52.0.0.0").asLong())
+            .and(route.getPrefixLength().value(10));
+    BDD rfc1918 =
+        route
+            .getPrefix()
+            .value(Ip.parse("10.0.0.0").asLong())
+            .and(route.getPrefixLength().value(8));
+    BDD prefixes = googlePrefix.or(amazonPrefix).or(rfc1918);
+    // Alternatively, if the above fails set the prefix to something >= 10.0.0.0 and the length to
+    // something >= 16.
+    BDD lessPreferredPrefixes =
+        route.getPrefix().geq(167772160).and(route.getPrefixLength().geq(16));
     BDD augmentedConstraints = tryAddingConstraint(isBGP, constraints);
     augmentedConstraints = tryAddingConstraint(defaultLP, augmentedConstraints);
+    augmentedConstraints = tryAddingConstraint(prefixes, augmentedConstraints);
+    augmentedConstraints = tryAddingConstraint(lessPreferredPrefixes, augmentedConstraints);
     return augmentedConstraints.fullSatOne();
   }
 }
