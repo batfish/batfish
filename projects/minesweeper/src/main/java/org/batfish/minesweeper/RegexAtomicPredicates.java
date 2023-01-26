@@ -1,11 +1,12 @@
 package org.batfish.minesweeper;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import dk.brics.automaton.Automaton;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -33,7 +34,10 @@ import org.batfish.common.BatfishException;
 @ParametersAreNonnullByDefault
 public class RegexAtomicPredicates<T extends SymbolicRegex> {
 
-  @Nonnull private final Set<T> _regexes;
+  @Nonnull private final List<T> _regexes;
+
+  // a regex representing logical "true", or all possible valid strings
+  @Nonnull private final T _trueRegex;
 
   // the number of atomic predicates
   private int _numAtomicPredicates;
@@ -53,26 +57,23 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
    * @param trueRegex a regex representing logical "true", or all possible valid strings
    */
   public RegexAtomicPredicates(Set<T> regexes, T trueRegex) {
-    _regexes = ImmutableSet.<T>builder().addAll(regexes).add(trueRegex).build();
+    _regexes = ImmutableList.<T>builder().addAll(regexes).build();
+    _trueRegex = trueRegex;
     initAtomicPredicates();
   }
 
   private void initAtomicPredicates() {
     SetMultimap<Automaton, T> mmap = HashMultimap.create();
+    mmap.put(_trueRegex.toAutomaton(), _trueRegex);
     for (T regex : _regexes) {
       Automaton rAuto = regex.toAutomaton();
       if (rAuto.isEmpty()) {
         // regex doesn't match any communities; give up
         throw new BatfishException("Regex " + regex + " does not match any strings");
       }
+
       SetMultimap<Automaton, T> newMMap = HashMultimap.create(mmap);
       for (Automaton a : mmap.keySet()) {
-        if (a.equals(rAuto)) {
-          newMMap.put(a, regex);
-          // since all atomic predicates are disjoint from one another, if
-          // this regex is equal to an existing one, we can ignore all the rest
-          break;
-        }
         Automaton inter = a.intersection(rAuto);
         if (inter.isEmpty()) {
           // this regex is disjoint from a, so move on to the next atomic predicate
@@ -88,12 +89,6 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
         }
         // add regex to the intersection
         newMMap.put(inter, regex);
-        // update cAuto with the residual automaton that is left
-        rAuto = rAuto.minus(a);
-      }
-      if (!rAuto.isEmpty()) {
-        // if there's anything left of cAuto by the end, add it
-        newMMap.put(rAuto, regex);
       }
       mmap = newMMap;
     }
