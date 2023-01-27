@@ -93,8 +93,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   // to properly determine the next-hop IP that results from each path through a given route-map we
   // need to track a few more pieces of information:  whether the next-hop is explicitly discarded
   // by the route-map and whether the next-hop is explicitly set by the route-map
-  private BDD _nextHopDiscarded;
-  private BDD _nextHopSet;
+  private boolean _nextHopDiscarded;
+  private boolean _nextHopSet;
 
   private BDDDomain<OspfType> _ospfMetric;
 
@@ -102,13 +102,26 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final MutableBDDInteger _prefixLength;
 
+  /**
+   * A sequence of AS numbers that is prepended to the original AS-path. The use of a fully concrete
+   * value here is sufficient to accurately represent the effects of a single execution path through
+   * a route map, since any single path encounters a fixed set of AS-path prepend statements. Hence
+   * this representation is sufficient to support {@link TransferBDD#computePaths(Set)}, which
+   * produces on BDDRoute per execution path. However, this representation precludes the use of a
+   * BDDRoute to accurately represent the effects of multiple execution paths, unless those paths
+   * prepend the same exact sequence of ASes to the AS-path.
+   */
+  @Nonnull private List<Long> _prependedASes;
+
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   private MutableBDDInteger _tag;
 
-  // the conditions under which the analysis encounters an unsupported route-policy
+  private MutableBDDInteger _weight;
+
+  // whether the analysis encountered an unsupported route-policy
   // statement/expression
-  @Nonnull private BDD _unsupported;
+  private boolean _unsupported;
 
   /**
    * The routing protocols allowed in a BGP route announcement (see {@link
@@ -124,7 +137,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDDRoute(BDDFactory factory, ConfigAtomicPredicates aps) {
     this(
         factory,
-        aps.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+        aps.getStandardCommunityAtomicPredicates().getNumAtomicPredicates()
+            + aps.getNonStandardCommunityLiterals().size(),
         aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
   }
 
@@ -141,6 +155,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     int numVars = factory.varNum();
     int numNeeded =
         32 * 6
+            + 16
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
@@ -164,11 +179,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHop = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("nextHop", 32, idx, false);
     idx += 32;
-    _nextHopSet = factory.zero();
-    _nextHopDiscarded = factory.zero();
+    _nextHopSet = false;
+    _nextHopDiscarded = false;
     _tag = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("tag", 32, idx, false);
     idx += 32;
+    _weight = MutableBDDInteger.makeFromIndex(factory, 16, idx, false);
+    addBitNames("weight", 16, idx, false);
+    idx += 16;
     _adminDist = MutableBDDInteger.makeFromIndex(factory, 8, idx, false);
     addBitNames("ad", 8, idx, false);
     idx += 8;
@@ -202,8 +220,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
+    _prependedASes = new ArrayList<>();
     // Initially there are no unsupported statements encountered
-    _unsupported = factory.zero();
+    _unsupported = false;
   }
 
   /*
@@ -218,16 +237,59 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _prefixLength = new MutableBDDInteger(other._prefixLength);
     _prefix = new MutableBDDInteger(other._prefix);
     _nextHop = new MutableBDDInteger(other._nextHop);
-    _nextHopSet = other._nextHopSet.id();
-    _nextHopDiscarded = other._nextHopDiscarded.id();
+    _nextHopSet = other._nextHopSet;
+    _nextHopDiscarded = other._nextHopDiscarded;
     _adminDist = new MutableBDDInteger(other._adminDist);
     _med = new MutableBDDInteger(other._med);
     _tag = new MutableBDDInteger(other._tag);
+    _weight = new MutableBDDInteger(other._weight);
     _localPref = new MutableBDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
-    _unsupported = other._unsupported.id();
+    _prependedASes = new ArrayList(other._prependedASes);
+    _unsupported = other._unsupported;
+  }
+
+  /**
+   * Constructs a new BDDRoute by restricting the given one to conform to the predicate pred.
+   *
+   * @param pred the predicate used to restrict the output routes
+   * @param route a symbolic route represented as a transformation on a set of routes (input).
+   */
+  public BDDRoute(BDD pred, BDDRoute route) {
+    _factory = route._factory;
+
+    // Create fresh arrays for atomic predicates
+    BDD[] asPathAtomicPredicates = new BDD[route._asPathRegexAtomicPredicates.length];
+    BDD[] communityAtomicPredicates = new BDD[route._communityAtomicPredicates.length];
+
+    // Intersect each atomic predicate with pred.
+    for (int i = 0; i < asPathAtomicPredicates.length; i++) {
+      asPathAtomicPredicates[i] = route._asPathRegexAtomicPredicates[i].and(pred);
+    }
+
+    for (int i = 0; i < communityAtomicPredicates.length; i++) {
+      communityAtomicPredicates[i] = route._communityAtomicPredicates[i].and(pred);
+    }
+
+    _asPathRegexAtomicPredicates = asPathAtomicPredicates;
+    _communityAtomicPredicates = communityAtomicPredicates;
+    _prefixLength = route._prefixLength.and(pred);
+    _prefix = route.getPrefix().and(pred);
+    _nextHop = route.getNextHop().and(pred);
+    _adminDist = route.getAdminDist().and(pred);
+    _med = route.getMed().and(pred);
+    _tag = route.getTag().and(pred);
+    _localPref = route.getLocalPref().and(pred);
+    _weight = route.getWeight().and(pred);
+    _protocolHistory = new BDDDomain<>(pred, route.getProtocolHistory());
+    _ospfMetric = new BDDDomain<>(pred, route.getOspfMetric());
+    _bitNames = route._bitNames;
+    _nextHopSet = route.getNextHopSet();
+    _nextHopDiscarded = route.getNextHopDiscarded();
+    _unsupported = route.getUnsupported();
+    _prependedASes = new ArrayList<>(route.getPrependedASes());
   }
 
   /*
@@ -416,19 +478,19 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHop = nextHop;
   }
 
-  public BDD getNextHopDiscarded() {
+  public boolean getNextHopDiscarded() {
     return _nextHopDiscarded;
   }
 
-  public void setNextHopDiscarded(BDD nextHopDiscarded) {
+  public void setNextHopDiscarded(boolean nextHopDiscarded) {
     _nextHopDiscarded = nextHopDiscarded;
   }
 
-  public BDD getNextHopSet() {
+  public boolean getNextHopSet() {
     return _nextHopSet;
   }
 
-  public void setNextHopSet(BDD nextHopSet) {
+  public void setNextHopSet(boolean nextHopSet) {
     _nextHopSet = nextHopSet;
   }
 
@@ -448,6 +510,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _prefixLength;
   }
 
+  public List<Long> getPrependedASes() {
+    return _prependedASes;
+  }
+
+  public void setPrependedASes(List<Long> prependedASes) {
+    _prependedASes = prependedASes;
+  }
+
   public BDDDomain<RoutingProtocol> getProtocolHistory() {
     return _protocolHistory;
   }
@@ -460,11 +530,19 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
-  public BDD getUnsupported() {
+  public MutableBDDInteger getWeight() {
+    return _weight;
+  }
+
+  public void setWeight(MutableBDDInteger weight) {
+    _weight = weight;
+  }
+
+  public boolean getUnsupported() {
     return _unsupported;
   }
 
-  public void setUnsupported(@Nonnull BDD unsupported) {
+  public void setUnsupported(boolean unsupported) {
     _unsupported = unsupported;
   }
 
@@ -476,9 +554,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_med != null ? _med.hashCode() : 0);
       result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
       result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
+      result = 31 * result + (_weight != null ? _weight.hashCode() : 0);
       result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
-      result = 31 * result + (_nextHopDiscarded != null ? _nextHopDiscarded.hashCode() : 0);
-      result = 31 * result + (_nextHopSet != null ? _nextHopSet.hashCode() : 0);
+      result = 31 * result + Boolean.hashCode(_nextHopDiscarded);
+      result = 31 * result + Boolean.hashCode(_nextHopSet);
       result =
           31 * result
               + (_communityAtomicPredicates != null
@@ -489,7 +568,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
               + (_asPathRegexAtomicPredicates != null
                   ? Arrays.hashCode(_asPathRegexAtomicPredicates)
                   : 0);
-      result = 31 * result + _unsupported.hashCode();
+      result = 31 * result + _prependedASes.hashCode();
+      result = 31 * result + Boolean.hashCode(_unsupported);
       _hcode = result;
     }
     return _hcode;
@@ -511,7 +591,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
         && Objects.equals(_nextHopSet, other._nextHopSet)
         && Objects.equals(_tag, other._tag)
+        && Objects.equals(_weight, other._weight)
         && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_prependedASes, other._prependedASes)
         && Objects.equals(_unsupported, other._unsupported);
   }
 }

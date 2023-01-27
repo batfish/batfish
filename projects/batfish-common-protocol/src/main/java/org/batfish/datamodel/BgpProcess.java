@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,6 +60,7 @@ public class BgpProcess implements Serializable {
     @Nullable private Ip _routerId;
     @Nullable private Vrf _vrf;
     @Nullable private String _networkPolicy;
+    @Nullable private String _mainRibIndependentNetworkPolicy;
     @Nullable private String _redistributionPolicy;
     @Nullable private LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
     @Nullable private NextHopIpTieBreaker _networkNextHopIpTieBreaker;
@@ -92,6 +94,7 @@ public class BgpProcess implements Serializable {
               _localAdminCost,
               _confederation,
               _networkPolicy,
+              _mainRibIndependentNetworkPolicy,
               _redistributionPolicy,
               _localOriginationTypeTieBreaker,
               _networkNextHopIpTieBreaker,
@@ -143,6 +146,12 @@ public class BgpProcess implements Serializable {
 
     public @Nonnull Builder setNetworkPolicy(@Nullable String networkPolicy) {
       _networkPolicy = networkPolicy;
+      return this;
+    }
+
+    public @Nonnull Builder setMainRibIndependentNetworkPolicy(
+        @Nullable String mainRibIndependentNetworkPolicy) {
+      _mainRibIndependentNetworkPolicy = mainRibIndependentNetworkPolicy;
       return this;
     }
 
@@ -198,12 +207,15 @@ public class BgpProcess implements Serializable {
   private static final String PROP_CLUSTER_LIST_AS_IBGP_COST = "clusterListAsIbgpCost";
   private static final String PROP_CLUSTER_LIST_AS_IGP_COST_DEPRECATED = "clusterListAsIgpCost";
   private static final String PROP_INDEPENDENT_NETWORK_POLICY = "independentNetworkPolicy";
+  private static final String PROP_MAIN_RIB_INDEPENDENT_NETWORK_POLICY =
+      "mainRibIndependentNetworkPolicy";
   private static final String PROP_REDISTRIBUTION_POLICY = "redistributionPolicy";
   private static final String PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER =
       "localOriginationTypeTieBreaker";
   private static final String PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER = "networkNextHopIpTieBreaker";
   private static final String PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER =
       "redistributeNextHopIpTieBreaker";
+  private static final String PROP_TRACKS = "tracks";
 
   @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
@@ -239,11 +251,21 @@ public class BgpProcess implements Serializable {
 
   @Nullable private String _independentNetworkPolicy;
 
+  @Nullable private String _mainRibIndependentNetworkPolicy;
+
   @Nullable private String _redistributionPolicy;
 
   private final @Nonnull LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
   private final @Nonnull NextHopIpTieBreaker _networkNextHopIpTieBreaker;
   private final @Nonnull NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
+
+  private @Nonnull Set<String> _tracks;
+
+  /**
+   * a list of prefixes from bgp network statements that will be unconditionally advertised if
+   * _mainRibIndependentNetworkPolicy is set
+   */
+  private List<Prefix> _unconditionalNetworkStatements;
 
   private BgpProcess(
       @Nonnull Ip routerId,
@@ -252,6 +274,7 @@ public class BgpProcess implements Serializable {
       int localAdminCost,
       @Nullable BgpConfederation confederation,
       @Nullable String independentNetworkPolicy,
+      @Nullable String mainRibIndependentNetworkPolicy,
       @Nullable String redistributionPolicy,
       @Nonnull LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
       @Nonnull NextHopIpTieBreaker networkNextHopIpTieBreaker,
@@ -270,10 +293,13 @@ public class BgpProcess implements Serializable {
     _routerId = routerId;
     _clusterListAsIbgpCost = false;
     _independentNetworkPolicy = independentNetworkPolicy;
+    _mainRibIndependentNetworkPolicy = mainRibIndependentNetworkPolicy;
     _redistributionPolicy = redistributionPolicy;
     _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
     _networkNextHopIpTieBreaker = networkNextHopIpTieBreaker;
     _redistributeNextHopIpTieBreaker = redistributeNextHopIpTieBreaker;
+    _unconditionalNetworkStatements = new ArrayList<>();
+    _tracks = ImmutableSet.of();
   }
 
   @JsonCreator
@@ -284,6 +310,8 @@ public class BgpProcess implements Serializable {
       @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost,
       @Nullable @JsonProperty(PROP_LOCAL_ADMIN_COST) Integer localAdminCost,
       @Nullable @JsonProperty(PROP_INDEPENDENT_NETWORK_POLICY) String networkPolicy,
+      @Nullable @JsonProperty(PROP_MAIN_RIB_INDEPENDENT_NETWORK_POLICY)
+          String mainRibIndependentNetworkPolicy,
       @Nullable @JsonProperty(PROP_REDISTRIBUTION_POLICY) String redistributionPolicy,
       @Nullable @JsonProperty(PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER)
           LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
@@ -313,6 +341,7 @@ public class BgpProcess implements Serializable {
         localAdminCost,
         confederation,
         networkPolicy,
+        mainRibIndependentNetworkPolicy,
         redistributionPolicy,
         localOriginationTypeTieBreaker,
         networkNextHopIpTieBreaker,
@@ -357,6 +386,11 @@ public class BgpProcess implements Serializable {
    */
   public void addToOriginationSpace(Prefix prefix) {
     _originationSpace.addPrefix(prefix);
+  }
+
+  /** Add a prefix announced in a network statement unconditionally (without consulting main RIB) */
+  public void addUnconditionalNetworkStatements(Prefix prefix) {
+    _unconditionalNetworkStatements.add(prefix);
   }
 
   /**
@@ -468,6 +502,11 @@ public class BgpProcess implements Serializable {
   @JsonIgnore
   public PrefixSpace getOriginationSpace() {
     return _originationSpace;
+  }
+
+  @JsonIgnore
+  public List<Prefix> getUnconditionalNetworkStatements() {
+    return _unconditionalNetworkStatements;
   }
 
   /**
@@ -587,6 +626,26 @@ public class BgpProcess implements Serializable {
   }
 
   /**
+   * Name of the main RIB independent network policy for this process. Set for vendors like FRR that
+   * may announce networks via {@code network} statements regardless of if the route is present in
+   * the main RIB.
+   *
+   * <p>If non-null, these networks will unquestionably be announced to BGP neighbors
+   *
+   * <p>If {@code null}, indicates that networks must be in the main RIB to be announced to BGP
+   * neighbors.
+   */
+  @JsonProperty(PROP_MAIN_RIB_INDEPENDENT_NETWORK_POLICY)
+  @Nullable
+  public String getMainRibIndependentNetworkPolicy() {
+    return _mainRibIndependentNetworkPolicy;
+  }
+
+  public void setMainRibIndependentNetworkPolicy(@Nullable String mainRibIndependentNetworkPolicy) {
+    _mainRibIndependentNetworkPolicy = mainRibIndependentNetworkPolicy;
+  }
+
+  /**
    * Name of the redistribution policy for this process. This policy is expected to be set only on
    * vendors that export BGP from their BGP RIBs (Cisco-like behavior).
    *
@@ -619,5 +678,16 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER)
   public @Nonnull NextHopIpTieBreaker getRedistributeNextHopIpTieBreaker() {
     return _redistributeNextHopIpTieBreaker;
+  }
+
+  /** Names of tracks for which routes must be re-evaluated against policy upon a state change. */
+  @JsonProperty(PROP_TRACKS)
+  public @Nonnull Set<String> getTracks() {
+    return _tracks;
+  }
+
+  @JsonProperty(PROP_TRACKS)
+  public void setTracks(@Nonnull Set<String> tracks) {
+    _tracks = tracks;
   }
 }

@@ -187,8 +187,16 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   @Override
   public BDD visitOpaqueExtendedCommunities(
       OpaqueExtendedCommunities opaqueExtendedCommunities, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on opaque extended communities");
+    return matchingCommunityVarsToBDD(
+        _isExtendedCommunityLiteral.and(
+            c -> {
+              assert c.getLiteralValue() != null;
+              ExtendedCommunity ec = (ExtendedCommunity) c.getLiteralValue();
+              return ec.isOpaque()
+                  && ec.isTransitive() == opaqueExtendedCommunities.getIsTransitive()
+                  && ec.getSubtype() == opaqueExtendedCommunities.getSubtype();
+            }),
+        arg);
   }
 
   @Override

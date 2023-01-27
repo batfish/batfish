@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
@@ -242,6 +243,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -436,6 +438,11 @@ import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.EigrpRedistributionPolicy;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
+import org.batfish.representation.cisco.HsrpDecrementPriority;
+import org.batfish.representation.cisco.HsrpGroup;
+import org.batfish.representation.cisco.HsrpShutdown;
+import org.batfish.representation.cisco.HsrpTrackAction;
+import org.batfish.representation.cisco.HsrpVersion;
 import org.batfish.representation.cisco.IcmpEchoSla;
 import org.batfish.representation.cisco.IpSla;
 import org.batfish.representation.cisco.LdapServerGroup;
@@ -1628,10 +1635,94 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterfaceStandbyExtraction() {
+    CiscoConfiguration vc =
+        parseCiscoConfig("ios-interface-standby", ConfigurationFormat.CISCO_IOS);
+    assertThat(
+        vc.getInterfaces(), hasKeys("Ethernet0", "Tunnel1", "Ethernet1", "Ethernet2", "Ethernet3"));
+    {
+      org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet0");
+      assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_2));
+      assertThat(i.getHsrpGroups(), hasKeys(4095));
+      HsrpGroup h = i.getHsrpGroups().get(4095);
+      assertThat(
+          h.getAuthentication(),
+          equalTo(CommonUtil.sha256Digest("012345678901234567890123456789012345678")));
+      assertThat(h.getIp(), equalTo(Ip.parse("10.0.0.1")));
+      assertTrue(h.getPreempt());
+      assertThat(h.getPriority(), equalTo(105));
+      // msec, copied directly
+      assertThat(h.getHelloTime(), equalTo(500));
+      // no msec, multiplied by 1000
+      assertThat(h.getHoldTime(), equalTo(2000));
+      assertThat(h.getTrackActions(), hasKeys(1, 2, 3, 4, 5));
+      {
+        HsrpTrackAction t = h.getTrackActions().get(1);
+        assertThat(t, instanceOf(HsrpDecrementPriority.class));
+        HsrpDecrementPriority d = (HsrpDecrementPriority) t;
+        assertThat(d.getDecrement(), equalTo(20));
+      }
+      {
+        HsrpTrackAction t = h.getTrackActions().get(2);
+        assertThat(t, instanceOf(HsrpShutdown.class));
+      }
+      {
+        HsrpTrackAction t = h.getTrackActions().get(3);
+        assertThat(t, instanceOf(HsrpDecrementPriority.class));
+        HsrpDecrementPriority d = (HsrpDecrementPriority) t;
+        assertThat(d.getDecrement(), equalTo(20));
+      }
+      {
+        HsrpTrackAction t = h.getTrackActions().get(4);
+        assertThat(t, instanceOf(HsrpDecrementPriority.class));
+        HsrpDecrementPriority d = (HsrpDecrementPriority) t;
+        assertNull(d.getDecrement());
+      }
+      {
+        HsrpTrackAction t = h.getTrackActions().get(5);
+        assertThat(t, instanceOf(HsrpDecrementPriority.class));
+        HsrpDecrementPriority d = (HsrpDecrementPriority) t;
+        assertThat(d.getDecrement(), equalTo(20));
+      }
+    }
+    {
+      org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet1");
+      assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_1));
+      assertThat(i.getHsrpGroups(), hasKeys(255));
+    }
+    {
+      org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet2");
+      assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_1));
+      assertThat(i.getHsrpGroups(), anEmptyMap());
+    }
+    {
+      org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet3");
+      assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_2));
+      assertThat(i.getHsrpGroups(), anEmptyMap());
+    }
+  }
+
+  @Test
+  public void testIosInterfaceStandbyWarnings() throws IOException {
+    String hostname = "ios-interface-standby";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae.getWarnings().get(filename).getParseWarnings(),
+        containsInAnyOrder(
+            hasComment("Expected HSRP version 1 group number in range 0-255, but got '500'"),
+            hasComment("Expected HSRP version 2 group number in range 0-4095, but got '5000'")));
+  }
+
+  @Test
   public void testIosInterfaceStandby() throws IOException {
     Configuration c = parseConfig("ios-interface-standby");
     Interface i = c.getAllInterfaces().get("Ethernet0");
-    int group = 101;
+    int group = 4095;
 
     assertThat(
         c,
@@ -4534,6 +4625,12 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testInterfaceParsing() throws IOException {
+    Configuration c = parseConfig("interface-parsing");
+    assertThat(c, hasInterface("Vlan75", hasDescription("Made it to the end of Vlan75")));
+  }
+
+  @Test
   public void testIosOspfPassive() throws IOException {
     String testrigName = "ios-ospf-passive";
     String host1name = "ios-ospf-passive1";
@@ -7033,5 +7130,27 @@ public final class CiscoGrammarTest {
         ccae,
         hasReferencedStructure(
             filename, BGP_TEMPLATE_PEER_SESSION, "INDIRECT-PARENT", BGP_INHERITED_SESSION));
+  }
+
+  @Test
+  public void testDownSwitchVirtualInterface() throws IOException {
+    String hostname = "ios_svi";
+
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    vc.toVendorIndependentConfigurations();
+
+    assertThat(vc.getInterfaces().get("GigabitEthernet0/0").getActive(), equalTo(false));
+    assertThat(vc.getInterfaces().get("GigabitEthernet0/1").getActive(), equalTo(false));
+    assertThat(vc.getInterfaces().get("Vlan100").getActive(), equalTo(true));
+    assertThat(vc.getInterfaces().get("Vlan3000").getActive(), equalTo(true));
+
+    // Task17 Test
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(c.getAllInterfaces().get("GigabitEthernet0/0").getActive(), equalTo(false));
+    assertThat(c.getAllInterfaces().get("GigabitEthernet0/1").getActive(), equalTo(false));
+    assertThat(c.getAllInterfaces().get("Vlan100").getActive(), equalTo(false));
+    assertThat(c.getAllInterfaces().get("Vlan3000").getActive(), equalTo(false));
   }
 }

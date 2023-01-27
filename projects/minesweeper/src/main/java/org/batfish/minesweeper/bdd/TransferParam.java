@@ -2,7 +2,6 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.errorprone.annotations.FormatMethod;
 import javax.annotation.Nullable;
-import net.sf.javabdd.BDD;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.minesweeper.collections.PList;
 
@@ -29,9 +28,9 @@ public class TransferParam {
 
   private ChainContext _chainContext;
 
-  private BDD _defaultAccept;
+  private boolean _defaultAccept;
 
-  private BDD _defaultAcceptLocal;
+  private boolean _defaultAcceptLocal;
 
   private SetDefaultPolicy _defaultPolicy;
 
@@ -43,8 +42,8 @@ public class TransferParam {
     _chainContext = ChainContext.NONE;
     _indent = 0;
     _scopes = PList.empty();
-    _defaultAccept = data.getFactory().zero();
-    _defaultAcceptLocal = data.getFactory().zero();
+    _defaultAccept = false;
+    _defaultAcceptLocal = false;
     _defaultPolicy = null;
     _debug = debug;
   }
@@ -73,11 +72,11 @@ public class TransferParam {
     return _chainContext;
   }
 
-  public BDD getDefaultAccept() {
+  public boolean getDefaultAccept() {
     return _defaultAccept;
   }
 
-  public BDD getDefaultAcceptLocal() {
+  public boolean getDefaultAcceptLocal() {
     return _defaultAcceptLocal;
   }
 
@@ -117,7 +116,7 @@ public class TransferParam {
     return ret;
   }
 
-  public TransferParam setDefaultAccept(BDD defaultAccept) {
+  public TransferParam setDefaultAccept(boolean defaultAccept) {
     TransferParam ret = new TransferParam(this);
     ret._defaultAccept = defaultAccept;
     return ret;
@@ -129,7 +128,7 @@ public class TransferParam {
     return ret;
   }
 
-  public TransferParam setDefaultAcceptLocal(BDD defaultAcceptLocal) {
+  public TransferParam setDefaultAcceptLocal(boolean defaultAcceptLocal) {
     TransferParam ret = new TransferParam(this);
     ret._defaultAcceptLocal = defaultAcceptLocal;
     return ret;

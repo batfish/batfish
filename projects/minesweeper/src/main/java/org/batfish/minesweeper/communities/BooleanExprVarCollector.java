@@ -33,181 +33,207 @@ import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.utils.Tuple;
 
 /** Collect all community literals and regexes in a {@link BooleanExpr}. */
 @ParametersAreNonnullByDefault
 public class BooleanExprVarCollector
-    implements BooleanExprVisitor<Set<CommunityVar>, Configuration> {
+    implements BooleanExprVisitor<Set<CommunityVar>, Tuple<Set<String>, Configuration>> {
 
   @Override
   public Set<CommunityVar> visitMatchClusterListLength(
-      MatchClusterListLength matchClusterListLength, Configuration arg) {
+      MatchClusterListLength matchClusterListLength, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitBooleanExprs(
-      StaticBooleanExpr staticBooleanExpr, Configuration arg) {
+      StaticBooleanExpr staticBooleanExpr, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitCallExpr(CallExpr callExpr, Configuration arg) {
-    /* we already visit all route policies in a configuration (see Graph::findAllCommunities), so no
-    need to recurse to the callee policy */
-    return ImmutableSet.of();
+  public Set<CommunityVar> visitCallExpr(CallExpr callExpr, Tuple<Set<String>, Configuration> arg) {
+    if (arg.getFirst().contains(callExpr.getCalledPolicyName())) {
+      // If we have already visited this policy then don't visit again
+      return ImmutableSet.of();
+    }
+    // Otherwise update the set of seen policies and recurse.
+    arg.getFirst().add(callExpr.getCalledPolicyName());
+
+    return new RoutePolicyStatementVarCollector()
+        .visitAll(
+            arg.getSecond()
+                .getRoutingPolicies()
+                .get(callExpr.getCalledPolicyName())
+                .getStatements(),
+            arg);
   }
 
   @Override
-  public Set<CommunityVar> visitConjunction(Conjunction conjunction, Configuration arg) {
+  public Set<CommunityVar> visitConjunction(
+      Conjunction conjunction, Tuple<Set<String>, Configuration> arg) {
     return visitAll(conjunction.getConjuncts(), arg);
   }
 
   @Override
   public Set<CommunityVar> visitConjunctionChain(
-      ConjunctionChain conjunctionChain, Configuration arg) {
+      ConjunctionChain conjunctionChain, Tuple<Set<String>, Configuration> arg) {
     return visitAll(conjunctionChain.getSubroutines(), arg);
   }
 
   @Override
-  public Set<CommunityVar> visitDisjunction(Disjunction disjunction, Configuration arg) {
+  public Set<CommunityVar> visitDisjunction(
+      Disjunction disjunction, Tuple<Set<String>, Configuration> arg) {
     return visitAll(disjunction.getDisjuncts(), arg);
   }
 
   @Override
   public Set<CommunityVar> visitFirstMatchChain(
-      FirstMatchChain firstMatchChain, Configuration arg) {
+      FirstMatchChain firstMatchChain, Tuple<Set<String>, Configuration> arg) {
     return visitAll(firstMatchChain.getSubroutines(), arg);
   }
 
   @Override
-  public Set<CommunityVar> visitRibIntersectsPrefixSpace(
-      RibIntersectsPrefixSpace ribIntersectsPrefixSpace, Configuration arg) {
-    return ribIntersectsPrefixSpace.getRibExpr().accept(RibExprVarCollector.instance(), arg);
-  }
-
-  @Override
-  public Set<CommunityVar> visitHasRoute(HasRoute hasRoute, Configuration arg) {
+  public Set<CommunityVar> visitTrackSucceeded(
+      TrackSucceeded trackSucceeded, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchAsPath(MatchAsPath matchAsPath, Configuration arg) {
+  public Set<CommunityVar> visitHasRoute(HasRoute hasRoute, Tuple<Set<String>, Configuration> arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitMatchAsPath(
+      MatchAsPath matchAsPath, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitMatchLegacyAsPath(
-      LegacyMatchAsPath legacyMatchAsPath, Configuration arg) {
+      LegacyMatchAsPath legacyMatchAsPath, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitMatchBgpSessionType(
-      MatchBgpSessionType matchBgpSessionType, Configuration arg) {
+      MatchBgpSessionType matchBgpSessionType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchColor(MatchColor matchColor, Configuration arg) {
+  public Set<CommunityVar> visitMatchColor(
+      MatchColor matchColor, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitMatchCommunities(
-      MatchCommunities matchCommunities, Configuration arg) {
+      MatchCommunities matchCommunities, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.<CommunityVar>builder()
         .addAll(
-            matchCommunities.getCommunitySetExpr().accept(new CommunitySetExprVarCollector(), arg))
+            matchCommunities
+                .getCommunitySetExpr()
+                .accept(new CommunitySetExprVarCollector(), arg.getSecond()))
         .addAll(
             matchCommunities
                 .getCommunitySetMatchExpr()
-                .accept(new CommunitySetMatchExprVarCollector(), arg))
+                .accept(new CommunitySetMatchExprVarCollector(), arg.getSecond()))
         .build();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchInterface(MatchInterface matchInterface, Configuration arg) {
+  public Set<CommunityVar> visitMatchInterface(
+      MatchInterface matchInterface, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchIpv4(MatchIpv4 matchIpv4, Configuration arg) {
+  public Set<CommunityVar> visitMatchIpv4(
+      MatchIpv4 matchIpv4, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitMatchLocalPreference(
-      MatchLocalPreference matchLocalPreference, Configuration arg) {
+      MatchLocalPreference matchLocalPreference, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitMatchLocalRouteSourcePrefixLength(
-      MatchLocalRouteSourcePrefixLength matchLocalRouteSourcePrefixLength, Configuration arg) {
+      MatchLocalRouteSourcePrefixLength matchLocalRouteSourcePrefixLength,
+      Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchMetric(MatchMetric matchMetric, Configuration arg) {
+  public Set<CommunityVar> visitMatchMetric(
+      MatchMetric matchMetric, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchPrefixSet(MatchPrefixSet matchPrefixSet, Configuration arg) {
+  public Set<CommunityVar> visitMatchPrefixSet(
+      MatchPrefixSet matchPrefixSet, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitMatchProcessAsn(
-      MatchProcessAsn matchProcessAsn, Configuration arg) {
+      MatchProcessAsn matchProcessAsn, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchProtocol(MatchProtocol matchProtocol, Configuration arg) {
+  public Set<CommunityVar> visitMatchProtocol(
+      MatchProtocol matchProtocol, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchRouteType(MatchRouteType matchRouteType, Configuration arg) {
+  public Set<CommunityVar> visitMatchRouteType(
+      MatchRouteType matchRouteType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitMatchSourceProtocol(
-      MatchSourceProtocol matchSourceProtocol, Configuration arg) {
+      MatchSourceProtocol matchSourceProtocol, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchSourceVrf(MatchSourceVrf matchSourceVrf, Configuration arg) {
+  public Set<CommunityVar> visitMatchSourceVrf(
+      MatchSourceVrf matchSourceVrf, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitMatchTag(MatchTag matchTag, Configuration arg) {
+  public Set<CommunityVar> visitMatchTag(MatchTag matchTag, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitNot(Not not, Configuration arg) {
+  public Set<CommunityVar> visitNot(Not not, Tuple<Set<String>, Configuration> arg) {
     return not.getExpr().accept(this, arg);
   }
 
   @Override
   public Set<CommunityVar> visitRouteIsClassful(
-      RouteIsClassful routeIsClassful, Configuration arg) {
+      RouteIsClassful routeIsClassful, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitWithEnvironmentExpr(
-      WithEnvironmentExpr withEnvironmentExpr, Configuration arg) {
+      WithEnvironmentExpr withEnvironmentExpr, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.<CommunityVar>builder()
         .addAll(withEnvironmentExpr.getExpr().accept(this, arg))
         .addAll(
@@ -222,7 +248,8 @@ public class BooleanExprVarCollector
         .build();
   }
 
-  private Set<CommunityVar> visitAll(List<BooleanExpr> exprs, Configuration arg) {
+  private Set<CommunityVar> visitAll(
+      List<BooleanExpr> exprs, Tuple<Set<String>, Configuration> arg) {
     return exprs.stream()
         .flatMap(expr -> expr.accept(this, arg).stream())
         .collect(ImmutableSet.toImmutableSet());

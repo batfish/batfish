@@ -17,7 +17,16 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
@@ -28,6 +37,8 @@ public class ConfigAtomicPredicatesTest {
   private static final String HOSTNAME = "hostname";
   private IBatfish _batfish;
   private Configuration _baseConfig;
+
+  private NetworkFactory _nf;
 
   static final class MockBatfish extends IBatfishTestAdapter {
     private final SortedMap<String, Configuration> _baseConfigs;
@@ -62,13 +73,13 @@ public class ConfigAtomicPredicatesTest {
 
   @Before
   public void setup() {
-    NetworkFactory nf = new NetworkFactory();
+    _nf = new NetworkFactory();
     Configuration.Builder cb =
-        nf.configurationBuilder()
+        _nf.configurationBuilder()
             .setHostname(HOSTNAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _baseConfig = cb.build();
-    nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
+    _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
     _batfish = new MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
   }
@@ -78,7 +89,7 @@ public class ConfigAtomicPredicatesTest {
     ConfigAtomicPredicates cap =
         new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    RegexAtomicPredicates<CommunityVar> commAPs = cap.getCommunityAtomicPredicates();
+    RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
     assertEquals(commAPs.getAtomicPredicateAutomata().size(), 1);
@@ -97,13 +108,15 @@ public class ConfigAtomicPredicatesTest {
     ConfigAtomicPredicates cap =
         new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME, null, null);
 
-    RegexAtomicPredicates<CommunityVar> commAPs = cap.getCommunityAtomicPredicates();
+    RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
     assertEquals(commAPs.getAtomicPredicateAutomata().size(), 1);
     assertThat(
         commAPs.getAtomicPredicateAutomata().values(),
         hasItem(CommunityVar.ALL_STANDARD_COMMUNITIES.toAutomaton()));
+
+    assertEquals(cap.getNonStandardCommunityLiterals().size(), 0);
 
     assertEquals(asAPs.getAtomicPredicateAutomata().size(), 1);
     assertThat(
@@ -121,7 +134,7 @@ public class ConfigAtomicPredicatesTest {
             ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("30:40"))),
             ImmutableSet.of("^$"));
 
-    RegexAtomicPredicates<CommunityVar> commAPs = cap.getCommunityAtomicPredicates();
+    RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
 
     assertEquals(commAPs.getAtomicPredicateAutomata().size(), 2);
@@ -129,9 +142,77 @@ public class ConfigAtomicPredicatesTest {
         commAPs.getAtomicPredicateAutomata().values(),
         hasItem(CommunityVar.from(StandardCommunity.parse("30:40")).toAutomaton()));
 
+    assertEquals(cap.getNonStandardCommunityLiterals().size(), 0);
+
     assertEquals(asAPs.getAtomicPredicateAutomata().size(), 2);
     assertThat(
         asAPs.getAtomicPredicateAutomata().values(),
         hasItem(new SymbolicAsPathRegex("^$").toAutomaton()));
+  }
+
+  @Test
+  public void testConstructor3() {
+    ConfigAtomicPredicates cap =
+        new ConfigAtomicPredicates(
+            _batfish,
+            _batfish.getSnapshot(),
+            HOSTNAME,
+            ImmutableSet.of(CommunityVar.from(ExtendedCommunity.parse("0:30:40"))),
+            ImmutableSet.of("^$"));
+
+    RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
+    RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
+
+    assertEquals(commAPs.getAtomicPredicateAutomata().size(), 1);
+    assertThat(
+        commAPs.getAtomicPredicateAutomata().values(),
+        hasItem(CommunityVar.ALL_STANDARD_COMMUNITIES.toAutomaton()));
+
+    assertEquals(cap.getNonStandardCommunityLiterals().size(), 1);
+    assertThat(
+        cap.getNonStandardCommunityLiterals().values(),
+        hasItem(CommunityVar.from(ExtendedCommunity.parse("0:30:40"))));
+
+    assertEquals(asAPs.getAtomicPredicateAutomata().size(), 2);
+    assertThat(
+        asAPs.getAtomicPredicateAutomata().values(),
+        hasItem(new SymbolicAsPathRegex("^$").toAutomaton()));
+  }
+
+  @Test
+  public void testCallStatement() {
+
+    RoutingPolicy firstPolicy =
+        _nf.routingPolicyBuilder()
+            .setName("firstPolicy")
+            .setOwner(_baseConfig)
+            .addStatement(new CallStatement("secondPolicy"))
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("1:1"))))))
+            .addStatement(new Statements.StaticStatement(Statements.ExitAccept))
+            .build();
+
+    RoutingPolicy secondPolicy =
+        _nf.routingPolicyBuilder()
+            .setName("secondPolicy")
+            .setOwner(_baseConfig)
+            .addStatement(new CallStatement("firstPolicy"))
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("2:2"))))))
+            .addStatement(new Statements.StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of("firstPolicy", firstPolicy, "secondPolicy", secondPolicy));
+    ConfigAtomicPredicates cap =
+        new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    assertEquals(3, cap.getStandardCommunityAtomicPredicates().getNumAtomicPredicates());
   }
 }

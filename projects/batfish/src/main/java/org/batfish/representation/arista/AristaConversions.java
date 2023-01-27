@@ -96,6 +96,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.arista.eos.AristaBgpDefaultOriginate;
 import org.batfish.representation.arista.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMode;
@@ -528,21 +529,25 @@ final class AristaConversions {
                             AristaBgpNeighbor.SYSTEM_DEFAULT_LOCALPREF)))));
     exportStatements.add(overrideUnsetLocalPref);
 
-    if (v4Enabled
-        && neighbor.getDefaultOriginate() != null
-        && neighbor.getDefaultOriginate().getEnabled()) {
+    @Nullable
+    AristaBgpDefaultOriginate defaultOriginate =
+        // bgp default-originate: address-family, per-neighbor binding wins first.
+        Optional.ofNullable(naf4)
+            .map(AristaBgpNeighborAddressFamily::getDefaultOriginate)
+            // but if not present, then per-neighbor binding wins
+            .orElse(neighbor.getDefaultOriginate());
+    if (v4Enabled && defaultOriginate != null && defaultOriginate.getEnabled()) {
       // TODO: fix the export pipeline in VI so that setting the attribute policy is sufficient.
       //   Similarly, "new MatchProtocol(RoutingProtocol.AGGREGATE)" below should go away
       //   https://github.com/batfish/batfish/issues/5375
 
       // 1. Unconditionally generate a default route that is sent directly to this neighbor, without
       // going through the export policy.
-      String defaultOriginateRouteMapName = neighbor.getDefaultOriginate().getRouteMap();
       GeneratedRoute defaultRoute =
           GeneratedRoute.builder()
               .setNetwork(Prefix.ZERO)
               .setAdmin(MAX_ADMINISTRATIVE_COST)
-              .setAttributePolicy(defaultOriginateRouteMapName)
+              .setAttributePolicy(defaultOriginate.getRouteMap())
               .build();
       newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute));
 

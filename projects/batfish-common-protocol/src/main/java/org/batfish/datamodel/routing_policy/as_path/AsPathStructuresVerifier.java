@@ -36,8 +36,8 @@ import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
@@ -136,8 +136,8 @@ public final class AsPathStructuresVerifier {
     }
 
     @Override
-    public Void visitRibIntersectsPrefixSpace(
-        RibIntersectsPrefixSpace ribIntersectsPrefixSpace, AsPathStructuresVerifierContext arg) {
+    public Void visitTrackSucceeded(
+        TrackSucceeded trackSucceeded, AsPathStructuresVerifierContext arg) {
       return null;
     }
 

@@ -16,7 +16,7 @@ repos:
         require_serial: true
         pass_filenames: false  # this is a global check, only run it once
 -   repo: https://github.com/psf/black
-    rev: 19.10b0
+    rev: 22.3.0
     hooks:
     -   id: black
 -   repo: https://github.com/pre-commit/mirrors-isort
