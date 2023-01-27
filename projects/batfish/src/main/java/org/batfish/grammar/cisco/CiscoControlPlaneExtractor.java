@@ -314,6 +314,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7143,9 +7144,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
     long as = toAsNum(ctx.asn);
-        List<Object> obj = new ArrayList<Object>();
-    obj.add(as);
-    r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, obj);
+    r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, Sets.newHashSet(as));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7200,7 +7199,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     long asn = toLong(ctx.asn);
     r.getSpecialAttributes()
-        .computeIfAbsent(EigrpRedistributionPolicy.EIGRP_AS_NUMBER, (key) -> new ArrayList<>())
+        .computeIfAbsent(EigrpRedistributionPolicy.EIGRP_AS_NUMBER, (key) -> new HashSet<>())
         .add(asn);
 
     if (!ctx.METRIC().isEmpty()) {
@@ -7236,10 +7235,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
     EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
-    int procNum = toInteger(ctx.proc);
-    List<Object> obj = new ArrayList<Object>();
-    obj.add(procNum);
-    r.getSpecialAttributes().put(EigrpRedistributionPolicy.OSPF_PROCESS_NUMBER, obj);
+    long procNum = toLong(ctx.proc);
+    r.getSpecialAttributes()
+        .put(EigrpRedistributionPolicy.OSPF_PROCESS_NUMBER, Sets.newHashSet(procNum));
 
     if (ctx.MATCH() != null) {
       todo(ctx);
@@ -7872,14 +7870,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         for (Ospf_route_typeContext ospf_route_typeContext : ctx.ospf_route_type()) {
           protocols.addAll(toOspfRoutingProtocols(ospf_route_typeContext));
         }
-        List<Object> obj = new ArrayList<Object>();
-        obj.add(new MatchProtocol(protocols));
-        r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_ROUTE_TYPES, obj);
+        r.getSpecialAttributes()
+            .put(
+                BgpRedistributionPolicy.OSPF_ROUTE_TYPES,
+                Sets.newHashSet(new MatchProtocol(protocols)));
       }
       if (ctx.procname != null) {
-        List<Object> obj = new ArrayList<Object>();
-        obj.add(ctx.procname.getText());
-        r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, obj);
+        r.getSpecialAttributes()
+            .put(
+                BgpRedistributionPolicy.OSPF_PROCESS_NUMBER,
+                Sets.newHashSet(ctx.procname.getText()));
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
@@ -8390,9 +8390,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
     long as = toAsNum(ctx.bgp_asn());
-    List<Object> obj = new ArrayList<Object>();
-    obj.add(as);
-    r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, obj);
+    r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, Sets.newHashSet(as));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8454,9 +8452,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
     long asn = toLong(ctx.tag);
-    List<Object> obj = new ArrayList<Object>();
-    obj.add(asn);
-    r.getSpecialAttributes().put(OspfRedistributionPolicy.EIGRP_AS_NUMBER, obj);
+    r.getSpecialAttributes().put(OspfRedistributionPolicy.EIGRP_AS_NUMBER, Sets.newHashSet(asn));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);

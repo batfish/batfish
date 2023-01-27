@@ -1214,12 +1214,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
         matchProtocol = new MatchProtocol(srcProtocol);
         break;
       case OSPF:
-        List<Object> obj =
+        Set<Object> obj =
             redistributionPolicy
                 .getSpecialAttributes()
                 .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES);
-        if (obj != null && !obj.isEmpty() && obj.get(0) != null) {
-          matchProtocol = (MatchProtocol) obj.get(0);
+        if (obj != null && !obj.isEmpty() && obj.iterator().hasNext()) {
+          matchProtocol = (MatchProtocol) obj.iterator().next();
         } else {
           // No match type means internal routes only, at least on IOS.
           // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp

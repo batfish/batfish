@@ -271,12 +271,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1462,8 +1463,8 @@ public final class CiscoGrammarTest {
             .getRedistributionPolicies()
             .get(RoutingProtocol.EIGRP);
 
-    List<Object> MatchRedistributeASList = new ArrayList<Object>(Arrays.asList(20L, 30L));
-    java.util.Map<String, List<Object>> MatchList = new java.util.TreeMap<>();
+    Set<Object> MatchRedistributeASList = Sets.newHashSet(20L, 30L);
+    java.util.Map<String, Set<Object>> MatchList = new java.util.TreeMap<>();
     MatchList.put(
         org.batfish.representation.cisco.EigrpRedistributionPolicy.EIGRP_AS_NUMBER,
         MatchRedistributeASList);
@@ -6051,7 +6052,7 @@ public final class CiscoGrammarTest {
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
           vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
-      List<Object> MatchProtocolList = new ArrayList<Object>();
+      Set<Object> MatchProtocolList = new HashSet<Object>();
       MatchProtocolList.add(
           new MatchProtocol(
               RoutingProtocol.OSPF,
@@ -6069,7 +6070,7 @@ public final class CiscoGrammarTest {
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
           vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
-      List<Object> MatchProtocolList = new ArrayList<Object>();
+      Set<Object> MatchProtocolList = new HashSet<Object>();
       MatchProtocolList.add(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA));
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
