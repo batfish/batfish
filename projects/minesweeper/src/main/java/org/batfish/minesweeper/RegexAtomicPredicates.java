@@ -134,8 +134,7 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   }
 
   protected void setAtomicPredicateAutomata(Map<Integer, Automaton> apAutomata) {
-    _atomicPredicateAutomata =
-        ImmutableMap.<Integer, Automaton>builder().putAll(apAutomata).build();
+    _atomicPredicateAutomata = ImmutableMap.copyOf(apAutomata);
   }
 
   @Nonnull
