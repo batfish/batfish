@@ -72,9 +72,6 @@ public final class SearchRoutePoliciesQuestion extends Question {
     checkArgument(
         action == Action.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
         "Output route constraints can only be provided when the action is 'permit'");
-    checkArgument(
-        outputConstraints.getAsPath().isEmpty(),
-        "Constraints on the output AS path are not currently supported");
     _direction = direction;
     _nodes = nodes;
     _policies = policies;

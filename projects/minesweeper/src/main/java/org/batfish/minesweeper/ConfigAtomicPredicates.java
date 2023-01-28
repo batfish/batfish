@@ -38,10 +38,10 @@ public class ConfigAtomicPredicates {
    * Each extended/large community literal that appears in the given configuration is assigned a
    * unique atomic predicate.
    */
-  private final Map<Integer, CommunityVar> _nonStandardCommunityLiterals = new HashMap<>();
+  private final Map<Integer, CommunityVar> _nonStandardCommunityLiterals;
 
   /** Atomic predicates for the AS-path regexes that appear in the given configuration. */
-  private final RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
+  private final AsPathRegexAtomicPredicates _asPathRegexAtomicPredicates;
 
   /**
    * Compute atomic predicates for the given router's configuration.
@@ -52,6 +52,24 @@ public class ConfigAtomicPredicates {
    */
   public ConfigAtomicPredicates(IBatfish batfish, NetworkSnapshot snapshot, String router) {
     this(batfish, snapshot, router, null, null);
+  }
+
+  /**
+   * Compute atomic predicates for the given router's configuration.
+   *
+   * @param batfish the batfish object
+   * @param snapshot the current snapshot
+   * @param router the name of the router whose configuration is being analyzed
+   * @param communities additional community regexes to track, from user-defined constraints
+   * @param asPathRegexes additional as-path regexes to track, from user-defined constraints
+   */
+  public ConfigAtomicPredicates(
+      IBatfish batfish,
+      NetworkSnapshot snapshot,
+      String router,
+      @Nullable Set<CommunityVar> communities,
+      @Nullable Set<String> asPathRegexes) {
+    this(batfish, snapshot, router, communities, asPathRegexes, null);
   }
 
   /**
@@ -95,30 +113,21 @@ public class ConfigAtomicPredicates {
     CommunityVar[] nonStandardCommunityVars =
         allCommunities.stream().filter(isStandardCommunity.negate()).toArray(CommunityVar[]::new);
     int numAPs = _standardCommunityAtomicPredicates.getNumAtomicPredicates();
+    _nonStandardCommunityLiterals = new HashMap<>();
     for (int i = 0; i < nonStandardCommunityVars.length; i++) {
       _nonStandardCommunityLiterals.put(i + numAPs, nonStandardCommunityVars[i]);
     }
     _asPathRegexAtomicPredicates =
-        new RegexAtomicPredicates<>(
-            findAllAsPathRegexes(asPathRegexes, usedPolicies), SymbolicAsPathRegex.ALL_AS_PATHS);
+        new AsPathRegexAtomicPredicates(findAllAsPathRegexes(asPathRegexes, usedPolicies));
   }
 
-  /**
-   * Compute atomic predicates for the given router's configuration.
-   *
-   * @param batfish the batfish object
-   * @param snapshot the current snapshot
-   * @param router the name of the router whose configuration is being analyzed
-   * @param communities additional community regexes to track, from user-defined constraints
-   * @param asPathRegexes additional as-path regexes to track, from user-defined constraints
-   */
-  public ConfigAtomicPredicates(
-      IBatfish batfish,
-      NetworkSnapshot snapshot,
-      String router,
-      @Nullable Set<CommunityVar> communities,
-      @Nullable Set<String> asPathRegexes) {
-    this(batfish, snapshot, router, communities, asPathRegexes, null);
+  public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
+    _configuration = other._configuration;
+    _standardCommunityAtomicPredicates =
+        new RegexAtomicPredicates<>(other._standardCommunityAtomicPredicates);
+    _nonStandardCommunityLiterals = new HashMap<>(other._nonStandardCommunityLiterals);
+    _asPathRegexAtomicPredicates =
+        new AsPathRegexAtomicPredicates(other._asPathRegexAtomicPredicates);
   }
 
   /**
@@ -232,7 +241,7 @@ public class ConfigAtomicPredicates {
     return _nonStandardCommunityLiterals;
   }
 
-  public RegexAtomicPredicates<SymbolicAsPathRegex> getAsPathRegexAtomicPredicates() {
+  public AsPathRegexAtomicPredicates getAsPathRegexAtomicPredicates() {
     return _asPathRegexAtomicPredicates;
   }
 }
