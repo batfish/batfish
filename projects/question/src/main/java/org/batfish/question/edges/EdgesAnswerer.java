@@ -190,7 +190,8 @@ public class EdgesAnswerer extends Answerer {
             .map(
                 userProvidedLayer1Topology ->
                     (Multiset<Row>)
-                        userProvidedLayer1Topology.getGraph().edges().stream()
+                        userProvidedLayer1Topology
+                            .edgeStream()
                             .map(EdgesAnswerer::layer1EdgeToRow)
                             .collect(Collectors.toCollection(HashMultiset::create)))
             .orElse(ImmutableMultiset.of());
@@ -287,7 +288,8 @@ public class EdgesAnswerer extends Answerer {
     if (layer1Topology == null) {
       return ImmutableList.of();
     }
-    return layer1Topology.getGraph().edges().stream()
+    return layer1Topology
+        .edgeStream()
         .filter(
             layer1Edge ->
                 includeNodes.contains(layer1Edge.getNode1().getHostname())

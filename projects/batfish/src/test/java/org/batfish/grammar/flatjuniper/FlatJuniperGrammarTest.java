@@ -1039,7 +1039,7 @@ public final class FlatJuniperGrammarTest {
 
     // check layer-1 logical adjacencies
     assertThat(
-        layer1LogicalTopology.getGraph().edges(),
+        layer1LogicalTopology.edgeStream().collect(Collectors.toList()),
         hasItem(new Layer1Edge("r1", "ae0", "r2", "ae0")));
 
     // check layer-2 adjacencies
