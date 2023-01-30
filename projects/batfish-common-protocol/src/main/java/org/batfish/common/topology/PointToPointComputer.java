@@ -55,12 +55,12 @@ public final class PointToPointComputer {
   @VisibleForTesting
   static Map<NodeInterfacePair, NodeInterfacePair> pointToPointInterfaces(Layer1Topology topology) {
     Map<NodeInterfacePair, NodeInterfacePair> pointToPoint = new HashMap<>();
-    for (Layer1Node n : topology.getGraph().nodes()) {
+    for (Layer1Node n : topology.nodes()) {
       if (n.equals(Layer1Topologies.INVALID_INTERFACE)) {
         // Not valid point-to-point interface.
         continue;
       }
-      Set<Layer1Node> neighbors = topology.getGraph().adjacentNodes(n);
+      Set<Layer1Node> neighbors = topology.adjacentNodes(n);
       if (neighbors.size() != 1) {
         // Not unique, so no point-to-point link.
         continue;
@@ -70,7 +70,7 @@ public final class PointToPointComputer {
         // Not valid point-to-point interface.
         continue;
       }
-      Set<Layer1Node> neighborNeighbors = topology.getGraph().adjacentNodes(neighbor);
+      Set<Layer1Node> neighborNeighbors = topology.adjacentNodes(neighbor);
       if (!neighborNeighbors.isEmpty() && !neighborNeighbors.equals(ImmutableSet.of(n))) {
         // Neighbor has either too many neighbors or the wrong neighbor; empty is okay though.
         // (Keep in mind: topology is directed, and may be asymmetric.)

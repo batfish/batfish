@@ -1,9 +1,10 @@
 package org.batfish.common.topology;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
@@ -97,7 +98,8 @@ public final class Layer1Topologies {
     _synthesizedL1 = synthesizedL1;
     _combinedL1 =
         new Layer1Topology(
-            Sets.union(_canonicalUserL1.getGraph().edges(), _synthesizedL1.getGraph().edges()));
+            Stream.concat(_canonicalUserL1.edgeStream(), _synthesizedL1.edgeStream())
+                .collect(Collectors.toList()));
     _logicalL1 = logicalL1;
     _activeLogicalL1 = activeLogicalL1;
   }

@@ -4,12 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.MutableNetwork;
-import com.google.common.graph.NetworkBuilder;
+import com.google.common.collect.Ordering;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.ImmutableGraph;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,29 +29,41 @@ public final class Layer1Topology {
     return new Layer1Topology(edges != null ? edges : ImmutableSortedSet.of());
   }
 
-  private final ImmutableNetwork<Layer1Node, Layer1Edge> _graph;
+  private final ImmutableGraph<Layer1Node> _graph;
 
   public Layer1Topology(@Nonnull Layer1Edge... edges) {
     this(Arrays.asList(edges));
   }
 
   public Layer1Topology(@Nonnull Iterable<Layer1Edge> edges) {
-    MutableNetwork<Layer1Node, Layer1Edge> graph =
-        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
-    edges.forEach(
-        edge -> {
-          if (edge.getNode1().equals(edge.getNode2()) || graph.edges().contains(edge)) {
-            // Ignore self-loops and parallel edges
-            return;
-          }
-          graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
-        });
-    _graph = ImmutableNetwork.copyOf(graph);
+    ImmutableGraph.Builder<Layer1Node> graph =
+        GraphBuilder.directed().allowsSelfLoops(false).immutable();
+    for (Layer1Edge edge : edges) {
+      if (edge.getNode1().equals(edge.getNode2())) {
+        // Ignore self-loops
+        continue;
+      }
+      graph.putEdge(edge.getNode1(), edge.getNode2());
+    }
+    _graph = graph.build();
   }
 
   @JsonIgnore
-  public @Nonnull ImmutableNetwork<Layer1Node, Layer1Edge> getGraph() {
-    return _graph;
+  public @Nonnull Stream<Layer1Edge> edgeStream() {
+    return _graph.edges().stream().map(ep -> new Layer1Edge(ep.nodeU(), ep.nodeV()));
+  }
+
+  @JsonIgnore
+  public @Nonnull Set<Layer1Node> adjacentNodes(Layer1Node node) {
+    if (!_graph.nodes().contains(node)) {
+      return ImmutableSet.of();
+    }
+    return _graph.adjacentNodes(node);
+  }
+
+  @JsonIgnore
+  public @Nonnull Set<Layer1Node> nodes() {
+    return _graph.nodes();
   }
 
   /** Returns true if this {@link Layer1Topology} has no edges (it may have nodes). */
@@ -59,7 +74,7 @@ public final class Layer1Topology {
 
   @JsonProperty(PROP_EDGES)
   private SortedSet<Layer1Edge> getJsonEdges() {
-    return ImmutableSortedSet.copyOf(_graph.edges());
+    return edgeStream().collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
   @Override

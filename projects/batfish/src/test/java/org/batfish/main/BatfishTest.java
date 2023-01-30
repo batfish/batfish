@@ -390,13 +390,12 @@ public class BatfishTest {
     Layer1Node c1i3 = new Layer1Node("c1", "i3");
     Layer1Node c2i4 = new Layer1Node("c2", "i4");
     assertThat(
-        layer1Topology.getGraph().edges(),
-        equalTo(
-            ImmutableSet.of(
-                new Layer1Edge(c1i1, c2i2),
-                new Layer1Edge(c2i2, c1i1),
-                new Layer1Edge(c1i3, c2i4),
-                new Layer1Edge(c2i4, c1i3))));
+        layer1Topology.edgeStream().collect(Collectors.toList()),
+        containsInAnyOrder(
+            new Layer1Edge(c1i1, c2i2),
+            new Layer1Edge(c2i2, c1i1),
+            new Layer1Edge(c1i3, c2i4),
+            new Layer1Edge(c2i4, c1i3)));
   }
 
   @Test

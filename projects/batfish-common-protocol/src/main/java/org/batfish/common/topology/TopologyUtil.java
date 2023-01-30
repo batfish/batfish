@@ -361,8 +361,7 @@ public final class TopologyUtil {
 
     // Pre-compute nodes that have L1 or VXLAN edges, and only compute L2 edges for those.
     Set<String> nodesWithL1Edge =
-        layer1LogicalTopology.getGraph().edges().stream()
-            .flatMap(edge -> Stream.of(edge.getNode1(), edge.getNode2()))
+        layer1LogicalTopology.nodes().stream()
             .map(Layer1Node::getHostname)
             .collect(ImmutableSet.toImmutableSet());
     Set<String> nodesWithVxlan =
@@ -392,8 +391,7 @@ public final class TopologyUtil {
 
     // Add layer2 edges for physical links.
     layer1LogicalTopology
-        .getGraph()
-        .edges()
+        .edgeStream()
         .forEach(
             layer1Edge ->
                 computeLayer2EdgesForLayer1Edge(

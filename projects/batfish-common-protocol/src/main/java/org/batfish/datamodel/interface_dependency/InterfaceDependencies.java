@@ -30,7 +30,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topologies;
-import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Interface;
@@ -233,11 +232,11 @@ public class InterfaceDependencies {
     Layer1Node layer1Node = new Layer1Node(iface.getOwner().getHostname(), iface.getName());
     switch (iface.getInterfaceType()) {
       case PHYSICAL:
-        return adjacentNodes(_layer1Topologies.getCombinedL1(), layer1Node);
+        return _layer1Topologies.getCombinedL1().adjacentNodes(layer1Node);
       case AGGREGATED:
       case REDUNDANT:
         // the logical L1 contains physical nodes and AGGREGATED/REDUNDANT nodes. filter them out.
-        return adjacentNodes(_layer1Topologies.getLogicalL1(), layer1Node).stream()
+        return _layer1Topologies.getLogicalL1().adjacentNodes(layer1Node).stream()
             .filter(
                 node ->
                     getInterfaceType(node)
@@ -262,13 +261,6 @@ public class InterfaceDependencies {
       return Optional.empty();
     }
     return Optional.of(iface.getInterfaceType());
-  }
-
-  private static Set<Layer1Node> adjacentNodes(Layer1Topology topology, Layer1Node node) {
-    if (!topology.getGraph().nodes().contains(node)) {
-      return ImmutableSet.of();
-    }
-    return topology.getGraph().adjacentNodes(node);
   }
 
   private @Nullable NodeInterfacePair getL1Neighbor(Interface iface) {
