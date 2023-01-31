@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
@@ -407,7 +406,7 @@ public class L3AdjacencyComputer {
       Map<NodeInterfacePair, PhysicalInterface> physicalInterfaces,
       Layer1Topology layer1Topology) {
     Set<NodeInterfacePair> physicalInterfacesMentionedInL1 =
-        layer1Topology.getGraph().nodes().stream()
+        layer1Topology.nodes().stream()
             .map(l1node -> NodeInterfacePair.of(l1node.getHostname(), l1node.getInterfaceName()))
             .sorted() // sorted for determinism
             .collect(ImmutableSet.toImmutableSet());
@@ -437,16 +436,21 @@ public class L3AdjacencyComputer {
       LOGGER.debug("L1 topology is empty, so only the global hub exists");
     } else {
       UnionFind<NodeInterfacePair> clusters = new UnionFind<>(physicalInterfacesMentionedInL1);
-      for (Layer1Edge edge : layer1Topology.getGraph().edges()) {
-        NodeInterfacePair i1 =
-            NodeInterfacePair.of(edge.getNode1().getHostname(), edge.getNode1().getInterfaceName());
-        NodeInterfacePair i2 =
-            NodeInterfacePair.of(edge.getNode2().getHostname(), edge.getNode2().getInterfaceName());
-        if (physicalInterfaces.containsKey(i1) && physicalInterfaces.containsKey(i2)) {
-          // Only apply L1 edges where both interfaces exist.
-          clusters.union(i1, i2);
-        }
-      }
+      layer1Topology
+          .edgeStream()
+          .forEach(
+              edge -> {
+                NodeInterfacePair i1 =
+                    NodeInterfacePair.of(
+                        edge.getNode1().getHostname(), edge.getNode1().getInterfaceName());
+                NodeInterfacePair i2 =
+                    NodeInterfacePair.of(
+                        edge.getNode2().getHostname(), edge.getNode2().getInterfaceName());
+                if (physicalInterfaces.containsKey(i1) && physicalInterfaces.containsKey(i2)) {
+                  // Only apply L1 edges where both interfaces exist.
+                  clusters.union(i1, i2);
+                }
+              });
       // Build up the set of interfaces attached to each hub. Note that since we are only looking
       // at interfaces that exist in this snapshot, and we only applied edges that exist in this
       // snapshot, we guarantee both the representative NodeInterfacePair and the elements in the
