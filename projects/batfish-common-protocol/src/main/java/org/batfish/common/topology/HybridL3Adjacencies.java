@@ -45,8 +45,8 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
       Map<String, Configuration> configurations) {
     Set<String> nodesWithL1Topology =
         Stream.concat(
-                layer1Topologies.getUserProvidedL1().getGraph().edges().stream(),
-                layer1Topologies.getActiveLogicalL1().getGraph().edges().stream())
+                layer1Topologies.getUserProvidedL1().edgeStream(),
+                layer1Topologies.getActiveLogicalL1().edgeStream())
             .filter(
                 // Ignore border-to-ISP edges when computing the set of nodes for which users
                 // provided L1 topology. Batfish adds these edges during ISP modeling, and not
