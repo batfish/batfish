@@ -406,7 +406,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  private static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
+  @VisibleForTesting
+  static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
     assert snapshotResult.getKey().equals(referenceResult.getKey());
 
     if (snapshotResult.equals(referenceResult)) {
@@ -420,7 +421,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     boolean equalAction = snapshotResult.getAction() == referenceResult.getAction();
     boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
-    assert !(equalAction && equalOutputRoutes);
+    if (equalAction && equalOutputRoutes) {
+      // This can happen if the trace is different.
+      return null;
+    }
 
     BgpRouteDiffs routeDiffs =
         new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
