@@ -58,6 +58,11 @@ public final class FlattenTest {
   }
 
   @Test
+  public void testReplaceFlatMix() throws IOException {
+    assertInputOutputPair("replace_flat_mix", "replace_flat_mix_flattened");
+  }
+
+  @Test
   public void testReplaceFilter() throws IOException {
     assertInputOutputPair("replace_filter", "replace_filter_flattened");
   }
