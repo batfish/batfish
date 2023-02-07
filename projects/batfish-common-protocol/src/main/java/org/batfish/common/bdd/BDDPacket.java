@@ -144,13 +144,9 @@ public class BDDPacket implements Serializable {
 
     _bitNames = new HashMap<>();
 
-    _dstIp = allocatePrimedBDDInteger("dstIp", IP_LENGTH);
-    _srcIp = allocatePrimedBDDInteger("srcIp", IP_LENGTH);
-    _dstPort = allocatePrimedBDDInteger("dstPort", PORT_LENGTH);
-    _srcPort = allocatePrimedBDDInteger("srcPort", PORT_LENGTH);
-    _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH));
-    _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH));
-    _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH));
+    _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH);
+    _ecn = allocateBDDInteger("ecn", ECN_LENGTH);
+    _dscp = allocateBDDInteger("dscp", DSCP_LENGTH);
     _tcpAck = allocateBDDBit("tcpAck");
     _tcpCwr = allocateBDDBit("tcpCwr");
     _tcpEce = allocateBDDBit("tcpEce");
@@ -161,11 +157,15 @@ public class BDDPacket implements Serializable {
     _tcpUrg = allocateBDDBit("tcpUrg");
     _tcpFlags =
         factory.andLiterals(_tcpAck, _tcpCwr, _tcpEce, _tcpFin, _tcpPsh, _tcpRst, _tcpSyn, _tcpUrg);
-    _dscp = allocateBDDInteger("dscp", DSCP_LENGTH);
-    _ecn = allocateBDDInteger("ecn", ECN_LENGTH);
-    _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH);
-    _packetLength = new BDDPacketLength(allocateBDDInteger("packetLength", PACKET_LENGTH_LENGTH));
 
+    _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH));
+    _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH));
+    _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH));
+    _packetLength = new BDDPacketLength(allocateBDDInteger("packetLength", PACKET_LENGTH_LENGTH));
+    _srcPort = allocatePrimedBDDInteger("srcPort", PORT_LENGTH);
+    _dstPort = allocatePrimedBDDInteger("dstPort", PORT_LENGTH);
+    _srcIp = allocatePrimedBDDInteger("srcIp", IP_LENGTH);
+    _dstIp = allocatePrimedBDDInteger("dstIp", IP_LENGTH);
     _swapSourceAndDestinationPairing =
         swapPairing(
             BDDUtils.concatBitvectors(_dstIp.getVar()._bitvec, _dstPort.getVar()._bitvec),
