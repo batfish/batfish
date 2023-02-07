@@ -59,6 +59,10 @@ public class Transform implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
+    if (true) {
+      return bdd.applyEx(_forwardRelation, BDDFactory.and, _pairingFactory.getDomainVarsBdd())
+          .replaceWith(_pairingFactory.getPrimeToUnprimePairing());
+    }
     return bdd.transform(_forwardRelation, _pairingFactory.getPrimeToUnprimePairing());
   }
 
@@ -66,6 +70,10 @@ public class Transform implements Transition {
   public BDD transitBackward(BDD bdd) {
     if (_reverseRelation == null) {
       init();
+    }
+    if (true) {
+      return bdd.applyEx(_reverseRelation, BDDFactory.and, _pairingFactory.getDomainVarsBdd())
+          .replaceWith(_pairingFactory.getPrimeToUnprimePairing());
     }
     return bdd.transform(_reverseRelation, _pairingFactory.getPrimeToUnprimePairing());
   }

@@ -1064,6 +1064,17 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     INITREF();
+
+    if (true) {
+      int i = operands[0];
+      for (int j = 1; j < operands.length; ++j) {
+        PUSHREF(i);
+        i = and_rec(i, operands[j]);
+        POPREF(1);
+      }
+      return i;
+    }
+
     int res = andAll_rec(operands);
     checkresize();
 
@@ -1107,6 +1118,17 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     INITREF();
+
+    if (true) {
+      int i = operands[0];
+      for (int j = 1; j < operands.length; ++j) {
+        PUSHREF(i);
+        i = or_rec(i, operands[j]);
+        POPREF(1);
+      }
+      return i;
+    }
+
     int res = orAll_rec(operands);
     checkresize();
 
@@ -2739,6 +2761,9 @@ public class JFactory extends BDDFactory implements Serializable {
    * and using {@link #orAll_rec(int[])}.
    */
   private int exist_rec(int r) {
+    if (true) {
+      return quant_rec(r);
+    }
     if (r < 2 || LEVEL(r) > quantlast) {
       return r;
     }
