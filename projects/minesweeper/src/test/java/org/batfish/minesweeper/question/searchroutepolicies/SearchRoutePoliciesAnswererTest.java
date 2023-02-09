@@ -2287,7 +2287,7 @@ public class SearchRoutePoliciesAnswererTest {
         new SearchRoutePoliciesQuestion(
             DEFAULT_DIRECTION,
             BgpRouteConstraints.builder()
-                .setPrefix(new PrefixSpace(PrefixRange.fromString("20.0.0.0/0:28-32")))
+                .setPrefix(new PrefixSpace(PrefixRange.fromString("0.0.0.0/0:28-32")))
                 .build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
