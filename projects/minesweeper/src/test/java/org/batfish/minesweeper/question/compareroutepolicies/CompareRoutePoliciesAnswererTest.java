@@ -32,6 +32,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -712,24 +713,26 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute_1 =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .setAsPath(AsPath.ofSingletonAsSets(40L))
             .build();
 
     BgpRoute inputRoute_2 =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .setAsPath(AsPath.empty())
             .build();
@@ -784,12 +787,13 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .setAsPath(AsPath.ofSingletonAsSets(40L))
             .build();
@@ -847,6 +851,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
 
@@ -903,6 +908,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
 
@@ -914,6 +920,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
 
@@ -966,12 +973,13 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1032,12 +1040,13 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
     BgpRouteDiffs diff =
@@ -1136,12 +1145,13 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1)))
             .build();
     BgpRouteDiffs diff =
