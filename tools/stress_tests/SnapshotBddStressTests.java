@@ -150,13 +150,14 @@ public class SnapshotBddStressTests {
             DropNoRoute.INSTANCE,
             DropNullRoute.INSTANCE);
 
-    int warmupIters = 3;
-    int measureIters = 1;
+    int warmupIters = 1;
+    int measureIters = 3;
     int totalIters = warmupIters + measureIters;
 
     List<Long> graphTimes = new ArrayList<>();
     List<Long> successTimes = new ArrayList<>();
     List<Long> multipathTimes = new ArrayList<>();
+    int numSources = 0;
     for (int i = 0; i < totalIters; i++) {
       boolean warmup = i < warmupIters;
       System.out.printf("Iter %s of %s%s%n", i, totalIters, warmup ? " (warmup)" : "");
@@ -173,6 +174,7 @@ public class SnapshotBddStressTests {
           edgeTable.rowKeySet().stream()
               .filter(OriginateInterfaceLink.class::isInstance)
               .collect(Collectors.toSet());
+      numSources = sourceStates.size();
       Set<StateExpr> statesToKeep =
           Stream.of(successStates, failureStates, sourceStates)
               .flatMap(Set::stream)
@@ -238,7 +240,8 @@ public class SnapshotBddStressTests {
     System.out.println("--------- Average times (ms) -----------");
     System.out.println(
         String.format(
-            "graph: %s\nsuccess: %s\nmultipath: %s", graphTime, successTime, multipathTime));
+            "graph: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n",
+            graphTime, successTime, multipathTime, numSources));
   }
 
   public static void main(String[] args) throws IOException, ParseException {
