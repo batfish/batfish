@@ -281,13 +281,14 @@ public class TestrigText {
     checkArgument(configsDir.toFile().exists(), "%s does not exist.", configsDir);
     checkArgument(configsDir.toFile().isDirectory(), "%s is not a directory.", configsDir);
     builder.setConfigurationText(
-        Arrays.stream(configsDir.toFile().listFiles())
+        Files.walk(configsDir)
+            .filter(Files::isRegularFile)
             .collect(
                 ImmutableMap.toImmutableMap(
-                    File::getName,
-                    f -> {
+                    Path::toString,
+                    p -> {
                       try {
-                        return fileText(f);
+                        return fileText(p.toFile());
                       } catch (IOException e) {
                         throw new RuntimeException(e);
                       }
