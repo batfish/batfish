@@ -150,15 +150,16 @@ public class SnapshotBddStressTests {
             DropNoRoute.INSTANCE,
             DropNullRoute.INSTANCE);
 
-    int warmupIters = 50;
-    int measureIters = 20;
+    int warmupIters = 3;
+    int measureIters = 1;
     int totalIters = warmupIters + measureIters;
 
     List<Long> graphTimes = new ArrayList<>();
     List<Long> successTimes = new ArrayList<>();
     List<Long> multipathTimes = new ArrayList<>();
     for (int i = 0; i < totalIters; i++) {
-      System.out.println(String.format("Iter %s of %s", i, totalIters));
+      boolean warmup = i < warmupIters;
+      System.out.printf("Iter %s of %s%s%n", i, totalIters, warmup ? " (warmup)" : "");
 
       BDDPacket pkt = new BDDPacket();
       long t = System.currentTimeMillis();
@@ -194,13 +195,16 @@ public class SnapshotBddStressTests {
       BDDReachabilityUtils.backwardFixpointTransposed(transposedEdgeTable, success);
       long successTime = System.currentTimeMillis() - t;
 
+      // Deliberately do not reset t, since success time is part of MPC time.
       Map<StateExpr, BDD> loops =
           new BDDLoopDetectionAnalysis(pkt, edges.stream(), sourceStates).detectLoopsStateExpr();
       Map<StateExpr, BDD> failure = new HashMap<>();
-      failureStates.forEach(s -> success.put(s, pkt.getFactory().one()));
-      BDDReachabilityUtils.backwardFixpointTransposed(transposedEdgeTable, success);
+      failureStates.forEach(s -> failure.put(s, pkt.getFactory().one()));
+      BDDReachabilityUtils.backwardFixpointTransposed(transposedEdgeTable, failure);
 
+      // Compute the MPC answer from success and failure and loop.
       BDD zero = pkt.getFactory().zero();
+      @SuppressWarnings("unused") // answer computed but not used below
       Map<StateExpr, BDD> multipath =
           success.entrySet().stream()
               .filter(e -> e.getKey() instanceof OriginateInterfaceLink)
@@ -218,9 +222,8 @@ public class SnapshotBddStressTests {
 
       long multipathTime = System.currentTimeMillis() - t;
 
-      System.out.println(
-          String.format(
-              "graph: %s\nsuccess: %s\nmultipath: %s", graphTime, successTime, multipathTime));
+      System.out.printf(
+          "graph: %s\nsuccess: %s\nmultipath: %s%n", graphTime, successTime, multipathTime);
 
       if (i >= warmupIters) {
         graphTimes.add(graphTime);

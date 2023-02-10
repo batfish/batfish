@@ -1570,6 +1570,12 @@ public class FileBasedStorage implements StorageProvider {
 
   @Override
   public void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException {
+    int nodes = dataPlane.getRibs().rowKeySet().size();
+    int vrfs = dataPlane.getRibs().cellSet().size();
+    long routes = dataPlane.getRibs().values().parallelStream().mapToLong(r -> r.getRoutes().size()).sum();
+    long bgpRoutes = dataPlane.getBgpRoutes().values().parallelStream().mapToInt(Set::size).asLongStream().sum();
+    long fibs = dataPlane.getFibs().values().stream().flatMap(m -> m.values().stream()).mapToLong(f -> f.allEntries().size()).sum();
+    System.err.printf("Nodes: %d VRFs: %d Routes: %d BGP Routes: %d FIBs: %d%n", nodes, vrfs, routes, bgpRoutes, fibs);
     dataPlane.getFibs().keySet().parallelStream()
         .forEach(
             hostname -> {
