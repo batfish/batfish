@@ -256,8 +256,8 @@ public class SnapshotBddStressTests {
       long multipathTime = System.currentTimeMillis() - t;
 
       System.out.printf(
-          "graph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s%n",
-          graphTime, perDstTime, successTime, multipathTime);
+          "graph: %s\nperDest: %s\ntotalPerDest: %s\nsuccess: %s\nmultipath: %s%n",
+          graphTime, perDstTime, perDstTime * numDestinations, successTime, multipathTime);
 
       if (i >= warmupIters) {
         graphTimes.add(graphTime);
@@ -285,6 +285,7 @@ public class SnapshotBddStressTests {
 
   public static void main(String[] args) throws IOException, ParseException {
     String snapshotDir = args[0];
+    System.out.printf("net: %s\n", snapshotDir);
     String test = args[1];
 
     SnapshotBddStressTests stressTest = new SnapshotBddStressTests(snapshotDir);
