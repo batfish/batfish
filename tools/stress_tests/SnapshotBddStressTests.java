@@ -51,7 +51,10 @@ import org.batfish.symbolic.state.DropNoRoute;
 import org.batfish.symbolic.state.DropNullRoute;
 import org.batfish.symbolic.state.ExitsNetwork;
 import org.batfish.symbolic.state.InsufficientInfo;
+import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NeighborUnreachable;
+import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.StateExpr;
 
@@ -157,7 +160,9 @@ public class SnapshotBddStressTests {
     List<Long> graphTimes = new ArrayList<>();
     List<Long> successTimes = new ArrayList<>();
     List<Long> multipathTimes = new ArrayList<>();
+    List<Double> perDestTimes = new ArrayList<>();
     int numSources = 0;
+    int numDestinations = 0;
     for (int i = 0; i < totalIters; i++) {
       boolean warmup = i < warmupIters;
       System.out.printf("Iter %s of %s%s%n", i, totalIters, warmup ? " (warmup)" : "");
@@ -175,8 +180,17 @@ public class SnapshotBddStressTests {
               .filter(OriginateInterfaceLink.class::isInstance)
               .collect(Collectors.toSet());
       numSources = sourceStates.size();
+      Set<StateExpr> destinationStates =
+          edgeTable.rowKeySet().stream()
+              .filter(
+                  s ->
+                      s instanceof InterfaceAccept
+                          || s instanceof NodeInterfaceExitsNetwork
+                          || s instanceof NodeInterfaceDeliveredToSubnet)
+              .collect(Collectors.toSet());
+      numDestinations = destinationStates.size();
       Set<StateExpr> statesToKeep =
-          Stream.of(successStates, failureStates, sourceStates)
+          Stream.of(successStates, failureStates, sourceStates, destinationStates)
               .flatMap(Set::stream)
               .collect(Collectors.toSet());
 
@@ -191,13 +205,22 @@ public class SnapshotBddStressTests {
           BDDReachabilityUtils.transposeAndMaterialize(edges);
       long graphTime = System.currentTimeMillis() - t;
 
+      // Do destination reachability
+      t = System.currentTimeMillis();
+      for (StateExpr dstState : destinationStates) {
+        Map<StateExpr, BDD> answer = new HashMap<>();
+        answer.put(dstState, pkt.getFactory().one()); // TODO: refine by header space
+        BDDReachabilityUtils.backwardFixpointTransposed(transposedEdgeTable, answer);
+      }
+      double perDstTime = (System.currentTimeMillis() - t + 0.0) / numDestinations;
+
+      // Do multipath now
       t = System.currentTimeMillis();
       Map<StateExpr, BDD> success = new HashMap<>();
       successStates.forEach(s -> success.put(s, pkt.getFactory().one()));
       BDDReachabilityUtils.backwardFixpointTransposed(transposedEdgeTable, success);
       long successTime = System.currentTimeMillis() - t;
 
-      // Deliberately do not reset t, since success time is part of MPC time.
       Map<StateExpr, BDD> loops =
           new BDDLoopDetectionAnalysis(pkt, edges.stream(), sourceStates).detectLoopsStateExpr();
       Map<StateExpr, BDD> failure = new HashMap<>();
@@ -225,23 +248,26 @@ public class SnapshotBddStressTests {
       long multipathTime = System.currentTimeMillis() - t;
 
       System.out.printf(
-          "graph: %s\nsuccess: %s\nmultipath: %s%n", graphTime, successTime, multipathTime);
+          "graph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s%n",
+          graphTime, perDstTime, successTime, multipathTime);
 
       if (i >= warmupIters) {
         graphTimes.add(graphTime);
         successTimes.add(successTime);
         multipathTimes.add(multipathTime);
+        perDestTimes.add(perDstTime);
       }
     }
 
     double graphTime = meanOf(graphTimes);
     double successTime = meanOf(successTimes);
     double multipathTime = meanOf(multipathTimes);
+    double perDestTime = meanOf(perDestTimes);
     System.out.println("--------- Average times (ms) -----------");
     System.out.println(
         String.format(
-            "graph: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n",
-            graphTime, successTime, multipathTime, numSources));
+            "graph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n",
+            graphTime, perDestTime, successTime, multipathTime, numSources));
   }
 
   public static void main(String[] args) throws IOException, ParseException {
