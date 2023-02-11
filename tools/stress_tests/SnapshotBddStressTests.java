@@ -163,9 +163,7 @@ public class SnapshotBddStressTests {
             DropNoRoute.INSTANCE,
             DropNullRoute.INSTANCE);
 
-    int warmupIters = 5;
-    int measureIters = 3;
-    int totalIters = warmupIters + measureIters;
+    int actualIters = 0;
 
     List<Long> graphTimes = new ArrayList<>();
     List<Long> successTimes = new ArrayList<>();
@@ -173,9 +171,27 @@ public class SnapshotBddStressTests {
     List<Double> perDestTimes = new ArrayList<>();
     int numSources = 0;
     int numDestinations = 0;
-    for (int i = 0; i < totalIters; i++) {
-      boolean warmup = i < warmupIters;
-      System.out.printf("Iter %s of %s%s%n", i, totalIters, warmup ? " (warmup)" : "");
+
+    long warmupStartTime = System.currentTimeMillis();
+    long minWarmupTime = 3 * 60 * 1000; // 3 minutes
+    long runStartTime = Long.MAX_VALUE;
+    long minRunTime = 5 * 60 * 1000; // 5 minutes
+
+    while (actualIters < 2
+        || (System.currentTimeMillis() - warmupStartTime) < minWarmupTime
+        || (System.currentTimeMillis() - runStartTime) < minRunTime) {
+      boolean warmup = (System.currentTimeMillis() - warmupStartTime) < minWarmupTime;
+      ++actualIters;
+      if (!warmup && runStartTime == Long.MAX_VALUE) {
+        runStartTime = System.currentTimeMillis();
+      }
+      long remainingMs =
+          warmup
+              ? minWarmupTime - (System.currentTimeMillis() - warmupStartTime)
+              : minRunTime - (System.currentTimeMillis() - runStartTime);
+      System.out.printf(
+          "Iter %s%s (%f remaining)%n",
+          actualIters, warmup ? " (warmup)" : "", remainingMs / 1000.0);
 
       BDDPacket pkt = new BDDPacket();
       t = System.currentTimeMillis();
@@ -275,7 +291,7 @@ public class SnapshotBddStressTests {
           "  graph: %s\n  perDest: %s\n  totalPerDest: %s\n  success: %s\n  multipath: %s%n",
           graphTime, perDstTime, perDstTime * numDestinations, successTime, multipathTime);
 
-      if (i >= warmupIters) {
+      if (!warmup) {
         graphTimes.add(graphTime);
         successTimes.add(successTime);
         multipathTimes.add(multipathTime);
