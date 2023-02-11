@@ -153,7 +153,7 @@ public class SnapshotBddStressTests {
             DropNoRoute.INSTANCE,
             DropNullRoute.INSTANCE);
 
-    int warmupIters = 1;
+    int warmupIters = 5;
     int measureIters = 3;
     int totalIters = warmupIters + measureIters;
 
@@ -209,7 +209,7 @@ public class SnapshotBddStressTests {
       t = System.currentTimeMillis();
       for (StateExpr dstState : destinationStates) {
         Map<StateExpr, BDD> answer = new HashMap<>();
-        answer.put(dstState, pkt.getFactory().one()); // TODO: refine by header space
+        answer.put(dstState, pkt.getFactory().one()); // TODO: refine by header space if needed
         BDDReachabilityUtils.backwardFixpointTransposed(transposedEdgeTable, answer);
       }
       double perDstTime = (System.currentTimeMillis() - t + 0.0) / numDestinations;
@@ -264,10 +264,9 @@ public class SnapshotBddStressTests {
     double multipathTime = meanOf(multipathTimes);
     double perDestTime = meanOf(perDestTimes);
     System.out.println("--------- Average times (ms) -----------");
-    System.out.println(
-        String.format(
-            "graph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n",
-            graphTime, perDestTime, successTime, multipathTime, numSources));
+    System.out.printf(
+        "graph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n%n",
+        graphTime, perDestTime, successTime, multipathTime, numSources);
   }
 
   public static void main(String[] args) throws IOException, ParseException {
