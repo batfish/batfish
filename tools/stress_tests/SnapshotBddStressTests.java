@@ -4,9 +4,11 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.math.Stats.meanOf;
 import static org.batfish.main.TestrigText.loadTestrig;
 
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,7 +23,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDLoopDetectionAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
@@ -37,6 +38,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
@@ -52,6 +54,7 @@ import org.batfish.symbolic.state.DropNullRoute;
 import org.batfish.symbolic.state.ExitsNetwork;
 import org.batfish.symbolic.state.InsufficientInfo;
 import org.batfish.symbolic.state.InterfaceAccept;
+import org.batfish.symbolic.state.InterfaceStateExpr;
 import org.batfish.symbolic.state.NeighborUnreachable;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
@@ -187,19 +190,30 @@ public class SnapshotBddStressTests {
               .filter(OriginateInterfaceLink.class::isInstance)
               .collect(Collectors.toSet());
       numSources = sourceStates.size();
-      Set<StateExpr> destinationStates =
+      Multimap<NodeInterfacePair, StateExpr> destinationStates =
           edgeTable.rowKeySet().stream()
               .filter(
                   s ->
                       s instanceof InterfaceAccept
                           || s instanceof NodeInterfaceExitsNetwork
                           || s instanceof NodeInterfaceDeliveredToSubnet)
-              .collect(Collectors.toSet());
+              .collect(
+                  ImmutableListMultimap.toImmutableListMultimap(
+                      s -> {
+                        InterfaceStateExpr is = ((InterfaceStateExpr) s);
+                        NodeInterfacePair nip =
+                            NodeInterfacePair.of(is.getHostname(), is.getInterface());
+                        return nip;
+                      },
+                      s -> s));
       numDestinations = destinationStates.size();
       Set<StateExpr> statesToKeep =
-          Stream.of(successStates, failureStates, sourceStates, destinationStates)
-              .flatMap(Set::stream)
-              .collect(Collectors.toSet());
+          ImmutableSet.<StateExpr>builder()
+              .addAll(successStates)
+              .addAll(failureStates)
+              .addAll(sourceStates)
+              .addAll(destinationStates.values())
+              .build();
 
       Collection<Edge> edges =
           edgeTable.cellSet().stream()
@@ -212,11 +226,13 @@ public class SnapshotBddStressTests {
           BDDReachabilityUtils.transposeAndMaterialize(edges);
       long graphTime = System.currentTimeMillis() - t;
 
-      // Do destination reachability
+      // Do destination reachability per interface
       t = System.currentTimeMillis();
-      for (StateExpr dstState : destinationStates) {
+      for (Collection<StateExpr> states : destinationStates.asMap().values()) {
         Map<StateExpr, BDD> answer = new HashMap<>();
-        answer.put(dstState, pkt.getFactory().one()); // TODO: refine by header space if needed
+        for (StateExpr dstState : states) {
+          answer.put(dstState, pkt.getFactory().one()); // TODO: refine by header space if needed
+        }
         BDDReachabilityUtils.backwardFixpointTransposed(transposedEdgeTable, answer);
         answer.values().forEach(BDD::free);
       }
@@ -256,7 +272,7 @@ public class SnapshotBddStressTests {
       long multipathTime = System.currentTimeMillis() - t;
 
       System.out.printf(
-          "graph: %s\nperDest: %s\ntotalPerDest: %s\nsuccess: %s\nmultipath: %s%n",
+          "  graph: %s\n  perDest: %s\n  totalPerDest: %s\n  success: %s\n  multipath: %s%n",
           graphTime, perDstTime, perDstTime * numDestinations, successTime, multipathTime);
 
       if (i >= warmupIters) {
@@ -273,14 +289,15 @@ public class SnapshotBddStressTests {
     double perDestTime = meanOf(perDestTimes);
     System.out.println("--------- Average times (ms) -----------");
     System.out.printf(
-        "init: %s\ndataplane: %s\ngraph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n%n",
+        "init: %s\ndataplane: %s\ngraph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\ndestinations: %s\n%n",
         _parseTimeMillis / 1000.0,
         dataPlaneTimeMillis / 1000.0,
         graphTime,
         perDestTime,
         successTime,
         multipathTime,
-        numSources);
+        numSources,
+        numDestinations);
   }
 
   public static void main(String[] args) throws IOException, ParseException {
