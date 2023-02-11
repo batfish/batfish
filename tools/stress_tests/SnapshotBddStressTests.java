@@ -218,6 +218,7 @@ public class SnapshotBddStressTests {
         Map<StateExpr, BDD> answer = new HashMap<>();
         answer.put(dstState, pkt.getFactory().one()); // TODO: refine by header space if needed
         BDDReachabilityUtils.backwardFixpointTransposed(transposedEdgeTable, answer);
+        answer.values().forEach(BDD::free);
       }
       double perDstTime = (System.currentTimeMillis() - t + 0.0) / numDestinations;
 
