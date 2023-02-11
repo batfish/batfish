@@ -111,6 +111,11 @@ public class TestrigText {
       return this;
     }
 
+    public Builder setCheckpointMgmtBytes(Map<String, byte[]> checkpointMgmtBytes) {
+      _checkpointMgmtBytes = checkpointMgmtBytes;
+      return this;
+    }
+
     public Builder setCheckpointMgmtFiles(String testrigResourcePrefix, String... filenames) {
       return setConfigurationFiles(testrigResourcePrefix, Arrays.asList(filenames));
     }
@@ -278,21 +283,58 @@ public class TestrigText {
 
     // configs
     Path configsDir = snapshotDir.resolve("configs");
-    checkArgument(configsDir.toFile().exists(), "%s does not exist.", configsDir);
-    checkArgument(configsDir.toFile().isDirectory(), "%s is not a directory.", configsDir);
-    builder.setConfigurationText(
-        Files.walk(configsDir)
-            .filter(Files::isRegularFile)
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Path::toString,
-                    p -> {
-                      try {
-                        return fileText(p.toFile());
-                      } catch (IOException e) {
-                        throw new RuntimeException(e);
-                      }
-                    })));
+    if (configsDir.toFile().exists()) {
+      checkArgument(configsDir.toFile().exists(), "%s does not exist.", configsDir);
+      checkArgument(configsDir.toFile().isDirectory(), "%s is not a directory.", configsDir);
+      builder.setConfigurationText(
+          Files.walk(configsDir)
+              .filter(Files::isRegularFile)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Path::toString,
+                      p -> {
+                        try {
+                          return fileText(p.toFile());
+                        } catch (IOException e) {
+                          throw new RuntimeException(e);
+                        }
+                      })));
+    }
+
+    // AWS configs
+    Path awsConfigsDir = snapshotDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
+    if (awsConfigsDir.toFile().exists()) {
+      builder.setAwsBytes(
+          Files.walk(awsConfigsDir)
+              .filter(Files::isRegularFile)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Path::toString,
+                      p -> {
+                        try {
+                          return fileBytes(p.toFile());
+                        } catch (IOException e) {
+                          throw new RuntimeException(e);
+                        }
+                      })));
+    }
+
+    Path checkpointDir = snapshotDir.resolve(BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR);
+    if (checkpointDir.toFile().exists()) {
+      builder.setCheckpointMgmtBytes(
+          Files.walk(checkpointDir)
+              .filter(Files::isRegularFile)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Path::toString,
+                      p -> {
+                        try {
+                          return fileBytes(p.toFile());
+                        } catch (IOException e) {
+                          throw new RuntimeException(e);
+                        }
+                      })));
+    }
 
     // hosts
     File hostsDir = snapshotDir.resolve("hosts").toFile();
@@ -314,8 +356,12 @@ public class TestrigText {
     return builder.build();
   }
 
+  private static byte[] fileBytes(File f) throws IOException {
+    return Files.readAllBytes(f.toPath());
+  }
+
   private static String fileText(File f) throws IOException {
-    return new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
+    return new String(fileBytes(f), StandardCharsets.UTF_8);
   }
 
   private Map<String, byte[]> _awsBytes;
