@@ -61,6 +61,7 @@ import org.batfish.symbolic.state.StateExpr;
 public class SnapshotBddStressTests {
   private Batfish _batfish;
   private SortedMap<String, Configuration> _configs;
+  private long _parseTimeMillis;
 
   SnapshotBddStressTests(String snapshotDir) throws IOException {
     Path tmp = Files.createTempDirectory(this.getClass().getSimpleName());
@@ -74,7 +75,9 @@ public class SnapshotBddStressTests {
     settings.setThrowOnParserError(false);
 
     NetworkSnapshot snapshot = _batfish.getSnapshot();
+    long t = System.currentTimeMillis();
     _configs = _batfish.loadConfigurations(snapshot);
+    _parseTimeMillis = System.currentTimeMillis() - t;
 
     checkState(
         true || _batfish.loadParseVendorConfigurationAnswerElement(snapshot).getErrors().isEmpty(),
@@ -106,7 +109,9 @@ public class SnapshotBddStressTests {
 
   void bddReachabilityAnalysisFactory() {
     NetworkSnapshot snapshot = _batfish.getSnapshot();
+    long t = System.currentTimeMillis();
     _batfish.computeDataPlane(snapshot);
+    long dataPlaneTimeMillis = System.currentTimeMillis() - t;
     DataPlane dataPlane = _batfish.loadDataPlane(snapshot);
     ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
     IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory =
@@ -118,7 +123,7 @@ public class SnapshotBddStressTests {
 
     while (true) {
       BDDPacket pkt = new BDDPacket();
-      long t = System.currentTimeMillis();
+      t = System.currentTimeMillis();
       int size =
           new BDDReachabilityAnalysisFactory(
                   pkt, _configs, forwardingAnalysis, ipsRoutedOutInterfacesFactory, false, false)
@@ -132,7 +137,9 @@ public class SnapshotBddStressTests {
 
   void multipathConsistency() {
     NetworkSnapshot snapshot = _batfish.getSnapshot();
+    long t = System.currentTimeMillis();
     _batfish.computeDataPlane(snapshot);
+    long dataPlaneTimeMillis = System.currentTimeMillis() - t;
     DataPlane dataPlane = _batfish.loadDataPlane(snapshot);
     ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
     IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory =
@@ -168,7 +175,7 @@ public class SnapshotBddStressTests {
       System.out.printf("Iter %s of %s%s%n", i, totalIters, warmup ? " (warmup)" : "");
 
       BDDPacket pkt = new BDDPacket();
-      long t = System.currentTimeMillis();
+      t = System.currentTimeMillis();
       Table<StateExpr, StateExpr, Transition> edgeTable =
           new BDDReachabilityAnalysisFactory(
                   pkt, _configs, forwardingAnalysis, ipsRoutedOutInterfacesFactory, false, false)
@@ -265,8 +272,14 @@ public class SnapshotBddStressTests {
     double perDestTime = meanOf(perDestTimes);
     System.out.println("--------- Average times (ms) -----------");
     System.out.printf(
-        "graph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n%n",
-        graphTime, perDestTime, successTime, multipathTime, numSources);
+        "init: %s\ndataplane: %s\ngraph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n%n",
+        _parseTimeMillis / 1000.0,
+        dataPlaneTimeMillis / 1000.0,
+        graphTime,
+        perDestTime,
+        successTime,
+        multipathTime,
+        numSources);
   }
 
   public static void main(String[] args) throws IOException, ParseException {
