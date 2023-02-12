@@ -241,6 +241,11 @@ public class TestrigText {
       return this;
     }
 
+    public @Nonnull Builder setExternalBgpAnnouncements(byte[] bytes) {
+      _externalBgpAnnouncementsBytes = bytes;
+      return this;
+    }
+
     /**
      * Sets conversion context to be used during conversion. Note that this has no effect when the
      * snapshot input text contains information that would populate conversion context.
@@ -264,28 +269,37 @@ public class TestrigText {
     checkArgument(snapshotDir.toFile().isDirectory(), "%s is not a directory.", dir);
 
     // layer 1 topology
-    Path l1TopologyPath = snapshotDir.resolve("batfish").resolve("layer1_topology.json");
+    Path l1TopologyPath =
+        snapshotDir.resolve(BfConsts.RELPATH_BATFISH).resolve(BfConsts.RELPATH_L1_TOPOLOGY_PATH);
     if (!l1TopologyPath.toFile().exists()) {
-      l1TopologyPath = snapshotDir.resolve("layer1_topology.json");
+      l1TopologyPath = snapshotDir.resolve(BfConsts.RELPATH_L1_TOPOLOGY_PATH);
     }
     if (l1TopologyPath.toFile().exists()) {
       builder.setLayer1TopologyBytes(Files.readAllBytes(l1TopologyPath));
     }
 
     // isp config
-    Path ispConfigPath = snapshotDir.resolve("batfish").resolve("isp_config.json");
+    Path ispConfigPath =
+        snapshotDir.resolve(BfConsts.RELPATH_BATFISH).resolve(BfConsts.RELPATH_ISP_CONFIG_FILE);
     if (ispConfigPath.toFile().exists()) {
       builder.setIspConfigBytes(Files.readAllBytes(ispConfigPath));
     }
 
     // runtime data
-    Path runtimeDataPath = snapshotDir.resolve("batfish").resolve("runtime_data.json");
+    Path runtimeDataPath =
+        snapshotDir.resolve(BfConsts.RELPATH_BATFISH).resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE);
     if (runtimeDataPath.toFile().exists()) {
       builder.setRuntimeDataBytes(Files.readAllBytes(runtimeDataPath));
     }
 
+    // external BGP
+    Path bgpPath = snapshotDir.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+    if (bgpPath.toFile().exists()) {
+      builder.setExternalBgpAnnouncements(Files.readAllBytes(bgpPath));
+    }
+
     // configs
-    Path configsDir = snapshotDir.resolve("configs");
+    Path configsDir = snapshotDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
     if (configsDir.toFile().exists()) {
       checkArgument(configsDir.toFile().exists(), "%s does not exist.", configsDir);
       checkArgument(configsDir.toFile().isDirectory(), "%s is not a directory.", configsDir);
@@ -340,7 +354,7 @@ public class TestrigText {
     }
 
     // hosts
-    File hostsDir = snapshotDir.resolve("hosts").toFile();
+    File hostsDir = snapshotDir.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR).toFile();
     if (hostsDir.exists()) {
       builder.setHostsBytes(
           Arrays.stream(hostsDir.listFiles())
