@@ -78,6 +78,7 @@ public class SnapshotBddStressTests {
     settings.setThrowOnParserError(false);
 
     NetworkSnapshot snapshot = _batfish.getSnapshot();
+    System.err.println("Initializing ss");
     long t = System.currentTimeMillis();
     _configs = _batfish.loadConfigurations(snapshot);
     _parseTimeMillis = System.currentTimeMillis() - t;
@@ -140,9 +141,13 @@ public class SnapshotBddStressTests {
 
   void multipathConsistency() {
     NetworkSnapshot snapshot = _batfish.getSnapshot();
+
+    System.err.println("Generating dp");
     long t = System.currentTimeMillis();
     _batfish.computeDataPlane(snapshot);
     long dataPlaneTimeMillis = System.currentTimeMillis() - t;
+
+    System.err.println("Loading dp and computing forwarding analysis, etc");
     DataPlane dataPlane = _batfish.loadDataPlane(snapshot);
     ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
     IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory =
@@ -151,6 +156,10 @@ public class SnapshotBddStressTests {
     IpSpaceAssignment ipSpaceAssignment =
         InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE.resolve(
             LocationSpecifier.ALL_LOCATIONS.resolve(ctx), ctx);
+
+    long activeL3Ifaces =
+        _configs.values().stream().mapToLong(c -> c.activeL3Interfaces().count()).sum();
+    long l3Edges = _batfish.getTopologyProvider().getLayer3Topology(snapshot).getEdges().size();
 
     Set<StateExpr> successStates =
         ImmutableSet.of(Accept.INSTANCE, DeliveredToSubnet.INSTANCE, ExitsNetwork.INSTANCE);
@@ -305,7 +314,7 @@ public class SnapshotBddStressTests {
     double perDestTime = meanOf(perDestTimes);
     System.out.println("--------- Average times (ms) -----------");
     System.out.printf(
-        "init: %s\ndataplane: %s\ngraph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\ndestinations: %s\n%n",
+        "init: %s\ndataplane: %s\ngraph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\ndestinations: %s\nActive L3 interfaces: %d\nL3 edges: %d\n\n",
         _parseTimeMillis,
         dataPlaneTimeMillis,
         graphTime,
@@ -313,7 +322,9 @@ public class SnapshotBddStressTests {
         successTime,
         multipathTime,
         numSources,
-        numDestinations);
+        numDestinations,
+        activeL3Ifaces,
+        l3Edges);
   }
 
   public static void main(String[] args) throws IOException, ParseException {
