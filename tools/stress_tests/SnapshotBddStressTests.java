@@ -222,7 +222,7 @@ public class SnapshotBddStressTests {
                         return nip;
                       },
                       s -> s));
-      numDestinations = destinationStates.size();
+      numDestinations = destinationStates.asMap().size();
       Set<StateExpr> statesToKeep =
           ImmutableSet.<StateExpr>builder()
               .addAll(successStates)
@@ -306,8 +306,8 @@ public class SnapshotBddStressTests {
     System.out.println("--------- Average times (ms) -----------");
     System.out.printf(
         "init: %s\ndataplane: %s\ngraph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\ndestinations: %s\n%n",
-        _parseTimeMillis / 1000.0,
-        dataPlaneTimeMillis / 1000.0,
+        _parseTimeMillis,
+        dataPlaneTimeMillis,
         graphTime,
         perDestTime,
         successTime,
