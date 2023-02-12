@@ -265,6 +265,9 @@ public class TestrigText {
 
     // layer 1 topology
     Path l1TopologyPath = snapshotDir.resolve("batfish").resolve("layer1_topology.json");
+    if (!l1TopologyPath.toFile().exists()) {
+      l1TopologyPath = snapshotDir.resolve("layer1_topology.json");
+    }
     if (l1TopologyPath.toFile().exists()) {
       builder.setLayer1TopologyBytes(Files.readAllBytes(l1TopologyPath));
     }
