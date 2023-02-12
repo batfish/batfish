@@ -182,9 +182,9 @@ public class SnapshotBddStressTests {
     int numDestinations = 0;
 
     long warmupStartTime = System.currentTimeMillis();
-    long minWarmupTime = 3 * 60 * 1000; // 3 minutes
+    long minWarmupTime = 1 * 60 * 1000; // 1 minutes
     long runStartTime = Long.MAX_VALUE;
-    long minRunTime = 5 * 60 * 1000; // 5 minutes
+    long minRunTime = 3 * 60 * 1000; // 3 minutes
 
     while (actualIters < 2
         || (System.currentTimeMillis() - warmupStartTime) < minWarmupTime
