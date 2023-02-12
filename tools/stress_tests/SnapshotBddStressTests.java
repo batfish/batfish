@@ -204,6 +204,7 @@ public class SnapshotBddStressTests {
 
       BDDPacket pkt = new BDDPacket();
       t = System.currentTimeMillis();
+      System.err.println("Starting graph computation");
       Table<StateExpr, StateExpr, Transition> edgeTable =
           new BDDReachabilityAnalysisFactory(
                   pkt, _configs, forwardingAnalysis, ipsRoutedOutInterfacesFactory, false, false)
@@ -252,6 +253,7 @@ public class SnapshotBddStressTests {
       long graphTime = System.currentTimeMillis() - t;
 
       // Do destination reachability per interface
+      System.err.println("Starting per-dest reachability for " + numDestinations + " destinations");
       t = System.currentTimeMillis();
       for (Collection<StateExpr> states : destinationStates.asMap().values()) {
         Map<StateExpr, BDD> answer = new HashMap<>();
@@ -264,6 +266,7 @@ public class SnapshotBddStressTests {
       double perDstTime = (System.currentTimeMillis() - t + 0.0) / numDestinations;
 
       // Do multipath now
+      System.err.println("Starting multipath");
       t = System.currentTimeMillis();
       Map<StateExpr, BDD> success = new HashMap<>();
       successStates.forEach(s -> success.put(s, pkt.getFactory().one()));
