@@ -11,11 +11,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -37,6 +40,7 @@ import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.BDDRouteDiff;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
+import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -52,9 +56,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Environment.Direction _direction;
 
   @Nonnull private final String _policySpecifierString;
-  @Nonnull private final String _proposedPolicySpecifierString;
+  @Nullable private final String _referencePolicySpecifierString;
   @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nonnull private final RoutingPolicySpecifier _proposedPolicySpecifier;
+  @Nullable private final RoutingPolicySpecifier _referencePolicySpecifier;
 
   @Nonnull private final NodeSpecifier _nodeSpecifier;
 
@@ -73,10 +77,12 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
             _policySpecifierString, ALL_ROUTING_POLICIES);
 
-    _proposedPolicySpecifierString = question.getProposedPolicy();
-    _proposedPolicySpecifier =
+    // If the referencePolicySpecifier is null then we compare using the route-maps in
+    // policySpecifier
+    _referencePolicySpecifierString = question.getReferencePolicy();
+    _referencePolicySpecifier =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
-            _proposedPolicySpecifierString, ALL_ROUTING_POLICIES);
+            _referencePolicySpecifierString, _policySpecifier);
 
     // in the future, it may improve performance to combine all input community regexes
     // into a single regex representing their disjunction, and similarly for all output
@@ -90,14 +96,14 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * Convert the results of symbolic route analysis into an answer to this question, if the
    * resulting constraints are satisfiable.
    *
+   * @param referencePolicy the first route policy that was analyzed
    * @param policy the first route policy that was analyzed
-   * @param proposedPolicy the second route policy that was analyzed
    * @return the concrete input route and, if the desired action is PERMIT, the concrete output
    *     routes resulting from analyzing the given policies.
    */
   private Row computeDifferencesForInputRoute(
-      RoutingPolicy policy, RoutingPolicy proposedPolicy, Bgpv4Route inRoute) {
-    return diffRowResultsFor(policy, proposedPolicy, inRoute, _direction);
+      RoutingPolicy referencePolicy, RoutingPolicy policy, Bgpv4Route inRoute) {
+    return diffRowResultsFor(referencePolicy, policy, inRoute, _direction);
   }
 
   /**
@@ -189,19 +195,19 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   /**
    * Compare two route policies for behavioral differences.
    *
-   * @param policy the routing policy
-   * @param proposedPolicy the proposed routing policy
+   * @param referencePolicy the routing policy of the reference snapshot
+   * @param policy the routing policy of the current snapshot
    * @param configAPs an object providing the atomic predicates for the policy's owner configuration
    * @return a set of differences
    */
   private List<Row> comparePolicies(
-      RoutingPolicy policy, RoutingPolicy proposedPolicy, ConfigAtomicPredicates configAPs) {
+      RoutingPolicy referencePolicy, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     // The set of differences if any.
     List<BDD> differences = new ArrayList<>();
 
     BDDFactory factory = JFactory.init(100000, 10000);
-    TransferBDD tBDD = new TransferBDD(factory, configAPs, policy);
-    TransferBDD otherTBDD = new TransferBDD(factory, configAPs, proposedPolicy);
+    TransferBDD tBDD = new TransferBDD(factory, configAPs, referencePolicy);
+    TransferBDD otherTBDD = new TransferBDD(factory, configAPs, policy);
 
     // Generate well-formedness constraints
     BDD wf = new BDDRoute(tBDD.getFactory(), configAPs).bgpWellFormednessConstraints();
@@ -253,7 +259,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     return differences.stream()
         .map(intersection -> constraintsToInputs(intersection, configAPs))
         .sorted(Comparator.comparing(AbstractRoute::getNetwork))
-        .map(r -> computeDifferencesForInputRoute(policy, proposedPolicy, r))
+        .map(r -> computeDifferencesForInputRoute(referencePolicy, policy, r))
         .collect(Collectors.toList());
   }
 
@@ -261,67 +267,153 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * Search all of the route policies of a particular node for behaviors of interest.
    *
    * @param node the node - for now assuming a single config, might lift that assumption later.
-   * @param policies all route policies in that node
-   * @param proposedPolicies all route policies in that node
+   * @param policies all route policies in the given node for the new snapshot
+   * @param referencePolicies all route policies in the given node for the reference snapshot.
+   * @param crossPolicies if true then policies and referencePolicies are all compared with each
+   *     other. Otherwise we use a one-to-one mapping where names must match in order to compare.
+   * @param snapshot
+   * @param reference
    * @return all results from analyzing those route policies
    */
   private Stream<Row> comparePoliciesForNode(
       String node,
       Stream<RoutingPolicy> policies,
-      Stream<RoutingPolicy> proposedPolicies,
-      NetworkSnapshot snapshot) {
-    List<RoutingPolicy> policiesList = policies.collect(Collectors.toList());
-    List<RoutingPolicy> proposedPoliciesList = proposedPolicies.collect(Collectors.toList());
+      Stream<RoutingPolicy> referencePolicies,
+      boolean crossPolicies,
+      NetworkSnapshot snapshot,
+      NetworkSnapshot reference) {
+    List<RoutingPolicy> referencePoliciesList = referencePolicies.collect(Collectors.toList());
+    List<RoutingPolicy> currentPoliciesList = policies.collect(Collectors.toList());
 
-    if (policiesList.isEmpty()) {
-      throw new IllegalArgumentException(
-          String.format("Could not find policy matching %s", _policySpecifierString));
-    }
-    if (proposedPoliciesList.isEmpty()) {
+    if (referencePoliciesList.isEmpty()) {
       throw new IllegalArgumentException(
           String.format(
-              "Could not find proposed policy matching %s", _proposedPolicySpecifierString));
+              "Could not find policy matching %s in reference snapshot",
+              _referencePolicySpecifier));
+    }
+    if (currentPoliciesList.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Could not find policy matching %s in current snapshot", _policySpecifierString));
     }
 
-    // Compute AtomicPredicates for both policies and proposedPolicies.
-    List<RoutingPolicy> allPolicies = new ArrayList<>(policiesList);
-    allPolicies.addAll(proposedPoliciesList);
+    if (!crossPolicies) {
+      // In this case we are comparing all route-maps with the same name.
+      Set<String> referencePoliciesNames =
+          referencePoliciesList.stream().map(RoutingPolicy::getName).collect(Collectors.toSet());
+      Set<String> policiesNames =
+          currentPoliciesList.stream().map(RoutingPolicy::getName).collect(Collectors.toSet());
+      Set<String> intersection =
+          referencePoliciesNames.stream()
+              .filter(policiesNames::contains)
+              .collect(Collectors.toSet());
+      if (intersection.isEmpty()) {
+        throw new IllegalArgumentException(
+            String.format(
+                "No common policies described by %s in %s", _policySpecifierString, node));
+      }
+      // Filter down the lists such that they include policies with the same name only
+      referencePoliciesList.removeIf(p -> !intersection.contains(p.getName()));
+      currentPoliciesList.removeIf(p -> !intersection.contains(p.getName()));
+    }
 
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             _batfish,
             snapshot,
+            reference,
             node,
             _communityRegexes.stream()
                 .map(CommunityVar::from)
                 .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes,
-            allPolicies);
+            currentPoliciesList,
+            referencePoliciesList);
 
-    return policiesList.stream()
-        .flatMap(
-            policy ->
-                proposedPoliciesList.stream()
-                    .flatMap(
-                        proposedPolicy ->
-                            comparePolicies(policy, proposedPolicy, configAPs).stream()));
+    if (crossPolicies) {
+      // In this case we cross-compare all routing policies in the two sets regardless of their
+      // names.
+      return referencePoliciesList.stream()
+          .flatMap(
+              referencePolicy ->
+                  currentPoliciesList.stream()
+                      .flatMap(
+                          currentPolicy ->
+                              comparePolicies(referencePolicy, currentPolicy, configAPs).stream()));
+    } else {
+      // In this case we only compare policies with the same name.
+      // Create a map from policy name to a tuple (currentPolicy, referencePolicy)
+      Map<String, Tuple<RoutingPolicy, RoutingPolicy>> policiesMap = new HashMap<>();
+      for (RoutingPolicy c : currentPoliciesList) {
+        policiesMap.put(c.getName(), new Tuple<>(c, null));
+      }
+      for (RoutingPolicy p : referencePoliciesList) {
+        policiesMap.computeIfPresent(p.getName(), (k, v) -> new Tuple<>(v.getFirst(), p));
+      }
+
+      return policiesMap.values().stream()
+          .flatMap(
+              policyTuple ->
+                  comparePolicies(policyTuple.getSecond(), policyTuple.getFirst(), configAPs)
+                      .stream());
+    }
   }
 
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
-    SpecifierContext context = _batfish.specifierContext(snapshot);
+    throw new BatfishException(
+        String.format("%s can only be run in differential mode.", _question.getName()));
+  }
+
+  /**
+   * Compares the policies in policySpecifier with the policies in proposedPolicySpecifier (all of
+   * them, their names don't have to match up). If, however, the proposedPolicySpecifier is empty it
+   * will do a 1-1 comparison with the policies found in policySpecifier. Note, this only compares
+   * across the same hostnames between the two snapshots, i.e., it will compare route-maps in r1
+   * with route-maps in r1 of the new snapshot.
+   *
+   * @param snapshot the current snapshot
+   * @param reference the reference snapshot
+   * @return
+   */
+  @Override
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+
+    SpecifierContext currentContext = _batfish.specifierContext(snapshot);
+    SpecifierContext referenceContext = _batfish.specifierContext(reference);
+    Set<String> currentNodes = _nodeSpecifier.resolve(currentContext);
+    Set<String> referenceNodes = _nodeSpecifier.resolve(referenceContext);
+    // Only compare nodes that are in both snapshots.
+    Stream<String> nodes = currentNodes.stream().filter(referenceNodes::contains);
 
     // Using stream.sorted() to ensure consistent order.
     List<Row> rows =
-        _nodeSpecifier.resolve(context).stream()
+        nodes
             .sorted()
             .flatMap(
-                node ->
-                    comparePoliciesForNode(
+                node -> {
+                  // If the referencePolicySpecifier is null then use the policies from
+                  // policySpecifier and do a 1-1 comparison based on policy name equality.
+                  if (_referencePolicySpecifier == null) {
+                    return comparePoliciesForNode(
                         node,
-                        _policySpecifier.resolve(node, context).stream().sorted(),
-                        _proposedPolicySpecifier.resolve(node, context).stream().sorted(),
-                        snapshot))
+                        _policySpecifier.resolve(node, currentContext).stream().sorted(),
+                        _policySpecifier.resolve(node, referenceContext).stream().sorted(),
+                        false,
+                        snapshot,
+                        reference);
+                  } else {
+                    // Otherwise cross-compare all policies in each set (policySpecifier and
+                    // referencePolicySpecifier)
+                    return comparePoliciesForNode(
+                        node,
+                        _policySpecifier.resolve(node, currentContext).stream().sorted(),
+                        _referencePolicySpecifier.resolve(node, referenceContext).stream().sorted(),
+                        true,
+                        snapshot,
+                        reference);
+                  }
+                })
             .collect(ImmutableList.toImmutableList());
     TableAnswerElement answerElement =
         new TableAnswerElement(TestRoutePoliciesAnswerer.compareMetadata());
@@ -341,9 +433,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     return _policySpecifier;
   }
 
-  @Nonnull
+  @Nullable
   @VisibleForTesting
-  RoutingPolicySpecifier getProposedPolicySpecifier() {
-    return _proposedPolicySpecifier;
+  RoutingPolicySpecifier getReferencePolicySpecifier() {
+    return _referencePolicySpecifier;
   }
 }
