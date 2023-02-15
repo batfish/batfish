@@ -119,6 +119,11 @@ public class BDDPacket implements Serializable {
     this(defaultFactory(JFactory::init));
   }
 
+  /** Returns total number of variables allocated in BDDs */
+  public int getVarCount() {
+    return _nextFreeBDDVarIdxBeforePacketVars + _nextFreeBDDVarIdx - FIRST_PACKET_VAR;
+  }
+
   /**
    * Creates a collection of BDD variables representing the various attributes of a control plane
    * advertisement using the given existing {@link BDDFactory}.

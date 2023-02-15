@@ -153,8 +153,8 @@ public class SnapshotBddStressTests {
             DropNoRoute.INSTANCE,
             DropNullRoute.INSTANCE);
 
-    int warmupIters = 5;
-    int measureIters = 3;
+    int warmupIters = 0;
+    int measureIters = 1;
     int totalIters = warmupIters + measureIters;
 
     List<Long> graphTimes = new ArrayList<>();
@@ -265,8 +265,13 @@ public class SnapshotBddStressTests {
     double perDestTime = meanOf(perDestTimes);
     System.out.println("--------- Average times (ms) -----------");
     System.out.printf(
-        "graph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\n%n",
-        graphTime, perDestTime, successTime, multipathTime, numSources);
+        "graph: %s\nperDest: %s\nsuccess: %s\nmultipath: %s\nsources: %s\nbddVars: %s%n",
+        graphTime,
+        perDestTime,
+        successTime,
+        multipathTime,
+        numSources,
+        new BDDPacket().getVarCount());
   }
 
   public static void main(String[] args) throws IOException, ParseException {
