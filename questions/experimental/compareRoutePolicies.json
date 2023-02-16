@@ -1,6 +1,6 @@
 {
   "class": "org.batfish.minesweeper.question.compareRoutePolicies.CompareRoutePoliciesQuestion",
-  "differential": false,
+  "differential": true,
   "policy": "${policy}",
   "referencePolicy": "${referencePolicy}",
   "nodes": "${nodes}",

@@ -11,11 +11,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,8 +95,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * Convert the results of symbolic route analysis into an answer to this question, if the
    * resulting constraints are satisfiable.
    *
-   * @param referencePolicy the first route policy that was analyzed
-   * @param policy the first route policy that was analyzed
+   * @param referencePolicy the reference route policy that we compared against.
+   * @param policy the proposed route policy.
    * @return the concrete input route and, if the desired action is PERMIT, the concrete output
    *     routes resulting from analyzing the given policies.
    */
@@ -342,20 +341,31 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
                               comparePolicies(referencePolicy, currentPolicy, configAPs).stream()));
     } else {
       // In this case we only compare policies with the same name.
-      // Create a map from policy name to a tuple (currentPolicy, referencePolicy)
-      Map<String, Tuple<RoutingPolicy, RoutingPolicy>> policiesMap = new HashMap<>();
-      for (RoutingPolicy c : currentPoliciesList) {
-        policiesMap.put(c.getName(), new Tuple<>(c, null));
-      }
-      for (RoutingPolicy p : referencePoliciesList) {
-        policiesMap.computeIfPresent(p.getName(), (k, v) -> new Tuple<>(v.getFirst(), p));
-      }
+      // Create a stream of policy tuples (referencePolicy, currentPolicy) for policies with the
+      // same name.
+      currentPoliciesList.sort(Comparator.comparing(RoutingPolicy::getName));
+      referencePoliciesList.sort(Comparator.comparing(RoutingPolicy::getName));
 
-      return policiesMap.values().stream()
-          .flatMap(
-              policyTuple ->
-                  comparePolicies(policyTuple.getSecond(), policyTuple.getFirst(), configAPs)
-                      .stream());
+      // Since the two lists have been filtered to include only elements in their intersection they
+      // should have the same
+      // length.
+      assert (currentPoliciesList.size() == referencePoliciesList.size());
+
+      // Since they have been sorted by name the policies at each index should have the same name.
+      Stream<Tuple<RoutingPolicy, RoutingPolicy>> zippedPolicies =
+          IntStream.range(0, currentPoliciesList.size())
+              .mapToObj(
+                  i -> {
+                    assert (referencePoliciesList
+                        .get(i)
+                        .getName()
+                        .equals(currentPoliciesList.get(i).getName()));
+                    return new Tuple<>(referencePoliciesList.get(i), currentPoliciesList.get(i));
+                  });
+
+      return zippedPolicies.flatMap(
+          policyTuple ->
+              comparePolicies(policyTuple.getFirst(), policyTuple.getSecond(), configAPs).stream());
     }
   }
 
