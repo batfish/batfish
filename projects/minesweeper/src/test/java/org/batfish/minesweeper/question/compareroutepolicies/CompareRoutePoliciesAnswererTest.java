@@ -96,8 +96,6 @@ import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.minesweeper.question.compareRoutePolicies.CompareRoutePoliciesAnswerer;
-import org.batfish.minesweeper.question.compareRoutePolicies.CompareRoutePoliciesQuestion;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.hamcrest.Matchers;
@@ -231,10 +229,12 @@ public class CompareRoutePoliciesAnswererTest {
     RoutingPolicy policy_new =
         _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -250,10 +250,12 @@ public class CompareRoutePoliciesAnswererTest {
     RoutingPolicy policy_new =
         _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -286,10 +288,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -325,10 +329,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -366,10 +372,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -395,6 +403,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests that differences in MED are detected. */
   @Test
   public void testSetMedDifference() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(new SetMetric(new LiteralLong(0)))
@@ -406,10 +415,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -435,6 +446,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests that differences in weight are detected. */
   @Test
   public void testWeightDifference() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(new SetWeight(new LiteralInt(10)))
@@ -446,10 +458,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -475,6 +489,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests that differences in nexthop IP are detected. */
   @Test
   public void testSetNextHop() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
@@ -483,10 +498,12 @@ public class CompareRoutePoliciesAnswererTest {
     RoutingPolicy policy_new =
         _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -513,6 +530,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests that when the nexthop IP is discarded the difference is captured. */
   @Test
   public void testDiscardNexthop() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
@@ -521,10 +539,12 @@ public class CompareRoutePoliciesAnswererTest {
     RoutingPolicy policy_new =
         _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -555,6 +575,7 @@ public class CompareRoutePoliciesAnswererTest {
    */
   @Test
   public void testOspfMetric() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(new SetOspfMetricType(OspfMetricType.E1))
@@ -566,10 +587,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -586,6 +609,7 @@ public class CompareRoutePoliciesAnswererTest {
    */
   @Test
   public void testAdministrativeDistance() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(new SetAdministrativeCost(new LiteralInt(20)))
@@ -597,10 +621,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -614,6 +640,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Test differences in set communities. */
   @Test
   public void testSetCommunity() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
@@ -626,10 +653,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -656,6 +685,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Test differences in set extcommunities. */
   @Test
   public void testSetExtCommunity() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(
@@ -666,10 +696,12 @@ public class CompareRoutePoliciesAnswererTest {
     RoutingPolicy policy_new =
         _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -696,6 +728,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests that differences caused by AS-path prepends are detected. */
   @Test
   public void testSetAsPathPrepend() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(
@@ -705,10 +738,12 @@ public class CompareRoutePoliciesAnswererTest {
     RoutingPolicy policy_new =
         _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -734,12 +769,14 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests that differences caused by AS-path prepends are detected. */
   @Test
   public void testMatchSetAsPath() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(
                 new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(40L)))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
+
     RoutingPolicy policy_new =
         _policyBuilder_base
             .addStatement(
@@ -749,10 +786,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitReject))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -816,6 +855,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests differences resulting from different treatment of incoming route's AS path. */
   @Test
   public void testMatchAs() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
@@ -827,10 +867,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -868,6 +910,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests differences from Prefix Matching. */
   @Test
   public void testMatchPrefixes() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(
@@ -887,10 +930,12 @@ public class CompareRoutePoliciesAnswererTest {
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -927,6 +972,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests differences from Prefix Matching. */
   @Test
   public void testMatchPrefixesSplit() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(
@@ -936,6 +982,7 @@ public class CompareRoutePoliciesAnswererTest {
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .addStatement(new StaticStatement(Statements.ExitReject))
             .build();
+
     RoutingPolicy policy_new =
         _policyBuilder_base
             .addStatement(
@@ -946,10 +993,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitReject))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -1007,6 +1056,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests differences resulting from different treatment of incoming route's communities. */
   @Test
   public void testMatchCommunity() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(
@@ -1021,10 +1071,12 @@ public class CompareRoutePoliciesAnswererTest {
     RoutingPolicy policy_new =
         _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -1090,10 +1142,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -1131,6 +1185,7 @@ public class CompareRoutePoliciesAnswererTest {
   /** Tests multiple differences in set values. */
   @Test
   public void testMultipleSetDifferences() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(new SetLocalPreference(new LiteralLong(200)))
@@ -1147,10 +1202,12 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -1187,6 +1244,7 @@ public class CompareRoutePoliciesAnswererTest {
    */
   @Test
   public void testDeleteCommunity() {
+
     RoutingPolicy policy_reference =
         _policyBuilder_delta
             .addStatement(
@@ -1199,10 +1257,12 @@ public class CompareRoutePoliciesAnswererTest {
     RoutingPolicy policy_new =
         _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
 
     TableAnswerElement answer =
         (TableAnswerElement)
@@ -1239,21 +1299,27 @@ public class CompareRoutePoliciesAnswererTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testRejectMissingOriginalPolicy() {
+
     _policyBuilder_base.build();
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, "does not exist", POLICY_NEW_NAME, HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
     answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testRejectMissingProposedPolicy() {
+
     _policyBuilder_delta.build();
-    CompareRoutePoliciesQuestion question =
-        new CompareRoutePoliciesQuestion(
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, POLICY_REFERENCE_NAME, "does not exist", HOSTNAME);
-    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
     answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
   }
 }

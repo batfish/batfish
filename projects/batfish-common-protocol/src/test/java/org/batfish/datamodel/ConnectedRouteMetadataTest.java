@@ -23,13 +23,20 @@ public class ConnectedRouteMetadataTest {
         .addEqualityGroup(builder.setTag(2).build())
         .addEqualityGroup(builder.setGenerateConnectedRoute(true).build())
         .addEqualityGroup(builder.setGenerateConnectedRoute(false).build())
+        .addEqualityGroup(builder.setGenerateLocalNullRouteIfDown(true).build())
+        .addEqualityGroup(builder.setGenerateLocalNullRouteIfDown(false).build())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
     ConnectedRouteMetadata crm =
-        ConnectedRouteMetadata.builder().setAdmin(2).setGenerateLocalRoute(true).setTag(1).build();
+        ConnectedRouteMetadata.builder()
+            .setAdmin(2)
+            .setGenerateLocalRoute(true)
+            .setGenerateLocalNullRouteIfDown(true)
+            .setTag(1)
+            .build();
     assertThat(SerializationUtils.clone(crm), equalTo(crm));
   }
 
@@ -40,6 +47,7 @@ public class ConnectedRouteMetadataTest {
             .setAdmin(2)
             .setGenerateConnectedRoute(false)
             .setGenerateLocalRoute(true)
+            .setGenerateLocalNullRouteIfDown(true)
             .setTag(1)
             .build();
     assertThat(BatfishObjectMapper.clone(crm, ConnectedRouteMetadata.class), equalTo(crm));
