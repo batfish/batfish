@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.question.compareRoutePolicies;
+package org.batfish.minesweeper.question.compareroutepolicies;
 
 import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
@@ -165,6 +165,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             // manifests during model generation.
             acc = acc.or(outConstraint);
           }
+          break;
         case AS_PATH:
           BDD[] asPathAtomicPredicates = r1.getAsPathRegexAtomicPredicates();
           BDD[] otherAsPathAtomicPredicates = r2.getAsPathRegexAtomicPredicates();
@@ -175,6 +176,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             // manifests during model generation.
             acc = acc.or(outConstraint);
           }
+          break;
+        default:
+          throw new UnsupportedOperationException(d.name());
       }
     }
     if (!acc.isZero()) {

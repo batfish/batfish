@@ -1529,8 +1529,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         return "1";
       case VERSION_2:
         return "2";
+      default:
+        throw new IllegalArgumentException(String.format("Invalid HsrpVersion: %s", hsrpVersion));
     }
-    throw new IllegalArgumentException(String.format("Invalid HsrpVersion: %s", hsrpVersion));
   }
 
   public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, Long asn) {
