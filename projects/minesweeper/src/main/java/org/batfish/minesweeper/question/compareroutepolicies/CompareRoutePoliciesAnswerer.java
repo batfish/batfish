@@ -64,7 +64,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Set<String> _communityRegexes;
   @Nonnull private final Set<String> _asPathRegexes;
 
-  public CompareRoutePoliciesAnswerer(CompareRoutePoliciesQuestion question, IBatfish batfish) {
+  public CompareRoutePoliciesAnswerer(
+      org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question,
+      IBatfish batfish) {
     super(question, batfish);
     _nodeSpecifier =
         SpecifierFactories.getNodeSpecifierOrDefault(
@@ -274,8 +276,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @param referencePolicies all route policies in the given node for the reference snapshot.
    * @param crossPolicies if true then policies and referencePolicies are all compared with each
    *     other. Otherwise we use a one-to-one mapping where names must match in order to compare.
-   * @param snapshot
-   * @param reference
+   * @param snapshot the snapshot of the proposed change
+   * @param reference the reference snapshot
    * @return all results from analyzing those route policies
    */
   private Stream<Row> comparePoliciesForNode(

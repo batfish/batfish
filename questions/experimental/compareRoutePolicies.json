@@ -1,5 +1,5 @@
 {
-  "class": "org.batfish.minesweeper.question.compareRoutePolicies.CompareRoutePoliciesQuestion",
+  "class": "org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion",
   "differential": true,
   "policy": "${policy}",
   "referencePolicy": "${referencePolicy}",

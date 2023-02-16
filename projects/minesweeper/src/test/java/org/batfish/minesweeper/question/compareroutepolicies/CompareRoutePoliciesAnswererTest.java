@@ -114,8 +114,8 @@ public class CompareRoutePoliciesAnswererTest {
 
   private static final Environment.Direction DEFAULT_DIRECTION = Environment.Direction.IN;
 
-  private RoutingPolicy.Builder _policyBuilder_delta;
-  private RoutingPolicy.Builder _policyBuilder_base;
+  private RoutingPolicy.Builder _policyBuilderDelta;
+  private RoutingPolicy.Builder _policyBuilderBase;
   private IBatfish _batfish;
 
   static final class MockBatfish extends IBatfishTestAdapter {
@@ -201,8 +201,8 @@ public class CompareRoutePoliciesAnswererTest {
 
     nf.vrfBuilder().setOwner(baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
     nf.vrfBuilder().setOwner(deltaConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
-    _policyBuilder_base = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_NEW_NAME);
-    _policyBuilder_delta =
+    _policyBuilderBase = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_NEW_NAME);
+    _policyBuilderDelta =
         nf.routingPolicyBuilder().setOwner(deltaConfig).setName(POLICY_REFERENCE_NAME);
 
     _batfish =
@@ -225,9 +225,9 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testBothPermit() {
     RoutingPolicy policy_reference =
-        _policyBuilder_delta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
-        _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -246,9 +246,9 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testPermitDeny() {
     RoutingPolicy policy_reference =
-        _policyBuilder_delta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
-        _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitReject)).build();
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -281,9 +281,9 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testPermitDenyDeadCode() {
     RoutingPolicy policy_reference =
-        _policyBuilder_delta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(new StaticStatement(Statements.ExitReject))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -319,12 +319,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testLocalPrefDifference() {
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetLocalPreference(new LiteralLong(200)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(new SetLocalPreference(new LiteralLong(100)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -362,12 +362,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testSetTagDifference() {
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetTag(new LiteralLong(0)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(new SetTag(new LiteralLong(1)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -405,12 +405,12 @@ public class CompareRoutePoliciesAnswererTest {
   public void testSetMedDifference() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetMetric(new LiteralLong(0)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(new SetMetric(new LiteralLong(1)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -448,12 +448,12 @@ public class CompareRoutePoliciesAnswererTest {
   public void testWeightDifference() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetWeight(new LiteralInt(10)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(new SetWeight(new LiteralInt(0)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -491,12 +491,12 @@ public class CompareRoutePoliciesAnswererTest {
   public void testSetNextHop() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -532,12 +532,12 @@ public class CompareRoutePoliciesAnswererTest {
   public void testDiscardNexthop() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -577,12 +577,12 @@ public class CompareRoutePoliciesAnswererTest {
   public void testOspfMetric() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetOspfMetricType(OspfMetricType.E1))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(new SetOspfMetricType(OspfMetricType.E2))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -611,12 +611,12 @@ public class CompareRoutePoliciesAnswererTest {
   public void testAdministrativeDistance() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetAdministrativeCost(new LiteralInt(20)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(new SetAdministrativeCost(new LiteralInt(10)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -642,9 +642,9 @@ public class CompareRoutePoliciesAnswererTest {
   public void testSetCommunity() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(
                 new SetCommunities(
                     CommunitySetUnion.of(
@@ -687,14 +687,14 @@ public class CompareRoutePoliciesAnswererTest {
   public void testSetExtCommunity() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(
                 new SetCommunities(
                     new LiteralCommunitySet(CommunitySet.of(ExtendedCommunity.parse("0:4:44")))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -730,13 +730,13 @@ public class CompareRoutePoliciesAnswererTest {
   public void testSetAsPathPrepend() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(
                 new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(42L)))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -771,14 +771,14 @@ public class CompareRoutePoliciesAnswererTest {
   public void testMatchSetAsPath() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(
                 new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(40L)))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(
                 new If(
                     new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
@@ -857,9 +857,9 @@ public class CompareRoutePoliciesAnswererTest {
   public void testMatchAs() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(
                 new If(
                     new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
@@ -912,7 +912,7 @@ public class CompareRoutePoliciesAnswererTest {
   public void testMatchPrefixes() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(
                 new If(
                     matchPrefixSet(
@@ -921,7 +921,7 @@ public class CompareRoutePoliciesAnswererTest {
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(
                 new If(
                     matchPrefixSet(
@@ -974,7 +974,7 @@ public class CompareRoutePoliciesAnswererTest {
   public void testMatchPrefixesSplit() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(
                 new If(
                     new MatchPrefixSet(
@@ -984,7 +984,7 @@ public class CompareRoutePoliciesAnswererTest {
             .build();
 
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(
                 new If(
                     new MatchPrefixSet(
@@ -1058,7 +1058,7 @@ public class CompareRoutePoliciesAnswererTest {
   public void testMatchCommunity() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(
                 new If(
                     new MatchCommunities(
@@ -1069,7 +1069,7 @@ public class CompareRoutePoliciesAnswererTest {
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -1119,7 +1119,7 @@ public class CompareRoutePoliciesAnswererTest {
     Community comm1 = StandardCommunity.parse("1:1");
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(
                 new If(
                     new MatchCommunities(
@@ -1133,7 +1133,7 @@ public class CompareRoutePoliciesAnswererTest {
             .build();
 
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(
                 new SetCommunities(
                     CommunitySetUnion.of(
@@ -1187,7 +1187,7 @@ public class CompareRoutePoliciesAnswererTest {
   public void testMultipleSetDifferences() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(new SetLocalPreference(new LiteralLong(200)))
             .addStatement(new SetTag(new LiteralLong(10)))
             .addStatement(new SetMetric(new LiteralLong(0)))
@@ -1195,7 +1195,7 @@ public class CompareRoutePoliciesAnswererTest {
             .build();
 
     RoutingPolicy policy_new =
-        _policyBuilder_base
+        _policyBuilderBase
             .addStatement(new SetMetric(new LiteralLong(100)))
             .addStatement(new SetLocalPreference(new LiteralLong(0)))
             .addStatement(new SetTag(new LiteralLong(0)))
@@ -1246,7 +1246,7 @@ public class CompareRoutePoliciesAnswererTest {
   public void testDeleteCommunity() {
 
     RoutingPolicy policy_reference =
-        _policyBuilder_delta
+        _policyBuilderDelta
             .addStatement(
                 new SetCommunities(
                     new CommunitySetDifference(
@@ -1255,7 +1255,7 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
-        _policyBuilder_base.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
@@ -1300,7 +1300,7 @@ public class CompareRoutePoliciesAnswererTest {
   @Test(expected = IllegalArgumentException.class)
   public void testRejectMissingOriginalPolicy() {
 
-    _policyBuilder_base.build();
+    _policyBuilderBase.build();
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, "does not exist", POLICY_NEW_NAME, HOSTNAME);
@@ -1313,7 +1313,7 @@ public class CompareRoutePoliciesAnswererTest {
   @Test(expected = IllegalArgumentException.class)
   public void testRejectMissingProposedPolicy() {
 
-    _policyBuilder_delta.build();
+    _policyBuilderDelta.build();
     org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
             DEFAULT_DIRECTION, POLICY_REFERENCE_NAME, "does not exist", HOSTNAME);
