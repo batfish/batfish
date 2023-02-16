@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.question.compareRoutePolicies;
+package org.batfish.minesweeper.question.compareroutepolicies;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
