@@ -25,11 +25,11 @@ import org.batfish.minesweeper.utils.Tuple;
  * This class computes the community-regex and AS-path-regex atomic predicates for a single router
  * configuration.
  */
-public class ConfigAtomicPredicates {
+public final class ConfigAtomicPredicates {
 
-  Configuration _configuration;
+  private final Configuration _configuration;
 
-  Configuration _referenceConfiguration;
+  private final Configuration _referenceConfiguration;
 
   /**
    * Atomic predicates for standard community literals and regexes that appear in the given
@@ -131,6 +131,8 @@ public class ConfigAtomicPredicates {
     _configuration = batfish.loadConfigurations(snapshot).get(router);
     if (reference != null) {
       _referenceConfiguration = batfish.loadConfigurations(reference).get(router);
+    } else {
+      _referenceConfiguration = null;
     }
 
     // Gather the communities from both (if differential) configs + any user provided communities.
@@ -176,6 +178,7 @@ public class ConfigAtomicPredicates {
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
     _configuration = other._configuration;
+    _referenceConfiguration = other._referenceConfiguration;
     _standardCommunityAtomicPredicates =
         new RegexAtomicPredicates<>(other._standardCommunityAtomicPredicates);
     _nonStandardCommunityLiterals = new HashMap<>(other._nonStandardCommunityLiterals);
@@ -188,7 +191,7 @@ public class ConfigAtomicPredicates {
    * set of additional community literals and regexes is also included, which is used to support
    * user-specified community constraints for symbolic analysis.
    */
-  private Set<CommunityVar> findAllCommunities(
+  private static Set<CommunityVar> findAllCommunities(
       @Nullable Set<CommunityVar> communities,
       Collection<RoutingPolicy> policies,
       Configuration configuration) {
@@ -206,7 +209,8 @@ public class ConfigAtomicPredicates {
    * @param configuration the configuration based on a given snapshot
    * @return a set of community vars
    */
-  private Set<CommunityVar> findAllCommunities(RoutingPolicy policy, Configuration configuration) {
+  private static Set<CommunityVar> findAllCommunities(
+      RoutingPolicy policy, Configuration configuration) {
     Set<CommunityVar> comms = new HashSet<>();
     List<Statement> stmts = policy.getStatements();
     stmts.forEach(
@@ -225,7 +229,7 @@ public class ConfigAtomicPredicates {
    * @param policies the routing policies to retrieve the community literals/regexes from.
    * @param configuration the configuration based on a given snapshot
    */
-  private Set<CommunityVar> findAllCommunities(
+  private static Set<CommunityVar> findAllCommunities(
       Collection<RoutingPolicy> policies, Configuration configuration) {
     Set<CommunityVar> comms = new HashSet<>();
 
@@ -239,7 +243,7 @@ public class ConfigAtomicPredicates {
    * additional AS-path regexes is also included, which is used to support user-specified AS-path
    * constraints for symbolic analysis.
    */
-  private Set<SymbolicAsPathRegex> findAllAsPathRegexes(
+  private static Set<SymbolicAsPathRegex> findAllAsPathRegexes(
       @Nullable Set<String> asPathRegexes,
       Collection<RoutingPolicy> policies,
       Configuration configuration) {
@@ -262,7 +266,7 @@ public class ConfigAtomicPredicates {
    * @param configuration the batfish configuration
    * @return a set of symbolic AS path regexes.
    */
-  private Set<SymbolicAsPathRegex> findAsPathRegexes(
+  private static Set<SymbolicAsPathRegex> findAsPathRegexes(
       RoutingPolicy policy, Configuration configuration) {
     Set<SymbolicAsPathRegex> asPathRegexes = new HashSet<>();
     List<Statement> stmts = policy.getStatements();
@@ -283,7 +287,7 @@ public class ConfigAtomicPredicates {
    * @param configuration the batfish configuration
    * @return a set of all AS-path regexes that appear
    */
-  private Set<SymbolicAsPathRegex> findAsPathRegexes(
+  private static Set<SymbolicAsPathRegex> findAsPathRegexes(
       Collection<RoutingPolicy> policies, Configuration configuration) {
     Set<SymbolicAsPathRegex> asPathRegexes = new HashSet<>();
 
@@ -295,6 +299,11 @@ public class ConfigAtomicPredicates {
 
   public Configuration getConfiguration() {
     return _configuration;
+  }
+
+  @Nullable
+  public Configuration getReferenceConfiguration() {
+    return _referenceConfiguration;
   }
 
   public RegexAtomicPredicates<CommunityVar> getStandardCommunityAtomicPredicates() {
