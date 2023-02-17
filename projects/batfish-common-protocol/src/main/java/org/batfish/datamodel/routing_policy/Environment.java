@@ -1,13 +1,14 @@
 package org.batfish.datamodel.routing_policy;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Predicates.alwaysFalse;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
@@ -21,7 +22,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.as_path.AsPathExpr;
@@ -30,7 +30,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
-import org.batfish.datamodel.routing_policy.expr.RibExpr;
 import org.batfish.datamodel.trace.Tracer;
 
 public class Environment {
@@ -96,8 +95,7 @@ public class Environment {
   private boolean _localDefaultAction;
   private boolean _tagExplicitlySet;
 
-  @Nullable
-  private final BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
+  private final @Nonnull Predicate<String> _successfulTrack;
 
   private final AbstractRoute _originalRoute;
   private final AbstractRouteBuilder<?, ?> _outputRoute;
@@ -131,7 +129,7 @@ public class Environment {
       Map<String, IpAccessList> ipAccessLists,
       boolean localDefaultAction,
       Map<String, RoutingPolicy> routingPolicies,
-      @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator,
+      @Nonnull Predicate<String> successfulTrack,
       AbstractRouteDecorator originalRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       boolean readFromIntermediateBgpAttributes,
@@ -158,7 +156,7 @@ public class Environment {
     _intermediateBgpAttributes = intermediateBgpAttributes;
     _ipAccessLists = ipAccessLists;
     _localDefaultAction = localDefaultAction;
-    _ribIntersectsPrefixSpaceEvaluator = ribIntersectsPrefixSpaceEvaluator;
+    _successfulTrack = successfulTrack;
     _routingPolicies = routingPolicies;
     _originalRoute = originalRoute == null ? null : originalRoute.getAbstractRoute();
     _outputRoute = outputRoute;
@@ -297,13 +295,11 @@ public class Environment {
   }
 
   /**
-   * Returns a function for evaluating whether there is any intersection between the prefixes of the
-   * routes in the RIB represented by a provided {@link RibExpr} and a provided {@link PrefixSpace},
-   * or {@code null} if called outside of data plane generation.
+   * Returns {@code true} iff the named track was indicated as successful according to the predicate
+   * provided by the instantiator of this {@link Environment}.
    */
-  @Nullable
-  public BiFunction<RibExpr, PrefixSpace, Boolean> getRibIntersectsPrefixSpaceEvaluator() {
-    return _ribIntersectsPrefixSpaceEvaluator;
+  public boolean isTrackSuccessful(String trackName) {
+    return _successfulTrack.test(trackName);
   }
 
   public AbstractRoute getOriginalRoute() {
@@ -404,7 +400,7 @@ public class Environment {
     private Map<String, IpAccessList> _ipAccessLists;
     private boolean _localDefaultAction;
     private Map<String, RoutingPolicy> _routingPolicies;
-    @Nullable private BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
+    private @Nullable Predicate<String> _successfulTrack;
     private AbstractRouteDecorator _originalRoute;
     private AbstractRouteBuilder<?, ?> _outputRoute;
     private boolean _readFromIntermediateBgpAttributes;
@@ -520,10 +516,8 @@ public class Environment {
       return this;
     }
 
-    @Nonnull
-    public Builder setRibIntersectsPrefixSpaceEvaluator(
-        @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
-      _ribIntersectsPrefixSpaceEvaluator = ribIntersectsPrefixSpaceEvaluator;
+    public @Nonnull Builder setSuccessfulTrack(@Nonnull Predicate<String> successfulTrack) {
+      _successfulTrack = successfulTrack;
       return this;
     }
 
@@ -579,7 +573,7 @@ public class Environment {
           firstNonNull(_ipAccessLists, ImmutableMap.of()),
           _localDefaultAction,
           firstNonNull(_routingPolicies, ImmutableMap.of()),
-          _ribIntersectsPrefixSpaceEvaluator,
+          firstNonNull(_successfulTrack, alwaysFalse()),
           _originalRoute,
           _outputRoute,
           _readFromIntermediateBgpAttributes,

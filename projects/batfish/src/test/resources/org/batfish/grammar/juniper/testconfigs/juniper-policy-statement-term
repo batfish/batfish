@@ -8,6 +8,9 @@ set policy-options community BGP1 members 1
 set policy-options community BGP2 members 2
 set policy-options community BGP3 members 3
 #
+set policy-options as-path-group AS_PATH_GROUP as-path ASN1 ".* 1$"
+set policy-options as-path-group AS_PATH_GROUP as-path ASN2 ".* 2$"
+#
 set policy-options as-path AS1 1
 set policy-options as-path AS2 2
 set policy-options as-path AS3 3
@@ -18,6 +21,9 @@ set policy-options prefix-list PL3 3.3.3.0/24
 set policy-options prefix-list PL4 4.4.4.0/24
 set policy-options prefix-list PL5 5.5.5.0/24
 set policy-options prefix-list PL6 6.6.6.0/24
+#
+set policy-options policy-statement AS_PATH_GROUP_POLICY term T1 from as-path-group AS_PATH_GROUP
+set policy-options policy-statement AS_PATH_GROUP_POLICY term T1 then accept
 #
 # Untested until "set policy-options as-path AS1 1" is extracted
 # set policy-options policy-statement AS_PATH_POLICY term T1 from as-path AS1
@@ -32,6 +38,11 @@ set policy-options prefix-list PL6 6.6.6.0/24
 set policy-options policy-statement COMMUNITY_POLICY term T1 from community BGP1
 set policy-options policy-statement COMMUNITY_POLICY term T1 from community BGP2
 set policy-options policy-statement COMMUNITY_POLICY term T1 then accept
+#
+set policy-options policy-statement COMMUNITY_COUNT_POLICY term T1 from community-count 2
+set policy-options policy-statement COMMUNITY_COUNT_POLICY term T1 from community-count 2 orhigher
+set policy-options policy-statement COMMUNITY_COUNT_POLICY term T1 from community-count 2 orlower
+set policy-options policy-statement COMMUNITY_COUNT_POLICY term T1 then accept
 #
 set policy-options policy-statement FAMILY_POLICY term T1 from family inet
 set policy-options policy-statement FAMILY_POLICY term T1 from family inet6

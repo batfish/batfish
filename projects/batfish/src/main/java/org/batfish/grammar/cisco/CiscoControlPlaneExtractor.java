@@ -188,6 +188,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_DHCP_RELAY_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP;
@@ -314,6 +315,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -645,11 +648,12 @@ import org.batfish.grammar.cisco.CiscoParser.If_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_zone_memberContext;
-import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmpsg_aclContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifipdhcpr_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifipdhcpr_clientContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifipdhcpr_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_modeContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_protectionContext;
@@ -1018,11 +1022,13 @@ import org.batfish.grammar.cisco.CiscoParser.Standard_ipv6_access_list_tailConte
 import org.batfish.grammar.cisco.CiscoParser.Standby_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_ipContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_group_numberContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_timersContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_versionContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_version_numberContext;
 import org.batfish.grammar.cisco.CiscoParser.SubrangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Summary_address_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Suppressed_iis_stanzaContext;
@@ -1105,6 +1111,7 @@ import org.batfish.representation.cisco.HsrpDecrementPriority;
 import org.batfish.representation.cisco.HsrpGroup;
 import org.batfish.representation.cisco.HsrpShutdown;
 import org.batfish.representation.cisco.HsrpTrackAction;
+import org.batfish.representation.cisco.HsrpVersion;
 import org.batfish.representation.cisco.IcmpEchoSla;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
 import org.batfish.representation.cisco.IcmpTypeGroupReferenceLine;
@@ -1550,7 +1557,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private SecurityZonePair _currentSecurityZonePair;
 
-  private Integer _currentHsrpGroup;
+  private List<HsrpGroup> _currentHsrpGroups;
 
   private Integer _currentTrack;
 
@@ -2353,51 +2360,82 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterStandby_group(Standby_groupContext ctx) {
-    int group = toInteger(ctx.group);
-    _currentHsrpGroup = group;
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new));
+    // Hard to determine correct behavior if some interfaces in the current interface range are
+    // version 1 and some are version 2. For now, fail loudly by warning and refusing to update
+    // groups if any interface is wrong version for provided group number.
+    // Note that version 1 is default.
+    boolean effectiveVersion2 =
+        _currentInterfaces.stream().allMatch(i -> i.getHsrpVersion() == HsrpVersion.VERSION_2);
+    Optional<Integer> maybeGroup = toInteger(ctx, ctx.group, effectiveVersion2);
+    if (!maybeGroup.isPresent()) {
+      // already warned
+      _currentHsrpGroups = ImmutableList.of();
+      return;
+    }
+    int group = maybeGroup.get();
+    _currentHsrpGroups =
+        _currentInterfaces.stream()
+            .map(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new))
+            .collect(ImmutableList.toImmutableList());
   }
 
   @Override
   public void exitStandby_group(Standby_groupContext ctx) {
-    _currentHsrpGroup = null;
+    _currentHsrpGroups = null;
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Standby_group_numberContext ctx, boolean effectiveVersion2) {
+    if (effectiveVersion2) {
+      return toIntegerInSpace(
+          messageCtx, ctx, HSRP_VERSION_2_GROUP_RANGE, "HSRP version 2 group number");
+    } else {
+      return toIntegerInSpace(
+          messageCtx, ctx, HSRP_VERSION_1_GROUP_RANGE, "HSRP version 1 group number");
+    }
   }
 
   @Override
   public void exitStandby_version(Standby_versionContext ctx) {
     if (!_no) {
-      _currentInterfaces.forEach(i -> i.setHsrpVersion(ctx.version.getText()));
+      _currentInterfaces.forEach(i -> i.setHsrpVersion(toHsrpVersion(ctx.version)));
     } else {
       _currentInterfaces.forEach(i -> i.setHsrpVersion(null));
+    }
+  }
+
+  private static @Nonnull HsrpVersion toHsrpVersion(Standby_version_numberContext ctx) {
+    if (ctx.STANDBY_VERSION_1() != null) {
+      return HsrpVersion.VERSION_1;
+    } else {
+      assert ctx.STANDBY_VERSION_2() != null;
+      return HsrpVersion.VERSION_2;
     }
   }
 
   @Override
   public void exitStandby_group_authentication(Standby_group_authenticationContext ctx) {
     String rawAuthenticationString = ctx.auth.getText();
-    _currentInterfaces.forEach(
-        i ->
-            i.getHsrpGroups()
-                .get(_currentHsrpGroup)
-                .setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
+    _currentHsrpGroups.forEach(
+        h -> h.setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
   }
 
   @Override
   public void exitStandby_group_ip(Standby_group_ipContext ctx) {
     Ip ip = toIp(ctx.ip);
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setIp(ip));
+    _currentHsrpGroups.forEach(h -> h.setIp(ip));
   }
 
   @Override
   public void exitStandby_group_preempt(Standby_group_preemptContext ctx) {
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPreempt(!_no));
+    _currentHsrpGroups.forEach(h -> h.setPreempt(!_no));
   }
 
   @Override
   public void exitStandby_group_priority(Standby_group_priorityContext ctx) {
     int priority =
         _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPriority(priority));
+    _currentHsrpGroups.forEach(h -> h.setPriority(priority));
   }
 
   @Override
@@ -2412,9 +2450,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
       holdTime = ctx.hold_ms != null ? toInteger(ctx.hold_ms) : (toInteger(ctx.hold_sec) * 1000);
     }
-    _currentInterfaces.forEach(
-        i -> {
-          HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
+    _currentHsrpGroups.forEach(
+        hsrpGroup -> {
           hsrpGroup.setHelloTime(helloTime);
           hsrpGroup.setHoldTime(holdTime);
         });
@@ -2426,8 +2463,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(
         TRACK, Integer.toString(track), INTERFACE_STANDBY_TRACK, ctx.getStart().getLine());
     HsrpTrackAction trackAction = toTrackAction(ctx);
-    _currentInterfaces.stream()
-        .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
+    _currentHsrpGroups.stream()
+        .map(h -> h.getTrackActions())
         .forEach(
             trackActions -> {
               if (_no) {
@@ -5817,7 +5854,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
+  public void exitIfipdhcpr_address(Ifipdhcpr_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip address = toIp(ctx.address);
       iface.getDhcpRelayAddresses().add(address);
@@ -5825,10 +5862,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
+  public void exitIfipdhcpr_client(Ifipdhcpr_clientContext ctx) {
     for (Interface iface : _currentInterfaces) {
       iface.setDhcpRelayClient(true);
     }
+  }
+
+  @Override
+  public void exitIfipdhcpr_source_interface(Ifipdhcpr_source_interfaceContext ctx) {
+    String iface = toString(ctx.iname);
+    _configuration.referenceStructure(
+        INTERFACE, iface, INTERFACE_IP_DHCP_RELAY_SOURCE_INTERFACE, ctx.getStart().getLine());
   }
 
   @Override
@@ -10819,6 +10863,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
@@ -10848,4 +10907,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitEveryRule(ParserRuleContext ctx) {
     tryProcessSilentSyntax(ctx);
   }
+
+  // See
+  // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipapp_fhrp/configuration/15-mt/fhp-15-mt-book/fhp-hsrp-v2.pdf
+  private static final IntegerSpace HSRP_VERSION_1_GROUP_RANGE =
+      IntegerSpace.of(Range.closed(0, 255));
+  private static final IntegerSpace HSRP_VERSION_2_GROUP_RANGE =
+      IntegerSpace.of(Range.closed(0, 4095));
 }

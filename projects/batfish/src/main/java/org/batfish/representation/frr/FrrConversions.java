@@ -11,6 +11,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpMainRibIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
@@ -115,8 +116,10 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -129,6 +132,7 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.frr.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
@@ -152,6 +156,9 @@ public final class FrrConversions {
 
   public static final long DEFAULT_MAX_MED = 4294967294L;
   public static final long DEFAULT_OSPF_MAX_METRIC = 0xFFFF;
+
+  /** Locally-generated BGP routes have a default weight of 32768. */
+  public static final int BGP_LOCAL_WEIGHT = 32768;
 
   @VisibleForTesting
   static final Statement REJECT_DEFAULT_ROUTE =
@@ -509,6 +516,9 @@ public final class FrrConversions {
       Sets.union(bgpVrf.getNetworks().keySet(), ipv4Unicast.getNetworks().keySet())
           .forEach(newProc::addToOriginationSpace);
 
+      Sets.union(bgpVrf.getNetworks().keySet(), ipv4Unicast.getNetworks().keySet())
+          .forEach(newProc::addUnconditionalNetworkStatements);
+
       // Generate aggregate routes
       generateBgpAggregates(c, newProc, ipv4Unicast.getAggregateNetworks());
     }
@@ -516,6 +526,12 @@ public final class FrrConversions {
     generateBgpCommonExportPolicy(c, vrfName, bgpVrf);
     newProc.setRedistributionPolicy(
         generateBgpRedistributionPolicy(c, vrfName, bgpVrf, frr.getRouteMaps()));
+
+    // http://docs.frrouting.org/en/latest/bgp.html#clicmd-network-A.B.C.D-M
+    // TODO: Investigate when we shouldn't set this policy for FRR - ex, specific syntax or
+    // defaults.
+    newProc.setMainRibIndependentNetworkPolicy(
+        generateBgpNetworkPolicy(c, vrfName, bgpVrf, frr.getRouteMaps()));
 
     return newProc;
   }
@@ -693,6 +709,8 @@ public final class FrrConversions {
                     (ipv4UnicastAddressFamily != null
                         && (firstNonNull(ipv4UnicastAddressFamily.getAllowAsIn(), 0) > 0)))
                 .setAllowRemoteAsOut(ALWAYS) // no outgoing remote-as check on Cumulus
+                // Based on result from https://github.com/batfish/batfish/issues/8588
+                .setAdvertiseInactive(true)
                 .build())
         .setExportPolicy(exportRoutingPolicy.getName())
         .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
@@ -1030,16 +1048,81 @@ public final class FrrConversions {
     //     bgpRedistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
 
     // Add redistribution conditions
-    addRedistributionAndNetworkStatements(bgpVrf, routeMaps, bgpRedistributionPolicy);
+    addRedistributionStatements(bgpVrf, routeMaps, bgpRedistributionPolicy);
 
     // Reject all other routes
     bgpRedistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
     return redistPolicyName;
   }
 
-  private static void addRedistributionAndNetworkStatements(
+  /**
+   * Create BGP network policy to add network statement routes unconditionally to BGP. This policy
+   * permits routes whose network matches a configured network statement.
+   *
+   * <p>All other routes are denied.
+   *
+   * @return Name of the generated main rib independent network policy
+   */
+  private static String generateBgpNetworkPolicy(
+      Configuration c, String vrfName, BgpVrf bgpVrf, Map<String, RouteMap> routeMaps) {
+    String networkPolicyName = generatedBgpMainRibIndependentNetworkPolicyName(vrfName);
+    RoutingPolicy.Builder bgpNetworkPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(networkPolicyName);
+
+    bgpNetworkPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
+    // local routes have a default weight of 32768.
+    bgpNetworkPolicy.addStatement(new SetWeight(new LiteralInt(BGP_LOCAL_WEIGHT)));
+
+    addNetworkStatementsToPolicy(bgpVrf, routeMaps, bgpNetworkPolicy);
+
+    // Reject all other routes
+    bgpNetworkPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
+    return networkPolicyName;
+  }
+
+  private static void addNetworkStatementsToPolicy(
+      BgpVrf bgpVrf, Map<String, RouteMap> routeMaps, RoutingPolicy.Builder policyBuilder) {
+    if (!bgpVrf.isIpv4UnicastActive()) {
+      return;
+    }
+    BgpIpv4UnicastAddressFamily bgpIpv4UnicastAddressFamily =
+        firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
+
+    // Each disjunct in this list represents the conditions for exporting a different network.
+    ImmutableList.Builder<BooleanExpr> networkDisjuncts = ImmutableList.builder();
+    Iterables.concat(
+            bgpVrf.getNetworks().values(), bgpIpv4UnicastAddressFamily.getNetworks().values())
+        .forEach(
+            network -> {
+              @Nullable String routeMapName = network.getRouteMap();
+              ImmutableList.Builder<BooleanExpr> matchNetworkConjuncts = ImmutableList.builder();
+              /* Match network prefix */
+              matchNetworkConjuncts.add(
+                  new MatchPrefixSet(
+                      DestinationNetwork.instance(),
+                      new ExplicitPrefixSet(
+                          new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))));
+              matchNetworkConjuncts.add(
+                  new Not(
+                      new MatchProtocol(
+                          RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
+              if (routeMapName != null && routeMaps.containsKey(routeMapName)) {
+                matchNetworkConjuncts.add(new CallExpr(routeMapName));
+              }
+              networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
+            });
+    policyBuilder.addStatement(
+        new If(
+            "Add network statement routes to BGP",
+            new Disjunction(networkDisjuncts.build()),
+            ImmutableList.of(
+                new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                Statements.ExitAccept.toStaticStatement())));
+  }
+
+  private static void addRedistributionStatements(
       BgpVrf bgpVrf, Map<String, RouteMap> routeMaps, RoutingPolicy.Builder redistributionPolicy) {
-    // we don't need to process redist policies and network statements (inside v4 address family or
+    // we don't need to process redist policies (inside v4 address family or
     // bgp-vrf-level) if v4 address family is not active
     if (!bgpVrf.isIpv4UnicastActive()) {
       return;
@@ -1076,38 +1159,6 @@ public final class FrrConversions {
         new If(
             new Disjunction(redistributionDisjuncts.build()),
             ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
-
-    // Create origination prefilter from listed advertised networks. Each disjunct in this list
-    // represents the conditions for exporting a different network.
-    ImmutableList.Builder<BooleanExpr> networkDisjuncts = ImmutableList.builder();
-    Iterables.concat(
-            bgpVrf.getNetworks().values(), bgpIpv4UnicastAddressFamily.getNetworks().values())
-        .forEach(
-            network -> {
-              @Nullable String routeMapName = network.getRouteMap();
-              ImmutableList.Builder<BooleanExpr> matchNetworkConjuncts = ImmutableList.builder();
-              /* Match network prefix */
-              matchNetworkConjuncts.add(
-                  new MatchPrefixSet(
-                      DestinationNetwork.instance(),
-                      new ExplicitPrefixSet(
-                          new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))));
-              matchNetworkConjuncts.add(
-                  new Not(
-                      new MatchProtocol(
-                          RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
-              if (routeMapName != null && routeMaps.containsKey(routeMapName)) {
-                matchNetworkConjuncts.add(new CallExpr(routeMapName));
-              }
-              networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
-            });
-    redistributionPolicy.addStatement(
-        new If(
-            "Add network statement routes to BGP",
-            new Disjunction(networkDisjuncts.build()),
-            ImmutableList.of(
-                new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                Statements.ExitAccept.toStaticStatement())));
   }
 
   /** Returns whether we originate default toward a neighbor with this configuration */

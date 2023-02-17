@@ -47,19 +47,41 @@ Do the following before doing anything
 1. Install Java 11 and corresponding debug symbols
     - `sudo apt install openjdk-11-jdk openjdk-11-dbg`
 
+1. If you don't already have it, install `wget`:
+    - `sudo apt-get install wget`
+
 2. If you don't already have it, install Bazelisk.
     - Open the [bazelisk release page](https://github.com/bazelbuild/bazelisk/releases)
     - Copy the link for the `bazelisk-linux-amd64` release asset for the latest version
     - Download and install bazelisk using the copied link (example url below is for `v1.12.2`, but
       you should use the latest version):
 
-      `curl -s https://github.com/bazelbuild/bazelisk/releases/download/v1.12.2/bazelisk-linux-amd64 | sudo tee /usr/local/bin/bazelisk`
+      `wget -O- https://github.com/bazelbuild/bazelisk/releases/download/v1.12.2/bazelisk-linux-amd64 | sudo tee /usr/local/bin/bazelisk > /dev/null`
     - Make bazelisk executable:
 
       `sudo chmod +x /usr/local/bin/bazelisk`
     - Symlink bazel to bazelisk:
 
       `sudo ln -s bazelisk /usr/local/bin/bazel`
+
+### Note: multiple versions of Java
+
+If you have multiple versions of Java installed on your machine, the default `java`/`javac` commands may still not be
+using JVM 11. In that case, you can force the version of Java in use by setting `JAVA_HOME`. @dhalperi has these aliases
+in his `.zshrc` to control which Java is running in a given shell on macOS:
+
+```sh
+# Java options
+# j8q switches to Java 8, quietly. Could make a loud version that runs `java -version` after.
+function j8q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+}
+function j11q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 11`
+}
+# Default to Java 11.
+j11q
+```
 
 ## Installation steps
 
@@ -139,6 +161,27 @@ do:
 ```
 bazel test --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistNetwork$ -- //projects/coordinator:coordinator_tests
 ```
+
+## Dependency management and upgrades
+
+We use Bazel's [`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external) to manage our Java dependencies
+from Maven. Refer to that
+project's [documentation](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson)
+to understand how it works, how Maven dependencies are versioned and captured in `maven_install.json`, and
+other information.
+
+Commonly, some Java library will have a CVE and we will want to upgrade our dependence on it. While the true reference
+for upgrading should be
+the [`rules_jvm_external` instructions on re-pinning](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson),
+here is a summary of the steps involved:
+
+1. Edit [`library_deps.bzl`](https://github.com/batfish/batfish/blob/master/library_deps.bzl) to update the version of
+   the library used to a non-vulnerable release.
+2. Run [`bazel run @unpinned_maven//:pin`](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson)
+   to re-generate `maven_install.json`.
+3. Manually review the changes (e.g., with `git diff`) to ensure all needed upgrades are achieved.
+4. Run all the tests (e.g., `bazel test //...`) to ensure that Batfish still builds and the tests still pass.
+5. Submit a PR to this repository as usual.
 
 ## Building a deployable batfish or allinone docker image
 

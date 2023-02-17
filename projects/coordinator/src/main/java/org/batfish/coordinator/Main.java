@@ -30,10 +30,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.BindPortFutures;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
-import org.batfish.coordinator.authorizer.DbAuthorizer;
 import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
-import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.questions.InstanceData;
@@ -42,8 +40,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.jettison.JettisonFeature;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class Main {
@@ -52,7 +48,6 @@ public class Main {
   // been called.
   private static @Nullable Authorizer _authorizer;
   private static @Nullable BatfishLogger _logger;
-  private static @Nullable PoolMgr _poolManager;
   private static @Nullable Settings _settings;
   private static @Nullable WorkMgr _workManager;
 
@@ -68,11 +63,6 @@ public class Main {
   public static BatfishLogger getLogger() {
     checkState(_logger != null, "Error: Logger has not been configured");
     return _logger;
-  }
-
-  public static PoolMgr getPoolMgr() {
-    checkState(_poolManager != null, "Error: Pool Manager has not been configured");
-    return _poolManager;
   }
 
   @Nullable
@@ -192,64 +182,12 @@ public class Main {
       case file:
         _authorizer = FileAuthorizer.createFromSettings(settings);
         break;
-      case database:
-        _authorizer = DbAuthorizer.createFromSettings(settings);
-        break;
       default:
         System.err.print(
             "org.batfish.coordinator: Initialization failed. Unsupported authorizer type " + type);
         System.exit(1);
     }
     getLogger().infof("Using authorizer %s\n", _authorizer);
-  }
-
-  private static void initPoolManager(BindPortFutures bindPortFutures) {
-    ResourceConfig rcPool =
-        new ResourceConfig(PoolMgrService.class)
-            .register(new JettisonFeature())
-            .register(MultiPartFeature.class);
-    HttpServer server;
-    if (_settings.getSslPoolDisable()) {
-      URI poolMgrUri =
-          UriBuilder.fromUri("http://" + _settings.getPoolBindHost())
-              .port(_settings.getServicePoolPort())
-              .build();
-
-      _logger.infof("Starting pool manager at %s\n", poolMgrUri);
-
-      server = GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
-    } else {
-      URI poolMgrUri =
-          UriBuilder.fromUri("https://" + _settings.getPoolBindHost())
-              .port(_settings.getServicePoolPort())
-              .build();
-
-      _logger.infof("Starting pool manager at %s\n", poolMgrUri);
-
-      server =
-          CommonUtil.startSslServer(
-              rcPool,
-              poolMgrUri,
-              _settings.getSslPoolKeystoreFile(),
-              _settings.getSslPoolKeystorePassword(),
-              _settings.getSslPoolTrustAllCerts(),
-              _settings.getSslPoolTruststoreFile(),
-              _settings.getSslPoolTruststorePassword(),
-              ConfigurationLocator.class,
-              Main.class);
-    }
-
-    _poolManager = new PoolMgr(_settings, _logger);
-    _poolManager.startPoolManager();
-    int selectedListenPort = server.getListeners().iterator().next().getPort();
-    URI actualPoolMgrUri =
-        UriBuilder.fromUri("http://" + _settings.getPoolBindHost())
-            .port(selectedListenPort)
-            .build();
-    _logger.infof("Started pool manager at %s\n", actualPoolMgrUri);
-    if (!bindPortFutures.getPoolPort().isDone()) {
-      bindPortFutures.getPoolPort().complete(selectedListenPort);
-    }
   }
 
   private static void startWorkManagerService(
@@ -265,29 +203,13 @@ public class Main {
     }
 
     HttpServer server;
-    if (_settings.getSslWorkDisable()) {
+    {
       URI workMgrUri =
           UriBuilder.fromUri("http://" + _settings.getWorkBindHost()).port(port).build();
 
       _logger.infof("Starting work manager %s at %s\n", serviceClass, workMgrUri);
 
       server = GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
-    } else {
-      URI workMgrUri =
-          UriBuilder.fromUri("https://" + _settings.getWorkBindHost()).port(port).build();
-
-      _logger.infof("Starting work manager at %s\n", workMgrUri);
-      server =
-          CommonUtil.startSslServer(
-              rcWork,
-              workMgrUri,
-              _settings.getSslWorkKeystoreFile(),
-              _settings.getSslWorkKeystorePassword(),
-              _settings.getSslWorkTrustAllCerts(),
-              _settings.getSslWorkTruststoreFile(),
-              _settings.getSslWorkTruststorePassword(),
-              ConfigurationLocator.class,
-              Main.class);
     }
     int selectedListenPort = server.getListeners().iterator().next().getPort();
     URI actualWorkMgrUri =
@@ -301,21 +223,11 @@ public class Main {
   }
 
   private static void initWorkManager(
-      BindPortFutures bindPortFutures,
-      WorkExecutorCreator workExecutorCreator,
-      boolean initLegacyWorkMgrV1) {
+      BindPortFutures bindPortFutures, WorkExecutorCreator workExecutorCreator) {
     FileBasedStorage fbs = new FileBasedStorage(_settings.getContainersLocation(), _logger);
     _workManager =
         new WorkMgr(_settings, _logger, new StorageBasedIdManager(fbs), fbs, workExecutorCreator);
     _workManager.startWorkManager();
-    if (initLegacyWorkMgrV1) {
-      // Initialize and start the work manager service using the legacy v1 API and Jettison.
-      startWorkManagerService(
-          WorkMgrService.class,
-          WorkMgrService.REQUIRED_FEATURES,
-          _settings.getServiceWorkPort(),
-          bindPortFutures.getWorkPort());
-    }
     // Initialize and start the work manager service using the v2 RESTful API and Jackson.
     startWorkManagerService(
         WorkMgrServiceV2.class,
@@ -324,31 +236,32 @@ public class Main {
         bindPortFutures.getWorkV2Port());
   }
 
+  @Deprecated
+  @SuppressWarnings("unused")
   public static void main(
       String[] args,
       BatfishLogger logger,
       BindPortFutures portFutures,
       WorkExecutorCreator workExecutorCreator,
-      boolean initLegacyPoolManager) {
+      boolean unused) {
+    main(args, logger, portFutures, workExecutorCreator);
+  }
+
+  public static void main(
+      String[] args,
+      BatfishLogger logger,
+      BindPortFutures portFutures,
+      WorkExecutorCreator workExecutorCreator) {
     mainInit(args);
 
     // Supply ports early if known before binding
-    int configuredPoolPort = _settings.getServicePoolPort();
-    if (configuredPoolPort > 0) {
-      portFutures.getPoolPort().complete(configuredPoolPort);
-    }
-    int configuredWorkPort = _settings.getServiceWorkPort();
-    if (configuredWorkPort > 0) {
-      portFutures.getWorkPort().complete(configuredWorkPort);
-    }
     int configuredWorkV2Port = _settings.getServiceWorkV2Port();
     if (configuredWorkV2Port > 0) {
       portFutures.getWorkV2Port().complete(configuredWorkV2Port);
     }
 
     _logger = logger;
-    mainRun(
-        portFutures, workExecutorCreator, initLegacyPoolManager, _settings.getUseLegacyWorkMgrV1());
+    mainRun(portFutures, workExecutorCreator);
   }
 
   public static void mainInit(String[] args) {
@@ -365,16 +278,10 @@ public class Main {
   }
 
   private static void mainRun(
-      BindPortFutures portFutures,
-      WorkExecutorCreator workExecutorCreator,
-      boolean initLegacyPoolManager,
-      boolean initLegacyWorkMgrV1) {
+      BindPortFutures portFutures, WorkExecutorCreator workExecutorCreator) {
     try {
       initAuthorizer();
-      if (initLegacyPoolManager) {
-        initPoolManager(portFutures);
-      }
-      initWorkManager(portFutures, workExecutorCreator, initLegacyWorkMgrV1);
+      initWorkManager(portFutures, workExecutorCreator);
     } catch (Exception e) {
       System.err.println(
           "org.batfish.coordinator: Initialization of a helper failed: "

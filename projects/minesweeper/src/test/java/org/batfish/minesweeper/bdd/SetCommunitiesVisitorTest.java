@@ -82,7 +82,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunityExprsSet(ces, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getStandardCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }
@@ -101,7 +101,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunitySetDifference(csd, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getStandardCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }
@@ -119,7 +119,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunitySetExprReference(cser, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getStandardCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }
@@ -136,7 +136,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunitySetReference(csr, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getStandardCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }
@@ -154,7 +154,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitCommunitySetUnion(csu, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getStandardCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(
             ImmutableSet.<Integer>builder()
@@ -187,7 +187,7 @@ public class SetCommunitiesVisitorTest {
     CommunityAPDispositions result = _scVisitor.visitLiteralCommunitySet(lcs, _arg);
 
     Map<CommunityVar, Set<Integer>> commAPs =
-        _configAPs.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+        _configAPs.getStandardCommunityAtomicPredicates().getRegexAtomicPredicates();
     assertEquals(
         CommunityAPDispositions.exactly(commAPs.get(cvar2030), _arg.getBDDRoute()), result);
   }

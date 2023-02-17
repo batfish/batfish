@@ -2,12 +2,14 @@ package org.batfish.representation.frr;
 
 import static org.batfish.representation.frr.RouteMapConvertor.toTraceableStatement;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
@@ -16,13 +18,14 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
@@ -170,6 +173,7 @@ public class RouteMapConvertorTest {
                     toTraceableStatement(
                         ImmutableList.of(
                             new SetMetric(new LiteralLong(10)),
+                            Statements.SetLocalDefaultActionAccept.toStaticStatement(),
                             new If(
                                 new CallExpr(String.format("~%s~SEQ:%d~", "routeMap", 30)),
                                 ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
@@ -199,10 +203,7 @@ public class RouteMapConvertorTest {
                     toTraceableStatement(
                         ImmutableList.of(
                             new SetMetric(new LiteralLong(20)),
-                            new If(
-                                BooleanExprs.CALL_EXPR_CONTEXT,
-                                ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
-                                ImmutableList.of(Statements.ExitReject.toStaticStatement()))),
+                            Statements.ReturnFalse.toStaticStatement()),
                         ENTRY2.getNumber(),
                         ROUTEMAP.getName(),
                         FILENAME)),
@@ -233,10 +234,7 @@ public class RouteMapConvertorTest {
                     toTraceableStatement(
                         ImmutableList.of(
                             new SetMetric(new LiteralLong(30)),
-                            new If(
-                                BooleanExprs.CALL_EXPR_CONTEXT,
-                                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                                ImmutableList.of(Statements.ExitAccept.toStaticStatement()))),
+                            Statements.ReturnTrue.toStaticStatement()),
                         ENTRY3.getNumber(),
                         ROUTEMAP.getName(),
                         FILENAME)),
@@ -360,5 +358,79 @@ public class RouteMapConvertorTest {
                 .setOutputRoute(outputBuilder)
                 .build());
     assertTrue(result.getBooleanValue());
+  }
+
+  @Test
+  public void testRouteMapExhaustive() throws IOException {
+    ENTRY1 = new RouteMapEntry(10, LineAction.DENY);
+    ENTRY1.setMatchTag(new RouteMapMatchTag(1L));
+    ENTRY1.setSetTag(new RouteMapSetTag(10));
+    ENTRY1.setContinue(new RouteMapContinue(20));
+
+    ENTRY2 = new RouteMapEntry(20, LineAction.PERMIT);
+    ENTRY2.setMatchTag(new RouteMapMatchTag(2L));
+    ENTRY2.setSetTag(new RouteMapSetTag(20));
+    ENTRY2.setContinue(new RouteMapContinue(30));
+
+    ENTRY3 = new RouteMapEntry(30, LineAction.PERMIT);
+    ENTRY3.setSetLocalPreference(new RouteMapSetLocalPreference(30));
+
+    ROUTEMAP = new RouteMap("routeMap");
+    ROUTEMAP
+        .getEntries()
+        .putAll(
+            ImmutableMap.of(
+                10, ENTRY1,
+                20, ENTRY2,
+                30, ENTRY3));
+
+    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, FILENAME, W);
+    RoutingPolicy policy = convertor.toRouteMap();
+
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setTag(0L)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setMetric(0L) // 30 match metric 3
+            .setAsPath(AsPath.ofSingletonAsSets(0L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.EGP)
+            .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("192.0.2.254"))
+            .setNetwork(Prefix.ZERO)
+            .setReceivedFrom(ReceivedFromSelf.instance())
+            .build();
+    Environment.Builder env = Environment.builder(C);
+    Builder outputBuilder = Bgpv4Route.testBuilder();
+    // There are 3 paths through the route-map:
+    // 10 deny tag 1, continue                OR    fall-through
+    // 20 permit tag 2, continue      OR    30 terminate
+    {
+      // false false -> 30 only
+      policy.call(env.setOriginalRoute(base).setOutputRoute(outputBuilder).build());
+      assertThat(outputBuilder.getTag(), not(equalTo(10L)));
+      assertThat(outputBuilder.getTag(), not(equalTo(20L)));
+      assertThat(outputBuilder.getLocalPreference(), equalTo(30L));
+    }
+    {
+      // false true -> 20, 30
+      policy.call(
+          env.setOriginalRoute(base.toBuilder().setTag(2L).build())
+              .setOutputRoute(outputBuilder)
+              .build());
+      assertThat(outputBuilder.getTag(), equalTo(20L));
+      assertThat(outputBuilder.getLocalPreference(), equalTo(30L));
+    }
+    {
+      // true false -> 10 and 30 - check behavior on actual device.
+
+      policy.call(
+          env.setOriginalRoute(base.toBuilder().setTag(1L).build())
+              .setOutputRoute(outputBuilder)
+              .build());
+      assertThat(outputBuilder.getTag(), equalTo(10L));
+      assertThat(outputBuilder.getLocalPreference(), equalTo(30L));
+    }
   }
 }

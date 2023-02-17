@@ -2016,7 +2016,11 @@ public class FileBasedStorage implements StorageProvider {
 
   /** Expunge blobs in a network older than the provided date. */
   private void expungeOldBlobs(NetworkId networkId, Instant blobExpungeBeforeDate) {
-    try (Stream<Path> blobs = Files.walk(getNetworkBlobsDir(networkId))) {
+    Path blobPath = getNetworkBlobsDir(networkId);
+    if (!Files.exists(blobPath)) {
+      return;
+    }
+    try (Stream<Path> blobs = Files.walk(blobPath)) {
       blobs.forEach(
           path -> {
             try {
