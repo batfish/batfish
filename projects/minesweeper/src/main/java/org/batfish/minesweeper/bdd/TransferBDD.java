@@ -62,6 +62,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
@@ -443,6 +444,12 @@ public class TransferBDD {
           matchIntComparison(mt.getCmp(), mt.getTag(), routeForMatching(p.getData()).getTag());
       finalResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
 
+    } else if (expr instanceof MatchMetric) {
+      MatchMetric mm = (MatchMetric) expr;
+      BDD mmBDD =
+          matchIntComparison(
+              mm.getComparator(), mm.getMetric(), routeForMatching(p.getData()).getMed());
+      finalResults.add(result.setReturnValueBDD(mmBDD).setReturnValueAccepted(true));
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
       switch (b.getType()) {
