@@ -43,7 +43,7 @@ public class CiscoOspfRedistributionTest {
 
   @Test
   public void testBasicConvertRedistributionPolicy() {
-    OspfRedistributionPolicy rp = new OspfRedistributionPolicy(BGP);
+    OspfRedistributionPolicy rp = new OspfRedistributionPolicy(RoutingProtocolInstance.bgp());
     rp.setOnlyClassfulRoutes(true);
     rp.setOspfMetricType(OspfMetricType.E2);
     rp.setRouteMap("some-map");
@@ -68,7 +68,7 @@ public class CiscoOspfRedistributionTest {
 
   @Test
   public void testConvertRedistributionPolicyMetric() {
-    OspfRedistributionPolicy rp = new OspfRedistributionPolicy(BGP);
+    OspfRedistributionPolicy rp = new OspfRedistributionPolicy(RoutingProtocolInstance.bgp());
     rp.setOspfMetricType(OspfMetricType.E2);
 
     // Vendor default BGP metric is 1 for IOS.

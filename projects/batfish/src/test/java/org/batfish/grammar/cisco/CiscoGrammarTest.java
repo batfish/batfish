@@ -271,13 +271,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -433,7 +431,6 @@ import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
-import org.batfish.representation.cisco.EigrpRedistributionPolicy;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.IcmpEchoSla;
@@ -635,7 +632,8 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, TACACS_SERVER, "10.1.1.1"));
     assertThat(ccae, hasNumReferrers(filename, TACACS_SERVER, "192.168.1.1", 2));
 
-    // global and group-level tacacs servers must be included; radius and ldap servers shouldn't be
+    // global and group-level tacacs servers must be included; radius and ldap
+    // servers shouldn't be
     assertThat(
         c.getTacacsServers(), equalTo(ImmutableSet.of("192.168.1.1", "10.1.1.1", "10.2.2.2")));
   }
@@ -767,7 +765,8 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/8"))));
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.1.0.0/16"))));
-    // NB this route-map permits /7 because matching standard ip access-list on a network
+    // NB this route-map permits /7 because matching standard ip access-list on a
+    // network
     // is just matching the network address against the src IP.
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/7"))));
     assertThat(
@@ -834,7 +833,8 @@ public final class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
-     * The produced ACL should permit if source matchers object-group ogn1, destination matches
+     * The produced ACL should permit if source matchers object-group ogn1,
+     * destination matches
      * ogn2, and service matches ogs1.
      */
     assertThat(
@@ -869,7 +869,8 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "ognunused1", 0));
 
     /*
-     * We expect undefined references only to object-groups ogsfake, ognfake1, ognfake2
+     * We expect undefined references only to object-groups ogsfake, ognfake1,
+     * ognfake2
      */
     assertThat(ccae, not(hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "ogs1")));
     assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "ogn1")));
@@ -1001,14 +1002,17 @@ public final class CiscoGrammarTest {
   @Test
   public void testBgpDefaultInformationOriginate() throws IOException {
     /*
-     * Default-information originate is required for default routes to be redistributed into BGP via
-     * redistribute statements. It does not affect routes added to BGP via network statements.
+     * Default-information originate is required for default routes to be
+     * redistributed into BGP via
+     * redistribute statements. It does not affect routes added to BGP via network
+     * statements.
      *
      * Config contains four VRFs, each of which contains a static default route.
      * - VRF1 redistributes static and has default-information originate configured.
      * - VRF2 redistributes static, but does not have default-information originate.
      * - VRF3 has default-information originate, but does not redistribute static.
-     * - VRF4 has a network statement for 0.0.0.0/0 and does not have default-information originate.
+     * - VRF4 has a network statement for 0.0.0.0/0 and does not have
+     * default-information originate.
      *
      * VRFs 1 and 4 should have a redistributed BGP default route.
      */
@@ -1107,18 +1111,22 @@ public final class CiscoGrammarTest {
   @Test
   public void testBgpRedistributionWithRouteMap() throws IOException {
     /*
-     Config contains two VRFs, each of which has a static route for 1.1.1.1/32. Both VRFs redistribute
-     static routes into BGP with a route-map. The redistribution route-map in VRF1 permits 1.1.1.1/32,
-     so we should see it as a local route in VRF1's BGP RIB. The redistribution route-map in VRF2 is
-     undefined, so VRF2's BGP RIB should be empty.
-    */
+     * Config contains two VRFs, each of which has a static route for 1.1.1.1/32.
+     * Both VRFs redistribute
+     * static routes into BGP with a route-map. The redistribution route-map in VRF1
+     * permits 1.1.1.1/32,
+     * so we should see it as a local route in VRF1's BGP RIB. The redistribution
+     * route-map in VRF2 is
+     * undefined, so VRF2's BGP RIB should be empty.
+     */
     String hostname = "bgp_redistribution_with_route_map";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Prefix staticPrefix = Prefix.parse("1.1.1.1/32");
 
-    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32
+    // Sanity check: Both VRFs' main RIBs should contain the static route to
+    // 1.1.1.1/32
     Set<AbstractRoute> vrf1Routes = dp.getRibs().get(hostname, "VRF1").getRoutes();
     Set<AbstractRoute> vrf2Routes = dp.getRibs().get(hostname, "VRF2").getRoutes();
     assertThat(
@@ -1136,9 +1144,11 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosIbgpMissingUpdateSource() throws IOException {
     /*
-    r1 is missing update-source, but session should still be established between r1 and r2. Both
-    redistribute static routes, so should see BGP routes on both for the other's static route.
-    */
+     * r1 is missing update-source, but session should still be established between
+     * r1 and r2. Both
+     * redistribute static routes, so should see BGP routes on both for the other's
+     * static route.
+     */
     String testrigName = "ibgp-no-update-source";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
     Batfish batfish =
@@ -1157,9 +1167,10 @@ public final class CiscoGrammarTest {
     assertThat(r1Peers.get(r1NeighborPeerAddress).getLocalIp(), nullValue());
 
     /*
-    r1 has a static route to 7.7.7.7/32; r2 has a static route to 8.8.8.8/32. Confirm that both
-    received a BGP route to the other's static route.
-    */
+     * r1 has a static route to 7.7.7.7/32; r2 has a static route to 8.8.8.8/32.
+     * Confirm that both
+     * received a BGP route to the other's static route.
+     */
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
@@ -1316,7 +1327,10 @@ public final class CiscoGrammarTest {
   public void testIosPortChannelEigrpMetric() throws IOException {
     Configuration c = parseConfig("ios-portchannel-eigrp");
 
-    /* Port-channel23 should have EIGRP bandwidth based on member interfaces' bandwidths */
+    /*
+     * Port-channel23 should have EIGRP bandwidth based on member interfaces'
+     * bandwidths
+     */
     long expectedBw = (long) 2e9;
     Interface portChannel23 = c.getAllInterfaces().get("Port-channel23");
     assertThat(portChannel23, hasBandwidth(expectedBw));
@@ -1368,7 +1382,8 @@ public final class CiscoGrammarTest {
             .build();
     assertNotNull(originalRoute);
 
-    // Check if routingPolicy accepts EIGRP route and sets correct metric from original route
+    // Check if routingPolicy accepts EIGRP route and sets correct metric from
+    // original route
     assertTrue(routingPolicy.process(originalRoute, outputRouteBuilder, Direction.OUT));
     assertThat(outputRouteBuilder.build(), hasEigrpMetric(originalRoute.getEigrpMetric()));
   }
@@ -1446,30 +1461,6 @@ public final class CiscoGrammarTest {
                 .setValues(
                     EigrpMetricValues.builder().setBandwidth(200).setDelay(200_000_000L).build())
                 .build()));
-  }
-
-  /**
-   * Test EIGRP route redistribution. Confirmation test when multiple redelivery settings are made
-   * in EIGRP.
-   */
-  @Test
-  public void testIosEigrpRedistributeMultiple() {
-    String hostname = "ios-eigrp-redistribute-eigrp-multi";
-    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
-    EigrpRedistributionPolicy redistributionPolicy =
-        vc.getDefaultVrf()
-            .getEigrpProcesses()
-            .get(10L)
-            .getRedistributionPolicies()
-            .get(RoutingProtocol.EIGRP);
-
-    Set<Object> MatchRedistributeASList = Sets.newHashSet(20L, 30L);
-    java.util.Map<String, Set<Object>> MatchList = new java.util.TreeMap<>();
-    MatchList.put(
-        org.batfish.representation.cisco.EigrpRedistributionPolicy.EIGRP_AS_NUMBER,
-        MatchRedistributeASList);
-
-    assertThat(redistributionPolicy.getSpecialAttributes(), equalTo(MatchList));
   }
 
   @Test
@@ -1764,25 +1755,34 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosNeighborDefaultOriginateRouteMapsAsGenerationPolicies() throws IOException {
     /*
-                              Listener 2
-                                  |
-                               (Peer 2)
-       Listener 1 -- (Peer 1) Originator (Peer 3) -- Listener 3
-
-     All listeners have EBGP sessions established with the originator, and the originator has
-     default-originate configured for all three peers. Some peers also have a route-map configured
-     with default-originate, which will act as a generation policy for the default route.
-
-      - Peer 1: default-originate has no route-map attached, but there is a route-map configured as
-        an export policy that denies the default route. However, the default-originate route doesn't
-        go through configured export policies, so should reach listener 1.
-
-      - Peer 2: default-originate has a route-map attached that permits routes to 1.2.3.4; the
-      originator has a static route to 1.2.3.4, so default route should still be generated.
-
-      - Peer 3: default-originate has a route-map attached that permits routes to 5.6.7.8; the
-      originator has no route to 5.6.7.8, so no default route should appear on listener 3.
-    */
+     * Listener 2
+     * |
+     * (Peer 2)
+     * Listener 1 -- (Peer 1) Originator (Peer 3) -- Listener 3
+     *
+     * All listeners have EBGP sessions established with the originator, and the
+     * originator has
+     * default-originate configured for all three peers. Some peers also have a
+     * route-map configured
+     * with default-originate, which will act as a generation policy for the default
+     * route.
+     *
+     * - Peer 1: default-originate has no route-map attached, but there is a
+     * route-map configured as
+     * an export policy that denies the default route. However, the
+     * default-originate route doesn't
+     * go through configured export policies, so should reach listener 1.
+     *
+     * - Peer 2: default-originate has a route-map attached that permits routes to
+     * 1.2.3.4; the
+     * originator has a static route to 1.2.3.4, so default route should still be
+     * generated.
+     *
+     * - Peer 3: default-originate has a route-map attached that permits routes to
+     * 5.6.7.8; the
+     * originator has no route to 5.6.7.8, so no default route should appear on
+     * listener 3.
+     */
     String testrigName = "ios-default-originate";
     String originatorName = "originator";
     String l1Name = "listener1";
@@ -1839,23 +1839,31 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosRedistributeStaticDefaultWithDefaultOriginatePolicy() throws IOException {
     /*
-       Listener 1 -- (Peer 1) Originator (Peer 2) -- Listener 2
-
-     Both listeners have EBGP sessions established with the originator. The originator has
-     default-originate configured on both peers, but with a generation policy that only matches
-     routes to 1.2.3.4, so default routes won't be generated. This way both peers' BGP export
-     policies include the default route export policy, but we don't have to worry about the
-     default-originate route overwriting other default routes in neighbors' RIBs.
-
-     The originator has a static default route which is added to BGP via a network statement with
-     a route-map that sets community 50, so we can be certain of the route's origin in neighbors.
-
-     We should see the redistributed local route in the originator's BGP RIB.
-
-     Peer 1 has no outbound route-map, so the static route should be redistributed to listener 1.
-
-     Peer 2 has an outbound route-map that denies 0.0.0.0/0, so no default route on listener 2.
-    */
+     * Listener 1 -- (Peer 1) Originator (Peer 2) -- Listener 2
+     *
+     * Both listeners have EBGP sessions established with the originator. The
+     * originator has
+     * default-originate configured on both peers, but with a generation policy that
+     * only matches
+     * routes to 1.2.3.4, so default routes won't be generated. This way both peers'
+     * BGP export
+     * policies include the default route export policy, but we don't have to worry
+     * about the
+     * default-originate route overwriting other default routes in neighbors' RIBs.
+     *
+     * The originator has a static default route which is added to BGP via a network
+     * statement with
+     * a route-map that sets community 50, so we can be certain of the route's
+     * origin in neighbors.
+     *
+     * We should see the redistributed local route in the originator's BGP RIB.
+     *
+     * Peer 1 has no outbound route-map, so the static route should be redistributed
+     * to listener 1.
+     *
+     * Peer 2 has an outbound route-map that denies 0.0.0.0/0, so no default route
+     * on listener 2.
+     */
     String testrigName = "ios-default-originate";
     String originatorName = "originator-static-route";
     String l1Name = "listener1";
@@ -1912,7 +1920,8 @@ public final class CiscoGrammarTest {
             .build();
     assertThat(l1Routes, hasItem(exportedRoute));
 
-    // Listener 2 should not have received the static route since export policy prevents it
+    // Listener 2 should not have received the static route since export policy
+    // prevents it
     assertThat(l2Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
@@ -2013,7 +2022,8 @@ public final class CiscoGrammarTest {
         ccae, hasUndefinedReference(filename, PROTOCOL_OR_SERVICE_OBJECT_GROUP, ogpUndefName));
 
     /*
-     * Icmp protocol object group and the acl referencing it should only accept Icmp and reject Tcp
+     * Icmp protocol object group and the acl referencing it should only accept Icmp
+     * and reject Tcp
      */
     assertThat(c, hasIpAccessList(ogpAclIcmpName, accepts(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(ogpAclIcmpName, rejects(tcpFlow, null, c)));
@@ -2021,7 +2031,8 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(aclIcmpName, rejects(tcpFlow, null, c)));
 
     /*
-     * TcpUdp protocol object group and the acl referencing it should reject Icmp and accept Tcp
+     * TcpUdp protocol object group and the acl referencing it should reject Icmp
+     * and accept Tcp
      */
     assertThat(c, hasIpAccessList(ogpAclTcpUdpName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(ogpAclTcpUdpName, accepts(tcpFlow, null, c)));
@@ -2029,7 +2040,8 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(aclTcpUdpName, accepts(tcpFlow, null, c)));
 
     /*
-     * Empty protocol object group and the acl referencing it should reject everything
+     * Empty protocol object group and the acl referencing it should reject
+     * everything
      */
     assertThat(c, hasIpAccessList(ogpAclEmptyName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(ogpAclEmptyName, rejects(tcpFlow, null, c)));
@@ -2037,7 +2049,8 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(aclEmptyName, rejects(tcpFlow, null, c)));
 
     /*
-     * Empty protocol object group that is erroneously redefined should still reject everything
+     * Empty protocol object group that is erroneously redefined should still reject
+     * everything
      */
     assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(tcpFlow, null, c)));
@@ -2080,15 +2093,20 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList("aclBase", accepts(inFlowDst, null, c)));
     assertThat(c, hasIpAccessList("aclBase", rejects(outFlow, null, c)));
 
-    // TODO: The semantics of empty, duplicate, and undefined groups below have not been lab tested
+    // TODO: The semantics of empty, duplicate, and undefined groups below have not
+    // been lab tested
 
     /* The empty acl reject inFlows */
     assertThat(c, hasIpAccessList("aclEmpty", rejects(inFlowSrc, null, c)));
 
-    /* The duplicate acl rejects inFlows because the earlier (empty) definition wins */
+    /*
+     * The duplicate acl rejects inFlows because the earlier (empty) definition wins
+     */
     assertThat(c, hasIpAccessList("aclDuplicate", rejects(inFlowSrc, null, c)));
 
-    /* The undefined acl rejects inFlows because the earlier (empty) definition wins */
+    /*
+     * The undefined acl rejects inFlows because the earlier (empty) definition wins
+     */
     assertThat(c, hasIpAccessList("aclUndefined", rejects(inFlowSrc, null, c)));
   }
 
@@ -2231,15 +2249,18 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testIosOspfDefaultOriginateAlways() throws IOException {
-    /*   ________      ________      ________
-        |   R1   |    |        |    |   R2   |
-        | Area 0 |----|  ABR   |----| Area 1 |
-        |        |    |        |    |  NSSA  |
-         --------      --------      --------
-      ABR has `default-information originate always` configured at the process level, so R1 should
-      install a default route to the ABR even though the ABR has no default route of its own. R2
-      should not install a default route because it's in an NSSA.
-    */
+    /*
+     * ________ ________ ________
+     * | R1 | | | | R2 |
+     * | Area 0 |----| ABR |----| Area 1 |
+     * | | | | | NSSA |
+     * -------- -------- --------
+     * ABR has `default-information originate always` configured at the process
+     * level, so R1 should
+     * install a default route to the ABR even though the ABR has no default route
+     * of its own. R2
+     * should not install a default route because it's in an NSSA.
+     */
 
     String testrigName = "ospf-default-originate";
     String area0Name = "ios-area-0";
@@ -2255,7 +2276,8 @@ public final class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration abr = configurations.get(originatorName);
 
-    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    // Sanity check: ensure the ABR has a generated default route in its OSPF
+    // process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
         abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
@@ -2277,14 +2299,16 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testIosOspfDefaultOriginateNoRoute() throws IOException {
-    /*   ________      ________      ________
-        |   R1   |    |        |    |   R2   |
-        | Area 0 |----|  ABR   |----| Area 1 |
-        |        |    |        |    |  NSSA  |
-         --------      --------      --------
-      ABR has `default-information originate` configured at the process level, but no default route
-      in its RIB, so it should not export a default route.
-    */
+    /*
+     * ________ ________ ________
+     * | R1 | | | | R2 |
+     * | Area 0 |----| ABR |----| Area 1 |
+     * | | | | | NSSA |
+     * -------- -------- --------
+     * ABR has `default-information originate` configured at the process level, but
+     * no default route
+     * in its RIB, so it should not export a default route.
+     */
 
     String testrigName = "ospf-default-originate";
     String area0Name = "ios-area-0";
@@ -2300,7 +2324,8 @@ public final class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration abr = configurations.get(originatorName);
 
-    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    // Sanity check: ensure the ABR has a generated default route in its OSPF
+    // process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
         abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
@@ -2321,14 +2346,16 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testIosOspfDefaultOriginateStaticRoute() throws IOException {
-    /*   ________      ________      ________
-        |   R1   |    |        |    |   R2   |
-        | Area 0 |----|  ABR   |----| Area 1 |
-        |        |    |        |    |  NSSA  |
-         --------      --------      --------
-      ABR has `default-information originate` configured at the process level and a statically
-      configured default route, so it should advertise the default route to R1.
-    */
+    /*
+     * ________ ________ ________
+     * | R1 | | | | R2 |
+     * | Area 0 |----| ABR |----| Area 1 |
+     * | | | | | NSSA |
+     * -------- -------- --------
+     * ABR has `default-information originate` configured at the process level and a
+     * statically
+     * configured default route, so it should advertise the default route to R1.
+     */
 
     String testrigName = "ospf-default-originate";
     String area0Name = "ios-area-0";
@@ -2344,7 +2371,8 @@ public final class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration abr = configurations.get(originatorName);
 
-    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    // Sanity check: ensure the ABR has a generated default route in its OSPF
+    // process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
         abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
@@ -2368,11 +2396,13 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosOspfDefaultOriginateLoop() throws IOException {
     /*
-    Setup: 2-node network in OSPF area 0.
-      - R1 has `default-information originate always` configured at the process level
-      - R2 has `default-information originate` configured at the process level
-    R2 should have a default route to R1; R1 shouldn't have a default route in its main RIB.
-    */
+     * Setup: 2-node network in OSPF area 0.
+     * - R1 has `default-information originate always` configured at the process
+     * level
+     * - R2 has `default-information originate` configured at the process level
+     * R2 should have a default route to R1; R1 shouldn't have a default route in
+     * its main RIB.
+     */
 
     String testrigName = "ospf-default-originate-loop";
     String r1Name = "ios-originator-1-always";
@@ -2386,7 +2416,8 @@ public final class CiscoGrammarTest {
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
 
-    // Sanity check: both devices have a generated default route in their OSPF processes
+    // Sanity check: both devices have a generated default route in their OSPF
+    // processes
     Map<String, Configuration> configurations = batfish.loadConfigurations(snapshot);
     Configuration r1 = configurations.get(r1Name);
     Configuration r2 = configurations.get(r2Name);
@@ -2472,7 +2503,8 @@ public final class CiscoGrammarTest {
 
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
 
-    // a route (previously) redistributed from router EIGRP 2 and allowed by distribute list
+    // a route (previously) redistributed from router EIGRP 2 and allowed by
+    // distribute list
     assertTrue(
         routingPolicy.process(
             EigrpExternalRoute.testBuilder()
@@ -2484,7 +2516,8 @@ public final class CiscoGrammarTest {
                 .build(),
             EigrpExternalRoute.testBuilder(),
             Direction.OUT));
-    // a route (previously) redistributed from router EIGRP 2 and denied by distribute list
+    // a route (previously) redistributed from router EIGRP 2 and denied by
+    // distribute list
     assertFalse(
         routingPolicy.process(
             EigrpExternalRoute.testBuilder()
@@ -2507,7 +2540,8 @@ public final class CiscoGrammarTest {
                 .build(),
             EigrpExternalRoute.testBuilder(),
             Direction.OUT));
-    // a route matching distribute list but does not have the correct ASN so falls through till the
+    // a route matching distribute list but does not have the correct ASN so falls
+    // through till the
     // end and gets rejected
     assertFalse(
         routingPolicy.process(
@@ -2824,35 +2858,35 @@ public final class CiscoGrammarTest {
         equalTo(
             ImmutableMap.of(
                 "Ethernet0",
-                    EigrpNeighborConfig.builder()
-                        .setAsn(1L)
-                        .setInterfaceName("Ethernet0")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
-                        .setPassive(false)
-                        .setHostname("ios-eigrp-classic")
-                        .setVrfName("default")
-                        .setIp(Ip.parse("10.0.0.1"))
-                        .build(),
+                EigrpNeighborConfig.builder()
+                    .setAsn(1L)
+                    .setInterfaceName("Ethernet0")
+                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
+                    .setPassive(false)
+                    .setHostname("ios-eigrp-classic")
+                    .setVrfName("default")
+                    .setIp(Ip.parse("10.0.0.1"))
+                    .build(),
                 "Ethernet1",
-                    EigrpNeighborConfig.builder()
-                        .setAsn(1L)
-                        .setInterfaceName("Ethernet1")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1~")
-                        .setPassive(false)
-                        .setHostname("ios-eigrp-classic")
-                        .setVrfName("default")
-                        .setIp(Ip.parse("10.0.1.1"))
-                        .build(),
+                EigrpNeighborConfig.builder()
+                    .setAsn(1L)
+                    .setInterfaceName("Ethernet1")
+                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1~")
+                    .setPassive(false)
+                    .setHostname("ios-eigrp-classic")
+                    .setVrfName("default")
+                    .setIp(Ip.parse("10.0.1.1"))
+                    .build(),
                 "Ethernet2",
-                    EigrpNeighborConfig.builder()
-                        .setAsn(1L)
-                        .setInterfaceName("Ethernet2")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2~")
-                        .setPassive(true)
-                        .setHostname("ios-eigrp-classic")
-                        .setVrfName("default")
-                        .setIp(Ip.parse("10.0.2.1"))
-                        .build())));
+                EigrpNeighborConfig.builder()
+                    .setAsn(1L)
+                    .setInterfaceName("Ethernet2")
+                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2~")
+                    .setPassive(true)
+                    .setHostname("ios-eigrp-classic")
+                    .setVrfName("default")
+                    .setIp(Ip.parse("10.0.2.1"))
+                    .build())));
   }
 
   @Test
@@ -3093,7 +3127,8 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-interface-ospf-network");
 
     /*
-     * Confirm interfaces with ospf network broadcast, non-broadcast, etc do not show up as
+     * Confirm interfaces with ospf network broadcast, non-broadcast, etc do not
+     * show up as
      * point-to-point
      */
     assertThat(c, hasInterface("Ethernet0/0", not(isOspfPointToPoint())));
@@ -3117,7 +3152,8 @@ public final class CiscoGrammarTest {
             hasOspfNetworkType(
                 equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT))));
 
-    // Confirm interface NOT associated with an OSPF area still has expected OSPF properties
+    // Confirm interface NOT associated with an OSPF area still has expected OSPF
+    // properties
     assertThat(
         c,
         hasInterface(
@@ -3188,12 +3224,15 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosBgpDistributeList() throws IOException {
     /*
-         r1 -- advertiser -- r2
-    The advertiser redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP, but has outbound
-    distribute-lists configured for both r1 and r2:
-    - Routes to r1 are filtered by standard access-list 1, which permits everything but 1.2.3.4
-    - Routes to r2 are filtered by extended access-list 100, which denies everything but 5.6.7.8
-    */
+     * r1 -- advertiser -- r2
+     * The advertiser redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP, but
+     * has outbound
+     * distribute-lists configured for both r1 and r2:
+     * - Routes to r1 are filtered by standard access-list 1, which permits
+     * everything but 1.2.3.4
+     * - Routes to r2 are filtered by extended access-list 100, which denies
+     * everything but 5.6.7.8
+     */
     String testrigName = "bgp-distribute-list";
     String advertiserName = "advertiser";
     String r1Name = "r1";
@@ -3244,9 +3283,10 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef2"));
 
     /*
-     Neighbor 1.2.3.4 uses pre_list to filter both inbound and outbound routes. Test that both
-     generated policies permit 10.1.1.0/24 and not other routes.
-    */
+     * Neighbor 1.2.3.4 uses pre_list to filter both inbound and outbound routes.
+     * Test that both
+     * generated policies permit 10.1.1.0/24 and not other routes.
+     */
     Ip peerAddress = Ip.parse("1.2.3.4");
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     String generatedImportPolicyName =
@@ -3715,7 +3755,11 @@ public final class CiscoGrammarTest {
     org.batfish.representation.cisco.BgpProcess bgpProc = vc.getDefaultVrf().getBgpProcess();
     assert bgpProc != null;
     BgpRedistributionPolicy eigrpRedist =
-        bgpProc.getRedistributionPolicies().get(RoutingProtocol.EIGRP);
+        bgpProc.getRedistributionPolicies().entrySet().stream()
+            .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.EIGRP))
+            .findFirst()
+            .map(Map.Entry::getValue)
+            .orElse(null);
     assert eigrpRedist != null;
     assertThat(eigrpRedist.getRouteMap(), equalTo(redistRmName));
 
@@ -3883,7 +3927,10 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, null, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(accepts(flow, null, c))));
 
-    /* Traffic with src and dst interface in same zone should be permitted by default */
+    /*
+     * Traffic with src and dst interface in same zone should be permitted by
+     * default
+     */
     assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, e1Name, c))));
     assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, e2Name, c))));
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, e1Name, c))));
@@ -3927,7 +3974,8 @@ public final class CiscoGrammarTest {
     org.batfish.representation.cisco.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
     assertThat(defBgp.getProcnum(), equalTo(1L));
 
-    // VRF keeps local-as from first declaration and overriden router-id from second.
+    // VRF keeps local-as from first declaration and overriden router-id from
+    // second.
     assertThat(c.getVrfs(), hasKey("a"));
     org.batfish.representation.cisco.BgpProcess vrfBgp = c.getVrfs().get("a").getBgpProcess();
     assertThat(vrfBgp.getMasterBgpPeerGroup().getLocalAs(), equalTo(5L));
@@ -3992,7 +4040,8 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
 
-    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
+    // Each list should be converted to both a CommunityMatchExpr and a
+    // CommunitySetMatchExpr.
     {
       // Test CommunityMatchExpr conversion
       assertThat(c.getCommunityMatchExprs(), hasKeys("cl_test"));
@@ -4075,7 +4124,8 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
 
-    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
+    // Each list should be converted to both a CommunityMatchExpr and a
+    // CommunitySetMatchExpr.
     {
       // Test CommunityMatchExpr conversion
       assertThat(c.getCommunityMatchExprs(), hasKeys("cl_values", "cl_test"));
@@ -4474,7 +4524,8 @@ public final class CiscoGrammarTest {
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
                 hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                // TODO: filter proposals during conversion so that they match IKE Phase 1 policy's
+                // TODO: filter proposals during conversion so that they match IKE Phase 1
+                // policy's
                 // key type
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
 
@@ -4585,7 +4636,8 @@ public final class CiscoGrammarTest {
     assertThat(ifaces.get(iface1Name).getOspfProcess(), equalTo("1"));
     assertThat(ifaces.get(iface2Name).getOspfProcess(), equalTo("2"));
     assertThat(ifaces.get(iface3Name).getOspfProcess(), equalTo("2"));
-    // Should not infer an OSPF process for the interface not overlapping with an OSPF network
+    // Should not infer an OSPF process for the interface not overlapping with an
+    // OSPF network
     assertThat(ifaces.get(iface4Name).getOspfProcess(), nullValue());
   }
 
@@ -4692,12 +4744,15 @@ public final class CiscoGrammarTest {
 
     Set<EndpointPair<IpsecPeerConfigId>> edges = graph.edges();
 
-    // there should be six edges in total, two for the static crypto map session between r1 and r2
-    // two for the dynamic crypto map session from r1->r3 and r2->r3 (unidirectional)
+    // there should be six edges in total, two for the static crypto map session
+    // between r1 and r2
+    // two for the dynamic crypto map session from r1->r3 and r2->r3
+    // (unidirectional)
     // two for the tunnel interface IPSec session between r2 and r3
     assertThat(edges, hasSize(6));
 
-    // checking that the negotiated IKE and IPSec proposals are set in all the sessions
+    // checking that the negotiated IKE and IPSec proposals are set in all the
+    // sessions
     for (EndpointPair<IpsecPeerConfigId> edge : edges) {
       IpsecSession ipsecSession = graph.edgeValueOrDefault(edge.nodeU(), edge.nodeV(), null);
 
@@ -4758,16 +4813,20 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testOspfNoRedistribution() throws IOException {
-    /*   ________      ________      ________
-        |   R1   |    |        |    |   R2   |
-        | Area 0 |----|  ABR   |----| Area 1 |
-        |        |    |        |    |  NSSA  |
-         --------      --------      --------
-      Will run this setup with two versions of the ABR, one where it has no-redistribution
-      configured for area 1 and one where it doesn't. In both cases, the ABR is configured to
-      redistribute connected subnets, so we should always see its loopback prefix on R1 and should
-      also see it on R2 when no-redistribution is not configured.
-    */
+    /*
+     * ________ ________ ________
+     * | R1 | | | | R2 |
+     * | Area 0 |----| ABR |----| Area 1 |
+     * | | | | | NSSA |
+     * -------- -------- --------
+     * Will run this setup with two versions of the ABR, one where it has
+     * no-redistribution
+     * configured for area 1 and one where it doesn't. In both cases, the ABR is
+     * configured to
+     * redistribute connected subnets, so we should always see its loopback prefix
+     * on R1 and should
+     * also see it on R2 when no-redistribution is not configured.
+     */
 
     // First snapshot: no-redistribution is not configured
     String testrigName = "ospf-no-redistribution";
@@ -4808,7 +4867,8 @@ public final class CiscoGrammarTest {
         hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
     assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
 
-    // Second snapshot: run the same song and dance with no-redistribution configured on the ABR
+    // Second snapshot: run the same song and dance with no-redistribution
+    // configured on the ABR
     abrName = "ios-abr-no-redistribution";
     configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
     batfish =
@@ -4997,7 +5057,8 @@ public final class CiscoGrammarTest {
     assertThat(ifaces.keySet(), contains(eth0));
     Interface iface = ifaces.get(eth0);
 
-    // Confirm OSPF settings are associated with interface even though it is shutdown
+    // Confirm OSPF settings are associated with interface even though it is
+    // shutdown
     assertThat(iface.getOspfEnabled(), equalTo(false));
     assertThat(iface.getOspfAreaName(), equalTo(0L));
     assertThat(iface.getOspfProcess(), equalTo("1"));
@@ -5039,7 +5100,10 @@ public final class CiscoGrammarTest {
     batfish.getSettings().setThrowOnParserError(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
-    /* Parser should not crash, and configuration with hostname from file should be generated */
+    /*
+     * Parser should not crash, and configuration with hostname from file should be
+     * generated
+     */
     assertThat(configurations, hasKey(hostname));
   }
 
@@ -5322,7 +5386,8 @@ public final class CiscoGrammarTest {
       assertFalse(nat.getOverload());
       assertThat(nat.getVrf(), nullValue());
     }
-    // note, the indices skip 2 because there's an inside dest rule that's only present to test how
+    // note, the indices skip 2 because there's an inside dest rule that's only
+    // present to test how
     // it gets incorporated in the converted transformations
     {
       assertThat(nats.get(3), instanceOf(CiscoIosDynamicNat.class));
@@ -5408,8 +5473,10 @@ public final class CiscoGrammarTest {
 
       assertThat(outside0.getIncomingTransformation(), equalTo(inTransformation));
 
-      // The route-map used for the outside source rule specifies "match interface Ethernet2/0",
-      // i.e. outside0. Since it will never match traffic forwarded out outside1, that interface
+      // The route-map used for the outside source rule specifies "match interface
+      // Ethernet2/0",
+      // i.e. outside0. Since it will never match traffic forwarded out outside1, that
+      // interface
       // should have no incoming transformation.
       assertNull(outside1.getIncomingTransformation());
 
@@ -5429,7 +5496,8 @@ public final class CiscoGrammarTest {
                       .setOrElse(destTransformation)
                       .build())
               .build();
-      // both interfaces should have the same outgoing transformation since the route-maps used for
+      // both interfaces should have the same outgoing transformation since the
+      // route-maps used for
       // inside source rules don't specify match interfaces
       assertThat(outside0.getOutgoingTransformation(), equalTo(outTransformation));
       assertThat(outside1.getOutgoingTransformation(), equalTo(outTransformation));
@@ -5599,7 +5667,8 @@ public final class CiscoGrammarTest {
     AclLineMatchExpr matchInsideSources =
         or(matchSrcInterface(insideIntf), OriginatingFromDevice.INSTANCE);
 
-    // Check that the inside-to-outside transformation evaluates the static NAT first
+    // Check that the inside-to-outside transformation evaluates the static NAT
+    // first
     Transformation outTransformation =
         when(and(matchSrc(staticNatLocal), matchInsideSources))
             .apply(shiftSourceIp(staticNatGlobal))
@@ -5632,8 +5701,10 @@ public final class CiscoGrammarTest {
     Set<StaticRoute> defaultVrfStaticRoutes = c.getDefaultVrf().getStaticRoutes();
     assertThat(defaultVrfStaticRoutes, allOf(hasItem(rule1Route), hasItem(rule2Route)));
 
-    // Rule 1's global IP is routable (via iface Ethernet2), but rule 2's global IP isn't.
-    // The RIB should therefore have a route corresponding to rule 1, but none for rule 2.
+    // Rule 1's global IP is routable (via iface Ethernet2), but rule 2's global IP
+    // isn't.
+    // The RIB should therefore have a route corresponding to rule 1, but none for
+    // rule 2.
     Set<AbstractRoute> routes =
         dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(routes, allOf(hasItem(rule1Route), not(hasItem(rule2Route))));
@@ -6040,7 +6111,11 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().entrySet().stream()
+              .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.OSPF))
+              .findFirst()
+              .map(Map.Entry::getValue)
+              .orElse(null);
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(
@@ -6051,32 +6126,36 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf-match-various";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
-      Set<Object> MatchProtocolList = new HashSet<Object>();
-      MatchProtocolList.add(
-          new MatchProtocol(
-              RoutingProtocol.OSPF,
-              RoutingProtocol.OSPF_IA,
-              RoutingProtocol.OSPF_E1,
-              RoutingProtocol.OSPF_E2));
+          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().entrySet().stream()
+              .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.OSPF))
+              .findFirst()
+              .map(Map.Entry::getValue)
+              .orElse(null);
       assertThat(redistributionPolicy.getRouteMap(), equalTo("ospf2bgp"));
       assertThat(redistributionPolicy.getMetric(), equalTo(10000L));
       assertThat(
           redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-          equalTo(MatchProtocolList));
+          equalTo(
+              new MatchProtocol(
+                  RoutingProtocol.OSPF,
+                  RoutingProtocol.OSPF_IA,
+                  RoutingProtocol.OSPF_E1,
+                  RoutingProtocol.OSPF_E2)));
     }
     {
       String hostname = "ios-bgp-redistribute-ospf-match-internal";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
-      Set<Object> MatchProtocolList = new HashSet<Object>();
-      MatchProtocolList.add(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA));
+          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().entrySet().stream()
+              .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.OSPF))
+              .findFirst()
+              .map(Map.Entry::getValue)
+              .orElse(null);
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(
           redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-          equalTo(MatchProtocolList));
+          equalTo(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
     }
   }
 
@@ -6203,16 +6282,19 @@ public final class CiscoGrammarTest {
         // 1.1.1.1/32 is denied by import map
         // 2.2.2.0/24 is expected to be leaked from SRC_VRF
         // 3.3.3.0/24 is expected to be leaked from SRC_VRF_WITH_EXPORT_MAP
-        // 4.4.4.0/24 has its route-target changed by export-map causing it not to be imported
+        // 4.4.4.0/24 has its route-target changed by export-map causing it not to be
+        // imported
         containsInAnyOrder(leakedRouteMatcher2220, leakedRouteMatcher3330));
     assertThat(
         dstVrfNoImportMapRoutes,
         // 1.1.1.1/32 is expected to be leaked from SRC_VRF
         // 2.2.2.0/24 is expected to be leaked from SRC_VRF
         // 3.3.3.0/24 is expected to be leaked from SRC_VRF_WITH_EXPORT_MAP
-        // 4.4.4.0/24 has its route-target changed by export-map causing it not to be imported
+        // 4.4.4.0/24 has its route-target changed by export-map causing it not to be
+        // imported
         containsInAnyOrder(leakedRouteMatcher1111, leakedRouteMatcher2220, leakedRouteMatcher3330));
-    // VRF not defined under router bgp should still have a process, and get both routes
+    // VRF not defined under router bgp should still have a process, and get both
+    // routes
     // (because no import map is defined)
     assertThat(
         batfish
@@ -6361,13 +6443,15 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Set<AbstractRoute> routes = dp.getRibs().get(hostname, "default").getRoutes();
 
-    // Rib should have the static route whose NHI is determined from a non-default route
+    // Rib should have the static route whose NHI is determined from a non-default
+    // route
     assertThat(
         routes,
         hasItem(
             allOf(hasPrefix(Prefix.parse("10.101.1.1/32")), hasNextHopIp(Ip.parse("10.0.1.100")))));
 
-    // Rib should NOT have the static route whose NHI is determined from the default route
+    // Rib should NOT have the static route whose NHI is determined from the default
+    // route
     assertThat(routes, not(hasItem(hasPrefix(Prefix.parse("10.103.3.1/32")))));
   }
 
@@ -6542,7 +6626,7 @@ public final class CiscoGrammarTest {
                 BgpAggregate.of(
                     Prefix.parse("3.3.0.0/16"),
                     // TODO: suppression policy should incorporate suppress-map and ignore
-                    //       summary-only.
+                    // summary-only.
                     SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                     null,
                     null))));
@@ -6596,11 +6680,12 @@ public final class CiscoGrammarTest {
      * In the BGP RIB, we should see:
      * - all local routes
      * - the 3 aggregate routes with more specific local routes:
-     *   - 1.1.0/0/16
-     *   - 2.2.0.0/16
-     *   - 4.4.0.0/16
+     * - 1.1.0/0/16
+     * - 2.2.0.0/16
+     * - 4.4.0.0/16
      *
-     * In the main RIB, we should see the static routes and the 3 aggregates activated in the BGP RIB.
+     * In the main RIB, we should see the static routes and the 3 aggregates
+     * activated in the BGP RIB.
      */
     String hostname = "bgp-aggregate";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -6681,12 +6766,16 @@ public final class CiscoGrammarTest {
   @Test
   public void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
     /*
-     * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16 and 2.2.2.0/16
-     * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not summary-only) and
-     * 2.2.0.0/16 (summary-only). c2 advertises both aggregates and 1.1.1.0/16 to c3 (not
+     * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16
+     * and 2.2.2.0/16
+     * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not
+     * summary-only) and
+     * 2.2.0.0/16 (summary-only). c2 advertises both aggregates and 1.1.1.0/16 to c3
+     * (not
      * 2.2.2.0/16, which is suppressed by the summary-only aggregate).
      *
-     * c1 should also receive c2's aggregate routes. Worth checking in addition to c3's routes
+     * c1 should also receive c2's aggregate routes. Worth checking in addition to
+     * c3's routes
      * because the c1-c2 peering is IBGP, whereas the c2-c3 peering is EBGP.
      */
     String snapshotName = "bgp-agg-learned-contributors";

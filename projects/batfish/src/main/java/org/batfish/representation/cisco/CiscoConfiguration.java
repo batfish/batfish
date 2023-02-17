@@ -217,12 +217,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   /*
    * This map is used to convert interface names to their canonical forms.
-   * The entries are visited in insertion order until a key is found of which the name to convert is
-   * case-insensitively a prefix. The value corresponding to that key is chosen as the canonical
+   * The entries are visited in insertion order until a key is found of which the
+   * name to convert is
+   * case-insensitively a prefix. The value corresponding to that key is chosen as
+   * the canonical
    * form for that name.
    *
-   * NOTE: Entries are sorted by priority. Do not reorder unless you have a good reason.
-   * For instance, we don't want 'e' to be canonically considered 'Embedded-Service-Engine' instead
+   * NOTE: Entries are sorted by priority. Do not reorder unless you have a good
+   * reason.
+   * For instance, we don't want 'e' to be canonically considered
+   * 'Embedded-Service-Engine' instead
    * of 'Ethernet'.
    */
   private static final Map<String, String> CISCO_INTERFACE_PREFIXES =
@@ -984,7 +988,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .forEach(newBgpProcess::addAggregate);
 
     /*
-     * Create common BGP export policy. This policy's only function is to prevent export of
+     * Create common BGP export policy. This policy's only function is to prevent
+     * export of
      * suppressed routes (contributors to summary-only aggregates).
      */
     RoutingPolicy.Builder bgpCommonExportPolicy =
@@ -992,7 +997,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .setOwner(c)
             .setName(Names.generatedBgpCommonExportPolicyName(vrfName));
 
-    // Never export routes suppressed because they are more specific than summary-only aggregate
+    // Never export routes suppressed because they are more specific than
+    // summary-only aggregate
     Stream<Prefix> summaryOnlyNetworks =
         proc.getAggregateNetworks().entrySet().stream()
             .filter(e -> e.getValue().getSummaryOnly())
@@ -1196,7 +1202,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private @Nullable Statement matchRedistributedRoutes(
       BgpProcess bgpProcess, RoutingProtocol srcProtocol) {
     RedistributionPolicy redistributionPolicy =
-        bgpProcess.getRedistributionPolicies().get(srcProtocol);
+        bgpProcess.getRedistributionPolicies().entrySet().stream()
+            .filter(entry -> entry.getValue().getSourceProtocol().equals(srcProtocol))
+            .findFirst()
+            .map(Map.Entry::getValue)
+            .orElse(null);
     if (redistributionPolicy == null) {
       // Process does not redistribute this protocol
       return null;
@@ -1214,19 +1224,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
         matchProtocol = new MatchProtocol(srcProtocol);
         break;
       case OSPF:
-        Set<Object> obj =
-            redistributionPolicy
-                .getSpecialAttributes()
-                .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES);
-        if (obj != null && !obj.isEmpty() && obj.iterator().hasNext()) {
-          matchProtocol = (MatchProtocol) obj.iterator().next();
-        } else {
-          // No match type means internal routes only, at least on IOS.
-          // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
-          matchProtocol =
-              new MatchProtocol(
-                  RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA, RoutingProtocol.OSPF_IS);
-        }
+        matchProtocol =
+            firstNonNull(
+                (MatchProtocol)
+                    redistributionPolicy
+                        .getSpecialAttributes()
+                        .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+                // No match type means internal routes only, at least on IOS.
+                // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
+                new MatchProtocol(
+                    RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA, RoutingProtocol.OSPF_IS));
         break;
       case EIGRP:
         // key EIGRP indicates redist external too; EIGRP_EX is never used as a key
@@ -1261,7 +1268,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Interface iface, Set<OspfNetwork> ospfNetworks) {
     ConcreteInterfaceAddress interfaceAddress = iface.getAddress();
     if (interfaceAddress == null) {
-      // Iface has no IP address / isn't associated with a network in this OSPF process
+      // Iface has no IP address / isn't associated with a network in this OSPF
+      // process
       return null;
     }
 
@@ -1279,7 +1287,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Ip maskedInterfaceAddress =
           interfaceAddress.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
       if (maskedInterfaceAddress.equals(networkAddress)) {
-        // Found a longest prefix match, so found the network in this OSPF process for the iface
+        // Found a longest prefix match, so found the network in this OSPF process for
+        // the iface
         return network;
       }
     }
@@ -1373,7 +1382,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         newIface.setAutoState(iface.getAutoState());
       }
 
-      // All prefixes is the combination of the interface prefix + any secondary prefixes.
+      // All prefixes is the combination of the interface prefix + any secondary
+      // prefixes.
       ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
       if (iface.getAddress() != null) {
         newIface.setAddress(iface.getAddress());
@@ -1392,7 +1402,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (process.getNetworks().contains(iface.getAddress().getPrefix())) {
           // Found a process on interface
           if (eigrpProcess != null) {
-            // Cisco does not recommend running multiple EIGRP autonomous systems on the same
+            // Cisco does not recommend running multiple EIGRP autonomous systems on the
+            // same
             // interface
             _w.redFlag("Interface: '" + iface.getName() + "' matches multiple EIGRP processes");
             break;
@@ -1495,8 +1506,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     applyZoneFilter(iface, newIface, c);
 
     /*
-     * NAT rules are specified at the top level, but are applied as incoming transformations on the
-     * outside interface (outside-to-inside) and outgoing transformations on the outside interface
+     * NAT rules are specified at the top level, but are applied as incoming
+     * transformations on the
+     * outside interface (outside-to-inside) and outgoing transformations on the
+     * outside interface
      * (inside-to-outside)
      *
      * Currently, only static NATs have both incoming and outgoing transformations
@@ -1565,8 +1578,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       return;
     }
 
-    // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
-    // can be modified independently but not jointly. A single CiscoIosNat can represent an incoming
+    // Convert the IOS NATs to a mapping of transformations. Each field (source or
+    // destination)
+    // can be modified independently but not jointly. A single CiscoIosNat can
+    // represent an incoming
     // NAT, an outgoing NAT, or both.
     Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats = new HashMap<>();
     Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats = new HashMap<>();
@@ -1788,7 +1803,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         c.getAllInterfaces(vrfName).entrySet()) {
       org.batfish.datamodel.Interface iface = e.getValue();
       /*
-       * Filter out interfaces that do not belong to this process, however if the process name is missing,
+       * Filter out interfaces that do not belong to this process, however if the
+       * process name is missing,
        * proceed down to inference based on network addresses.
        */
       Interface vsIface = _interfaces.get(iface.getName());
@@ -1803,7 +1819,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
       String ifaceName = e.getKey();
       Long areaNum = vsIface.getOspfArea();
-      // OSPF area number was not configured on the interface itself, so get from OspfNetwork
+      // OSPF area number was not configured on the interface itself, so get from
+      // OspfNetwork
       if (areaNum == null) {
         if (network == null) {
           continue;
@@ -1902,8 +1919,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         RoutingPolicy ospfDefaultGenerationPolicy =
             c.getRoutingPolicies().get(defaultOriginateMapName);
         if (ospfDefaultGenerationPolicy != null) {
-          // TODO This should depend on a default route existing, unless `always` is configured
-          // If `always` is configured, maybe the route-map should be ignored. Needs GNS3 check.
+          // TODO This should depend on a default route existing, unless `always` is
+          // configured
+          // If `always` is configured, maybe the route-map should be ignored. Needs GNS3
+          // check.
           route.setGenerationPolicy(defaultOriginateMapName);
           newProcess.addGeneratedRoute(route.build());
         }
@@ -1911,7 +1930,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         // add generated aggregate with no precondition
         newProcess.addGeneratedRoute(route.build());
       } else {
-        // Use a generated route that will only be generated if a default route exists in RIB
+        // Use a generated route that will only be generated if a default route exists
+        // in RIB
         String defaultRouteGenerationPolicyName =
             generatedOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
         RoutingPolicy.builder()
@@ -2065,7 +2085,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // policy for redistributing connected routes
-    RipRedistributionPolicy rcp = proc.getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
+    RipRedistributionPolicy rcp =
+        proc.getRedistributionPolicies().entrySet().stream()
+            .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.CONNECTED))
+            .findFirst()
+            .map(Map.Entry::getValue)
+            .orElse(null);
     if (rcp != null) {
       If ripExportConnected = new If();
       ripExportConnected.setComment("RIP export connected routes");
@@ -2095,7 +2120,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // policy map for redistributing static routes
-    RipRedistributionPolicy rsp = proc.getRedistributionPolicies().get(RoutingProtocol.STATIC);
+    RipRedistributionPolicy rsp =
+        proc.getRedistributionPolicies().entrySet().stream()
+            .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.STATIC))
+            .findFirst()
+            .map(Map.Entry::getValue)
+            .orElse(null);
     if (rsp != null) {
       If ripExportStatic = new If();
       ripExportStatic.setComment("RIP export static routes");
@@ -2124,7 +2154,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // policy map for redistributing bgp routes
-    RipRedistributionPolicy rbp = proc.getRedistributionPolicies().get(RoutingProtocol.BGP);
+    RipRedistributionPolicy rbp =
+        proc.getRedistributionPolicies().entrySet().stream()
+            .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.BGP))
+            .findFirst()
+            .map(Map.Entry::getValue)
+            .orElse(null);
     if (rbp != null) {
       If ripExportBgp = new If();
       ripExportBgp.setComment("RIP export bgp routes");
@@ -2346,7 +2381,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @VisibleForTesting
   static Set<String> toTacacsServers(
       Set<String> tacacsServers, Map<String, AaaServerGroup> tacacsPlusGroups) {
-    /* The VI model of TACACS servers is not rich enough to express the nuances of global vs. group-level servers and of private servers. We combine them all in the VI set. */
+    /*
+     * The VI model of TACACS servers is not rich enough to express the nuances of
+     * global vs. group-level servers and of private servers. We combine them all in
+     * the VI set.
+     */
     return ImmutableSet.<String>builder()
         .addAll(tacacsServers)
         .addAll(
@@ -2411,7 +2450,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
 
-    // Build static route resolution policy used by VRFs; prevents resolution w/ default-routes
+    // Build static route resolution policy used by VRFs; prevents resolution w/
+    // default-routes
     RoutingPolicy.builder()
         .setOwner(c)
         .setName(RESOLUTION_POLICY_NAME)
@@ -2593,16 +2633,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
           c.getAllInterfaces().put(newIfaceName, newInterface);
         });
     /*
-     * On IOS, add a single FirewallSessionInterfaceInfo for all inside interfaces and a
-     * single FirewallSessionInterfaceInfo for all outside interfaces. This way, when an outgoing
-     * flow exits an [inside|outside] interface, return flows will match the session if they enter
+     * On IOS, add a single FirewallSessionInterfaceInfo for all inside interfaces
+     * and a
+     * single FirewallSessionInterfaceInfo for all outside interfaces. This way,
+     * when an outgoing
+     * flow exits an [inside|outside] interface, return flows will match the session
+     * if they enter
      * any [inside|outside] interface.
      */
     if (_vendor == ConfigurationFormat.CISCO_IOS) {
-      // IOS does FIB lookups with the original dst IP for flows from inside to outside, but the
+      // IOS does FIB lookups with the original dst IP for flows from inside to
+      // outside, but the
       // transformed dst IP for flows from outside to inside.
       if (!getNatInside().isEmpty()) {
-        // Flows to inside interfaces should undergo NAT if they come from an outside interface
+        // Flows to inside interfaces should undergo NAT if they come from an outside
+        // interface
         FirewallSessionInterfaceInfo insideIfaceInfo =
             new FirewallSessionInterfaceInfo(
                 Action.PRE_NAT_FIB_LOOKUP, getNatInside(), getNatOutside(), null, null);
@@ -2689,7 +2734,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .map(org.batfish.datamodel.Interface::getConcreteAddress)
                         .map(ConcreteInterfaceAddress::getIp)
                         .orElse(null);
-                // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
+                // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled
+                // separately.
                 if (tunnel.getMode() != TunnelMode.IPSEC_IPV4) {
                   // Ensure we have both src and dst IPs, otherwise don't convert
                   if (tunnel.getDestination() != null
@@ -2825,7 +2871,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
             newVrf.getStaticRoutes().add(toStaticRoute(staticRoute, _tracks::containsKey));
           }
-          // For the default VRF, also convert static routes created by add-route in NAT rules
+          // For the default VRF, also convert static routes created by add-route in NAT
+          // rules
           if (vrf == getDefaultVrf()) {
             newVrf.getStaticRoutes().addAll(generateIosNatAddRouteRoutes());
           }
@@ -2877,7 +2924,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         });
     /*
      * Another pass over interfaces to push final settings to VI interfaces.
-     * (e.g. has OSPF settings but no associated OSPF process, common in show run all)
+     * (e.g. has OSPF settings but no associated OSPF process, common in show run
+     * all)
      */
     _interfaces.forEach(
         (ifaceName, vsIface) -> {
@@ -2902,7 +2950,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     convertVrfLeakingConfig(_vrfs.values(), c);
 
-    // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
+    // Define the Null0 interface if it has been referenced. Otherwise, these show
+    // as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
         _structureReferences
@@ -3183,7 +3232,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     markConcreteStructure(CiscoStructureType.BGP_NEIGHBOR);
     markConcreteStructure(CiscoStructureType.BGP_LISTEN_RANGE);
-    // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
+    // BGP inheritance. This is complicated, as there are many
+    // similar-but-overlapping concepts
     markConcreteStructure(CiscoStructureType.BGP_AF_GROUP, CiscoStructureUsage.BGP_USE_AF_GROUP);
     markConcreteStructure(
         CiscoStructureType.BGP_NEIGHBOR_GROUP, CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP);

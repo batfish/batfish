@@ -6,7 +6,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 
 public class RipProcess implements Serializable {
 
@@ -34,7 +33,7 @@ public class RipProcess implements Serializable {
 
   private final SortedSet<String> _passiveInterfaceList;
 
-  private final SortedMap<RoutingProtocol, RipRedistributionPolicy> _redistributionPolicies;
+  private final SortedMap<RoutingProtocolInstance, RipRedistributionPolicy> _redistributionPolicies;
 
   public RipProcess() {
     _activeInterfaceList = new TreeSet<>();
@@ -88,7 +87,7 @@ public class RipProcess implements Serializable {
     return _passiveInterfaceList;
   }
 
-  public SortedMap<RoutingProtocol, RipRedistributionPolicy> getRedistributionPolicies() {
+  public SortedMap<RoutingProtocolInstance, RipRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 

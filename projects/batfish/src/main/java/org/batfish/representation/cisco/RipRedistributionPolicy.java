@@ -1,7 +1,5 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.datamodel.RoutingProtocol;
-
 public class RipRedistributionPolicy extends RedistributionPolicy {
 
   public static final long DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 1L;
@@ -12,8 +10,8 @@ public class RipRedistributionPolicy extends RedistributionPolicy {
 
   private Long _metric;
 
-  public RipRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol);
+  public RipRedistributionPolicy(RoutingProtocolInstance instance) {
+    super(instance);
   }
 
   public Long getMetric() {

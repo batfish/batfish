@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import javax.annotation.Nullable;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 
 public class EigrpRedistributionPolicy extends RedistributionPolicy {
@@ -12,8 +11,8 @@ public class EigrpRedistributionPolicy extends RedistributionPolicy {
 
   private @Nullable EigrpMetricValues _metric;
 
-  public EigrpRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol);
+  public EigrpRedistributionPolicy(RoutingProtocolInstance instance) {
+    super(instance);
   }
 
   @Nullable
