@@ -120,6 +120,7 @@ public class RegexAtomicPredicatesTest {
     RegexAtomicPredicates<CommunityVar> copy = new RegexAtomicPredicates<>(commAPs);
 
     assertEquals(commAPs.getRegexes(), copy.getRegexes());
+    assertEquals(commAPs.getTrueRegex(), copy.getTrueRegex());
     assertEquals(commAPs.getRegexAtomicPredicates(), copy.getRegexAtomicPredicates());
     assertEquals(commAPs.getAtomicPredicateAutomata(), copy.getAtomicPredicateAutomata());
   }

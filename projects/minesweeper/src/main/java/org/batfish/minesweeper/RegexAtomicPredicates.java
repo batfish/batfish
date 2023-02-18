@@ -143,4 +143,9 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   public Map<T, Set<Integer>> getRegexAtomicPredicates() {
     return _regexAtomicPredicates;
   }
+
+  @Nonnull
+  public T getTrueRegex() {
+    return _trueRegex;
+  }
 }
