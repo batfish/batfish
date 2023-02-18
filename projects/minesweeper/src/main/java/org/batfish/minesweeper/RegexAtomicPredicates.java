@@ -72,6 +72,9 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   private void initAtomicPredicates() {
     SetMultimap<Automaton, T> mmap = HashMultimap.create();
     mmap.put(_trueRegex.toAutomaton(), _trueRegex);
+    // key loop invariants:
+    // the automata that are in mmap are pairwise disjoint;
+    // the union of those automata is complete (all possible valid strings)
     for (T regex : _regexes) {
       Automaton rAuto = regex.toAutomaton();
       if (rAuto.isEmpty()) {
