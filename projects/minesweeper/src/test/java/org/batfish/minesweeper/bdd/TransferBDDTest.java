@@ -85,6 +85,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
@@ -1023,6 +1024,95 @@ public class TransferBDDTest {
         paths,
         Matchers.containsInAnyOrder(
             new TransferReturn(any, tag01, true), new TransferReturn(any, tag01.not(), false)));
+  }
+
+  @Test
+  public void testMatchMetric() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchMetric(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    assertThat(paths, Matchers.hasSize(2));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
+            new TransferReturn(any, any.getMed().value(42), true),
+            new TransferReturn(any, any.getMed().value(42).not(), false)));
+  }
+
+  @Test
+  public void testMatchMetricGE() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchMetric(IntComparator.GE, new LiteralLong(2)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD metricGETwo = any.getMed().value(0).or(any.getMed().value(1)).not();
+
+    assertThat(paths, Matchers.hasSize(2));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
+            new TransferReturn(any, metricGETwo, true),
+            new TransferReturn(any, metricGETwo.not(), false)));
+  }
+
+  @Test
+  public void testSetThenMatchMetric() {
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetMetric(new LiteralLong(42)),
+            new If(
+                new MatchMetric(IntComparator.EQ, new LiteralLong(42)),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute expected = new BDDRoute(any);
+    MutableBDDInteger metric = expected.getMed();
+    expected.setMed(MutableBDDInteger.makeFromValue(metric.getFactory(), 32, 42));
+
+    assertThat(paths, Matchers.hasSize(2));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
+            new TransferReturn(expected, any.getMed().value(42), true),
+            new TransferReturn(expected, any.getMed().value(42).not(), false)));
+
+    // now do the analysis again but use the output attributes for matching
+    setup(ConfigurationFormat.JUNIPER);
+    policy = _policyBuilder.setStatements(stmts).build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertThat(paths, Matchers.hasSize(1));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(new TransferReturn(expected, tbdd.getFactory().one(), true)));
   }
 
   @Test
