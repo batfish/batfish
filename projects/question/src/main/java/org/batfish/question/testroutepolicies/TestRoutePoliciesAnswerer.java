@@ -54,7 +54,7 @@ import org.batfish.specifier.SpecifierFactories;
 public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_POLICY_NAME = "Policy_Name";
-  public static final String COL_PROPOSED_POLICY_NAME = "Proposed_Policy_Name";
+  public static final String COL_REFERENCE_POLICY_NAME = "Reference_Policy_Name";
   public static final String COL_INPUT_ROUTE = "Input_Route";
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
@@ -333,7 +333,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             new ColumnMetadata(COL_NODE, NODE, "The node that has the policy", true, false),
             new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
             new ColumnMetadata(
-                COL_PROPOSED_POLICY_NAME, STRING, "The name of the proposed policy", true, false),
+                COL_REFERENCE_POLICY_NAME, STRING, "The name of the proposed policy", true, false),
             new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
             new ColumnMetadata(
                 baseColumnName(COL_ACTION),
@@ -473,13 +473,13 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     BgpRouteDiffs routeDiffs =
         new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
 
-    RoutingPolicyId policyId = referenceResult.getPolicyId();
-    RoutingPolicyId proposedPolicyId = snapshotResult.getPolicyId();
+    RoutingPolicyId referencePolicyId = referenceResult.getPolicyId();
+    RoutingPolicyId policyId = snapshotResult.getPolicyId();
     Bgpv4Route inputRoute = referenceResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
-        .put(COL_PROPOSED_POLICY_NAME, proposedPolicyId.getPolicy())
+        .put(COL_REFERENCE_POLICY_NAME, referencePolicyId.getPolicy())
         .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
         .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
         .put(baseColumnName(COL_ACTION), snapshotResult.getAction())
