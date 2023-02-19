@@ -18,8 +18,7 @@ public final class CompareRoutePoliciesQuestion extends Question {
 
   private static final String PROP_DIRECTION = "direction";
   private static final String PROP_POLICY = "policy";
-  private static final String PROP_PROPOSED_POLICY = "proposedPolicy";
-
+  private static final String PROP_REFERENCE_POLICY = "referencePolicy";
   private static final String PROP_NODES = "nodes";
 
   @VisibleForTesting
@@ -27,8 +26,7 @@ public final class CompareRoutePoliciesQuestion extends Question {
 
   @Nonnull private final Environment.Direction _direction;
   @Nullable private final String _policy;
-  @Nullable private final String _proposedPolicy;
-
+  @Nullable private final String _referencePolicy;
   @Nullable private final String _nodes;
 
   public CompareRoutePoliciesQuestion() {
@@ -38,23 +36,24 @@ public final class CompareRoutePoliciesQuestion extends Question {
   public CompareRoutePoliciesQuestion(
       Environment.Direction direction,
       @Nullable String policy,
-      @Nullable String proposedPolicy,
+      @Nullable String referencePolicy,
       @Nullable String nodes) {
 
     _direction = direction;
     _policy = policy;
-    _proposedPolicy = proposedPolicy;
+    _referencePolicy = referencePolicy;
     _nodes = nodes;
+    setDifferential(true);
   }
 
   @JsonCreator
   private static CompareRoutePoliciesQuestion jsonCreator(
       @Nullable @JsonProperty(PROP_DIRECTION) Environment.Direction direction,
       @Nullable @JsonProperty(PROP_POLICY) String policy,
-      @Nullable @JsonProperty(PROP_PROPOSED_POLICY) String proposedPolicy,
+      @Nullable @JsonProperty(PROP_REFERENCE_POLICY) String referencePolicy,
       @Nullable @JsonProperty(PROP_NODES) String nodes) {
     return new CompareRoutePoliciesQuestion(
-        firstNonNull(direction, DEFAULT_DIRECTION), policy, proposedPolicy, nodes);
+        firstNonNull(direction, DEFAULT_DIRECTION), policy, referencePolicy, nodes);
   }
 
   @JsonIgnore
@@ -83,9 +82,9 @@ public final class CompareRoutePoliciesQuestion extends Question {
   }
 
   @Nullable
-  @JsonProperty(PROP_PROPOSED_POLICY)
-  public String getProposedPolicy() {
-    return _proposedPolicy;
+  @JsonProperty(PROP_REFERENCE_POLICY)
+  public String getReferencePolicy() {
+    return _referencePolicy;
   }
 
   @Nullable
