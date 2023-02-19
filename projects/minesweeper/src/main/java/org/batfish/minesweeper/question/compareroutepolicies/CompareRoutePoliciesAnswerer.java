@@ -358,20 +358,19 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       assert (currentPoliciesList.size() == referencePoliciesList.size());
 
       // Since they have been sorted by name the policies at each index should have the same name.
-      Stream<Tuple<RoutingPolicy, RoutingPolicy>> zippedPolicies =
-          IntStream.range(0, currentPoliciesList.size())
-              .mapToObj(
-                  i -> {
-                    assert (referencePoliciesList
-                        .get(i)
-                        .getName()
-                        .equals(currentPoliciesList.get(i).getName()));
-                    return new Tuple<>(referencePoliciesList.get(i), currentPoliciesList.get(i));
-                  });
-
-      return zippedPolicies.flatMap(
-          policyTuple ->
-              comparePolicies(policyTuple.getFirst(), policyTuple.getSecond(), configAPs).stream());
+      return IntStream.range(0, currentPoliciesList.size())
+          .mapToObj(
+              i -> {
+                assert (referencePoliciesList
+                    .get(i)
+                    .getName()
+                    .equals(currentPoliciesList.get(i).getName()));
+                return new Tuple<>(referencePoliciesList.get(i), currentPoliciesList.get(i));
+              })
+          .flatMap(
+              policyTuple ->
+                  comparePolicies(policyTuple.getFirst(), policyTuple.getSecond(), configAPs)
+                      .stream());
     }
   }
 

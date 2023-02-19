@@ -27,10 +27,6 @@ import org.batfish.minesweeper.utils.Tuple;
  */
 public final class ConfigAtomicPredicates {
 
-  private final Configuration _configuration;
-
-  private final Configuration _referenceConfiguration;
-
   /**
    * Atomic predicates for standard community literals and regexes that appear in the given
    * configuration.
@@ -128,19 +124,18 @@ public final class ConfigAtomicPredicates {
       @Nullable Set<String> asPathRegexes,
       @Nonnull Collection<RoutingPolicy> policies,
       @Nullable Collection<RoutingPolicy> referencePolicies) {
-    _configuration = batfish.loadConfigurations(snapshot).get(router);
+    Configuration configuration = batfish.loadConfigurations(snapshot).get(router);
+    Configuration referenceConfiguration = null;
     if (reference != null) {
-      _referenceConfiguration = batfish.loadConfigurations(reference).get(router);
-    } else {
-      _referenceConfiguration = null;
+      referenceConfiguration = batfish.loadConfigurations(reference).get(router);
     }
 
     // Gather the communities from both (if differential) configs + any user provided communities.
-    Set<CommunityVar> allCommunities = findAllCommunities(communities, policies, _configuration);
+    Set<CommunityVar> allCommunities = findAllCommunities(communities, policies, configuration);
 
     if (reference != null) {
       allCommunities.addAll(
-          findAllCommunities(Collections.emptySet(), referencePolicies, _referenceConfiguration));
+          findAllCommunities(Collections.emptySet(), referencePolicies, referenceConfiguration));
     }
 
     // currently we only support regex matching for standard communities
@@ -168,17 +163,15 @@ public final class ConfigAtomicPredicates {
 
     // Collect as path regexes from both (if differential) configs
     Set<SymbolicAsPathRegex> asPathAps =
-        new HashSet<>(findAllAsPathRegexes(asPathRegexes, policies, _configuration));
+        new HashSet<>(findAllAsPathRegexes(asPathRegexes, policies, configuration));
     if (reference != null) {
       asPathAps.addAll(
-          findAllAsPathRegexes(Collections.emptySet(), referencePolicies, _referenceConfiguration));
+          findAllAsPathRegexes(Collections.emptySet(), referencePolicies, referenceConfiguration));
     }
     _asPathRegexAtomicPredicates = new AsPathRegexAtomicPredicates(ImmutableSet.copyOf(asPathAps));
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
-    _configuration = other._configuration;
-    _referenceConfiguration = other._referenceConfiguration;
     _standardCommunityAtomicPredicates =
         new RegexAtomicPredicates<>(other._standardCommunityAtomicPredicates);
     _nonStandardCommunityLiterals = new HashMap<>(other._nonStandardCommunityLiterals);
@@ -295,15 +288,6 @@ public final class ConfigAtomicPredicates {
     policies.forEach(pol -> asPathRegexes.addAll(findAsPathRegexes(pol, configuration)));
 
     return asPathRegexes;
-  }
-
-  public Configuration getConfiguration() {
-    return _configuration;
-  }
-
-  @Nullable
-  public Configuration getReferenceConfiguration() {
-    return _referenceConfiguration;
   }
 
   public RegexAtomicPredicates<CommunityVar> getStandardCommunityAtomicPredicates() {
