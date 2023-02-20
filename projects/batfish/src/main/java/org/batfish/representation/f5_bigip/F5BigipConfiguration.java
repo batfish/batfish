@@ -14,6 +14,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -1063,11 +1064,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private boolean isReferencedByRouteMap(String aclName) {
     // Return true iff the named acl is referenced via route-map match ip address
-    return Optional.ofNullable(_structureReferences.get(F5BigipStructureType.ACCESS_LIST))
-        .map(byStructureName -> byStructureName.get(aclName))
-        .map(byUsage -> byUsage.get(F5BigipStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS))
-        .map(lines -> !lines.isEmpty())
-        .orElse(false);
+    return !_structureManager
+        .getStructureReferences(F5BigipStructureType.ACCESS_LIST)
+        .getOrDefault(aclName, ImmutableMap.of())
+        .getOrDefault(F5BigipStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS, ImmutableMultiset.of())
+        .isEmpty();
   }
 
   private void markStructures() {

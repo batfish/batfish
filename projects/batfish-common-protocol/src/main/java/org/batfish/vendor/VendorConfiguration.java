@@ -1,26 +1,15 @@
 package org.batfish.vendor;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multiset;
 import com.google.common.collect.Range;
-import com.google.common.collect.SortedMultiset;
-import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,51 +23,31 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.references.StructureManager;
 import org.batfish.grammar.BatfishCombinedParser;
 
 public abstract class VendorConfiguration implements Serializable {
 
   private transient @Nullable Map<Integer, Set<Integer>> _extraLines;
   private transient @Nullable ConversionContext _conversionContext;
-  private transient ConvertConfigurationAnswerElement _answerElement;
   protected String _filename;
   protected @Nonnull List<String> _secondaryFilenames;
   @Nonnull protected transient SnapshotRuntimeData _runtimeData;
   private VendorConfiguration _overlayConfiguration;
-  /** Type description -> Name -> DefinedStructureInfo */
-  @Nonnull
-  protected final SortedMap<String, SortedMap<String, DefinedStructureInfo>> _structureDefinitions;
-  /** StructureType -> Name -> StructureUsage */
-  @Nonnull
-  protected final SortedMap<
-          StructureType, SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>>>
-      _structureReferences;
-  /** structType -> structName -> usage -> lines */
-  @Nonnull
-  protected final SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
-      _undefinedReferences;
+  protected final @Nonnull StructureManager _structureManager;
 
   private transient boolean _unrecognized;
   protected transient Warnings _w;
 
   public VendorConfiguration() {
     _runtimeData = SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
-    _structureDefinitions = new TreeMap<>();
-    _structureReferences = new TreeMap<>();
-    _undefinedReferences = new TreeMap<>();
+    _structureManager = StructureManager.create();
     _secondaryFilenames = ImmutableList.of();
   }
 
   public String canonicalizeInterfaceName(String name) {
     return name;
-  }
-
-  @JsonIgnore
-  public final ConvertConfigurationAnswerElement getAnswerElement() {
-    return _answerElement;
   }
 
   public @Nullable ConversionContext getConversionContext() {
@@ -104,6 +73,10 @@ public abstract class VendorConfiguration implements Serializable {
     return _overlayConfiguration;
   }
 
+  public @Nonnull StructureManager getStructureManager() {
+    return _structureManager;
+  }
+
   public boolean getUnrecognized() {
     return _unrecognized;
   }
@@ -120,21 +93,7 @@ public abstract class VendorConfiguration implements Serializable {
    * #markAbstractStructure(StructureType, StructureUsage, Collection)}.
    */
   protected void markConcreteStructure(StructureType type) {
-    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
-        _structureReferences.getOrDefault(type, Collections.emptySortedMap());
-    Map<String, DefinedStructureInfo> definitions =
-        _structureDefinitions.getOrDefault(type.getDescription(), Collections.emptySortedMap());
-    references.forEach(
-        (name, byUsage) -> {
-          DefinedStructureInfo def = definitions.get(name);
-          if (def == null) {
-            byUsage.forEach(
-                (usage, lines) -> lines.forEach(line -> undefined(type, name, usage, line)));
-          } else {
-            int count = byUsage.values().stream().mapToInt(Multiset::size).sum();
-            def.setNumReferrers(def.getNumReferrers() + count);
-          }
-        });
+    _structureManager.markConcreteStructure(type);
   }
 
   /**
@@ -149,27 +108,7 @@ public abstract class VendorConfiguration implements Serializable {
       StructureType type,
       StructureUsage usage,
       Collection<? extends StructureType> structureTypesToCheck) {
-    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
-        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
-    references.forEach(
-        (name, byUsage) -> {
-          Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
-          List<DefinedStructureInfo> matchingStructures =
-              structureTypesToCheck.stream()
-                  .map(t -> _structureDefinitions.get(t.getDescription()))
-                  .filter(Objects::nonNull)
-                  .map(m -> m.get(name))
-                  .filter(Objects::nonNull)
-                  .collect(ImmutableList.toImmutableList());
-          if (matchingStructures.isEmpty()) {
-            for (int line : lines) {
-              undefined(type, name, usage, line);
-            }
-          } else {
-            matchingStructures.forEach(
-                info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
-          }
-        });
+    _structureManager.markAbstractStructure(type, usage, structureTypesToCheck);
   }
 
   /**
@@ -179,28 +118,7 @@ public abstract class VendorConfiguration implements Serializable {
    */
   protected void markAbstractStructureAllUsages(
       StructureType type, Collection<? extends StructureType> structureTypesToCheck) {
-    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
-        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
-    references.forEach(
-        (name, byUsage) ->
-            byUsage.forEach(
-                (usage, lines) -> {
-                  List<DefinedStructureInfo> matchingStructures =
-                      structureTypesToCheck.stream()
-                          .map(t -> _structureDefinitions.get(t.getDescription()))
-                          .filter(Objects::nonNull)
-                          .map(m -> m.get(name))
-                          .filter(Objects::nonNull)
-                          .collect(ImmutableList.toImmutableList());
-                  if (matchingStructures.isEmpty()) {
-                    for (int line : lines) {
-                      undefined(type, name, usage, line);
-                    }
-                  } else {
-                    matchingStructures.forEach(
-                        info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
-                  }
-                }));
+    _structureManager.markAbstractStructureAllUsages(type, structureTypesToCheck);
   }
 
   /**
@@ -218,67 +136,7 @@ public abstract class VendorConfiguration implements Serializable {
 
   public void referenceStructure(
       @Nonnull StructureType type, @Nonnull String name, @Nonnull StructureUsage usage, int line) {
-    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
-        _structureReferences.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedMap<StructureUsage, SortedMultiset<Integer>> byUsage =
-        byName.computeIfAbsent(name, k -> new TreeMap<>());
-    SortedMultiset<Integer> lines = byUsage.computeIfAbsent(usage, k -> TreeMultiset.create());
-    lines.add(line);
-  }
-
-  /**
-   * Update the definition for the specified structure to use the new name. Returns {@code true} if
-   * the rename was successful, otherwise returns {@code false}.
-   *
-   * <p>Update is only successful if the specified structure is defined and the new name is not
-   * already taken. Checks for a name conflict with any of the specified structure types.
-   */
-  private boolean renameStructureDefinition(
-      String origName,
-      String newName,
-      StructureType type,
-      Collection<StructureType> sameNamespaceTypes) {
-
-    SortedMap<String, DefinedStructureInfo> defsByName =
-        _structureDefinitions.get(type.getDescription());
-    if (defsByName == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot rename structure %s (%s) to %s: %s is undefined.",
-              origName, type.getDescription(), newName, origName));
-      return false;
-    }
-
-    for (StructureType otherType : sameNamespaceTypes) {
-      SortedMap<String, DefinedStructureInfo> otherDefsByName =
-          _structureDefinitions.get(otherType.getDescription());
-      if (otherDefsByName == null) {
-        continue;
-      }
-
-      // Abort on *any* collision with the new name
-      if (otherDefsByName.containsKey(newName)) {
-        _w.redFlag(
-            String.format(
-                "Cannot rename structure %s (%s) to %s: %s is already in use as %s.",
-                origName, type.getDescription(), newName, newName, otherType.getDescription()));
-        return false;
-      }
-    }
-
-    DefinedStructureInfo def = defsByName.remove(origName);
-    defsByName.put(newName, def);
-    return true;
-  }
-
-  /** If any references exist to the specified structure, update them to use the new name. */
-  private void renameStructureReferences(String orgName, String newName, StructureType type) {
-    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> refsByName =
-        _structureReferences.get(type);
-    if (refsByName != null && refsByName.containsKey(orgName)) {
-      SortedMap<StructureUsage, SortedMultiset<Integer>> refs = refsByName.remove(orgName);
-      refsByName.put(newName, refs);
-    }
+    _structureManager.referenceStructure(type, name, usage, line);
   }
 
   /**
@@ -296,62 +154,7 @@ public abstract class VendorConfiguration implements Serializable {
       String newName,
       StructureType type,
       Collection<StructureType> sameNamespaceTypes) {
-    assert sameNamespaceTypes.contains(type);
-    boolean succeeded = renameStructureDefinition(origName, newName, type, sameNamespaceTypes);
-    if (succeeded) {
-      renameStructureReferences(origName, newName, type);
-    }
-    return succeeded;
-  }
-
-  public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {
-    _answerElement = answerElement;
-    _answerElement.getDefinedStructures().put(getFilename(), _structureDefinitions);
-    _structureReferences.forEach(
-        (structType, byType) ->
-            byType.forEach(
-                (name, byUsage) ->
-                    byUsage.forEach(
-                        (usage, lines) ->
-                            lines.forEach(
-                                line ->
-                                    addStructureReference(
-                                        _answerElement.getReferencedStructures(),
-                                        structType,
-                                        name,
-                                        usage,
-                                        line)))));
-    _answerElement.getUndefinedReferences().put(getFilename(), _undefinedReferences);
-  }
-
-  /**
-   * Delete the definition for the specified structure. Returns {@code true} if the delete was
-   * successful, otherwise returns {@code false}.
-   */
-  private boolean deleteStructureDefinition(String name, StructureType type) {
-    // TODO we're only deleting structures with self-refs currently and need to determine how to
-    // handle other references (e.g. are they undefined references now? do they disappear?)
-    SortedMap<String, DefinedStructureInfo> defsByName =
-        _structureDefinitions.get(type.getDescription());
-    if (defsByName == null || !defsByName.containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Cannot delete structure %s (%s): %s is undefined.",
-              name, type.getDescription(), name));
-      return false;
-    }
-
-    defsByName.remove(name);
-    return true;
-  }
-
-  /** Delete any existing references to the specified structure. */
-  private void deleteStructureReferences(String name, StructureType type) {
-    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> refsByName =
-        _structureReferences.get(type);
-    if (refsByName != null) {
-      refsByName.remove(name);
-    }
+    return _structureManager.renameStructure(origName, newName, type, sameNamespaceTypes, _w);
   }
 
   /**
@@ -360,11 +163,7 @@ public abstract class VendorConfiguration implements Serializable {
    * returns {@code true}.
    */
   public boolean deleteStructure(String name, StructureType type) {
-    boolean succeeded = deleteStructureDefinition(name, type);
-    if (succeeded) {
-      deleteStructureReferences(name, type);
-    }
-    return succeeded;
+    return _structureManager.deleteStructure(name, type, _w);
   }
 
   public void setConversionContext(@Nullable ConversionContext conversionContext) {
@@ -403,37 +202,8 @@ public abstract class VendorConfiguration implements Serializable {
   public abstract List<Configuration> toVendorIndependentConfigurations()
       throws VendorConversionException;
 
-  private void addStructureReference(
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
-          referenceMap,
-      StructureType structureType,
-      String name,
-      StructureUsage usage,
-      int line) {
-    String filename = getFilename();
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
-        referenceMap.computeIfAbsent(filename, k -> new TreeMap<>());
-    addStructureReferenceToTypeMap(byType, structureType, name, usage, line);
-  }
-
-  private void addStructureReferenceToTypeMap(
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
-          referenceMapByType,
-      StructureType structureType,
-      String name,
-      StructureUsage usage,
-      int line) {
-    String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName =
-        referenceMapByType.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedMap<String, SortedSet<Integer>> byUsage =
-        byName.computeIfAbsent(name, k -> new TreeMap<>());
-    String usageStr = usage.getDescription();
-    byUsage.computeIfAbsent(usageStr, ignored -> new TreeSet<>()).add(line);
-  }
-
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
-    addStructureReferenceToTypeMap(_undefinedReferences, structureType, name, usage, line);
+    _structureManager.undefined(structureType, name, usage, line);
   }
 
   /* Recursively process children to find all relevant definition lines for the specified context */
@@ -460,22 +230,11 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   /**
-   * Gets the {@link DefinedStructureInfo} for the specified structure {@code name} and {@code
-   * structureType}, initializing if necessary.
-   */
-  private DefinedStructureInfo getStructureInfo(StructureType structureType, String name) {
-    String type = structureType.getDescription();
-    SortedMap<String, DefinedStructureInfo> byName =
-        _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
-    return byName.computeIfAbsent(name, k -> new DefinedStructureInfo());
-  }
-
-  /**
    * Updates structure definitions to include the specified structure {@code name} and {@code
    * structureType} and initializes the number of referrers.
    */
   public void defineSingleLineStructure(StructureType structureType, String name, int line) {
-    getStructureInfo(structureType, name).addDefinitionLines(line);
+    _structureManager.getOrDefine(structureType, name).addDefinitionLines(line);
   }
 
   /**
@@ -489,7 +248,9 @@ public abstract class VendorConfiguration implements Serializable {
    */
   public void defineFlattenedStructure(
       StructureType type, String name, RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
-    getStructureInfo(type, name).addDefinitionLines(collectLines(ctx, parser, _extraLines));
+    _structureManager
+        .getOrDefine(type, name)
+        .addDefinitionLines(collectLines(ctx, parser, _extraLines));
   }
 
   /**
@@ -500,7 +261,8 @@ public abstract class VendorConfiguration implements Serializable {
    * RuleContext, BatfishCombinedParser)}.
    */
   public void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
-    getStructureInfo(type, name)
+    _structureManager
+        .getOrDefine(type, name)
         .addDefinitionLines(Range.closed(ctx.getStart().getLine(), ctx.getStop().getLine()));
   }
 

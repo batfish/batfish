@@ -48,7 +48,6 @@ import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -434,11 +433,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    */
   @VisibleForTesting
   static void removeInvalidVendorStructureIds(Configuration c, VendorConfiguration vc, Warnings w) {
-    assert vc.getAnswerElement() != null;
-    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-        definedStructures = vc.getAnswerElement().getDefinedStructures();
     InvalidVendorStructureIdEraser vsidEraser =
-        new InvalidVendorStructureIdEraser(definedStructures);
+        new InvalidVendorStructureIdEraser(vc.getFilename(), vc.getStructureManager());
     c.setIpAccessLists(
         c.getIpAccessLists().entrySet().stream()
             .collect(Collectors.toMap(Entry::getKey, e -> vsidEraser.visit(e.getValue()))));
@@ -452,14 +448,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    */
   @VisibleForTesting
   static void assertVendorStructureIdsValid(Configuration c, VendorConfiguration vc, Warnings w) {
-    if (vc.getAnswerElement() == null) {
-      // Tests should fail
-      assert vc.getAnswerElement() != null;
-      return;
-    }
-    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-        definedStructures = vc.getAnswerElement().getDefinedStructures();
-    InvalidVendorStructureIdEraser eraser = new InvalidVendorStructureIdEraser(definedStructures);
+    InvalidVendorStructureIdEraser eraser =
+        new InvalidVendorStructureIdEraser(vc.getFilename(), vc.getStructureManager());
     // Erase invalid VSIDs and confirm no changes occur
     for (IpAccessList acl : c.getIpAccessLists().values()) {
       for (AclLine line : acl.getLines()) {
@@ -1013,7 +1003,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
               .addAll(vendorConfiguration.getSecondaryFilenames())
               .build();
       vendorConfiguration.setWarnings(warnings);
-      vendorConfiguration.setAnswerElement(answerElement);
       vendorConfiguration.setConversionContext(_conversionContext);
       vendorConfiguration.setRuntimeData(_runtimeData);
       SortedMap<String, Warnings> configSpecificWarnings = new ConcurrentSkipListMap<>();
@@ -1048,6 +1037,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                 postFinalize(
                     configurations, warningsByHost, fileMap, warnings, filenames, configuration);
               });
+      vendorConfiguration
+          .getStructureManager()
+          .saveInto(answerElement, vendorConfiguration.getFilename());
       for (Warnings currentConfigSpecificWarnings : configSpecificWarnings.values()) {
         // Merge in config-specific warnings in deterministic fashion; values are ordered by
         // Configuration-specific hostname key from SortedMap.
