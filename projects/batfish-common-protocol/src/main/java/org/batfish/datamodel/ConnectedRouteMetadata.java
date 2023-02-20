@@ -15,6 +15,8 @@ import javax.annotation.Nullable;
 public final class ConnectedRouteMetadata implements Serializable {
   private static final String PROP_ADMIN = "admin";
   private static final String PROP_GENERATE_CONNECTED_ROUTE = "generateConnectedRoute";
+  private static final String PROP_GENERATE_LOCAL_NULL_ROUTE_IF_DOWN =
+      "generateLocalNullRouteIfDown";
   // plural for backwards compatibility, wrong.
   private static final String PROP_GENERATE_LOCAL_ROUTES = "generateLocalRoutes";
   private static final String PROP_TAG = "tag";
@@ -28,6 +30,10 @@ public final class ConnectedRouteMetadata implements Serializable {
   // If set, controls whether a local route is generated for this connected route. If unset, the
   // default behavior is to generate local routes for /31 networks or larger
   @Nullable private final Boolean _generateLocalRoute;
+
+  // If set, controls whether a local null route is generated for this connected route when the
+  // interface is down. If unset, these routes are not generated.
+  @Nullable private final Boolean _generateLocalNullRouteIfDown;
 
   @Nullable private final Long _tag;
 
@@ -49,6 +55,11 @@ public final class ConnectedRouteMetadata implements Serializable {
     return _generateLocalRoute;
   }
 
+  @JsonProperty(PROP_GENERATE_LOCAL_NULL_ROUTE_IF_DOWN)
+  public @Nullable Boolean getGenerateLocalNullRouteIfDown() {
+    return _generateLocalNullRouteIfDown;
+  }
+
   @Nullable
   @JsonProperty(PROP_TAG)
   public Long getTag() {
@@ -67,6 +78,7 @@ public final class ConnectedRouteMetadata implements Serializable {
     return Objects.equals(_admin, that._admin)
         && Objects.equals(_generateConnectedRoute, that._generateConnectedRoute)
         && Objects.equals(_generateLocalRoute, that._generateLocalRoute)
+        && Objects.equals(_generateLocalNullRouteIfDown, that._generateLocalNullRouteIfDown)
         && Objects.equals(_tag, that._tag);
   }
 
@@ -77,13 +89,15 @@ public final class ConnectedRouteMetadata implements Serializable {
         .add(PROP_ADMIN, _admin)
         .add(PROP_GENERATE_CONNECTED_ROUTE, _generateConnectedRoute)
         .add(PROP_GENERATE_LOCAL_ROUTES, _generateLocalRoute)
+        .add(PROP_GENERATE_LOCAL_NULL_ROUTE_IF_DOWN, _generateLocalNullRouteIfDown)
         .add(PROP_TAG, _tag)
         .toString();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_admin, _generateConnectedRoute, _generateLocalRoute, _tag);
+    return Objects.hash(
+        _admin, _generateConnectedRoute, _generateLocalRoute, _generateLocalNullRouteIfDown, _tag);
   }
 
   public static Builder builder() {
@@ -98,10 +112,12 @@ public final class ConnectedRouteMetadata implements Serializable {
       @Nullable Integer admin,
       @Nullable Boolean generateConnectedRoute,
       @Nullable Boolean generateLocalRoute,
+      @Nullable Boolean generateLocalNullRouteIfDown,
       @Nullable Long tag) {
     _admin = admin;
     _generateConnectedRoute = generateConnectedRoute;
     _generateLocalRoute = generateLocalRoute;
+    _generateLocalNullRouteIfDown = generateLocalNullRouteIfDown;
     _tag = tag;
   }
 
@@ -109,6 +125,7 @@ public final class ConnectedRouteMetadata implements Serializable {
     @Nullable private Integer _admin;
     @Nullable private Boolean _generateConnectedRoute;
     @Nullable private Boolean _generateLocalRoute;
+    @Nullable private Boolean _generateLocalNullRouteIfDown;
     @Nullable private Long _tag;
 
     private Builder() {}
@@ -144,6 +161,12 @@ public final class ConnectedRouteMetadata implements Serializable {
     }
 
     @Nonnull
+    public Builder setGenerateLocalNullRouteIfDown(@Nullable Boolean generateLocalNullRouteIfDown) {
+      _generateLocalNullRouteIfDown = generateLocalNullRouteIfDown;
+      return this;
+    }
+
+    @Nonnull
     public Builder setGenerateLocalRoute(boolean generateLocalRoute) {
       _generateLocalRoute = generateLocalRoute;
       return this;
@@ -163,7 +186,12 @@ public final class ConnectedRouteMetadata implements Serializable {
 
     @Nonnull
     public ConnectedRouteMetadata build() {
-      return new ConnectedRouteMetadata(_admin, _generateConnectedRoute, _generateLocalRoute, _tag);
+      return new ConnectedRouteMetadata(
+          _admin,
+          _generateConnectedRoute,
+          _generateLocalRoute,
+          _generateLocalNullRouteIfDown,
+          _tag);
     }
   }
 
@@ -172,7 +200,10 @@ public final class ConnectedRouteMetadata implements Serializable {
       @Nullable @JsonProperty(PROP_ADMIN) Integer admin,
       @Nullable @JsonProperty(PROP_GENERATE_CONNECTED_ROUTE) Boolean generateConnectedRoute,
       @Nullable @JsonProperty(PROP_GENERATE_LOCAL_ROUTES) Boolean generateLocalRoute,
+      @Nullable @JsonProperty(PROP_GENERATE_LOCAL_NULL_ROUTE_IF_DOWN)
+          Boolean generateLocalNullRouteIfDown,
       @Nullable @JsonProperty(PROP_TAG) Long tag) {
-    return new ConnectedRouteMetadata(admin, generateConnectedRoute, generateLocalRoute, tag);
+    return new ConnectedRouteMetadata(
+        admin, generateConnectedRoute, generateLocalRoute, generateLocalNullRouteIfDown, tag);
   }
 }

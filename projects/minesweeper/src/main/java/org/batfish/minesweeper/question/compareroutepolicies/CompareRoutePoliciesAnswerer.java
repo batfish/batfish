@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.question.compareRoutePolicies;
+package org.batfish.minesweeper.question.compareroutepolicies;
 
 import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
@@ -50,8 +50,10 @@ import org.batfish.specifier.SpecifierFactories;
 public final class CompareRoutePoliciesAnswerer extends Answerer {
 
   @Nonnull private final Environment.Direction _direction;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
 
+  @Nonnull private final String _policySpecifierString;
+  @Nonnull private final String _proposedPolicySpecifierString;
+  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
   @Nonnull private final RoutingPolicySpecifier _proposedPolicySpecifier;
 
   @Nonnull private final NodeSpecifier _nodeSpecifier;
@@ -66,13 +68,15 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             question.getNodes(), AllNodesNodeSpecifier.INSTANCE);
     _direction = question.getDirection();
 
+    _policySpecifierString = question.getPolicy();
     _policySpecifier =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
-            question.getPolicy(), ALL_ROUTING_POLICIES);
+            _policySpecifierString, ALL_ROUTING_POLICIES);
 
+    _proposedPolicySpecifierString = question.getProposedPolicy();
     _proposedPolicySpecifier =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
-            question.getProposedPolicy(), ALL_ROUTING_POLICIES);
+            _proposedPolicySpecifierString, ALL_ROUTING_POLICIES);
 
     // in the future, it may improve performance to combine all input community regexes
     // into a single regex representing their disjunction, and similarly for all output
@@ -161,6 +165,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             // manifests during model generation.
             acc = acc.or(outConstraint);
           }
+          break;
         case AS_PATH:
           BDD[] asPathAtomicPredicates = r1.getAsPathRegexAtomicPredicates();
           BDD[] otherAsPathAtomicPredicates = r2.getAsPathRegexAtomicPredicates();
@@ -171,6 +176,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             // manifests during model generation.
             acc = acc.or(outConstraint);
           }
+          break;
+        default:
+          throw new UnsupportedOperationException(d.name());
       }
     }
     if (!acc.isZero()) {
@@ -266,6 +274,23 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       Stream<RoutingPolicy> policies,
       Stream<RoutingPolicy> proposedPolicies,
       NetworkSnapshot snapshot) {
+    List<RoutingPolicy> policiesList = policies.collect(Collectors.toList());
+    List<RoutingPolicy> proposedPoliciesList = proposedPolicies.collect(Collectors.toList());
+
+    if (policiesList.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format("Could not find policy matching %s", _policySpecifierString));
+    }
+    if (proposedPoliciesList.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Could not find proposed policy matching %s", _proposedPolicySpecifierString));
+    }
+
+    // Compute AtomicPredicates for both policies and proposedPolicies.
+    List<RoutingPolicy> allPolicies = new ArrayList<>(policiesList);
+    allPolicies.addAll(proposedPoliciesList);
+
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             _batfish,
@@ -274,12 +299,16 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             _communityRegexes.stream()
                 .map(CommunityVar::from)
                 .collect(ImmutableSet.toImmutableSet()),
-            _asPathRegexes);
+            _asPathRegexes,
+            allPolicies);
 
-    return policies.flatMap(
-        policy ->
-            proposedPolicies.flatMap(
-                proposedPolicy -> comparePolicies(policy, proposedPolicy, configAPs).stream()));
+    return policiesList.stream()
+        .flatMap(
+            policy ->
+                proposedPoliciesList.stream()
+                    .flatMap(
+                        proposedPolicy ->
+                            comparePolicies(policy, proposedPolicy, configAPs).stream()));
   }
 
   @Override

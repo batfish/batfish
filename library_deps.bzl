@@ -16,7 +16,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4",
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.13.4",
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.13.4",
-    "com.github.ben-manes.caffeine:caffeine:3.1.2",
+    "com.github.ben-manes.caffeine:caffeine:3.1.3",
     "com.google.auto.service:auto-service:1.0.1",
     "com.google.auto.service:auto-service-annotations:1.0.1",
     "com.google.code.findbugs:jsr305:3.0.2",
@@ -41,14 +41,14 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.commons:commons-configuration2:2.8.0",
     "org.apache.commons:commons-lang3:3.12.0",
     "org.apache.commons:commons-text:1.10.0",
-    "org.apache.httpcomponents:httpclient:4.5.13",  # managed up 2021-06-04 for CVE-2020-13956
-    "org.apache.httpcomponents:httpcore:4.4.15",  # managed up 2021-06-04 for fixes
+    "org.apache.httpcomponents:httpclient:4.5.14",  # managed up 2021-06-04 for CVE-2020-13956
+    "org.apache.httpcomponents:httpcore:4.4.16",  # managed up 2021-06-04 for fixes
     "org.apache.logging.log4j:log4j-api:2.19.0",
     "org.apache.logging.log4j:log4j-core:2.19.0",
     "org.apache.logging.log4j:log4j-slf4j-impl:2.19.0",
     "org.apache.tomcat.embed:tomcat-embed-core:8.5.82",  # managed up 2022-08-23 for CVEs
     "org.codehaus.jettison:jettison:1.5.1",
-    "io.github.java-diff-utils:java-diff-utils:4.11",
+    "io.github.java-diff-utils:java-diff-utils:4.12",
     "org.glassfish.grizzly:grizzly-http-server:2.4.4",
     "org.glassfish.grizzly:grizzly-framework:2.4.4",
     "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.35",

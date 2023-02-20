@@ -406,7 +406,15 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  private static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
+  /**
+   * Returns a {@link Row} describing the difference between the two results, in the case where the
+   * actual outcome of the policy is different, or {@code null} otherwise.
+   *
+   * <p>Note that no difference in the outcome includes the case when, e.g., only the name of a
+   * policy changed but the action and output attributes are identical across the two snapshots.
+   */
+  @VisibleForTesting
+  static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
     assert snapshotResult.getKey().equals(referenceResult.getKey());
 
     if (snapshotResult.equals(referenceResult)) {
@@ -420,7 +428,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     boolean equalAction = snapshotResult.getAction() == referenceResult.getAction();
     boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
-    assert !(equalAction && equalOutputRoutes);
+    if (equalAction && equalOutputRoutes) {
+      // This can happen if the trace is different.
+      return null;
+    }
 
     BgpRouteDiffs routeDiffs =
         new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));

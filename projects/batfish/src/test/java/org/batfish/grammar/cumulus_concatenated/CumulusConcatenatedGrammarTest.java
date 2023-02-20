@@ -285,6 +285,19 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyNeighborIpv4AdvertiseInactiveConversion() throws IOException {
+    Configuration c = parseConfig("bgp_advertise_inactive");
+    assertTrue(
+        c.getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.0.0.1"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAdvertiseInactive());
+  }
+
+  @Test
   public void testVrf() {
     CumulusConcatenatedConfiguration c =
         parseLines(

@@ -773,7 +773,8 @@ final class IncrementalBdpEngine {
      * Initialize all routers and their message queues (can be done as parallel as possible)
      */
     LOGGER.info("Initialize virtual routers with updated topologies");
-    vrs.parallelStream().forEach(vr -> vr.initForEgpComputationWithNewTopology(topologyContext));
+    vrs.parallelStream()
+        .forEach(vr -> vr.initForEgpComputationWithNewTopology(topologyContext, provider));
 
     LOGGER.info("Compute HMM routes");
     Map<String, Map<String, Set<Ip>>> interfaceOwners = ipOwners.getInterfaceOwners(true);

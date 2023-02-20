@@ -1310,7 +1310,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     newIface.setCryptoMap(iface.getCryptoMap());
-    newIface.setHsrpVersion(iface.getHsrpVersion());
+    if (iface.getHsrpVersion() != null) {
+      newIface.setHsrpVersion(toString(iface.getHsrpVersion()));
+    }
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(
         firstNonNull(
@@ -1519,6 +1521,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // For IOS, FirewallSessionInterfaceInfo is created once for all NAT interfaces.
     return newIface;
+  }
+
+  private static @Nonnull String toString(HsrpVersion hsrpVersion) {
+    switch (hsrpVersion) {
+      case VERSION_1:
+        return "1";
+      case VERSION_2:
+        return "2";
+      default:
+        throw new IllegalArgumentException(String.format("Invalid HsrpVersion: %s", hsrpVersion));
+    }
   }
 
   public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, Long asn) {

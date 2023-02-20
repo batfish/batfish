@@ -1,0 +1,61 @@
+#
+set system host-name c
+#
+set routing-options static route 2.0.0.1/32 discard
+set routing-instances ri2 instance-type vrf
+set routing-instances ri2 routing-options static route 3.0.0.0/32 discard
+set routing-options static route 3.0.0.1/32 discard
+set routing-options static route 4.0.0.1/32 discard
+#
+set policy-options condition c1 if-route-exists 1.0.0.0/32
+set policy-options condition c1 if-route-exists table inet.0
+set policy-options condition c2 if-route-exists 2.0.0.0/32
+set policy-options condition c2 if-route-exists table inet.0
+set policy-options condition c3 if-route-exists 3.0.0.0/32
+set policy-options condition c3 if-route-exists table ri2.inet.0
+set policy-options condition c4 if-route-exists 4.0.0.0/32
+set policy-options condition c4 if-route-exists table inet.0
+#
+set policy-options policy-statement from-r term t then reject
+#
+set policy-options policy-statement to-r term t1 from condition c1
+set policy-options policy-statement to-r term t1 from route-filter 1.0.0.1/32 exact
+set policy-options policy-statement to-r term t1 then accept
+set policy-options policy-statement to-r term t2 from condition c2
+set policy-options policy-statement to-r term t2 from route-filter 2.0.0.1/32 exact
+set policy-options policy-statement to-r term t2 then accept
+set policy-options policy-statement to-r term t3 from condition c3
+set policy-options policy-statement to-r term t3 from route-filter 3.0.0.1/32 exact
+set policy-options policy-statement to-r term t3 then accept
+set policy-options policy-statement to-r term t4 from condition c4
+set policy-options policy-statement to-r term t4 from route-filter 4.0.0.1/32 exact
+set policy-options policy-statement to-r term t4 then accept
+set policy-options policy-statement to-r term default-drop then reject
+#
+set policy-options policy-statement from-s term t then accept
+#
+set policy-options policy-statement to-s term t then reject
+#
+# c <-> s1
+set interfaces xe-0/0/1 unit 0 family inet address 10.0.1.0/31
+# c <-> s21
+set interfaces xe-0/0/2 unit 0 family inet address 10.0.2.0/31
+# c <-> r
+set interfaces xe-0/0/3 unit 0 family inet address 10.0.3.0/31
+#
+set routing-options router-id 10.10.0.3
+set routing-options autonomous-system 3
+set protocols bgp group s1 peer-as 1
+set protocols bgp group s1 export to-s
+set protocols bgp group s1 import from-s
+set protocols bgp group s1 neighbor 10.0.1.1
+set protocols bgp group s2 peer-as 2
+set protocols bgp group s2 export to-s
+set protocols bgp group s2 import from-s
+set protocols bgp group s2 neighbor 10.0.2.1
+set protocols bgp group r peer-as 4
+set protocols bgp group r export to-r
+set protocols bgp group r import from-r
+set protocols bgp group r neighbor 10.0.3.1
+#
+

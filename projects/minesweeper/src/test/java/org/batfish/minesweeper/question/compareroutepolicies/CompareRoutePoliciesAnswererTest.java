@@ -32,6 +32,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -95,8 +96,6 @@ import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.minesweeper.question.compareRoutePolicies.CompareRoutePoliciesAnswerer;
-import org.batfish.minesweeper.question.compareRoutePolicies.CompareRoutePoliciesQuestion;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.hamcrest.Matchers;
@@ -115,8 +114,8 @@ public class CompareRoutePoliciesAnswererTest {
 
   private static final Environment.Direction DEFAULT_DIRECTION = Environment.Direction.IN;
 
-  private RoutingPolicy.Builder _policyBuilder_1;
-  private RoutingPolicy.Builder _policyBuilder_2;
+  private RoutingPolicy.Builder _policyBuilder1;
+  private RoutingPolicy.Builder _policyBuilder2;
   private IBatfish _batfish;
 
   static final class MockBatfish extends IBatfishTestAdapter {
@@ -186,8 +185,8 @@ public class CompareRoutePoliciesAnswererTest {
     baseConfig.setRouteFilterLists(ImmutableMap.of(PFX_LST_1, f1, PFX_LST_2, f2));
 
     nf.vrfBuilder().setOwner(baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
-    _policyBuilder_1 = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_1_NAME);
-    _policyBuilder_2 = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_2_NAME);
+    _policyBuilder1 = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_1_NAME);
+    _policyBuilder2 = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_2_NAME);
     _batfish = new MockBatfish(ImmutableSortedMap.of(HOSTNAME, baseConfig));
   }
 
@@ -205,9 +204,9 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testBothPermit() {
     RoutingPolicy policy1 =
-        _policyBuilder_1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy2 =
-        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     CompareRoutePoliciesQuestion question =
         new CompareRoutePoliciesQuestion(
@@ -222,9 +221,9 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testPermitDeny() {
     RoutingPolicy policy1 =
-        _policyBuilder_1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy2 =
-        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitReject)).build();
+        _policyBuilder2.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
     CompareRoutePoliciesQuestion question =
         new CompareRoutePoliciesQuestion(
@@ -253,9 +252,9 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testPermitDenyDeadCode() {
     RoutingPolicy policy1 =
-        _policyBuilder_1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(new StaticStatement(Statements.ExitReject))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -287,12 +286,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testLocalPrefDifference() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetLocalPreference(new LiteralLong(200)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(new SetLocalPreference(new LiteralLong(100)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -326,12 +325,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testSetTagDifference() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetTag(new LiteralLong(0)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(new SetTag(new LiteralLong(1)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -364,12 +363,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testSetMedDifference() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetMetric(new LiteralLong(0)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(new SetMetric(new LiteralLong(1)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -402,12 +401,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testWeightDifference() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetWeight(new LiteralInt(10)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(new SetWeight(new LiteralInt(0)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -440,12 +439,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testSetNextHop() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     CompareRoutePoliciesQuestion question =
         new CompareRoutePoliciesQuestion(
@@ -476,12 +475,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testDiscardNexthop() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     CompareRoutePoliciesQuestion question =
         new CompareRoutePoliciesQuestion(
@@ -516,12 +515,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testOspfMetric() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetOspfMetricType(OspfMetricType.E1))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(new SetOspfMetricType(OspfMetricType.E2))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -545,12 +544,12 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testAdministrativeDistance() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetAdministrativeCost(new LiteralInt(20)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(new SetAdministrativeCost(new LiteralInt(10)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
@@ -571,9 +570,9 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testSetCommunity() {
     RoutingPolicy policy1 =
-        _policyBuilder_1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(
                 new SetCommunities(
                     CommunitySetUnion.of(
@@ -611,14 +610,14 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testSetExtCommunity() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(
                 new SetCommunities(
                     new LiteralCommunitySet(CommunitySet.of(ExtendedCommunity.parse("0:4:44")))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     CompareRoutePoliciesQuestion question =
         new CompareRoutePoliciesQuestion(
@@ -649,13 +648,13 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testSetAsPathPrepend() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(
                 new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(42L)))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     CompareRoutePoliciesQuestion question =
         new CompareRoutePoliciesQuestion(
@@ -685,13 +684,13 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testMatchSetAsPath() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(
                 new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(40L)))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(
                 new If(
                     new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
@@ -712,24 +711,26 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute_1 =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .setAsPath(AsPath.ofSingletonAsSets(40L))
             .build();
 
     BgpRoute inputRoute_2 =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .setAsPath(AsPath.empty())
             .build();
@@ -763,9 +764,9 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testMatchAs() {
     RoutingPolicy policy1 =
-        _policyBuilder_1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder1.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(
                 new If(
                     new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
@@ -784,12 +785,13 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .setAsPath(AsPath.ofSingletonAsSets(40L))
             .build();
@@ -812,7 +814,7 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testMatchPrefixes() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(
                 new If(
                     matchPrefixSet(
@@ -821,7 +823,7 @@ public class CompareRoutePoliciesAnswererTest {
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(
                 new If(
                     matchPrefixSet(
@@ -847,6 +849,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
 
@@ -868,7 +871,7 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testMatchPrefixesSplit() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(
                 new If(
                     new MatchPrefixSet(
@@ -877,7 +880,7 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitReject))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(
                 new If(
                     new MatchPrefixSet(
@@ -903,6 +906,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
 
@@ -914,6 +918,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
 
@@ -944,7 +949,7 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testMatchCommunity() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(
                 new If(
                     new MatchCommunities(
@@ -955,7 +960,7 @@ public class CompareRoutePoliciesAnswererTest {
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     CompareRoutePoliciesQuestion question =
         new CompareRoutePoliciesQuestion(
@@ -966,12 +971,13 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
@@ -1000,7 +1006,7 @@ public class CompareRoutePoliciesAnswererTest {
     Community comm1 = StandardCommunity.parse("1:1");
 
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(
                 new If(
                     new MatchCommunities(
@@ -1014,7 +1020,7 @@ public class CompareRoutePoliciesAnswererTest {
             .build();
 
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(
                 new SetCommunities(
                     CommunitySetUnion.of(
@@ -1032,12 +1038,13 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of())
             .build();
     BgpRouteDiffs diff =
@@ -1062,7 +1069,7 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testMultipleSetDifferences() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(new SetLocalPreference(new LiteralLong(200)))
             .addStatement(new SetTag(new LiteralLong(10)))
             .addStatement(new SetMetric(new LiteralLong(0)))
@@ -1070,7 +1077,7 @@ public class CompareRoutePoliciesAnswererTest {
             .build();
 
     RoutingPolicy policy2 =
-        _policyBuilder_2
+        _policyBuilder2
             .addStatement(new SetMetric(new LiteralLong(100)))
             .addStatement(new SetLocalPreference(new LiteralLong(0)))
             .addStatement(new SetTag(new LiteralLong(0)))
@@ -1116,7 +1123,7 @@ public class CompareRoutePoliciesAnswererTest {
   @Test
   public void testDeleteCommunity() {
     RoutingPolicy policy1 =
-        _policyBuilder_1
+        _policyBuilder1
             .addStatement(
                 new SetCommunities(
                     new CommunitySetDifference(
@@ -1125,7 +1132,7 @@ public class CompareRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy2 =
-        _policyBuilder_2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+        _policyBuilder2.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     CompareRoutePoliciesQuestion question =
         new CompareRoutePoliciesQuestion(
@@ -1136,12 +1143,13 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1)))
             .build();
     BgpRouteDiffs diff =
@@ -1160,5 +1168,25 @@ public class CompareRoutePoliciesAnswererTest {
                 hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testRejectMissingOriginalPolicy() {
+    _policyBuilder2.build();
+    CompareRoutePoliciesQuestion question =
+        new CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, "does not exist", POLICY_2_NAME, HOSTNAME);
+    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    answerer.answer(_batfish.getSnapshot());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testRejectMissingProposedPolicy() {
+    _policyBuilder1.build();
+    CompareRoutePoliciesQuestion question =
+        new CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, POLICY_1_NAME, "does not exist", HOSTNAME);
+    CompareRoutePoliciesAnswerer answerer = new CompareRoutePoliciesAnswerer(question, _batfish);
+    answerer.answer(_batfish.getSnapshot());
   }
 }

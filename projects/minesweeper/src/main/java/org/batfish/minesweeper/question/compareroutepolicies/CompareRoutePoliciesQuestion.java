@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.question.compareRoutePolicies;
+package org.batfish.minesweeper.question.compareroutepolicies;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 

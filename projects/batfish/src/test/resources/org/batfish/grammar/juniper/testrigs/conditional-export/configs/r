@@ -1,0 +1,16 @@
+#
+set system host-name r
+#
+set policy-options policy-statement from-c term t then accept
+set policy-options policy-statement to-c term t then reject
+#
+# r <-> c
+set interfaces xe-0/0/1 unit 0 family inet address 10.0.3.1/31
+#
+set routing-options router-id 10.10.0.4
+set routing-options autonomous-system 4
+set protocols bgp group c peer-as 3
+set protocols bgp group c export to-c
+set protocols bgp group c import from-c
+set protocols bgp group c neighbor 10.0.3.0
+#
