@@ -18,6 +18,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.IDeepCopy;
@@ -96,6 +97,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private boolean _nextHopDiscarded;
   private boolean _nextHopSet;
 
+  private BDDDomain<OriginType> _originType;
+
   private BDDDomain<OspfType> _ospfMetric;
 
   private final MutableBDDInteger _prefix;
@@ -154,13 +157,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
     int numVars = factory.varNum();
     int numNeeded =
-        32 * 6
+        32 * 5
             + 16
+            + 8
             + 6
+            + 5
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
+            + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
             + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
-            + 2;
+            + IntMath.log2(allMetricTypes.size(), RoundingMode.CEILING);
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -171,6 +177,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         new BDDDomain<>(factory, ImmutableList.copyOf(RoutingProtocol.values()), idx);
     int len = _protocolHistory.getInteger().size();
     addBitNames("proto", len, idx, false);
+    idx += len;
+    _originType = new BDDDomain<>(factory, ImmutableList.copyOf(OriginType.values()), idx);
+    len = _originType.getInteger().size();
+    addBitNames("origin", len, idx, false);
     idx += len;
     // Initialize integer values
     _med = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
@@ -196,7 +206,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     // need 6 bits for prefix length because there are 33 possible values, 0 - 32
     _prefixLength = MutableBDDInteger.makeFromIndex(factory, 6, idx, true);
     addBitNames("pfxLen", 5, idx, true);
-    idx += 6;
+    idx += 5;
     _prefix = MutableBDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
     idx += 32;
@@ -245,6 +255,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _weight = new MutableBDDInteger(other._weight);
     _localPref = new MutableBDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
+    _originType = new BDDDomain<>(other._originType);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
     _prependedASes = new ArrayList(other._prependedASes);
@@ -284,6 +295,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _localPref = route.getLocalPref().and(pred);
     _weight = route.getWeight().and(pred);
     _protocolHistory = new BDDDomain<>(pred, route.getProtocolHistory());
+    _originType = new BDDDomain<>(pred, route.getOriginType());
     _ospfMetric = new BDDDomain<>(pred, route.getOspfMetric());
     _bitNames = route._bitNames;
     _nextHopSet = route.getNextHopSet();
@@ -492,6 +504,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   public void setNextHopSet(boolean nextHopSet) {
     _nextHopSet = nextHopSet;
+  }
+
+  public BDDDomain<OriginType> getOriginType() {
+    return _originType;
   }
 
   public BDDDomain<OspfType> getOspfMetric() {
