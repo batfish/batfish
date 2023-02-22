@@ -73,7 +73,6 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -126,12 +125,10 @@ public class PaloAltoSecurityRuleTest {
     extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
-    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     pac = SerializationUtils.clone(pac);
     pac.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
-    pac.setAnswerElement(answerElement);
     return pac;
   }
 

@@ -60,6 +60,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.primitives.Ints;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -2201,12 +2202,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(CiscoXrStructureType.INTERFACE, ImmutableSortedMap.of())
+        _structureManager
+            .getStructureReferences(CiscoXrStructureType.INTERFACE)
             .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
+            .values()
             .stream()
-            .flatMap(e -> e.getValue().stream())
+            .flatMap(Collection::stream)
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(CiscoXrStructureType.INTERFACE, "Null0", firstRefToNull0.get());
