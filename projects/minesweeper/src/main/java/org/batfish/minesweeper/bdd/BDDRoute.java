@@ -161,7 +161,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + 16
             + 8
             + 6
-            + 5
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
             + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
@@ -205,8 +204,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     idx += 32;
     // need 6 bits for prefix length because there are 33 possible values, 0 - 32
     _prefixLength = MutableBDDInteger.makeFromIndex(factory, 6, idx, true);
-    addBitNames("pfxLen", 5, idx, true);
-    idx += 5;
+    addBitNames("pfxLen", 6, idx, true);
+    idx += 6;
     _prefix = MutableBDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
     idx += 32;
@@ -337,15 +336,15 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /**
-   * Create a BDD representing the constraint that the route announcement's protocol is in the given
-   * set.
+   * Create a BDD representing the constraint that the value of a specific attribute in the route
+   * announcement's protocol is a member of the given set.
    *
-   * @param protocols the set of protocols that are allowed
+   * @param elements the set of elements that are allowed
+   * @param bddDomain the attribute to be constrained
    * @return the BDD representing this constraint
    */
-  public BDD anyProtocolIn(Set<RoutingProtocol> protocols) {
-    return _factory.orAll(
-        protocols.stream().map(_protocolHistory::value).collect(Collectors.toList()));
+  public <T> BDD anyElementOf(Set<T> elements, BDDDomain<T> bddDomain) {
+    return _factory.orAll(elements.stream().map(bddDomain::value).collect(Collectors.toList()));
   }
 
   /**
@@ -367,7 +366,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDD bgpWellFormednessConstraints() {
 
     // the protocol should be one of the ones allowed in a BgpRoute
-    BDD protocolConstraint = anyProtocolIn(ALL_BGP_PROTOCOLS);
+    BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
     // at most one AS-path regex atomic predicate should be true, since by construction their
@@ -508,6 +507,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   public BDDDomain<OriginType> getOriginType() {
     return _originType;
+  }
+
+  public void setOriginType(BDDDomain<OriginType> originType) {
+    _originType = originType;
   }
 
   public BDDDomain<OspfType> getOspfMetric() {

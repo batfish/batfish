@@ -33,7 +33,6 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -45,6 +44,7 @@ import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
+import org.batfish.minesweeper.bdd.BDDDomain;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
@@ -296,11 +296,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .collect(ImmutableSet.toImmutableSet()));
   }
 
-  private BDD protocolSetToBDD(Set<RoutingProtocol> protocolSet, BDDRoute bddRoute) {
-    if (protocolSet.isEmpty()) {
+  private <T> BDD setToBDD(Set<T> set, BDDRoute bddRoute, BDDDomain<T> bddDomain) {
+    if (set.isEmpty()) {
       return bddRoute.getFactory().one();
     } else {
-      return bddRoute.anyProtocolIn(protocolSet);
+      return bddRoute.anyElementOf(set, bddDomain);
     }
   }
 
@@ -337,7 +337,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 r.getAsPathRegexAtomicPredicates(),
                 r.getFactory()));
     result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
-    result.andWith(protocolSetToBDD(constraints.getProtocol(), r));
+    result.andWith(setToBDD(constraints.getOriginType(), r, r.getOriginType()));
+    result.andWith(setToBDD(constraints.getProtocol(), r, r.getProtocolHistory()));
 
     return result;
   }
