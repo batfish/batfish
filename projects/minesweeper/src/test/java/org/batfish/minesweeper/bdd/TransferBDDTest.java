@@ -843,7 +843,7 @@ public class TransferBDDTest {
   public void testSetOrigin() {
     RoutingPolicy policy =
         _policyBuilder
-            .addStatement(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)))
+            .addStatement(new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -852,7 +852,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
-    expectedRoute.getOriginType().setValue(OriginType.IGP);
+    expectedRoute.getOriginType().setValue(OriginType.INCOMPLETE);
 
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true)));
