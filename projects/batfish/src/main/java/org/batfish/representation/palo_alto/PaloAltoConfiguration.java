@@ -60,14 +60,11 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.Sets;
-import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.Streams;
-import com.google.common.collect.TreeMultiset;
 import com.google.common.collect.TreeRangeSet;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -3571,13 +3568,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private @Nullable DefinedStructureInfo findDefinedStructure(
       String name, Collection<PaloAltoStructureType> structureTypesToCheck) {
     for (PaloAltoStructureType typeToCheck : structureTypesToCheck) {
-      Map<String, DefinedStructureInfo> matchingDefinitions =
-          _structureDefinitions.get(typeToCheck.getDescription());
-      if (matchingDefinitions != null && !matchingDefinitions.isEmpty()) {
-        DefinedStructureInfo definition = matchingDefinitions.get(name);
-        if (definition != null) {
-          return definition;
-        }
+      Optional<DefinedStructureInfo> def = _structureManager.getDefinition(typeToCheck, name);
+      if (def.isPresent()) {
+        return def.get();
       }
     }
     return null;
@@ -3599,13 +3592,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Collection<PaloAltoStructureType> structureTypesToCheck,
       boolean ignoreUndefined,
       PaloAltoStructureUsage... usages) {
-    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
-        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
+    Map<String, Map<StructureUsage, Multiset<Integer>>> references =
+        _structureManager.getStructureReferences(type);
     for (PaloAltoStructureUsage usage : usages) {
       references.forEach(
           (nameWithNamespace, byUsage) -> {
+            Multiset<Integer> lines = byUsage.get(usage);
+            if (lines == null || lines.isEmpty()) {
+              return;
+            }
             String name = extractObjectName(nameWithNamespace);
-            Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
+
             // Check this namespace first
             DefinedStructureInfo info =
                 findDefinedStructure(nameWithNamespace, structureTypesToCheck);

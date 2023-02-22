@@ -223,7 +223,6 @@ public class A10GrammarTest {
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     A10Configuration vc = SerializationUtils.clone(vendorConfiguration);
-    vc.setAnswerElement(new ConvertConfigurationAnswerElement());
     vc.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     vc.setWarnings(parseWarnings);
     return vc;

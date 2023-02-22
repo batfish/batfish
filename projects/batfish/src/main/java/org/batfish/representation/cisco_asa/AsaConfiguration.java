@@ -62,6 +62,7 @@ import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -3154,12 +3155,12 @@ public final class AsaConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(AsaStructureType.INTERFACE, ImmutableSortedMap.of())
+        _structureManager
+            .getStructureReferences(AsaStructureType.INTERFACE)
             .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
+            .values()
             .stream()
-            .flatMap(e -> e.getValue().stream())
+            .flatMap(Collection::stream)
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(AsaStructureType.INTERFACE, "Null0", firstRefToNull0.get());
