@@ -336,8 +336,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /**
-   * Create a BDD representing the constraint that the value of a specific attribute in the route
-   * announcement's protocol is a member of the given set.
+   * Create a BDD representing the constraint that the value of a specific enum attribute in the
+   * route announcement's protocol is a member of the given set.
    *
    * @param elements the set of elements that are allowed
    * @param bddDomain the attribute to be constrained
