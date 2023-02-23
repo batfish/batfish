@@ -570,6 +570,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     if (_hcode == 0) {
       int result = _adminDist != null ? _adminDist.hashCode() : 0;
       result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
+      result = 31 * result + (_originType != null ? _originType.hashCode() : 0);
+      result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
       result = 31 * result + (_med != null ? _med.hashCode() : 0);
       result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
       result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
@@ -577,6 +579,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
       result = 31 * result + Boolean.hashCode(_nextHopDiscarded);
       result = 31 * result + Boolean.hashCode(_nextHopSet);
+      result = 31 * result + (_prefix != null ? _prefix.hashCode() : 0);
+      result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
       result =
           31 * result
               + (_communityAtomicPredicates != null
@@ -601,17 +605,21 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     }
     BDDRoute other = (BDDRoute) o;
 
-    return Objects.equals(_ospfMetric, other._ospfMetric)
-        && Objects.equals(_localPref, other._localPref)
-        && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
-        && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
+    return Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_ospfMetric, other._ospfMetric)
+        && Objects.equals(_originType, other._originType)
+        && Objects.equals(_protocolHistory, other._protocolHistory)
         && Objects.equals(_med, other._med)
+        && Objects.equals(_localPref, other._localPref)
+        && Objects.equals(_tag, other._tag)
+        && Objects.equals(_weight, other._weight)
         && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
         && Objects.equals(_nextHopSet, other._nextHopSet)
-        && Objects.equals(_tag, other._tag)
-        && Objects.equals(_weight, other._weight)
-        && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_prefix, other._prefix)
+        && Objects.equals(_prefixLength, other._prefixLength)
+        && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
+        && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
         && Objects.equals(_unsupported, other._unsupported);
   }

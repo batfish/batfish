@@ -706,6 +706,7 @@ public class TransferBDD {
         OriginType ot = ((LiteralOrigin) oe).getOriginType();
         BDDDomain<OriginType> originType = new BDDDomain<>(curP.getData().getOriginType());
         originType.setValue(ot);
+        curP.getData().setOriginType(originType);
         return ImmutableList.of(toTransferBDDState(curP, result));
       } else {
         throw new UnsupportedFeatureException(oe.toString());
