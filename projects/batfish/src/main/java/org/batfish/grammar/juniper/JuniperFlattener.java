@@ -183,8 +183,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
     List<WordContext> deepestParseTreeNodeWordsOnStack = _stack.get(_stack.size() - 1);
     if (!suffixWords.isEmpty()) {
+      // Precondition requires this be mutable
       deepestParseTreeNodeWordsOnStack.addAll(suffixWords);
-      // at this point we have guaranteed deepest is mutable.
     }
 
     StringBuilder sb = new StringBuilder();
@@ -203,7 +203,6 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _allFlatStatements.add(flatStatementText);
 
     for (int i = 0; i < suffixWords.size(); i++) {
-      // deepest guaranteed by precondition to be mutable
       deepestParseTreeNodeWordsOnStack.remove(deepestParseTreeNodeWordsOnStack.size() - 1);
     }
   }
