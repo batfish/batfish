@@ -170,6 +170,10 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
   /** Helper method to construct and save a flat-line and line-mapping */
   private void constructFlatLine(String command, List<WordContext> suffixWords) {
+    // Suffix words are added by caller in case we must construct a line before visiting words
+    // later/deeper in the parse tree that are needed at the end of the line to be constructed.
+
+    assert _currentStatement == _stack.get(_stack.size() - 1);
     _currentStatement.addAll(suffixWords);
 
     StringBuilder sb = new StringBuilder();
