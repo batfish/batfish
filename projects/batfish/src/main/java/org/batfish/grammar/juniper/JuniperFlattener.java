@@ -168,14 +168,23 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     constructFlatLine("delete", suffixWords);
   }
 
-  /** Helper method to construct and save a flat-line and line-mapping */
+  /**
+   * Helper method to construct and save a flat-line and line-mapping.
+   *
+   * <p>Non-empty {@code suffixWords} are added by caller in case we must construct a line before
+   * visiting words later/deeper in the parse tree that are needed at the end of the line to be
+   * constructed. In this case, the suffix words are temporarily added to the top list of the {@link
+   * #_stack}.
+   *
+   * <p>Precondition: {@code suffixWords} is empty, or the last element {@link #_stack}
+   * (corresponding to the deepest parse tree element reflected in the stack) is a mutable list.
+   */
   private void constructFlatLine(String command, List<WordContext> suffixWords) {
-    // Suffix words are added by caller in case we must construct a line before visiting words
-    // later/deeper in the parse tree that are needed at the end of the line to be constructed.
 
-    List<WordContext> deepest = _stack.get(_stack.size() - 1);
+    List<WordContext> deepestParseTreeNodeWordsOnStack = _stack.get(_stack.size() - 1);
     if (!suffixWords.isEmpty()) {
-      deepest.addAll(suffixWords);
+      deepestParseTreeNodeWordsOnStack.addAll(suffixWords);
+      // at this point we have guaranteed deepest is mutable.
     }
 
     StringBuilder sb = new StringBuilder();
@@ -193,10 +202,9 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     // Record index of new statement in the current subtree
     _allFlatStatements.add(flatStatementText);
 
-    if (!suffixWords.isEmpty()) {
-      for (int i = 0; i < suffixWords.size(); i++) {
-        deepest.remove(deepest.size() - 1);
-      }
+    for (int i = 0; i < suffixWords.size(); i++) {
+      // deepest guaranteed by precondition to be mutable
+      deepestParseTreeNodeWordsOnStack.remove(deepestParseTreeNodeWordsOnStack.size() - 1);
     }
   }
 
