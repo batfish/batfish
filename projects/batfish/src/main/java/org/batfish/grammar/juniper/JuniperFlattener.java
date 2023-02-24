@@ -173,8 +173,10 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     // Suffix words are added by caller in case we must construct a line before visiting words
     // later/deeper in the parse tree that are needed at the end of the line to be constructed.
 
-    assert _currentStatement == _stack.get(_stack.size() - 1);
-    _currentStatement.addAll(suffixWords);
+    List<WordContext> deepest = _stack.get(_stack.size() - 1);
+    if (!suffixWords.isEmpty()) {
+      deepest.addAll(suffixWords);
+    }
 
     StringBuilder sb = new StringBuilder();
     sb.append(command);
@@ -191,8 +193,10 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     // Record index of new statement in the current subtree
     _allFlatStatements.add(flatStatementText);
 
-    for (int i = 0; i < suffixWords.size(); i++) {
-      _currentStatement.remove(_currentStatement.size() - 1);
+    if (!suffixWords.isEmpty()) {
+      for (int i = 0; i < suffixWords.size(); i++) {
+        deepest.remove(deepest.size() - 1);
+      }
     }
   }
 
