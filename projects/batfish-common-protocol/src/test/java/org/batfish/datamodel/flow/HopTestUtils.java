@@ -2,12 +2,15 @@ package org.batfish.datamodel.flow;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.route.nh.NextHopIp;
 
 /** Utilities for building {@link Hop hops} and {@link Step steps} for testing. */
 public final class HopTestUtils {
@@ -41,6 +44,14 @@ public final class HopTestUtils {
                 .setAction(StepAction.FORWARDED)
                 .setDetail(
                     RoutingStepDetail.builder()
+                        .setRoutes(
+                            ImmutableList.of(
+                                new RouteInfo(
+                                    RoutingProtocol.BGP,
+                                    Prefix.parse("10.0.0.0/8"),
+                                    NextHopIp.of(Ip.parse("192.0.2.1")),
+                                    10,
+                                    15)))
                         .setForwardingDetail(
                             ForwardedOutInterface.of("outIface", Ip.parse("192.0.2.1")))
                         .setVrf(vrf)
