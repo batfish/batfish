@@ -79896,16 +79896,12 @@
           "bridge-domain" : {
             "bd_100" : {
               "bridge-domain self reference" : [
-                83,
-                84,
-                85
+                221
               ]
             },
             "bd_101" : {
               "bridge-domain self reference" : [
-                86,
-                87,
-                88
+                221
               ]
             }
           },
@@ -79944,7 +79940,7 @@
             },
             "irb.100" : {
               "bridge-domains routing-interface" : [
-                84
+                224
               ],
               "interface" : [
                 83
@@ -79952,7 +79948,7 @@
             },
             "irb.101" : {
               "bridge-domains routing-interface" : [
-                87
+                231
               ]
             },
             "lo0" : {
@@ -84824,7 +84820,7 @@
           "interface" : {
             "irb.101" : {
               "bridge-domains routing-interface" : [
-                87
+                231
               ]
             }
           }
