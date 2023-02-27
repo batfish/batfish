@@ -36,10 +36,7 @@ flat_statement
 hierarchical_statement
 :
   descriptive_comment += MULTILINE_COMMENT*
-  (
-    INACTIVE
-    | REPLACE
-  )? words += word+
+  tag* words += word+
   (
     braced_clause MULTILINE_COMMENT* close = CLOSE_BRACE
     | bracketed_clause close = CLOSE_BRACKET terminator
@@ -55,4 +52,11 @@ terminator
 word
 :
   WORD
+;
+
+tag
+:
+  ACTIVE
+  | INACTIVE
+  | REPLACE
 ;

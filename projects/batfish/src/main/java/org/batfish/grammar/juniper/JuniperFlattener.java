@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
@@ -14,6 +15,7 @@ import org.batfish.grammar.juniper.JuniperParser.Bracketed_clauseContext;
 import org.batfish.grammar.juniper.JuniperParser.Flat_statementContext;
 import org.batfish.grammar.juniper.JuniperParser.Hierarchical_statementContext;
 import org.batfish.grammar.juniper.JuniperParser.Juniper_configurationContext;
+import org.batfish.grammar.juniper.JuniperParser.TagContext;
 import org.batfish.grammar.juniper.JuniperParser.TerminatorContext;
 import org.batfish.grammar.juniper.JuniperParser.WordContext;
 
@@ -101,13 +103,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _extraLines.add(extraLinesBuilder.build());
     _currentStatement = new ArrayList<>();
     _stack.add(_currentStatement);
-    // TODO: handle 'active:'
-    if (ctx.INACTIVE() != null) {
-      // Deactivate tree from this depth
-      constructDeactivateLine(ctx.words);
-    } else if (ctx.REPLACE() != null) {
-      // Delete everything at current depth before deeper set lines are added
-      constructDeleteLine(ctx.words);
+    for (TagContext tagCtx : ctx.tag()) {
+      constructTagCommand(tagCtx, ctx.words);
     }
   }
 
@@ -160,12 +157,19 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     constructFlatLine("set", ImmutableList.of());
   }
 
-  private void constructDeactivateLine(List<WordContext> suffixWords) {
-    constructFlatLine("deactivate", suffixWords);
+  private void constructTagCommand(TagContext tagCtx, List<WordContext> suffixWords) {
+    constructFlatLine(toCommandString(tagCtx), suffixWords);
   }
 
-  private void constructDeleteLine(List<WordContext> suffixWords) {
-    constructFlatLine("delete", suffixWords);
+  private static @Nonnull String toCommandString(TagContext ctx) {
+    if (ctx.ACTIVE() != null) {
+      return "activate";
+    } else if (ctx.INACTIVE() != null) {
+      return "deactivate";
+    } else {
+      assert ctx.REPLACE() != null;
+      return "delete";
+    }
   }
 
   /**

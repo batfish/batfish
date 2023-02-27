@@ -53,7 +53,7 @@ ACCESS_INTERNAL: 'access-internal';
 ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
 
 ACCOUNTING: 'accounting';
-
+ACTIVATE: 'activate';
 ACTIVE: 'active';
 
 ACTIVE_SERVER_GROUP: 'active-server-group' -> pushMode(M_Name);
