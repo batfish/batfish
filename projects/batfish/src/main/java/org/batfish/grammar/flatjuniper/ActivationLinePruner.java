@@ -3,10 +3,11 @@ package org.batfish.grammar.flatjuniper;
 import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Activate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 
-public class DeactivateLinePruner extends FlatJuniperParserBaseListener {
+public class ActivationLinePruner extends FlatJuniperParserBaseListener {
 
   private Flat_juniper_configurationContext _configurationContext;
 
@@ -20,6 +21,11 @@ public class DeactivateLinePruner extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitDeactivate_line(Deactivate_lineContext ctx) {
+    _newConfigurationLines.remove(ctx);
+  }
+
+  @Override
+  public void exitActivate_line(Activate_lineContext ctx) {
     _newConfigurationLines.remove(ctx);
   }
 
