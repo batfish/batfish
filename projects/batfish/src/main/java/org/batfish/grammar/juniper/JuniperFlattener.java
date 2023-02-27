@@ -103,7 +103,6 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _extraLines.add(extraLinesBuilder.build());
     _currentStatement = new ArrayList<>();
     _stack.add(_currentStatement);
-    // TODO: handle 'active:'
     for (TagContext tagCtx : ctx.tag()) {
       constructTagCommand(tagCtx, ctx.words);
     }
