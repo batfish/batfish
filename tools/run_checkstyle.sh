@@ -15,4 +15,4 @@ if [ ! -f ${JAR} ]; then
 fi
 
 # Run the check
-java -jar ${JAR} -c projects/checkstyle.xml projects --exclude projects/bdd || FAIL="fail"
+java -jar ${JAR} -c projects/checkstyle.xml projects --exclude projects/bdd

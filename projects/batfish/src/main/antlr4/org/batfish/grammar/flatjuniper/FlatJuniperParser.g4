@@ -9,6 +9,11 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+activate_line
+:
+   ACTIVATE activate_line_tail NEWLINE
+;
+
 deactivate_line
 :
    DEACTIVATE deactivate_line_tail NEWLINE
@@ -19,6 +24,11 @@ hierarchy_element:
   | ~NEWLINE
 ;
 
+
+activate_line_tail
+:
+   hierarchy_element*
+;
 
 deactivate_line_tail
 :
@@ -64,7 +74,8 @@ insert_dst
 flat_juniper_configuration
 :
    (
-      deactivate_line
+      activate_line
+      | deactivate_line
       | delete_line
       | insert_line
       | protect_line

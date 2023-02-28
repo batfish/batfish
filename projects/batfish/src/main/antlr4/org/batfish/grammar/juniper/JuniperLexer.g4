@@ -4,6 +4,8 @@ options {
    superClass = 'org.batfish.grammar.juniper.parsing.JuniperBaseLexer';
 }
 
+ACTIVE: 'active:';
+
 REPLACE
 :
   'replace:'

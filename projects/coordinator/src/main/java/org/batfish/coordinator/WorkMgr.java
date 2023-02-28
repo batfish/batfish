@@ -125,8 +125,6 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.StoredObjectMetadata;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public class WorkMgr extends AbstractCoordinator {
   private static final Logger LOGGER = LogManager.getLogger(WorkMgr.class);
@@ -660,10 +658,6 @@ public class WorkMgr extends AbstractCoordinator {
     }
     NetworkId networkId = networkIdOpt.get();
     return _storage.loadReferenceLibrary(networkId).orElse(new ReferenceLibrary(null));
-  }
-
-  public JSONObject getStatusJson() throws JSONException {
-    return _workQueueMgr.getStatusJson();
   }
 
   /** Checks if the specified snapshot exists. */
@@ -1356,16 +1350,6 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public void startWorkManager() {
-    // for some bizarre reason, this ordering of scheduling checktask before
-    // assignwork, is important
-    // in the other order, assignwork never fires
-    // TODO: track this down
-    // _checkWorkTask = new CheckTaskTask();
-    // _checkService = Executors.newScheduledThreadPool(1);
-    // _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
-    // Main.getSettings().getPeriodCheckWorkMs(),
-    // TimeUnit.MILLISECONDS);
-
     loadPlugins();
 
     Executors.newScheduledThreadPool(1)

@@ -6,6 +6,7 @@ import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.eigrp.EigrpTopologyUtils.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateConnectedRoute;
+import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalNullRouteForDownInterface;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateConnectedRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateLocalRoute;
@@ -30,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
@@ -636,7 +638,8 @@ public class VirtualRouterTest {
                         .setBgpTopology(bgpTopology)
                         .setEigrpTopology(eigrpTopology)
                         .setIsisTopology(initialIsisTopology)
-                        .build()));
+                        .build(),
+                    PreDataPlaneTrackMethodEvaluator::new));
 
     // Assert that queues are empty as there are no OSPF, BGP, EIGRP, nor IS-IS processes if the
     // topologies are empty
@@ -660,7 +663,8 @@ public class VirtualRouterTest {
                   .setBgpTopology(bgpTopology2)
                   .setEigrpTopology(eigrpTopology)
                   .setIsisTopology(isisTopology)
-                  .build());
+                  .build(),
+              PreDataPlaneTrackMethodEvaluator::new);
     }
     // Assert that queues are initialized
     vrs.values()
@@ -925,6 +929,38 @@ public class VirtualRouterTest {
     assertTrue(
         shouldGenerateLocalRoute(
             24, ConnectedRouteMetadata.builder().setGenerateLocalRoute(true).build()));
+  }
+
+  @Test
+  public void testShouldGenerateLocalNullRouteIfDown() {
+    ConcreteInterfaceAddress addr = ConcreteInterfaceAddress.parse("1.2.3.5/24");
+    LocalRoute lr =
+        LocalRoute.builder()
+            .setNetwork(Prefix.parse("1.2.3.5/32"))
+            .setNextHop(NextHopDiscard.instance())
+            .setSourcePrefixLength(24)
+            .build();
+
+    assertThat(generateLocalNullRouteForDownInterface(addr, null), equalTo(Optional.empty()));
+    assertThat(
+        generateLocalNullRouteForDownInterface(addr, ConnectedRouteMetadata.builder().build()),
+        equalTo(Optional.empty()));
+    assertThat(
+        generateLocalNullRouteForDownInterface(
+            addr, ConnectedRouteMetadata.builder().setGenerateLocalNullRouteIfDown(false).build()),
+        equalTo(Optional.empty()));
+    assertThat(
+        generateLocalNullRouteForDownInterface(
+            addr, ConnectedRouteMetadata.builder().setGenerateLocalNullRouteIfDown(true).build()),
+        equalTo(Optional.of(lr)));
+    assertThat(
+        generateLocalNullRouteForDownInterface(
+            addr,
+            ConnectedRouteMetadata.builder()
+                .setGenerateLocalNullRouteIfDown(true)
+                .setTag(5L)
+                .build()),
+        equalTo(Optional.of(lr.toBuilder().setTag(5L).build())));
   }
 
   @Test

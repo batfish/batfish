@@ -8,6 +8,7 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
@@ -65,11 +66,15 @@ public final class InterfaceNameComparator implements Comparator<String>, Serial
 
   @Override
   public int compare(String o1, String o2) {
-    // We want to impose a total order, but the split comparisons ignore case and/or padding.
-    // Handle this by falling back to raw string-compare for equal comparisons.
-    // It's not perfect, but this really shouldn't happen on real devices.
-    int comp = COMPARATOR.compare(split(o1), split(o2));
-    return comp != 0 ? comp : o1.compareTo(o2);
+    return _cmp.computeIfAbsent(
+        new CacheKey(o1, o2),
+        _ignoredHashKey -> {
+          // We want to impose a total order, but the split comparisons ignore case and/or padding.
+          // Handle this by falling back to raw string-compare for equal comparisons.
+          // It's not perfect, but this really shouldn't happen on real devices.
+          int comp = COMPARATOR.compare(split(o1), split(o2));
+          return comp != 0 ? comp : o1.compareTo(o2);
+        });
   }
 
   /** Singleton after deserialization. */
@@ -78,4 +83,33 @@ public final class InterfaceNameComparator implements Comparator<String>, Serial
   }
 
   private InterfaceNameComparator() {} // prevent instantiation of utility class
+
+  /** {@link #split(String)} is pretty expensive, so it's worth caching comparisons. */
+  private static final class CacheKey {
+    public CacheKey(String left, String right) {
+      _left = left;
+      _right = right;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof CacheKey)) {
+        return false;
+      }
+      CacheKey cacheKey = (CacheKey) o;
+      return _left.equals(cacheKey._left) && _right.equals(cacheKey._right);
+    }
+
+    @Override
+    public int hashCode() {
+      return _left.hashCode() * 31 + _right.hashCode();
+    }
+
+    private final String _left;
+    private final String _right;
+  }
+
+  private final transient ConcurrentHashMap<CacheKey, Integer> _cmp = new ConcurrentHashMap<>();
 }

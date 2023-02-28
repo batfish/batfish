@@ -110,6 +110,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST("interface igmp host-proxy access-list"),
   INTERFACE_IGMP_STATIC_GROUP_ACL("interface igmp static-group acl"),
   INTERFACE_INCOMING_FILTER("interface incoming ip access-list"),
+  INTERFACE_IP_DHCP_RELAY_SOURCE_INTERFACE("interface ip dhcp relay source-interface"),
   INTERFACE_IP_INBAND_ACCESS_GROUP("interface ip inband access-group"),
   INTERFACE_IP_VERIFY_ACCESS_LIST("interface ip verify access-list"),
   INTERFACE_IP_VRF_SITEMAP("interface ip vrf sitemap"),

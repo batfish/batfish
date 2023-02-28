@@ -1,16 +1,10 @@
 package org.batfish.common;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.JsonDiff;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.JsonDiffAnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public abstract class Answerer {
 
@@ -50,8 +44,8 @@ public abstract class Answerer {
   /**
    * The default implementation for generating differential answers.
    *
-   * <p>It uses {@link TableDiff} if the answer element is a {@link TableAnswerElement}. Otherwise,
-   * it uses a JSON-level diff.
+   * <p>It uses {@link TableDiff} if the answer element is a {@link TableAnswerElement}, and throws
+   * otherwise.
    *
    * <p>Answerers that want a custom differential answer, should override this function.
    */
@@ -68,17 +62,7 @@ public abstract class Answerer {
       finalTable.postProcessAnswer(_question, rawTable.getRows().getData());
       return finalTable;
     } else {
-      try {
-        String beforeJsonStr = BatfishObjectMapper.writeString(baseAnswer);
-        String afterJsonStr = BatfishObjectMapper.writeString(deltaAnswer);
-        JSONObject beforeJson = new JSONObject(beforeJsonStr);
-        JSONObject afterJson = new JSONObject(afterJsonStr);
-        JsonDiff diff = new JsonDiff(beforeJson, afterJson);
-
-        return new JsonDiffAnswerElement(diff);
-      } catch (JsonProcessingException | JSONException e) {
-        throw new BatfishException("Could not convert diff element to json string", e);
-      }
+      throw new UnsupportedOperationException("Comparison mode not implemented for this question");
     }
   }
 }

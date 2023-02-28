@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -38,6 +39,11 @@ public final class AsPathMatchRegex extends AsPathMatchExpr {
   @Override
   public int hashCode() {
     return _regex.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass()).omitNullValues().add("regex", _regex).toString();
   }
 
   private static final String PROP_REGEX = "regex";

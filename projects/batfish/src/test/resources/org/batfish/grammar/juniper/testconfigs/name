@@ -12,3 +12,12 @@ set firewall family inet filter filterName term Slash/Name then accept
 # '.' is allowed in names
 set policy-options policy-statement XX term Dot.Name from protocol bgp
 set firewall family inet filter filterName term Dot.Name then accept
+# ':' is allowed in names
+set policy-options policy-statement XX term Colon:Name from protocol bgp
+set firewall family inet filter filterName term Colon:Name then accept
+# '+' is allowed in names
+set policy-options policy-statement XX term Plus+Name from protocol bgp
+set firewall family inet filter filterName term Plus+Name then accept
+# ',' is allowed in names
+set policy-options policy-statement XX term Comma,Name from protocol bgp
+set firewall family inet filter filterName term Comma,Name then accept

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
@@ -22,26 +23,29 @@ public final class ExtendedCommunityTest {
   public void testEquals() {
     ExtendedCommunity ec = ExtendedCommunity.of(0, 2L, 123L);
     new EqualsTester()
-        .addEqualityGroup(ec, ec, ExtendedCommunity.of(0, 2L, 123L))
+        .addEqualityGroup(ec, ExtendedCommunity.of(0, 2L, 123L))
         .addEqualityGroup(
             ExtendedCommunity.of(1 << 8, 2L, 123L),
             ExtendedCommunity.of(1 << 8, Ip.parse("0.0.0.2"), 123L))
         .addEqualityGroup(ExtendedCommunity.of(0, 3L, 123L))
         .addEqualityGroup(ExtendedCommunity.of(0, 2L, 124L))
-        .addEqualityGroup(new Object())
+        .addEqualityGroup(ExtendedCommunity.opaque(true, 1, 2))
+        .addEqualityGroup(ExtendedCommunity.opaque(false, 1, 2))
+        .addEqualityGroup(ExtendedCommunity.opaque(false, 3, 2))
+        .addEqualityGroup(ExtendedCommunity.opaque(false, 3, 4))
         .testEquals();
   }
 
   @Test
-  public void testJavaSerialization() {
-    ExtendedCommunity ec = ExtendedCommunity.of(1, 2L, 123L);
-    assertThat(SerializationUtils.clone(ec), equalTo(ec));
-  }
-
-  @Test
-  public void testJsonSerialization() {
-    ExtendedCommunity ec = ExtendedCommunity.of(1, 2L, 123L);
-    assertThat(BatfishObjectMapper.clone(ec, ExtendedCommunity.class), equalTo(ec));
+  public void testSerialization() {
+    for (ExtendedCommunity ec :
+        ImmutableList.of(
+            ExtendedCommunity.of(1, 2L, 123L),
+            ExtendedCommunity.opaque(true, 1, 2),
+            ExtendedCommunity.opaque(false, 255, 0xFFFFFFFFFFFFL))) {
+      assertThat(SerializationUtils.clone(ec), equalTo(ec));
+      assertThat(BatfishObjectMapper.clone(ec, Community.class), equalTo(ec));
+    }
   }
 
   @Test
@@ -54,6 +58,10 @@ public final class ExtendedCommunityTest {
         ExtendedCommunity.parse("512:1.1:1"), equalTo(ExtendedCommunity.of(0x02 << 8, 65537, 1L)));
     assertThat(ExtendedCommunity.parse("target:1L:1"), equalTo(ExtendedCommunity.of(514, 1L, 1L)));
     assertThat(ExtendedCommunity.parse("origin:1L:1"), equalTo(ExtendedCommunity.of(515, 1L, 1L)));
+    assertThat(
+        ExtendedCommunity.parse("0x43:0x4:0x5"), equalTo(ExtendedCommunity.opaque(false, 4, 5L)));
+    assertThat(
+        ExtendedCommunity.parse("0x3:0x4:0x5"), equalTo(ExtendedCommunity.opaque(true, 4, 5L)));
   }
 
   @Test
@@ -90,6 +98,24 @@ public final class ExtendedCommunityTest {
   public void testParseLargeType() {
     thrown.expect(IllegalArgumentException.class);
     ExtendedCommunity.parse("65536:1:1");
+  }
+
+  @Test
+  public void testParseGenericNegativeType() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.parse("0x-1:0x2:0x3");
+  }
+
+  @Test
+  public void testParseGenericNegativeSubtype() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.parse("0x3:0x-4:0x5");
+  }
+
+  @Test
+  public void testParseGenericNegativeValue() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.parse("0x3:0x4:0x-5");
   }
 
   @Test
@@ -130,6 +156,20 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testGetLAInapplicable() {
+    ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
+    thrown.expect(UnsupportedOperationException.class);
+    community.getLocalAdministrator();
+  }
+
+  @Test
+  public void testGetGAInapplicable() {
+    ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
+    thrown.expect(UnsupportedOperationException.class);
+    community.getGlobalAdministrator();
+  }
+
+  @Test
   public void testIsTransitive() {
     assertTrue(ExtendedCommunity.parse("1:1:1").isTransitive());
     assertFalse(ExtendedCommunity.parse("16384:1:1").isTransitive());
@@ -139,6 +179,10 @@ public final class ExtendedCommunityTest {
   public void testMatchString() {
     ExtendedCommunity ec = ExtendedCommunity.parse("origin:65555L:1");
     assertThat(ec.matchString(), equalTo("65555:1"));
+
+    // check no local/global administrator case
+    assertThat(
+        ExtendedCommunity.opaque(true, 0x00, 65559).matchString(), equalTo("0x3:0x0:0x10017"));
   }
 
   @Test
@@ -147,6 +191,11 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.parse("origin:1L:1").toString(), equalTo("515:1L:1"));
     assertThat(ExtendedCommunity.parse("origin:1:1").toString(), equalTo("3:1:1"));
     assertThat(ExtendedCommunity.parse("origin:0.0.0.0:1").toString(), equalTo("259:0L:1"));
+
+    // check no local/global administrator case
+    assertThat(ExtendedCommunity.opaque(true, 0x00, 65559).toString(), equalTo("0x3:0x0:0x10017"));
+    assertThat(
+        ExtendedCommunity.opaque(false, 0x00, 65559).toString(), equalTo("0x43:0x0:0x10017"));
   }
 
   @Test
@@ -179,6 +228,14 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testOpaqueCreation() {
+    ExtendedCommunity communityTransitive = ExtendedCommunity.opaque(true, 0x00, 65559);
+    assertThat(communityTransitive.getValue(), equalTo(65559L));
+    ExtendedCommunity communityIntransitive = ExtendedCommunity.opaque(false, 0x01, 2);
+    assertThat(communityIntransitive.getValue(), equalTo(2L));
+  }
+
+  @Test
   public void testIsRouteOrigin() {
     assertTrue(ExtendedCommunity.of(0x0003, 1, 1).isRouteOrigin());
     assertTrue(ExtendedCommunity.of(0x0103, 1, 1).isRouteOrigin());
@@ -208,12 +265,40 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
+  public void testIsOpaque() {
+    assertFalse(ExtendedCommunity.of(0x0010, 1, 1).isOpaque());
+    assertFalse(ExtendedCommunity.of(0x0110, 1, 1).isOpaque());
+    assertTrue(ExtendedCommunity.of(0x0300, 1, 1).isOpaque());
+    assertTrue(ExtendedCommunity.opaque(false, 1, 1).isOpaque());
+  }
+
+  @Test
   public void testGetGlobalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getGlobalAdministrator(), equalTo(2L));
+    assertThat(
+        ExtendedCommunity.of(1, 42995L, 4294967295L).getGlobalAdministrator(), equalTo(42995L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 4294967295L, 1).getGlobalAdministrator(),
+        equalTo(4294967295L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 1, 42995L).getGlobalAdministrator(), equalTo(1L));
   }
 
   @Test
   public void testGetLocalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getLocalAdministrator(), equalTo(3L));
+    assertThat(
+        ExtendedCommunity.of(1, 42995L, 4294967295L).getLocalAdministrator(), equalTo(4294967295L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 4294967295L, 1).getLocalAdministrator(), equalTo(1L));
+    assertThat(
+        ExtendedCommunity.of(0x01 << 8 | 1, 1, 42995L).getLocalAdministrator(), equalTo(42995L));
+  }
+
+  @Test
+  public void testGetSubType() {
+    assertThat(ExtendedCommunity.of(0x0201, 2, 3).getSubtype(), equalTo(0x01));
+    assertThat(ExtendedCommunity.opaque(true, 0x04, 3).getSubtype(), equalTo(0x04));
+    assertThat(ExtendedCommunity.target(1, 3).getSubtype(), equalTo(0x02));
   }
 }

@@ -130,5 +130,8 @@ jobs:
             --combined_report=lcov \
             --instrument_test_targets=false
       - name: Generate report
-        run: |
-          bash <(curl -s https://codecov.io/bash) -t "${{ secrets.BATFISH_CODECOV_TOKEN }}" -f bazel-out/_coverage/_coverage_report.dat
+        uses: codecov/codecov-action@v3
+        with:
+          files: bazel-out/_coverage/_coverage_report.dat
+          fail_ci_if_error: true
+          verbose: true

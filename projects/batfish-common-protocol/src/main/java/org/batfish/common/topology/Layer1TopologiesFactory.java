@@ -2,7 +2,6 @@ package org.batfish.common.topology;
 
 import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
 
-import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -76,7 +75,7 @@ public final class Layer1TopologiesFactory {
       Layer1Topology topology, Map<String, Configuration> configurations) {
     Map<Layer1Node, Layer1Node> replacements = new HashMap<>();
     Set<String> missingDevices = new HashSet<>(); // dedupe warnings about missing devices
-    for (Layer1Node original : topology.getGraph().nodes()) {
+    for (Layer1Node original : topology.nodes()) {
       Layer1Node canonical = canonicalizeUserNode(original, configurations, missingDevices);
       if (!canonical.equals(original)) {
         replacements.put(original, canonical);
@@ -92,13 +91,13 @@ public final class Layer1TopologiesFactory {
       return topology;
     }
     return new Layer1Topology(
-        topology.getGraph().edges().stream()
+        topology
+            .edgeStream()
             .map(
                 edge ->
                     new Layer1Edge(
                         replacements.getOrDefault(edge.getNode1(), edge.getNode1()),
-                        replacements.getOrDefault(edge.getNode2(), edge.getNode2())))
-            .collect(ImmutableSet.toImmutableSet()));
+                        replacements.getOrDefault(edge.getNode2(), edge.getNode2()))));
   }
 
   /**
@@ -155,14 +154,12 @@ public final class Layer1TopologiesFactory {
     Set<Layer1Node> invalidInterfaces =
         new HashSet<>(); // dedupe warnings about missing or invalid interfaces.
     return new Layer1Topology(
-        Stream.concat(
-                userProvidedL1.getGraph().edges().stream(), syntheticL1.getGraph().edges().stream())
+        Stream.concat(userProvidedL1.edgeStream(), syntheticL1.edgeStream())
             .map(
                 edge ->
                     new Layer1Edge(
                         toLogicalNode(edge.getNode1(), configs, invalidInterfaces),
-                        toLogicalNode(edge.getNode2(), configs, invalidInterfaces)))
-            .collect(ImmutableSet.toImmutableSet()));
+                        toLogicalNode(edge.getNode2(), configs, invalidInterfaces))));
   }
 
   /**
@@ -173,11 +170,11 @@ public final class Layer1TopologiesFactory {
   private static @Nonnull Layer1Topology cleanLogicalTopology(
       Layer1Topology logicalTopology, Map<String, Configuration> configs) {
     return new Layer1Topology(
-        logicalTopology.getGraph().edges().stream()
+        logicalTopology
+            .edgeStream()
             .filter(
                 edge -> isActive(edge.getNode1(), configs) && isActive(edge.getNode2(), configs))
-            .flatMap(edge -> Stream.of(edge, edge.reverse()))
-            .collect(ImmutableSet.toImmutableSet()));
+            .flatMap(edge -> Stream.of(edge, edge.reverse())));
   }
 
   /** Returns true if the node corresponds to an existing, active interface. */

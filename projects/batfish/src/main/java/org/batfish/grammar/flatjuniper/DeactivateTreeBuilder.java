@@ -1,6 +1,8 @@
 package org.batfish.grammar.flatjuniper;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Activate_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Activate_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_line_tailContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
@@ -40,6 +42,30 @@ public class DeactivateTreeBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitDeactivate_line_tail(Deactivate_line_tailContext ctx) {
+    _enablePathRecording = false;
+  }
+
+  @Override
+  public void enterActivate_line(Activate_lineContext ctx) {
+    _addLine = true;
+  }
+
+  @Override
+  public void enterActivate_line_tail(Activate_line_tailContext ctx) {
+    _enablePathRecording = true;
+    _currentPath = new HierarchyPath();
+  }
+
+  @Override
+  public void exitActivate_line(Activate_lineContext ctx) {
+    if (_addLine) {
+      _hierarchy.removeDeactivatePath(_currentPath, ctx);
+      _currentPath = null;
+    }
+  }
+
+  @Override
+  public void exitActivate_line_tail(Activate_line_tailContext ctx) {
     _enablePathRecording = false;
   }
 

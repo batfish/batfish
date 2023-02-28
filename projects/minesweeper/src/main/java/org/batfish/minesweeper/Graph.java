@@ -51,6 +51,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.aspath.RoutePolicyStatementAsPathCollector;
 import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
+import org.batfish.minesweeper.utils.Tuple;
 
 /**
  * A graph object representing the structure of the network. The graph is built potentially by
@@ -860,7 +861,9 @@ public class Graph {
     // walk through every statement of every route policy
     for (RoutingPolicy pol : conf.getRoutingPolicies().values()) {
       for (Statement stmt : pol.getStatements()) {
-        comms.addAll(stmt.accept(new RoutePolicyStatementVarCollector(), conf));
+        comms.addAll(
+            stmt.accept(
+                new RoutePolicyStatementVarCollector(), new Tuple<>(new HashSet<>(), conf)));
       }
     }
     return comms;
@@ -878,7 +881,9 @@ public class Graph {
     // walk through every statement of every route policy
     for (RoutingPolicy pol : conf.getRoutingPolicies().values()) {
       for (Statement stmt : pol.getStatements()) {
-        asPathRegexes.addAll(stmt.accept(new RoutePolicyStatementAsPathCollector(), conf));
+        asPathRegexes.addAll(
+            stmt.accept(
+                new RoutePolicyStatementAsPathCollector(), new Tuple<>(new HashSet<>(), conf)));
       }
     }
     return asPathRegexes;

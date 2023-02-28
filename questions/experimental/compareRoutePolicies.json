@@ -1,0 +1,40 @@
+{
+  "class": "org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion",
+  "differential": true,
+  "policy": "${policy}",
+  "referencePolicy": "${referencePolicy}",
+  "nodes": "${nodes}",
+  "instance": {
+    "description": "Finds route announcements for which the behavior of the route-policies in the given snapshots differ.",
+    "instanceName": "compareRoutePolicies",
+    "longDescription": "This question finds route announcements for which the behavior of the route-policies in the given snapshots differ. The comparison is using a symbolic model of the route policies and will find _all_ differences between two given policies. Route policies are selected using node and policy specifiers, which might match multiple policies. In this case, all matching policies by the specifiers will be compared with each other. _Note:_ This question currently does not support all of the route policy features that Batfish supports. The question only supports common forms of matching on prefixes, communities, and AS-paths, as well as common forms of setting communities, the local preference, and the metric. The question logs all unsupported features that it encounters as warnings.",
+    "orderedVariableNames": [
+      "policy",
+      "referencePolicy",
+      "nodes"
+    ],
+    "tags": [
+      "routing"
+    ],
+    "variables": {
+      "policy": {
+        "description": "Only consider policies that match this specifier",
+        "type": "routingPolicySpec",
+        "optional": false,
+        "displayName": "Policy"
+      },
+      "referencePolicy": {
+        "description": "Only consider policies that match this specifier - if not provided, policies matched by policy are used.",
+        "type": "routingPolicySpec",
+        "optional": true,
+        "displayName": "Reference Policy"
+      },
+      "nodes": {
+        "description": "Only examine policies on nodes matching this specifier",
+        "type": "nodeSpec",
+        "optional": true,
+        "displayName": "Nodes"
+      }
+    }
+  }
+}

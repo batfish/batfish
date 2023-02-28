@@ -334,11 +334,9 @@ public final class PaloAltoGrammarTest {
     extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
-    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     pac = SerializationUtils.clone(pac);
-    pac.setAnswerElement(answerElement);
     pac.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     pac.setWarnings(parseWarnings);
     return pac;
@@ -362,9 +360,7 @@ public final class PaloAltoGrammarTest {
     extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
-    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
-    pac.setAnswerElement(answerElement);
     return pac;
   }
 

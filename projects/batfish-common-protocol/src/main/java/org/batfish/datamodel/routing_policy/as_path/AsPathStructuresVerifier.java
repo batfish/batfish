@@ -21,6 +21,7 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
+import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
@@ -35,8 +36,8 @@ import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
@@ -96,6 +97,12 @@ public final class AsPathStructuresVerifier {
     }
 
     @Override
+    public Void visitMatchClusterListLength(
+        MatchClusterListLength matchClusterListLength, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
     public Void visitCallExpr(CallExpr callExpr, AsPathStructuresVerifierContext arg) {
       // No need to dereference and recurse, since all named routing policies will be visited
       // anyway.
@@ -129,8 +136,8 @@ public final class AsPathStructuresVerifier {
     }
 
     @Override
-    public Void visitRibIntersectsPrefixSpace(
-        RibIntersectsPrefixSpace ribIntersectsPrefixSpace, AsPathStructuresVerifierContext arg) {
+    public Void visitTrackSucceeded(
+        TrackSucceeded trackSucceeded, AsPathStructuresVerifierContext arg) {
       return null;
     }
 

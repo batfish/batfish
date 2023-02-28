@@ -12,5 +12,4 @@ Input:
 Output:
 
 * ARP behavior for each interface
-* Forwarding behavior for each VRF
-
+* Forwarding behavior for each VRF, including [Flow dispositions](../flow_dispositions/README.md) at each interface.

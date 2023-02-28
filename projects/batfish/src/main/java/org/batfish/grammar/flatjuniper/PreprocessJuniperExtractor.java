@@ -55,16 +55,16 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
 
     // Implements insert and delete respecting order of configuration lines.
-    // Properly handles set and deactivate lines.
+    // Properly handles set, activate, and deactivate lines.
     InsertDeleteApplicator d = new InsertDeleteApplicator(parser, w);
     walker.walk(d, tree);
 
     // Delete all deactivated lines:
-    // 1. Mark parts of the hierarchy as deleted
+    // 1. Mark parts of the hierarchy as deactivated
     DeactivateTreeBuilder dtb = new DeactivateTreeBuilder(hierarchy);
     walker.walk(dtb, tree);
-    // 2. Remove 'deactivate <tree>' lines
-    DeactivateLinePruner dp = new DeactivateLinePruner();
+    // 2. Remove 'activate <tree>' and 'deactivate <tree>' lines
+    ActivationLinePruner dp = new ActivationLinePruner();
     walker.walk(dp, tree);
     // 3. Remove 'set' lines that are deactivated
     DeactivatedLinePruner dlp = new DeactivatedLinePruner(hierarchy);

@@ -53,7 +53,7 @@ ACCESS_INTERNAL: 'access-internal';
 ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
 
 ACCOUNTING: 'accounting';
-
+ACTIVATE: 'activate';
 ACTIVE: 'active';
 
 ACTIVE_SERVER_GROUP: 'active-server-group' -> pushMode(M_Name);
@@ -402,6 +402,8 @@ COMMUNITY
     }
   }
 ;
+
+COMMUNITY_COUNT: 'community-count';
 
 COMPATIBLE: 'compatible';
 
@@ -1969,7 +1971,9 @@ OPTIONS: 'options';
 
 ORIGIN: 'origin';
 
+ORHIGHER: 'orhigher';
 ORLONGER: 'orlonger';
+ORLOWER: 'orlower';
 
 OSPF: 'ospf';
 
@@ -2368,7 +2372,7 @@ ROUTING_HEADER: 'routing-header';
 
 ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_Name);
 
-ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Name);
+ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Routing_Instances);
 ROUTING_INTERFACE: 'routing-interface' -> pushMode(M_Interface);
 ROUTING_OPTIONS: 'routing-options';
 
@@ -3470,8 +3474,11 @@ F_NameChar
 :
   [0-9A-Za-z_]
   | '-'
+  | '+'
   | '/'
+  | ','
   | '.'
+  | ':'
 ;
 
 // Any number of newlines, allowing whitespace in between
@@ -4202,6 +4209,13 @@ M_RouteDistinguisher_UINT32L: F_Uint32 'L' -> type(UINT32L);
 M_RouteDistinguisher_NEWLINE :F_Newline -> type(NEWLINE), popMode;
 M_RouteDistinguisher_WS: F_WhitespaceChar+ -> channel(HIDDEN);
 
+mode M_Routing_Instances;
+M_Routing_Instances_WS: F_WhitespaceChar+ -> skip;
+M_Routing_Instances_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Routing_Instances_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
+M_Routing_Instances_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_Routing_Instances_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
+M_Routing_Instances_NAME: F_Name -> type(NAME), popMode;
 
 mode M_Speed;
 

@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
-import com.google.common.graph.Traverser;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Collection;
@@ -170,19 +169,6 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       R leftResult = _left == null ? null : _left.fold(operator);
       R rightResult = _right == null ? null : _right.fold(operator);
       return operator.fold(_prefix, _elements, leftResult, rightResult);
-    }
-
-    /** Returns the list of non-null children for this node */
-    private @Nonnull Stream<Node<T>> getChildren() {
-      if (_left == null && _right == null) {
-        return Stream.of();
-      } else if (_left == null) {
-        return Stream.of(_right);
-      } else if (_right == null) {
-        return Stream.of(_left);
-      } else {
-        return Stream.of(_left, _right);
-      }
     }
 
     @Override
@@ -363,13 +349,21 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   }
 
   private void traverseNodes(Consumer<Node<T>> consumer, Predicate<Node<T>> visitNode) {
-    if (_root == null || !visitNode.test(_root)) {
+    traverseNodes(_root, consumer, visitNode);
+  }
+
+  /**
+   * A depth-first post-order consumption of the tree rooted at {@code node}, stopping early if
+   * {@code visitNode} returns {@code false}.
+   */
+  private static <T> void traverseNodes(
+      @Nullable Node<T> node, Consumer<Node<T>> consumer, Predicate<Node<T>> visitNode) {
+    if (node == null || !visitNode.test(node)) {
       return;
     }
-    Traverser.<Node<T>>forTree(
-            node -> node.getChildren().filter(visitNode).collect(ImmutableList.toImmutableList()))
-        .depthFirstPostOrder(_root)
-        .forEach(consumer);
+    traverseNodes(node._left, consumer, visitNode);
+    traverseNodes(node._right, consumer, visitNode);
+    consumer.accept(node);
   }
 
   private @Nullable Node<T> exactMatchNode(Prefix p) {

@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -204,14 +203,6 @@ public final class BDDReachabilityUtils {
   public static void forwardFixpoint(
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable, Map<StateExpr, BDD> reachable) {
     fixpoint(reachable, forwardEdgeTable, Transition::transitForward);
-  }
-
-  static Map<StateExpr, BDD> getIngressStateExprBdds(
-      Map<StateExpr, BDD> stateReachableBdds, Set<StateExpr> ingressLocationStates, BDD zero) {
-    return toImmutableMap(
-        ingressLocationStates,
-        Function.identity(),
-        stateExpr -> stateReachableBdds.getOrDefault(stateExpr, zero));
   }
 
   static Map<IngressLocation, BDD> getIngressLocationBdds(

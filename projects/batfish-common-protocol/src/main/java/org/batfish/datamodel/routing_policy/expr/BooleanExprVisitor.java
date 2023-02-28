@@ -7,6 +7,8 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
 /** A visitor of {@link BooleanExpr} that takes 1 generic argument and returns a generic value. */
 public interface BooleanExprVisitor<T, U> {
 
+  T visitMatchClusterListLength(MatchClusterListLength matchClusterListLength, U arg);
+
   T visitBooleanExprs(StaticBooleanExpr staticBooleanExpr, U arg);
 
   T visitCallExpr(CallExpr callExpr, U arg);
@@ -19,7 +21,7 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitFirstMatchChain(FirstMatchChain firstMatchChain, U arg);
 
-  T visitRibIntersectsPrefixSpace(RibIntersectsPrefixSpace ribIntersectsPrefixSpace, U arg);
+  T visitTrackSucceeded(TrackSucceeded trackSucceeded, U arg);
 
   T visitHasRoute(HasRoute hasRoute, U arg);
 

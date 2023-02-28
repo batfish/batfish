@@ -11,9 +11,11 @@ import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
@@ -40,6 +42,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1983,52 +1986,169 @@ public class FileBasedStorage implements StorageProvider {
         .resolve(RELPATH_PARSE_ANSWER_PATH);
   }
 
+  /**
+   * Collects garbage inside the given network.
+   *
+   * <p>May delete things like non-existent snapshots, but does not delete the network itself.
+   */
+  private void garbageCollectNetwork(NetworkId networkId, Instant expungeBeforeDate)
+      throws IOException {
+    for (Path dir : getSnapshotDirsToExpunge(networkId, expungeBeforeDate)) {
+      try {
+        deleteDirectory(dir);
+      } catch (IOException e) {
+        _logger.errorf(
+            "Failed to expunge snapshot directory '%s': %s",
+            dir, Throwables.getStackTraceAsString(e));
+        LOGGER.error(String.format("Failed to expunge snapshot directory %s", dir), e);
+      }
+    }
+    Optional<Instant> maybeOldestExtantSnapshotFileModifiedDate =
+        getOldestSnapshotCreationTime(networkId);
+    if (maybeOldestExtantSnapshotFileModifiedDate.isPresent()) {
+      Instant snapshotMetadataBasedExpungeBeforeDate =
+          maybeOldestExtantSnapshotFileModifiedDate.get().minus(GC_SKEW_ALLOWANCE);
+      Instant blobExpungeBeforeDate =
+          Comparators.min(snapshotMetadataBasedExpungeBeforeDate, expungeBeforeDate);
+      expungeOldBlobs(networkId, blobExpungeBeforeDate);
+    } // else no point expunging blobs if this network has no snapshots
+  }
+
+  /** Expunge blobs in a network older than the provided date. */
+  private void expungeOldBlobs(NetworkId networkId, Instant blobExpungeBeforeDate) {
+    Path blobPath = getNetworkBlobsDir(networkId);
+    if (!Files.exists(blobPath)) {
+      return;
+    }
+    try (Stream<Path> blobs = Files.walk(blobPath)) {
+      blobs.forEach(
+          path -> {
+            try {
+              if (Files.isRegularFile(path)
+                  && getLastModifiedTime(path).isBefore(blobExpungeBeforeDate)) {
+                Files.delete(path);
+              }
+            } catch (IOException e) {
+              LOGGER.error(
+                  String.format(
+                      "Failed to expunge blob '%s' of networkId '%s'",
+                      path.getFileName(), networkId),
+                  e);
+            }
+          });
+    } catch (IOException e) {
+      LOGGER.error(String.format("Failed to expunge blobs from networkId '%s'", networkId), e);
+    }
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Optional<Instant> getOldestSnapshotCreationTime(NetworkId networkId) {
+    try {
+      return listResolvedIds(SnapshotId.class, networkId).stream()
+          .map(SnapshotId::new)
+          .map(
+              snapshotId -> {
+                try {
+                  return Optional.of(
+                      BatfishObjectMapper.mapper()
+                          .readValue(
+                              loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class));
+                } catch (IOException e) {
+                  LOGGER.error(
+                      String.format(
+                          "Error loading snapshot metadata for networkId '%s' snapshotId '%s'",
+                          networkId, snapshotId),
+                      e);
+                  // Just skip this snapshot
+                  return Optional.<SnapshotMetadata>empty();
+                }
+              })
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .map(SnapshotMetadata::getCreationTimestamp)
+          .min(Comparator.naturalOrder());
+    } catch (IOException e) {
+      // Just skip this network
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Get the oldest last madified time of any directory entry that is a descendant of provided path.
+   * Return {@link Optional#empty()} if path does not exist or there are errors fetching last
+   * modified time of all descendants.
+   */
+  private @Nonnull Optional<Instant> getOldestEntryLastModifiedDate(Path path) {
+    try (Stream<Path> paths = Files.walk(path)) {
+      return paths
+          .map(
+              p -> {
+                try {
+                  return Optional.of(getLastModifiedTime(p));
+                } catch (IOException e) {
+                  LOGGER.error(
+                      String.format(
+                          "Failed to get last modified time of '%s': %s",
+                          p, Throwables.getStackTraceAsString(e)));
+                  return Optional.<Instant>empty();
+                }
+              })
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .min(Comparator.naturalOrder());
+    } catch (IOException e) {
+      LOGGER.error(
+          String.format(
+              "Failed to get oldest recursive entry of path rooted at '%s': %s",
+              path, Throwables.getStackTraceAsString(e)));
+      return Optional.empty();
+    }
+  }
+
   @Override
   public void runGarbageCollection() throws IOException {
+    if (!exists(getNetworksDir())) {
+      // There are no networks, nothing to do.
+      return;
+    }
+
     // Go back GC_SKEW_ALLOWANCE, so we under-approximate data to delete. This helps minimize race
     // conditions with in-progress or queued work.
     Instant expungeBeforeDate = Instant.now().minus(GC_SKEW_ALLOWANCE);
 
-    // Iterate over network dirs directly so we get both extant and deleted networks.
-    if (exists(getNetworksDir())) {
-      Set<String> extantNetworkIds = listResolvedIds(NetworkId.class);
-      ImmutableList.Builder<Path> dirsToExpunge = ImmutableList.builder();
-      try (Stream<Path> networkDirStream = list(getNetworksDir())) {
-        networkDirStream
-            .map(networkDir -> new NetworkId(networkDir.getFileName().toString()))
-            .forEach(
-                networkId -> {
-                  try {
-                    if (extantNetworkIds.contains(networkId.toString())) {
-                      dirsToExpunge.addAll(getSnapshotDirsToExpunge(networkId, expungeBeforeDate));
-                    } else {
-                      if (canExpungeNetwork(networkId, expungeBeforeDate)) {
-                        dirsToExpunge.add(getNetworkDir(networkId));
-                      }
-                    }
-                  } catch (IOException e) {
-                    _logger.errorf(
-                        "Failed to garbage collect network with ID '%s': %s",
-                        networkId, Throwables.getStackTraceAsString(e));
-                    LOGGER.error(
-                        String.format("Failed to garbage collect network with ID %s", networkId),
-                        e);
-                  }
-                });
+    Set<NetworkId> extantNetworkIds =
+        listResolvedIds(NetworkId.class).stream()
+            .map(NetworkId::new)
+            .collect(ImmutableSet.toImmutableSet());
+    Set<NetworkId> storageNetworkIds;
+    try (Stream<Path> networkDirStream = list(getNetworksDir())) {
+      // storageNetworkIds listed from disk will contain both existing AND deleted networks.
+      storageNetworkIds =
+          networkDirStream
+              .map(networkDir -> new NetworkId(networkDir.getFileName().toString()))
+              .collect(Collectors.toSet());
+    }
+
+    for (NetworkId networkId : Sets.intersection(storageNetworkIds, extantNetworkIds)) {
+      // GC inside networks that exist.
+      garbageCollectNetwork(networkId, expungeBeforeDate);
+    }
+    for (NetworkId networkId : Sets.difference(storageNetworkIds, extantNetworkIds)) {
+      if (!canExpungeNetwork(networkId, expungeBeforeDate)) {
+        // Too new, may be being created.
+        continue;
       }
-      dirsToExpunge
-          .build()
-          .forEach(
-              dir -> {
-                try {
-                  deleteDirectory(dir);
-                } catch (IOException e) {
-                  _logger.errorf(
-                      "Failed to expunge directory '%s': %s",
-                      dir, Throwables.getStackTraceAsString(e));
-                  LOGGER.error(String.format("Failed to expunge directory %s", dir), e);
-                }
-              });
+      // Delete networks that do not exist.
+      Path dir = getNetworkDir(networkId);
+      try {
+        deleteDirectory(dir);
+      } catch (IOException e) {
+        _logger.errorf(
+            "Failed to expunge network directory '%s': %s",
+            dir, Throwables.getStackTraceAsString(e));
+        LOGGER.error(String.format("Failed to expunge network directory %s", dir), e);
+      }
     }
   }
 

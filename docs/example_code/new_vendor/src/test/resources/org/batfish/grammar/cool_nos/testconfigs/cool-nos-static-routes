@@ -1,0 +1,29 @@
+! THIS IS A COOL NOS FILE
+
+system host-name cool-nos-static-routes
+
+static-routes
+ add 0.0.0.0/0 discard
+ modify 0.0.0.0/0 interface ethernet 1
+
+ add 192.0.2.0/24 discard
+
+ add 192.0.2.1/32 gateway 192.168.1.1
+
+ add 192.0.2.2/32 interface vlan 1000
+
+ ! should not appear since it is deleted
+ add 192.0.2.3/32 discard
+ delete 192.0.2.3/32
+
+ ! should warn about invalid vlan number
+ add 192.0.2.4/32 interface vlan 5000
+
+ ! already exists, should warn
+ add 0.0.0.0/0 interface vlan 10
+
+ ! does not exist, should warn
+ modify 192.168.1.1/32 discard
+
+ ! does not exist, should warn
+ delete 192.168.2.2/32

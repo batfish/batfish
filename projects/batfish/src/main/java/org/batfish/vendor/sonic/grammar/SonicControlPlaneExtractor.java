@@ -86,7 +86,9 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
     if (snmpYmlFilename != null) {
       ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
       try {
-        SnmpYml snmpYml = mapper.readValue(_fileTexts.get(snmpYmlFilename), SnmpYml.class);
+        // Trim YAML before deserializing since Jackson doesn't ignore, e.g., a trailing tab,
+        // but SONiC doesn't mind.
+        SnmpYml snmpYml = mapper.readValue(_fileTexts.get(snmpYmlFilename).trim(), SnmpYml.class);
         _configuration.setSnmpYml(snmpYml);
       } catch (JsonProcessingException exception) {
         ErrorDetails errorDetails =

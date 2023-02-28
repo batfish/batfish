@@ -472,6 +472,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_community_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_conditionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_instanceContext;
@@ -879,8 +880,11 @@ import org.batfish.representation.juniper.PathSelectionMode;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
+import org.batfish.representation.juniper.PsFromAsPathGroup;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
+import org.batfish.representation.juniper.PsFromCommunityCount;
+import org.batfish.representation.juniper.PsFromCommunityCount.Mode;
 import org.batfish.representation.juniper.PsFromCondition;
 import org.batfish.representation.juniper.PsFromFamily;
 import org.batfish.representation.juniper.PsFromInstance;
@@ -5601,10 +5605,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopsf_as_path_group(Popsf_as_path_groupContext ctx) {
     String name = toString(ctx.name);
+    _currentPsTerm.getFroms().addFromAsPathGroup(new PsFromAsPathGroup(name));
     _configuration.referenceStructure(
         AS_PATH_GROUP, name, POLICY_STATEMENT_FROM_AS_PATH_GROUP, getLine(ctx.getStart()));
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
-    todo(ctx);
   }
 
   @Override
@@ -5619,6 +5622,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentPsTerm.getFroms().addFromCommunity(new PsFromCommunity(name));
     _configuration.referenceStructure(
         COMMUNITY, name, POLICY_STATEMENT_FROM_COMMUNITY, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitPopsf_community_count(Popsf_community_countContext ctx) {
+    int count = toInteger(ctx.n.uint16());
+    Mode mode = Mode.EXACT;
+    if (ctx.ORHIGHER() != null) {
+      mode = Mode.ORHIGHER;
+    } else if (ctx.ORLOWER() != null) {
+      mode = Mode.ORLOWER;
+    }
+    PsFromCommunityCount from = new PsFromCommunityCount(count, mode);
+    _currentPsTerm.getFroms().setFromCommunityCount(from);
   }
 
   @Override
@@ -7190,7 +7206,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = maybeName.get();
     _currentBridgeDomain = _currentRoutingInstance.getOrAddBridgeDomain(name);
     _configuration.referenceStructure(
-        BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, ctx.getStart().getLine());
+        BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, getLine(ctx.getStart()));
     _configuration.defineFlattenedStructure(BRIDGE_DOMAIN, name, ctx, _parser);
     // until we support bridge domains generally
     todo(ctx);
@@ -7209,7 +7225,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     _configuration.referenceStructure(
-        INTERFACE, iface, BRIDGE_DOMAINS_ROUTING_INTERFACE, ctx.getStart().getLine());
+        INTERFACE, iface, BRIDGE_DOMAINS_ROUTING_INTERFACE, getLine(ctx.getStart()));
     _currentBridgeDomain.setRoutingInterface(iface);
   }
 
@@ -7281,7 +7297,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitBfiuas_prefix_policy(Bfiuas_prefix_policyContext ctx) {
     String name = toString(ctx.policy);
     _configuration.referenceStructure(
-        POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, ctx.getStart().getLine());
+        POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, getLine(ctx.getStart()));
     _currentBgpGroup.getAddPath().getSend().setPrefixPolicy(name);
   }
 

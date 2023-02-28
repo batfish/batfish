@@ -13,12 +13,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Table;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -28,6 +31,7 @@ import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -205,5 +209,36 @@ public final class BDDLoopDetectionAnalysisTest {
                 new Edge(state1, state2, IDENTITY)),
             ImmutableSet.of(state1));
     assertTrue(analysis.detectLoops().get(IngressLocation.vrf("node1", "vrf1")).isOne());
+  }
+
+  @Test
+  public void testIngressLocationHeaderConstraint() {
+    StateExpr state1 = new OriginateVrf("node1", "vrf1");
+    StateExpr state2 = new OriginateVrf("node2", "vrf2");
+
+    BDD ip1Bdd = _dst.toBDD(Ip.parse("1.1.1.1"));
+    Table<StateExpr, StateExpr, Transition> edgeTable =
+        ImmutableTable.<StateExpr, StateExpr, Transition>builder()
+            .put(state1, state2, constraint(ip1Bdd))
+            .put(state2, state1, IDENTITY)
+            .build();
+
+    // if we search for loops with dstIP within 1.0.0.0/8, we find 1.1.1.1
+    {
+      BDD pfxBdd = _dst.toBDD(Prefix.parse("1.0.0.0/8"));
+      Map<StateExpr, BDD> loops =
+          new BDDLoopDetectionAnalysis(_pkt, edgeTable, ImmutableMap.of(state1, pfxBdd))
+              .detectLoopsStateExpr();
+      assertEquals(ImmutableMap.of(state1, ip1Bdd), loops);
+    }
+
+    // if we search for loops with dstIP within 2.0.0.0/8, we find nothing
+    {
+      BDD pfxBdd = _dst.toBDD(Prefix.parse("2.0.0.0/8"));
+      Map<StateExpr, BDD> loops =
+          new BDDLoopDetectionAnalysis(_pkt, edgeTable, ImmutableMap.of(state1, pfxBdd))
+              .detectLoopsStateExpr();
+      assertEquals(ImmutableMap.of(state1, _pkt.getFactory().zero()), loops);
+    }
   }
 }
