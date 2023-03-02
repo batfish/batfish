@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.math.IntMath;
@@ -46,8 +47,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
 
   private static List<OspfType> allMetricTypes;
-
-  private int _hcode = 0;
 
   static {
     allMetricTypes = new ArrayList<>();
@@ -565,46 +564,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _unsupported = unsupported;
   }
 
-  @Override
-  public int hashCode() {
-    if (_hcode == 0) {
-      int result = _adminDist != null ? _adminDist.hashCode() : 0;
-      result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
-      result = 31 * result + (_originType != null ? _originType.hashCode() : 0);
-      result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
-      result = 31 * result + (_med != null ? _med.hashCode() : 0);
-      result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
-      result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
-      result = 31 * result + (_weight != null ? _weight.hashCode() : 0);
-      result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
-      result = 31 * result + Boolean.hashCode(_nextHopDiscarded);
-      result = 31 * result + Boolean.hashCode(_nextHopSet);
-      result = 31 * result + (_prefix != null ? _prefix.hashCode() : 0);
-      result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
-      result =
-          31 * result
-              + (_communityAtomicPredicates != null
-                  ? Arrays.hashCode(_communityAtomicPredicates)
-                  : 0);
-      result =
-          31 * result
-              + (_asPathRegexAtomicPredicates != null
-                  ? Arrays.hashCode(_asPathRegexAtomicPredicates)
-                  : 0);
-      result = 31 * result + _prependedASes.hashCode();
-      result = 31 * result + Boolean.hashCode(_unsupported);
-      _hcode = result;
-    }
-    return _hcode;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof BDDRoute)) {
-      return false;
-    }
-    BDDRoute other = (BDDRoute) o;
-
+  // BDDRoutes are mutable so in general the default pointer equality is the right thing to use;
+  // This method is used only to test the results of our symbolic route analysis.
+  @VisibleForTesting
+  boolean equalsForTesting(BDDRoute other) {
     return Objects.equals(_adminDist, other._adminDist)
         && Objects.equals(_ospfMetric, other._ospfMetric)
         && Objects.equals(_originType, other._originType)
