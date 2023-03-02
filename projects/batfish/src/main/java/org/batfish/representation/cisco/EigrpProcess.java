@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -47,7 +48,7 @@ public class EigrpProcess implements Serializable {
     _networks = new TreeSet<>();
     _inboundInterfaceDistributeLists = new HashMap<>(0);
     _outboundInterfaceDistributeLists = new HashMap<>(0);
-    _redistributionPolicies = new HashMap<>();
+    _redistributionPolicies = new LinkedHashMap<>();
     _vrfName = vrfName;
     _wildcardNetworks = new TreeSet<>();
   }

@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -138,7 +139,7 @@ public class OspfProcess implements Serializable {
     _passiveInterfaces = new HashSet<>();
     _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
-    _redistributionPolicies = new HashMap<>();
+    _redistributionPolicies = new LinkedHashMap<>();
     _summaries = new TreeMap<>();
   }
 
