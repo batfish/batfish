@@ -97,6 +97,7 @@ import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
+import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
@@ -858,6 +859,27 @@ public class TransferBDDTest {
 
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOriginType().setValue(OriginType.INCOMPLETE);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testUnsupportedSetOrigin() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetOrigin(new VarOrigin("var")))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
+    expectedRoute.setUnsupported(true);
 
     assertTrue(
         equalsForTesting(
