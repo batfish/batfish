@@ -17,7 +17,7 @@ public class RoutingProtocolInstanceTest {
     RoutingProtocolInstance connected = RoutingProtocolInstance.connected();
     assertThat(connected.getProtocol(), equalTo(RoutingProtocol.CONNECTED));
 
-    RoutingProtocolInstance eigrp = RoutingProtocolInstance.eigrp();
+    RoutingProtocolInstance eigrp = RoutingProtocolInstance.eigrp(10L);
     assertThat(eigrp.getProtocol(), equalTo(RoutingProtocol.EIGRP));
 
     RoutingProtocolInstance ospf = RoutingProtocolInstance.ospf();
@@ -38,7 +38,7 @@ public class RoutingProtocolInstanceTest {
     new EqualsTester()
         .addEqualityGroup(RoutingProtocolInstance.bgp())
         .addEqualityGroup(RoutingProtocolInstance.connected())
-        .addEqualityGroup(RoutingProtocolInstance.eigrp())
+        .addEqualityGroup(RoutingProtocolInstance.eigrp(10L))
         .addEqualityGroup(RoutingProtocolInstance.ospf())
         .addEqualityGroup(RoutingProtocolInstance.rip())
         .addEqualityGroup(RoutingProtocolInstance.isis_l1())

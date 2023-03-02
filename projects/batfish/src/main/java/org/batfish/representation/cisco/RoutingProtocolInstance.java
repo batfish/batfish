@@ -4,45 +4,52 @@ import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.RoutingProtocol;
 
 public class RoutingProtocolInstance implements Serializable {
   public static RoutingProtocolInstance bgp() {
-    return new RoutingProtocolInstance(RoutingProtocol.BGP);
+    return new RoutingProtocolInstance(RoutingProtocol.BGP, null);
   }
 
   public static RoutingProtocolInstance connected() {
-    return new RoutingProtocolInstance(RoutingProtocol.CONNECTED);
+    return new RoutingProtocolInstance(RoutingProtocol.CONNECTED, null);
   }
 
-  public static RoutingProtocolInstance eigrp() {
-    return new RoutingProtocolInstance(RoutingProtocol.EIGRP);
+  public static RoutingProtocolInstance eigrp(Long tag) {
+    return new RoutingProtocolInstance(RoutingProtocol.EIGRP, String.valueOf(tag));
   }
 
   public static RoutingProtocolInstance ospf() {
-    return new RoutingProtocolInstance(RoutingProtocol.OSPF);
+    return new RoutingProtocolInstance(RoutingProtocol.OSPF, null);
   }
 
   public static RoutingProtocolInstance rip() {
-    return new RoutingProtocolInstance(RoutingProtocol.RIP);
+    return new RoutingProtocolInstance(RoutingProtocol.RIP, null);
   }
 
   public static RoutingProtocolInstance isis_l1() {
-    return new RoutingProtocolInstance(RoutingProtocol.ISIS_L1);
+    return new RoutingProtocolInstance(RoutingProtocol.ISIS_L1, null);
   }
 
   public static RoutingProtocolInstance staticRoutingProtocol() {
-    return new RoutingProtocolInstance(RoutingProtocol.STATIC);
+    return new RoutingProtocolInstance(RoutingProtocol.STATIC, null);
   }
 
   private final @Nonnull RoutingProtocol _protocol;
+  private final @Nullable String _tag;
 
-  public RoutingProtocolInstance(RoutingProtocol protocol) {
+  public RoutingProtocolInstance(RoutingProtocol protocol, @Nullable String tag) {
     _protocol = protocol;
+    _tag = tag;
   }
 
   public @Nonnull RoutingProtocol getProtocol() {
     return _protocol;
+  }
+
+  public @Nullable String getTag() {
+    return _tag;
   }
 
   @Override
@@ -53,16 +60,20 @@ public class RoutingProtocolInstance implements Serializable {
       return false;
     }
     RoutingProtocolInstance that = (RoutingProtocolInstance) o;
-    return _protocol == that._protocol;
+    return _protocol == that._protocol && Objects.equals(_tag, that._tag);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_protocol);
+    return Objects.hash(_protocol, _tag);
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).omitNullValues().add("protocol", _protocol).toString();
+    return MoreObjects.toStringHelper(this)
+        .omitNullValues()
+        .add("protocol", _protocol)
+        .add("tag", _tag)
+        .toString();
   }
 }
