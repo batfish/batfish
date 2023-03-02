@@ -104,4 +104,24 @@ public class RegexAtomicPredicatesTest {
         asPathAPs.getRegexAtomicPredicates(),
         hasEntry(equalTo(new SymbolicAsPathRegex(".*")), iterableWithSize(5)));
   }
+
+  @Test
+  public void testCopyConstructor() {
+    Set<CommunityVar> cvars =
+        ImmutableSet.of(
+            CommunityVar.from("^2[0-3]:40$"),
+            CommunityVar.from("^21:4[0-3]$"),
+            CommunityVar.from(StandardCommunity.parse("20:40")),
+            CommunityVar.from(StandardCommunity.parse("22:22")));
+
+    RegexAtomicPredicates<CommunityVar> commAPs =
+        new RegexAtomicPredicates<>(cvars, CommunityVar.ALL_STANDARD_COMMUNITIES);
+
+    RegexAtomicPredicates<CommunityVar> copy = new RegexAtomicPredicates<>(commAPs);
+
+    assertEquals(commAPs.getRegexes(), copy.getRegexes());
+    assertEquals(commAPs.getTrueRegex(), copy.getTrueRegex());
+    assertEquals(commAPs.getRegexAtomicPredicates(), copy.getRegexAtomicPredicates());
+    assertEquals(commAPs.getAtomicPredicateAutomata(), copy.getAtomicPredicateAutomata());
+  }
 }

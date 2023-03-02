@@ -1,16 +1,16 @@
 {
-  "class": "org.batfish.minesweeper.question.compareRoutePolicies.CompareRoutePoliciesQuestion",
-  "differential": false,
+  "class": "org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion",
+  "differential": true,
   "policy": "${policy}",
-  "proposedPolicy": "${proposedPolicy}",
+  "referencePolicy": "${referencePolicy}",
   "nodes": "${nodes}",
   "instance": {
-    "description": "Finds route announcements for which a route policy has a particular behavior.",
+    "description": "Finds route announcements for which the behavior of the route-policies in the given snapshots differ.",
     "instanceName": "compareRoutePolicies",
-    "longDescription": "This question finds route announcements for which a route policy has a particular behavior. The behaviors can be: that the policy permits the route (`permit`) or that it denies the route (`deny`). Constraints can be imposed on the input route announcements of interest and, in the case of a `permit` action, also on the output route announcements of interest. Route policies are selected using node and policy specifiers, which might match multiple policies. In this case, a (possibly different) answer will be found for each policy. _Note:_ This question currently does not support all of the route policy features that Batfish supports. The question only supports common forms of matching on prefixes, communities, and AS-paths, as well as common forms of setting communities, the local preference, and the metric. The question logs all unsupported features that it encounters as warnings. Due to unsupported features, it is possible for the question to return no answers even for route policies that can in fact exhibit the specified behavior.",
+    "longDescription": "This question finds route announcements for which the behavior of the route-policies in the given snapshots differ. The comparison is using a symbolic model of the route policies and will find _all_ differences between two given policies. Route policies are selected using node and policy specifiers, which might match multiple policies. In this case, all matching policies by the specifiers will be compared with each other. _Note:_ This question currently does not support all of the route policy features that Batfish supports. The question only supports common forms of matching on prefixes, communities, and AS-paths, as well as common forms of setting communities, the local preference, and the metric. The question logs all unsupported features that it encounters as warnings.",
     "orderedVariableNames": [
       "policy",
-      "proposedPolicy",
+      "referencePolicy",
       "nodes"
     ],
     "tags": [
@@ -23,11 +23,11 @@
         "optional": false,
         "displayName": "Policy"
       },
-      "proposedPolicy": {
-        "description": "Only consider policies that match this specifier",
+      "referencePolicy": {
+        "description": "Only consider policies that match this specifier - if not provided, policies matched by policy are used.",
         "type": "routingPolicySpec",
-        "optional": false,
-        "displayName": "Proposed Policy"
+        "optional": true,
+        "displayName": "Reference Policy"
       },
       "nodes": {
         "description": "Only examine policies on nodes matching this specifier",

@@ -6,7 +6,6 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -70,9 +69,17 @@ public final class Layer1Edge implements Comparable<Layer1Edge> {
     return _node2;
   }
 
+  /* Cache the hashcode */
+  private transient int _hashCode = 0;
+
   @Override
   public int hashCode() {
-    return Objects.hash(_node1, _node2);
+    int h = _hashCode;
+    if (h == 0) {
+      h = _node1.hashCode() * 31 + _node2.hashCode();
+      _hashCode = h;
+    }
+    return h;
   }
 
   /** Returns the reverse of this directed {@link Layer1Edge}. */

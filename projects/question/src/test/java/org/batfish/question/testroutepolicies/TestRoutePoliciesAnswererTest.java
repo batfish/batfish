@@ -15,12 +15,14 @@ import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.C
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_OUTPUT_ROUTE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_POLICY_NAME;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_TRACE;
+import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toDiffRow;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
@@ -31,6 +33,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -38,6 +41,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TraceElement;
@@ -58,6 +62,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.trace.Tracer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -556,5 +561,29 @@ public class TestRoutePoliciesAnswererTest {
             allOf(
                 hasColumn(
                     COL_TRACE, contains(isTraceTree("term")), Schema.list(Schema.TRACE_TREE)))));
+  }
+
+  @Test
+  public void testToDiffRow_DiffResultButSame() {
+    RoutingPolicyId rpid = new RoutingPolicyId("n", "p");
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
+            .build();
+    Tracer t = new Tracer();
+    t.newSubTrace();
+    t.setTraceElement(TraceElement.builder().add("elt").build());
+    t.endSubTrace();
+    Result ref = new Result(rpid, inputRoute, DENY, null, ImmutableList.of());
+    Result snap = new Result(rpid, inputRoute, DENY, null, t.getTrace());
+
+    assertThat(ref, not(equalTo(snap)));
+    assertThat(toDiffRow(snap, ref), nullValue());
   }
 }

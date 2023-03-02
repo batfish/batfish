@@ -64,7 +64,7 @@ public abstract class BooleanExpr implements Serializable {
   /**
    * Used by extenders to build a {@link Object#toString} function that includes parent properties.
    */
-  ToStringHelper toStringHelper() {
+  protected ToStringHelper toStringHelper() {
     return MoreObjects.toStringHelper(getClass()).omitNullValues().add("comment", _comment);
   }
 

@@ -1545,8 +1545,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         return "1";
       case VERSION_2:
         return "2";
+      default:
+        throw new IllegalArgumentException(String.format("Invalid HsrpVersion: %s", hsrpVersion));
     }
-    throw new IllegalArgumentException(String.format("Invalid HsrpVersion: %s", hsrpVersion));
   }
 
   public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, Long asn) {
@@ -2968,12 +2969,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+        _structureManager
+            .getStructureReferences(CiscoStructureType.INTERFACE)
             .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
+            .values()
             .stream()
-            .flatMap(e -> e.getValue().stream())
+            .flatMap(Collection::stream)
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());

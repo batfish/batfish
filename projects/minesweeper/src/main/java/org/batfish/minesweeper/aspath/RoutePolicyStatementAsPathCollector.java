@@ -83,8 +83,6 @@ public class RoutePolicyStatementAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitPrependAsPath(
       PrependAsPath prependAsPath, Tuple<Set<String>, Configuration> arg) {
-    // if/when we update TransferBDD to support AS-path prepending, we will need to update this as
-    // well
     return ImmutableSet.of();
   }
 

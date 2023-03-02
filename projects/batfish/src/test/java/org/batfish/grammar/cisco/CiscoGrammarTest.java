@@ -704,7 +704,7 @@ public final class CiscoGrammarTest {
   public void testIosBgpExtcommunityParsing() throws IOException {
     CiscoConfiguration c = parseCiscoConfig("ios-bgp-extcommunity", ConfigurationFormat.CISCO_IOS);
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    c.setAnswerElement(ccae);
+    c.getStructureManager().saveInto(ccae, c.getFilename());
     c.setWarnings(new Warnings(true, true, true));
     assertThat(
         ccae, hasDefinedStructure(c.getFilename(), EXTCOMMUNITY_LIST_STANDARD, "COM_WITH_RT"));

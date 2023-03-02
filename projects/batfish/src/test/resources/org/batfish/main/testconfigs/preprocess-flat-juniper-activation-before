@@ -1,0 +1,23 @@
+#
+set system host-name preprocess-flat-juniper-activation
+#
+
+# deactivate hierarchy not yet declared
+deactivate interfaces xe-0/0/0
+
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.0/32
+set interfaces xe-0/0/1 unit 0 family inet address 10.0.0.1/32
+set interfaces xe-0/0/2 unit 0 family inet address 10.0.0.2/32
+
+# deactivate a line that does not exist
+deactivate interfaces xe-0/0/3
+
+# activate a line that does not exist
+activate interfaces xe-0/0/4
+
+# deactivate hierarchy previously declared
+deactivate interfaces xe-0/0/1
+deactivate interfaces xe-0/0/2
+
+# reactivate deactivated hierarchy
+activate interfaces xe-0/0/2

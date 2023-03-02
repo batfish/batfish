@@ -7094,7 +7094,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = maybeName.get();
     _currentBridgeDomain = _currentRoutingInstance.getOrAddBridgeDomain(name);
     _configuration.referenceStructure(
-        BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, ctx.getStart().getLine());
+        BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, getLine(ctx.getStart()));
     _configuration.defineFlattenedStructure(BRIDGE_DOMAIN, name, ctx, _parser);
     // until we support bridge domains generally
     todo(ctx);
@@ -7113,7 +7113,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     _configuration.referenceStructure(
-        INTERFACE, iface, BRIDGE_DOMAINS_ROUTING_INTERFACE, ctx.getStart().getLine());
+        INTERFACE, iface, BRIDGE_DOMAINS_ROUTING_INTERFACE, getLine(ctx.getStart()));
     _currentBridgeDomain.setRoutingInterface(iface);
   }
 
@@ -7177,7 +7177,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitBfiuas_prefix_policy(Bfiuas_prefix_policyContext ctx) {
     String name = toString(ctx.policy);
     _configuration.referenceStructure(
-        POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, ctx.getStart().getLine());
+        POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, getLine(ctx.getStart()));
     _currentBgpGroup.getAddPath().getSend().setPrefixPolicy(name);
   }
 

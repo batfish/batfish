@@ -2,14 +2,12 @@ package org.batfish.job;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.TraceElement;
@@ -26,6 +24,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.references.StructureManager;
 import org.batfish.vendor.VendorStructureId;
 
 /**
@@ -33,15 +32,15 @@ import org.batfish.vendor.VendorStructureId;
  *
  * <p>{@link VendorStructureId}s are considered invalid if they do not point to a defined structure.
  */
+@ParametersAreNonnullByDefault
 public final class InvalidVendorStructureIdEraser
     implements GenericAclLineVisitor<AclLine>, GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
 
   // TODO visit IpSpaceMetadata as well
 
-  public InvalidVendorStructureIdEraser(
-      SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-          definedStructures) {
-    _definedStructures = definedStructures;
+  public InvalidVendorStructureIdEraser(String filename, StructureManager structures) {
+    _filename = filename;
+    _structureManager = structures;
   }
 
   /**
@@ -49,22 +48,11 @@ public final class InvalidVendorStructureIdEraser
    * structure.
    */
   private boolean isVendorStructureIdValid(VendorStructureId vendorStructureId) {
-    return isVendorStructureIdValid(vendorStructureId, _definedStructures);
-  }
-
-  /**
-   * Returns a boolean indicating if the specified {@link VendorStructureId} points to a defined
-   * structure.
-   */
-  @VisibleForTesting
-  static boolean isVendorStructureIdValid(
-      VendorStructureId vendorStructureId,
-      SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-          definedStructures) {
-    return definedStructures
-        .getOrDefault(vendorStructureId.getFilename(), ImmutableSortedMap.of())
-        .getOrDefault(vendorStructureId.getStructureType(), ImmutableSortedMap.of())
-        .containsKey(vendorStructureId.getStructureName());
+    boolean f1 = _filename.equals(vendorStructureId.getFilename());
+    boolean f2 =
+        _structureManager.hasDefinition(
+            vendorStructureId.getStructureType(), vendorStructureId.getStructureName());
+    return f1 && f2;
   }
 
   /**
@@ -224,11 +212,7 @@ public final class InvalidVendorStructureIdEraser
     return new TrueExpr(te);
   }
 
-  /**
-   * All known structure definitions. These are used to determine if a {@link VendorStructureId} is
-   * valid (points to a defined structure).
-   */
-  @Nonnull
-  private final SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-      _definedStructures;
+  private final @Nonnull StructureManager _structureManager;
+
+  private final @Nonnull String _filename;
 }

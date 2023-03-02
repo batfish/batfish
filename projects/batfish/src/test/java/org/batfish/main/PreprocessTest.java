@@ -70,6 +70,12 @@ public final class PreprocessTest {
   }
 
   @Test
+  public void testFlatJuniperActivation() throws IOException {
+    assertValidPair(
+        "preprocess-flat-juniper-activation-before", "preprocess-flat-juniper-activation-after");
+  }
+
+  @Test
   public void testMainBadArgs() throws IOException {
     _thrown.expect(IllegalArgumentException.class);
     main(new String[] {});

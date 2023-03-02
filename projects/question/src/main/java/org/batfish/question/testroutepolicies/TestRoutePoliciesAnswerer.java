@@ -54,7 +54,7 @@ import org.batfish.specifier.SpecifierFactories;
 public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_POLICY_NAME = "Policy_Name";
-  public static final String COL_PROPOSED_POLICY_NAME = "Proposed_Policy_Name";
+  public static final String COL_REFERENCE_POLICY_NAME = "Reference_Policy_Name";
   public static final String COL_INPUT_ROUTE = "Input_Route";
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
@@ -333,7 +333,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             new ColumnMetadata(COL_NODE, NODE, "The node that has the policy", true, false),
             new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
             new ColumnMetadata(
-                COL_PROPOSED_POLICY_NAME, STRING, "The name of the proposed policy", true, false),
+                COL_REFERENCE_POLICY_NAME, STRING, "The name of the proposed policy", true, false),
             new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
             new ColumnMetadata(
                 baseColumnName(COL_ACTION),
@@ -406,7 +406,15 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  private static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
+  /**
+   * Returns a {@link Row} describing the difference between the two results, in the case where the
+   * actual outcome of the policy is different, or {@code null} otherwise.
+   *
+   * <p>Note that no difference in the outcome includes the case when, e.g., only the name of a
+   * policy changed but the action and output attributes are identical across the two snapshots.
+   */
+  @VisibleForTesting
+  static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
     assert snapshotResult.getKey().equals(referenceResult.getKey());
 
     if (snapshotResult.equals(referenceResult)) {
@@ -420,7 +428,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     boolean equalAction = snapshotResult.getAction() == referenceResult.getAction();
     boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
-    assert !(equalAction && equalOutputRoutes);
+    if (equalAction && equalOutputRoutes) {
+      // This can happen if the trace is different.
+      return null;
+    }
 
     BgpRouteDiffs routeDiffs =
         new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
@@ -462,13 +473,13 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     BgpRouteDiffs routeDiffs =
         new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
 
-    RoutingPolicyId policyId = referenceResult.getPolicyId();
-    RoutingPolicyId proposedPolicyId = snapshotResult.getPolicyId();
+    RoutingPolicyId referencePolicyId = referenceResult.getPolicyId();
+    RoutingPolicyId policyId = snapshotResult.getPolicyId();
     Bgpv4Route inputRoute = referenceResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
-        .put(COL_PROPOSED_POLICY_NAME, proposedPolicyId.getPolicy())
+        .put(COL_REFERENCE_POLICY_NAME, referencePolicyId.getPolicy())
         .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
         .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
         .put(baseColumnName(COL_ACTION), snapshotResult.getAction())

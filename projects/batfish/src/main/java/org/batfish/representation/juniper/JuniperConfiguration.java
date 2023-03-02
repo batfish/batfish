@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,6 +74,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -215,6 +217,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** Juniper uses AD 170 for both EBGP and IBGP routes. */
   public static final int DEFAULT_BGP_ADMIN_DISTANCE = 170;
+
+  public static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA =
+      ConnectedRouteMetadata.builder().setGenerateLocalNullRouteIfDown(true).build();
 
   public static @Nonnull String computeFirewallFilterTermName(
       @Nonnull String filterName, @Nonnull String termName) {
@@ -1969,23 +1974,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setOutgoingFilter(outAcl);
 
-    // Prefix primaryPrefix = iface.getPrimaryAddress();
-    // Set<Prefix> allPrefixes = iface.getAllAddresses();
-    // if (primaryPrefix != null) {
-    // newIface.setAddress(primaryPrefix);
-    // }
-    // else {
-    // if (!allPrefixes.isEmpty()) {
-    // Prefix firstOfAllPrefixes = allPrefixes.toArray(new Prefix[] {})[0];
-    // newIface.setAddress(firstOfAllPrefixes);
-    // }
-    // }
-    // newIface.getAllAddresses().addAll(allPrefixes);
-
     if (iface.getPrimaryAddress() != null) {
       newIface.setAddress(iface.getPrimaryAddress());
     }
     newIface.setAllAddresses(iface.getAllAddresses());
+    newIface.setAddressMetadata(
+        iface.getAllAddresses().stream()
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Ordering.natural(), a -> a, a -> JUNIPER_CONNECTED_ROUTE_METADATA)));
     if (!iface.getActive()) {
       newIface.adminDown();
     }
@@ -3467,7 +3464,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private @Nonnull JuniperConfiguration cloneConfiguration() {
     JuniperConfiguration clonedConfiguration = SerializationUtils.clone(this);
-    clonedConfiguration.setAnswerElement(getAnswerElement());
     clonedConfiguration.setUnrecognized(getUnrecognized());
     clonedConfiguration.setWarnings(_w);
     return clonedConfiguration;

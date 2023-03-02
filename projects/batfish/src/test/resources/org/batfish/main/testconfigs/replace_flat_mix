@@ -1,0 +1,13 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name replace_flat_mix
+set policy-options policy-statement PS term TERM then local-preference 10
+#
+policy-options {
+  replace: policy-statement PS {
+    term TERM {
+      then {
+        metric 20;
+      }
+    }
+  }
+}

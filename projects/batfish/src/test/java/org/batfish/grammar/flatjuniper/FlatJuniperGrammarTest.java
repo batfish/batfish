@@ -32,6 +32,7 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
@@ -1039,7 +1040,7 @@ public final class FlatJuniperGrammarTest {
 
     // check layer-1 logical adjacencies
     assertThat(
-        layer1LogicalTopology.getGraph().edges(),
+        layer1LogicalTopology.edgeStream().collect(Collectors.toList()),
         hasItem(new Layer1Edge("r1", "ae0", "r2", "ae0")));
 
     // check layer-2 adjacencies
@@ -5184,12 +5185,12 @@ public final class FlatJuniperGrammarTest {
     JuniperConfiguration c = parseJuniperConfig("name");
     assertThat(c.getMasterLogicalSystem().getPolicyStatements(), hasKeys("XX"));
     PolicyStatement ps = c.getMasterLogicalSystem().getPolicyStatements().get("XX");
-    assertThat(ps.getTerms(), hasKeys("10/8", "Colon:Name", "Dot.Name"));
+    assertThat(ps.getTerms(), hasKeys("10/8", "Colon:Name", "Dot.Name", "Plus+Name", "Comma,Name"));
 
     assertThat(
         ((ConcreteFirewallFilter) c.getMasterLogicalSystem().getFirewallFilters().get("filterName"))
             .getTerms(),
-        hasKeys("Colon:Name", "Dot.Name", "Slash/Name"));
+        hasKeys("Colon:Name", "Dot.Name", "Slash/Name", "Plus+Name", "Comma,Name"));
   }
 
   @Test
@@ -7728,6 +7729,19 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper_nested_multiline_comments";
     // don't crash
     parseConfig(hostname);
+  }
+
+  @Test
+  public void testInactiveInterfaceRoutes() throws IOException {
+    Configuration c = parseConfig("inactive_interface_local_route");
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    assertThat(
+        dp.getRibs().get(c.getHostname(), c.getDefaultVrf().getName()).getRoutes(),
+        contains(
+            allOf(hasPrefix(Prefix.parse("1.1.1.1/32")), hasNextHop(NextHopDiscard.instance()))));
   }
 
   @Test
