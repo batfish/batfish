@@ -24,6 +24,13 @@ import org.batfish.datamodel.RoutingProtocol;
  */
 public final class TrackRoute implements TrackMethod {
 
+  public enum RibType {
+    /** Main RIB */
+    MAIN,
+    /** BGP IPv4 unicast RIB */
+    BGP
+  }
+
   @Override
   public <R> R accept(GenericTrackMethodVisitor<R> visitor) {
     return visitor.visitTrackRoute(this);
@@ -49,6 +56,12 @@ public final class TrackRoute implements TrackMethod {
     return ImmutableSortedSet.copyOf(_protocols);
   }
 
+  /** The RIB type to check, e.g. main RIB vs. routing process, etc. */
+  @JsonProperty(PROP_RIB_TYPE)
+  public @Nonnull RibType getRibType() {
+    return _ribType;
+  }
+
   /** The vrf whose main RIB should be checked for a tracked route. */
   @JsonProperty(PROP_VRF)
   public @Nonnull String getVrf() {
@@ -65,28 +78,32 @@ public final class TrackRoute implements TrackMethod {
     TrackRoute that = (TrackRoute) o;
     return _prefix.equals(that._prefix)
         && _protocols.equals(that._protocols)
+        && _ribType == that._ribType
         && _vrf.equals(that._vrf);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_prefix, _protocols, _vrf);
+    return Objects.hash(_prefix, _protocols, _ribType.ordinal(), _vrf);
   }
 
-  static @Nonnull TrackRoute of(Prefix prefix, Set<RoutingProtocol> protocols, String vrf) {
+  static @Nonnull TrackRoute of(
+      Prefix prefix, Set<RoutingProtocol> protocols, RibType ribType, String vrf) {
     checkArgument(!Strings.isNullOrEmpty(vrf), "vrf name must be non-empty");
-    return new TrackRoute(prefix, protocols, vrf);
+    return new TrackRoute(prefix, protocols, ribType, vrf);
   }
 
   @JsonCreator
   private static @Nonnull TrackRoute create(
       @JsonProperty(PROP_PREFIX) @Nullable Prefix prefix,
       @JsonProperty(PROP_PROTOCOLS) @Nullable Set<RoutingProtocol> protocols,
+      @JsonProperty(PROP_RIB_TYPE) @Nullable RibType ribType,
       @JsonProperty(PROP_VRF) @Nullable String vrf) {
     checkArgument(prefix != null, "Missing %s", PROP_PREFIX);
+    checkArgument(ribType != null, "Missing %s", PROP_RIB_TYPE);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     return new TrackRoute(
-        prefix, ImmutableSet.copyOf(firstNonNull(protocols, ImmutableSet.of())), vrf);
+        prefix, ImmutableSet.copyOf(firstNonNull(protocols, ImmutableSet.of())), ribType, vrf);
   }
 
   @Override
@@ -94,21 +111,25 @@ public final class TrackRoute implements TrackMethod {
     return toStringHelper(this)
         .add(PROP_PREFIX, _prefix)
         .add(PROP_PROTOCOLS, _protocols)
+        .add(PROP_RIB_TYPE, _ribType)
         .add(PROP_VRF, _vrf)
         .toString();
   }
 
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_PROTOCOLS = "protocols";
+  private static final String PROP_RIB_TYPE = "ribType";
   private static final String PROP_VRF = "vrf";
 
   private final @Nonnull Prefix _prefix;
   private final @Nonnull Set<RoutingProtocol> _protocols;
+  private final @Nonnull RibType _ribType;
   private final @Nonnull String _vrf;
 
-  private TrackRoute(Prefix prefix, Set<RoutingProtocol> protocols, String vrf) {
+  private TrackRoute(Prefix prefix, Set<RoutingProtocol> protocols, RibType ribType, String vrf) {
     _prefix = prefix;
     _protocols = protocols;
+    _ribType = ribType;
     _vrf = vrf;
   }
 }

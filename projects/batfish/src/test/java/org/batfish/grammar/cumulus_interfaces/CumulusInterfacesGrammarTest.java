@@ -15,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import java.util.Set;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
@@ -24,7 +23,6 @@ import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
@@ -46,41 +44,32 @@ public class CumulusInterfacesGrammarTest {
   private static final String FILENAME = "";
   private static CumulusConcatenatedConfiguration _config;
   private static CumulusInterfacesConfiguration _ic;
-  private static ConvertConfigurationAnswerElement _ccae;
   private static Warnings _warnings;
 
   @Before
   public void setup() {
     _config = new CumulusConcatenatedConfiguration();
     _ic = _config.getInterfacesConfiguration();
-    _ccae = new ConvertConfigurationAnswerElement();
     _warnings = new Warnings();
     _config.setFilename(FILENAME);
-    _config.setAnswerElement(_ccae);
     _config.setWarnings(_warnings);
   }
 
   private static DefinedStructureInfo getDefinedStructureInfo(
       CumulusStructureType type, String name) {
-    return _ccae
-        .getDefinedStructures()
-        .get(FILENAME)
-        .getOrDefault(type.getDescription(), ImmutableSortedMap.of())
-        .get(name);
+    return _config.getStructureManager().getDefinition(type, name).orElse(null);
   }
 
   private static Set<Integer> getStructureReferences(
       CumulusStructureType type, String name, CumulusStructureUsage usage) {
     // The config keeps reference data in a private variable, and only copies into the answer
     // element when you set it.
-    _config.setAnswerElement(new ConvertConfigurationAnswerElement());
     return _config
-        .getAnswerElement()
-        .getReferencedStructures()
-        .get(FILENAME)
-        .get(type.getDescription())
+        .getStructureManager()
+        .getStructureReferences(type)
         .get(name)
-        .get(usage.getDescription());
+        .get(usage)
+        .elementSet();
   }
 
   private static CumulusInterfacesConfiguration parse(String input) {

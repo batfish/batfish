@@ -3464,7 +3464,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private @Nonnull JuniperConfiguration cloneConfiguration() {
     JuniperConfiguration clonedConfiguration = SerializationUtils.clone(this);
-    clonedConfiguration.setAnswerElement(getAnswerElement());
     clonedConfiguration.setUnrecognized(getUnrecognized());
     clonedConfiguration.setWarnings(_w);
     return clonedConfiguration;

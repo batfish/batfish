@@ -34,7 +34,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -55,7 +54,6 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.hsrp.HsrpGroup;
@@ -71,6 +69,8 @@ import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.job.ConvertConfigurationJob.CollectIpSpaceReferences;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoStructureType;
+import org.batfish.vendor.StructureType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
@@ -85,7 +85,6 @@ public final class ConvertConfigurationJobTest {
   private VendorConfiguration baseVendorConfig() {
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename("filename");
-    vc.setAnswerElement(new ConvertConfigurationAnswerElement());
     return vc;
   }
 
@@ -559,7 +558,8 @@ public final class ConvertConfigurationJobTest {
   @Test
   public void testRemoveInvalidVendorStructureIds() {
     String filename = "configs/config";
-    String structureType = "structureType";
+    StructureType type = CiscoStructureType.AAA_SERVER_GROUP;
+    String structureType = type.getDescription();
     String validStructureName = "validStructureName";
     String invalidStructureName = "invalidStructureName";
     Warnings w = new Warnings(false, true, false);
@@ -593,24 +593,14 @@ public final class ConvertConfigurationJobTest {
     // VS configuration with a structure definition for only the valid Vendor Structure ID
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
-    ccae.setDefinedStructures(
-        ImmutableSortedMap.of(
-            filename,
-            ImmutableSortedMap.of(
-                structureType,
-                ImmutableSortedMap.of(validStructureName, new DefinedStructureInfo()))));
+    vc.defineSingleLineStructure(type, validStructureName, 1);
 
     removeInvalidVendorStructureIds(c, vc, w);
     IpAccessList acl = Iterables.getOnlyElement(c.getIpAccessLists().values());
     assertThat(acl.getLines(), iterableWithSize(2));
-    AclLine line0 = acl.getLines().get(0);
-    AclLine line1 = acl.getLines().get(1);
-
     // Valid VSID persists and invalid one is removed
-    assertTrue(line0.getVendorStructureId().isPresent());
-    assertFalse(line1.getVendorStructureId().isPresent());
+    assertTrue(acl.getLines().get(0).getVendorStructureId().isPresent());
+    assertFalse(acl.getLines().get(1).getVendorStructureId().isPresent());
   }
 
   @Test
@@ -665,8 +655,6 @@ public final class ConvertConfigurationJobTest {
     IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
 
     // No matching defined structure, should fail assertion
     _thrown.expect(AssertionError.class);
@@ -676,7 +664,8 @@ public final class ConvertConfigurationJobTest {
   @Test
   public void testAssertVendorStructureIdsValidValid() {
     String filename = "configs/config";
-    String structureType = "structureType";
+    StructureType type = CiscoStructureType.AAA_SERVER_GROUP;
+    String structureType = type.getDescription();
     String validStructureName = "validStructureName";
     Warnings w = new Warnings(false, true, false);
 
@@ -696,14 +685,7 @@ public final class ConvertConfigurationJobTest {
     IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
-    ccae.setDefinedStructures(
-        ImmutableSortedMap.of(
-            filename,
-            ImmutableSortedMap.of(
-                structureType,
-                ImmutableSortedMap.of(validStructureName, new DefinedStructureInfo()))));
+    vc.defineSingleLineStructure(type, validStructureName, 1);
 
     // Matching defined structure, should not fail assertion
     assertVendorStructureIdsValid(c, vc, w);

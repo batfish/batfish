@@ -189,7 +189,6 @@ public class CheckPointGatewayGrammarTest {
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     CheckPointGatewayConfiguration vc = SerializationUtils.clone(vendorConfiguration);
-    vc.setAnswerElement(new ConvertConfigurationAnswerElement());
     vc.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     vc.setWarnings(parseWarnings);
     return vc;

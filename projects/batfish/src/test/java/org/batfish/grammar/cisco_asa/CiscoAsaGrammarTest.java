@@ -2188,7 +2188,6 @@ public final class CiscoAsaGrammarTest {
 
     // Finishes extraction, necessary for object NATs
     config.setWarnings(new Warnings());
-    config.setAnswerElement(new ConvertConfigurationAnswerElement());
     config.toVendorIndependentConfigurations();
 
     List<AsaNat> nats = config.getCiscoAsaNats();

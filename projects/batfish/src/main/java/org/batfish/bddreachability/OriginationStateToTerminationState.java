@@ -47,7 +47,7 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
 
   private OriginationStateToTerminationState() {}
 
-  static @Nullable List<StateExpr> originationStateToTerminationState(StateExpr expr) {
+  public static @Nullable List<StateExpr> originationStateToTerminationState(StateExpr expr) {
     return expr.accept(INSTANCE);
   }
 

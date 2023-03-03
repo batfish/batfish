@@ -28,9 +28,9 @@ public class JuniperFlattenerTest {
   public void testFlatLinesDoNotNest() {
     String hostname = "flatten-flat-lines-no-nesting";
 
-    List<String> copies =
-        Collections.nCopies(
-            FlatStatementTree.MAX_DEPTH + 1, "set routing-options autonomous-system 5");
+    int numCopies = 33;
+
+    List<String> copies = Collections.nCopies(numCopies, "set routing-options autonomous-system 5");
 
     String text =
         String.join(
