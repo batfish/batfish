@@ -2119,7 +2119,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            // the model will prefer the path that does not encounter the unsupported ExcluseAsPath
+            // the model will prefer the path that does not encounter the unsupported ExcludeAsPath
             // statement
             .setNetwork(Prefix.parse("1.0.0.0/24"))
             .setOriginatorIp(Ip.ZERO)
