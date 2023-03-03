@@ -4,8 +4,10 @@ import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
+import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.RoutingProtocol.CONNECTED;
 import static org.batfish.datamodel.RoutingProtocol.HMM;
+import static org.batfish.datamodel.tracking.TrackMethods.bgpRoute;
 import static org.batfish.datamodel.tracking.TrackMethods.negated;
 import static org.batfish.datamodel.tracking.TrackMethods.reachability;
 import static org.batfish.datamodel.tracking.TrackMethods.route;
@@ -29,6 +31,8 @@ import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -37,16 +41,22 @@ import org.batfish.datamodel.HmmRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.OriginMechanism;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackRoute;
+import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Test;
 
@@ -75,6 +85,41 @@ public final class IncrementalBdpEngineTest {
     assertTrue(evaluateTrackRoute(trMatchWithProtocol, node));
     assertFalse(evaluateTrackRoute(trPrefixMismatch, node));
     assertFalse(evaluateTrackRoute(trProtocolMismatch, node));
+  }
+
+  @Test
+  public void testEvaluateTrackRoute_bgp() {
+    Configuration c =
+        Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
+    Vrf v = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess.builder()
+        .setEbgpAdminCost(100)
+        .setIbgpAdminCost(100)
+        .setLocalAdminCost(100)
+        .setVrf(v)
+        .setRouterId(Ip.ZERO)
+        .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+        .build();
+    Node node = new Node(c);
+    Bgpv4Rib rib = node.getVirtualRouter(DEFAULT_VRF_NAME).get().getBgpRoutingProcess()._bgpv4Rib;
+    Prefix prefix = Prefix.parse("192.0.2.0/24");
+    rib.mergeRoute(
+        Bgpv4Route.builder()
+            .setNetwork(prefix)
+            .setProtocol(BGP)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.2.3.4")))
+            .setNextHop(NextHopDiscard.instance())
+            .build());
+    TrackRoute trBgp = (TrackRoute) bgpRoute(prefix, DEFAULT_VRF_NAME);
+    TrackRoute trPrefixMismatch = (TrackRoute) bgpRoute(Prefix.ZERO, DEFAULT_VRF_NAME);
+
+    assertTrue(evaluateTrackRoute(trBgp, node));
+    assertFalse(evaluateTrackRoute(trPrefixMismatch, node));
   }
 
   @Test
