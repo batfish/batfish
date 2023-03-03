@@ -2041,19 +2041,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   private static @Nonnull ExtendedCommunity toExtendedCommunity(Vt_communityContext ctx) {
-    if (ctx.getText() != null) {
-      return ExtendedCommunity.parse(ctx.getText());
-    } else {
-      throw new BatfishException("invalid extended community: " + ctx.getText());
-    }
+    return ExtendedCommunity.parse(ctx.getText());
   }
 
   private static @Nonnull ExtendedCommunity toExtendedCommunity(Extended_communityContext ctx) {
-    if (ctx.getText() != null) {
-      return ExtendedCommunity.parse(ctx.getText());
-    } else {
-      throw new BatfishException("invalid extended community: " + ctx.getText());
-    }
+    return ExtendedCommunity.parse(ctx.getText());
   }
 
   private @Nonnull Optional<SubRange> toSubRange(
@@ -3465,11 +3457,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSovt_auto(Sovt_autoContext ctx) {
-    if (ctx.AUTO() != null) {
-      _currentLogicalSystem
-          .getOrInitSwitchOptions()
-          .setVrfTargetCommunityorAuto(ExtendedCommunityOrAuto.auto());
-    }
+    _currentLogicalSystem
+        .getOrInitSwitchOptions()
+        .setVrfTargetCommunityorAuto(ExtendedCommunityOrAuto.auto());
   }
 
   @Override
@@ -4422,12 +4412,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEvovt_auto(Evovt_autoContext ctx) {
-    if (ctx.AUTO() != null) {
-      _currentLogicalSystem
-          .getVniOptions()
-          .get(_currentVni)
-          .setVrfTargetCommunityorAuto(ExtendedCommunityOrAuto.auto());
-    }
+    _currentLogicalSystem
+        .getVniOptions()
+        .get(_currentVni)
+        .setVrfTargetCommunityorAuto(ExtendedCommunityOrAuto.auto());
   }
 
   @Override
@@ -6094,10 +6082,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRo_route_distinguisher_id(Ro_route_distinguisher_idContext ctx) {
-    if (ctx.ip_address() != null) {
-      Ip rdIp = toIp(ctx.ip_address());
-      _currentRoutingInstance.setRouteDistinguisherId(rdIp);
-    }
+    Ip rdIp = toIp(ctx.ip_address());
+    _currentRoutingInstance.setRouteDistinguisherId(rdIp);
   }
 
   @Override
@@ -7249,10 +7235,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitBf_evpn(Bf_evpnContext ctx) {
-    _currentBgpGroup.setEvpnAf(false);
-    if (ctx.EVPN() != null) {
-      _currentBgpGroup.setEvpnAf(true);
-    }
+    _currentBgpGroup.setEvpnAf(true);
   }
 
   @Override
