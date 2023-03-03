@@ -2089,6 +2089,62 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
+  public void testUnsupportedStatementAvoid() {
+    _policyBuilder
+        .addStatement(
+            new If(
+                matchPrefixSet(
+                    ImmutableList.of(
+                        new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 16)))),
+                ImmutableList.of(
+                    new ExcludeAsPath(new LiteralAsList(ImmutableList.of())),
+                    new StaticStatement(Statements.ExitAccept))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    PrefixRange prefixRange = new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 24));
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            Action.PERMIT,
+            false);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            // the model will prefer the path that does not encounter the unsupported ExcluseAsPath
+            // statement
+            .setNetwork(Prefix.parse("1.0.0.0/24"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
   public void testUnsupportedStatementDeny() {
     _policyBuilder.addStatement(
         new If(

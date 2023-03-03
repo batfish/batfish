@@ -46,6 +46,7 @@ public class AsPathRegexAtomicPredicatesTest {
     AsPathRegexAtomicPredicates copy = new AsPathRegexAtomicPredicates(asPathAPs);
 
     assertEquals(asPathAPs.getRegexes(), copy.getRegexes());
+    assertEquals(asPathAPs.getTrueRegex(), copy.getTrueRegex());
     assertEquals(asPathAPs.getRegexAtomicPredicates(), copy.getRegexAtomicPredicates());
     assertEquals(asPathAPs.getAtomicPredicateAutomata(), copy.getAtomicPredicateAutomata());
   }
