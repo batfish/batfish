@@ -8,8 +8,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.RoutingProtocol;
 
 public class RoutingProtocolInstance implements Serializable {
-  public static RoutingProtocolInstance bgp() {
-    return new RoutingProtocolInstance(RoutingProtocol.BGP, null);
+  public static RoutingProtocolInstance bgp(Long tag) {
+    return new RoutingProtocolInstance(RoutingProtocol.BGP, String.valueOf(tag));
   }
 
   public static RoutingProtocolInstance connected() {

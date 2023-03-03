@@ -11,7 +11,7 @@ import org.junit.Test;
 public class RoutingProtocolInstanceTest {
   @Test
   public void testConstruction() {
-    RoutingProtocolInstance bgp = RoutingProtocolInstance.bgp();
+    RoutingProtocolInstance bgp = RoutingProtocolInstance.bgp(10L);
     assertThat(bgp.getProtocol(), equalTo(RoutingProtocol.BGP));
 
     RoutingProtocolInstance connected = RoutingProtocolInstance.connected();
@@ -36,7 +36,7 @@ public class RoutingProtocolInstanceTest {
   @Test
   public void testEquals() {
     new EqualsTester()
-        .addEqualityGroup(RoutingProtocolInstance.bgp())
+        .addEqualityGroup(RoutingProtocolInstance.bgp(10L))
         .addEqualityGroup(RoutingProtocolInstance.connected())
         .addEqualityGroup(RoutingProtocolInstance.eigrp(10L))
         .addEqualityGroup(RoutingProtocolInstance.ospf())

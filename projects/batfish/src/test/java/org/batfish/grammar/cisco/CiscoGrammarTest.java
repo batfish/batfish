@@ -281,10 +281,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
@@ -433,6 +435,7 @@ import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
+import org.batfish.representation.cisco.EigrpRedistributionPolicy;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.HsrpDecrementPriority;
@@ -452,6 +455,7 @@ import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtAdditiveLine;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtLine;
+import org.batfish.representation.cisco.RoutingProtocolInstance;
 import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.TacacsPlusServerGroup;
@@ -1468,6 +1472,48 @@ public final class CiscoGrammarTest {
                 .setValues(
                     EigrpMetricValues.builder().setBandwidth(200).setDelay(200_000_000L).build())
                 .build()));
+  }
+
+  /**
+   * Test EIGRP route redistribution. Confirmation test when multiple redelivery settings are made
+   * in EIGRP.
+   */
+  @Test
+  public void testIosEigrpRedistributeMultiple() {
+    String hostname = "ios-eigrp-redistribute-eigrp-multi";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    Map<Long, EigrpProcess> eigrpProc = vc.getDefaultVrf().getEigrpProcesses();
+    assertTrue(eigrpProc.size() == 3);
+
+    List<EigrpRedistributionPolicy> eigrpRedists =
+        eigrpProc.get(10L).getRedistributionPolicies().entrySet().stream()
+            .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.EIGRP))
+            .map(Entry::getValue)
+            .collect(Collectors.toList());
+    assertTrue(eigrpRedists.size() == 2);
+
+    RoutingProtocolInstance instance1 = RoutingProtocolInstance.eigrp(10L);
+    RoutingProtocolInstance instance2 = RoutingProtocolInstance.eigrp(20L);
+    RoutingProtocolInstance instance3 = RoutingProtocolInstance.eigrp(30L);
+    EigrpRedistributionPolicy eigrpRedist0 = eigrpRedists.get(0);
+    EigrpRedistributionPolicy eigrpRedist1 = eigrpRedists.get(1);
+
+    assertTrue(eigrpRedist0.getRouteMap().equals("RM20"));
+    assertTrue(eigrpRedist1.getRouteMap().equals("RM30"));
+    assertThat(eigrpRedist0.getInstance(), equalTo(instance2));
+    assertThat(eigrpRedist1.getInstance(), equalTo(instance3));
+
+    assertTrue(eigrpProc.get(20L).getRedistributionPolicies().size() == 1);
+    assertTrue(eigrpProc.get(30L).getRedistributionPolicies().size() == 1);
+
+    EigrpRedistributionPolicy eigrpRedist2 =
+        eigrpProc.get(20L).getRedistributionPolicies().get(instance1);
+    EigrpRedistributionPolicy eigrpRedist3 =
+        eigrpProc.get(30L).getRedistributionPolicies().get(instance1);
+    assertTrue(eigrpRedist2.getRouteMap().equals("RM10"));
+    assertTrue(eigrpRedist3.getRouteMap().equals("RM10"));
+    assertThat(eigrpRedist2.getInstance(), equalTo(instance1));
+    assertThat(eigrpRedist3.getInstance(), equalTo(instance1));
   }
 
   @Test

@@ -3611,8 +3611,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .getTracks()
                 .computeIfAbsent(_currentTrack, num -> new TrackInterface(interfaceName));
     assert ctx.ROUTING() != null ^ ctx.LINE_PROTOCOL() != null;
-    // You can change the interface and the subtype, but you can't change to a
-    // different top-level
+    // You can change the interface and the subtype, but you can't change to a different top-level
     // track type.
     trackInterface.setInterfaceName(interfaceName);
     trackInterface.setIpRouting(ctx.ROUTING() != null);
@@ -4774,11 +4773,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (proc.getAsn() == null) {
       /*
        * This will happen with the following configuration:
-       * address-family ... autonomous-system 1
-       * autonomous-system 2
-       * no autonomous-system
-       * The result should be a process with ASN 1, but instead the result is an
-       * invalid EIGRP
+       *  address-family ... autonomous-system 1
+       *   autonomous-system 2
+       *   no autonomous-system
+       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
        * process with null ASN.
        */
       warn(ctx, "No EIGRP ASN configured");
@@ -5526,9 +5524,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_policy(If_ip_policyContext ctx) {
     String policyName = ctx.name.getText();
     warn(ctx, "PBR is not supported");
-    // for (Interface currentInterface : _currentInterfaces) {
-    // currentInterface.setRoutingPolicy(policyName);
-    // }
     _configuration.referenceStructure(
         ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, ctx.name.getLine());
   }
@@ -7185,10 +7180,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(RoutingProtocolInstance.bgp());
-    _currentEigrpProcess.getRedistributionPolicies().put(r.getInstance(), r);
     long as = toAsNum(ctx.asn);
-    r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, as);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.bgp(as);
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -8416,10 +8413,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_redistribute_bgp_cisco(Ro_redistribute_bgp_ciscoContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(RoutingProtocolInstance.bgp());
-    proc.getRedistributionPolicies().put(r.getInstance(), r);
     long as = toAsNum(ctx.bgp_asn());
-    r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.bgp(as);
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -10129,8 +10127,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int num = toInteger(ctx.num);
       return IpProtocol.fromNumber(num);
     } else if (ctx.AH() != null || ctx.AHP() != null) {
-      // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication
-      // header protocol
+      // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication header protocol
       return IpProtocol.AHP;
     } else if (ctx.EIGRP() != null) {
       return IpProtocol.EIGRP;
@@ -10160,7 +10157,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ND() != null) {
       return IpProtocol.IPV6_ICMP;
     } else if (ctx.NOS() != null) {
-      // Wikipedia: 94 KA9Q NOS compatible IP over IP tunneling
+      // Wikipedia: 94  KA9Q NOS compatible IP over IP tunneling
       assert IpProtocol.IPIP.number() == 94;
       return IpProtocol.IPIP;
     } else if (ctx.OSPF() != null) {
