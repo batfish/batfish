@@ -80,11 +80,15 @@ public final class IncrementalBdpEngineTest {
         (TrackRoute) route(Prefix.ZERO, ImmutableSet.of(), DEFAULT_VRF_NAME);
     TrackRoute trProtocolMismatch =
         (TrackRoute) route(prefix, ImmutableSet.of(HMM), DEFAULT_VRF_NAME);
+    TrackRoute trBgpButNoBgpRib = (TrackRoute) bgpRoute(prefix, DEFAULT_VRF_NAME);
 
     assertTrue(evaluateTrackRoute(trMatchWithoutProtocol, node));
     assertTrue(evaluateTrackRoute(trMatchWithProtocol, node));
     assertFalse(evaluateTrackRoute(trPrefixMismatch, node));
     assertFalse(evaluateTrackRoute(trProtocolMismatch, node));
+
+    // don't crash, should just return false
+    assertFalse(evaluateTrackRoute(trBgpButNoBgpRib, node));
   }
 
   @Test
