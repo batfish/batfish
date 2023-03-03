@@ -264,6 +264,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -1483,14 +1484,14 @@ public final class CiscoGrammarTest {
     String hostname = "ios-eigrp-redistribute-eigrp-multi";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     Map<Long, EigrpProcess> eigrpProc = vc.getDefaultVrf().getEigrpProcesses();
-    assertTrue(eigrpProc.size() == 3);
+    assertSame(eigrpProc.size(), 3);
 
     List<EigrpRedistributionPolicy> eigrpRedists =
         eigrpProc.get(10L).getRedistributionPolicies().entrySet().stream()
             .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.EIGRP))
             .map(Entry::getValue)
             .collect(Collectors.toList());
-    assertTrue(eigrpRedists.size() == 2);
+    assertSame(eigrpRedists.size(), 2);
 
     RoutingProtocolInstance instance1 = RoutingProtocolInstance.eigrp(10L);
     RoutingProtocolInstance instance2 = RoutingProtocolInstance.eigrp(20L);
@@ -1503,8 +1504,8 @@ public final class CiscoGrammarTest {
     assertThat(eigrpRedist0.getInstance(), equalTo(instance2));
     assertThat(eigrpRedist1.getInstance(), equalTo(instance3));
 
-    assertTrue(eigrpProc.get(20L).getRedistributionPolicies().size() == 1);
-    assertTrue(eigrpProc.get(30L).getRedistributionPolicies().size() == 1);
+    assertSame(eigrpProc.get(20L).getRedistributionPolicies().size(), 1);
+    assertSame(eigrpProc.get(30L).getRedistributionPolicies().size(), 1);
 
     EigrpRedistributionPolicy eigrpRedist2 =
         eigrpProc.get(20L).getRedistributionPolicies().get(instance1);
