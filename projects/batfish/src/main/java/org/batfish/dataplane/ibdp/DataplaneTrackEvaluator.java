@@ -7,6 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackAll;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackMethodEvaluator;
@@ -51,6 +52,16 @@ public final class DataplaneTrackEvaluator implements TrackMethodEvaluator {
   @Override
   public Boolean visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod) {
     return !visit(negatedTrackMethod.getTrackMethod());
+  }
+
+  @Override
+  public Boolean visitTrackAll(TrackAll trackAll) {
+    for (TrackMethod conjunct : trackAll.getConjuncts()) {
+      if (!visit(conjunct)) {
+        return Boolean.FALSE;
+      }
+    }
+    return Boolean.TRUE;
   }
 
   @Override
