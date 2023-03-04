@@ -63,6 +63,7 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackAll;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackReachability;
@@ -453,6 +454,11 @@ final class IncrementalBdpEngine {
     }
 
     @Override
+    public Stream<TrackReachability> visitTrackAll(TrackAll trackAll) {
+      return trackAll.getConjuncts().stream().flatMap(this::visit);
+    }
+
+    @Override
     public Stream<TrackReachability> visitTrackInterface(TrackInterface trackInterface) {
       return Stream.of();
     }
@@ -508,6 +514,11 @@ final class IncrementalBdpEngine {
     @Override
     public Stream<TrackRoute> visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod) {
       return visit(negatedTrackMethod.getTrackMethod());
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackAll(TrackAll trackAll) {
+      return trackAll.getConjuncts().stream().flatMap(this::visit);
     }
 
     @Override

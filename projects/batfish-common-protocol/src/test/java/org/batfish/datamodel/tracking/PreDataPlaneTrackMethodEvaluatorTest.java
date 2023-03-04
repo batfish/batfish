@@ -5,6 +5,7 @@ import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -54,6 +55,29 @@ public class PreDataPlaneTrackMethodEvaluatorTest {
     PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);
 
     assertFalse(evaluator.visit(NegatedTrackMethod.of(base)));
+  }
+
+  @Test
+  public void testVisitTrackAll() {
+    Configuration c =
+        Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
+    PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);
+
+    // vacuously true
+    assertTrue(evaluator.visit(TrackAll.of(ImmutableList.of())));
+    // singleton
+    assertTrue(evaluator.visit(TrackAll.of(ImmutableList.of(TrackTrue.instance()))));
+    assertFalse(
+        evaluator.visit(
+            TrackAll.of(ImmutableList.of(NegatedTrackMethod.of(TrackTrue.instance())))));
+    // multiple
+    assertTrue(
+        evaluator.visit(TrackAll.of(ImmutableList.of(TrackTrue.instance(), TrackTrue.instance()))));
+    assertFalse(
+        evaluator.visit(
+            TrackAll.of(
+                ImmutableList.of(
+                    TrackTrue.instance(), NegatedTrackMethod.of(TrackTrue.instance())))));
   }
 
   @Test
