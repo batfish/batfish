@@ -24,7 +24,12 @@ public class PreDataPlaneTrackMethodEvaluator implements TrackMethodEvaluator {
 
   @Override
   public Boolean visitTrackAll(TrackAll trackAll) {
-    return trackAll.getConjuncts().stream().allMatch(this::visit);
+    for (TrackMethod conjunct : trackAll.getConjuncts()) {
+      if (!visit(conjunct)) {
+        return Boolean.FALSE;
+      }
+    }
+    return Boolean.TRUE;
   }
 
   @Override
