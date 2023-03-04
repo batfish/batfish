@@ -23,6 +23,11 @@ public class PreDataPlaneTrackMethodEvaluator implements TrackMethodEvaluator {
   }
 
   @Override
+  public Boolean visitTrackAll(TrackAll trackAll) {
+    return trackAll.getConjuncts().stream().allMatch(this::visit);
+  }
+
+  @Override
   public Boolean visitTrackInterface(TrackInterface trackInterface) {
     Interface trackedInterface =
         _configuration.getAllInterfaces().get(trackInterface.getTrackedInterface());
