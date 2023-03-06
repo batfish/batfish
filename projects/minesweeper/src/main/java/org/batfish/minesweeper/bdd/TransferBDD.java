@@ -252,23 +252,28 @@ public class TransferBDD {
       currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(true));
       for (BooleanExpr e : conj.getConjuncts()) {
         List<TransferResult> nextResults = new ArrayList<>();
-        for (TransferResult curr : currResults) {
-          BDD currBDD = curr.getReturnValue().getSecond();
-          compute(e, toTransferBDDState(p.indent(), curr))
-              .forEach(
-                  r -> {
-                    TransferResult updated =
-                        r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
-                    // if we're on a path where e evaluates to false, then this path is done;
-                    // otherwise we will evaluate the next conjunct in the next iteration
-                    if (!updated.getReturnValue().getAccepted()) {
-                      finalResults.add(updated);
-                    } else {
-                      nextResults.add(updated);
-                    }
-                  });
+        try {
+          for (TransferResult curr : currResults) {
+            BDD currBDD = curr.getReturnValue().getSecond();
+            compute(e, toTransferBDDState(p.indent(), curr))
+                .forEach(
+                    r -> {
+                      TransferResult updated =
+                          r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                      // if we're on a path where e evaluates to false, then this path is done;
+                      // otherwise we will evaluate the next conjunct in the next iteration
+                      if (!updated.getReturnValue().getAccepted()) {
+                        finalResults.add(updated);
+                      } else {
+                        nextResults.add(updated);
+                      }
+                    });
+          }
+          currResults = nextResults;
+        } catch (UnsupportedFeatureException ufe) {
+          // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
+          currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
         }
-        currResults = nextResults;
       }
       finalResults.addAll(currResults);
 
@@ -279,23 +284,28 @@ public class TransferBDD {
       currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
       for (BooleanExpr e : disj.getDisjuncts()) {
         List<TransferResult> nextResults = new ArrayList<>();
-        for (TransferResult curr : currResults) {
-          BDD currBDD = curr.getReturnValue().getSecond();
-          compute(e, toTransferBDDState(p.indent(), curr))
-              .forEach(
-                  r -> {
-                    TransferResult updated =
-                        r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
-                    // if we're on a path where e evaluates to true, then this path is done;
-                    // otherwise we will evaluate the next disjunct in the next iteration
-                    if (updated.getReturnValue().getAccepted()) {
-                      finalResults.add(updated);
-                    } else {
-                      nextResults.add(updated);
-                    }
-                  });
+        try {
+          for (TransferResult curr : currResults) {
+            BDD currBDD = curr.getReturnValue().getSecond();
+            compute(e, toTransferBDDState(p.indent(), curr))
+                .forEach(
+                    r -> {
+                      TransferResult updated =
+                          r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                      // if we're on a path where e evaluates to true, then this path is done;
+                      // otherwise we will evaluate the next disjunct in the next iteration
+                      if (updated.getReturnValue().getAccepted()) {
+                        finalResults.add(updated);
+                      } else {
+                        nextResults.add(updated);
+                      }
+                    });
+          }
+          currResults = nextResults;
+        } catch (UnsupportedFeatureException ufe) {
+          // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
+          currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
         }
-        currResults = nextResults;
       }
       finalResults.addAll(currResults);
 
@@ -848,7 +858,7 @@ public class TransferBDD {
             newStates.addAll(compute(stmt, currState));
           }
         } catch (UnsupportedFeatureException e) {
-          unsupported(stmt, currState);
+          unsupported(e, currState.getTransferParam().getData());
           newStates.add(currState);
         }
       }
@@ -1130,17 +1140,16 @@ public class TransferBDD {
 
   // If the analysis encounters a routing policy feature that is not currently supported, we ignore
   // it and keep going, but we also log a warning and mark the output BDDRoute as having reached an
-  // unsupported statement.
-  private void unsupported(Statement stmt, TransferBDDState state) {
+  // unsupported feature.
+  private void unsupported(UnsupportedFeatureException e, BDDRoute route) {
     LOGGER.warn(
         "Unsupported statement in routing policy "
             + _policy.getName()
             + " of node "
             + _conf.getHostname()
             + ": "
-            + stmt);
-    TransferParam curP = state.getTransferParam();
-    curP.getData().setUnsupported(true);
+            + e.getMessage());
+    route.setUnsupported(true);
   }
 
   /*
