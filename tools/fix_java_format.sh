@@ -14,7 +14,7 @@ if [ ! -f ${JAR} ]; then
 fi
 
 # Some OS X users have installed GNU find as gfind.
-if [ "$(uname)" = "Darwin" ] && [ -x $(command -v gfind) ]; then
+if [ "$(uname)" = "Darwin" ] && [ -x "$(command -v gfind)" ]; then
   GNU_FIND=gfind
 else
   GNU_FIND=find
