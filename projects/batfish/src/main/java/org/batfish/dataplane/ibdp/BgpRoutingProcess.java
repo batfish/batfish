@@ -2427,7 +2427,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
     _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
     // Take a snapshot of best-paths from current RIBs so we know what to send to new non-add-path
-    // sessions, aand also so we can tell what ADDs can be sent to neighbors: those that correspond
+    // sessions, and also so we can tell what ADDs can be sent to neighbors: those that correspond
     // to current valid best paths.
     _bgpv4PrevBestPath = _bgpv4Rib.getBestPathRoutes();
     _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
