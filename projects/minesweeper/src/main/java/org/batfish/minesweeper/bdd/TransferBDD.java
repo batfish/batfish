@@ -24,6 +24,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterLine;
@@ -60,6 +61,7 @@ import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
@@ -71,6 +73,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -380,7 +383,7 @@ public class TransferBDD {
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
       Set<RoutingProtocol> rps = mp.getProtocols();
-      BDD matchRPBDD = _originalRoute.anyProtocolIn(rps);
+      BDD matchRPBDD = _originalRoute.anyElementOf(rps, p.getData().getProtocolHistory());
       finalResults.add(result.setReturnValueBDD(matchRPBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchPrefixSet) {
@@ -695,6 +698,19 @@ public class TransferBDD {
       MutableBDDInteger med = applyLongExprModification(curP.indent(), curMed, ie);
       curP.getData().setMed(med);
       return ImmutableList.of(toTransferBDDState(curP, result));
+
+    } else if (stmt instanceof SetOrigin) {
+      curP.debug("SetOrigin");
+      OriginExpr oe = ((SetOrigin) stmt).getOriginType();
+      if (oe instanceof LiteralOrigin) {
+        OriginType ot = ((LiteralOrigin) oe).getOriginType();
+        BDDDomain<OriginType> originType = new BDDDomain<>(curP.getData().getOriginType());
+        originType.setValue(ot);
+        curP.getData().setOriginType(originType);
+        return ImmutableList.of(toTransferBDDState(curP, result));
+      } else {
+        throw new UnsupportedFeatureException(oe.toString());
+      }
 
     } else if (stmt instanceof SetOspfMetricType) {
       curP.debug("SetOspfMetricType");

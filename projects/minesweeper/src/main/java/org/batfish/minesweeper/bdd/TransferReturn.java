@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.annotations.VisibleForTesting;
 import net.sf.javabdd.BDD;
 import org.batfish.minesweeper.utils.Tuple;
 
@@ -45,17 +46,14 @@ public class TransferReturn extends Tuple<BDDRoute, BDD> {
     return getFirst().dot(getSecond());
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof TransferReturn)) {
-      return false;
-    }
-    return super.equals(o) && _accepted == ((TransferReturn) o)._accepted;
-  }
-
-  @Override
-  public int hashCode() {
-    return super.hashCode() * Boolean.valueOf(_accepted).hashCode();
+  // TransferReturns are mutable (because the BDDRoutes that they contain are mutable), so in
+  // general the default pointer equality is the right thing to use;
+  // This method is used only to test the results of our symbolic route analysis.
+  @VisibleForTesting
+  boolean equalsForTesting(TransferReturn other) {
+    return this.getFirst().equalsForTesting(other.getFirst())
+        && this.getSecond().equals(other.getSecond())
+        && this.getAccepted() == other.getAccepted();
   }
 
   @Override

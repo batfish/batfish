@@ -18,7 +18,6 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
@@ -176,8 +175,7 @@ public class ModelGeneration {
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
             .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
-            .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */
-            .setOriginType(OriginType.IGP) /* dummy value until supported */;
+            .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */;
 
     BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 
@@ -189,6 +187,7 @@ public class ModelGeneration {
     builder.setAdmin(r.getAdminDist().satAssignmentToInt(fullModel));
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
+    builder.setOriginType(r.getOriginType().satAssignmentToValue(fullModel));
     builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
