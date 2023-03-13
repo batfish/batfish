@@ -63,6 +63,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -444,15 +445,25 @@ public class TransferBDD {
     } else if (expr instanceof MatchTag) {
       MatchTag mt = (MatchTag) expr;
       BDD mtBDD =
-          matchIntComparison(mt.getCmp(), mt.getTag(), routeForMatching(p.getData()).getTag());
+          matchLongComparison(mt.getCmp(), mt.getTag(), routeForMatching(p.getData()).getTag());
       finalResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchMetric) {
       MatchMetric mm = (MatchMetric) expr;
       BDD mmBDD =
-          matchIntComparison(
+          matchLongComparison(
               mm.getComparator(), mm.getMetric(), routeForMatching(p.getData()).getMed());
       finalResults.add(result.setReturnValueBDD(mmBDD).setReturnValueAccepted(true));
+
+    } else if (expr instanceof MatchClusterListLength) {
+      MatchClusterListLength mcll = (MatchClusterListLength) expr;
+      BDD mcllBDD =
+          matchIntComparison(
+              mcll.getComparator(),
+              mcll.getRhs(),
+              routeForMatching(p.getData()).getClusterListLength());
+      finalResults.add(result.setReturnValueBDD(mcllBDD).setReturnValueAccepted(true));
+
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
       switch (b.getType()) {
@@ -1053,13 +1064,9 @@ public class TransferBDD {
   }
 
   // Produce a BDD representing a constraint on the given MutableBDDInteger that enforces the
-  // integer (in)equality constraint represented by the given IntComparator and LongExpr
-  private BDD matchIntComparison(IntComparator comp, LongExpr expr, MutableBDDInteger bddInt)
+  // integer equality constraint represented by the given IntComparator and long value
+  private BDD matchLongValueComparison(IntComparator comp, long val, MutableBDDInteger bddInt)
       throws UnsupportedFeatureException {
-    if (!(expr instanceof LiteralLong)) {
-      throw new UnsupportedFeatureException(expr.toString());
-    }
-    long val = ((LiteralLong) expr).getValue();
     switch (comp) {
       case EQ:
         return bddInt.value(val);
@@ -1074,6 +1081,28 @@ public class TransferBDD {
       default:
         throw new UnsupportedFeatureException(comp.getClass().getSimpleName());
     }
+  }
+
+  // Produce a BDD representing a constraint on the given MutableBDDInteger that enforces the
+  // integer equality constraint represented by the given IntComparator and IntExpr
+  private BDD matchIntComparison(IntComparator comp, IntExpr expr, MutableBDDInteger bddInt)
+      throws UnsupportedFeatureException {
+    if (!(expr instanceof LiteralInt)) {
+      throw new UnsupportedFeatureException(expr.toString());
+    }
+    int val = ((LiteralInt) expr).getValue();
+    return matchLongValueComparison(comp, val, bddInt);
+  }
+
+  // Produce a BDD representing a constraint on the given MutableBDDInteger that enforces the
+  // integer (in)equality constraint represented by the given IntComparator and LongExpr
+  private BDD matchLongComparison(IntComparator comp, LongExpr expr, MutableBDDInteger bddInt)
+      throws UnsupportedFeatureException {
+    if (!(expr instanceof LiteralLong)) {
+      throw new UnsupportedFeatureException(expr.toString());
+    }
+    long val = ((LiteralLong) expr).getValue();
+    return matchLongValueComparison(comp, val, bddInt);
   }
 
   /*
