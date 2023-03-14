@@ -40671,6 +40671,33 @@
             "                        (ip_prefix*",
             "                          IP_PREFIX:'192.168.100.200/32')))))))))))",
             "    NEWLINE:'\\n')",
+            "  (deactivate_line*",
+            "    DEACTIVATE:'deactivate'",
+            "    (deactivate_line_tail*",
+            "      (hierarchy_element*",
+            "        ROUTING_OPTIONS:'routing-options')",
+            "      (hierarchy_element*",
+            "        STATIC:'static'))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_static",
+            "              STATIC:'static'",
+            "              (ros_route",
+            "                ROUTE:'route'",
+            "                (ip_prefix*",
+            "                  IP_PREFIX:'10.40.40.0/24')",
+            "                (rosr_common*",
+            "                  (rosr_next_hop",
+            "                    NEXT_HOP:'next-hop'",
+            "                    (ip_address*",
+            "                      IP_ADDRESS:'10.200.100.4'  <== mode:M_Interface)))))))))",
+            "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
             "    (set_line_tail*",
@@ -79869,16 +79896,12 @@
           "bridge-domain" : {
             "bd_100" : {
               "bridge-domain self reference" : [
-                81,
-                82,
-                83
+                221
               ]
             },
             "bd_101" : {
               "bridge-domain self reference" : [
-                84,
-                85,
-                86
+                221
               ]
             }
           },
@@ -79917,7 +79940,7 @@
             },
             "irb.100" : {
               "bridge-domains routing-interface" : [
-                82
+                224
               ],
               "interface" : [
                 83
@@ -79925,7 +79948,7 @@
             },
             "irb.101" : {
               "bridge-domains routing-interface" : [
-                85
+                231
               ]
             },
             "lo0" : {
@@ -84797,7 +84820,7 @@
           "interface" : {
             "irb.101" : {
               "bridge-domains routing-interface" : [
-                85
+                231
               ]
             }
           }

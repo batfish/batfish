@@ -1,10 +1,13 @@
 package org.batfish.datamodel.tracking;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.tracking.TrackRoute.RibType;
 
 /** Utility class for constructing track methods. */
 public final class TrackMethods {
@@ -67,7 +70,23 @@ public final class TrackMethods {
    */
   public static @Nonnull TrackMethod route(
       Prefix prefix, Set<RoutingProtocol> protocols, String vrf) {
-    return TrackRoute.of(prefix, protocols, vrf);
+    return TrackRoute.of(prefix, protocols, RibType.MAIN, vrf);
+  }
+
+  /** Succeeds when the BGP RIB of {@code vrf} contains a route for {@code prefix}. */
+  public static @Nonnull TrackMethod bgpRoute(Prefix prefix, String vrf) {
+    return TrackRoute.of(prefix, ImmutableSet.of(), RibType.BGP, vrf);
+  }
+
+  /** Succeeds when no conjunct fails. */
+  public static @Nonnull TrackMethod all(List<TrackMethod> conjuncts) {
+    if (conjuncts.isEmpty()) {
+      return alwaysTrue();
+    } else if (conjuncts.size() == 1) {
+      return conjuncts.get(0);
+    } else {
+      return TrackAll.of(conjuncts);
+    }
   }
 
   private TrackMethods() {}

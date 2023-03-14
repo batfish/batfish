@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -46,6 +47,7 @@ import org.batfish.common.topology.TunnelTopology;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
@@ -61,6 +63,7 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
 import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackAll;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackReachability;
@@ -69,9 +72,9 @@ import org.batfish.datamodel.tracking.TrackTrue;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.DataplaneTrackEvaluator.DataPlaneTrackMethodEvaluatorProvider;
+import org.batfish.dataplane.ibdp.TrackRouteUtils.GetRoutesForPrefix;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
-import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.version.BatfishVersion;
 
@@ -451,6 +454,11 @@ final class IncrementalBdpEngine {
     }
 
     @Override
+    public Stream<TrackReachability> visitTrackAll(TrackAll trackAll) {
+      return trackAll.getConjuncts().stream().flatMap(this::visit);
+    }
+
+    @Override
     public Stream<TrackReachability> visitTrackInterface(TrackInterface trackInterface) {
       return Stream.of();
     }
@@ -506,6 +514,11 @@ final class IncrementalBdpEngine {
     @Override
     public Stream<TrackRoute> visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod) {
       return visit(negatedTrackMethod.getTrackMethod());
+    }
+
+    @Override
+    public Stream<TrackRoute> visitTrackAll(TrackAll trackAll) {
+      return trackAll.getConjuncts().stream().flatMap(this::visit);
     }
 
     @Override
@@ -591,8 +604,21 @@ final class IncrementalBdpEngine {
 
   @VisibleForTesting
   static boolean evaluateTrackRoute(TrackRoute trackRoute, Node node) {
-    Rib rib = node.getVirtualRouter(trackRoute.getVrf()).get().getMainRib();
-    return TrackRouteUtils.evaluateTrackRoute(trackRoute, rib);
+    switch (trackRoute.getRibType()) {
+      case BGP:
+        return TrackRouteUtils.evaluateTrackRoute(
+            trackRoute,
+            Optional.ofNullable(
+                    node.getVirtualRouter(trackRoute.getVrf()).get().getBgpRoutingProcess())
+                .<GetRoutesForPrefix<Bgpv4Route>>map(brp -> brp._bgpv4Rib::getRoutes)
+                .orElse(TrackRouteUtils::emptyGetRoutesForPrefix));
+      case MAIN:
+        return TrackRouteUtils.evaluateTrackRoute(
+            trackRoute, node.getVirtualRouter(trackRoute.getVrf()).get().getMainRib()::getRoutes);
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unsupported RibType: %s", trackRoute.getRibType()));
+    }
   }
 
   /**

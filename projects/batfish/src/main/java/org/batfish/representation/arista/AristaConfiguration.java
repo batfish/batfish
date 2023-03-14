@@ -63,6 +63,7 @@ import com.google.common.primitives.Ints;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -2585,12 +2586,12 @@ public final class AristaConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(AristaStructureType.INTERFACE, ImmutableSortedMap.of())
-            .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
+        _structureManager
+            .getStructureReferences(AristaStructureType.INTERFACE)
+            .getOrDefault("Null0", ImmutableMap.of())
+            .values()
             .stream()
-            .flatMap(e -> e.getValue().stream())
+            .flatMap(Collection::stream)
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(AristaStructureType.INTERFACE, "Null0", firstRefToNull0.get());

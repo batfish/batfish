@@ -185,7 +185,6 @@ public class FrrGrammarTest {
     _ccae = new ConvertConfigurationAnswerElement();
     _warnings = new Warnings(true, true, true);
     _config.setFilename(FILENAME);
-    _config.setAnswerElement(_ccae);
     _config.setWarnings(_warnings);
   }
 
@@ -199,11 +198,7 @@ public class FrrGrammarTest {
 
   private Set<Integer> getStructureReferences(
       FrrStructureType type, String name, FrrStructureUsage usage) {
-    // The config keeps reference data in a private variable, and only copies into the answer
-    // element when you set it.
-    _config.setAnswerElement(new ConvertConfigurationAnswerElement());
-    return _config
-        .getAnswerElement()
+    return _ccae
         .getReferencedStructures()
         .get(FILENAME)
         .get(type.getDescription())
@@ -222,6 +217,7 @@ public class FrrGrammarTest {
     settings.setThrowOnParserError(true);
 
     parseFromTextWithSettings(src, settings);
+    _config.getStructureManager().saveInto(_ccae, _config.getFilename());
   }
 
   /**

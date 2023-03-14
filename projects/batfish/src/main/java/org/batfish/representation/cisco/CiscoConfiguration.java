@@ -2917,12 +2917,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+        _structureManager
+            .getStructureReferences(CiscoStructureType.INTERFACE)
             .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
+            .values()
             .stream()
-            .flatMap(e -> e.getValue().stream())
+            .flatMap(Collection::stream)
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());
