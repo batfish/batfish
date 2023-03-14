@@ -188,7 +188,6 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     // Evict older non-trackable-local routes for same prefix, receivedFrom, and path-id.
     // Note that trackable local routes are managed elsewhere,
     // e.g. in Bgpv4Rib.{add,remove}LocalRoute
-    Prefix prefix = route.getNetwork();
     RibDelta<R> evictionDelta =
         route.isTrackableLocalRoute() ? RibDelta.empty() : evictSamePrefixReceivedFromPathId(route);
     Map<NextHop, SortedSet<R>> routesByNh = null;
