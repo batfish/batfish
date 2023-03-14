@@ -212,20 +212,24 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   /**
    * Evict any distinct existing route with the same values as {@code route} for {@link
    * BgpRoute#getNetwork()}, {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()}.
-   *
-   * <p>
    */
   private @Nonnull RibDelta<R> evictSamePrefixReceivedFromPathId(R route) {
     Set<R> routesForPrefix =
+        // Make a copy because we are modifying the returned view
         ImmutableSet.copyOf(
             _backupRoutes != null
+                // Get a list of all the routes we may need to withdraw.
+                // Delegate the actual removal process to removeRouteGetDelta, which handles
+                // all bookkeeping.
+                // Note that backup routes contains all
                 ? _backupRoutes.get(route.getNetwork())
                 : super.getRoutes(route.getNetwork()));
-    if (routesForPrefix.contains(route)) {
-      return RibDelta.empty();
-    }
     RibDelta.Builder<R> delta = RibDelta.builder();
     for (R tenant : routesForPrefix) {
+      if (tenant.equals(route)) {
+        // not distinct, leave in to avoid unnecessary churn and clock update
+        continue;
+      }
       if (route.getReceivedFrom().equals(tenant.getReceivedFrom())
           && Objects.equals(route.getPathId(), tenant.getPathId())) {
         delta.from(removeRouteGetDelta(tenant));
