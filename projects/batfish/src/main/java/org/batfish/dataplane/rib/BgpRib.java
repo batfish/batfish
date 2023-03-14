@@ -188,6 +188,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     // Evict older non-trackable-local routes for same prefix, receivedFrom, and path-id.
     // Note that trackable local routes are managed elsewhere,
     // e.g. in Bgpv4Rib.{add,remove}LocalRoute
+    Prefix prefix = route.getNetwork();
     RibDelta<R> evictionDelta =
         route.isTrackableLocalRoute() ? RibDelta.empty() : evictSamePrefixReceivedFromPathId(route);
     Map<NextHop, SortedSet<R>> routesByNh = null;
@@ -214,28 +215,31 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    * BgpRoute#getNetwork()}, {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()}.
    */
   private @Nonnull RibDelta<R> evictSamePrefixReceivedFromPathId(R route) {
-    Set<R> routesForPrefix =
-        // Make a copy because we are modifying the returned view
-        ImmutableSet.copyOf(
-            _backupRoutes != null
-                // Get a list of all the routes we may need to withdraw.
-                // Delegate the actual removal process to removeRouteGetDelta, which handles
-                // all bookkeeping.
-                // Note that backup routes contains all
-                ? _backupRoutes.get(route.getNetwork())
-                : super.getRoutes(route.getNetwork()));
-    RibDelta.Builder<R> delta = RibDelta.builder();
-    for (R tenant : routesForPrefix) {
-      if (tenant.equals(route)) {
-        // not distinct, leave in to avoid unnecessary churn and clock update
-        continue;
-      }
-      if (route.getReceivedFrom().equals(tenant.getReceivedFrom())
-          && Objects.equals(route.getPathId(), tenant.getPathId())) {
-        delta.from(removeRouteGetDelta(tenant));
+    Prefix prefix = route.getNetwork();
+    R oldRoute =
+        getRouteSamePrefixReceivedFromPathId(
+            route, _backupRoutes != null ? _backupRoutes.get(prefix) : super.getRoutes(prefix));
+    if (oldRoute == null || route.equals(oldRoute)) {
+      return RibDelta.empty();
+    } else {
+      return removeRouteGetDelta(oldRoute);
+    }
+  }
+
+  /**
+   * Return a BGP route with the same values as {@code route} for {@link BgpRoute#getNetwork()},
+   * {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()} from {@code oldRoutes}.
+   *
+   * <p>If no such route is found in {@code oldRoutes}, return {@code null}.
+   */
+  protected final @Nullable R getRouteSamePrefixReceivedFromPathId(R route, Iterable<R> oldRoutes) {
+    for (R oldRoute : oldRoutes) {
+      if (route.getReceivedFrom().equals(oldRoute.getReceivedFrom())
+          && Objects.equals(route.getPathId(), oldRoute.getPathId())) {
+        return oldRoute;
       }
     }
-    return delta.build();
+    return null;
   }
 
   @Override
