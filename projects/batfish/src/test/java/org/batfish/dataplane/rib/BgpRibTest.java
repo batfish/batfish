@@ -12,10 +12,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFrom;
@@ -25,13 +27,54 @@ import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Test;
 
 /** Tests of {@link BgpRib} */
 public class BgpRibTest {
+
+  @Test
+  public void testEvictSamePrefixReceivedFromPathId() {
+    Bgpv4Rib bestPathRib =
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.ROUTER_ID,
+            999,
+            MultipathEquivalentAsPathMatchMode.PATH_LENGTH,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+    Bgpv4Route.Builder rb =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.strict("10.0.0.1/32"))
+            .setAdmin(200)
+            .setClusterList(ImmutableSet.of(1L))
+            .setLocalPreference(100L)
+            .setMetric(0)
+            .setNextHop(NextHopIp.of(Ip.parse("10.0.0.2")))
+            .setOriginatorIp(Ip.parse("10.0.0.2"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.0.0.2")))
+            .setReceivedFromRouteReflectorClient(true);
+    Bgpv4Route rb1 =
+        rb.setAsPath(AsPath.ofSingletonAsSets(1L, 21L, 3L))
+            .setCommunities(CommunitySet.of(StandardCommunity.of(1, 1)))
+            .build();
+    Bgpv4Route rb2 =
+        rb.setAsPath(AsPath.ofSingletonAsSets(1L, 22L, 3L))
+            .setCommunities(CommunitySet.of(StandardCommunity.of(1, 2)))
+            .build();
+    bestPathRib.mergeRoute(rb1);
+    RibDelta<Bgpv4Route> delta = bestPathRib.mergeRouteGetDelta(rb2);
+    assertThat(delta, equalTo(RibDelta.builder().remove(rb1, Reason.WITHDRAW).add(rb2).build()));
+  }
 
   @Test
   public void testMultipathMergeAndRemove_notMultipath() {
@@ -47,9 +90,12 @@ public class BgpRibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
-    Bgpv4Route good = rb.setLocalPreference(20).build();
-    Bgpv4Route better = rb.setLocalPreference(30).build();
-    Bgpv4Route best = rb.setLocalPreference(40).build();
+    Bgpv4Route good =
+        rb.setLocalPreference(20).setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1"))).build();
+    Bgpv4Route better =
+        rb.setLocalPreference(30).setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2"))).build();
+    Bgpv4Route best =
+        rb.setLocalPreference(40).setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3"))).build();
 
     {
       // Merge into empty RIB
@@ -119,21 +165,25 @@ public class BgpRibTest {
     Bgpv4Route nh1 =
         rb.setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
             .setOriginatorIp(Ip.parse("1.0.0.1"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.0.0.1")))
             .build();
 
     Bgpv4Route nh2better =
         rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
             .setOriginatorIp(Ip.parse("2.0.0.1"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.0.0.1")))
             .build();
 
     Bgpv4Route nh2worse =
         rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
             .setOriginatorIp(Ip.parse("2.0.0.2"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.0.0.2")))
             .build();
 
     Bgpv4Route nh3best =
         rb.setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
             .setOriginatorIp(Ip.parse("3.0.0.1"))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.0.0.1")))
             .setLocalPreference(1000)
             .build();
 
@@ -220,14 +270,17 @@ public class BgpRibTest {
     Bgpv4Route good =
         rb.setOriginatorIp(Ip.parse("1.1.1.40"))
             .setNextHop(NextHopIp.of(Ip.parse("1.1.1.40")))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.40")))
             .build();
     Bgpv4Route better =
         rb.setOriginatorIp(Ip.parse("1.1.1.30"))
             .setNextHop(NextHopIp.of(Ip.parse("1.1.1.30")))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.30")))
             .build();
     Bgpv4Route best =
         rb.setOriginatorIp(Ip.parse("1.1.1.20"))
             .setNextHop(NextHopIp.of(Ip.parse("1.1.1.20")))
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.20")))
             .build();
     {
       // Merge into empty RIB

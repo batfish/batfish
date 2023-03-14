@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -184,6 +185,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   @Nonnull
   @Override
   public RibDelta<R> mergeRouteGetDelta(R route) {
+    // Evict older non-trackable-local routes for same prefix, receivedFrom, and path-id.
+    // Note that trackable local routes are managed elsewhere,
+    // e.g. in Bgpv4Rib.{add,remove}LocalRoute
+    RibDelta<R> evictionDelta =
+        route.isTrackableLocalRoute() ? RibDelta.empty() : evictSamePrefixReceivedFromPathId(route);
     Map<NextHop, SortedSet<R>> routesByNh = null;
     boolean multipath = isMultipath();
     if (multipath) {
@@ -200,7 +206,32 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
     }
-    return delta;
+    return RibDelta.<R>builder().from(evictionDelta).from(delta).build();
+  }
+
+  /**
+   * Evict any distinct existing route with the same values as {@code route} for {@link
+   * BgpRoute#getNetwork()}, {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()}.
+   *
+   * <p>
+   */
+  private @Nonnull RibDelta<R> evictSamePrefixReceivedFromPathId(R route) {
+    Set<R> routesForPrefix =
+        ImmutableSet.copyOf(
+            _backupRoutes != null
+                ? _backupRoutes.get(route.getNetwork())
+                : super.getRoutes(route.getNetwork()));
+    if (routesForPrefix.contains(route)) {
+      return RibDelta.empty();
+    }
+    RibDelta.Builder<R> delta = RibDelta.builder();
+    for (R tenant : routesForPrefix) {
+      if (route.getReceivedFrom().equals(tenant.getReceivedFrom())
+          && Objects.equals(route.getPathId(), tenant.getPathId())) {
+        delta.from(removeRouteGetDelta(tenant));
+      }
+    }
+    return delta.build();
   }
 
   @Override
