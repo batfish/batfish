@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.GenericRibReadOnly;
@@ -112,6 +113,12 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
               });
     }
 
+    /**
+     * Evict any distinct existing route with the same values as {@code route} for {@link
+     * BgpRoute#getNetwork()}, {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()}.
+     *
+     * <p>See also the same-named function in {@link BgpRib}.
+     */
     void evictSamePrefixReceivedFromPathId(Bgpv4Route route) {
       Bgpv4Route oldRoute =
           getRouteSamePrefixReceivedFromPathId(route, getBgpRoutes(route.getNetwork()));
