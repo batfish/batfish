@@ -24,6 +24,7 @@ public class BgpRouteTest {
   public void testJsonSerialization() {
     BgpRoute br =
         BgpRoute.builder()
+            .setClusterList(ImmutableSet.of(0L))
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
@@ -49,6 +50,7 @@ public class BgpRouteTest {
         .addEqualityGroup(brb.build(), brb.build())
         .addEqualityGroup(brb.setNetwork(Prefix.parse("1.1.2.0/24")).build())
         .addEqualityGroup(brb.setAsPath(AsPath.ofSingletonAsSets(1L, 1L)).build())
+        .addEqualityGroup(brb.setClusterList(ImmutableSet.of(1L)).build())
         .addEqualityGroup(brb.setCommunities(ImmutableSet.of(StandardCommunity.of(1L))).build())
         .addEqualityGroup(brb.setLocalPreference(10).build())
         .addEqualityGroup(brb.setMetric(10).build())
@@ -72,6 +74,7 @@ public class BgpRouteTest {
     BgpRoute br =
         BgpRoute.builder()
             .setAsPath(AsPath.ofSingletonAsSets(1L, 1L))
+            .setClusterList(ImmutableSet.of(0L, 1L))
             .setCommunities(ImmutableSet.of(StandardCommunity.of(1L)))
             .setLocalPreference(10)
             .setMetric(10)
