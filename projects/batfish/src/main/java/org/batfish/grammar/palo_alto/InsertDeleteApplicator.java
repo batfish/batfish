@@ -187,7 +187,10 @@ public class InsertDeleteApplicator extends PaloAltoParserBaseListener implement
     StatementTree subtree = tree;
     String lastWord = null;
     for (String word : _words) {
-      subtree = subtree.getOrAddSubtree(word);
+      subtree = subtree.getSubtree(word);
+      if (subtree == null) {
+        return;
+      }
       lastWord = word;
     }
     assert lastWord != null;
@@ -197,6 +200,7 @@ public class InsertDeleteApplicator extends PaloAltoParserBaseListener implement
             t -> {
               _statementsByTree.removeAll(t);
             });
+    assert subtree.getParent() != null;
     subtree.getParent().deleteSubtree(lastWord);
   }
 
