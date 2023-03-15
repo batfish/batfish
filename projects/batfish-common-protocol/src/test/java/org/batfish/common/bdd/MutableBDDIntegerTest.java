@@ -93,7 +93,7 @@ public class MutableBDDIntegerTest {
 
     assertTrue(x.value(0).equals(xPlus1.value(1))); // x == 0 <==> x+1 == 1
     assertTrue(x.value(1).equals(xPlus1.value(2))); // x == 1 <==> x+1 == 2
-    assertTrue(x.geq(31).imp(xPlus1.value(31)).equals(factory.one())); // x >= 31 ==> x+1 == 31
-    assertTrue(x.geq(20).imp(xPlus16.value(31)).equals(factory.one())); // x >= 15 ==> x+16 == 31
+    assertTrue(x.geq(30).equals(xPlus1.value(31))); // x >= 31 ==> x+1 == 31
+    assertTrue(x.geq(15).equals(xPlus16.value(31))); // x >= 15 ==> x+16 == 31
   }
 }
