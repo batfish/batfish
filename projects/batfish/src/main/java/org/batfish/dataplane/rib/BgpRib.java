@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -184,6 +185,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   @Nonnull
   @Override
   public RibDelta<R> mergeRouteGetDelta(R route) {
+    // Evict older non-trackable-local routes for same prefix, receivedFrom, and path-id.
+    // Note that trackable local routes are managed elsewhere,
+    // e.g. in Bgpv4Rib.{add,remove}LocalRoute
+    RibDelta<R> evictionDelta =
+        route.isTrackableLocalRoute() ? RibDelta.empty() : evictSamePrefixReceivedFromPathId(route);
     Map<NextHop, SortedSet<R>> routesByNh = null;
     boolean multipath = isMultipath();
     if (multipath) {
@@ -200,7 +206,39 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
     }
-    return delta;
+    return RibDelta.<R>builder().from(evictionDelta).from(delta).build();
+  }
+
+  /**
+   * Evict any distinct existing route with the same values as {@code route} for {@link
+   * BgpRoute#getNetwork()}, {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()}.
+   */
+  private @Nonnull RibDelta<R> evictSamePrefixReceivedFromPathId(R route) {
+    Prefix prefix = route.getNetwork();
+    R oldRoute =
+        getRouteSamePrefixReceivedFromPathId(
+            route, _backupRoutes != null ? _backupRoutes.get(prefix) : super.getRoutes(prefix));
+    if (oldRoute == null || route.equals(oldRoute)) {
+      return RibDelta.empty();
+    } else {
+      return removeRouteGetDelta(oldRoute);
+    }
+  }
+
+  /**
+   * Return a BGP route with the same values as {@code route} for {@link BgpRoute#getNetwork()},
+   * {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()} from {@code oldRoutes}.
+   *
+   * <p>If no such route is found in {@code oldRoutes}, return {@code null}.
+   */
+  protected final @Nullable R getRouteSamePrefixReceivedFromPathId(R route, Iterable<R> oldRoutes) {
+    for (R oldRoute : oldRoutes) {
+      if (route.getReceivedFrom().equals(oldRoute.getReceivedFrom())
+          && Objects.equals(route.getPathId(), oldRoute.getPathId())) {
+        return oldRoute;
+      }
+    }
+    return null;
   }
 
   @Override
