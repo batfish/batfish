@@ -495,7 +495,11 @@ public class AbstractRibTest {
             .setOriginatorIp(originator2)
             .setReceivedFrom(ReceivedFromIp.of(originator2))
             .build();
-    Bgpv4Route route3 = routeBuilder.setLocalPreference(1).build();
+    Bgpv4Route route3 =
+        routeBuilder
+            .setLocalPreference(1)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3")))
+            .build();
 
     bestPathRib.mergeRoute(route1);
     bestPathRib.mergeRoute(route2);

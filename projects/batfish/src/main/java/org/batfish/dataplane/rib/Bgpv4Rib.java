@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.GenericRibReadOnly;
@@ -46,25 +47,41 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     /** Map of NHIP to {@link Bgpv4Route} with that NHIP */
     private final @Nonnull SetMultimap<Ip, Bgpv4Route> _bgpRoutesByNhip;
 
+    /**
+     * Mapping : prefix -> routes tracked herein with that prefix.
+     *
+     * <p>Needed for efficient bookkeeping
+     */
+    private final @Nonnull SetMultimap<Prefix, Bgpv4Route> _bgpRoutesByPrefix;
+
     private final @Nonnull RibResolutionTrie _mainRibPrefixesAndBgpNhips;
 
     private ResolvabilityEnforcer() {
       _bgpRoutesByNhip = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+      _bgpRoutesByPrefix = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
       _mainRibPrefixesAndBgpNhips = new RibResolutionTrie();
     }
 
     void addBgpRoute(Bgpv4Route route) {
       Ip nhip = route.getNextHopIp();
       _bgpRoutesByNhip.put(nhip, route);
+      _bgpRoutesByPrefix.put(route.getNetwork(), route);
       _mainRibPrefixesAndBgpNhips.addNextHopIp(nhip);
     }
 
     void removeBgpRoute(Bgpv4Route route) {
       Ip nhip = route.getNextHopIp();
       _bgpRoutesByNhip.remove(nhip, route);
+      _bgpRoutesByPrefix.remove(route.getNetwork(), route);
       if (!_bgpRoutesByNhip.containsKey(nhip)) {
         _mainRibPrefixesAndBgpNhips.removeNextHopIp(nhip);
       }
+    }
+
+    /** Get all routes with the given {@code prefix} tracked by the resolvability enforcer. */
+    @Nonnull
+    Set<Bgpv4Route> getBgpRoutes(Prefix prefix) {
+      return _bgpRoutesByPrefix.get(prefix);
     }
 
     @Nonnull
@@ -94,6 +111,20 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
                   _mainRibPrefixesAndBgpNhips.removePrefix(prefix);
                 }
               });
+    }
+
+    /**
+     * Evict any distinct existing route with the same values as {@code route} for {@link
+     * BgpRoute#getNetwork()}, {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()}.
+     *
+     * <p>See also the same-named function in {@link BgpRib}.
+     */
+    void evictSamePrefixReceivedFromPathId(Bgpv4Route route) {
+      Bgpv4Route oldRoute =
+          getRouteSamePrefixReceivedFromPathId(route, getBgpRoutes(route.getNetwork()));
+      if (oldRoute != null && !route.equals(oldRoute)) {
+        removeBgpRoute(oldRoute);
+      }
     }
   }
 
@@ -152,6 +183,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       - routes that have a next vrf as the next hop
     */
     if (shouldCheckNextHopReachability(route) && _mainRib != null) {
+      _resolvabilityEnforcer.evictSamePrefixReceivedFromPathId(route);
       _resolvabilityEnforcer.addBgpRoute(route);
       if (!isResolvable(route.getNextHopIp())) {
         return RibDelta.empty();

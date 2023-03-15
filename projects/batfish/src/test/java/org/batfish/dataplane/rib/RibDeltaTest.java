@@ -186,7 +186,8 @@ public class RibDeltaTest {
     Bgpv4Route route = routeBuilder.build();
     // Better preference, kicks out route
     routeBuilder.setLocalPreference(route.getLocalPreference() + 1);
-    Bgpv4Route betterRoute = routeBuilder.build();
+    Bgpv4Route betterRoute =
+        routeBuilder.setReceivedFrom(ReceivedFromIp.of(Ip.parse("7.7.7.8"))).build();
 
     // Rib is empty beforehand, merges route, and then replaces it with betterRoute.
     List<RouteAdvertisement<Bgpv4Route>> firstRound =
@@ -200,7 +201,10 @@ public class RibDeltaTest {
     assertThat(firstRound, contains(equalTo(new RouteAdvertisement<>(betterRoute))));
 
     Bgpv4Route bestRoute =
-        routeBuilder.setLocalPreference(betterRoute.getLocalPreference() + 1).build();
+        routeBuilder
+            .setLocalPreference(betterRoute.getLocalPreference() + 1)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("7.7.7.9")))
+            .build();
     List<RouteAdvertisement<Bgpv4Route>> secondRound =
         RibDelta.<Bgpv4Route>builder()
             .from(rib.mergeRouteGetDelta(bestRoute))
