@@ -85,4 +85,11 @@ public final class PreprocessTest {
   public void testNop() throws IOException {
     assertValidPair(TESTCONFIGS_PREFIX, "nop-preprocess", "nop-preprocess");
   }
+
+  @Test
+  public void testApplyGroupsOrder() throws IOException {
+    assertValidPair(
+        "preprocess-flat-juniper-apply-groups-order-before",
+        "preprocess-flat-juniper-apply-groups-order-after");
+  }
 }
