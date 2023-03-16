@@ -97,20 +97,17 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     }
 
     void updateMainRibPrefixes(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-      mainRibDelta
-          .getActions()
-          // TODO Filter to routes that pass the resolution restriction, when one is added
-          .forEach(
-              action -> {
-                Prefix prefix = action.getRoute().getNetwork();
-                if (!action.isWithdrawn()) {
-                  // Route was added (note that the same route can't be removed in the same delta)
-                  _mainRibPrefixesAndBgpNhips.addPrefix(prefix);
-                } else if (_mainRib.getRoutes(prefix).isEmpty()) {
-                  // Route was removed, and there are no remaining routes for this prefix
-                  _mainRibPrefixesAndBgpNhips.removePrefix(prefix);
-                }
-              });
+      // TODO Filter to routes that pass the resolution restriction, when one is added
+      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> action : mainRibDelta.getActions()) {
+        Prefix prefix = action.getRoute().getNetwork();
+        if (!action.isWithdrawn()) {
+          // Route was added (note that the same route can't be removed in the same delta)
+          _mainRibPrefixesAndBgpNhips.addPrefix(prefix);
+        } else if (_mainRib.getRoutes(prefix).isEmpty()) {
+          // Route was removed, and there are no remaining routes for this prefix
+          _mainRibPrefixesAndBgpNhips.removePrefix(prefix);
+        }
+      }
     }
 
     /**
