@@ -119,7 +119,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       }
       Prefix prefix = delta.getPrefixes().findFirst().get();
       assert delta.getPrefixes().allMatch(prefix::equals);
-      if (delta.getActions().count() == 1) {
+      if (delta.getActions().size() == 1) {
         // No backup replacement, but there may be existing route(s) before an add or after a
         // withdraw. Need to check if anything now present matches resolution restriction.
         if (getRoutes(prefix).stream().anyMatch(_resolutionRestriction)) {
@@ -132,8 +132,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         // The only available routes now are the ADDs in the delta (either backup routes that were
         // promoted after a removal, or an added route that demoted existing routes to backup). So
         // we don't have to check the RIB.
-        if (delta
-            .getActions()
+        if (delta.stream()
             .anyMatch(
                 action ->
                     !action.isWithdrawn() && _resolutionRestriction.test(action.getRoute()))) {
@@ -142,17 +141,14 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
           _ribResolutionTrie.removePrefix(prefix);
         }
       }
-      delta
-          .getActions()
-          .forEach(
-              action -> {
-                AnnotatedRoute<AbstractRoute> route = action.getRoute();
-                if (action.isWithdrawn()) {
-                  _resolutionGraph.removeVertex(route);
-                } else {
-                  _resolutionGraph.addVertex(route);
-                }
-              });
+      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> action : delta.getActions()) {
+        AnnotatedRoute<AbstractRoute> route = action.getRoute();
+        if (action.isWithdrawn()) {
+          _resolutionGraph.removeVertex(route);
+        } else {
+          _resolutionGraph.addVertex(route);
+        }
+      }
     }
 
     /**
@@ -192,7 +188,9 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       Set<AnnotatedRoute<AbstractRoute>> affectedRoutes = new LinkedHashSet<>();
       // make sure route gets added first, then add everything else in the delta
       affectedRoutes.add(route);
-      initialDelta.getActions().map(RouteAdvertisement::getRoute).forEach(affectedRoutes::add);
+      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> ra : initialDelta.getActions()) {
+        affectedRoutes.add(ra.getRoute());
+      }
       initialDelta.getPrefixes().flatMap(p -> getAffectedRoutes(p)).forEach(affectedRoutes::add);
       while (!affectedRoutes.isEmpty()) {
         AnnotatedRoute<AbstractRoute> nextRoute = affectedRoutes.iterator().next();
@@ -237,12 +235,13 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         Set<AnnotatedRoute<AbstractRoute>> initialLpm = lpmIfValid(affectedRoute);
         if (initialLpm.isEmpty()) {
           delta = Rib.super.removeRouteGetDelta(affectedRoute);
-          if (delta.getActions().count() > 1) {
+          if (delta.getActions().size() > 1) {
             // backup routes replaced the removed route
-            delta
-                .getActions()
-                .filter(action -> !action.isWithdrawn())
-                .forEach(action -> remainingAffectedRoutes.add(action.getRoute()));
+            for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> action : delta.getActions()) {
+              if (!action.isWithdrawn()) {
+                remainingAffectedRoutes.add(action.getRoute());
+              }
+            }
           }
           postProcessDelta(delta);
         } else {

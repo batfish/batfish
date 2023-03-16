@@ -143,9 +143,7 @@ public class RibTest {
 
     // Both activating and NHIP route should be added on merge of activating route.
     assertThat(
-        rib.mergeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.mergeRouteGetDelta(activatingRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.adding(nhipRoute), RouteAdvertisement.adding(activatingRoute)));
   }
@@ -175,9 +173,7 @@ public class RibTest {
 
     // Activating and NHIP routes should be added on merge of activating route.
     assertThat(
-        rib.mergeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.mergeRouteGetDelta(activatingRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.adding(nhipRoute1),
             RouteAdvertisement.adding(nhipRoute2),
@@ -215,9 +211,7 @@ public class RibTest {
 
     // Activating and NHIP routes should be removed on withdrawal of activating route.
     assertThat(
-        rib.removeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.removeRouteGetDelta(activatingRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.withdrawing(nhipRoute1),
             RouteAdvertisement.withdrawing(nhipRoute2),
@@ -288,9 +282,7 @@ public class RibTest {
 
     // All routes should be removed due to loop created on removal of activating route
     assertThat(
-        rib.removeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.removeRouteGetDelta(activatingRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.withdrawing(activatingRoute),
             RouteAdvertisement.withdrawing(nhipRoute1),
@@ -299,9 +291,7 @@ public class RibTest {
 
     // All route should be re-added when activating route is re-merged, breaking the loop.
     assertThat(
-        rib.mergeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.mergeRouteGetDelta(activatingRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.adding(activatingRoute),
             RouteAdvertisement.adding(nhipRoute1),
@@ -393,9 +383,7 @@ public class RibTest {
 
     // ownNextHopRoute should be activated by activatingRoute.
     assertThat(
-        rib.mergeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.mergeRouteGetDelta(activatingRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.adding(activatingRoute),
             RouteAdvertisement.adding(ownNextHopRoute)));
@@ -425,9 +413,7 @@ public class RibTest {
     // moreSpecificOwnNextHopRoute should be activated by activatingRoute, and the former should
     // activate lessSpecificOwnNextHopRoute.
     assertThat(
-        rib.mergeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.mergeRouteGetDelta(activatingRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.adding(activatingRoute),
             RouteAdvertisement.adding(lessSpecificOwnNextHopRoute),
@@ -451,9 +437,7 @@ public class RibTest {
 
     // Removing active ownNextHopRoute should result in withdrawal.
     assertThat(
-        rib.removeRouteGetDelta(ownNextHopRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.removeRouteGetDelta(ownNextHopRoute).stream().collect(ImmutableList.toImmutableList()),
         contains(RouteAdvertisement.withdrawing(ownNextHopRoute)));
   }
 
@@ -508,8 +492,7 @@ public class RibTest {
     // Removing lessSpecificActivatingRoute should result in removal of ownNextHopRoute since
     // no activating route remains.
     assertThat(
-        rib.removeRouteGetDelta(lessSpecificActivatingRoute)
-            .getActions()
+        rib.removeRouteGetDelta(lessSpecificActivatingRoute).stream()
             .collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.withdrawing(lessSpecificActivatingRoute),
@@ -541,9 +524,7 @@ public class RibTest {
     // Removing activatingRoute should deactivate moreSpecificOwnNextHopRoute, and deactivating the
     // latter should deactivate lessSpecificOwnNextHopRoute.
     assertThat(
-        rib.removeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
+        rib.removeRouteGetDelta(activatingRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.withdrawing(activatingRoute),
             RouteAdvertisement.withdrawing(lessSpecificOwnNextHopRoute),
@@ -664,7 +645,7 @@ public class RibTest {
     // Replacing worse recursive route with better route should succeed, and worse route should
     // become backup.
     assertThat(
-        rib.mergeRouteGetDelta(betterRoute).getActions().collect(ImmutableList.toImmutableList()),
+        rib.mergeRouteGetDelta(betterRoute).stream().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.replacing(worseRoute), RouteAdvertisement.adding(betterRoute)));
   }
@@ -695,8 +676,7 @@ public class RibTest {
 
     // Removing nonrecursive route deactivates recursive route.
     assertThat(
-        rib.removeRouteGetDelta(nonrecursiveRoute)
-            .getActions()
+        rib.removeRouteGetDelta(nonrecursiveRoute).stream()
             .collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
             RouteAdvertisement.withdrawing(nonrecursiveRoute),

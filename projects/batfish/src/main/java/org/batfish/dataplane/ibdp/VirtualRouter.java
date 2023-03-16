@@ -279,14 +279,11 @@ public final class VirtualRouter {
    */
   static <R extends AbstractRoute, D extends R> void queueDelta(
       Queue<RouteAdvertisement<R>> queue, @Nonnull RibDelta<D> delta) {
-    delta
-        .getActions()
-        .forEach(
-            r -> {
-              @SuppressWarnings("unchecked") // Ok to upcast to R since immutable.
-              RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
-              queue.add(sanitized);
-            });
+    for (RouteAdvertisement<D> r : delta.getActions()) {
+      @SuppressWarnings("unchecked") // Ok to upcast to R since immutable.
+      RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
+      queue.add(sanitized);
+    }
   }
 
   /**
@@ -365,19 +362,15 @@ public final class VirtualRouter {
                         });
               }
             });
-    delta
-        .build()
-        .getActions()
-        .forEach(
-            action -> {
-              if (action.isWithdrawn()) {
-                _mainRibRouteDeltaBuilder.from(
-                    _mainRib.removeRouteGetDelta(annotateRoute(action.getRoute())));
-              } else {
-                _mainRibRouteDeltaBuilder.from(
-                    _mainRib.mergeRouteGetDelta(annotateRoute(action.getRoute())));
-              }
-            });
+    for (RouteAdvertisement<HmmRoute> action : delta.build().getActions()) {
+      if (action.isWithdrawn()) {
+        _mainRibRouteDeltaBuilder.from(
+            _mainRib.removeRouteGetDelta(annotateRoute(action.getRoute())));
+      } else {
+        _mainRibRouteDeltaBuilder.from(
+            _mainRib.mergeRouteGetDelta(annotateRoute(action.getRoute())));
+      }
+    }
     _hmmRoutes = newHmmRoutes.build();
   }
 
@@ -569,9 +562,11 @@ public final class VirtualRouter {
      * Updates from these BGP deltas into mainRib will be handled in finalizeBgp routes
      */
     if (!d.isEmpty() && _bgpRoutingProcess != null) {
-      d.getActions()
-          .filter(RouteAdvertisement::isWithdrawn)
-          .forEach(r -> _bgpRoutingProcess.removeAggregate(r.getRoute().getRoute()));
+      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> r : d.getActions()) {
+        if (r.isWithdrawn()) {
+          _bgpRoutingProcess.removeAggregate(r.getRoute().getRoute());
+        }
+      }
     }
   }
 
@@ -1003,9 +998,7 @@ public final class VirtualRouter {
       // Neither level enabled
       return;
     }
-    _routesForIsisRedistribution
-        .build()
-        .getActions()
+    _routesForIsisRedistribution.build().stream()
         // Don't redistribute IS-IS routes into IS-IS...
         .filter(ra -> !(ra.getRoute().getRoute() instanceof IsisRoute))
         .map(ra -> exportNonIsisRouteToIsis(ra.getRoute(), proc, isLevel1, _c))
@@ -1305,8 +1298,7 @@ public final class VirtualRouter {
         if (upgradeL1Routes) {
           // TODO: a little cumbersome, simplify later
           RibDelta.Builder<IsisRoute> upgradedRoutes = RibDelta.builder();
-          correctedL1Delta
-              .getActions()
+          correctedL1Delta.stream()
               .forEach(
                   ra -> {
                     IsisRoute l1Route = ra.getRoute();
@@ -1457,7 +1449,7 @@ public final class VirtualRouter {
             messageQueueStream(_isisIncomingRoutes),
             messageQueueStream(_crossVrfIncomingRoutes),
             // Exported routes
-            _routesForIsisRedistribution.build().getActions(),
+            _routesForIsisRedistribution.build().stream(),
             // Processes
             _ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode),
             _eigrpProcesses.values().stream().map(EigrpRoutingProcess::computeIterationHashCode),
@@ -1545,7 +1537,7 @@ public final class VirtualRouter {
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
           // TODO Will need to update once support is added for cross-VRF export policies
-          exportingVR._mainRibDeltaPrevRound.getActions(),
+          exportingVR._mainRibDeltaPrevRound.stream(),
           leakConfig.getImportPolicy());
     }
   }
