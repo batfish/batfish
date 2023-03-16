@@ -261,51 +261,49 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       RibDelta<R> initialDelta, Set<R> beforeRoutes) {
     RibDelta.Builder<R> builder = RibDelta.builder();
     Map<NextHop, SortedSet<R>> bestByNh = new HashMap<>(); // lazily computed
-    initialDelta.stream()
-        .forEach(
-            action -> {
-              R route = action.getRoute();
-              SortedSet<R> routesForNh =
-                  bestByNh.computeIfAbsent(
-                      route.getNextHop(),
-                      nh -> {
-                        SortedSet<R> beforeWithNh = new TreeSet<>(this::bestPathComparator);
-                        for (R r : beforeRoutes) {
-                          if (r.getNextHop().equals(nh)) {
-                            beforeWithNh.add(r);
-                          }
-                        }
-                        return beforeWithNh;
-                      });
-
-              if (action.isWithdrawn()) {
-                // withdraw
-                assert routesForNh.contains(route);
-                R oldBest = routesForNh.last();
-                routesForNh.remove(route);
-                if (oldBest.equals(route)) {
-                  builder.from(action);
-                  if (!routesForNh.isEmpty()) {
-                    // the removed route was best, so promote the new best
-                    builder.add(routesForNh.last());
-                  } // else the removed route was the last one, so the removal is the only action
-                } // else another route was better, so no change occurred
-              } else {
-                // add
-                assert !routesForNh.contains(route);
-                if (routesForNh.isEmpty()) {
-                  routesForNh.add(route);
-                  builder.from(action);
-                  return;
+    for (RouteAdvertisement<R> action : initialDelta.getActions()) {
+      R route = action.getRoute();
+      SortedSet<R> routesForNh =
+          bestByNh.computeIfAbsent(
+              route.getNextHop(),
+              nh -> {
+                SortedSet<R> beforeWithNh = new TreeSet<>(this::bestPathComparator);
+                for (R r : beforeRoutes) {
+                  if (r.getNextHop().equals(nh)) {
+                    beforeWithNh.add(r);
+                  }
                 }
-                R oldBest = routesForNh.last();
-                routesForNh.add(route);
-                R newBest = routesForNh.last();
-                if (newBest.equals(route)) {
-                  builder.remove(oldBest, Reason.REPLACE).from(action);
-                } // else not the best, so do nothing with this action
-              }
-            });
+                return beforeWithNh;
+              });
+
+      if (action.isWithdrawn()) {
+        // withdraw
+        assert routesForNh.contains(route);
+        R oldBest = routesForNh.last();
+        routesForNh.remove(route);
+        if (oldBest.equals(route)) {
+          builder.from(action);
+          if (!routesForNh.isEmpty()) {
+            // the removed route was best, so promote the new best
+            builder.add(routesForNh.last());
+          } // else the removed route was the last one, so the removal is the only action
+        } // else another route was better, so no change occurred
+      } else {
+        // add
+        assert !routesForNh.contains(route);
+        if (routesForNh.isEmpty()) {
+          routesForNh.add(route);
+          builder.from(action);
+          continue;
+        }
+        R oldBest = routesForNh.last();
+        routesForNh.add(route);
+        R newBest = routesForNh.last();
+        if (newBest.equals(route)) {
+          builder.remove(oldBest, Reason.REPLACE).from(action);
+        } // else not the best, so do nothing with this action
+      }
+    }
     return builder.build();
   }
 
@@ -327,13 +325,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     RibDelta<R> delta = actionRouteGetDelta(route, super::removeRouteGetDelta);
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
-      delta.stream()
-          .forEach(
-              a -> {
-                if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER && a.isWithdrawn()) {
-                  _logicalArrivalTime.remove(a.getRoute());
-                }
-              });
+      for (RouteAdvertisement<R> a : delta.getActions()) {
+        if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER && a.isWithdrawn()) {
+          _logicalArrivalTime.remove(a.getRoute());
+        }
+      }
     }
     return delta;
   }

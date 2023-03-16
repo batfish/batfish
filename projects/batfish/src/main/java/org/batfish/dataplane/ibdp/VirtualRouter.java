@@ -279,13 +279,11 @@ public final class VirtualRouter {
    */
   static <R extends AbstractRoute, D extends R> void queueDelta(
       Queue<RouteAdvertisement<R>> queue, @Nonnull RibDelta<D> delta) {
-    delta.stream()
-        .forEach(
-            r -> {
-              @SuppressWarnings("unchecked") // Ok to upcast to R since immutable.
-              RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
-              queue.add(sanitized);
-            });
+    for (RouteAdvertisement<D> r : delta.getActions()) {
+      @SuppressWarnings("unchecked") // Ok to upcast to R since immutable.
+      RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
+      queue.add(sanitized);
+    }
   }
 
   /**
@@ -364,17 +362,15 @@ public final class VirtualRouter {
                         });
               }
             });
-    delta.build().stream()
-        .forEach(
-            action -> {
-              if (action.isWithdrawn()) {
-                _mainRibRouteDeltaBuilder.from(
-                    _mainRib.removeRouteGetDelta(annotateRoute(action.getRoute())));
-              } else {
-                _mainRibRouteDeltaBuilder.from(
-                    _mainRib.mergeRouteGetDelta(annotateRoute(action.getRoute())));
-              }
-            });
+    for (RouteAdvertisement<HmmRoute> action : delta.build().getActions()) {
+      if (action.isWithdrawn()) {
+        _mainRibRouteDeltaBuilder.from(
+            _mainRib.removeRouteGetDelta(annotateRoute(action.getRoute())));
+      } else {
+        _mainRibRouteDeltaBuilder.from(
+            _mainRib.mergeRouteGetDelta(annotateRoute(action.getRoute())));
+      }
+    }
     _hmmRoutes = newHmmRoutes.build();
   }
 
@@ -566,9 +562,11 @@ public final class VirtualRouter {
      * Updates from these BGP deltas into mainRib will be handled in finalizeBgp routes
      */
     if (!d.isEmpty() && _bgpRoutingProcess != null) {
-      d.stream()
-          .filter(RouteAdvertisement::isWithdrawn)
-          .forEach(r -> _bgpRoutingProcess.removeAggregate(r.getRoute().getRoute()));
+      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> r : d.getActions()) {
+        if (r.isWithdrawn()) {
+          _bgpRoutingProcess.removeAggregate(r.getRoute().getRoute());
+        }
+      }
     }
   }
 

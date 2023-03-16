@@ -622,13 +622,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     if (!_mainRibIndependentNetworkInitializationDelta.isEmpty()
         && _process.getMainRibIndependentNetworkPolicy() != null) {
-      _mainRibIndependentNetworkInitializationDelta.stream()
-          .forEach(
-              a ->
-                  redistributeRouteToBgpRib(
-                      a,
-                      _policies.get(_process.getMainRibIndependentNetworkPolicy()).get(),
-                      NETWORK));
+      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a :
+          _mainRibIndependentNetworkInitializationDelta.getActions()) {
+        redistributeRouteToBgpRib(
+            a, _policies.get(_process.getMainRibIndependentNetworkPolicy()).get(), NETWORK);
+      }
       _mainRibIndependentNetworkInitializationDelta = RibDelta.empty();
     }
 
@@ -682,8 +680,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             "Undefined BGP redistribution policy {}. Skipping redistribution",
             _process.getRedistributionPolicy());
       } else {
-        mainRibDelta.stream()
-            .forEach(a -> redistributeRouteToBgpRib(a, redistributionPolicy.get(), REDISTRIBUTE));
+        for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a : mainRibDelta.getActions()) {
+          redistributeRouteToBgpRib(a, redistributionPolicy.get(), REDISTRIBUTE);
+        }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
               "Redistributed via redistribution policy into local BGP RIB node {}, VRF {}: {}",
@@ -705,8 +704,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             "Undefined BGP independent network policy {}. Skipping redistribution",
             independentNetworkPolicyName);
       } else {
-        mainRibDelta.stream()
-            .forEach(a -> redistributeRouteToBgpRib(a, independentNetworkPolicy.get(), NETWORK));
+        for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a : mainRibDelta.getActions()) {
+          redistributeRouteToBgpRib(a, independentNetworkPolicy.get(), NETWORK);
+        }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
               "Redistributed via independent network policy into local BGP RIB node {}, VRF {}: {}",
@@ -805,15 +805,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private static @Nonnull <T extends EvpnRoute<?, ?>, U extends T> RibDelta<T> importRibDelta(
       EvpnMasterRib<T> rib, RibDelta<U> delta) {
     RibDelta.Builder<T> builder = RibDelta.builder();
-    delta.stream()
-        .forEach(
-            action -> {
-              if (action.isWithdrawn()) {
-                builder.from(rib.removeRouteGetDelta(action.getRoute()));
-              } else {
-                builder.from(rib.mergeRouteGetDelta(action.getRoute()));
-              }
-            });
+    for (RouteAdvertisement<U> action : delta.getActions()) {
+      if (action.isWithdrawn()) {
+        builder.from(rib.removeRouteGetDelta(action.getRoute()));
+      } else {
+        builder.from(rib.mergeRouteGetDelta(action.getRoute()));
+      }
+    }
     return builder.build();
   }
 
@@ -1451,8 +1449,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           }
         });
     RibDelta<Bgpv4Route> aggDelta = aggDeltaBuilder.build();
-    aggDelta.stream()
-        .forEach(action -> processMergeOrRemoveInBgpRib(action.getRoute(), !action.isWithdrawn()));
+    for (RouteAdvertisement<Bgpv4Route> action : aggDelta.getActions()) {
+      processMergeOrRemoveInBgpRib(action.getRoute(), !action.isWithdrawn());
+    }
     return aggDelta;
   }
 
