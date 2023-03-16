@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -178,7 +177,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (multipathCompare != 0 || isMultipath()) {
       return multipathCompare;
     } else {
-      return Comparator.comparing(Function.identity(), this::bestPathComparator).compare(lhs, rhs);
+      return this.bestPathComparator(lhs, rhs);
     }
   }
 
