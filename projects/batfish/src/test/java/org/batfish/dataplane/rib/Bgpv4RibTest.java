@@ -1381,9 +1381,7 @@ public class Bgpv4RibTest {
       // Add more preferred NHIP route. Less preferred route should be removed, and should not
       // appear in backup.
       assertThat(
-          bgpRib
-              .mergeRouteGetDelta(lowestNhipRoute)
-              .getActions()
+          bgpRib.mergeRouteGetDelta(lowestNhipRoute).stream()
               .collect(ImmutableList.toImmutableList()),
           containsInAnyOrder(
               RouteAdvertisement.adding(lowestNhipRoute),
@@ -1398,9 +1396,7 @@ public class Bgpv4RibTest {
 
       // Remove more preferred NHIP route. The less preferred one should now be added.
       assertThat(
-          bgpRib
-              .removeRouteGetDelta(lowestNhipRoute)
-              .getActions()
+          bgpRib.removeRouteGetDelta(lowestNhipRoute).stream()
               .collect(ImmutableList.toImmutableList()),
           containsInAnyOrder(
               RouteAdvertisement.adding(highestNhipRoute),
@@ -1442,9 +1438,7 @@ public class Bgpv4RibTest {
       // Add more preferred NHIP route. Less preferred route should be removed, and should not
       // appear in backup.
       assertThat(
-          bgpRib
-              .mergeRouteGetDelta(highestNhipRoute)
-              .getActions()
+          bgpRib.mergeRouteGetDelta(highestNhipRoute).stream()
               .collect(ImmutableList.toImmutableList()),
           containsInAnyOrder(
               RouteAdvertisement.adding(highestNhipRoute),
@@ -1459,9 +1453,7 @@ public class Bgpv4RibTest {
 
       // Remove more preferred NHIP route. The less preferred one should now be added.
       assertThat(
-          bgpRib
-              .removeRouteGetDelta(highestNhipRoute)
-              .getActions()
+          bgpRib.removeRouteGetDelta(highestNhipRoute).stream()
               .collect(ImmutableList.toImmutableList()),
           containsInAnyOrder(
               RouteAdvertisement.adding(lowestNhipRoute),
@@ -1503,9 +1495,7 @@ public class Bgpv4RibTest {
       // Add more preferred NHIP route. Less preferred route should be removed, and should not
       // appear in backup.
       assertThat(
-          bgpRib
-              .mergeRouteGetDelta(lowestNhipRoute)
-              .getActions()
+          bgpRib.mergeRouteGetDelta(lowestNhipRoute).stream()
               .collect(ImmutableList.toImmutableList()),
           containsInAnyOrder(
               RouteAdvertisement.adding(lowestNhipRoute),
@@ -1520,9 +1510,7 @@ public class Bgpv4RibTest {
 
       // Remove more preferred NHIP route. The less preferred one should now be added.
       assertThat(
-          bgpRib
-              .removeRouteGetDelta(lowestNhipRoute)
-              .getActions()
+          bgpRib.removeRouteGetDelta(lowestNhipRoute).stream()
               .collect(ImmutableList.toImmutableList()),
           containsInAnyOrder(
               RouteAdvertisement.adding(highestNhipRoute),
@@ -1564,9 +1552,7 @@ public class Bgpv4RibTest {
       // Add more preferred NHIP route. Less preferred route should be removed, and should not
       // appear in backup.
       assertThat(
-          bgpRib
-              .mergeRouteGetDelta(highestNhipRoute)
-              .getActions()
+          bgpRib.mergeRouteGetDelta(highestNhipRoute).stream()
               .collect(ImmutableList.toImmutableList()),
           containsInAnyOrder(
               RouteAdvertisement.adding(highestNhipRoute),
@@ -1581,9 +1567,7 @@ public class Bgpv4RibTest {
 
       // Remove more preferred NHIP route. The less preferred one should now be added.
       assertThat(
-          bgpRib
-              .removeRouteGetDelta(highestNhipRoute)
-              .getActions()
+          bgpRib.removeRouteGetDelta(highestNhipRoute).stream()
               .collect(ImmutableList.toImmutableList()),
           containsInAnyOrder(
               RouteAdvertisement.adding(lowestNhipRoute),

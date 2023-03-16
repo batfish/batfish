@@ -195,7 +195,7 @@ public class RibDeltaTest {
             .from(rib.mergeRouteGetDelta(route))
             .from(rib.mergeRouteGetDelta(betterRoute))
             .build()
-            .getActions()
+            .stream()
             .collect(Collectors.toList());
     // route was added and withdrawn in the same iteration, does not appear in update.
     assertThat(firstRound, contains(equalTo(new RouteAdvertisement<>(betterRoute))));
@@ -206,10 +206,7 @@ public class RibDeltaTest {
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("7.7.7.9")))
             .build();
     List<RouteAdvertisement<Bgpv4Route>> secondRound =
-        RibDelta.<Bgpv4Route>builder()
-            .from(rib.mergeRouteGetDelta(bestRoute))
-            .build()
-            .getActions()
+        RibDelta.<Bgpv4Route>builder().from(rib.mergeRouteGetDelta(bestRoute)).build().stream()
             .collect(Collectors.toList());
     // betterRoute was replaced by bestRoute, and both show in the delta.
     assertThat(

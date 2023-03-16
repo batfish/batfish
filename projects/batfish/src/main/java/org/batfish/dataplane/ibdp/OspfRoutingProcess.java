@@ -934,8 +934,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @VisibleForTesting
   static Stream<RouteAdvertisement<OspfIntraAreaRoute>> transformIntraAreaRoutesOnExport(
       RibDelta<OspfIntraAreaRoute> delta, OspfArea areaConfig, Ip nextHopIp) {
-    return delta
-        .getActions()
+    return delta.stream()
         /*
          * For intra-area routes, send the route to all neighbors in the same area as
          * the route's area
@@ -992,8 +991,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       Ip neighborIp,
       Ip nextHopIp,
       @Nullable Long customMetric) {
-    return delta
-        .getActions()
+    return delta.stream()
         /*
          * A regular (non-ABR) router can continue re-advertising
          * inter-area routes for area X in area X.
@@ -1075,8 +1073,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       // Nothing to do for totally stubby areas, where summaries are suppressed
       return Stream.empty();
     }
-    return delta
-        .getActions()
+    return delta.stream()
         // Only propagate routes from different areas
         .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
         /* Do not send the route to the neighbor that has sent it to us originally. (split horizon) */
@@ -1370,7 +1367,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       return Stream.of();
     }
 
-    return delta.getActions();
+    return delta.stream();
   }
 
   /**
@@ -1689,7 +1686,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             messageQueueStream(_type1IncomingRoutes),
             messageQueueStream(_type2IncomingRoutes),
             // Deltas
-            _activatedGeneratedRoutes.getActions(),
+            _activatedGeneratedRoutes.stream(),
             // RIB state
             Stream.of(_intraAreaRib, _interAreaRib, _internalSummaryRib, _type1Rib, _type2Rib)
                 .map(AbstractRib::getTypedRoutes))

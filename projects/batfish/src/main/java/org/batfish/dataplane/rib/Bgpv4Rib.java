@@ -97,8 +97,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     }
 
     void updateMainRibPrefixes(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-      mainRibDelta
-          .getActions()
+      mainRibDelta.stream()
           // TODO Filter to routes that pass the resolution restriction, when one is added
           .forEach(
               action -> {

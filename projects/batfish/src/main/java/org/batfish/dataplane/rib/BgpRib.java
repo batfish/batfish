@@ -261,8 +261,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       RibDelta<R> initialDelta, Set<R> beforeRoutes) {
     RibDelta.Builder<R> builder = RibDelta.builder();
     Map<NextHop, SortedSet<R>> bestByNh = new HashMap<>(); // lazily computed
-    initialDelta
-        .getActions()
+    initialDelta.stream()
         .forEach(
             action -> {
               R route = action.getRoute();
@@ -328,8 +327,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     RibDelta<R> delta = actionRouteGetDelta(route, super::removeRouteGetDelta);
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
-      delta
-          .getActions()
+      delta.stream()
           .forEach(
               a -> {
                 if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER && a.isWithdrawn()) {

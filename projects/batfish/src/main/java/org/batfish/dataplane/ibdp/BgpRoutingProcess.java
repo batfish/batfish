@@ -622,8 +622,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     if (!_mainRibIndependentNetworkInitializationDelta.isEmpty()
         && _process.getMainRibIndependentNetworkPolicy() != null) {
-      _mainRibIndependentNetworkInitializationDelta
-          .getActions()
+      _mainRibIndependentNetworkInitializationDelta.stream()
           .forEach(
               a ->
                   redistributeRouteToBgpRib(
@@ -683,8 +682,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             "Undefined BGP redistribution policy {}. Skipping redistribution",
             _process.getRedistributionPolicy());
       } else {
-        mainRibDelta
-            .getActions()
+        mainRibDelta.stream()
             .forEach(a -> redistributeRouteToBgpRib(a, redistributionPolicy.get(), REDISTRIBUTE));
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
@@ -707,8 +705,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             "Undefined BGP independent network policy {}. Skipping redistribution",
             independentNetworkPolicyName);
       } else {
-        mainRibDelta
-            .getActions()
+        mainRibDelta.stream()
             .forEach(a -> redistributeRouteToBgpRib(a, independentNetworkPolicy.get(), NETWORK));
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
@@ -808,8 +805,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private static @Nonnull <T extends EvpnRoute<?, ?>, U extends T> RibDelta<T> importRibDelta(
       EvpnMasterRib<T> rib, RibDelta<U> delta) {
     RibDelta.Builder<T> builder = RibDelta.builder();
-    delta
-        .getActions()
+    delta.stream()
         .forEach(
             action -> {
               if (action.isWithdrawn()) {
@@ -1045,7 +1041,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       .getVirtualRouterOrThrow(rib.getVrfName())
                       .enqueueCrossVrfRoutes(
                           new CrossVrfEdgeId(_vrfName, rib.getRibName()),
-                          perNeighborDeltaForRibGroups.build().getActions(),
+                          perNeighborDeltaForRibGroups.build().stream(),
                           rg.getImportPolicy()));
     }
   }
@@ -1092,7 +1088,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       // Start with the entire main RIB if this session is new.
                       ? _mainRibPrev.stream().map(RouteAdvertisement::adding)
                       : Stream.of(),
-                  _mainRibDelta.getActions())
+                  _mainRibDelta.stream())
               .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
               .map(
                   adv -> {
@@ -1161,8 +1157,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   sendFullAdvertisementSet
                       ? bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new)
                       : Stream.of(),
-                  bgpv4DeltaPrev
-                      .getActions()
+                  bgpv4DeltaPrev.stream()
                       .map(
                           r ->
                               RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
@@ -1218,9 +1213,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Transform and apply export policy to exportable BGP RIB routes
     Stream<RouteAdvertisement<Bgpv4Route>> bgpRibRoutesToExport =
-        bgpRibExports
-            .build()
-            .getActions()
+        bgpRibExports.build().stream()
             .map(
                 adv -> {
                   Optional<Bgpv4Route> transformedRoute =
@@ -1458,8 +1451,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           }
         });
     RibDelta<Bgpv4Route> aggDelta = aggDeltaBuilder.build();
-    aggDelta
-        .getActions()
+    aggDelta.stream()
         .forEach(action -> processMergeOrRemoveInBgpRib(action.getRoute(), !action.isWithdrawn()));
     return aggDelta;
   }
@@ -1661,8 +1653,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     assert ourConfig != null; // Invariant of the edge existing
     assert remoteConfig != null; // Invariant of the edge existing
     BgpRoutingProcess remoteBgpRoutingProcess = getNeighborBgpProcess(remoteConfigId, allNodes);
-    return evpnDelta
-        .getActions()
+    return evpnDelta.stream()
         .map(
             // TODO: take into account address-family session settings, such as add-path or
             //   advertise-inactive
@@ -2580,12 +2571,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * locally-generated and received routes.
    */
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
-    return _bgpv4DeltaPrev.getActions().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
+    return _bgpv4DeltaPrev.stream().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
   }
 
   /** Return a stream of EVPN route advertisements to leak to other VRFs. */
   Stream<RouteAdvertisement<EvpnType5Route>> getEvpnRoutesToLeak() {
-    return _evpnType5DeltaPrev.getActions();
+    return _evpnType5DeltaPrev.stream();
   }
 
   /**

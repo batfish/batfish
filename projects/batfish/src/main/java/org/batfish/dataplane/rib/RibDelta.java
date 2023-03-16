@@ -69,7 +69,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     if (delta1 == null || delta1.isEmpty()) {
       return delta2;
     }
-    return RibDelta.<R>builder().from(delta1.getActions()).from(delta2.getActions()).build();
+    return RibDelta.<R>builder().from(delta1.stream()).from(delta2.stream()).build();
   }
 
   /**
@@ -83,8 +83,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
   }
 
   /** Return all the RIB actions that need to be applied (in order). */
-  @Nonnull
-  public Stream<RouteAdvertisement<R>> getActions() {
+  public @Nonnull Stream<RouteAdvertisement<R>> stream() {
     return _actions.stream();
   }
 
@@ -119,8 +118,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    */
   public static <T extends AbstractRoute, U extends T> void importDeltaToBuilder(
       RibDelta.Builder<AnnotatedRoute<T>> importer, RibDelta<U> exporter, String vrfName) {
-    exporter
-        .getActions()
+    exporter.stream()
         .forEach(
             ra -> {
               AnnotatedRoute<T> tRoute = new AnnotatedRoute<>(ra.getRoute(), vrfName);
@@ -217,7 +215,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     /** Process all added and removed routes from a given delta */
     @Nonnull
     public <T extends R> Builder<R> from(RibDelta<T> delta) {
-      return from(delta.getActions());
+      return from(delta.stream());
     }
 
     /** Process all added and removed routes from a given delta */
