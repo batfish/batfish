@@ -1,0 +1,8 @@
+####BATFISH PRE-PROCESSED JUNIPER CONFIG####
+set interfaces xe-0/0/0 ether-options 802.3ad ae3
+set interfaces xe-0/0/0 ether-options 802.3ad ae2
+set interfaces xe-0/0/0 ether-options 802.3ad ae1
+set interfaces lo0 unit 0 family inet address 1.2.3.4/32 primary
+set interfaces ae1 unit 0 family inet6 mtu 2000
+set interfaces ae2 mac 00:11:22:33:44:55
+set system host-name preprocess-flat-juniper-apply-groups-order

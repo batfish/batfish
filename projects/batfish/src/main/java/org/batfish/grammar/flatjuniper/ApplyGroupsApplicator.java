@@ -63,12 +63,21 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
   }
 
   private void processGroup(String groupName, boolean clusterGroup, boolean removeApplyLine) {
+    List<ParseTree> applyGroupsLines;
     try {
-      List<ParseTree> applyGroupsLines =
+      applyGroupsLines =
           _hierarchy.getApplyGroupsLines(
               groupName, _currentPath, _configurationContext, clusterGroup);
-      int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
-      _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
+      // Insert the new configuration lines for each group at the top of the list of parse trees,
+      // so that:
+      //
+      // 1. Inherited lines resulting from the first applied group come after lines from subsequent
+      //    applied groups at the same level of hierarchy. This conforms to priority indicated in:
+      // https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/ref/statement/apply-groups.html#apply-groups__d65612e42
+      //
+      // 2. Ordinary non-inherited lines come after all inherited lines resulting from applied
+      //    groups, i.e. non-inherited lines take priority.
+      _newConfigurationLines.addAll(0, applyGroupsLines);
     } catch (PartialGroupMatchException e) {
       _w.pedantic(applyGroupsExceptionMessage(groupName, e));
     } catch (UndefinedGroupBatfishException e) {

@@ -2314,9 +2314,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 screenName -> {
                   Screen screen = _masterLogicalSystem.getScreens().get(screenName);
                   String screenAclName = ACL_NAME_SCREEN + screenName;
-                  IpAccessList screenAcl =
-                      _c.getIpAccessLists()
-                          .computeIfAbsent(screenAclName, x -> buildScreen(screen, screenAclName));
+                  IpAccessList screenAcl = _c.getIpAccessLists().get(screenAclName);
+                  if (screenAcl == null) {
+                    screenAcl = buildScreen(screen, screenAclName);
+                    if (screenAcl != null) {
+                      _c.getIpAccessLists().put(screenAclName, screenAcl);
+                    }
+                  }
                   return screenAcl != null ? new PermittedByAcl(screenAcl.getName()) : null;
                 })
             .filter(Objects::nonNull)
@@ -2340,9 +2344,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // build a acl for each zone
     String zoneAclName = ACL_NAME_SCREEN_ZONE + zone.getName();
-    IpAccessList zoneAcl =
-        _c.getIpAccessLists()
-            .computeIfAbsent(zoneAclName, x -> buildScreensPerZone(zone, zoneAclName));
+    IpAccessList zoneAcl = _c.getIpAccessLists().get(zoneAclName);
+    if (zoneAcl == null) {
+      zoneAcl = buildScreensPerZone(zone, zoneAclName);
+      if (zoneAcl != null) {
+        _c.getIpAccessLists().put(zoneAclName, zoneAcl);
+      }
+    }
 
     return zoneAcl == null
         ? null
@@ -2355,8 +2363,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Nullable
   IpAccessList buildIncomingFilter(Interface iface) {
     String screenAclName = ACL_NAME_SCREEN_INTERFACE + iface.getName();
-    IpAccessList screenAcl =
-        _c.getIpAccessLists().computeIfAbsent(screenAclName, x -> buildScreensPerInterface(iface));
+    IpAccessList screenAcl = _c.getIpAccessLists().get(screenAclName);
+    if (screenAcl == null) {
+      screenAcl = buildScreensPerInterface(iface);
+      if (screenAcl != null) {
+        _c.getIpAccessLists().put(screenAclName, screenAcl);
+      }
+    }
     // merge screen options to incoming filter
     // but keep both original filters in the config, so we can run search filter queries on them
     String inAclName = iface.getIncomingFilter();
