@@ -622,10 +622,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     if (!_mainRibIndependentNetworkInitializationDelta.isEmpty()
         && _process.getMainRibIndependentNetworkPolicy() != null) {
+      RoutingPolicy policy = _policies.get(_process.getMainRibIndependentNetworkPolicy()).get();
       for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a :
           _mainRibIndependentNetworkInitializationDelta.getActions()) {
-        redistributeRouteToBgpRib(
-            a, _policies.get(_process.getMainRibIndependentNetworkPolicy()).get(), NETWORK);
+        redistributeRouteToBgpRib(a, policy, NETWORK);
       }
       _mainRibIndependentNetworkInitializationDelta = RibDelta.empty();
     }
@@ -673,15 +673,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _mainRibDelta = mainRibDelta;
     } else {
       // Place redistributed routes into our RIB
-      Optional<RoutingPolicy> redistributionPolicy =
-          _policies.get(_process.getRedistributionPolicy());
-      if (!redistributionPolicy.isPresent()) {
+      RoutingPolicy redistributionPolicy =
+          _policies.get(_process.getRedistributionPolicy()).orElse(null);
+      if (redistributionPolicy == null) {
         LOGGER.debug(
             "Undefined BGP redistribution policy {}. Skipping redistribution",
             _process.getRedistributionPolicy());
       } else {
         for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a : mainRibDelta.getActions()) {
-          redistributeRouteToBgpRib(a, redistributionPolicy.get(), REDISTRIBUTE);
+          redistributeRouteToBgpRib(a, redistributionPolicy, REDISTRIBUTE);
         }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
@@ -697,15 +697,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       if (independentNetworkPolicyName == null) {
         return;
       }
-      Optional<RoutingPolicy> independentNetworkPolicy =
-          _policies.get(independentNetworkPolicyName);
-      if (!independentNetworkPolicy.isPresent()) {
+      RoutingPolicy independentNetworkPolicy =
+          _policies.get(independentNetworkPolicyName).orElse(null);
+      if (independentNetworkPolicy == null) {
         LOGGER.debug(
             "Undefined BGP independent network policy {}. Skipping redistribution",
             independentNetworkPolicyName);
       } else {
         for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a : mainRibDelta.getActions()) {
-          redistributeRouteToBgpRib(a, independentNetworkPolicy.get(), NETWORK);
+          redistributeRouteToBgpRib(a, independentNetworkPolicy, NETWORK);
         }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(

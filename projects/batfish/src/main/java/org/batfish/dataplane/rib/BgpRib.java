@@ -325,9 +325,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     RibDelta<R> delta = actionRouteGetDelta(route, super::removeRouteGetDelta);
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
-      for (RouteAdvertisement<R> a : delta.getActions()) {
-        if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER && a.isWithdrawn()) {
-          _logicalArrivalTime.remove(a.getRoute());
+      if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
+        for (RouteAdvertisement<R> a : delta.getActions()) {
+          if (a.isWithdrawn()) {
+            _logicalArrivalTime.remove(a.getRoute());
+          }
         }
       }
     }
