@@ -2409,6 +2409,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _mainRibPrev = ImmutableSet.of();
     // Main RIB delta for exporting directly from main RIB
     _mainRibDelta = RibDelta.empty();
+    // No longer need to send full advertisement set until after we recompute tracks.
+    _successfulWatchedTracksChanged = false;
   }
 
   /** Record state at beginning of round prior to pulling from neighbors. */
