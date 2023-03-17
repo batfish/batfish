@@ -46,6 +46,7 @@ public class BgpSessionPropertiesTest {
             .setRemoteAs(as2)
             .setPeerAddress(ip2)
             .setIpv4UnicastAddressFamily(addressFamily1)
+            .setReplaceNonLocalAsesOnExport(true)
             .build();
     BgpActivePeerConfig p2 =
         BgpActivePeerConfig.builder()
@@ -54,6 +55,7 @@ public class BgpSessionPropertiesTest {
             .setRemoteAs(as1)
             .setPeerAddress(ip1)
             .setIpv4UnicastAddressFamily(addressFamily2)
+            .setReplaceNonLocalAsesOnExport(false)
             .build();
     {
       BgpSessionProperties forwardSession =
@@ -67,6 +69,7 @@ public class BgpSessionPropertiesTest {
               .setRouteExchangeSettings(
                   // Add paths false, advertise external false, advertise inactive true
                   ImmutableMap.of(addressFamily1.getType(), new RouteExchange(false, false, true)))
+              .setReplaceNonLocalAsesOnExport(true)
               .build();
       assertThat(BgpSessionProperties.from(p1, p2, false), equalTo(forwardSession));
     }
@@ -82,6 +85,7 @@ public class BgpSessionPropertiesTest {
               .setRouteExchangeSettings(
                   // Add paths false, advertise external false, advertise inactive true
                   ImmutableMap.of(addressFamily1.getType(), new RouteExchange(false, false, false)))
+              .setReplaceNonLocalAsesOnExport(false)
               .build();
       assertThat(BgpSessionProperties.from(p1, p2, true), equalTo(reverseSession));
     }
@@ -181,7 +185,8 @@ public class BgpSessionPropertiesTest {
         // note the head/tail swap
         .addEqualityGroup(builder.setRemoteIp(tailIp).build())
         .addEqualityGroup(builder.setLocalIp(headIp).build())
-        .addEqualityGroup(builder.setSessionType(SessionType.EBGP_SINGLEHOP))
+        .addEqualityGroup(builder.setSessionType(SessionType.EBGP_SINGLEHOP).build())
+        .addEqualityGroup(builder.setReplaceNonLocalAsesOnExport(true).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -200,6 +205,7 @@ public class BgpSessionPropertiesTest {
             .setLocalIp(tailIp)
             .setRemoteIp(headIp)
             .setSessionType(SessionType.EBGP_MULTIHOP)
+            .setReplaceNonLocalAsesOnExport(true)
             .build();
     assertThat(BatfishObjectMapper.clone(bsp, BgpSessionProperties.class), equalTo(bsp));
   }
