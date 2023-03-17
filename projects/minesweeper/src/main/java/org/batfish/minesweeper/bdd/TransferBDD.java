@@ -53,6 +53,7 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -163,16 +164,22 @@ public class TransferBDD {
   }
 
   /*
-   * Apply the effect of modifying a long value (e.g., to set the metric)
+   * Apply the effect of modifying a long value (e.g., to set the metric).
+   * Overflows for IncrementMetric are handled by clipping to the max value.
    */
   private MutableBDDInteger applyLongExprModification(
       TransferParam p, MutableBDDInteger x, LongExpr e) throws UnsupportedFeatureException {
-    if (!(e instanceof LiteralLong)) {
+    if (e instanceof LiteralLong) {
+      LiteralLong z = (LiteralLong) e;
+      p.debug("LiteralLong: %s", z.getValue());
+      return MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
+    } else if (e instanceof IncrementMetric) {
+      IncrementMetric z = (IncrementMetric) e;
+      p.debug("Increment: %s", z.getAddend());
+      return x.addClipping(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+    } else {
       throw new UnsupportedFeatureException(e.toString());
     }
-    LiteralLong z = (LiteralLong) e;
-    p.debug("LiteralLong: %s", z.getValue());
-    return MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
 
     /* TODO: These old cases are not correct; removing for now since they are not currently used.
     First, they should dec/inc the corresponding field of the route, not whatever MutableBDDInteger x
@@ -182,11 +189,6 @@ public class TransferBDD {
       DecrementMetric z = (DecrementMetric) e;
       p.debug("Decrement: %s", z.getSubtrahend());
       return x.sub(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
-    }
-    if (e instanceof IncrementMetric) {
-      IncrementMetric z = (IncrementMetric) e;
-      p.debug("Increment: %s", z.getAddend());
-      return x.add(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
     if (e instanceof IncrementLocalPreference) {
       IncrementLocalPreference z = (IncrementLocalPreference) e;
@@ -709,7 +711,6 @@ public class TransferBDD {
       MutableBDDInteger med = applyLongExprModification(curP.indent(), curMed, ie);
       curP.getData().setMed(med);
       return ImmutableList.of(toTransferBDDState(curP, result));
-
     } else if (stmt instanceof SetOrigin) {
       curP.debug("SetOrigin");
       OriginExpr oe = ((SetOrigin) stmt).getOriginType();
@@ -722,7 +723,6 @@ public class TransferBDD {
       } else {
         throw new UnsupportedFeatureException(oe.toString());
       }
-
     } else if (stmt instanceof SetOspfMetricType) {
       curP.debug("SetOspfMetricType");
       SetOspfMetricType somt = (SetOspfMetricType) stmt;

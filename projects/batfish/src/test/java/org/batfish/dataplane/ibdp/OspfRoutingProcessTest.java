@@ -346,7 +346,7 @@ public class OspfRoutingProcessTest {
     // Must not crash on non-existent interface
     RibDelta<OspfIntraAreaRoute> delta = _routingProcess.initializeRoutesByArea(AREA0_CONFIG);
     // All routes were added
-    assertTrue(delta.getActions().allMatch(r -> r.getReason() == ADD));
+    assertTrue(delta.stream().allMatch(r -> r.getReason() == ADD));
 
     /*
       Requirements:
@@ -1132,7 +1132,7 @@ public class OspfRoutingProcessTest {
         _routingProcess
             .filterExternalRoutesOnExport(routes, AREA0_CONFIG)
             .collect(Collectors.toList()),
-        equalTo(routes.getActions().collect(Collectors.toList())));
+        equalTo(routes.stream().collect(Collectors.toList())));
     // Filtering to STUB
     assertThat(
         _routingProcess
@@ -1162,7 +1162,7 @@ public class OspfRoutingProcessTest {
                     .setNssa(NssaSettings.builder().setSuppressType7(false).build())
                     .build())
             .collect(Collectors.toList()),
-        equalTo(routes.getActions().collect(Collectors.toList())));
+        equalTo(routes.stream().collect(Collectors.toList())));
   }
 
   // For p2mp interfaces, initial route is the interface IP instead of subnet
@@ -1222,7 +1222,7 @@ public class OspfRoutingProcessTest {
     _routingProcess = new OspfRoutingProcess(ospfProcess, VRF_NAME, _c, _emptyOspfTopology);
     RibDelta<OspfIntraAreaRoute> routes = _routingProcess.initializeRoutesByArea(AREA0_CONFIG);
     assertThat(
-        routes.getActions().collect(ImmutableList.toImmutableList()),
+        routes.stream().collect(ImmutableList.toImmutableList()),
         contains(
             new RouteAdvertisement<>(
                 new OspfIntraAreaRoute(

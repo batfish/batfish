@@ -81,4 +81,19 @@ public class MutableBDDIntegerTest {
     assertThat(xPlus1.getValuesSatisfying(x.value(3L), 100), contains(4L));
     assertThat(x.getValuesSatisfying(xPlus1.value(3L), 100), contains(2L));
   }
+
+  @Test
+  public void testAddClipping() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
+    MutableBDDInteger constant16 = MutableBDDInteger.makeFromValue(factory, 5, 16);
+    BDDInteger xPlus1 = x.addClipping(constant1);
+    BDDInteger xPlus16 = x.addClipping(constant16);
+
+    assertTrue(x.value(0).equals(xPlus1.value(1))); // x == 0 <==> x+1 == 1
+    assertTrue(x.value(1).equals(xPlus1.value(2))); // x == 1 <==> x+1 == 2
+    assertTrue(x.geq(30).equals(xPlus1.value(31))); // x >= 31 ==> x+1 == 31
+    assertTrue(x.geq(15).equals(xPlus16.value(31))); // x >= 15 ==> x+16 == 31
+  }
 }

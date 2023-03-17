@@ -195,8 +195,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
       RoutingPolicy exportPolicy) {
     RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
-    queueForRedistribution
-        .getActions()
+    queueForRedistribution.stream()
         .forEach(
             ra -> {
               EigrpExternalRoute outputRoute = computeEigrpExportRoute(exportPolicy, ra.getRoute());
@@ -442,8 +441,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     Ip neighborIp = eigrpEdge.getNode1().getInterface(nc).getConcreteAddress().getIp();
     neighborProc.enqueueInternalMessages(
         eigrpEdge.reverse(),
-        routes
-            .getActions()
+        routes.stream()
             .filter(ra -> allowedByExportPolicy(eigrpEdge.getNode2(), ra.getRoute()))
             // Approximate split horizon: don't send the route to a neighbor if the neighbor is the
             // next hop IP for the route.
@@ -480,8 +478,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     Ip neighborIp = eigrpEdge.getNode1().getInterface(nc).getConcreteAddress().getIp();
     neighborProc.enqueueExternalMessages(
         eigrpEdge.reverse(),
-        routes
-            .getActions()
+        routes.stream()
             // Approximate split horizon: don't send the route to a neighbor if the neighbor is the
             // next hop IP for the route.
             .filter(ra -> !ra.getRoute().getNextHopIp().equals(neighborIp)));
@@ -494,8 +491,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     // TODO: this is likely inefficient. optimize
     return RibDelta.<EigrpExternalRoute>builder()
         .from(
-            routes
-                .getActions()
+            routes.stream()
                 .map(
                     ra -> {
                       Optional<EigrpExternalRoute> transformExternalRoute =
@@ -603,7 +599,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
             Stream.of(_rib),
             messageQueueStream(_incomingInternalRoutes),
             messageQueueStream(_incomingExternalRoutes),
-            _changeSet.build().getActions())
+            _changeSet.build().stream())
         .collect(toOrderedHashCode());
   }
 

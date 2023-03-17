@@ -43,6 +43,8 @@ public abstract class BgpPeerConfig implements Serializable {
   static final String PROP_IPV4_UNICAST_ADDRESS_FAMILY = "ipv4UnicastAddressFamily";
   static final String PROP_EVPN_ADDRESS_FAMILY = "evpnAddressFamily";
 
+  static final String PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT = "replaceNonLocalAsesOnExport";
+
   @Nullable private final RibGroup _appliedRibGroup;
   @Nullable private final BgpAuthenticationSettings _authenticationSettings;
   /** The cluster id associated with this peer to be used in route reflection */
@@ -78,6 +80,8 @@ public abstract class BgpPeerConfig implements Serializable {
   @Nullable private Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
   @Nullable private EvpnAddressFamily _evpnAddressFamily;
 
+  private final boolean _replaceNonLocalAsesOnExport;
+
   protected BgpPeerConfig(
       @Nullable RibGroup appliedRibGroup,
       @Nullable BgpAuthenticationSettings authenticationSettings,
@@ -93,7 +97,8 @@ public abstract class BgpPeerConfig implements Serializable {
       @Nullable Ip localIp,
       @Nullable LongSpace remoteAsns,
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
-      @Nullable EvpnAddressFamily evpnAddressFamily) {
+      @Nullable EvpnAddressFamily evpnAddressFamily,
+      boolean replaceNonLocalAsesOnExport) {
     _appliedRibGroup = appliedRibGroup;
     _authenticationSettings = authenticationSettings;
     _clusterId = clusterId;
@@ -109,6 +114,7 @@ public abstract class BgpPeerConfig implements Serializable {
     _remoteAsns = firstNonNull(remoteAsns, ALL_AS_NUMBERS);
     _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
     _evpnAddressFamily = evpnAddressFamily;
+    _replaceNonLocalAsesOnExport = replaceNonLocalAsesOnExport;
   }
 
   /** Return the {@link RibGroup} applied to this config */
@@ -253,6 +259,15 @@ public abstract class BgpPeerConfig implements Serializable {
     }
   }
 
+  /**
+   * When true, replace every AS-path element with the singleton element of the local AS as the last
+   * step post-export. Only applicable to eBGP sessions.
+   */
+  @JsonProperty(PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT)
+  public boolean getReplaceNonLocalAsesOnExport() {
+    return _replaceNonLocalAsesOnExport;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -276,7 +291,8 @@ public abstract class BgpPeerConfig implements Serializable {
         && Objects.equals(_localIp, that._localIp)
         && _remoteAsns.equals(that._remoteAsns)
         && Objects.equals(_ipv4UnicastAddressFamily, that._ipv4UnicastAddressFamily)
-        && Objects.equals(_evpnAddressFamily, that._evpnAddressFamily);
+        && Objects.equals(_evpnAddressFamily, that._evpnAddressFamily)
+        && _replaceNonLocalAsesOnExport == that._replaceNonLocalAsesOnExport;
   }
 
   @Override
@@ -296,7 +312,8 @@ public abstract class BgpPeerConfig implements Serializable {
         _localIp,
         _remoteAsns,
         _ipv4UnicastAddressFamily,
-        _evpnAddressFamily);
+        _evpnAddressFamily,
+        _replaceNonLocalAsesOnExport);
   }
 
   @Override
@@ -317,6 +334,7 @@ public abstract class BgpPeerConfig implements Serializable {
         .add("_remoteAsns", _remoteAsns)
         .add("_ipv4UnicastAddressFamily", _ipv4UnicastAddressFamily)
         .add("_evpnAddressFamily", _evpnAddressFamily)
+        .add("_replaceNonLocalAsesOnExport", _replaceNonLocalAsesOnExport)
         .toString();
   }
 
@@ -340,6 +358,8 @@ public abstract class BgpPeerConfig implements Serializable {
 
     // Identifying fields
     @Nullable protected String _hostname;
+
+    protected boolean _replaceNonLocalAsesOnExport;
 
     protected Builder() {
       _remoteAsns = LongSpace.EMPTY;
@@ -439,6 +459,11 @@ public abstract class BgpPeerConfig implements Serializable {
 
     public S setEvpnAddressFamily(@Nullable EvpnAddressFamily evpnAddressFamily) {
       _evpnAddressFamily = evpnAddressFamily;
+      return getThis();
+    }
+
+    public S setReplaceNonLocalAsesOnExport(boolean replaceNonLocalAsesOnExport) {
+      _replaceNonLocalAsesOnExport = replaceNonLocalAsesOnExport;
       return getThis();
     }
   }

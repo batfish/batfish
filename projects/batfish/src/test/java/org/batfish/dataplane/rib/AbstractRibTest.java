@@ -325,13 +325,13 @@ public class AbstractRibTest {
     // First merge old route
     RibDelta<RipInternalRoute> delta = rib.mergeRouteGetDelta(oldRoute);
     List<RouteAdvertisement<RipInternalRoute>> actions =
-        delta.getActions().collect(Collectors.toList());
+        delta.stream().collect(Collectors.toList());
     assertThat(actions, contains(new RouteAdvertisement<>(oldRoute)));
     assertThat(delta.getRoutes(), hasItem(oldRoute));
 
     // Try re-merging, should get empty delta, because RIB has not changed
     delta = rib.mergeRouteGetDelta(oldRoute);
-    actions = delta.getActions().collect(Collectors.toList());
+    actions = delta.stream().collect(Collectors.toList());
     assertThat(actions, empty());
 
     // Now replace with a newer route, check that one route removed, one added
@@ -357,7 +357,7 @@ public class AbstractRibTest {
 
     // Remove
     RibDelta<StaticRoute> d = _rib.removeRouteGetDelta(_mostGeneralRoute);
-    List<RouteAdvertisement<StaticRoute>> actions = d.getActions().collect(Collectors.toList());
+    List<RouteAdvertisement<StaticRoute>> actions = d.stream().collect(Collectors.toList());
 
     // Check only route r remains
     assertThat(_rib.getTypedRoutes(), contains(r));
@@ -365,7 +365,7 @@ public class AbstractRibTest {
 
     // Remove route r
     d = _rib.removeRouteGetDelta(r);
-    actions = d.getActions().collect(Collectors.toList());
+    actions = d.stream().collect(Collectors.toList());
     assertThat(_rib.getTypedRoutes(), empty());
     assertThat(actions, contains(new RouteAdvertisement<>(r, Reason.WITHDRAW)));
   }
@@ -510,7 +510,7 @@ public class AbstractRibTest {
     // Route 2 is removed but route 1 fills the gap as the next-best route
     assertThat(bestPathRib.getTypedRoutes(), contains(route1));
     assertThat(
-        delta.getActions().collect(Collectors.toList()),
+        delta.stream().collect(Collectors.toList()),
         contains(RouteAdvertisement.withdrawing(route2), new RouteAdvertisement<>(route1)));
   }
 }

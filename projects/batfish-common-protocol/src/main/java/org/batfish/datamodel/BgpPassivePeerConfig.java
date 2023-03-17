@@ -41,7 +41,8 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY) @Nullable
           Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
-      @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily) {
+      @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily,
+      @JsonProperty(PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT) boolean replaceNonLocalAsesOnExport) {
     return new BgpPassivePeerConfig(
         appliedRibGroup,
         authenticationSettings,
@@ -58,7 +59,8 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
         peerPrefix,
         firstNonNull(remoteAsns, LongSpace.EMPTY),
         ipv4UnicastAddressFamily,
-        evpnAddressFamily);
+        evpnAddressFamily,
+        replaceNonLocalAsesOnExport);
   }
 
   private BgpPassivePeerConfig(
@@ -77,7 +79,8 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @Nullable Prefix peerPrefix,
       @Nullable LongSpace remoteAsns,
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
-      @Nullable EvpnAddressFamily evpnAddressFamily) {
+      @Nullable EvpnAddressFamily evpnAddressFamily,
+      boolean replaceNonLocalAsesOnExport) {
     super(
         appliedRibGroup,
         authenticationSettings,
@@ -93,7 +96,8 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
         localIp,
         remoteAsns,
         ipv4UnicastAddressFamily,
-        evpnAddressFamily);
+        evpnAddressFamily,
+        replaceNonLocalAsesOnExport);
     _peerPrefix = peerPrefix;
   }
 
@@ -153,7 +157,8 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
               _peerPrefix,
               _remoteAsns,
               _ipv4UnicastAddressFamily,
-              _evpnAddressFamily);
+              _evpnAddressFamily,
+              _replaceNonLocalAsesOnExport);
       if (_bgpProcess != null) {
         _bgpProcess.getPassiveNeighbors().put(_peerPrefix, bgpPeerConfig);
       }
