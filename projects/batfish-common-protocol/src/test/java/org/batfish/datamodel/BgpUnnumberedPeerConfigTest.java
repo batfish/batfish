@@ -89,6 +89,7 @@ public final class BgpUnnumberedPeerConfigTest {
         .addEqualityGroup(
             builder.setEvpnAddressFamily(
                 EvpnAddressFamily.builder().setPropagateUnmatched(true).build()))
+        .addEqualityGroup(builder.setReplaceNonLocalAsesOnExport(true).build())
         .testEquals();
   }
 

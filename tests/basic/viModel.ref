@@ -1529,7 +1529,8 @@
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
                   "peerAddress" : "1.10.1.1",
-                  "remoteAsns" : "1"
+                  "remoteAsns" : "1",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "3.2.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -1555,7 +1556,8 @@
                   },
                   "localAs" : 1,
                   "peerAddress" : "3.2.2.2",
-                  "remoteAsns" : "666"
+                  "remoteAsns" : "666",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "5.6.7.8" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -1581,7 +1583,8 @@
                   },
                   "localAs" : 1,
                   "peerAddress" : "5.6.7.8",
-                  "remoteAsns" : "555"
+                  "remoteAsns" : "555",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.12.11.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -1615,7 +1618,8 @@
                   "localAs" : 1,
                   "localIp" : "10.12.11.1",
                   "peerAddress" : "10.12.11.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -3213,7 +3217,8 @@
                   "localAs" : 1,
                   "localIp" : "1.2.2.2",
                   "peerAddress" : "1.10.1.1",
-                  "remoteAsns" : "1"
+                  "remoteAsns" : "1",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.13.22.3" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -3247,7 +3252,8 @@
                   "localAs" : 1,
                   "localIp" : "10.13.22.1",
                   "peerAddress" : "10.13.22.3",
-                  "remoteAsns" : "3"
+                  "remoteAsns" : "3",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.14.22.4" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -3281,7 +3287,8 @@
                   "localAs" : 1,
                   "localIp" : "10.14.22.1",
                   "peerAddress" : "10.14.22.4",
-                  "remoteAsns" : "4"
+                  "remoteAsns" : "4",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -3743,7 +3750,8 @@
                   "localAs" : 1,
                   "localIp" : "1.10.1.1",
                   "peerAddress" : "1.1.1.1",
-                  "remoteAsns" : "1"
+                  "remoteAsns" : "1",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "1.2.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -3770,7 +3778,8 @@
                   "localAs" : 1,
                   "localIp" : "1.10.1.1",
                   "peerAddress" : "1.2.2.2",
-                  "remoteAsns" : "1"
+                  "remoteAsns" : "1",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -5447,7 +5456,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.1.1",
                   "peerAddress" : "2.1.2.1",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -5474,7 +5484,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.1.1",
                   "peerAddress" : "2.1.2.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.12.11.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -5508,7 +5519,8 @@
                   "localAs" : 2,
                   "localIp" : "10.12.11.2",
                   "peerAddress" : "10.12.11.1",
-                  "remoteAsns" : "1"
+                  "remoteAsns" : "1",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -7105,7 +7117,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.1.2",
                   "peerAddress" : "2.1.2.1",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -7132,7 +7145,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.1.2",
                   "peerAddress" : "2.1.2.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.23.21.3" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -7166,7 +7180,8 @@
                   "localAs" : 2,
                   "localIp" : "10.23.21.2",
                   "peerAddress" : "10.23.21.3",
-                  "remoteAsns" : "3"
+                  "remoteAsns" : "3",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -7863,7 +7878,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.1",
                   "peerAddress" : "2.1.1.1",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.1.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -7890,7 +7906,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.1",
                   "peerAddress" : "2.1.1.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.3.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -7917,7 +7934,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.1",
                   "peerAddress" : "2.1.3.1",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.3.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -7944,7 +7962,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.1",
                   "peerAddress" : "2.1.3.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -8542,7 +8561,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.2",
                   "peerAddress" : "2.1.1.1",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.1.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -8569,7 +8589,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.2",
                   "peerAddress" : "2.1.1.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.3.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -8596,7 +8617,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.2",
                   "peerAddress" : "2.1.3.1",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.3.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -8623,7 +8645,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.2",
                   "peerAddress" : "2.1.3.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -9891,7 +9914,8 @@
                   "localAs" : 65001,
                   "localIp" : "2.34.101.4",
                   "peerAddress" : "2.34.101.3",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.34.201.3" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -9925,7 +9949,8 @@
                   "localAs" : 65001,
                   "localIp" : "2.34.201.4",
                   "peerAddress" : "2.34.201.3",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -10901,7 +10926,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.3.1",
                   "peerAddress" : "2.1.2.1",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -10928,7 +10954,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.3.1",
                   "peerAddress" : "2.1.2.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.34.101.4" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -10962,7 +10989,8 @@
                   "localAs" : 2,
                   "localIp" : "2.34.101.3",
                   "peerAddress" : "2.34.101.4",
-                  "remoteAsns" : "65001"
+                  "remoteAsns" : "65001",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -11938,7 +11966,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.3.2",
                   "peerAddress" : "2.1.2.1",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.1.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -11965,7 +11994,8 @@
                   "localAs" : 2,
                   "localIp" : "2.1.3.2",
                   "peerAddress" : "2.1.2.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "2.34.201.4" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -11999,7 +12029,8 @@
                   "localAs" : 2,
                   "localIp" : "2.34.201.3",
                   "peerAddress" : "2.34.201.4",
-                  "remoteAsns" : "65001"
+                  "remoteAsns" : "65001",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -13499,7 +13530,8 @@
                   "localAs" : 3,
                   "localIp" : "3.1.1.1",
                   "peerAddress" : "3.10.1.1",
-                  "remoteAsns" : "3"
+                  "remoteAsns" : "3",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.23.21.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -13533,7 +13565,8 @@
                   "localAs" : 3,
                   "localIp" : "10.23.21.3",
                   "peerAddress" : "10.23.21.2",
-                  "remoteAsns" : "2"
+                  "remoteAsns" : "2",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -14950,7 +14983,8 @@
                   "localAs" : 3,
                   "localIp" : "3.2.2.2",
                   "peerAddress" : "3.10.1.1",
-                  "remoteAsns" : "3"
+                  "remoteAsns" : "3",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.13.22.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -14984,7 +15018,8 @@
                   "localAs" : 3,
                   "localIp" : "10.13.22.3",
                   "peerAddress" : "10.13.22.1",
-                  "remoteAsns" : "1"
+                  "remoteAsns" : "1",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -15598,7 +15633,8 @@
                   "localAs" : 3,
                   "localIp" : "3.10.1.1",
                   "peerAddress" : "3.1.1.1",
-                  "remoteAsns" : "3"
+                  "remoteAsns" : "3",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "3.2.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -15625,7 +15661,8 @@
                   "localAs" : 3,
                   "localIp" : "3.10.1.1",
                   "peerAddress" : "3.2.2.2",
-                  "remoteAsns" : "3"
+                  "remoteAsns" : "3",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
