@@ -1470,7 +1470,7 @@ public final class CiscoGrammarTest {
 
     List<EigrpRedistributionPolicy> eigrpRedists =
         eigrpProc.get(10L).getRedistributionPolicies().entrySet().stream()
-            .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.EIGRP))
+            .filter(entry -> entry.getKey().getProtocol().equals(RoutingProtocol.EIGRP))
             .map(Entry::getValue)
             .collect(Collectors.toList());
     assertSame(eigrpRedists.size(), 2);
@@ -3826,11 +3826,7 @@ public final class CiscoGrammarTest {
     org.batfish.representation.cisco.BgpProcess bgpProc = vc.getDefaultVrf().getBgpProcess();
     assert bgpProc != null;
     BgpRedistributionPolicy eigrpRedist =
-        bgpProc.getRedistributionPolicies().entrySet().stream()
-            .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.EIGRP))
-            .findFirst()
-            .map(Map.Entry::getValue)
-            .orElse(null);
+        bgpProc.getRedistributionPolicies().get(RoutingProtocolInstance.eigrp(1L));
     assert eigrpRedist != null;
     assertThat(eigrpRedist.getRouteMap(), equalTo(redistRmName));
 
@@ -6161,11 +6157,10 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().entrySet().stream()
-              .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.OSPF))
-              .findFirst()
-              .map(Map.Entry::getValue)
-              .orElse(null);
+          vc.getDefaultVrf()
+              .getBgpProcess()
+              .getRedistributionPolicies()
+              .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(
@@ -6176,11 +6171,10 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf-match-various";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().entrySet().stream()
-              .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.OSPF))
-              .findFirst()
-              .map(Map.Entry::getValue)
-              .orElse(null);
+          vc.getDefaultVrf()
+              .getBgpProcess()
+              .getRedistributionPolicies()
+              .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), equalTo("ospf2bgp"));
       assertThat(redistributionPolicy.getMetric(), equalTo(10000L));
       assertThat(
@@ -6196,11 +6190,10 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf-match-internal";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().entrySet().stream()
-              .filter(entry -> entry.getValue().getSourceProtocol().equals(RoutingProtocol.OSPF))
-              .findFirst()
-              .map(Map.Entry::getValue)
-              .orElse(null);
+          vc.getDefaultVrf()
+              .getBgpProcess()
+              .getRedistributionPolicies()
+              .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(

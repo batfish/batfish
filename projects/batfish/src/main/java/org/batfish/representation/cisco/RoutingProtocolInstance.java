@@ -7,17 +7,21 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.RoutingProtocol;
 
+/**
+ * An instance of a routing protocol on IOS - a {@link CiscoRoutingProtocol} and an optional
+ * process/instance tag or ID.
+ */
 public class RoutingProtocolInstance implements Serializable {
-  public static RoutingProtocolInstance bgp(Long tag) {
-    return new RoutingProtocolInstance(RoutingProtocol.BGP, String.valueOf(tag));
+  public static RoutingProtocolInstance bgp(long tag) {
+    return new RoutingProtocolInstance(RoutingProtocol.BGP, Long.toString(tag));
   }
 
   public static RoutingProtocolInstance connected() {
     return new RoutingProtocolInstance(RoutingProtocol.CONNECTED, null);
   }
 
-  public static RoutingProtocolInstance eigrp(Long tag) {
-    return new RoutingProtocolInstance(RoutingProtocol.EIGRP, String.valueOf(tag));
+  public static RoutingProtocolInstance eigrp(long tag) {
+    return new RoutingProtocolInstance(RoutingProtocol.EIGRP, Long.toString(tag));
   }
 
   public static RoutingProtocolInstance ospf() {

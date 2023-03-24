@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.RoutingProtocol;
 
 public abstract class RedistributionPolicy implements Serializable {
 
@@ -21,10 +20,6 @@ public abstract class RedistributionPolicy implements Serializable {
 
   public String getRouteMap() {
     return _routeMap;
-  }
-
-  public RoutingProtocol getSourceProtocol() {
-    return _instance.getProtocol();
   }
 
   public @Nonnull RoutingProtocolInstance getInstance() {
