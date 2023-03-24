@@ -1,10 +1,9 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import org.batfish.datamodel.IsoAddress;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.isis.IsisLevel;
 
 public class IsisProcess implements Serializable {
@@ -13,10 +12,10 @@ public class IsisProcess implements Serializable {
 
   private IsoAddress _netAddress;
 
-  private Map<RoutingProtocol, IsisRedistributionPolicy> _redistributionPolicies;
+  private Map<RoutingProtocolInstance, IsisRedistributionPolicy> _redistributionPolicies;
 
   public IsisProcess() {
-    _redistributionPolicies = new TreeMap<>();
+    _redistributionPolicies = new HashMap<>();
   }
 
   public IsisLevel getLevel() {
@@ -27,7 +26,7 @@ public class IsisProcess implements Serializable {
     return _netAddress;
   }
 
-  public Map<RoutingProtocol, IsisRedistributionPolicy> getRedistributionPolicies() {
+  public Map<RoutingProtocolInstance, IsisRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 

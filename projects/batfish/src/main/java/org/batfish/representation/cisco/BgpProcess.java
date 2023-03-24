@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,7 +14,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.RoutingProtocol;
 
 public class BgpProcess implements Serializable {
 
@@ -70,7 +68,7 @@ public class BgpProcess implements Serializable {
 
   private final long _procnum;
 
-  private final Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
+  private final Map<RoutingProtocolInstance, BgpRedistributionPolicy> _redistributionPolicies;
 
   private Ip _routerId;
 
@@ -92,7 +90,7 @@ public class BgpProcess implements Serializable {
     _ipv6PeerGroups = new HashMap<>();
     _peerSessions = new HashMap<>();
     _procnum = procnum;
-    _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+    _redistributionPolicies = new HashMap<>();
     _masterBgpPeerGroup = new MasterBgpPeerGroup();
     _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
   }
@@ -263,7 +261,7 @@ public class BgpProcess implements Serializable {
     return _procnum;
   }
 
-  public Map<RoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
+  public Map<RoutingProtocolInstance, BgpRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 
