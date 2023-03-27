@@ -66,6 +66,14 @@ public final class MatchAsPath extends BooleanExpr {
     return Objects.hash(_asPathExpr, _asPathMatchExpr);
   }
 
+  @Override
+  public String toString() {
+    return toStringHelper()
+        .add(PROP_AS_PATH_EXPR, _asPathExpr)
+        .add(PROP_AS_PATH_MATCH_EXPR, _asPathMatchExpr)
+        .toString();
+  }
+
   private static final String PROP_AS_PATH_EXPR = "asPathExpr";
   private static final String PROP_AS_PATH_MATCH_EXPR = "asPathMatchExpr";
 

@@ -10,7 +10,9 @@ import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import dk.brics.automaton.Automaton;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -24,22 +26,25 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.minesweeper.AsPathRegexAtomicPredicates;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
+import org.batfish.minesweeper.bdd.BDDDomain;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
@@ -93,8 +98,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .build();
     _asPathRegexes =
         ImmutableSet.<String>builder()
+            // AS-path output constraints are handled in a separate post-processing step, to
+            // properly handle AS-path prepending
             .addAll(_inputConstraints.getAsPath().getAllRegexes())
-            .addAll(_outputConstraints.getAsPath().getAllRegexes())
             .build();
   }
 
@@ -107,17 +113,32 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param policy the route policy that was analyzed
    * @param configAPs an object that provides information about the community and as-path atomic
    *     predicates
+   * @param prependedASes a list of the ASes that were prepended on the particular execution path
+   *     being considered
    * @return an optional answer, which includes a concrete input route and (if the desired action is
    *     PERMIT) concrete output route
    */
   private Optional<Row> constraintsToResult(
-      BDD constraints, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
+      BDD constraints,
+      RoutingPolicy policy,
+      ConfigAtomicPredicates configAPs,
+      List<Long> prependedASes) {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
       BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
-      Row result = TestRoutePoliciesAnswerer.rowResultFor(policy, inRoute, _direction);
+
+      // the AS path on the produced route represents the AS path that will result after
+      // all prepends along the execution path occur. to obtain the original AS path of the
+      // input route, we simply remove those prepended ASes.
+      List<AsSet> asSets = inRoute.getAsPath().getAsSets();
+      AsPath newAspath =
+          AsPath.ofAsSets(
+              asSets.subList(prependedASes.size(), asSets.size()).toArray(new AsSet[0]));
+      Row result =
+          TestRoutePoliciesAnswerer.rowResultFor(
+              policy, inRoute.toBuilder().setAsPath(newAspath).build(), _direction);
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
       // is modeling something incorrectly (or both).
@@ -242,11 +263,44 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return positiveConstraints.diffWith(negativeConstraints);
   }
 
-  private BDD protocolSetToBDD(Set<RoutingProtocol> protocolSet, BDDRoute bddRoute) {
-    if (protocolSet.isEmpty()) {
+  /**
+   * Updates the AS-path regex atomic predicates to incorporate the given AS-path constraints on the
+   * output route. Then returns a BDD representing the AS-path regexes that satisfy these
+   * constraints.
+   *
+   * @param asPathRegexes the user-defined regex constraints on the output AS path
+   * @param configAPs object containing the AS-path atomic predicates; these atomic predicates are
+   *     modified to represent only AS paths that satisfy the given regex constraints, also taking
+   *     into account any AS prepending that occurs along the current execution path
+   * @param r the {@link BDDRoute} representing the symbolic output route on the current execution
+   *     path
+   * @return a BDD representing atomic predicates that satisfy the given regex constraints
+   */
+  private BDD outputAsPathConstraintsToBDDAndUpdatedAPs(
+      RegexConstraints asPathRegexes, ConfigAtomicPredicates configAPs, BDDRoute r) {
+    // update the atomic predicates to include any prepended ASes and then to constrain them to
+    // satisfy the given regex constraints
+    AsPathRegexAtomicPredicates aps = configAPs.getAsPathRegexAtomicPredicates();
+    aps.prependAPs(r.getPrependedASes());
+    aps.constrainAPs(asPathRegexes);
+
+    // produce the OR of all atomic predicates whose associated automata are non-empty
+    // these are the atomic predicates that satisfy the given regex constraints
+    Map<Integer, Automaton> apAutomata = aps.getAtomicPredicateAutomata();
+    BDD[] apBDDs = r.getAsPathRegexAtomicPredicates();
+    return r.getFactory()
+        .orAll(
+            apAutomata.keySet().stream()
+                .filter(i -> !apAutomata.get(i).isEmpty())
+                .map(i -> apBDDs[i])
+                .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  private <T> BDD setToBDD(Set<T> set, BDDRoute bddRoute, BDDDomain<T> bddDomain) {
+    if (set.isEmpty()) {
       return bddRoute.getFactory().one();
     } else {
-      return bddRoute.anyProtocolIn(protocolSet);
+      return bddRoute.anyElementOf(set, bddDomain);
     }
   }
 
@@ -274,14 +328,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             r.getCommunityAtomicPredicates(),
             r.getFactory()));
     result.andWith(
-        regexConstraintsToBDD(
-            constraints.getAsPath(),
-            SymbolicAsPathRegex::new,
-            configAPs.getAsPathRegexAtomicPredicates(),
-            r.getAsPathRegexAtomicPredicates(),
-            r.getFactory()));
+        outputRoute
+            ? outputAsPathConstraintsToBDDAndUpdatedAPs(constraints.getAsPath(), configAPs, r)
+            : regexConstraintsToBDD(
+                constraints.getAsPath(),
+                SymbolicAsPathRegex::new,
+                configAPs.getAsPathRegexAtomicPredicates(),
+                r.getAsPathRegexAtomicPredicates(),
+                r.getFactory()));
     result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
-    result.andWith(protocolSetToBDD(constraints.getProtocol(), r));
+    result.andWith(setToBDD(constraints.getOriginType(), r, r.getOriginType()));
+    result.andWith(setToBDD(constraints.getProtocol(), r, r.getProtocolHistory()));
 
     return result;
   }
@@ -323,14 +380,19 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD pathAnnouncements = path.getSecond();
       BDDRoute outputRoute = path.getFirst();
       BDD intersection = pathAnnouncements.and(inConstraints);
+      // make a copy of the config atomic predicates, since the process of creating the constraints
+      // on the output route can modify them, in order to handle AS-path constraints in the presence
+      // of AS prepending
+      ConfigAtomicPredicates outConfigAPs = new ConfigAtomicPredicates(configAPs);
       if (_action == PERMIT) {
         // incorporate the constraints on the output route as well
         BDD outConstraints =
-            routeConstraintsToBDD(_outputConstraints, outputRoute, true, configAPs);
+            routeConstraintsToBDD(_outputConstraints, outputRoute, true, outConfigAPs);
         intersection = intersection.and(outConstraints);
       }
 
-      Optional<Row> result = constraintsToResult(intersection, policy, configAPs);
+      Optional<Row> result =
+          constraintsToResult(intersection, policy, outConfigAPs, outputRoute.getPrependedASes());
       if (result.isPresent()) {
         builder.add(result.get());
         if (!_perPath) {
@@ -359,7 +421,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _communityRegexes.stream()
                 .map(CommunityVar::from)
                 .collect(ImmutableSet.toImmutableSet()),
-            _asPathRegexes);
+            _asPathRegexes,
+            policies);
 
     return policies.stream().flatMap(policy -> searchPolicy(policy, configAPs).stream());
   }

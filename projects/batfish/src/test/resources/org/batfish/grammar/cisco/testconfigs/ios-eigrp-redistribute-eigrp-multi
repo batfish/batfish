@@ -1,0 +1,28 @@
+!
+hostname ios-eigrp-redistribute-eigrp-multi
+!
+interface GigabitEthernet0/0
+ ip address 10.0.23.3 255.255.255.0
+!
+interface GigabitEthernet0/1
+ ip address 10.0.34.3 255.255.255.0
+!
+interface GigabitEthernet0/2
+ ip address 10.0.36.3 255.255.255.0
+!
+interface GigabitEthernet0/3
+ shutdown
+!
+router eigrp 10
+ network 10.0.23.0 0.0.0.255
+ redistribute eigrp 20 route-map RM20
+ redistribute eigrp 30 route-map RM30
+!
+router eigrp 20
+ network 10.0.34.0 0.0.0.255
+ redistribute eigrp 10 route-map RM10
+!
+router eigrp 30
+ network 10.0.36.0 0.0.0.255
+ redistribute eigrp 10 route-map RM10
+!

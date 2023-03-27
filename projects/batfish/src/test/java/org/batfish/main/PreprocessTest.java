@@ -70,6 +70,12 @@ public final class PreprocessTest {
   }
 
   @Test
+  public void testFlatJuniperActivation() throws IOException {
+    assertValidPair(
+        "preprocess-flat-juniper-activation-before", "preprocess-flat-juniper-activation-after");
+  }
+
+  @Test
   public void testMainBadArgs() throws IOException {
     _thrown.expect(IllegalArgumentException.class);
     main(new String[] {});
@@ -78,5 +84,12 @@ public final class PreprocessTest {
   @Test
   public void testNop() throws IOException {
     assertValidPair(TESTCONFIGS_PREFIX, "nop-preprocess", "nop-preprocess");
+  }
+
+  @Test
+  public void testApplyGroupsOrder() throws IOException {
+    assertValidPair(
+        "preprocess-flat-juniper-apply-groups-order-before",
+        "preprocess-flat-juniper-apply-groups-order-after");
   }
 }

@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.grammar.flatjuniper.ConfigurationBuilder.unquote;
 
 import com.google.common.collect.ImmutableList;
@@ -29,6 +30,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Activate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
@@ -86,6 +88,9 @@ public final class Hierarchy {
 
     private abstract static class HierarchyChildNode extends HierarchyNode {
 
+      /** Not copied by {@link #copy()} */
+      private boolean _deactivated;
+
       private Set_lineContext _line;
       protected int _lineNumber;
       protected String _sourceGroup;
@@ -99,6 +104,10 @@ public final class Hierarchy {
         _lineNumber = lineNumber;
       }
 
+      /**
+       * Create a copy of this node. Does not copy non-transitive node attributes: {@link
+       * #_deactivated}.
+       */
       public abstract HierarchyChildNode copy();
 
       public abstract boolean isMatchedBy(HierarchyLiteralNode node);
@@ -106,6 +115,14 @@ public final class Hierarchy {
       public abstract boolean isMatchedBy(HierarchyWildcardNode node);
 
       public abstract boolean matches(HierarchyChildNode node);
+
+      public boolean getDeactivated() {
+        return _deactivated;
+      }
+
+      public void setDeactivated(boolean deactivated) {
+        _deactivated = deactivated;
+      }
     }
 
     private static final class HierarchyLiteralNode extends HierarchyChildNode {
@@ -542,29 +559,29 @@ public final class Hierarchy {
       }
     }
 
-    public boolean containsPathPrefixOf(HierarchyPath path) {
-      Map<String, HierarchyChildNode> currentChildren = _root.getChildren();
-      List<HierarchyChildNode> pathNodes = path._nodes;
-      for (HierarchyChildNode currentPathNode : pathNodes) {
-        HierarchyChildNode treeMatchNode = currentChildren.get(currentPathNode._unquotedText);
-        if (treeMatchNode != null) {
-          if (treeMatchNode.getChildren().size() == 0) {
-            return true;
-          } else {
-            currentChildren = treeMatchNode.getChildren();
-          }
-        } else {
-          break;
+    private boolean isSubPathDeactivated(HierarchyPath path) {
+      HierarchyNode currentNode = _root;
+      HierarchyChildNode matchNode = null;
+      for (HierarchyChildNode currentPathNode : path._nodes) {
+        matchNode = currentNode.getChildNode(currentPathNode._unquotedText);
+        if (matchNode == null) {
+          return false;
         }
+        if (matchNode.getDeactivated()) {
+          return true;
+        }
+        currentNode = matchNode;
       }
       return false;
     }
 
-    private HierarchyChildNode findExactPathMatchNode(HierarchyPath path) {
+    private @Nonnull HierarchyChildNode findExactPathMatchNode(HierarchyPath path) {
       HierarchyNode currentGroupNode = _root;
       HierarchyChildNode matchNode = null;
+      checkArgument(!path._nodes.isEmpty(), "Path must be non-empty", path);
       for (HierarchyChildNode currentPathNode : path._nodes) {
         matchNode = currentGroupNode.getChildNode(currentPathNode._unquotedText);
+        checkArgument(matchNode != null, "Path does not exist in tree: %s", path);
         currentGroupNode = matchNode;
       }
       return matchNode;
@@ -757,11 +774,6 @@ public final class Hierarchy {
       return _groupName;
     }
 
-    public void pruneAfterPath(HierarchyPath path) {
-      HierarchyChildNode pathEnd = findExactPathMatchNode(path);
-      pathEnd.getChildren().clear();
-    }
-
     public void setApplyGroupsExcept(HierarchyPath path, String groupName) {
       HierarchyChildNode node = findExactPathMatchNode(path);
       node.addBlacklistedGroup(groupName);
@@ -802,11 +814,13 @@ public final class Hierarchy {
   }
 
   public void addDeactivatePath(HierarchyPath path, Deactivate_lineContext ctx) {
-    if (isDeactivated(path)) {
-      return;
-    }
     _deactivateTree.addPath(path, null, null, null);
-    _deactivateTree.pruneAfterPath(path);
+    _deactivateTree.findExactPathMatchNode(path).setDeactivated(true);
+  }
+
+  public void removeDeactivatePath(HierarchyPath path, Activate_lineContext ctx) {
+    _deactivateTree.addPath(path, null, null, null);
+    _deactivateTree.findExactPathMatchNode(path).setDeactivated(false);
   }
 
   public void addMasterPath(
@@ -844,7 +858,7 @@ public final class Hierarchy {
   }
 
   public boolean isDeactivated(HierarchyPath path) {
-    return _deactivateTree.containsPathPrefixOf(path);
+    return _deactivateTree.isSubPathDeactivated(path);
   }
 
   public HierarchyTree newTree(String groupName) {

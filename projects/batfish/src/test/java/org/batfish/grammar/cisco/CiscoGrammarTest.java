@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
@@ -242,6 +243,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -262,6 +264,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -279,10 +282,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
@@ -431,8 +436,14 @@ import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
+import org.batfish.representation.cisco.EigrpRedistributionPolicy;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
+import org.batfish.representation.cisco.HsrpDecrementPriority;
+import org.batfish.representation.cisco.HsrpGroup;
+import org.batfish.representation.cisco.HsrpShutdown;
+import org.batfish.representation.cisco.HsrpTrackAction;
+import org.batfish.representation.cisco.HsrpVersion;
 import org.batfish.representation.cisco.IcmpEchoSla;
 import org.batfish.representation.cisco.IpSla;
 import org.batfish.representation.cisco.LdapServerGroup;
@@ -445,6 +456,7 @@ import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtAdditiveLine;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtLine;
+import org.batfish.representation.cisco.RoutingProtocolInstance;
 import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.TacacsPlusServerGroup;
@@ -696,7 +708,7 @@ public final class CiscoGrammarTest {
   public void testIosBgpExtcommunityParsing() throws IOException {
     CiscoConfiguration c = parseCiscoConfig("ios-bgp-extcommunity", ConfigurationFormat.CISCO_IOS);
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    c.setAnswerElement(ccae);
+    c.getStructureManager().saveInto(ccae, c.getFilename());
     c.setWarnings(new Warnings(true, true, true));
     assertThat(
         ccae, hasDefinedStructure(c.getFilename(), EXTCOMMUNITY_LIST_STANDARD, "COM_WITH_RT"));
@@ -1445,6 +1457,48 @@ public final class CiscoGrammarTest {
                 .build()));
   }
 
+  /**
+   * Test EIGRP route redistribution. Confirmation test when multiple redelivery settings are made
+   * in EIGRP.
+   */
+  @Test
+  public void testIosEigrpRedistributeMultiple() {
+    String hostname = "ios-eigrp-redistribute-eigrp-multi";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    Map<Long, EigrpProcess> eigrpProc = vc.getDefaultVrf().getEigrpProcesses();
+    assertSame(eigrpProc.size(), 3);
+
+    List<EigrpRedistributionPolicy> eigrpRedists =
+        eigrpProc.get(10L).getRedistributionPolicies().entrySet().stream()
+            .filter(entry -> entry.getKey().getProtocol().equals(RoutingProtocol.EIGRP))
+            .map(Entry::getValue)
+            .collect(Collectors.toList());
+    assertSame(eigrpRedists.size(), 2);
+
+    RoutingProtocolInstance instance1 = RoutingProtocolInstance.eigrp(10L);
+    RoutingProtocolInstance instance2 = RoutingProtocolInstance.eigrp(20L);
+    RoutingProtocolInstance instance3 = RoutingProtocolInstance.eigrp(30L);
+    EigrpRedistributionPolicy eigrpRedist0 = eigrpRedists.get(0);
+    EigrpRedistributionPolicy eigrpRedist1 = eigrpRedists.get(1);
+
+    assertTrue(eigrpRedist0.getRouteMap().equals("RM20"));
+    assertTrue(eigrpRedist1.getRouteMap().equals("RM30"));
+    assertThat(eigrpRedist0.getInstance(), equalTo(instance2));
+    assertThat(eigrpRedist1.getInstance(), equalTo(instance3));
+
+    assertSame(eigrpProc.get(20L).getRedistributionPolicies().size(), 1);
+    assertSame(eigrpProc.get(30L).getRedistributionPolicies().size(), 1);
+
+    EigrpRedistributionPolicy eigrpRedist2 =
+        eigrpProc.get(20L).getRedistributionPolicies().get(instance1);
+    EigrpRedistributionPolicy eigrpRedist3 =
+        eigrpProc.get(30L).getRedistributionPolicies().get(instance1);
+    assertTrue(eigrpRedist2.getRouteMap().equals("RM10"));
+    assertTrue(eigrpRedist3.getRouteMap().equals("RM10"));
+    assertThat(eigrpRedist2.getInstance(), equalTo(instance1));
+    assertThat(eigrpRedist3.getInstance(), equalTo(instance1));
+  }
+
   @Test
   public void testIosInspection() throws IOException {
     Configuration c = parseConfig("ios-inspection");
@@ -1601,10 +1655,94 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterfaceStandbyExtraction() {
+    CiscoConfiguration vc =
+        parseCiscoConfig("ios-interface-standby", ConfigurationFormat.CISCO_IOS);
+    assertThat(
+        vc.getInterfaces(), hasKeys("Ethernet0", "Tunnel1", "Ethernet1", "Ethernet2", "Ethernet3"));
+    {
+      org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet0");
+      assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_2));
+      assertThat(i.getHsrpGroups(), hasKeys(4095));
+      HsrpGroup h = i.getHsrpGroups().get(4095);
+      assertThat(
+          h.getAuthentication(),
+          equalTo(CommonUtil.sha256Digest("012345678901234567890123456789012345678")));
+      assertThat(h.getIp(), equalTo(Ip.parse("10.0.0.1")));
+      assertTrue(h.getPreempt());
+      assertThat(h.getPriority(), equalTo(105));
+      // msec, copied directly
+      assertThat(h.getHelloTime(), equalTo(500));
+      // no msec, multiplied by 1000
+      assertThat(h.getHoldTime(), equalTo(2000));
+      assertThat(h.getTrackActions(), hasKeys(1, 2, 3, 4, 5));
+      {
+        HsrpTrackAction t = h.getTrackActions().get(1);
+        assertThat(t, instanceOf(HsrpDecrementPriority.class));
+        HsrpDecrementPriority d = (HsrpDecrementPriority) t;
+        assertThat(d.getDecrement(), equalTo(20));
+      }
+      {
+        HsrpTrackAction t = h.getTrackActions().get(2);
+        assertThat(t, instanceOf(HsrpShutdown.class));
+      }
+      {
+        HsrpTrackAction t = h.getTrackActions().get(3);
+        assertThat(t, instanceOf(HsrpDecrementPriority.class));
+        HsrpDecrementPriority d = (HsrpDecrementPriority) t;
+        assertThat(d.getDecrement(), equalTo(20));
+      }
+      {
+        HsrpTrackAction t = h.getTrackActions().get(4);
+        assertThat(t, instanceOf(HsrpDecrementPriority.class));
+        HsrpDecrementPriority d = (HsrpDecrementPriority) t;
+        assertNull(d.getDecrement());
+      }
+      {
+        HsrpTrackAction t = h.getTrackActions().get(5);
+        assertThat(t, instanceOf(HsrpDecrementPriority.class));
+        HsrpDecrementPriority d = (HsrpDecrementPriority) t;
+        assertThat(d.getDecrement(), equalTo(20));
+      }
+    }
+    {
+      org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet1");
+      assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_1));
+      assertThat(i.getHsrpGroups(), hasKeys(255));
+    }
+    {
+      org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet2");
+      assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_1));
+      assertThat(i.getHsrpGroups(), anEmptyMap());
+    }
+    {
+      org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet3");
+      assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_2));
+      assertThat(i.getHsrpGroups(), anEmptyMap());
+    }
+  }
+
+  @Test
+  public void testIosInterfaceStandbyWarnings() throws IOException {
+    String hostname = "ios-interface-standby";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae.getWarnings().get(filename).getParseWarnings(),
+        containsInAnyOrder(
+            hasComment("Expected HSRP version 1 group number in range 0-255, but got '500'"),
+            hasComment("Expected HSRP version 2 group number in range 0-4095, but got '5000'")));
+  }
+
+  @Test
   public void testIosInterfaceStandby() throws IOException {
     Configuration c = parseConfig("ios-interface-standby");
     Interface i = c.getAllInterfaces().get("Ethernet0");
-    int group = 101;
+    int group = 4095;
 
     assertThat(
         c,
@@ -3688,7 +3826,7 @@ public final class CiscoGrammarTest {
     org.batfish.representation.cisco.BgpProcess bgpProc = vc.getDefaultVrf().getBgpProcess();
     assert bgpProc != null;
     BgpRedistributionPolicy eigrpRedist =
-        bgpProc.getRedistributionPolicies().get(RoutingProtocol.EIGRP);
+        bgpProc.getRedistributionPolicies().get(RoutingProtocolInstance.eigrp(1L));
     assert eigrpRedist != null;
     assertThat(eigrpRedist.getRouteMap(), equalTo(redistRmName));
 
@@ -6019,7 +6157,10 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+          vc.getDefaultVrf()
+              .getBgpProcess()
+              .getRedistributionPolicies()
+              .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(
@@ -6030,7 +6171,10 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf-match-various";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+          vc.getDefaultVrf()
+              .getBgpProcess()
+              .getRedistributionPolicies()
+              .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), equalTo("ospf2bgp"));
       assertThat(redistributionPolicy.getMetric(), equalTo(10000L));
       assertThat(
@@ -6046,7 +6190,10 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf-match-internal";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+          vc.getDefaultVrf()
+              .getBgpProcess()
+              .getRedistributionPolicies()
+              .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(

@@ -18,7 +18,6 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
@@ -176,8 +175,7 @@ public class ModelGeneration {
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
             .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
-            .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */
-            .setOriginType(OriginType.IGP) /* dummy value until supported */;
+            .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */;
 
     BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 
@@ -189,6 +187,7 @@ public class ModelGeneration {
     builder.setAdmin(r.getAdminDist().satAssignmentToInt(fullModel));
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
+    builder.setOriginType(r.getOriginType().satAssignmentToValue(fullModel));
     builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
@@ -206,6 +205,23 @@ public class ModelGeneration {
     return builder.build();
   }
 
+  /**
+   * Tries to "add" constraint c to constraints; if the result is not inconsistent returns it,
+   * otherwise returns constraints.
+   *
+   * @param c a constraint expressed as a BDD
+   * @param constraints the set of constraints to augment
+   * @return the augmented constraints if consistent, otherwise the original constraints.
+   */
+  private static BDD tryAddingConstraint(BDD c, BDD constraints) {
+    BDD augmentedConstraints = constraints.and(c);
+    if (!augmentedConstraints.isZero()) {
+      return augmentedConstraints;
+    } else {
+      return constraints;
+    }
+  }
+
   // Produces a full model of the given constraints, which represents a concrete route announcement
   // that is consistent with the constraints.  The protocol defaults to BGP if it is consistent with
   // the constraints.  The same approach could be used to provide default values for other fields in
@@ -214,11 +230,33 @@ public class ModelGeneration {
     BDDRoute route = new BDDRoute(constraints.getFactory(), configAPs);
     // set the protocol field to BGP if it is consistent with the constraints
     BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
-    BDD augmentedConstraints = constraints.and(isBGP);
-    if (!augmentedConstraints.isZero()) {
-      return augmentedConstraints.fullSatOne();
-    } else {
-      return constraints.fullSatOne();
-    }
+    BDD defaultLP = route.getLocalPref().value(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE);
+
+    // Set the prefixes to one of the well-known ones
+    BDD googlePrefix =
+        route
+            .getPrefix()
+            .value(Ip.parse("8.8.8.0").asLong())
+            .and(route.getPrefixLength().value(24));
+    BDD amazonPrefix =
+        route
+            .getPrefix()
+            .value(Ip.parse("52.0.0.0").asLong())
+            .and(route.getPrefixLength().value(10));
+    BDD rfc1918 =
+        route
+            .getPrefix()
+            .value(Ip.parse("10.0.0.0").asLong())
+            .and(route.getPrefixLength().value(8));
+    BDD prefixes = googlePrefix.or(amazonPrefix).or(rfc1918);
+    // Alternatively, if the above fails set the prefix to something >= 10.0.0.0 and the length to
+    // something >= 16.
+    BDD lessPreferredPrefixes =
+        route.getPrefix().geq(167772160).and(route.getPrefixLength().geq(16));
+    BDD augmentedConstraints = tryAddingConstraint(isBGP, constraints);
+    augmentedConstraints = tryAddingConstraint(defaultLP, augmentedConstraints);
+    augmentedConstraints = tryAddingConstraint(prefixes, augmentedConstraints);
+    augmentedConstraints = tryAddingConstraint(lessPreferredPrefixes, augmentedConstraints);
+    return augmentedConstraints.fullSatOne();
   }
 }

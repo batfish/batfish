@@ -30,10 +30,10 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -54,7 +54,8 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -64,9 +65,12 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.job.ConvertConfigurationJob.CollectIpSpaceReferences;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoStructureType;
+import org.batfish.vendor.StructureType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
@@ -81,7 +85,6 @@ public final class ConvertConfigurationJobTest {
   private VendorConfiguration baseVendorConfig() {
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename("filename");
-    vc.setAnswerElement(new ConvertConfigurationAnswerElement());
     return vc;
   }
 
@@ -555,7 +558,8 @@ public final class ConvertConfigurationJobTest {
   @Test
   public void testRemoveInvalidVendorStructureIds() {
     String filename = "configs/config";
-    String structureType = "structureType";
+    StructureType type = CiscoStructureType.AAA_SERVER_GROUP;
+    String structureType = type.getDescription();
     String validStructureName = "validStructureName";
     String invalidStructureName = "invalidStructureName";
     Warnings w = new Warnings(false, true, false);
@@ -589,24 +593,14 @@ public final class ConvertConfigurationJobTest {
     // VS configuration with a structure definition for only the valid Vendor Structure ID
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
-    ccae.setDefinedStructures(
-        ImmutableSortedMap.of(
-            filename,
-            ImmutableSortedMap.of(
-                structureType,
-                ImmutableSortedMap.of(validStructureName, new DefinedStructureInfo()))));
+    vc.defineSingleLineStructure(type, validStructureName, 1);
 
     removeInvalidVendorStructureIds(c, vc, w);
     IpAccessList acl = Iterables.getOnlyElement(c.getIpAccessLists().values());
     assertThat(acl.getLines(), iterableWithSize(2));
-    AclLine line0 = acl.getLines().get(0);
-    AclLine line1 = acl.getLines().get(1);
-
     // Valid VSID persists and invalid one is removed
-    assertTrue(line0.getVendorStructureId().isPresent());
-    assertFalse(line1.getVendorStructureId().isPresent());
+    assertTrue(acl.getLines().get(0).getVendorStructureId().isPresent());
+    assertFalse(acl.getLines().get(1).getVendorStructureId().isPresent());
   }
 
   @Test
@@ -661,8 +655,6 @@ public final class ConvertConfigurationJobTest {
     IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
 
     // No matching defined structure, should fail assertion
     _thrown.expect(AssertionError.class);
@@ -672,7 +664,8 @@ public final class ConvertConfigurationJobTest {
   @Test
   public void testAssertVendorStructureIdsValidValid() {
     String filename = "configs/config";
-    String structureType = "structureType";
+    StructureType type = CiscoStructureType.AAA_SERVER_GROUP;
+    String structureType = type.getDescription();
     String validStructureName = "validStructureName";
     Warnings w = new Warnings(false, true, false);
 
@@ -692,16 +685,46 @@ public final class ConvertConfigurationJobTest {
     IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
-    ccae.setDefinedStructures(
-        ImmutableSortedMap.of(
-            filename,
-            ImmutableSortedMap.of(
-                structureType,
-                ImmutableSortedMap.of(validStructureName, new DefinedStructureInfo()))));
+    vc.defineSingleLineStructure(type, validStructureName, 1);
 
     // Matching defined structure, should not fail assertion
     assertVendorStructureIdsValid(c, vc, w);
+  }
+
+  @Test
+  public void testRemoveUndefinedTrackReferences() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+    Vrf v = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess proc =
+        BgpProcess.builder()
+            .setRouterId(Ip.ZERO)
+            .setEbgpAdminCost(1)
+            .setIbgpAdminCost(1)
+            .setLocalAdminCost(1)
+            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .build();
+    v.setBgpProcess(proc);
+    proc.setTracks(ImmutableSet.of("absent", "present"));
+    c.setTrackingGroups(ImmutableMap.of("present", TrackMethods.alwaysTrue()));
+
+    Warnings w = new Warnings(false, true, false);
+    VendorConfiguration vc = baseVendorConfig();
+    finalizeConfiguration(c, vc, w);
+
+    assertThat(proc.getTracks(), contains("present"));
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText(
+                "Removing reference to undefined track 'absent' in BGP process for vrf"
+                    + " 'default'")));
   }
 }

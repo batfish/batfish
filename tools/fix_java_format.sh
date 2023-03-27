@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Find the jar, and download it if needed.
-GJF_VERSION=1.15.0
+GJF_VERSION=1.16.0
 JAR_NAME="google-java-format-${GJF_VERSION}-all-deps.jar"
 JAR_URL="https://github.com/google/google-java-format/releases/download/v${GJF_VERSION}/${JAR_NAME}"
 JAR_DIR="${HOME}/.cache/google-java-format"
@@ -14,7 +14,7 @@ if [ ! -f ${JAR} ]; then
 fi
 
 # Some OS X users have installed GNU find as gfind.
-if [ "$(uname)" = "Darwin" ] && [ -x $(command -v gfind) ]; then
+if [ "$(uname)" = "Darwin" ] && [ -x "$(command -v gfind)" ]; then
   GNU_FIND=gfind
 else
   GNU_FIND=find

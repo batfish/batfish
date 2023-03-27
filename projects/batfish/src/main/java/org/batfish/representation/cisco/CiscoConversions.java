@@ -1267,7 +1267,7 @@ public class CiscoConversions {
   @Nullable
   private static If convertEigrpRedistributionPolicy(
       EigrpRedistributionPolicy policy, EigrpProcess proc, CiscoConfiguration oldConfig) {
-    RoutingProtocol protocol = policy.getSourceProtocol();
+    RoutingProtocol protocol = policy.getInstance().getProtocol();
     // All redistribution must match the specified protocol.
     Conjunction eigrpExportConditions = new Conjunction();
     BooleanExpr matchExpr;
@@ -1276,8 +1276,7 @@ public class CiscoConversions {
           new MatchProtocol(
               RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX, RoutingProtocol.CONNECTED);
 
-      Long otherAsn =
-          (Long) policy.getSpecialAttributes().get(EigrpRedistributionPolicy.EIGRP_AS_NUMBER);
+      Long otherAsn = Long.parseLong(policy.getInstance().getTag());
       if (otherAsn == null) {
         oldConfig
             .getWarnings()

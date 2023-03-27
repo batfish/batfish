@@ -2,8 +2,8 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -14,7 +14,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 
@@ -30,7 +29,7 @@ public class EigrpProcess implements Serializable {
   @Nullable private DistributeList _outboundGlobalDistributeList;
   @Nonnull private Map<String, DistributeList> _inboundInterfaceDistributeLists;
   @Nonnull private Map<String, DistributeList> _outboundInterfaceDistributeLists;
-  private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
+  private final Map<RoutingProtocolInstance, EigrpRedistributionPolicy> _redistributionPolicies;
   private final @Nonnull String _vrfName;
   private String _addressFamily;
   private @Nullable Long _asn;
@@ -49,7 +48,7 @@ public class EigrpProcess implements Serializable {
     _networks = new TreeSet<>();
     _inboundInterfaceDistributeLists = new HashMap<>(0);
     _outboundInterfaceDistributeLists = new HashMap<>(0);
-    _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+    _redistributionPolicies = new LinkedHashMap<>();
     _vrfName = vrfName;
     _wildcardNetworks = new TreeSet<>();
   }
@@ -161,7 +160,7 @@ public class EigrpProcess implements Serializable {
     _passiveInterfaceDefault = passiveInterfaceDefault;
   }
 
-  public Map<RoutingProtocol, EigrpRedistributionPolicy> getRedistributionPolicies() {
+  public Map<RoutingProtocolInstance, EigrpRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 

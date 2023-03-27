@@ -315,6 +315,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1020,11 +1021,13 @@ import org.batfish.grammar.cisco.CiscoParser.Standard_ipv6_access_list_tailConte
 import org.batfish.grammar.cisco.CiscoParser.Standby_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_ipContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_group_numberContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_timersContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_group_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.Standby_versionContext;
+import org.batfish.grammar.cisco.CiscoParser.Standby_version_numberContext;
 import org.batfish.grammar.cisco.CiscoParser.SubrangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Summary_address_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Suppressed_iis_stanzaContext;
@@ -1107,6 +1110,7 @@ import org.batfish.representation.cisco.HsrpDecrementPriority;
 import org.batfish.representation.cisco.HsrpGroup;
 import org.batfish.representation.cisco.HsrpShutdown;
 import org.batfish.representation.cisco.HsrpTrackAction;
+import org.batfish.representation.cisco.HsrpVersion;
 import org.batfish.representation.cisco.IcmpEchoSla;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
 import org.batfish.representation.cisco.IcmpTypeGroupReferenceLine;
@@ -1197,6 +1201,7 @@ import org.batfish.representation.cisco.RouteMapSetNextHopPeerAddress;
 import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
 import org.batfish.representation.cisco.RouteMapSetTagLine;
 import org.batfish.representation.cisco.RouteMapSetWeightLine;
+import org.batfish.representation.cisco.RoutingProtocolInstance;
 import org.batfish.representation.cisco.SecurityZone;
 import org.batfish.representation.cisco.SecurityZonePair;
 import org.batfish.representation.cisco.ServiceObject;
@@ -1551,7 +1556,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private SecurityZonePair _currentSecurityZonePair;
 
-  private Integer _currentHsrpGroup;
+  private List<HsrpGroup> _currentHsrpGroups;
 
   private Integer _currentTrack;
 
@@ -2337,51 +2342,82 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterStandby_group(Standby_groupContext ctx) {
-    int group = toInteger(ctx.group);
-    _currentHsrpGroup = group;
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new));
+    // Hard to determine correct behavior if some interfaces in the current interface range are
+    // version 1 and some are version 2. For now, fail loudly by warning and refusing to update
+    // groups if any interface is wrong version for provided group number.
+    // Note that version 1 is default.
+    boolean effectiveVersion2 =
+        _currentInterfaces.stream().allMatch(i -> i.getHsrpVersion() == HsrpVersion.VERSION_2);
+    Optional<Integer> maybeGroup = toInteger(ctx, ctx.group, effectiveVersion2);
+    if (!maybeGroup.isPresent()) {
+      // already warned
+      _currentHsrpGroups = ImmutableList.of();
+      return;
+    }
+    int group = maybeGroup.get();
+    _currentHsrpGroups =
+        _currentInterfaces.stream()
+            .map(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new))
+            .collect(ImmutableList.toImmutableList());
   }
 
   @Override
   public void exitStandby_group(Standby_groupContext ctx) {
-    _currentHsrpGroup = null;
+    _currentHsrpGroups = null;
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Standby_group_numberContext ctx, boolean effectiveVersion2) {
+    if (effectiveVersion2) {
+      return toIntegerInSpace(
+          messageCtx, ctx, HSRP_VERSION_2_GROUP_RANGE, "HSRP version 2 group number");
+    } else {
+      return toIntegerInSpace(
+          messageCtx, ctx, HSRP_VERSION_1_GROUP_RANGE, "HSRP version 1 group number");
+    }
   }
 
   @Override
   public void exitStandby_version(Standby_versionContext ctx) {
     if (!_no) {
-      _currentInterfaces.forEach(i -> i.setHsrpVersion(ctx.version.getText()));
+      _currentInterfaces.forEach(i -> i.setHsrpVersion(toHsrpVersion(ctx.version)));
     } else {
       _currentInterfaces.forEach(i -> i.setHsrpVersion(null));
+    }
+  }
+
+  private static @Nonnull HsrpVersion toHsrpVersion(Standby_version_numberContext ctx) {
+    if (ctx.STANDBY_VERSION_1() != null) {
+      return HsrpVersion.VERSION_1;
+    } else {
+      assert ctx.STANDBY_VERSION_2() != null;
+      return HsrpVersion.VERSION_2;
     }
   }
 
   @Override
   public void exitStandby_group_authentication(Standby_group_authenticationContext ctx) {
     String rawAuthenticationString = ctx.auth.getText();
-    _currentInterfaces.forEach(
-        i ->
-            i.getHsrpGroups()
-                .get(_currentHsrpGroup)
-                .setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
+    _currentHsrpGroups.forEach(
+        h -> h.setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
   }
 
   @Override
   public void exitStandby_group_ip(Standby_group_ipContext ctx) {
     Ip ip = toIp(ctx.ip);
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setIp(ip));
+    _currentHsrpGroups.forEach(h -> h.setIp(ip));
   }
 
   @Override
   public void exitStandby_group_preempt(Standby_group_preemptContext ctx) {
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPreempt(!_no));
+    _currentHsrpGroups.forEach(h -> h.setPreempt(!_no));
   }
 
   @Override
   public void exitStandby_group_priority(Standby_group_priorityContext ctx) {
     int priority =
         _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPriority(priority));
+    _currentHsrpGroups.forEach(h -> h.setPriority(priority));
   }
 
   @Override
@@ -2396,9 +2432,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
       holdTime = ctx.hold_ms != null ? toInteger(ctx.hold_ms) : (toInteger(ctx.hold_sec) * 1000);
     }
-    _currentInterfaces.forEach(
-        i -> {
-          HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
+    _currentHsrpGroups.forEach(
+        hsrpGroup -> {
           hsrpGroup.setHelloTime(helloTime);
           hsrpGroup.setHoldTime(holdTime);
         });
@@ -2410,8 +2445,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(
         TRACK, Integer.toString(track), INTERFACE_STANDBY_TRACK, ctx.getStart().getLine());
     HsrpTrackAction trackAction = toTrackAction(ctx);
-    _currentInterfaces.stream()
-        .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
+    _currentHsrpGroups.stream()
+        .map(h -> h.getTrackActions())
         .forEach(
             trackActions -> {
               if (_no) {
@@ -5489,9 +5524,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_policy(If_ip_policyContext ctx) {
     String policyName = ctx.name.getText();
     warn(ctx, "PBR is not supported");
-    //    for (Interface currentInterface : _currentInterfaces) {
-    //      currentInterface.setRoutingPolicy(policyName);
-    //    }
     _configuration.referenceStructure(
         ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, ctx.name.getLine());
   }
@@ -7148,11 +7180,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
     long as = toAsNum(ctx.asn);
-    r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, as);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.bgp(as);
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7173,9 +7206,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.connected();
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7196,11 +7231,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
+
     long asn = toLong(ctx.asn);
-    r.getSpecialAttributes().put(EigrpRedistributionPolicy.EIGRP_AS_NUMBER, asn);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.eigrp(asn);
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7232,9 +7269,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.ospf();
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
     int procNum = toInteger(ctx.proc);
     r.getSpecialAttributes().put(EigrpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
 
@@ -7261,9 +7300,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.rip();
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7284,9 +7325,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.staticRoutingProtocol();
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7447,8 +7490,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-      proc.getRedistributionPolicies().remove(sourceProtocol);
+      proc.getRedistributionPolicies()
+          .entrySet()
+          .removeIf(entry -> entry.getKey().getProtocol().equals(RoutingProtocol.CONNECTED));
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
     }
@@ -7777,9 +7821,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      RoutingProtocolInstance instance = RoutingProtocolInstance.connected();
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
@@ -7798,9 +7843,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRedistribute_connected_is_stanza(Redistribute_connected_is_stanzaContext ctx) {
     IsisProcess proc = currentVrf().getIsisProcess();
-    RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-    IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.connected();
+    IsisRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -7827,10 +7873,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      // TODO match specific EIGRP process ID (ctx.id)
+      RoutingProtocolInstance instance = RoutingProtocolInstance.eigrp(toLong(ctx.id));
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
@@ -7851,9 +7897,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      RoutingProtocolInstance instance = RoutingProtocolInstance.ospf();
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
@@ -7914,9 +7961,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      RoutingProtocolInstance instance = RoutingProtocolInstance.rip();
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
@@ -7937,9 +7985,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      RoutingProtocolInstance instance = RoutingProtocolInstance.staticRoutingProtocol();
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         long metric = toLong(ctx.metric);
         r.setMetric(metric);
@@ -7958,9 +8007,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRedistribute_static_is_stanza(Redistribute_static_is_stanzaContext ctx) {
     IsisProcess proc = currentVrf().getIsisProcess();
-    RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-    IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.staticRoutingProtocol();
+    IsisRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8381,11 +8431,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_redistribute_bgp_cisco(Ro_redistribute_bgp_ciscoContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
     long as = toAsNum(ctx.bgp_asn());
-    r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.bgp(as);
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8413,9 +8463,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_redistribute_connected(Ro_redistribute_connectedContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.connected();
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8443,11 +8494,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_redistribute_eigrp(Ro_redistribute_eigrpContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
     long asn = toLong(ctx.tag);
-    r.getSpecialAttributes().put(OspfRedistributionPolicy.EIGRP_AS_NUMBER, asn);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.eigrp(asn);
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
+
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8476,9 +8528,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_redistribute_static(Ro_redistribute_staticContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.staticRoutingProtocol();
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -9469,10 +9522,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
     Prefix prefix = Prefix.create(ip, mask);
-    RoutingProtocol sourceProtocol = RoutingProtocol.ISIS_L1;
-    IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
+    RoutingProtocolInstance instance = RoutingProtocolInstance.isis_l1();
+    IsisRedistributionPolicy r =
+        _currentIsisProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
     r.setSummaryPrefix(prefix);
-    _currentIsisProcess.getRedistributionPolicies().put(sourceProtocol, r);
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -10795,6 +10850,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
@@ -10824,4 +10894,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitEveryRule(ParserRuleContext ctx) {
     tryProcessSilentSyntax(ctx);
   }
+
+  // See
+  // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipapp_fhrp/configuration/15-mt/fhp-15-mt-book/fhp-hsrp-v2.pdf
+  private static final IntegerSpace HSRP_VERSION_1_GROUP_RANGE =
+      IntegerSpace.of(Range.closed(0, 255));
+  private static final IntegerSpace HSRP_VERSION_2_GROUP_RANGE =
+      IntegerSpace.of(Range.closed(0, 4095));
 }

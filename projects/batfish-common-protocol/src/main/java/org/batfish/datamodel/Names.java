@@ -112,6 +112,10 @@ public final class Names {
     return String.format("~BGP_INDEPENDENT_NETWORK_POLICY:%s~", vrf);
   }
 
+  public static String generatedBgpMainRibIndependentNetworkPolicyName(String vrf) {
+    return String.format("~BGP_MAIN_RIB_INDEPENDENT_NETWORK_POLICY:%s~", vrf);
+  }
+
   public static String generatedBgpRedistributionPolicyName(String vrf) {
     return String.format("~BGP_REDISTRIBUTION_POLICY:%s~", vrf);
   }

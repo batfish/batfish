@@ -1,0 +1,25 @@
+frr-network
+# This file describes the network interfaces
+auto lo
+iface lo inet loopback
+
+auto swp1
+iface swp1
+
+# ports.conf --
+frr version
+frr defaults datacenter
+!
+
+router bgp 1
+ bgp router-id 1.1.1.1
+ network 10.2.2.2/32
+ network 10.3.3.3/32 route-map ADD-METRIC
+ neighbor 10.1.1.2 remote-as 2
+!
+
+route-map ADD-METRIC permit 10
+ set metric 10000
+!
+
+end

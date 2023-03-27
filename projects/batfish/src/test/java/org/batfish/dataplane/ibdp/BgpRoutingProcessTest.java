@@ -907,10 +907,7 @@ public class BgpRoutingProcessTest {
 
     // Test
     List<RouteAdvertisement<Bgpv4Route>> deltaAdverts =
-        _routingProcess
-            .initBgpAggregateRoutes()
-            .getActions()
-            .collect(ImmutableList.toImmutableList());
+        _routingProcess.initBgpAggregateRoutes().stream().collect(ImmutableList.toImmutableList());
 
     // Initially, there should only be adds.
     deltaAdverts.forEach(advert -> assertThat(advert.getReason(), equalTo(Reason.ADD)));

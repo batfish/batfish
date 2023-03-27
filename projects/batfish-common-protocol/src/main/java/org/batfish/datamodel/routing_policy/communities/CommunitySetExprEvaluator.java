@@ -32,10 +32,13 @@ public final class CommunitySetExprEvaluator
       CommunitySetDifference communitySetDifference, CommunityContext arg) {
     CommunitySet initial = communitySetDifference.getInitial().accept(this, arg);
     CommunityMatchExpr removalCriterion = communitySetDifference.getRemovalCriterion();
-    return CommunitySet.of(
-        initial.getCommunities().stream()
-            .filter(c -> !removalCriterion.accept(arg.getCommunityMatchExprEvaluator(), c))
-            .collect(ImmutableSet.toImmutableSet()));
+    ImmutableSet.Builder<Community> ret = ImmutableSet.builder();
+    for (Community c : initial.getCommunities()) {
+      if (!removalCriterion.accept(arg.getCommunityMatchExprEvaluator(), c)) {
+        ret.add(c);
+      }
+    }
+    return CommunitySet.of(ret.build());
   }
 
   @Override

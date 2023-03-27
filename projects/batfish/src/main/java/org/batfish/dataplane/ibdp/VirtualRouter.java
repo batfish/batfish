@@ -2,6 +2,7 @@ package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.alwaysFalse;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
@@ -38,13 +39,11 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AbstractRoute;
@@ -66,7 +65,6 @@ import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.HmmRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -76,7 +74,6 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
@@ -107,15 +104,12 @@ import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.MainRib;
-import org.batfish.datamodel.routing_policy.expr.RibExpr;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackMethodEvaluator;
-import org.batfish.datamodel.visitors.RibExprVisitor;
+import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
-import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.ConnectedRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
@@ -131,32 +125,6 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 
 public final class VirtualRouter {
-
-  /** Visitor that evaluates a {@link RibExpr}, yielding an {@link AbstractRib} . */
-  @ParametersAreNonnullByDefault
-  public static final class RibExprEvaluator
-      implements RibExprVisitor<GenericRibReadOnly<?>, Void>,
-          BiFunction<RibExpr, PrefixSpace, Boolean> {
-
-    public RibExprEvaluator(GenericRibReadOnly<?> mainRib) {
-      // TODO: cleaner construction, especially when multiple RIBs might be required
-      _mainRib = mainRib;
-    }
-
-    @Nonnull
-    @Override
-    public GenericRibReadOnly<?> visitMainRib(MainRib mainRib, Void arg) {
-      return _mainRib;
-    }
-
-    private final GenericRibReadOnly<?> _mainRib;
-
-    @Override
-    public Boolean apply(RibExpr ribExpr, PrefixSpace prefixSpace) {
-      GenericRibReadOnly<?> rib = ribExpr.accept(this, null);
-      return rib.intersectsPrefixSpace(prefixSpace);
-    }
-  }
 
   /** The BGP routing process. {@code null} if BGP is not configured for this VRF */
   @Nullable BgpRoutingProcess _bgpRoutingProcess;
@@ -250,8 +218,6 @@ public final class VirtualRouter {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
-  @Nonnull private final RibExprEvaluator _ribExprEvaluator;
-
   @Nonnull
   private final ResolutionRestriction<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
 
@@ -286,7 +252,6 @@ public final class VirtualRouter {
           new BgpRoutingProcess(
               _vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY, _prefixTracer);
     }
-    _ribExprEvaluator = new RibExprEvaluator(_mainRib);
     _hmmRoutes = ImmutableList.of();
     _kernelConditionalRoutes = ImmutableList.of();
   }
@@ -314,14 +279,11 @@ public final class VirtualRouter {
    */
   static <R extends AbstractRoute, D extends R> void queueDelta(
       Queue<RouteAdvertisement<R>> queue, @Nonnull RibDelta<D> delta) {
-    delta
-        .getActions()
-        .forEach(
-            r -> {
-              @SuppressWarnings("unchecked") // Ok to upcast to R since immutable.
-              RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
-              queue.add(sanitized);
-            });
+    for (RouteAdvertisement<D> r : delta.getActions()) {
+      @SuppressWarnings("unchecked") // Ok to upcast to R since immutable.
+      RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
+      queue.add(sanitized);
+    }
   }
 
   /**
@@ -400,19 +362,15 @@ public final class VirtualRouter {
                         });
               }
             });
-    delta
-        .build()
-        .getActions()
-        .forEach(
-            action -> {
-              if (action.isWithdrawn()) {
-                _mainRibRouteDeltaBuilder.from(
-                    _mainRib.removeRouteGetDelta(annotateRoute(action.getRoute())));
-              } else {
-                _mainRibRouteDeltaBuilder.from(
-                    _mainRib.mergeRouteGetDelta(annotateRoute(action.getRoute())));
-              }
-            });
+    for (RouteAdvertisement<HmmRoute> action : delta.build().getActions()) {
+      if (action.isWithdrawn()) {
+        _mainRibRouteDeltaBuilder.from(
+            _mainRib.removeRouteGetDelta(annotateRoute(action.getRoute())));
+      } else {
+        _mainRibRouteDeltaBuilder.from(
+            _mainRib.mergeRouteGetDelta(annotateRoute(action.getRoute())));
+      }
+    }
     _hmmRoutes = newHmmRoutes.build();
   }
 
@@ -435,7 +393,7 @@ public final class VirtualRouter {
         .map(
             route -> {
               AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
-              boolean accept = policy.process(route, builder, IN, _ribExprEvaluator);
+              boolean accept = policy.process(route, builder, IN, alwaysFalse());
               return accept ? new AnnotatedRoute<AbstractRoute>(builder.build(), _name) : null;
             })
         .filter(Objects::nonNull)
@@ -464,14 +422,19 @@ public final class VirtualRouter {
    * <p>Must be called between rounds, aka, all delta builder should be empty.
    *
    * @param topologyContext The various network topologies
+   * @param trackMethodEvaluatorProvider current data plane iteration's {@link
+   *     TrackMethodEvaluatorProvider} used for computing the iteration's values for BGP-watched
+   *     tracks
    */
-  void initForEgpComputationWithNewTopology(TopologyContext topologyContext) {
+  void initForEgpComputationWithNewTopology(
+      TopologyContext topologyContext, TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
     assert _mainRibRouteDeltaBuilder.isEmpty(); // or else invariant is not maintained
 
     initQueuesAndDeltaBuilders(topologyContext);
     if (_bgpRoutingProcess != null) {
-      // If the process exists, update the topology
+      // If the process exists, update the topology and BGP track states
       _bgpRoutingProcess.updateTopology(topologyContext.getBgpTopology());
+      _bgpRoutingProcess.updateWatchedTrackStates(trackMethodEvaluatorProvider);
     }
   }
 
@@ -567,7 +530,7 @@ public final class VirtualRouter {
           policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
-              gr, generationPolicy, _mainRib.getTypedRoutes(), _ribExprEvaluator);
+              gr, generationPolicy, _mainRib.getTypedRoutes(), null);
 
       if (grb != null) {
         // Routes have been changed
@@ -599,9 +562,11 @@ public final class VirtualRouter {
      * Updates from these BGP deltas into mainRib will be handled in finalizeBgp routes
      */
     if (!d.isEmpty() && _bgpRoutingProcess != null) {
-      d.getActions()
-          .filter(RouteAdvertisement::isWithdrawn)
-          .forEach(r -> _bgpRoutingProcess.removeAggregate(r.getRoute().getRoute()));
+      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> r : d.getActions()) {
+        if (r.isWithdrawn()) {
+          _bgpRoutingProcess.removeAggregate(r.getRoute().getRoute());
+        }
+      }
     }
   }
 
@@ -883,7 +848,7 @@ public final class VirtualRouter {
   @VisibleForTesting
   void initLocalRib() {
     // Look at all interfaces in our VRF
-    _c.getActiveInterfaces(_name).values().stream()
+    _c.getAllInterfaces(_name).values().stream()
         .flatMap(VirtualRouter::generateLocalRoutes)
         .forEach(r -> _localRib.mergeRoute(annotateRoute(r)));
   }
@@ -895,7 +860,15 @@ public final class VirtualRouter {
    */
   @Nonnull
   private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
-    assert iface.getActive();
+    if (!iface.getActive()) {
+      return iface.getAllConcreteAddresses().stream()
+          .map(
+              addr ->
+                  generateLocalNullRouteForDownInterface(
+                      addr, iface.getAddressMetadata().get(addr)))
+          .filter(Optional::isPresent)
+          .map(Optional::get);
+    }
     return iface.getAllConcreteAddresses().stream()
         .filter(
             addr ->
@@ -928,11 +901,15 @@ public final class VirtualRouter {
       @Nonnull ConcreteInterfaceAddress address,
       @Nonnull String ifaceName,
       @Nullable ConnectedRouteMetadata metadata) {
+    return seedLocalRoute(address, metadata).setNextHop(NextHopInterface.of(ifaceName)).build();
+  }
+
+  private static @Nonnull LocalRoute.Builder seedLocalRoute(
+      ConcreteInterfaceAddress address, ConnectedRouteMetadata metadata) {
     LocalRoute.Builder builder =
         LocalRoute.builder()
             .setNetwork(address.getIp().toPrefix())
-            .setSourcePrefixLength(address.getNetworkBits())
-            .setNextHopInterface(ifaceName);
+            .setSourcePrefixLength(address.getNetworkBits());
     if (metadata != null) {
       if (metadata.getAdmin() != null) {
         builder.setAdmin(metadata.getAdmin());
@@ -941,7 +918,17 @@ public final class VirtualRouter {
         builder.setTag(metadata.getTag());
       }
     }
-    return builder.build();
+    return builder;
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  static Optional<LocalRoute> generateLocalNullRouteForDownInterface(
+      ConcreteInterfaceAddress address, @Nullable ConnectedRouteMetadata meta) {
+    if (meta == null || !firstNonNull(meta.getGenerateLocalNullRouteIfDown(), false)) {
+      return Optional.empty();
+    }
+    return Optional.of(seedLocalRoute(address, meta).setNextHop(NextHopDiscard.instance()).build());
   }
 
   void initIsisExports(int numIterations, Map<String, Node> allNodes, NetworkConfigurations nc) {
@@ -1020,9 +1007,7 @@ public final class VirtualRouter {
       // Neither level enabled
       return;
     }
-    _routesForIsisRedistribution
-        .build()
-        .getActions()
+    _routesForIsisRedistribution.build().stream()
         // Don't redistribute IS-IS routes into IS-IS...
         .filter(ra -> !(ra.getRoute().getRoute() instanceof IsisRoute))
         .map(ra -> exportNonIsisRouteToIsis(ra.getRoute(), proc, isLevel1, _c))
@@ -1322,8 +1307,7 @@ public final class VirtualRouter {
         if (upgradeL1Routes) {
           // TODO: a little cumbersome, simplify later
           RibDelta.Builder<IsisRoute> upgradedRoutes = RibDelta.builder();
-          correctedL1Delta
-              .getActions()
+          correctedL1Delta.stream()
               .forEach(
                   ra -> {
                     IsisRoute l1Route = ra.getRoute();
@@ -1388,7 +1372,7 @@ public final class VirtualRouter {
     importRib(_ripInternalRib, _ripInternalStagingRib);
   }
 
-  /** Re-initialize RIBs (at the start of each iteration). */
+  /** Re-initialize RIBs (at the start of each iteration) and process-specific track states. */
   void reinitForNewIteration() {
     /*
      * RIBs not read from can just be re-initialized
@@ -1474,7 +1458,7 @@ public final class VirtualRouter {
             messageQueueStream(_isisIncomingRoutes),
             messageQueueStream(_crossVrfIncomingRoutes),
             // Exported routes
-            _routesForIsisRedistribution.build().getActions(),
+            _routesForIsisRedistribution.build().stream(),
             // Processes
             _ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode),
             _eigrpProcesses.values().stream().map(EigrpRoutingProcess::computeIterationHashCode),
@@ -1512,7 +1496,7 @@ public final class VirtualRouter {
                   ra -> {
                     AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
                     AbstractRouteBuilder<?, ?> routeBuilder = annotatedRoute.getRoute().toBuilder();
-                    if (policy.process(annotatedRoute, routeBuilder, IN, _ribExprEvaluator)) {
+                    if (policy.process(annotatedRoute, routeBuilder, IN, alwaysFalse())) {
                       // Preserve original route's source VRF
                       return ra.toBuilder()
                           .setRoute(
@@ -1562,7 +1546,7 @@ public final class VirtualRouter {
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
           // TODO Will need to update once support is added for cross-VRF export policies
-          exportingVR._mainRibDeltaPrevRound.getActions(),
+          exportingVR._mainRibDeltaPrevRound.stream(),
           leakConfig.getImportPolicy());
     }
   }

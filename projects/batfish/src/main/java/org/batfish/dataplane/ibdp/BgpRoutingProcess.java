@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -100,8 +101,10 @@ import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.tracking.TrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
+import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.dataplane.ibdp.VirtualRouter.RibExprEvaluator;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.BgpRib;
@@ -298,7 +301,35 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   private final RibDelta.Builder<EvpnType5Route> _evpnType5Advertisements = RibDelta.builder();
 
-  @Nonnull private final RibExprEvaluator _ribExprEvaluator;
+  /**
+   * The values of BGP-process-specific watched tracks for the current iteration. Used with {@link
+   * #_successfulWatchedTracksPrev} to compute {@link #_successfulWatchedTracksChanged}, and passed
+   * to BGP routing policy evaluation for policies that reference tracks.
+   *
+   * <p>Since this node may be pulled from prior to its own execution in the BGP schedule, this
+   * field must be updated prior to the running of schedules.
+   */
+  private @Nonnull Set<String> _successfulWatchedTracks;
+
+  /**
+   * The values of BGP-process-specific watched tracks for the prior iteration. Used with {@link
+   * #_successfulWatchedTracks} to compute {@link #_successfulWatchedTracksChanged}.
+   *
+   * <p>Since this node may be pulled from prior to its own execution in the BGP schedule, this
+   * field must be updated prior to the running of schedules.
+   */
+  private @Nonnull Set<String> _successfulWatchedTracksPrev;
+
+  /**
+   * Helper to avoid recomputation of track states for each neighbor pulling from this process in a
+   * given iteration. Used to determine whether to re-evaluate all routes on export rather than just
+   * routes from deltas. Computed by comparing {@link #_successfulWatchedTracks} and {@link
+   * #_successfulWatchedTracksPrev}.
+   *
+   * <p>Since this node may be pulled from prior to its own execution in the BGP schedule, this
+   * field must be updated prior to the running of schedules.
+   */
+  private boolean _successfulWatchedTracksChanged;
 
   private static final Logger LOGGER = LogManager.getLogger(BgpRoutingProcess.class);
 
@@ -336,6 +367,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _bgpv4Edges = ImmutableSortedSet.of();
     _evpnType3IncomingRoutes = ImmutableSortedMap.of();
     _evpnType5IncomingRoutes = ImmutableSortedMap.of();
+
+    _successfulWatchedTracks = ImmutableSet.of();
+    _successfulWatchedTracksPrev = ImmutableSet.of();
 
     // Initialize all RIBs
     BgpTieBreaker bestPathTieBreaker =
@@ -415,7 +449,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process.getLocalOriginationTypeTieBreaker());
     _evpnInitializationDelta = RibDelta.empty();
     _mainRibIndependentNetworkInitializationDelta = RibDelta.empty();
-    _ribExprEvaluator = new RibExprEvaluator(_mainRib);
     _aggregates = new PrefixTrieMultiMap<>();
     _process.getAggregates().forEach(_aggregates::put);
 
@@ -589,14 +622,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     if (!_mainRibIndependentNetworkInitializationDelta.isEmpty()
         && _process.getMainRibIndependentNetworkPolicy() != null) {
-      _mainRibIndependentNetworkInitializationDelta
-          .getActions()
-          .forEach(
-              a ->
-                  redistributeRouteToBgpRib(
-                      a,
-                      _policies.get(_process.getMainRibIndependentNetworkPolicy()).get(),
-                      NETWORK));
+      RoutingPolicy policy = _policies.get(_process.getMainRibIndependentNetworkPolicy()).get();
+      for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a :
+          _mainRibIndependentNetworkInitializationDelta.getActions()) {
+        redistributeRouteToBgpRib(a, policy, NETWORK);
+      }
       _mainRibIndependentNetworkInitializationDelta = RibDelta.empty();
     }
 
@@ -643,16 +673,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _mainRibDelta = mainRibDelta;
     } else {
       // Place redistributed routes into our RIB
-      Optional<RoutingPolicy> redistributionPolicy =
-          _policies.get(_process.getRedistributionPolicy());
-      if (!redistributionPolicy.isPresent()) {
+      RoutingPolicy redistributionPolicy =
+          _policies.get(_process.getRedistributionPolicy()).orElse(null);
+      if (redistributionPolicy == null) {
         LOGGER.debug(
             "Undefined BGP redistribution policy {}. Skipping redistribution",
             _process.getRedistributionPolicy());
       } else {
-        mainRibDelta
-            .getActions()
-            .forEach(a -> redistributeRouteToBgpRib(a, redistributionPolicy.get(), REDISTRIBUTE));
+        for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a : mainRibDelta.getActions()) {
+          redistributeRouteToBgpRib(a, redistributionPolicy, REDISTRIBUTE);
+        }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
               "Redistributed via redistribution policy into local BGP RIB node {}, VRF {}: {}",
@@ -667,16 +697,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       if (independentNetworkPolicyName == null) {
         return;
       }
-      Optional<RoutingPolicy> independentNetworkPolicy =
-          _policies.get(independentNetworkPolicyName);
-      if (!independentNetworkPolicy.isPresent()) {
+      RoutingPolicy independentNetworkPolicy =
+          _policies.get(independentNetworkPolicyName).orElse(null);
+      if (independentNetworkPolicy == null) {
         LOGGER.debug(
             "Undefined BGP independent network policy {}. Skipping redistribution",
             independentNetworkPolicyName);
       } else {
-        mainRibDelta
-            .getActions()
-            .forEach(a -> redistributeRouteToBgpRib(a, independentNetworkPolicy.get(), NETWORK));
+        for (RouteAdvertisement<AnnotatedRoute<AbstractRoute>> a : mainRibDelta.getActions()) {
+          redistributeRouteToBgpRib(a, independentNetworkPolicy, NETWORK);
+        }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
               "Redistributed via independent network policy into local BGP RIB node {}, VRF {}: {}",
@@ -714,7 +744,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             .setNonRouting(true);
 
     // Hopefully, the direction should not matter here.
-    boolean accept = policy.process(route, bgpBuilder, OUT, _ribExprEvaluator);
+    boolean accept = policy.process(route, bgpBuilder, OUT, _successfulWatchedTracks::contains);
     if (!accept) {
       return;
     }
@@ -775,16 +805,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private static @Nonnull <T extends EvpnRoute<?, ?>, U extends T> RibDelta<T> importRibDelta(
       EvpnMasterRib<T> rib, RibDelta<U> delta) {
     RibDelta.Builder<T> builder = RibDelta.builder();
-    delta
-        .getActions()
-        .forEach(
-            action -> {
-              if (action.isWithdrawn()) {
-                builder.from(rib.removeRouteGetDelta(action.getRoute()));
-              } else {
-                builder.from(rib.mergeRouteGetDelta(action.getRoute()));
-              }
-            });
+    for (RouteAdvertisement<U> action : delta.getActions()) {
+      if (action.isWithdrawn()) {
+        builder.from(rib.removeRouteGetDelta(action.getRoute()));
+      } else {
+        builder.from(rib.mergeRouteGetDelta(action.getRoute()));
+      }
+    }
     return builder.build();
   }
 
@@ -959,7 +986,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   transformedIncomingRouteBuilder,
                   ourSessionProperties,
                   IN,
-                  _ribExprEvaluator);
+                  _successfulWatchedTracks::contains);
         }
       }
       if (!acceptIncoming) {
@@ -1012,7 +1039,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       .getVirtualRouterOrThrow(rib.getVrfName())
                       .enqueueCrossVrfRoutes(
                           new CrossVrfEdgeId(_vrfName, rib.getRibName()),
-                          perNeighborDeltaForRibGroups.build().getActions(),
+                          perNeighborDeltaForRibGroups.build().stream(),
                           rg.getImportPolicy()));
     }
   }
@@ -1047,17 +1074,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     BgpSessionProperties ourSession = BgpRoutingProcess.getBgpSessionProperties(bgpTopology, edge);
 
+    boolean sendFullAdvertisementSet = isNewSession || _successfulWatchedTracksChanged;
+
     // If exporting from main RIB, queue mainRib updates that were not introduced by BGP process
     // (i.e., IGP routes). Also, do not double-export main RIB routes: filter out bgp routes.
     Stream<RouteAdvertisement<Bgpv4Route>> mainRibExports = Stream.of();
     if (!_exportFromBgpRib) {
       mainRibExports =
           Stream.concat(
-                  isNewSession
+                  sendFullAdvertisementSet
                       // Start with the entire main RIB if this session is new.
                       ? _mainRibPrev.stream().map(RouteAdvertisement::adding)
                       : Stream.of(),
-                  _mainRibDelta.getActions())
+                  _mainRibDelta.stream())
               .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
               .map(
                   adv -> {
@@ -1105,7 +1134,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       ebgpv4DeltaPrev = _ebgpv4DeltaPrevBestPath;
     }
     if (ourSession.getAdvertiseExternal()) {
-      if (isNewSession) {
+      if (sendFullAdvertisementSet) {
         bgpRibExports.from(
             ebgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       }
@@ -1113,7 +1142,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
 
     if (ourSession.getAdvertiseInactive()) {
-      if (isNewSession) {
+      if (sendFullAdvertisementSet) {
         bgpRibExports.from(
             bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       }
@@ -1123,11 +1152,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // Default behavior
       bgpRibExports.from(
           Stream.concat(
-                  isNewSession
+                  sendFullAdvertisementSet
                       ? bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new)
                       : Stream.of(),
-                  bgpv4DeltaPrev
-                      .getActions()
+                  bgpv4DeltaPrev.stream()
                       .map(
                           r ->
                               RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
@@ -1183,9 +1211,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Transform and apply export policy to exportable BGP RIB routes
     Stream<RouteAdvertisement<Bgpv4Route>> bgpRibRoutesToExport =
-        bgpRibExports
-            .build()
-            .getActions()
+        bgpRibExports.build().stream()
             .map(
                 adv -> {
                   Optional<Bgpv4Route> transformedRoute =
@@ -1252,7 +1278,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // This kind of generation policy should not need access to the main rib
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
-            generatedRoute, policy, _mainRib.getTypedRoutes(), null);
+            generatedRoute, policy, _mainRib.getTypedRoutes(), _successfulWatchedTracks::contains);
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
             builder.build(), attrPolicy, _process.getRouterId(), nextHopIp, false)
@@ -1423,9 +1449,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           }
         });
     RibDelta<Bgpv4Route> aggDelta = aggDeltaBuilder.build();
-    aggDelta
-        .getActions()
-        .forEach(action -> processMergeOrRemoveInBgpRib(action.getRoute(), !action.isWithdrawn()));
+    for (RouteAdvertisement<Bgpv4Route> action : aggDelta.getActions()) {
+      processMergeOrRemoveInBgpRib(action.getRoute(), !action.isWithdrawn());
+    }
     return aggDelta;
   }
 
@@ -1534,7 +1560,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         if (importPolicy != null) {
           acceptIncoming =
               importPolicy.processBgpRoute(
-                  route, transformedBuilder, ourSessionProperties, IN, _ribExprEvaluator);
+                  route,
+                  transformedBuilder,
+                  ourSessionProperties,
+                  IN,
+                  _successfulWatchedTracks::contains);
         }
       }
       if (!acceptIncoming) {
@@ -1622,8 +1652,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     assert ourConfig != null; // Invariant of the edge existing
     assert remoteConfig != null; // Invariant of the edge existing
     BgpRoutingProcess remoteBgpRoutingProcess = getNeighborBgpProcess(remoteConfigId, allNodes);
-    return evpnDelta
-        .getActions()
+    return evpnDelta.stream()
         .map(
             // TODO: take into account address-family session settings, such as add-path or
             //   advertise-inactive
@@ -1711,7 +1740,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             transformedOutgoingRouteBuilder,
             ourSessionProperties,
             Direction.OUT,
-            _ribExprEvaluator);
+            _successfulWatchedTracks::contains);
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
@@ -1819,7 +1848,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             transformedOutgoingRouteBuilder,
             ourSessionProperties,
             Direction.OUT,
-            _ribExprEvaluator);
+            _successfulWatchedTracks::contains);
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
@@ -1946,7 +1975,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   transformedIncomingRouteBuilder,
                   neighbor,
                   ipv4ImportPolicy,
-                  _ribExprEvaluator);
+                  _successfulWatchedTracks::contains);
         }
       }
       if (acceptIncoming) {
@@ -2053,7 +2082,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       Bgpv4Route.Builder outputRouteBuilder,
       BgpActivePeerConfig neighbor,
       RoutingPolicy ipv4ImportPolicy,
-      RibExprEvaluator ribExprEvaluator) {
+      Predicate<String> successfulTrack) {
     // concoct a minimal session properties object: helps with route map constructs like
     // next-hop peer-address. note that "tail" is "this node" for routing policy.
     BgpSessionProperties ourSessionProperties =
@@ -2073,7 +2102,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
     return ipv4ImportPolicy.processBgpRoute(
-        inputRoute, outputRouteBuilder, ourSessionProperties, IN, ribExprEvaluator);
+        inputRoute, outputRouteBuilder, ourSessionProperties, IN, successfulTrack);
   }
 
   /**
@@ -2193,7 +2222,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           // Process route through import policy, if one exists
           boolean accept = true;
           if (policy != null) {
-            accept = policy.processBgpRoute(route, builder, null, IN, _ribExprEvaluator);
+            accept =
+                policy.processBgpRoute(
+                    route, builder, null, IN, _successfulWatchedTracks::contains);
           }
           if (accept) {
             Bgpv4Route transformedRoute = builder.build();
@@ -2296,7 +2327,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           // Process route through import policy, if one exists
           boolean accept = true;
           if (policy != null) {
-            accept = policy.processBgpRoute(route, builder, null, IN, _ribExprEvaluator);
+            accept =
+                policy.processBgpRoute(
+                    route, builder, null, IN, _successfulWatchedTracks::contains);
           }
           if (accept) {
             Bgpv4Route transformedRoute = builder.build();
@@ -2376,6 +2409,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _mainRibPrev = ImmutableSet.of();
     // Main RIB delta for exporting directly from main RIB
     _mainRibDelta = RibDelta.empty();
+    // No longer need to send full advertisement set until after we recompute tracks.
+    _successfulWatchedTracksChanged = false;
   }
 
   /** Record state at beginning of round prior to pulling from neighbors. */
@@ -2384,10 +2419,46 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
     _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
     // Take a snapshot of best-paths from current RIBs so we know what to send to new non-add-path
-    // sessions, aand also so we can tell what ADDs can be sent to neighbors: those that correspond
+    // sessions, and also so we can tell what ADDs can be sent to neighbors: those that correspond
     // to current valid best paths.
     _bgpv4PrevBestPath = _bgpv4Rib.getBestPathRoutes();
     _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
+  }
+
+  /**
+   * Update the current BGP track method states with their values from the provider.
+   *
+   * <p>If track states have changed, also updates previous main RIB pointer for vendors that do not
+   * export from BGP RIB. This is done so that main RIB routes can be re-evaluated given the track
+   * state changes. Since the updated fields may be used prior to this node's own execution
+   * schedule, this method must be called prior to any new main RIB updates for this iteration.
+   */
+  void updateWatchedTrackStates(TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
+    // Record the previous track states so we can tell if any track state changed
+    _successfulWatchedTracksPrev = _successfulWatchedTracks;
+    _successfulWatchedTracks = computeSuccessfulWatchedTracks(trackMethodEvaluatorProvider);
+    _successfulWatchedTracksChanged =
+        !_successfulWatchedTracks.equals(_successfulWatchedTracksPrev);
+    if (_successfulWatchedTracksChanged && !_exportFromBgpRib) {
+      // Sanity check that we are calling this method prior to its own execution schedule in the
+      // iteration, and prior to any other node's execution schedule that touches this node.
+      assert _bgpv4DeltaBuilder.isEmpty();
+      assert _ebgpv4DeltaBuilder.isEmpty();
+      assert _bgpv4DeltaBestPathBuilder.isEmpty();
+      assert _ebgpv4DeltaBestPathBuilder.isEmpty();
+      if (_mainRibPrev.isEmpty()) {
+        // Save previous main RIB routes if they were not already saved during topology update.
+        _mainRibPrev = _mainRib.getTypedRoutes();
+      }
+    }
+  }
+
+  private @Nonnull Set<String> computeSuccessfulWatchedTracks(
+      TrackMethodEvaluatorProvider trackMethodEvaluatorProvider) {
+    TrackMethodEvaluator evaluator = trackMethodEvaluatorProvider.forConfiguration(_c);
+    return _process.getTracks().stream()
+        .filter(trackName -> evaluator.visit(TrackMethods.reference(trackName)))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -2501,12 +2572,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * locally-generated and received routes.
    */
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
-    return _bgpv4DeltaPrev.getActions().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
+    return _bgpv4DeltaPrev.stream().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
   }
 
   /** Return a stream of EVPN route advertisements to leak to other VRFs. */
   Stream<RouteAdvertisement<EvpnType5Route>> getEvpnRoutesToLeak() {
-    return _evpnType5DeltaPrev.getActions();
+    return _evpnType5DeltaPrev.stream();
   }
 
   /**

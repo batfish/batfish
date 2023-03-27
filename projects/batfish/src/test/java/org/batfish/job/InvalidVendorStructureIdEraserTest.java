@@ -1,19 +1,13 @@
 package org.batfish.job;
 
-import static org.batfish.job.InvalidVendorStructureIdEraser.isVendorStructureIdValid;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.function.Function;
 import org.batfish.datamodel.AclAclLine;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -31,21 +25,38 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.references.StructureManager;
+import org.batfish.vendor.StructureType;
 import org.batfish.vendor.VendorStructureId;
+import org.junit.Before;
 import org.junit.Test;
 
 public class InvalidVendorStructureIdEraserTest {
-  private final SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-      _definedStructures =
-          ImmutableSortedMap.of(
-              "filename",
-              ImmutableSortedMap.of(
-                  "structureType",
-                  ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
+  private enum TestStructureType implements StructureType {
+    VALID;
+
+    @Override
+    public String getDescription() {
+      return name();
+    }
+  }
+
+  private static final String TEST_STRUCTURE_NAME = "struct";
+  private static final String TEST_FILENAME = "filename";
+
+  @Before
+  public void setup() {
+    StructureManager structureManager = StructureManager.create();
+    structureManager.getOrDefine(TestStructureType.VALID, TEST_STRUCTURE_NAME);
+    _eraser = new InvalidVendorStructureIdEraser(TEST_FILENAME, structureManager);
+  }
+
   private final VendorStructureId _validVsid =
-      new VendorStructureId("filename", "structureType", "structureName");
+      new VendorStructureId(
+          TEST_FILENAME, TestStructureType.VALID.getDescription(), TEST_STRUCTURE_NAME);
   private final VendorStructureId _invalidVsid =
-      new VendorStructureId("filename", "structureType", "otherStructureName");
+      new VendorStructureId(
+          TEST_FILENAME, TestStructureType.VALID.getDescription(), "otherStructureName");
 
   private final TraceElement _validTe = TraceElement.builder().add("valid", _validVsid).build();
   private final TraceElement _invalidTe =
@@ -53,8 +64,7 @@ public class InvalidVendorStructureIdEraserTest {
   // Same as above trace element, but with VSID removed
   private final TraceElement _erasedVsid = TraceElement.builder().add("invalid").build();
 
-  private final InvalidVendorStructureIdEraser _eraser =
-      new InvalidVendorStructureIdEraser(_definedStructures);
+  private InvalidVendorStructureIdEraser _eraser;
 
   private void assertExprHandled(Function<TraceElement, AclLineMatchExpr> creator) {
     // Valid VSID is left alone
@@ -193,33 +203,5 @@ public class InvalidVendorStructureIdEraserTest {
                 .setMatchCondition(new TrueExpr(_invalidTe))
                 .setVendorStructureId(_invalidVsid)
                 .build()));
-  }
-
-  @Test
-  public void testIsVendorStructureIdValid() {
-    SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
-        definedStructures =
-            ImmutableSortedMap.of(
-                "filename",
-                ImmutableSortedMap.of(
-                    "structureType",
-                    ImmutableSortedMap.of("structureName", new DefinedStructureInfo())));
-
-    assertTrue(
-        isVendorStructureIdValid(
-            new VendorStructureId("filename", "structureType", "structureName"),
-            definedStructures));
-    assertFalse(
-        isVendorStructureIdValid(
-            new VendorStructureId("otherFilename", "structureType", "structureName"),
-            definedStructures));
-    assertFalse(
-        isVendorStructureIdValid(
-            new VendorStructureId("filename", "otherStructureType", "structureName"),
-            definedStructures));
-    assertFalse(
-        isVendorStructureIdValid(
-            new VendorStructureId("filename", "structureType", "otherStructureName"),
-            definedStructures));
   }
 }

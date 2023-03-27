@@ -1,0 +1,12 @@
+set system host-name preprocess-flat-juniper-apply-groups-order
+set interfaces lo0 unit 0 family inet address 1.2.3.4/32 primary
+set apply-groups A
+set apply-groups B
+set interfaces ae1 unit 0 family inet6 mtu 2000
+set interfaces xe-0/0/0 ether-options 802.3ad ae1
+set interfaces ae2 mac 00:11:22:33:44:55
+# This delete is here to trigger the dirty bit in InsertDeleteApplicator,
+# which causes the hierarchy to be rebuilt from the resulting parse tree list
+delete groups A interfaces
+set groups A interfaces <xe-*> ether-options 802.3ad ae2
+set groups B interfaces <xe-*> ether-options 802.3ad ae3

@@ -8,6 +8,8 @@ public interface GenericTrackMethodVisitor<R> {
 
   R visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod);
 
+  R visitTrackAll(TrackAll trackAll);
+
   R visitTrackInterface(TrackInterface trackInterface);
 
   R visitTrackMethodReference(TrackMethodReference trackMethodReference);

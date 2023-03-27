@@ -24,6 +24,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterLine;
@@ -52,6 +53,7 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -60,8 +62,10 @@ import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
@@ -70,6 +74,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -158,16 +163,22 @@ public class TransferBDD {
   }
 
   /*
-   * Apply the effect of modifying a long value (e.g., to set the metric)
+   * Apply the effect of modifying a long value (e.g., to set the metric).
+   * Overflows for IncrementMetric are handled by clipping to the max value.
    */
   private MutableBDDInteger applyLongExprModification(
       TransferParam p, MutableBDDInteger x, LongExpr e) throws UnsupportedFeatureException {
-    if (!(e instanceof LiteralLong)) {
+    if (e instanceof LiteralLong) {
+      LiteralLong z = (LiteralLong) e;
+      p.debug("LiteralLong: %s", z.getValue());
+      return MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
+    } else if (e instanceof IncrementMetric) {
+      IncrementMetric z = (IncrementMetric) e;
+      p.debug("Increment: %s", z.getAddend());
+      return x.addClipping(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+    } else {
       throw new UnsupportedFeatureException(e.toString());
     }
-    LiteralLong z = (LiteralLong) e;
-    p.debug("LiteralLong: %s", z.getValue());
-    return MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
 
     /* TODO: These old cases are not correct; removing for now since they are not currently used.
     First, they should dec/inc the corresponding field of the route, not whatever MutableBDDInteger x
@@ -177,11 +188,6 @@ public class TransferBDD {
       DecrementMetric z = (DecrementMetric) e;
       p.debug("Decrement: %s", z.getSubtrahend());
       return x.sub(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
-    }
-    if (e instanceof IncrementMetric) {
-      IncrementMetric z = (IncrementMetric) e;
-      p.debug("Increment: %s", z.getAddend());
-      return x.add(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
     if (e instanceof IncrementLocalPreference) {
       IncrementLocalPreference z = (IncrementLocalPreference) e;
@@ -379,7 +385,7 @@ public class TransferBDD {
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
       Set<RoutingProtocol> rps = mp.getProtocols();
-      BDD matchRPBDD = _originalRoute.anyProtocolIn(rps);
+      BDD matchRPBDD = _originalRoute.anyElementOf(rps, p.getData().getProtocolHistory());
       finalResults.add(result.setReturnValueBDD(matchRPBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchPrefixSet) {
@@ -443,6 +449,12 @@ public class TransferBDD {
           matchIntComparison(mt.getCmp(), mt.getTag(), routeForMatching(p.getData()).getTag());
       finalResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
 
+    } else if (expr instanceof MatchMetric) {
+      MatchMetric mm = (MatchMetric) expr;
+      BDD mmBDD =
+          matchIntComparison(
+              mm.getComparator(), mm.getMetric(), routeForMatching(p.getData()).getMed());
+      finalResults.add(result.setReturnValueBDD(mmBDD).setReturnValueAccepted(true));
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
       switch (b.getType()) {
@@ -688,7 +700,18 @@ public class TransferBDD {
       MutableBDDInteger med = applyLongExprModification(curP.indent(), curMed, ie);
       curP.getData().setMed(med);
       return ImmutableList.of(toTransferBDDState(curP, result));
-
+    } else if (stmt instanceof SetOrigin) {
+      curP.debug("SetOrigin");
+      OriginExpr oe = ((SetOrigin) stmt).getOriginType();
+      if (oe instanceof LiteralOrigin) {
+        OriginType ot = ((LiteralOrigin) oe).getOriginType();
+        BDDDomain<OriginType> originType = new BDDDomain<>(curP.getData().getOriginType());
+        originType.setValue(ot);
+        curP.getData().setOriginType(originType);
+        return ImmutableList.of(toTransferBDDState(curP, result));
+      } else {
+        throw new UnsupportedFeatureException(oe.toString());
+      }
     } else if (stmt instanceof SetOspfMetricType) {
       curP.debug("SetOspfMetricType");
       SetOspfMetricType somt = (SetOspfMetricType) stmt;

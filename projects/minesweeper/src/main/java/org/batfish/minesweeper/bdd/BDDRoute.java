@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.math.IntMath;
@@ -18,6 +19,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.IDeepCopy;
@@ -45,8 +47,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
 
   private static List<OspfType> allMetricTypes;
-
-  private int _hcode = 0;
 
   static {
     allMetricTypes = new ArrayList<>();
@@ -95,6 +95,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   // by the route-map and whether the next-hop is explicitly set by the route-map
   private boolean _nextHopDiscarded;
   private boolean _nextHopSet;
+
+  private BDDDomain<OriginType> _originType;
 
   private BDDDomain<OspfType> _ospfMetric;
 
@@ -154,13 +156,15 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
     int numVars = factory.varNum();
     int numNeeded =
-        32 * 6
+        32 * 5
             + 16
+            + 8
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
+            + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
             + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
-            + 2;
+            + IntMath.log2(allMetricTypes.size(), RoundingMode.CEILING);
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -171,6 +175,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         new BDDDomain<>(factory, ImmutableList.copyOf(RoutingProtocol.values()), idx);
     int len = _protocolHistory.getInteger().size();
     addBitNames("proto", len, idx, false);
+    idx += len;
+    _originType = new BDDDomain<>(factory, ImmutableList.copyOf(OriginType.values()), idx);
+    len = _originType.getInteger().size();
+    addBitNames("origin", len, idx, false);
     idx += len;
     // Initialize integer values
     _med = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
@@ -195,7 +203,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     idx += 32;
     // need 6 bits for prefix length because there are 33 possible values, 0 - 32
     _prefixLength = MutableBDDInteger.makeFromIndex(factory, 6, idx, true);
-    addBitNames("pfxLen", 5, idx, true);
+    addBitNames("pfxLen", 6, idx, true);
     idx += 6;
     _prefix = MutableBDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
@@ -245,6 +253,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _weight = new MutableBDDInteger(other._weight);
     _localPref = new MutableBDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
+    _originType = new BDDDomain<>(other._originType);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
     _prependedASes = new ArrayList(other._prependedASes);
@@ -284,6 +293,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _localPref = route.getLocalPref().and(pred);
     _weight = route.getWeight().and(pred);
     _protocolHistory = new BDDDomain<>(pred, route.getProtocolHistory());
+    _originType = new BDDDomain<>(pred, route.getOriginType());
     _ospfMetric = new BDDDomain<>(pred, route.getOspfMetric());
     _bitNames = route._bitNames;
     _nextHopSet = route.getNextHopSet();
@@ -325,15 +335,15 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /**
-   * Create a BDD representing the constraint that the route announcement's protocol is in the given
-   * set.
+   * Create a BDD representing the constraint that the value of a specific enum attribute in the
+   * route announcement's protocol is a member of the given set.
    *
-   * @param protocols the set of protocols that are allowed
+   * @param elements the set of elements that are allowed
+   * @param bddDomain the attribute to be constrained
    * @return the BDD representing this constraint
    */
-  public BDD anyProtocolIn(Set<RoutingProtocol> protocols) {
-    return _factory.orAll(
-        protocols.stream().map(_protocolHistory::value).collect(Collectors.toList()));
+  public <T> BDD anyElementOf(Set<T> elements, BDDDomain<T> bddDomain) {
+    return _factory.orAll(elements.stream().map(bddDomain::value).collect(Collectors.toList()));
   }
 
   /**
@@ -355,7 +365,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDD bgpWellFormednessConstraints() {
 
     // the protocol should be one of the ones allowed in a BgpRoute
-    BDD protocolConstraint = anyProtocolIn(ALL_BGP_PROTOCOLS);
+    BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
     // at most one AS-path regex atomic predicate should be true, since by construction their
@@ -494,6 +504,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopSet = nextHopSet;
   }
 
+  public BDDDomain<OriginType> getOriginType() {
+    return _originType;
+  }
+
+  public void setOriginType(BDDDomain<OriginType> originType) {
+    _originType = originType;
+  }
+
   public BDDDomain<OspfType> getOspfMetric() {
     return _ospfMetric;
   }
@@ -546,53 +564,25 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _unsupported = unsupported;
   }
 
-  @Override
-  public int hashCode() {
-    if (_hcode == 0) {
-      int result = _adminDist != null ? _adminDist.hashCode() : 0;
-      result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
-      result = 31 * result + (_med != null ? _med.hashCode() : 0);
-      result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
-      result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
-      result = 31 * result + (_weight != null ? _weight.hashCode() : 0);
-      result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
-      result = 31 * result + Boolean.hashCode(_nextHopDiscarded);
-      result = 31 * result + Boolean.hashCode(_nextHopSet);
-      result =
-          31 * result
-              + (_communityAtomicPredicates != null
-                  ? Arrays.hashCode(_communityAtomicPredicates)
-                  : 0);
-      result =
-          31 * result
-              + (_asPathRegexAtomicPredicates != null
-                  ? Arrays.hashCode(_asPathRegexAtomicPredicates)
-                  : 0);
-      result = 31 * result + _prependedASes.hashCode();
-      result = 31 * result + Boolean.hashCode(_unsupported);
-      _hcode = result;
-    }
-    return _hcode;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof BDDRoute)) {
-      return false;
-    }
-    BDDRoute other = (BDDRoute) o;
-
-    return Objects.equals(_ospfMetric, other._ospfMetric)
-        && Objects.equals(_localPref, other._localPref)
-        && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
-        && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
+  // BDDRoutes are mutable so in general the default pointer equality is the right thing to use;
+  // This method is used only to test the results of our symbolic route analysis.
+  @VisibleForTesting
+  boolean equalsForTesting(BDDRoute other) {
+    return Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_ospfMetric, other._ospfMetric)
+        && Objects.equals(_originType, other._originType)
+        && Objects.equals(_protocolHistory, other._protocolHistory)
         && Objects.equals(_med, other._med)
+        && Objects.equals(_localPref, other._localPref)
+        && Objects.equals(_tag, other._tag)
+        && Objects.equals(_weight, other._weight)
         && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
         && Objects.equals(_nextHopSet, other._nextHopSet)
-        && Objects.equals(_tag, other._tag)
-        && Objects.equals(_weight, other._weight)
-        && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_prefix, other._prefix)
+        && Objects.equals(_prefixLength, other._prefixLength)
+        && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
+        && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
         && Objects.equals(_unsupported, other._unsupported);
   }

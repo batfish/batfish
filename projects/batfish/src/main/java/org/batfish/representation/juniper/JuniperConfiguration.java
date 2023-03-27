@@ -14,7 +14,6 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
-import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
 import static org.batfish.representation.juniper.EthernetSwitching.DEFAULT_VLAN_MEMBER;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
@@ -32,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,6 +74,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -169,14 +170,13 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -186,6 +186,8 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
+import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -216,6 +218,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Juniper uses AD 170 for both EBGP and IBGP routes. */
   public static final int DEFAULT_BGP_ADMIN_DISTANCE = 170;
 
+  public static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA =
+      ConnectedRouteMetadata.builder().setGenerateLocalNullRouteIfDown(true).build();
+
   public static @Nonnull String computeFirewallFilterTermName(
       @Nonnull String filterName, @Nonnull String termName) {
     return String.format("%s %s", filterName, termName);
@@ -232,7 +237,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  public static @Nonnull String computeConditionRoutingPolicyName(@Nonnull String conditionName) {
+  public static @Nonnull String computeConditionTrackName(@Nonnull String conditionName) {
     return String.format("~CONDITION~%s", conditionName);
   }
 
@@ -445,6 +450,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setEbgpAdminCost(ebgpAdmin)
             .setIbgpAdminCost(ibgpAdmin)
             .build();
+
+    // https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/topic-map/basic-routing-policies.html#id-conditional-advertisement-and-import-policy-routing-table-with-certain-match-conditions
+    // TODO: To avoid unnecessary route re-evaluation, only record conditions actually used by BGP
+    //       export policies. In practice, though, conditions are unlikely to be defined unless they
+    //       are used in some export policy.
+    if (!_masterLogicalSystem.getConditions().isEmpty()) {
+      proc.setTracks(
+          _masterLogicalSystem.getConditions().keySet().stream()
+              .map(JuniperConfiguration::computeConditionTrackName)
+              .collect(ImmutableSet.toImmutableSet()));
+    }
+
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;
@@ -1957,23 +1974,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setOutgoingFilter(outAcl);
 
-    // Prefix primaryPrefix = iface.getPrimaryAddress();
-    // Set<Prefix> allPrefixes = iface.getAllAddresses();
-    // if (primaryPrefix != null) {
-    // newIface.setAddress(primaryPrefix);
-    // }
-    // else {
-    // if (!allPrefixes.isEmpty()) {
-    // Prefix firstOfAllPrefixes = allPrefixes.toArray(new Prefix[] {})[0];
-    // newIface.setAddress(firstOfAllPrefixes);
-    // }
-    // }
-    // newIface.getAllAddresses().addAll(allPrefixes);
-
     if (iface.getPrimaryAddress() != null) {
       newIface.setAddress(iface.getPrimaryAddress());
     }
     newIface.setAllAddresses(iface.getAllAddresses());
+    newIface.setAddressMetadata(
+        iface.getAllAddresses().stream()
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Ordering.natural(), a -> a, a -> JUNIPER_CONNECTED_ROUTE_METADATA)));
     if (!iface.getActive()) {
       newIface.adminDown();
     }
@@ -2305,9 +2314,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 screenName -> {
                   Screen screen = _masterLogicalSystem.getScreens().get(screenName);
                   String screenAclName = ACL_NAME_SCREEN + screenName;
-                  IpAccessList screenAcl =
-                      _c.getIpAccessLists()
-                          .computeIfAbsent(screenAclName, x -> buildScreen(screen, screenAclName));
+                  IpAccessList screenAcl = _c.getIpAccessLists().get(screenAclName);
+                  if (screenAcl == null) {
+                    screenAcl = buildScreen(screen, screenAclName);
+                    if (screenAcl != null) {
+                      _c.getIpAccessLists().put(screenAclName, screenAcl);
+                    }
+                  }
                   return screenAcl != null ? new PermittedByAcl(screenAcl.getName()) : null;
                 })
             .filter(Objects::nonNull)
@@ -2331,9 +2344,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // build a acl for each zone
     String zoneAclName = ACL_NAME_SCREEN_ZONE + zone.getName();
-    IpAccessList zoneAcl =
-        _c.getIpAccessLists()
-            .computeIfAbsent(zoneAclName, x -> buildScreensPerZone(zone, zoneAclName));
+    IpAccessList zoneAcl = _c.getIpAccessLists().get(zoneAclName);
+    if (zoneAcl == null) {
+      zoneAcl = buildScreensPerZone(zone, zoneAclName);
+      if (zoneAcl != null) {
+        _c.getIpAccessLists().put(zoneAclName, zoneAcl);
+      }
+    }
 
     return zoneAcl == null
         ? null
@@ -2346,8 +2363,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Nullable
   IpAccessList buildIncomingFilter(Interface iface) {
     String screenAclName = ACL_NAME_SCREEN_INTERFACE + iface.getName();
-    IpAccessList screenAcl =
-        _c.getIpAccessLists().computeIfAbsent(screenAclName, x -> buildScreensPerInterface(iface));
+    IpAccessList screenAcl = _c.getIpAccessLists().get(screenAclName);
+    if (screenAcl == null) {
+      screenAcl = buildScreensPerInterface(iface);
+      if (screenAcl != null) {
+        _c.getIpAccessLists().put(screenAclName, screenAcl);
+      }
+    }
     // merge screen options to incoming filter
     // but keep both original filters in the config, so we can run search filter queries on them
     String inAclName = iface.getIncomingFilter();
@@ -3031,31 +3053,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return new PacketPolicy(filter.getName(), builder.build(), new Return(Drop.instance()));
   }
 
-  private @Nonnull RoutingPolicy toRoutingPolicy(@Nonnull Condition condition) {
-    String name = computeConditionRoutingPolicyName(condition.getName());
-    RoutingPolicy rp = new RoutingPolicy(name, _c);
-    If top = new If();
-    top.getTrueStatements().add(ReturnTrue.toStaticStatement());
-    top.getFalseStatements().add(ReturnFalse.toStaticStatement());
-    top.setGuard(toBooleanExpr(condition));
-    rp.getStatements().add(top);
-    return rp;
-  }
-
   private @Nonnull BooleanExpr toBooleanExpr(@Nonnull Condition condition) {
-    IfRouteExists ifr = condition.getIfRouteExists();
-    if (ifr == null) {
-      // TODO: verify empty condition means true
-      return BooleanExprs.TRUE;
-    }
-    Prefix prefix = ifr.getPrefix();
-    if (prefix == null) {
-      // TODO: verify missing prefix means true
-      return BooleanExprs.TRUE;
-    }
-    return new RibIntersectsPrefixSpace(
-        MainRib.instance() /* TODO: handle table other than inet.0 */,
-        new ExplicitPrefixSet((new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
+    return new TrackSucceeded(computeConditionTrackName(condition.getName()));
   }
 
   @VisibleForTesting
@@ -3478,7 +3477,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private @Nonnull JuniperConfiguration cloneConfiguration() {
     JuniperConfiguration clonedConfiguration = SerializationUtils.clone(this);
-    clonedConfiguration.setAnswerElement(getAnswerElement());
     clonedConfiguration.setUnrecognized(getUnrecognized());
     clonedConfiguration.setWarnings(_w);
     return clonedConfiguration;
@@ -3566,14 +3564,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // convert interfaces. Before policies because some policies depend on interfaces
     convertInterfaces();
 
-    // convert conditions to RoutingPolicy objects
+    // convert conditions to TrackMethod objects
     _masterLogicalSystem
         .getConditions()
         .forEach(
-            (conditionName, condition) -> {
-              RoutingPolicy rp = toRoutingPolicy(condition);
-              _c.getRoutingPolicies().put(rp.getName(), rp);
-            });
+            (conditionName, condition) ->
+                _c.getTrackingGroups()
+                    .put(computeConditionTrackName(conditionName), toTrackMethod(condition)));
 
     // convert policy-statements to RoutingPolicy objects
     for (Entry<String, PolicyStatement> e : _masterLogicalSystem.getPolicyStatements().entrySet()) {
@@ -3934,6 +3931,32 @@ public final class JuniperConfiguration extends VendorConfiguration {
     convertVxlan();
 
     return _c;
+  }
+
+  private @Nonnull TrackMethod toTrackMethod(Condition condition) {
+    IfRouteExists ifr = condition.getIfRouteExists();
+    if (ifr == null) {
+      // TODO: verify empty condition means true
+      return TrackMethods.alwaysTrue();
+    }
+    Prefix prefix = ifr.getPrefix();
+    if (prefix == null) {
+      // TODO: verify missing prefix means true
+      return TrackMethods.alwaysTrue();
+    }
+    String table = ifr.getTable();
+    String vrf;
+    if (table == null) {
+      vrf = Configuration.DEFAULT_VRF_NAME;
+    } else {
+      RibId ribId = toRibId(getHostname(), table, _w);
+      if (ribId == null) {
+        // unsupported RIB type, already warned in toRibId
+        return TrackMethods.alwaysTrue();
+      }
+      vrf = ribId.getVrfName();
+    }
+    return TrackMethods.route(prefix, ImmutableSet.of(), vrf);
   }
 
   private void applyBridgeDomainVlanIds(Map<String, Integer> irbVlanIds) {

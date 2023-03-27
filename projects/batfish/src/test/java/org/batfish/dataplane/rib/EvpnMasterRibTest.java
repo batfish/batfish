@@ -12,6 +12,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -33,14 +34,17 @@ public final class EvpnMasterRibTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.ZERO)
-            .setReceivedFrom(ReceivedFromSelf.instance())
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.0.0.1")))
             .setVni(1);
     EvpnType5Route route1 =
         rb.setRouteDistinguisher(RouteDistinguisher.from(1, 1L)).setLocalPreference(10).build();
     EvpnType5Route route21 =
         rb.setRouteDistinguisher(RouteDistinguisher.from(2, 2L)).setLocalPreference(20).build();
     EvpnType5Route route22 =
-        rb.setRouteDistinguisher(RouteDistinguisher.from(2, 2L)).setLocalPreference(15).build();
+        rb.setRouteDistinguisher(RouteDistinguisher.from(2, 2L))
+            .setLocalPreference(15)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("10.0.0.2")))
+            .build();
 
     // route1 and route21 should be best. route22 should be backup
     assertThat(rib.mergeRouteGetDelta(route1), equalTo(RibDelta.adding(route1)));
