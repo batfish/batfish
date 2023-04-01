@@ -2019,6 +2019,7 @@ public class AristaGrammarTest {
               StandardCommunity.NO_ADVERTISE,
               StandardCommunity.NO_EXPORT));
     }
+    // note: this also tests that INVALID_EXPANDED_CL is not included.
     assertThat(config.getExpandedCommunityLists(), hasKeys("EXPANDED_CL"));
     {
       ExpandedCommunityList list = config.getExpandedCommunityLists().get("EXPANDED_CL");
