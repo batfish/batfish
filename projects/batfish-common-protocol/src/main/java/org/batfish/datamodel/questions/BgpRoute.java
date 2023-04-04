@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.Set;
@@ -29,6 +30,7 @@ import org.batfish.datamodel.bgp.community.Community;
 @ParametersAreNonnullByDefault
 public final class BgpRoute {
   public static final String PROP_AS_PATH = "asPath";
+  public static final String PROP_CLUSTER_LIST = "clusterList";
   public static final String PROP_COMMUNITIES = "communities";
   public static final String PROP_LOCAL_PREFERENCE = "localPreference";
   public static final String PROP_METRIC = "metric";
@@ -46,6 +48,7 @@ public final class BgpRoute {
   public static final String PROP_CLASS = "class";
 
   @Nonnull private final AsPath _asPath;
+  @Nonnull private final Set<Long> _clusterList;
   @Nonnull private final SortedSet<Community> _communities;
   private final long _localPreference;
   private final long _metric;
@@ -63,6 +66,7 @@ public final class BgpRoute {
 
   private BgpRoute(
       AsPath asPath,
+      Set<Long> clusterList,
       SortedSet<Community> communities,
       long localPreference,
       long metric,
@@ -78,6 +82,7 @@ public final class BgpRoute {
       @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       int weight) {
     _asPath = asPath;
+    _clusterList = clusterList;
     _communities = communities;
     _localPreference = localPreference;
     _metric = metric;
@@ -97,6 +102,7 @@ public final class BgpRoute {
   @JsonCreator
   private static BgpRoute jsonCreator(
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
+      @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
       @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long metric,
@@ -120,6 +126,7 @@ public final class BgpRoute {
     checkArgument(protocol != null, "%s must be specified", PROP_PROTOCOL);
     return new BgpRoute(
         firstNonNull(asPath, AsPath.empty()),
+        firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, ImmutableSortedSet.of()),
         localPreference,
         metric,
@@ -140,6 +147,12 @@ public final class BgpRoute {
   @JsonProperty(PROP_AS_PATH)
   public AsPath getAsPath() {
     return _asPath;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_CLUSTER_LIST)
+  public Set<Long> getClusterList() {
+    return _clusterList;
   }
 
   @Nonnull
@@ -249,6 +262,7 @@ public final class BgpRoute {
         && _tag == bgpRoute._tag
         && _weight == bgpRoute._weight
         && Objects.equals(_asPath, bgpRoute._asPath)
+        && Objects.equals(_clusterList, bgpRoute._clusterList)
         && Objects.equals(_communities, bgpRoute._communities)
         && Objects.equals(_network, bgpRoute._network)
         && Objects.equals(_nextHopIp, bgpRoute._nextHopIp)
@@ -265,6 +279,7 @@ public final class BgpRoute {
   public int hashCode() {
     return Objects.hash(
         _asPath,
+        _clusterList,
         _communities,
         _localPreference,
         _metric,
@@ -288,6 +303,7 @@ public final class BgpRoute {
   public Builder toBuilder() {
     return builder()
         .setAsPath(_asPath)
+        .setClusterList(_clusterList)
         .setCommunities(_communities)
         .setLocalPreference(_localPreference)
         .setMetric(_metric)
@@ -309,6 +325,7 @@ public final class BgpRoute {
   public static final class Builder {
 
     @Nonnull private AsPath _asPath;
+    @Nonnull private Set<Long> _clusterList;
     @Nonnull private SortedSet<Community> _communities;
     private long _localPreference;
     private long _metric;
@@ -326,6 +343,7 @@ public final class BgpRoute {
 
     public Builder() {
       _asPath = AsPath.empty();
+      _clusterList = ImmutableSet.of();
       _communities = ImmutableSortedSet.of();
       _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
     }
@@ -338,6 +356,7 @@ public final class BgpRoute {
       checkArgument(_protocol != null, "%s must be specified", PROP_PROTOCOL);
       return new BgpRoute(
           _asPath,
+          _clusterList,
           _communities,
           _localPreference,
           _metric,
@@ -356,6 +375,11 @@ public final class BgpRoute {
 
     public Builder setAsPath(AsPath asPath) {
       _asPath = asPath;
+      return this;
+    }
+
+    public Builder setClusterList(Set<Long> clusterList) {
+      _clusterList = ImmutableSet.copyOf(clusterList);
       return this;
     }
 
@@ -438,6 +462,7 @@ public final class BgpRoute {
         .add("network", _network)
         .add("metric", _metric)
         .add("asPath", _asPath)
+        .add("clusterList", _clusterList)
         .add("communities", _communities)
         .add("localPreference", _localPreference)
         .add("nextHopIp", _nextHopIp)

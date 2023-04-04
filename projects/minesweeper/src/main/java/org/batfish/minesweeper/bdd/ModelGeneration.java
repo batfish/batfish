@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
@@ -189,6 +190,11 @@ public class ModelGeneration {
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
     builder.setOriginType(r.getOriginType().satAssignmentToValue(fullModel));
     builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
+
+    // if the cluster list length is N, create the cluster list 0,...,N-1
+    long clusterListLength = r.getClusterListLength().satAssignmentToLong(fullModel);
+    builder.setClusterList(
+        LongStream.range(0, clusterListLength).boxed().collect(ImmutableSet.toImmutableSet()));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
     builder.setCommunities(communities);

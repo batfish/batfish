@@ -84,6 +84,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   private BDD[] _asPathRegexAtomicPredicates;
 
+  // for now we only track the cluster list's length, not its contents;
+  // that is all that is needed to support matching on the length
+  private MutableBDDInteger _clusterListLength;
+
   private MutableBDDInteger _localPref;
 
   private MutableBDDInteger _med;
@@ -156,7 +160,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
     int numVars = factory.varNum();
     int numNeeded =
-        32 * 5
+        32 * 6
             + 16
             + 8
             + 6
@@ -201,6 +205,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _localPref = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("lp", 32, idx, false);
     idx += 32;
+    _clusterListLength = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("clusterListLength", 32, idx, false);
+    idx += 32;
     // need 6 bits for prefix length because there are 33 possible values, 0 - 32
     _prefixLength = MutableBDDInteger.makeFromIndex(factory, 6, idx, true);
     addBitNames("pfxLen", 6, idx, true);
@@ -241,6 +248,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _factory = other._factory;
 
     _asPathRegexAtomicPredicates = other._asPathRegexAtomicPredicates.clone();
+    _clusterListLength = new MutableBDDInteger(other._clusterListLength);
     _communityAtomicPredicates = other._communityAtomicPredicates.clone();
     _prefixLength = new MutableBDDInteger(other._prefixLength);
     _prefix = new MutableBDDInteger(other._prefix);
@@ -283,6 +291,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     }
 
     _asPathRegexAtomicPredicates = asPathAtomicPredicates;
+    _clusterListLength = route.getClusterListLength().and(pred);
     _communityAtomicPredicates = communityAtomicPredicates;
     _prefixLength = route._prefixLength.and(pred);
     _prefix = route.getPrefix().and(pred);
@@ -452,6 +461,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _asPathRegexAtomicPredicates = asPathRegexAtomicPredicates;
   }
 
+  public MutableBDDInteger getClusterListLength() {
+    return _clusterListLength;
+  }
+
+  public void setClusterListLength(MutableBDDInteger clusterListLength) {
+    _clusterListLength = clusterListLength;
+  }
+
   public BDD[] getCommunityAtomicPredicates() {
     return _communityAtomicPredicates;
   }
@@ -574,6 +591,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_protocolHistory, other._protocolHistory)
         && Objects.equals(_med, other._med)
         && Objects.equals(_localPref, other._localPref)
+        && Objects.equals(_clusterListLength, other._clusterListLength)
         && Objects.equals(_tag, other._tag)
         && Objects.equals(_weight, other._weight)
         && Objects.equals(_nextHop, other._nextHop)
