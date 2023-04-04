@@ -223,6 +223,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setTunnelEncapsulationAttribute(dataplaneBgpRoute.getTunnelEncapsulationAttribute())
         .setNetwork(dataplaneBgpRoute.getNetwork())
         .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
+        .setClusterList(dataplaneBgpRoute.getClusterList())
         .setAsPath(dataplaneBgpRoute.getAsPath())
         .build();
   }
