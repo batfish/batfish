@@ -1199,6 +1199,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       RoutingPolicy.Builder redistributionPolicy) {
     bgpProcess.getRedistributionPolicies().entrySet().stream()
         .filter(entry -> entry.getKey().getProtocol().equals(srcProtocol))
+        .sorted(Entry.comparingByKey())
         .map(Map.Entry::getValue)
         .map(policy -> createRedistributionStatements(bgpProcess, policy))
         .filter(Objects::nonNull)
@@ -1958,8 +1959,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // policies for redistributing routes
     ospfExportStatements.addAll(
-        proc.getRedistributionPolicies().values().stream()
-            .map(policy -> convertOspfRedistributionPolicy(policy, proc))
+        proc.getRedistributionPolicies().entrySet().stream()
+            .sorted(Entry.comparingByKey())
+            .map(e -> convertOspfRedistributionPolicy(e.getValue(), proc))
             .collect(Collectors.toList()));
 
     return newProcess;
