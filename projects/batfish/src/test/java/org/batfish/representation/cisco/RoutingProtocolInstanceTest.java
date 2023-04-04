@@ -1,6 +1,12 @@
 package org.batfish.representation.cisco;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
+import java.util.List;
 import org.junit.Test;
 
 /** Tests of {@link RoutingProtocolInstance}. */
@@ -19,5 +25,18 @@ public class RoutingProtocolInstanceTest {
         .addEqualityGroup(RoutingProtocolInstance.isis_l1())
         .addEqualityGroup(RoutingProtocolInstance.staticRoutingProtocol())
         .testEquals();
+  }
+
+  @Test
+  public void testSorting() {
+    List<RoutingProtocolInstance> entries =
+        ImmutableList.of(
+            RoutingProtocolInstance.bgp(5),
+            RoutingProtocolInstance.bgp(6),
+            RoutingProtocolInstance.eigrp(6),
+            RoutingProtocolInstance.eigrp(7),
+            RoutingProtocolInstance.ospf());
+    assertThat(ImmutableList.sortedCopyOf(entries), equalTo(entries));
+    assertThat(ImmutableList.sortedCopyOf(Lists.reverse(entries)), equalTo(entries));
   }
 }
