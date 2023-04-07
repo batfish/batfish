@@ -129,16 +129,19 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
 
-      // the AS path on the produced route represents the AS path that will result after
-      // all prepends along the execution path occur. to obtain the original AS path of the
-      // input route, we simply remove those prepended ASes.
-      List<AsSet> asSets = inRoute.getAsPath().getAsSets();
-      AsPath newAspath =
-          AsPath.ofAsSets(
-              asSets.subList(prependedASes.size(), asSets.size()).toArray(new AsSet[0]));
-      Row result =
-          TestRoutePoliciesAnswerer.rowResultFor(
-              policy, inRoute.toBuilder().setAsPath(newAspath).build(), _direction);
+      if (_action == PERMIT) {
+        // the AS path on the produced route represents the AS path that will result after
+        // all prepends along the execution path occur. to obtain the original AS path of the
+        // input route, we simply remove those prepended ASes.
+        List<AsSet> asSets = inRoute.getAsPath().getAsSets();
+        AsPath newAspath =
+            AsPath.ofAsSets(
+                asSets.subList(prependedASes.size(), asSets.size()).toArray(new AsSet[0]));
+        inRoute = inRoute.toBuilder().setAsPath(newAspath).build();
+      }
+
+      Row result = TestRoutePoliciesAnswerer.rowResultFor(policy, inRoute, _direction);
+
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
       // is modeling something incorrectly (or both).
