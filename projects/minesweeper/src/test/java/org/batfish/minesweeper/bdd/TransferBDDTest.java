@@ -1641,13 +1641,13 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(unsupported, conj1.and(conj2), true),
-            new TransferReturn(any, conj1.not(), false),
-            new TransferReturn(unsupported, conj1.and(conj2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, conj1.not(), false),
+                new TransferReturn(unsupported, conj1.and(conj2.not()), false),
+                new TransferReturn(unsupported, conj1.and(conj2), true))));
   }
 
   @Test
@@ -1870,13 +1870,13 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, disj1, true),
-            new TransferReturn(unsupported, disj1.not().and(disj2), true),
-            new TransferReturn(unsupported, disj1.not().and(disj2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, disj1, true),
+                new TransferReturn(unsupported, disj1.not().and(disj2), true),
+                new TransferReturn(unsupported, disj1.not().and(disj2.not()), false))));
   }
 
   @Test
