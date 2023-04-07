@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -364,14 +365,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
               + policy.getOwner().getHostname(),
           e);
     }
-    // consider only the subset of paths that have the desired action (permit or deny)
-    List<TransferReturn> relevantPaths =
+
+    Map<Boolean, List<TransferReturn>> pathMap =
         paths.stream()
+            // consider only the subset of paths that have the desired action (permit or deny)
             .filter(p -> p.getAccepted() == (_action == PERMIT))
-            // only search for models on paths where no unsupported route-policy feature was
-            // encountered
-            .filter(p -> !p.getFirst().getUnsupported())
-            .collect(ImmutableList.toImmutableList());
+            // separate the paths that encountered an unsupported statement from the others
+            .collect(Collectors.partitioningBy(tr -> tr.getFirst().getUnsupported()));
+    // consider the paths that do not encounter an unsupported feature first, to avoid the potential
+    // for false positives as much as possible
+    List<TransferReturn> relevantPaths = pathMap.get(false);
+    relevantPaths.addAll(pathMap.get(true));
     BDD inConstraints =
         routeConstraintsToBDD(
             _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, configAPs);
