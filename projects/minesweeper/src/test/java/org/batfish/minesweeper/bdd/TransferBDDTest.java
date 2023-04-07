@@ -1609,6 +1609,48 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testUnsupportedConjunction() {
+    _policyBuilder.addStatement(
+        new If(
+            new Conjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    // MatchColor is unsupported, so it should be ignored
+                    new MatchColor(0L),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute unsupported = new BDDRoute(any);
+    unsupported.setUnsupported(true);
+
+    BDD conj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD conj2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+
+    assertThat(paths, Matchers.hasSize(3));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
+            new TransferReturn(unsupported, conj1.and(conj2), true),
+            new TransferReturn(any, conj1.not(), false),
+            new TransferReturn(unsupported, conj1.and(conj2.not()), false)));
+  }
+
+  @Test
   public void testStatefulConjunction() {
     String calledPolicyName = "calledPolicy";
 
@@ -1793,6 +1835,48 @@ public class TransferBDDTest {
                 new TransferReturn(any, disj1, true),
                 new TransferReturn(any, disj1.not().and(disj2), true),
                 new TransferReturn(any, disj1.not().and(disj2.not()), false))));
+  }
+
+  @Test
+  public void testUnsupportedDisjunction() {
+    _policyBuilder.addStatement(
+        new If(
+            new Disjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    // MatchColor is unsupported, so it should be ignored
+                    new MatchColor(0L),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute unsupported = new BDDRoute(any);
+    unsupported.setUnsupported(true);
+
+    BDD disj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD disj2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+
+    assertThat(paths, Matchers.hasSize(3));
+    assertThat(
+        paths,
+        Matchers.containsInAnyOrder(
+            new TransferReturn(any, disj1, true),
+            new TransferReturn(unsupported, disj1.not().and(disj2), true),
+            new TransferReturn(unsupported, disj1.not().and(disj2.not()), false)));
   }
 
   @Test
