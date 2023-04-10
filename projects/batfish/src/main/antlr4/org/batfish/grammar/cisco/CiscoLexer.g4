@@ -2969,6 +2969,8 @@ LAST_MEMBER_QUERY_INTERVAL: 'last-member-query-interval';
 
 LAST_MEMBER_QUERY_RESPONSE_TIME: 'last-member-query-response-time';
 
+LAYER3: 'layer3';
+
 LCD_MENU: 'lcd-menu';
 
 LDAP: 'ldap';
@@ -3286,6 +3288,8 @@ MANAGEMENT_PLANE: 'management-plane';
 MANAGEMENT_PROFILE: 'management-profile';
 
 MANAGER: 'manager';
+
+MANUAL: 'manual';
 
 MAP: 'map';
 

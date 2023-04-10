@@ -7178,4 +7178,9 @@ public final class CiscoGrammarTest {
     assertThat(c.getAllInterfaces().get("Vlan100").getActive(), equalTo(false));
     assertThat(c.getAllInterfaces().get("Vlan3000").getActive(), equalTo(false));
   }
+
+  @Test
+  public void testIosInterfaceCts() {
+    parseCiscoConfig("ios-interface-cts", ConfigurationFormat.CISCO_IOS);
+  }
 }
