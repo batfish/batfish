@@ -20558,7 +20558,7 @@
             "      (null_rest_of_line*",
             "        VFI:'vfi'",
             "        VARIABLE:'foobar'",
-            "        VARIABLE:'manual'",
+            "        MANUAL:'manual'",
             "        NEWLINE:'\\n')",
             "      (l2_null*",
             "        BRIDGE_DOMAIN:'bridge-domain'",
