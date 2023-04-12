@@ -78,6 +78,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
@@ -523,6 +524,13 @@ public class TransferBDD {
               .getAsPathMatchExpr()
               .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
+
+    } else if (expr instanceof TrackSucceeded) {
+      TrackSucceeded ts = (TrackSucceeded) expr;
+      List<String> tracks = _configAtomicPredicates.getTracks();
+      int index = tracks.indexOf(ts.getTrackName());
+      BDD trackPred = p.getData().getTracks()[index];
+      finalResults.add(result.setReturnValueBDD(trackPred).setReturnValueAccepted(true));
 
     } else {
       throw new UnsupportedFeatureException(expr.toString());

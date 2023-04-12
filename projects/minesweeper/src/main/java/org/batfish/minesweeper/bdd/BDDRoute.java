@@ -151,7 +151,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         factory,
         aps.getStandardCommunityAtomicPredicates().getNumAtomicPredicates()
             + aps.getNonStandardCommunityLiterals().size(),
-        aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+        aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(),
+        aps.getTracks().size());
   }
 
   /**
@@ -161,7 +162,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * number of such atomic predicates is provided.
    */
   public BDDRoute(
-      BDDFactory factory, int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
+      BDDFactory factory,
+      int numCommAtomicPredicates,
+      int numAsPathRegexAtomicPredicates,
+      int numTracks) {
     _factory = factory;
 
     int numVars = factory.varNum();
@@ -172,6 +176,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
+            + numTracks
             + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
             + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
             + IntMath.log2(allMetricTypes.size(), RoundingMode.CEILING);
@@ -237,12 +242,18 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _bitNames.put(idx, "AS-path regex atomic predicate " + i);
       idx++;
     }
+    // Initialize one BDD per tracked name, each of which has a corresponding BDD variable
+    _tracks = new BDD[numTracks];
+    for (int i = 0; i < numTracks; i++) {
+      _tracks[i] = factory.ithVar(idx);
+      _bitNames.put(idx, "track " + i);
+      idx++;
+    }
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
     _prependedASes = new ArrayList<>();
-    _tracks = new BDD[0];
     // Initially there are no unsupported statements encountered
     _unsupported = false;
   }
