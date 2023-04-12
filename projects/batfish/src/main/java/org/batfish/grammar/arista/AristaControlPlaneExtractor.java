@@ -3730,15 +3730,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
+    LineAction action = toLineAction(ctx.action);
+    String regex = ctx.regexp.getText();
+
+    Optional<ExpandedCommunityListLine> maybeLine = ExpandedCommunityListLine.create(action, regex);
+    if (!maybeLine.isPresent()) {
+      warn(ctx, "Invalid regex");
+      return;
+    }
+    ExpandedCommunityListLine line = maybeLine.get();
+
     String name = ctx.name.getText();
     ExpandedCommunityList list =
         _configuration
             .getExpandedCommunityLists()
             .computeIfAbsent(name, ExpandedCommunityList::new);
 
-    LineAction action = toLineAction(ctx.action);
-    String regex = ctx.regexp.getText();
-    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, regex);
     list.addLine(line);
     _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
   }

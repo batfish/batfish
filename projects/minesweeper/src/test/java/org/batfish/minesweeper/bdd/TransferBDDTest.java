@@ -85,6 +85,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
@@ -1170,6 +1171,60 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testMatchClusterListLength() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    MatchClusterListLength.of(IntComparator.EQ, new LiteralInt(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, any.getClusterListLength().value(42), true),
+                new TransferReturn(any, any.getClusterListLength().value(42).not(), false))));
+  }
+
+  @Test
+  public void testMatchClusterListLengthLE() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    MatchClusterListLength.of(IntComparator.LE, new LiteralInt(2)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD clusterListLengthLETwo =
+        any.getClusterListLength()
+            .value(0)
+            .or(any.getClusterListLength().value(1))
+            .or(any.getClusterListLength().value(2));
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, clusterListLengthLETwo, true),
+                new TransferReturn(any, clusterListLengthLETwo.not(), false))));
+  }
+
+  @Test
   public void testMatchNextHop() {
     _policyBuilder.addStatement(
         new If(
@@ -1554,6 +1609,48 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testUnsupportedConjunction() {
+    _policyBuilder.addStatement(
+        new If(
+            new Conjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    // MatchColor is unsupported, so it should be ignored
+                    new MatchColor(0L),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute unsupported = new BDDRoute(any);
+    unsupported.setUnsupported(true);
+
+    BDD conj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD conj2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, conj1.not(), false),
+                new TransferReturn(unsupported, conj1.and(conj2.not()), false),
+                new TransferReturn(unsupported, conj1.and(conj2), true))));
+  }
+
+  @Test
   public void testStatefulConjunction() {
     String calledPolicyName = "calledPolicy";
 
@@ -1738,6 +1835,48 @@ public class TransferBDDTest {
                 new TransferReturn(any, disj1, true),
                 new TransferReturn(any, disj1.not().and(disj2), true),
                 new TransferReturn(any, disj1.not().and(disj2.not()), false))));
+  }
+
+  @Test
+  public void testUnsupportedDisjunction() {
+    _policyBuilder.addStatement(
+        new If(
+            new Disjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    // MatchColor is unsupported, so it should be ignored
+                    new MatchColor(0L),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute unsupported = new BDDRoute(any);
+    unsupported.setUnsupported(true);
+
+    BDD disj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD disj2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, disj1, true),
+                new TransferReturn(unsupported, disj1.not().and(disj2), true),
+                new TransferReturn(unsupported, disj1.not().and(disj2.not()), false))));
   }
 
   @Test

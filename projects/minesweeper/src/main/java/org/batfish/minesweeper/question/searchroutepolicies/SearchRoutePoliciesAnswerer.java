@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -129,16 +130,19 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
 
-      // the AS path on the produced route represents the AS path that will result after
-      // all prepends along the execution path occur. to obtain the original AS path of the
-      // input route, we simply remove those prepended ASes.
-      List<AsSet> asSets = inRoute.getAsPath().getAsSets();
-      AsPath newAspath =
-          AsPath.ofAsSets(
-              asSets.subList(prependedASes.size(), asSets.size()).toArray(new AsSet[0]));
-      Row result =
-          TestRoutePoliciesAnswerer.rowResultFor(
-              policy, inRoute.toBuilder().setAsPath(newAspath).build(), _direction);
+      if (_action == PERMIT) {
+        // the AS path on the produced route represents the AS path that will result after
+        // all prepends along the execution path occur. to obtain the original AS path of the
+        // input route, we simply remove those prepended ASes.
+        List<AsSet> asSets = inRoute.getAsPath().getAsSets();
+        AsPath newAspath =
+            AsPath.ofAsSets(
+                asSets.subList(prependedASes.size(), asSets.size()).toArray(new AsSet[0]));
+        inRoute = inRoute.toBuilder().setAsPath(newAspath).build();
+      }
+
+      Row result = TestRoutePoliciesAnswerer.rowResultFor(policy, inRoute, _direction);
+
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
       // is modeling something incorrectly (or both).
@@ -364,14 +368,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
               + policy.getOwner().getHostname(),
           e);
     }
-    // consider only the subset of paths that have the desired action (permit or deny)
-    List<TransferReturn> relevantPaths =
+
+    Map<Boolean, List<TransferReturn>> pathMap =
         paths.stream()
+            // consider only the subset of paths that have the desired action (permit or deny)
             .filter(p -> p.getAccepted() == (_action == PERMIT))
-            // only search for models on paths where no unsupported route-policy feature was
-            // encountered
-            .filter(p -> !p.getFirst().getUnsupported())
-            .collect(ImmutableList.toImmutableList());
+            // separate the paths that encountered an unsupported statement from the others
+            .collect(Collectors.partitioningBy(tr -> tr.getFirst().getUnsupported()));
+    // consider the paths that do not encounter an unsupported feature first, to avoid the potential
+    // for false positives as much as possible
+    List<TransferReturn> relevantPaths = pathMap.get(false);
+    relevantPaths.addAll(pathMap.get(true));
     BDD inConstraints =
         routeConstraintsToBDD(
             _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, configAPs);
