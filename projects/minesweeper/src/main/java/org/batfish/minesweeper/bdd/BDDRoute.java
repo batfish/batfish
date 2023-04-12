@@ -123,6 +123,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private MutableBDDInteger _tag;
 
+  /**
+   * Contains a BDD variable for each "track" that is encountered along the path. See {@link
+   * org.batfish.datamodel.routing_policy.expr.TrackSucceeded}.
+   */
+  private BDD[] _tracks;
+
   private MutableBDDInteger _weight;
 
   // whether the analysis encountered an unsupported route-policy
@@ -236,6 +242,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
     _prependedASes = new ArrayList<>();
+    _tracks = new BDD[0];
     // Initially there are no unsupported statements encountered
     _unsupported = false;
   }
@@ -264,11 +271,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _originType = new BDDDomain<>(other._originType);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
-    _prependedASes = new ArrayList(other._prependedASes);
+    _prependedASes = new ArrayList<>(other._prependedASes);
+    _tracks = other._tracks.clone();
     _unsupported = other._unsupported;
   }
 
-  /**
+  /*
    * Constructs a new BDDRoute by restricting the given one to conform to the predicate pred.
    *
    * @param pred the predicate used to restrict the output routes
@@ -309,6 +317,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopDiscarded = route.getNextHopDiscarded();
     _unsupported = route.getUnsupported();
     _prependedASes = new ArrayList<>(route.getPrependedASes());
+    _tracks = route.getTracks();
   }
 
   /*
@@ -565,6 +574,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
+  public BDD[] getTracks() {
+    return _tracks;
+  }
+
+  public void setTracks(BDD[] tracks) {
+    _tracks = tracks;
+  }
+
   public MutableBDDInteger getWeight() {
     return _weight;
   }
@@ -602,6 +619,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
         && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
+        && Arrays.equals(_tracks, other._tracks)
         && Objects.equals(_unsupported, other._unsupported);
   }
 }

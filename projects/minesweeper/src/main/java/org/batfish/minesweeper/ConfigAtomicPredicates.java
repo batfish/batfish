@@ -1,10 +1,12 @@
 package org.batfish.minesweeper;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,11 +21,16 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.aspath.RoutePolicyStatementAsPathCollector;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
+import org.batfish.minesweeper.track.RoutePolicyStatementTrackCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
 /**
- * This class computes the community-regex and AS-path-regex atomic predicates for a single router
- * configuration.
+ * This class traverses a given router configuration to find the community literals/regexes, as-path
+ * regexes, and tracks (see {@link org.batfish.datamodel.routing_policy.expr.TrackSucceeded}) that
+ * it contains. It uses this information to compute atomic predicates for each, which are then
+ * represented by unique BDD variables in a {@link org.batfish.minesweeper.bdd.BDDRoute} in order to
+ * perform the symbolic route analysis. (We don't need to compute atomic predicates for the tracks,
+ * because they are all independent of one another, so each gets a corresponding BDD variable.)
  */
 public final class ConfigAtomicPredicates {
 
@@ -41,6 +48,9 @@ public final class ConfigAtomicPredicates {
 
   /** Atomic predicates for the AS-path regexes that appear in the given configuration. */
   private final AsPathRegexAtomicPredicates _asPathRegexAtomicPredicates;
+
+  /** The list of "tracks" that appear in the given configuration. */
+  private final List<String> _tracks;
 
   /**
    * Compute atomic predicates for the given router's configuration.
@@ -169,6 +179,13 @@ public final class ConfigAtomicPredicates {
           findAllAsPathRegexes(Collections.emptySet(), referencePolicies, referenceConfiguration));
     }
     _asPathRegexAtomicPredicates = new AsPathRegexAtomicPredicates(ImmutableSet.copyOf(asPathAps));
+
+    // Collect the tracks from both (if differential) configs
+    Set<String> tracks = new HashSet<>(findAllTracks(policies, configuration));
+    if (reference != null) {
+      tracks.addAll(findAllTracks(referencePolicies, referenceConfiguration));
+    }
+    _tracks = tracks.stream().collect(ImmutableList.toImmutableList());
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
@@ -177,6 +194,7 @@ public final class ConfigAtomicPredicates {
     _nonStandardCommunityLiterals = new HashMap<>(other._nonStandardCommunityLiterals);
     _asPathRegexAtomicPredicates =
         new AsPathRegexAtomicPredicates(other._asPathRegexAtomicPredicates);
+    _tracks = new LinkedList<>(other._tracks);
   }
 
   /**
@@ -290,6 +308,43 @@ public final class ConfigAtomicPredicates {
     return asPathRegexes;
   }
 
+  /**
+   * Collect up all tracks that appear in the given policy.
+   *
+   * @param policy the policy to collect tracks from
+   * @param configuration the batfish configuration
+   * @return a set of all tracks that appear
+   */
+  private static Set<String> findTracks(RoutingPolicy policy, Configuration configuration) {
+    Set<String> tracks = new HashSet<>();
+    List<Statement> stmts = policy.getStatements();
+    stmts.forEach(
+        stmt ->
+            tracks.addAll(
+                stmt.accept(
+                    new RoutePolicyStatementTrackCollector(),
+                    new Tuple<>(
+                        new HashSet<>(Collections.singleton(policy.getName())), configuration))));
+    return tracks;
+  }
+
+  /**
+   * Collect up all tracks that appear in the given policies.
+   *
+   * @param policies the set of policies to collect tracks from.
+   * @param configuration the batfish configuration
+   * @return a set of all tracks that appear
+   */
+  private static Set<String> findAllTracks(
+      Collection<RoutingPolicy> policies, Configuration configuration) {
+    Set<String> tracks = new HashSet<>();
+
+    // walk through every statement of every route policy
+    policies.forEach(pol -> tracks.addAll(findTracks(pol, configuration)));
+
+    return tracks;
+  }
+
   public RegexAtomicPredicates<CommunityVar> getStandardCommunityAtomicPredicates() {
     return _standardCommunityAtomicPredicates;
   }
@@ -300,5 +355,9 @@ public final class ConfigAtomicPredicates {
 
   public AsPathRegexAtomicPredicates getAsPathRegexAtomicPredicates() {
     return _asPathRegexAtomicPredicates;
+  }
+
+  public List<String> getTracks() {
+    return _tracks;
   }
 }
