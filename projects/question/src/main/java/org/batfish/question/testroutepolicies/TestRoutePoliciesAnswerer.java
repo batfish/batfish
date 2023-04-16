@@ -128,10 +128,11 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy referencePolicy,
       RoutingPolicy proposedPolicy,
       Bgpv4Route inputRoute,
-      Direction direction) {
+      Direction direction,
+      Predicate<String> successfulTracks) {
     return toCompareRow(
-        testPolicy(proposedPolicy, inputRoute, direction),
-        testPolicy(referencePolicy, inputRoute, direction));
+        testPolicy(proposedPolicy, inputRoute, direction, successfulTracks),
+        testPolicy(referencePolicy, inputRoute, direction, successfulTracks));
   }
 
   private static Result testPolicy(

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -26,8 +27,8 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -99,23 +100,28 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    *
    * @param referencePolicy the reference route policy that we compared against.
    * @param policy the proposed route policy.
+   * @param inputs a pair of an input route and predicate that assigns truth values to tracks
    * @return the concrete input route and, if the desired action is PERMIT, the concrete output
    *     routes resulting from analyzing the given policies.
    */
-  private Row computeDifferencesForInputRoute(
-      RoutingPolicy referencePolicy, RoutingPolicy policy, Bgpv4Route inRoute) {
-    return diffRowResultsFor(referencePolicy, policy, inRoute, _direction);
+  private Row computeDifferencesForInputs(
+      RoutingPolicy referencePolicy,
+      RoutingPolicy policy,
+      Tuple<Bgpv4Route, Predicate<String>> inputs) {
+    return diffRowResultsFor(
+        referencePolicy, policy, inputs.getFirst(), _direction, inputs.getSecond());
   }
 
   /**
    * @param constraints Logical constraints that describe a set of routes.
    * @param configAPs the atomic predicates used for communities/as-paths.
-   * @return An input route that conforms to the given constraints.
+   * @return An input route and a predicate on tracks that conform to the given constraints.
    */
-  private Bgpv4Route constraintsToInputs(BDD constraints, ConfigAtomicPredicates configAPs) {
+  private Tuple<Bgpv4Route, Predicate<String>> constraintsToInputs(
+      BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
     BDD fullModel = constraintsToModel(constraints, configAPs);
-    return satAssignmentToInputRouteAndTracks(fullModel, configAPs).getFirst();
+    return satAssignmentToInputRouteAndTracks(fullModel, configAPs);
   }
 
   /**
@@ -263,8 +269,10 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     }
     return differences.stream()
         .map(intersection -> constraintsToInputs(intersection, configAPs))
-        .sorted(Comparator.comparing(AbstractRoute::getNetwork))
-        .map(r -> computeDifferencesForInputRoute(referencePolicy, policy, r))
+        .sorted(
+            Comparator.<Tuple<Bgpv4Route, Predicate<String>>, Prefix>comparing(
+                t -> t.getFirst().getNetwork()))
+        .map(t -> computeDifferencesForInputs(referencePolicy, policy, t))
         .collect(Collectors.toList());
   }
 
