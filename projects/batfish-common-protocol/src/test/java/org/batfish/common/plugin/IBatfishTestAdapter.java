@@ -251,6 +251,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public Map<String, String> getQuestionTemplates(boolean verbose) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public ImmutableConfiguration getSettingsConfiguration() {
     throw new UnsupportedOperationException();
   }

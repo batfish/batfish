@@ -94,6 +94,8 @@ public interface IBatfish extends IPluginConsumer {
   @Nonnull
   TopologyProvider getTopologyProvider();
 
+  Map<String, String> getQuestionTemplates(boolean verbose);
+
   /**
    * Get batfish settings
    *

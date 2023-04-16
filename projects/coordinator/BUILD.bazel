@@ -33,6 +33,8 @@ java_library(
         "@maven//:org_glassfish_jersey_core_jersey_common",
         "@maven//:org_glassfish_jersey_core_jersey_server",
         "@maven//:org_glassfish_jersey_media_jersey_media_json_jackson",
+        "@maven//:org_glassfish_jersey_media_jersey_media_json_jettison",
+        "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
     ],
 )
 
