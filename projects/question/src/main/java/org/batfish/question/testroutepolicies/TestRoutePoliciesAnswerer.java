@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -103,10 +104,15 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param policy the route policy to simulate
    * @param inputRoute the input route for the policy
    * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
    * @return a table row containing the results of the simulation
    */
-  public static Row rowResultFor(RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
-    return toRow(testPolicy(policy, inputRoute, direction));
+  public static Row rowResultFor(
+      RoutingPolicy policy,
+      Bgpv4Route inputRoute,
+      Direction direction,
+      Predicate<String> successfulTrack) {
+    return toRow(testPolicy(policy, inputRoute, direction, successfulTrack));
   }
 
   /**
@@ -130,6 +136,14 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
   private static Result testPolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
+    return testPolicy(policy, inputRoute, direction, null);
+  }
+
+  private static Result testPolicy(
+      RoutingPolicy policy,
+      Bgpv4Route inputRoute,
+      Direction direction,
+      @Nullable Predicate<String> successfulTrack) {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
     if (direction == Direction.OUT) {
@@ -139,7 +153,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     }
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
-    boolean permit = policy.process(inputRoute, outputRoute, direction, tracer);
+    boolean permit = policy.process(inputRoute, outputRoute, direction, successfulTrack, tracer);
     tracer.endSubTrace();
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.utils.Tuple;
 
 public class ModelGeneration {
   private static Optional<Community> stringToCommunity(String str) {
@@ -162,23 +164,13 @@ public class ModelGeneration {
     return AsPath.ofSingletonAsSets(asns);
   }
 
-  /**
-   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
-   * concrete input route that is consistent with the assignment.
-   *
-   * @param fullModel the satisfying assignment
-   * @param configAPs an object that provides information about the community atomic predicates
-   * @return a route
-   */
-  public static Bgpv4Route satAssignmentToInputRoute(
-      BDD fullModel, ConfigAtomicPredicates configAPs) {
+  static Bgpv4Route satAssignmentToInputRoute(
+      BDD fullModel, ConfigAtomicPredicates configAPs, BDDRoute r) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
             .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
             .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */;
-
-    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 
     Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
     long len = r.getPrefixLength().satAssignmentToLong(fullModel);
@@ -209,6 +201,32 @@ public class ModelGeneration {
     builder.setNextHop(NextHopIp.of(Ip.create(r.getNextHop().satAssignmentToLong(fullModel))));
 
     return builder.build();
+  }
+
+  /**
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete input route and a predicate on tracks that are consistent with the assignment.
+   *
+   * @param fullModel the satisfying assignment
+   * @param configAPs an object that provides information about the community atomic predicates
+   * @return a pair of a route and a predicate on the tracks
+   */
+  public static Tuple<Bgpv4Route, Predicate<String>> satAssignmentToInputRouteAndTracks(
+      BDD fullModel, ConfigAtomicPredicates configAPs) {
+
+    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
+
+    Bgpv4Route route = satAssignmentToInputRoute(fullModel, configAPs, r);
+
+    BDD[] aps = r.getTracks();
+    List<String> tracks = configAPs.getTracks();
+    ImmutableSet.Builder<String> successfulTracks = new ImmutableSet.Builder<>();
+    for (int i = 0; i < aps.length; i++) {
+      if (aps[i].andSat(fullModel)) {
+        successfulTracks.add(tracks.get(i));
+      }
+    }
+    return new Tuple<>(route, successfulTracks.build()::contains);
   }
 
   /**
