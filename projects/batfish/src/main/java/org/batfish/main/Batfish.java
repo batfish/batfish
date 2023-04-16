@@ -30,6 +30,7 @@ import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.parseCheckpointManagementData;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -101,6 +102,8 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.CoordConsts;
+import org.batfish.common.CoordConstsV2;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
@@ -236,6 +239,8 @@ import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.version.BatfishVersion;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
@@ -944,6 +949,42 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
     NodeRolesData nodeRolesData = getNodeRolesData();
     return nodeRolesData.nodeRoleDimensionFor(dimension);
+  }
+
+  @Override
+  public Map<String, String> getQuestionTemplates(boolean verbose) {
+    if (_settings.getCoordinatorHost() == null) {
+      throw new BatfishException("Cannot get question templates: coordinator host is not set");
+    }
+    String url =
+        String.format(
+            "http://%s:%s%s/%s",
+            _settings.getCoordinatorHost(),
+            _settings.getCoordinatorPoolPort(),
+            CoordConsts.SVC_CFG_POOL_MGR,
+            CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
+    Map<String, String> params = new HashMap<>();
+    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
+    params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
+
+    JSONObject response = (JSONObject) CoordinatorClient.talkToCoordinator(url, params, _logger);
+    if (response == null) {
+      throw new BatfishException("Could not get question templates: Got null response");
+    }
+    if (!response.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
+      throw new BatfishException("Could not get question templates: Response lacks question list");
+    }
+
+    try {
+      Map<String, String> templates =
+          BatfishObjectMapper.mapper()
+              .readValue(
+                  response.get(CoordConsts.SVC_KEY_QUESTION_LIST).toString(),
+                  new TypeReference<Map<String, String>>() {});
+      return templates;
+    } catch (JSONException | IOException e) {
+      throw new BatfishException("Could not cast response to Map: ", e);
+    }
   }
 
   /** Gets the {@link ReferenceLibrary} for the network */

@@ -24,8 +24,6 @@ import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
 public abstract class BaseSettings {
-  protected static final String DEPRECATED_ARG_DESC =
-      "(ignored, provided for backwards compatibility)";
 
   private static final int HELP_WIDTH = 80;
 

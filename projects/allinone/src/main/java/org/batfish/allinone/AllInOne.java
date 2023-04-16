@@ -137,10 +137,19 @@ public class AllInOne {
   private void runBatfish() throws ExecutionException, InterruptedException {
     String batfishArgs =
         String.format(
-            "%s -%s %s",
+            "%s -%s %s -%s %s %s -%s %s",
             _settings.getBatfishArgs(),
             org.batfish.config.Settings.ARG_RUN_MODE,
-            _settings.getBatfishRunMode());
+            _settings.getBatfishRunMode(),
+            org.batfish.config.Settings.ARG_COORDINATOR_REGISTER,
+            "true",
+            "",
+            org.batfish.config.Settings.ARG_TRACING_ENABLE,
+            _settings.getTracingEnable());
+    // If we are running a command file, just use an ephemeral port for worker
+    if (_settings.getCommandFile() != null) {
+      batfishArgs += String.format(" -%s %s", org.batfish.config.Settings.ARG_SERVICE_PORT, 0);
+    }
 
     String[] initialArgArray = getArgArrayFromString(batfishArgs);
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
@@ -163,12 +172,23 @@ public class AllInOne {
   }
 
   private BindPortFutures runCoordinator() {
-    String coordinatorArgs = _settings.getCoordinatorArgs();
+    String coordinatorArgs =
+        String.format(
+            "%s -%s %s",
+            _settings.getCoordinatorArgs(),
+            org.batfish.coordinator.config.Settings.ARG_TRACING_ENABLE,
+            _settings.getTracingEnable());
     // If we are using a command file, just pick ephemeral ports to listen on
     if (_settings.getCommandFile() != null) {
       coordinatorArgs +=
           String.format(
-              " -%s %s", org.batfish.coordinator.config.Settings.ARG_SERVICE_WORK_V2_PORT, 0);
+              " -%s %s -%s %s -%s %s",
+              org.batfish.coordinator.config.Settings.ARG_SERVICE_POOL_PORT,
+              0,
+              org.batfish.coordinator.config.Settings.ARG_SERVICE_WORK_PORT,
+              0,
+              org.batfish.coordinator.config.Settings.ARG_SERVICE_WORK_V2_PORT,
+              0);
     }
     String[] initialArgArray = getArgArrayFromString(coordinatorArgs);
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));

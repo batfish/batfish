@@ -26,6 +26,9 @@ public class Settings extends BaseSettings {
   public static final String ARG_SERVICE_NAME = "servicename";
   private static final String ARG_SNAPSHOT_DIR =
       org.batfish.client.config.Settings.ARG_SNAPSHOT_DIR;
+  private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
+  private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
+  private static final String ARG_TRACING_ENABLE = "tracingenable";
   private static final String ARG_VERSION = "version";
 
   private static final String EXECUTABLE_NAME = "allinone";
@@ -41,6 +44,8 @@ public class Settings extends BaseSettings {
   private String _runMode;
   private String _serviceName;
   private String _snapshotDir;
+  private String _tracingAgentHost;
+  private Integer _tracingAgentPort;
   private boolean _tracingEnable;
 
   public Settings(String[] args) {
@@ -110,6 +115,14 @@ public class Settings extends BaseSettings {
     return _snapshotDir;
   }
 
+  public Integer getTracingAgentPort() {
+    return _tracingAgentPort;
+  }
+
+  public String getTracingAgentHost() {
+    return _tracingAgentHost;
+  }
+
   public boolean getTracingEnable() {
     return _tracingEnable;
   }
@@ -129,6 +142,9 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_RUN_CLIENT, true);
     setDefaultProperty(ARG_RUN_MODE, "batch");
     setDefaultProperty(ARG_SERVICE_NAME, "allinone-service");
+    setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
+    setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
+    setDefaultProperty(ARG_TRACING_ENABLE, false);
     setDefaultProperty(ARG_VERSION, false);
   }
 
@@ -165,21 +181,13 @@ public class Settings extends BaseSettings {
 
     addOption(ARG_SNAPSHOT_DIR, "where the snapshot sits", "snapshot_dir");
 
-    addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
+    addOption(ARG_TRACING_AGENT_HOST, "jaeger agent host", "jaeger_agent_host");
 
-    // deprecated and ignored
-    for (String deprecatedStringArg :
-        new String[] {
-          "tracingagenthost", "tracingagentport",
-        }) {
-      addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
-    }
-    for (String deprecatedBooleanArg :
-        new String[] {
-          "tracingenable",
-        }) {
-      addBooleanOption(deprecatedBooleanArg, DEPRECATED_ARG_DESC);
-    }
+    addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
+
+    addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
+
+    addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
   }
 
   private void parseCommandLine(String[] args) {
@@ -209,5 +217,8 @@ public class Settings extends BaseSettings {
     _runMode = getStringOptionValue(ARG_RUN_MODE);
     _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
     _snapshotDir = getStringOptionValue(ARG_SNAPSHOT_DIR);
+    _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
+    _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
+    _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
   }
 }
