@@ -44,8 +44,8 @@ public abstract class Answerer {
   /**
    * The default implementation for generating differential answers.
    *
-   * <p>It uses {@link TableDiff} if the answer element is a {@link TableAnswerElement}, and throws
-   * otherwise.
+   * <p>It uses {@link TableDiff} if the answer element is a {@link TableAnswerElement}. Otherwise,
+   * it uses a JSON-level diff.
    *
    * <p>Answerers that want a custom differential answer, should override this function.
    */
@@ -61,8 +61,7 @@ public abstract class Answerer {
       TableAnswerElement finalTable = new TableAnswerElement(rawTable.getMetadata());
       finalTable.postProcessAnswer(_question, rawTable.getRows().getData());
       return finalTable;
-    } else {
-      throw new UnsupportedOperationException("Comparison mode not implemented for this question");
     }
+    throw new BatfishException("Unimplemented diff");
   }
 }

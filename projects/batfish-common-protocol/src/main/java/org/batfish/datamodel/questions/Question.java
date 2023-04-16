@@ -43,6 +43,11 @@ public abstract class Question implements IQuestion {
     _includeOneTableKeys = DEFAULT_INCLUDE_ONE_TABLE_KEYS;
   }
 
+  public Question configureTemplate(String exceptions, String assertion) {
+    throw new UnsupportedOperationException(
+        "configureTemplate is not supported for question type: " + getClass().getName());
+  }
+
   /** Returns {@code true} iff this question requires a computed data plane as input. */
   @JsonIgnore
   public abstract boolean getDataPlane();
