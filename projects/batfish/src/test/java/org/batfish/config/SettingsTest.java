@@ -2,11 +2,13 @@ package org.batfish.config;
 
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Paths;
+import org.batfish.common.CleanBatfishException;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
@@ -39,6 +41,23 @@ public class SettingsTest {
     // Ensure re-parsing does not modify original config
     assertThat(
         origSettings.getDataPlaneEngineName(), not(equalTo(settings.getDataPlaneEngineName())));
+  }
+
+  /** Test that boolean parsing recognizes "true" or "false" */
+  @Test
+  public void testBooleanParsing() {
+    Settings settings = new Settings(new String[] {"-register=true"});
+    assertThat(settings.getCoordinatorRegister(), is(true));
+
+    settings = new Settings(new String[] {"-register=false"});
+    assertThat(settings.getCoordinatorRegister(), is(false));
+  }
+
+  /** Test that boolean parsing fails on garbage values and not defaults to just false. */
+  @Test(expected = CleanBatfishException.class)
+  public void testBoolenParsingBogusValue() {
+    Settings settings = new Settings(new String[] {"-register=blah"});
+    assertThat(settings.getCoordinatorRegister(), is(false));
   }
 
   /** Test that parsing of runmode is case insensitive */

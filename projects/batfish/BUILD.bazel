@@ -72,6 +72,7 @@ java_library(
         "@maven//:org_glassfish_grizzly_grizzly_http_server",
         "@maven//:org_glassfish_jersey_containers_jersey_container_grizzly2_http",
         "@maven//:org_glassfish_jersey_core_jersey_server",
+        "@maven//:org_glassfish_jersey_media_jersey_media_json_jettison",
         "@maven//:org_jgrapht_jgrapht_core",
     ],
 )
