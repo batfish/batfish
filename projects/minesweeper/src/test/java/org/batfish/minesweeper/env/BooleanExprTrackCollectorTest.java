@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.track;
+package org.batfish.minesweeper.env;
 
 import static org.junit.Assert.assertEquals;
 

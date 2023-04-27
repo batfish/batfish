@@ -25,7 +25,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.aspath.BooleanExprAsPathCollector;
 import org.batfish.minesweeper.aspath.RoutePolicyStatementMatchCollector;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
-import org.batfish.minesweeper.track.BooleanExprTrackCollector;
+import org.batfish.minesweeper.env.BooleanExprTrackCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
 /**
