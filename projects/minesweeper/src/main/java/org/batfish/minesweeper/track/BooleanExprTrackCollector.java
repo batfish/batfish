@@ -36,6 +36,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
+import org.batfish.minesweeper.aspath.RoutePolicyStatementMatchCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
 /** Collect all community literals and regexes in a {@link BooleanExpr}. */
@@ -64,7 +65,7 @@ public class BooleanExprTrackCollector
     // Otherwise update the set of seen policies and recurse.
     arg.getFirst().add(callExpr.getCalledPolicyName());
 
-    return new RoutePolicyStatementTrackCollector()
+    return new RoutePolicyStatementMatchCollector<>(this)
         .visitAll(
             arg.getSecond()
                 .getRoutingPolicies()
@@ -225,13 +226,13 @@ public class BooleanExprTrackCollector
     return ImmutableSet.<String>builder()
         .addAll(withEnvironmentExpr.getExpr().accept(this, arg))
         .addAll(
-            new RoutePolicyStatementTrackCollector()
+            new RoutePolicyStatementMatchCollector<>(this)
                 .visitAll(withEnvironmentExpr.getPreStatements(), arg))
         .addAll(
-            new RoutePolicyStatementTrackCollector()
+            new RoutePolicyStatementMatchCollector<>(this)
                 .visitAll(withEnvironmentExpr.getPostStatements(), arg))
         .addAll(
-            new RoutePolicyStatementTrackCollector()
+            new RoutePolicyStatementMatchCollector<>(this)
                 .visitAll(withEnvironmentExpr.getPostTrueStatements(), arg))
         .build();
   }

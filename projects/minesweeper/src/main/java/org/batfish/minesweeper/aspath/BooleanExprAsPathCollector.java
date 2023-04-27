@@ -71,7 +71,7 @@ public class BooleanExprAsPathCollector
     // Otherwise update the set of seen policies and recurse.
     arg.getFirst().add(callExpr.getCalledPolicyName());
 
-    return new RoutePolicyStatementAsPathCollector()
+    return new RoutePolicyStatementMatchCollector<>(this)
         .visitAll(
             arg.getSecond()
                 .getRoutingPolicies()
@@ -249,13 +249,13 @@ public class BooleanExprAsPathCollector
     return ImmutableSet.<SymbolicAsPathRegex>builder()
         .addAll(withEnvironmentExpr.getExpr().accept(this, arg))
         .addAll(
-            new RoutePolicyStatementAsPathCollector()
+            new RoutePolicyStatementMatchCollector<>(this)
                 .visitAll(withEnvironmentExpr.getPreStatements(), arg))
         .addAll(
-            new RoutePolicyStatementAsPathCollector()
+            new RoutePolicyStatementMatchCollector<>(this)
                 .visitAll(withEnvironmentExpr.getPostStatements(), arg))
         .addAll(
-            new RoutePolicyStatementAsPathCollector()
+            new RoutePolicyStatementMatchCollector<>(this)
                 .visitAll(withEnvironmentExpr.getPostTrueStatements(), arg))
         .build();
   }

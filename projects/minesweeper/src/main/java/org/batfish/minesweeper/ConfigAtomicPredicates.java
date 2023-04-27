@@ -1,5 +1,7 @@
 package org.batfish.minesweeper;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
@@ -18,10 +20,12 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.minesweeper.aspath.RoutePolicyStatementAsPathCollector;
+import org.batfish.minesweeper.aspath.BooleanExprAsPathCollector;
+import org.batfish.minesweeper.aspath.RoutePolicyStatementMatchCollector;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
-import org.batfish.minesweeper.track.RoutePolicyStatementTrackCollector;
+import org.batfish.minesweeper.track.BooleanExprTrackCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
 /**
@@ -172,8 +176,15 @@ public final class ConfigAtomicPredicates {
     }
 
     // Collect as path regexes from both (if differential) configs
+    Set<String> asPaths = firstNonNull(asPathRegexes, ImmutableSet.of());
     Set<SymbolicAsPathRegex> asPathAps =
-        new HashSet<>(findAllAsPathRegexes(asPathRegexes, policies, configuration));
+        new HashSet<>(
+            findAllAsPathRegexes(
+                asPaths.stream()
+                    .map(SymbolicAsPathRegex::new)
+                    .collect(ImmutableSet.toImmutableSet()),
+                policies,
+                configuration));
     if (reference != null) {
       asPathAps.addAll(
           findAllAsPathRegexes(Collections.emptySet(), referencePolicies, referenceConfiguration));
@@ -250,82 +261,57 @@ public final class ConfigAtomicPredicates {
   }
 
   /**
+   * Identifies all items of a given kind in the match expressions of the given routing policies. A
+   * {@link BooleanExprVisitor} is provided that is specific to the particular items being searched
+   * for. An optional set of additional items is also included, which is used to support
+   * user-specified constraints for symbolic analysis.
+   */
+  private static <T> Set<T> findAllMatchItems(
+      Set<T> items,
+      Collection<RoutingPolicy> policies,
+      Configuration configuration,
+      BooleanExprVisitor<Set<T>, Tuple<Set<String>, Configuration>> booleanExprVisitor) {
+    ImmutableSet.Builder<T> builder = ImmutableSet.builder();
+
+    policies.forEach(
+        pol -> builder.addAll(findAllMatchItems(pol, configuration, booleanExprVisitor)));
+    builder.addAll(items.stream().collect(ImmutableSet.toImmutableSet()));
+    return builder.build();
+  }
+
+  /**
+   * Identifies all items of a given kind in the match expressions of the given routing policy. A
+   * {@link BooleanExprVisitor} is provided that is specific to the particular items being searched
+   * for. An optional set of additional items is also included, which is used to support
+   * user-specified constraints for symbolic analysis.
+   */
+  private static <T> Set<T> findAllMatchItems(
+      RoutingPolicy policy,
+      Configuration configuration,
+      BooleanExprVisitor<Set<T>, Tuple<Set<String>, Configuration>> booleanExprVisitor) {
+    Set<T> items = new HashSet<>();
+    List<Statement> stmts = policy.getStatements();
+    stmts.forEach(
+        stmt ->
+            items.addAll(
+                stmt.accept(
+                    new RoutePolicyStatementMatchCollector<>(booleanExprVisitor),
+                    new Tuple<>(
+                        new HashSet<>(Collections.singleton(policy.getName())), configuration))));
+    return items;
+  }
+
+  /**
    * Identifies all of the AS-path regexes in the given routing policies. An optional set of
    * additional AS-path regexes is also included, which is used to support user-specified AS-path
    * constraints for symbolic analysis.
    */
   private static Set<SymbolicAsPathRegex> findAllAsPathRegexes(
-      @Nullable Set<String> asPathRegexes,
+      Set<SymbolicAsPathRegex> asPathRegexes,
       Collection<RoutingPolicy> policies,
       Configuration configuration) {
-    ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
-
-    builder.addAll(findAsPathRegexes(policies, configuration));
-    if (asPathRegexes != null) {
-      builder.addAll(
-          asPathRegexes.stream()
-              .map(SymbolicAsPathRegex::new)
-              .collect(ImmutableSet.toImmutableSet()));
-    }
-    return builder.build();
-  }
-
-  /**
-   * Collect all AS-path regexes that appear in the given policy
-   *
-   * @param policy the policy to collect AS-path regexes from
-   * @param configuration the batfish configuration
-   * @return a set of symbolic AS path regexes.
-   */
-  private static Set<SymbolicAsPathRegex> findAsPathRegexes(
-      RoutingPolicy policy, Configuration configuration) {
-    Set<SymbolicAsPathRegex> asPathRegexes = new HashSet<>();
-    List<Statement> stmts = policy.getStatements();
-    stmts.forEach(
-        stmt ->
-            asPathRegexes.addAll(
-                stmt.accept(
-                    new RoutePolicyStatementAsPathCollector(),
-                    new Tuple<>(
-                        new HashSet<>(Collections.singleton(policy.getName())), configuration))));
-    return asPathRegexes;
-  }
-
-  /**
-   * Collect up all AS-path regexes that appear in the given policies.
-   *
-   * @param policies the set of policies to collect AS-path regexes from.
-   * @param configuration the batfish configuration
-   * @return a set of all AS-path regexes that appear
-   */
-  private static Set<SymbolicAsPathRegex> findAsPathRegexes(
-      Collection<RoutingPolicy> policies, Configuration configuration) {
-    Set<SymbolicAsPathRegex> asPathRegexes = new HashSet<>();
-
-    // walk through every statement of every route policy
-    policies.forEach(pol -> asPathRegexes.addAll(findAsPathRegexes(pol, configuration)));
-
-    return asPathRegexes;
-  }
-
-  /**
-   * Collect up all tracks that appear in the given policy.
-   *
-   * @param policy the policy to collect tracks from
-   * @param configuration the batfish configuration
-   * @return a set of all tracks that appear
-   */
-  private static Set<String> findTracks(RoutingPolicy policy, Configuration configuration) {
-    Set<String> tracks = new HashSet<>();
-    List<Statement> stmts = policy.getStatements();
-    stmts.forEach(
-        stmt ->
-            tracks.addAll(
-                stmt.accept(
-                    new RoutePolicyStatementTrackCollector(),
-                    new Tuple<>(
-                        new HashSet<>(Collections.singleton(policy.getName())), configuration))));
-    return tracks;
+    return findAllMatchItems(
+        asPathRegexes, policies, configuration, new BooleanExprAsPathCollector());
   }
 
   /**
@@ -337,12 +323,8 @@ public final class ConfigAtomicPredicates {
    */
   private static Set<String> findAllTracks(
       Collection<RoutingPolicy> policies, Configuration configuration) {
-    Set<String> tracks = new HashSet<>();
-
-    // walk through every statement of every route policy
-    policies.forEach(pol -> tracks.addAll(findTracks(pol, configuration)));
-
-    return tracks;
+    return findAllMatchItems(
+        ImmutableSet.of(), policies, configuration, new BooleanExprTrackCollector());
   }
 
   public RegexAtomicPredicates<CommunityVar> getStandardCommunityAtomicPredicates() {

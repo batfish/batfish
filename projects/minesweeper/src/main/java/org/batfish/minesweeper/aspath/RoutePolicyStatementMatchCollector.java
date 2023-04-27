@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.track;
+package org.batfish.minesweeper.aspath;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
@@ -35,24 +36,35 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.utils.Tuple;
 
-/** Collect all community literals and regexes in a route-policy {@link Statement}. */
+/**
+ * Collect a set of items in a route-policy {@link Statement} that only appear as part of boolean
+ * expressions. A {@link BooleanExprVisitor} is provided in order to find these items.
+ */
 @ParametersAreNonnullByDefault
-public class RoutePolicyStatementTrackCollector
-    implements StatementVisitor<Set<String>, Tuple<Set<String>, Configuration>> {
+public class RoutePolicyStatementMatchCollector<T>
+    implements StatementVisitor<Set<T>, Tuple<Set<String>, Configuration>> {
+
+  private final BooleanExprVisitor<Set<T>, Tuple<Set<String>, Configuration>> _booleanExprVisitor;
+
+  public RoutePolicyStatementMatchCollector(
+      BooleanExprVisitor<Set<T>, Tuple<Set<String>, Configuration>> booleanExprVisitor) {
+    _booleanExprVisitor = booleanExprVisitor;
+  }
+
   @Override
-  public Set<String> visitBufferedStatement(
+  public Set<T> visitBufferedStatement(
       BufferedStatement bufferedStatement, Tuple<Set<String>, Configuration> arg) {
     return bufferedStatement.getStatement().accept(this, arg);
   }
 
   @Override
-  public Set<String> visitCallStatement(
+  public Set<T> visitCallStatement(
       CallStatement callStatement, Tuple<Set<String>, Configuration> arg) {
     if (arg.getFirst().contains(callStatement.getCalledPolicyName())) {
       // If we have already visited this policy then don't visit again
       return ImmutableSet.of();
     }
-    // Otherwise update the set of seen policies and continue.
+    // Otherwise update the set of seen policies and recurse.
     arg.getFirst().add(callStatement.getCalledPolicyName());
 
     return visitAll(
@@ -64,149 +76,151 @@ public class RoutePolicyStatementTrackCollector
   }
 
   @Override
-  public Set<String> visitComment(Comment comment, Tuple<Set<String>, Configuration> arg) {
+  public Set<T> visitComment(Comment comment, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitIf(If if1, Tuple<Set<String>, Configuration> arg) {
-    ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+  public Set<T> visitIf(If if1, Tuple<Set<String>, Configuration> arg) {
+    ImmutableSet.Builder<T> builder = ImmutableSet.builder();
     return builder
-        .addAll(if1.getGuard().accept(new BooleanExprTrackCollector(), arg))
+        .addAll(if1.getGuard().accept(_booleanExprVisitor, arg))
         .addAll(visitAll(if1.getTrueStatements(), arg))
         .addAll(visitAll(if1.getFalseStatements(), arg))
         .build();
   }
 
   @Override
-  public Set<String> visitPrependAsPath(
+  public Set<T> visitPrependAsPath(
       PrependAsPath prependAsPath, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitReplaceAsesInAsSequence(
-      ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
+  public Set<T> visitReplaceAsesInAsSequence(ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
+    // if/when we update TransferBDD to support AS-path replacing, we will need to update this as
+    // well
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitExcludeAsPath(
+  public Set<T> visitExcludeAsPath(
       ExcludeAsPath excludeAsPath, Tuple<Set<String>, Configuration> arg) {
+    // if/when TransferBDD gets updated to support AS-path excluding, this will have to be updated
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitRemoveTunnelEncapsulationAttribute(
+  public Set<T> visitRemoveTunnelEncapsulationAttribute(
       RemoveTunnelEncapsulationAttribute removeTunnelAttribute,
       Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetAdministrativeCost(
+  public Set<T> visitSetAdministrativeCost(
       SetAdministrativeCost setAdministrativeCost, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetCommunities(
+  public Set<T> visitSetCommunities(
       SetCommunities setCommunities, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetDefaultPolicy(
+  public Set<T> visitSetDefaultPolicy(
       SetDefaultPolicy setDefaultPolicy, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetEigrpMetric(
+  public Set<T> visitSetEigrpMetric(
       SetEigrpMetric setEigrpMetric, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetIsisLevel(
+  public Set<T> visitSetIsisLevel(
       SetIsisLevel setIsisLevel, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetIsisMetricType(
+  public Set<T> visitSetIsisMetricType(
       SetIsisMetricType setIsisMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetLocalPreference(
+  public Set<T> visitSetLocalPreference(
       SetLocalPreference setLocalPreference, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetMetric(SetMetric setMetric, Tuple<Set<String>, Configuration> arg) {
+  public Set<T> visitSetMetric(SetMetric setMetric, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetNextHop(SetNextHop setNextHop, Tuple<Set<String>, Configuration> arg) {
+  public Set<T> visitSetNextHop(SetNextHop setNextHop, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetOrigin(SetOrigin setOrigin, Tuple<Set<String>, Configuration> arg) {
+  public Set<T> visitSetOrigin(SetOrigin setOrigin, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetOspfMetricType(
+  public Set<T> visitSetOspfMetricType(
       SetOspfMetricType setOspfMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetTag(SetTag setTag, Tuple<Set<String>, Configuration> arg) {
+  public Set<T> visitSetTag(SetTag setTag, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetDefaultTag(
+  public Set<T> visitSetDefaultTag(
       SetDefaultTag setDefaultTag, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetTunnelEncapsulationAttribute(
+  public Set<T> visitSetTunnelEncapsulationAttribute(
       SetTunnelEncapsulationAttribute setTunnelAttribute, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetVarMetricType(
+  public Set<T> visitSetVarMetricType(
       SetVarMetricType setVarMetricType, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitSetWeight(SetWeight setWeight, Tuple<Set<String>, Configuration> arg) {
+  public Set<T> visitSetWeight(SetWeight setWeight, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitStaticStatement(
+  public Set<T> visitStaticStatement(
       StaticStatement staticStatement, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
   @Override
-  public Set<String> visitTraceableStatement(
+  public Set<T> visitTraceableStatement(
       TraceableStatement traceableStatement, Tuple<Set<String>, Configuration> arg) {
     return visitAll(traceableStatement.getInnerStatements(), arg);
   }
 
-  public Set<String> visitAll(List<Statement> statements, Tuple<Set<String>, Configuration> arg) {
+  public Set<T> visitAll(List<Statement> statements, Tuple<Set<String>, Configuration> arg) {
     return statements.stream()
         .flatMap(stmt -> stmt.accept(this, arg).stream())
         .collect(ImmutableSet.toImmutableSet());
