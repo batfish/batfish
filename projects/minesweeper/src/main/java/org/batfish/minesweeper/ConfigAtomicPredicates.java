@@ -25,16 +25,19 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.aspath.BooleanExprAsPathCollector;
 import org.batfish.minesweeper.aspath.RoutePolicyStatementMatchCollector;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
+import org.batfish.minesweeper.env.BooleanExprSourceVrfCollector;
 import org.batfish.minesweeper.env.BooleanExprTrackCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
 /**
  * This class traverses a given router configuration to find the community literals/regexes, as-path
- * regexes, and tracks (see {@link org.batfish.datamodel.routing_policy.expr.TrackSucceeded}) that
- * it contains. It uses this information to compute atomic predicates for each, which are then
+ * regexes, tracks (see {@link org.batfish.datamodel.routing_policy.expr.TrackSucceeded}), and
+ * source VRFs (see {@link org.batfish.datamodel.routing_policy.expr.MatchSourceVrf}) that it
+ * contains. It uses this information to compute atomic predicates for each, which are then
  * represented by unique BDD variables in a {@link org.batfish.minesweeper.bdd.BDDRoute} in order to
- * perform the symbolic route analysis. (We don't need to compute atomic predicates for the tracks,
- * because they are all independent of one another, so each gets a corresponding BDD variable.)
+ * perform the symbolic route analysis. (We don't need to compute atomic predicates for the tracks
+ * and source VRFs, because they are all independent of one another, so each gets a corresponding
+ * BDD variable.)
  */
 public final class ConfigAtomicPredicates {
 
@@ -55,6 +58,9 @@ public final class ConfigAtomicPredicates {
 
   /** The list of "tracks" that appear in the given configuration. */
   private final List<String> _tracks;
+
+  /** The list of source VRFs that appear in the given configuration. */
+  private final List<String> _sourceVrfs;
 
   /**
    * Compute atomic predicates for the given router's configuration.
@@ -191,12 +197,15 @@ public final class ConfigAtomicPredicates {
     }
     _asPathRegexAtomicPredicates = new AsPathRegexAtomicPredicates(ImmutableSet.copyOf(asPathAps));
 
-    // Collect the tracks from both (if differential) configs
+    // Collect the tracks and source VRFs from both (if differential) configs
     Set<String> tracks = new HashSet<>(findAllTracks(policies, configuration));
+    Set<String> sourceVRFs = new HashSet<>(findAllSourceVrfs(policies, configuration));
     if (reference != null) {
       tracks.addAll(findAllTracks(referencePolicies, referenceConfiguration));
+      sourceVRFs.addAll(findAllSourceVrfs(referencePolicies, referenceConfiguration));
     }
     _tracks = tracks.stream().collect(ImmutableList.toImmutableList());
+    _sourceVrfs = sourceVRFs.stream().collect(ImmutableList.toImmutableList());
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
@@ -206,6 +215,7 @@ public final class ConfigAtomicPredicates {
     _asPathRegexAtomicPredicates =
         new AsPathRegexAtomicPredicates(other._asPathRegexAtomicPredicates);
     _tracks = new LinkedList<>(other._tracks);
+    _sourceVrfs = new LinkedList<>(other._sourceVrfs);
   }
 
   /**
@@ -327,6 +337,19 @@ public final class ConfigAtomicPredicates {
         ImmutableSet.of(), policies, configuration, new BooleanExprTrackCollector());
   }
 
+  /**
+   * Collect up all source VRFs that appear in the given policies.
+   *
+   * @param policies the set of policies to collect source VRFs from.
+   * @param configuration the batfish configuration
+   * @return a set of all source VRFs that appear
+   */
+  private static Set<String> findAllSourceVrfs(
+      Collection<RoutingPolicy> policies, Configuration configuration) {
+    return findAllMatchItems(
+        ImmutableSet.of(), policies, configuration, new BooleanExprSourceVrfCollector());
+  }
+
   public RegexAtomicPredicates<CommunityVar> getStandardCommunityAtomicPredicates() {
     return _standardCommunityAtomicPredicates;
   }
@@ -341,5 +364,9 @@ public final class ConfigAtomicPredicates {
 
   public List<String> getTracks() {
     return _tracks;
+  }
+
+  public List<String> getSourceVrfs() {
+    return _sourceVrfs;
   }
 }
