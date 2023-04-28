@@ -69,6 +69,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -525,11 +526,20 @@ public class TransferBDD {
               .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
+    } else if (expr instanceof MatchSourceVrf) {
+      MatchSourceVrf msv = (MatchSourceVrf) expr;
+      BDD sourceVrfPred =
+          itemToBDD(
+              msv.getSourceVrf(),
+              _configAtomicPredicates.getSourceVrfs(),
+              p.getData().getSourceVrfs());
+      finalResults.add(result.setReturnValueBDD(sourceVrfPred).setReturnValueAccepted(true));
+
     } else if (expr instanceof TrackSucceeded) {
       TrackSucceeded ts = (TrackSucceeded) expr;
-      List<String> tracks = _configAtomicPredicates.getTracks();
-      int index = tracks.indexOf(ts.getTrackName());
-      BDD trackPred = p.getData().getTracks()[index];
+      BDD trackPred =
+          itemToBDD(
+              ts.getTrackName(), _configAtomicPredicates.getTracks(), p.getData().getTracks());
       finalResults.add(result.setReturnValueBDD(trackPred).setReturnValueAccepted(true));
 
     } else {
@@ -969,6 +979,12 @@ public class TransferBDD {
    */
   private BDD ite(BDD b, BDD x, BDD y) {
     return b.ite(x, y);
+  }
+
+  // find the BDD corresponding to an item that is being tracked symbolically
+  private BDD itemToBDD(String item, List<String> items, BDD[] itemsBDDs) {
+    int index = items.indexOf(item);
+    return itemsBDDs[index];
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.

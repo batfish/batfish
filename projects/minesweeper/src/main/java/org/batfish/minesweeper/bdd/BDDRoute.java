@@ -121,6 +121,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
+  /**
+   * Contains a BDD variable for each source VRF that is encountered along the path. See {@link
+   * org.batfish.datamodel.routing_policy.expr.MatchSourceVrf}.
+   */
+  private BDD[] _sourceVrfs;
+
   private MutableBDDInteger _tag;
 
   /**
@@ -152,6 +158,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         aps.getStandardCommunityAtomicPredicates().getNumAtomicPredicates()
             + aps.getNonStandardCommunityLiterals().size(),
         aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(),
+        aps.getSourceVrfs().size(),
         aps.getTracks().size());
   }
 
@@ -165,6 +172,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       BDDFactory factory,
       int numCommAtomicPredicates,
       int numAsPathRegexAtomicPredicates,
+      int numSourceVrfs,
       int numTracks) {
     _factory = factory;
 
@@ -176,6 +184,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
+            + numSourceVrfs
             + numTracks
             + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
             + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
@@ -242,6 +251,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _bitNames.put(idx, "AS-path regex atomic predicate " + i);
       idx++;
     }
+    // Initialize one BDD per source VRF, each of which has a corresponding BDD variable
+    _sourceVrfs = new BDD[numSourceVrfs];
+    for (int i = 0; i < numSourceVrfs; i++) {
+      _sourceVrfs[i] = factory.ithVar(idx);
+      _bitNames.put(idx, "source VRF " + i);
+      idx++;
+    }
     // Initialize one BDD per tracked name, each of which has a corresponding BDD variable
     _tracks = new BDD[numTracks];
     for (int i = 0; i < numTracks; i++) {
@@ -283,6 +299,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
     _prependedASes = new ArrayList<>(other._prependedASes);
+    _sourceVrfs = other._sourceVrfs.clone();
     _tracks = other._tracks.clone();
     _unsupported = other._unsupported;
   }
@@ -328,6 +345,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopDiscarded = route.getNextHopDiscarded();
     _unsupported = route.getUnsupported();
     _prependedASes = new ArrayList<>(route.getPrependedASes());
+    _sourceVrfs = route.getSourceVrfs();
     _tracks = route.getTracks();
   }
 
@@ -585,6 +603,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
+  public BDD[] getSourceVrfs() {
+    return _sourceVrfs;
+  }
+
   public BDD[] getTracks() {
     return _tracks;
   }
@@ -630,6 +652,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
         && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
+        && Arrays.equals(_sourceVrfs, other._sourceVrfs)
         && Arrays.equals(_tracks, other._tracks)
         && Objects.equals(_unsupported, other._unsupported);
   }
