@@ -38,7 +38,9 @@ import org.batfish.minesweeper.utils.Tuple;
 
 /**
  * Collect a set of items in a route-policy {@link Statement} that only appear as part of boolean
- * expressions. A {@link BooleanExprVisitor} is provided in order to find these items.
+ * expressions. A {@link BooleanExprVisitor} is provided in order to find these items. We keep track
+ * of the set of policies that have already been visited, to prevent cycles when traversing called
+ * policies recursively.
  */
 @ParametersAreNonnullByDefault
 public class RoutePolicyStatementMatchCollector<T>
