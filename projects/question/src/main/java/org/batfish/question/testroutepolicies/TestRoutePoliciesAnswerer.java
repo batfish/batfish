@@ -131,10 +131,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy proposedPolicy,
       Bgpv4Route inputRoute,
       Direction direction,
-      Predicate<String> successfulTracks) {
+      Predicate<String> successfulTracks,
+      String sourceVrf) {
+    //      @Nullable String sourceVrf) {
     return toCompareRow(
-        testPolicy(proposedPolicy, inputRoute, direction, successfulTracks, null),
-        testPolicy(referencePolicy, inputRoute, direction, successfulTracks, null));
+        testPolicy(proposedPolicy, inputRoute, direction, successfulTracks, sourceVrf),
+        testPolicy(referencePolicy, inputRoute, direction, successfulTracks, sourceVrf));
   }
 
   private static Result testPolicy(
@@ -159,6 +161,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     tracer.newSubTrace();
     boolean permit =
         policy.process(
+            // include the source VRF in the route if it is not null
             sourceVrf == null ? inputRoute : new AnnotatedRoute<>(inputRoute, sourceVrf),
             outputRoute,
             direction,
