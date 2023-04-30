@@ -164,13 +164,24 @@ public class ModelGeneration {
     return AsPath.ofSingletonAsSets(asns);
   }
 
-  static Bgpv4Route satAssignmentToInputRoute(
-      BDD fullModel, ConfigAtomicPredicates configAPs, BDDRoute r) {
+  /**
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete input route that is consistent with the assignment.
+   *
+   * @param fullModel the satisfying assignment
+   * @param configAPs an object that provides information about the community atomic predicates
+   * @return a route
+   */
+  public static Bgpv4Route satAssignmentToInputRoute(
+      BDD fullModel, ConfigAtomicPredicates configAPs) {
+
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
             .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
             .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */;
+
+    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 
     Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
     long len = r.getPrefixLength().satAssignmentToLong(fullModel);
@@ -205,28 +216,37 @@ public class ModelGeneration {
 
   /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
-   * concrete input route and a predicate on tracks that are consistent with the assignment.
+   * concrete environment (for now, a predicate on tracks as well as an optional source VRF) that is
+   * consistent with the assignment.
    *
    * @param fullModel the satisfying assignment
    * @param configAPs an object that provides information about the community atomic predicates
-   * @return a pair of a route and a predicate on the tracks
+   * @return a pair of a predicate on tracks and an optional source VRF
    */
-  public static Tuple<Bgpv4Route, Predicate<String>> satAssignmentToInputRouteAndTracks(
+  public static Tuple<Predicate<String>, String> satAssignmentToEnvironment(
       BDD fullModel, ConfigAtomicPredicates configAPs) {
 
     BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 
-    Bgpv4Route route = satAssignmentToInputRoute(fullModel, configAPs, r);
+    List<String> successfulTracks =
+        allSatisfyingItems(configAPs.getTracks(), r.getTracks(), fullModel);
+    List<String> sourceVrfs =
+        allSatisfyingItems(configAPs.getSourceVrfs(), r.getSourceVrfs(), fullModel);
+    checkState(
+        sourceVrfs.size() <= 1,
+        "Error in symbolic route analysis: at most one source VRF can be in the environment");
 
-    BDD[] aps = r.getTracks();
-    List<String> tracks = configAPs.getTracks();
-    ImmutableSet.Builder<String> successfulTracks = new ImmutableSet.Builder<>();
-    for (int i = 0; i < aps.length; i++) {
-      if (aps[i].andSat(fullModel)) {
-        successfulTracks.add(tracks.get(i));
-      }
-    }
-    return new Tuple<>(route, successfulTracks.build()::contains);
+    return new Tuple<>(successfulTracks::contains, sourceVrfs.isEmpty() ? null : sourceVrfs.get(0));
+  }
+
+  // Return a list of all items whose corresponding BDD is consistent with the given variable
+  // assignment.
+  private static List<String> allSatisfyingItems(
+      List<String> items, BDD[] itemBDDs, BDD fullModel) {
+    return IntStream.range(0, itemBDDs.length)
+        .filter(i -> itemBDDs[i].andSat(fullModel))
+        .mapToObj(items::get)
+        .collect(ImmutableList.toImmutableList());
   }
 
   /**

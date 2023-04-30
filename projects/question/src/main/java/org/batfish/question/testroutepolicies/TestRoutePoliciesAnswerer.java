@@ -28,6 +28,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.ReceivedFromSelf;
@@ -111,8 +112,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy policy,
       Bgpv4Route inputRoute,
       Direction direction,
-      Predicate<String> successfulTrack) {
-    return toRow(testPolicy(policy, inputRoute, direction, successfulTrack));
+      Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
+    return toRow(testPolicy(policy, inputRoute, direction, successfulTrack, sourceVrf));
   }
 
   /**
@@ -131,20 +133,21 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       Direction direction,
       Predicate<String> successfulTracks) {
     return toCompareRow(
-        testPolicy(proposedPolicy, inputRoute, direction, successfulTracks),
-        testPolicy(referencePolicy, inputRoute, direction, successfulTracks));
+        testPolicy(proposedPolicy, inputRoute, direction, successfulTracks, null),
+        testPolicy(referencePolicy, inputRoute, direction, successfulTracks, null));
   }
 
   private static Result testPolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
-    return testPolicy(policy, inputRoute, direction, null);
+    return testPolicy(policy, inputRoute, direction, null, null);
   }
 
   private static Result testPolicy(
       RoutingPolicy policy,
       Bgpv4Route inputRoute,
       Direction direction,
-      @Nullable Predicate<String> successfulTrack) {
+      @Nullable Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
     if (direction == Direction.OUT) {
@@ -154,7 +157,13 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     }
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
-    boolean permit = policy.process(inputRoute, outputRoute, direction, successfulTrack, tracer);
+    boolean permit =
+        policy.process(
+            sourceVrf == null ? inputRoute : new AnnotatedRoute<>(inputRoute, sourceVrf),
+            outputRoute,
+            direction,
+            successfulTrack,
+            tracer);
     tracer.endSubTrace();
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),

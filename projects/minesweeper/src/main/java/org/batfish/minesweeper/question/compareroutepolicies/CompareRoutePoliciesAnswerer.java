@@ -2,7 +2,7 @@ package org.batfish.minesweeper.question.compareroutepolicies;
 
 import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
-import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRouteAndTracks;
+import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.diffRowResultsFor;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
@@ -121,7 +121,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
     BDD fullModel = constraintsToModel(constraints, configAPs);
-    return satAssignmentToInputRouteAndTracks(fullModel, configAPs);
+    return new Tuple<>(satAssignmentToInputRoute(fullModel, configAPs), (i -> false));
   }
 
   /**

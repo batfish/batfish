@@ -130,10 +130,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       return Optional.empty();
     } else {
       BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
-      Tuple<Bgpv4Route, Predicate<String>> routeAndTracks =
-          ModelGeneration.satAssignmentToInputRouteAndTracks(fullModel, configAPs);
-      Bgpv4Route inRoute = routeAndTracks.getFirst();
-      Predicate<String> successfulTracks = routeAndTracks.getSecond();
+
+      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
+      Tuple<Predicate<String>, String> env =
+          ModelGeneration.satAssignmentToEnvironment(fullModel, configAPs);
+      Predicate<String> successfulTracks = env.getFirst();
+      String sourceVrf = env.getSecond();
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -147,7 +149,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       }
 
       Row result =
-          TestRoutePoliciesAnswerer.rowResultFor(policy, inRoute, _direction, successfulTracks);
+          TestRoutePoliciesAnswerer.rowResultFor(
+              policy, inRoute, _direction, successfulTracks, sourceVrf);
 
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP

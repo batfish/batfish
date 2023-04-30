@@ -393,6 +393,17 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _factory.orAll(elements.stream().map(bddDomain::value).collect(Collectors.toList()));
   }
 
+  /** Produce a constraint that at most one of the given array of BDDs is true. */
+  private BDD atMostOneOf(BDD[] bdds) {
+    BDD atMostOne = _factory.one();
+    for (int i = 0; i < bdds.length; i++) {
+      for (int j = i + 1; j < bdds.length; j++) {
+        atMostOne.andWith(bdds[i].nand(bdds[j]));
+      }
+    }
+    return atMostOne;
+  }
+
   /**
    * Not all assignments to the BDD variables that make up a BDDRoute represent valid BGP routes.
    * This method produces constraints that well-formed BGP routes must satisfy, represented as a
@@ -419,13 +430,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     // regexes are all pairwise disjoint
     // Note: the same constraint does not apply to community regexes because a route has a set
     // of communities, so more than one regex can be simultaneously true
-    BDD asPathConstraint = _factory.one();
-    for (int i = 0; i < _asPathRegexAtomicPredicates.length; i++) {
-      for (int j = i + 1; j < _asPathRegexAtomicPredicates.length; j++) {
-        asPathConstraint.andWith(
-            _asPathRegexAtomicPredicates[i].nand(_asPathRegexAtomicPredicates[j]));
-      }
-    }
+    BDD asPathConstraint = atMostOneOf(_asPathRegexAtomicPredicates);
+    // at most one source VRF should be in the environment
+    BDD sourceVrfConstraint = atMostOneOf(_sourceVrfs);
     // the next hop should be neither the min nor the max possible IP
     // this constraint is enforced by NextHopIp's constructor
     BDD nextHopConstraint = _nextHop.range(Ip.ZERO.asLong() + 1, Ip.MAX.asLong() - 1);
@@ -433,6 +440,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return protocolConstraint
         .andWith(prefLenConstraint)
         .andWith(asPathConstraint)
+        .andWith(sourceVrfConstraint)
         .andWith(nextHopConstraint);
   }
 
