@@ -117,7 +117,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   /**
    * @param constraints Logical constraints that describe a set of routes.
    * @param configAPs the atomic predicates used for communities/as-paths.
-   * @return An input route and a predicate on tracks that conform to the given constraints.
+   * @return An input route, a predicate on tracks, and a (possibly null) source VRF that conform to
+   *     the given constraints.
    */
   private Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> constraintsToInputs(
       BDD constraints, ConfigAtomicPredicates configAPs) {
