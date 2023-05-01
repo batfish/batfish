@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class LiteralLong extends LongExpr {
@@ -55,6 +56,11 @@ public class LiteralLong extends LongExpr {
     int result = 1;
     result = prime * result + (int) (_value ^ (_value >>> 32));
     return result;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("value", _value).toString();
   }
 
   @JsonProperty(PROP_VALUE)
