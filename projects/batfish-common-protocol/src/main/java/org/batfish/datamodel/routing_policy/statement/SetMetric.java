@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -66,5 +67,10 @@ public final class SetMetric extends Statement {
     int result = 1;
     result = prime * result + _metric.hashCode();
     return result;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("metric", _metric).toString();
   }
 }
