@@ -109,8 +109,9 @@ public final class TraceTreeMatchers {
    *     {@code traceElements}
    */
   public static Matcher<TraceTree> isChainOfSingleChildren(TraceElement... traceElements) {
-    // Doesn't make sense with 0 traceElements
-    assert traceElements.length != 0;
+    if (traceElements.length == 0) {
+      return hasNoChildren();
+    }
 
     // Iterate backwards through traceElements to start from the leaf child's trace element
     ListIterator<TraceElement> iterator =
