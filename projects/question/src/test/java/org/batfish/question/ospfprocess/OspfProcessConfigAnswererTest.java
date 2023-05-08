@@ -11,8 +11,7 @@ import static org.batfish.question.ospfprocess.OspfProcessConfigurationAnswerer.
 import static org.batfish.question.ospfprocess.OspfProcessConfigurationAnswerer.COL_PROCESS_ID;
 import static org.batfish.question.ospfprocess.OspfProcessConfigurationAnswerer.COL_VRF;
 import static org.batfish.question.ospfprocess.OspfProcessConfigurationAnswerer.getRow;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -20,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multiset;
 import java.util.List;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -68,7 +66,7 @@ public class OspfProcessConfigAnswererTest {
             .setConfigs(ImmutableMap.of(configuration.getHostname(), configuration))
             .build();
 
-    Multiset<Row> rows =
+    List<Row> rows =
         OspfProcessConfigurationAnswerer.getProperties(
             COLUMNS_FROM_PROP_SPEC,
             ctxt,
@@ -76,22 +74,21 @@ public class OspfProcessConfigAnswererTest {
             OspfProcessConfigurationAnswerer.createTableMetadata(null, COLUMNS_FROM_PROP_SPEC)
                 .toColumnMap());
     assertThat(
-        rows.iterator().next(),
-        allOf(
-            hasColumn(COL_NODE, equalTo(new Node("test_conf")), Schema.NODE),
-            hasColumn(COL_VRF, equalTo("test_vrf"), Schema.STRING),
-            hasColumn(COL_PROCESS_ID, equalTo("ospf_1"), Schema.STRING),
-            hasColumn(AREAS, equalTo(ImmutableSet.of("1")), Schema.set(Schema.STRING)),
-            hasColumn(REFERENCE_BANDWIDTH, equalTo(12d), Schema.DOUBLE)));
-    assertThat(
-        rows.iterator().next(),
-        allOf(
-            hasColumn(ROUTER_ID, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
-            hasColumn(
-                EXPORT_POLICY_SOURCES,
-                equalTo(ImmutableSet.of("export_policy_source")),
-                Schema.set(Schema.STRING)),
-            hasColumn(AREA_BORDER_ROUTER, equalTo(false), Schema.BOOLEAN)));
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node("test_conf")), Schema.NODE),
+                hasColumn(COL_VRF, equalTo("test_vrf"), Schema.STRING),
+                hasColumn(COL_PROCESS_ID, equalTo("ospf_1"), Schema.STRING),
+                hasColumn(AREAS, equalTo(ImmutableSet.of("1")), Schema.set(Schema.STRING)),
+                hasColumn(REFERENCE_BANDWIDTH, equalTo(12d), Schema.DOUBLE)),
+            allOf(
+                hasColumn(ROUTER_ID, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
+                hasColumn(
+                    EXPORT_POLICY_SOURCES,
+                    equalTo(ImmutableSet.of("export_policy_source")),
+                    Schema.set(Schema.STRING)),
+                hasColumn(AREA_BORDER_ROUTER, equalTo(false), Schema.BOOLEAN))));
   }
 
   @Test

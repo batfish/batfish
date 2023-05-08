@@ -7,10 +7,9 @@ import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.REFER
 import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.ROUTER_ID;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +70,7 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
 
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
-    Multiset<Row> propertyRows =
+    List<Row> propertyRows =
         getProperties(
             orderedProperties,
             _batfish.specifierContext(snapshot),
@@ -113,35 +112,27 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
             : textDescription);
   }
 
-  public static Multiset<Row> getProperties(
+  public static List<Row> getProperties(
       List<String> properties,
       SpecifierContext ctxt,
       NodeSpecifier nodeSpecifier,
       Map<String, ColumnMetadata> columnMetadata) {
 
-    Multiset<Row> rows = HashMultiset.create();
-    nodeSpecifier
-        .resolve(ctxt)
-        .forEach(
-            nodeName -> {
-              ctxt.getConfigs()
-                  .get(nodeName)
-                  .getVrfs()
-                  .values()
-                  .forEach(
-                      vrf -> {
-                        for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-                          rows.add(
-                              getRow(
-                                  nodeName,
-                                  vrf.getName(),
-                                  ospfProcess,
-                                  properties,
-                                  columnMetadata));
-                        }
-                      });
-            });
-    return rows;
+    ImmutableList.Builder<Row> rows = ImmutableList.builder();
+    for (String nodeName : ImmutableSortedSet.copyOf(nodeSpecifier.resolve(ctxt))) {
+      ctxt.getConfigs()
+          .get(nodeName)
+          .getVrfs()
+          .values()
+          .forEach(
+              vrf -> {
+                for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+                  rows.add(
+                      getRow(nodeName, vrf.getName(), ospfProcess, properties, columnMetadata));
+                }
+              });
+    }
+    return rows.build();
   }
 
   @VisibleForTesting
