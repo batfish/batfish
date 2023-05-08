@@ -1,8 +1,7 @@
 package org.batfish.question.nodeproperties;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,7 +69,7 @@ public class NodePropertiesAnswerer extends Answerer {
     NodePropertiesQuestion question = (NodePropertiesQuestion) _question;
     TableMetadata tableMetadata = createTableMetadata(question);
 
-    Multiset<Row> propertyRows =
+    List<Row> propertyRows =
         getProperties(
             question.getPropertySpecifier(),
             _batfish.specifierContext(snapshot),
@@ -89,17 +88,17 @@ public class NodePropertiesAnswerer extends Answerer {
    * @param ctxt Specifier context to use in extractions
    * @param nodeSpecifier Specifies the set of nodes to focus on
    * @param columns a map from column name to {@link ColumnMetadata}
-   * @return A multiset of {@link Row}s where each row corresponds to a node and columns correspond
-   *     to property values.
+   * @return A list of {@link Row}s where each row corresponds to a node and columns correspond to
+   *     property values.
    */
-  public static Multiset<Row> getProperties(
+  public static List<Row> getProperties(
       NodePropertySpecifier propertySpecifier,
       SpecifierContext ctxt,
       NodeSpecifier nodeSpecifier,
       Map<String, ColumnMetadata> columns) {
-    Multiset<Row> rows = HashMultiset.create();
+    ImmutableList.Builder<Row> rows = ImmutableList.builder();
 
-    for (String nodeName : nodeSpecifier.resolve(ctxt)) {
+    for (String nodeName : ImmutableSortedSet.copyOf(nodeSpecifier.resolve(ctxt))) {
       RowBuilder row = Row.builder(columns).put(COL_NODE, new Node(nodeName));
 
       for (String property : propertySpecifier.getMatchingProperties()) {
@@ -113,7 +112,7 @@ public class NodePropertiesAnswerer extends Answerer {
       rows.add(row.build());
     }
 
-    return rows;
+    return rows.build();
   }
 
   /** Returns the name of the column that contains the value of property {@code property} */

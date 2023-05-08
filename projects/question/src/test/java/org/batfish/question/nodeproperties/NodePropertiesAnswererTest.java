@@ -1,14 +1,13 @@
 package org.batfish.question.nodeproperties;
 
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multiset;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
@@ -43,23 +42,22 @@ public class NodePropertiesAnswererTest {
     NodeSpecifier nodeSpecifier = new NameRegexNodeSpecifier(Pattern.compile("node1|node2"));
     MockSpecifierContext ctxt = MockSpecifierContext.builder().setConfigs(configurations).build();
 
-    Multiset<Row> propertyRows =
+    List<Row> propertyRows =
         NodePropertiesAnswerer.getProperties(propertySpec, ctxt, nodeSpecifier, columns);
 
     // we should have exactly these two rows
-    Multiset<Row> expected =
-        HashMultiset.create(
-            ImmutableList.of(
-                Row.builder()
-                    .put(NodePropertiesAnswerer.COL_NODE, new Node("node1"))
-                    .put(property1, ConfigurationFormat.CISCO_IOS)
-                    .put(property2, ImmutableList.of())
-                    .build(),
-                Row.builder()
-                    .put(NodePropertiesAnswerer.COL_NODE, new Node("node2"))
-                    .put(property1, ConfigurationFormat.HOST)
-                    .put(property2, ImmutableList.of("sa"))
-                    .build()));
-    assertThat(propertyRows, equalTo(expected));
+    assertThat(
+        propertyRows,
+        contains(
+            Row.builder()
+                .put(NodePropertiesAnswerer.COL_NODE, new Node("node1"))
+                .put(property1, ConfigurationFormat.CISCO_IOS)
+                .put(property2, ImmutableList.of())
+                .build(),
+            Row.builder()
+                .put(NodePropertiesAnswerer.COL_NODE, new Node("node2"))
+                .put(property1, ConfigurationFormat.HOST)
+                .put(property2, ImmutableList.of("sa"))
+                .build()));
   }
 }
