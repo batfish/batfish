@@ -1,0 +1,11 @@
+pull-requests:
+  - limits:
+      max-open: 10
+
+post-update-hooks:
+  - kinds: maven
+    commands:
+      - "bazel run @unpinned_maven//:pin"
+    files-to-commit:
+      - "maven_install.json"
+    run-for: commit
