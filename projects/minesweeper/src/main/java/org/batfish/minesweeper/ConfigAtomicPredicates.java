@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -204,8 +203,8 @@ public final class ConfigAtomicPredicates {
       tracks.addAll(findAllTracks(referencePolicies, referenceConfiguration));
       sourceVRFs.addAll(findAllSourceVrfs(referencePolicies, referenceConfiguration));
     }
-    _tracks = tracks.stream().collect(ImmutableList.toImmutableList());
-    _sourceVrfs = sourceVRFs.stream().collect(ImmutableList.toImmutableList());
+    _tracks = ImmutableList.copyOf(tracks);
+    _sourceVrfs = ImmutableList.copyOf(sourceVRFs);
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
@@ -214,8 +213,8 @@ public final class ConfigAtomicPredicates {
     _nonStandardCommunityLiterals = new HashMap<>(other._nonStandardCommunityLiterals);
     _asPathRegexAtomicPredicates =
         new AsPathRegexAtomicPredicates(other._asPathRegexAtomicPredicates);
-    _tracks = new LinkedList<>(other._tracks);
-    _sourceVrfs = new LinkedList<>(other._sourceVrfs);
+    _tracks = ImmutableList.copyOf(other._tracks);
+    _sourceVrfs = ImmutableList.copyOf(other._sourceVrfs);
   }
 
   /**
