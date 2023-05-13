@@ -150,18 +150,8 @@ public final class BgpProtocolHelper {
       /*
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
        * modify the outgoing route as appropriate.
-       *
-       * For route reflection: reflect everything received from
-       * clients to clients and non-clients. reflect everything
-       * received from non-clients to clients. Do not reflect to
-       * originator
        */
-      boolean remoteRouteReceivedFromRouteReflectorClient =
-          route.getReceivedFromRouteReflectorClient();
-      boolean sendingToRouteReflectorClient = af.getRouteReflectorClient();
-      if (!remoteRouteReceivedFromRouteReflectorClient
-          && !sendingToRouteReflectorClient
-          && !routeOriginatedLocally) {
+      if (!isReflectable(route, localSessionProperties, af) && !routeOriginatedLocally) {
         /*
          * Neither reflecting nor originating this iBGP route, so don't send
          */
@@ -199,6 +189,36 @@ public final class BgpProtocolHelper {
             : DEFAULT_LOCAL_PREFERENCE);
 
     return builder;
+  }
+
+  /*
+   * Ensure the remote route is iBGP and the session is iBGP. We consider whether to reflect.
+   *
+   * For route reflection: reflect everything received from
+   * clients to clients and non-clients. reflect everything
+   * received from non-clients to clients.
+   */
+  public static boolean isReflectable(
+      BgpRoute route, BgpSessionProperties session, AddressFamily localAf) {
+    switch (session.getSessionType()) {
+      case IBGP:
+      case IBGP_UNNUMBERED:
+        break;
+      default:
+        return false;
+    }
+
+    if (!route.getProtocol().equals(RoutingProtocol.IBGP)) {
+      return false;
+    }
+
+    // Advertise routes learned from Route Reflector clients to both RR clients and RR non-clients.
+    if (route.getReceivedFromRouteReflectorClient()) {
+      return true;
+    }
+
+    // Advertise routes from RR non-clients to RR clients only.
+    return localAf.getRouteReflectorClient();
   }
 
   /**

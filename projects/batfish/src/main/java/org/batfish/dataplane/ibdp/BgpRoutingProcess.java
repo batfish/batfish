@@ -1117,6 +1117,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
      *    they are global BGP best-paths.
      * 2. Advertise inactive: advertise best-path BGP routes to neighboring peers even if
      *    they are not active in the main RIB.
+     * 3. Route reflection: routes reflected by a route reflector are advertised
      */
     Set<Bgpv4Route> bgpv4Prev;
     RibDelta<Bgpv4Route> bgpv4DeltaPrev;
@@ -1173,7 +1174,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                                   .getReceivedFrom()
                                   .equals(ReceivedFromSelf.instance()))
                           // RIB-failure routes included
-                          || isReflectable(r.getRoute(), ourSession, ourConfig)
+                          || BgpProtocolHelper.isReflectable(
+                              r.getRoute().getRoute(),
+                              ourSession,
+                              ourConfig.getAddressFamily(Type.IPV4_UNICAST))
                           // RIB-failure routes excluded
                           || _mainRib.containsRoute(r.getRoute())));
     }
@@ -1242,19 +1246,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Return all advertisements to queue on the remote VR's BGP process
     return Streams.concat(bgpRibRoutesToExport, mainRibExports, neighborGeneratedRoutes);
-  }
-
-  private static boolean isReflectable(
-      AnnotatedRoute<Bgpv4Route> route, BgpSessionProperties session, BgpPeerConfig ourConfig) {
-    switch (session.getSessionType()) {
-      case IBGP:
-      case IBGP_UNNUMBERED:
-        break;
-      default:
-        return false;
-    }
-    return route.getRoute().getProtocol().equals(RoutingProtocol.IBGP)
-        && ourConfig.getAddressFamily(Type.IPV4_UNICAST).getRouteReflectorClient();
   }
 
   /**
