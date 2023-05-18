@@ -47,6 +47,7 @@ public final class OspfInterfaceSettings implements Serializable {
     private OspfNetworkType _ospfNetworkType;
     private Boolean _ospfPassive;
     private String _ospfProcess;
+    private @Nullable String _ospfType5FilterPolicy;
 
     public Builder() {
       _ospfEnabled = true;
@@ -112,6 +113,11 @@ public final class OspfInterfaceSettings implements Serializable {
       return this;
     }
 
+    public Builder setType5FilterPolicy(@Nullable String ospfType5FilterPolicy) {
+      _ospfType5FilterPolicy = ospfType5FilterPolicy;
+      return this;
+    }
+
     public OspfInterfaceSettings build() {
       return create(
           _ospfAddresses,
@@ -125,7 +131,8 @@ public final class OspfInterfaceSettings implements Serializable {
           _ospfNbmaNeighbors,
           _ospfNetworkType,
           _ospfPassive,
-          _ospfProcess);
+          _ospfProcess,
+          _ospfType5FilterPolicy);
     }
   }
 
@@ -141,6 +148,7 @@ public final class OspfInterfaceSettings implements Serializable {
   @Nullable private OspfNetworkType _ospfNetworkType;
   private boolean _ospfPassive;
   @Nullable private String _ospfProcess;
+  @Nullable private String _ospfType5FilterPolicy;
 
   private static final String PROP_AREA = "area";
   private static final String PROP_COST = "cost";
@@ -154,6 +162,7 @@ public final class OspfInterfaceSettings implements Serializable {
   private static final String PROP_OSPF_ADDRESSES = "ospfAddresses";
   private static final String PROP_PASSIVE = "passive";
   private static final String PROP_PROCESS = "process";
+  private static final String PROP_TYPE_5_FILTER_POLICY = "type5FilterPolicy";
 
   @JsonCreator
   private static OspfInterfaceSettings create(
@@ -169,7 +178,8 @@ public final class OspfInterfaceSettings implements Serializable {
       @Nullable @JsonProperty(PROP_NBMA_NEIGHBORS) Set<Ip> nbmaNeighbors,
       @Nullable @JsonProperty(PROP_NETWORK_TYPE) OspfNetworkType networkType,
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
-      @Nullable @JsonProperty(PROP_PROCESS) String process) {
+      @Nullable @JsonProperty(PROP_PROCESS) String process,
+      @Nullable @JsonProperty(PROP_TYPE_5_FILTER_POLICY) String type5FilterPolicy) {
     checkArgument(enabled != null, "OSPF enabled must be specified");
     checkArgument(passive != null, "OSPF passive must be specified");
     checkArgument(helloInterval != null, "OSPF hello interval must be specified");
@@ -186,7 +196,8 @@ public final class OspfInterfaceSettings implements Serializable {
         Optional.ofNullable(nbmaNeighbors).orElse(ImmutableSet.of()),
         networkType,
         passive,
-        process);
+        process,
+        type5FilterPolicy);
   }
 
   private OspfInterfaceSettings(
@@ -201,7 +212,8 @@ public final class OspfInterfaceSettings implements Serializable {
       @Nonnull Set<Ip> nbmaNeighbors,
       @Nullable OspfNetworkType networkType,
       boolean passive,
-      @Nullable String process) {
+      @Nullable String process,
+      @Nullable String type5FilterPolicy) {
     _ospfAddresses = addresses;
     _ospfAreaName = area;
     _ospfCost = cost;
@@ -214,6 +226,7 @@ public final class OspfInterfaceSettings implements Serializable {
     _ospfNetworkType = networkType;
     _ospfPassive = passive;
     _ospfProcess = process;
+    _ospfType5FilterPolicy = type5FilterPolicy;
   }
 
   @Override
@@ -230,7 +243,8 @@ public final class OspfInterfaceSettings implements Serializable {
         _ospfNbmaNeighbors,
         _ospfNetworkType,
         _ospfPassive,
-        _ospfProcess);
+        _ospfProcess,
+        _ospfType5FilterPolicy);
   }
 
   @Override
@@ -252,7 +266,8 @@ public final class OspfInterfaceSettings implements Serializable {
         && Objects.equals(_ospfNbmaNeighbors, other._ospfNbmaNeighbors)
         && Objects.equals(_ospfNetworkType, other._ospfNetworkType)
         && _ospfPassive == other._ospfPassive
-        && Objects.equals(_ospfProcess, other._ospfProcess);
+        && Objects.equals(_ospfProcess, other._ospfProcess)
+        && Objects.equals(_ospfType5FilterPolicy, other._ospfType5FilterPolicy);
   }
 
   /** The OSPF area to which this interface belongs. */
@@ -344,6 +359,15 @@ public final class OspfInterfaceSettings implements Serializable {
     return _ospfProcess;
   }
 
+  /**
+   * Returns name of the routing policy used to filter type 5 LSAs. Does not update routes - just
+   * filters
+   */
+  @JsonProperty(PROP_TYPE_5_FILTER_POLICY)
+  public @Nullable String getType5FilterPolicy() {
+    return _ospfType5FilterPolicy;
+  }
+
   public void setCost(int cost) {
     _ospfCost = cost;
   }
@@ -354,5 +378,9 @@ public final class OspfInterfaceSettings implements Serializable {
 
   public void setHelloMultiplier(Integer helloMultiplier) {
     _ospfHelloMultiplier = helloMultiplier;
+  }
+
+  public void setType5FilterPolicy(@Nullable String type5FilterPolicy) {
+    _ospfType5FilterPolicy = type5FilterPolicy;
   }
 }
