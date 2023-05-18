@@ -29,6 +29,7 @@ public class OspfInterfaceSettingsTest {
             .setNetworkType(OspfNetworkType.POINT_TO_POINT)
             .setOspfAddresses(
                 OspfAddresses.of(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/32"))))
+            .setType5FilterPolicy("~FILTER-POLICY~")
             .build();
 
     // test (de)serialization
@@ -51,6 +52,7 @@ public class OspfInterfaceSettingsTest {
             .setNetworkType(OspfNetworkType.POINT_TO_POINT)
             .setOspfAddresses(
                 OspfAddresses.of(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/32"))))
+            .setType5FilterPolicy("~FILTER-POLICY~")
             .build();
 
     assertThat(SerializationUtils.clone(s), equalTo(s));
@@ -88,6 +90,7 @@ public class OspfInterfaceSettingsTest {
                     OspfAddresses.of(
                         ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/32"))))
                 .build())
+        .addEqualityGroup(s.setType5FilterPolicy("~FILTER-POLICY~").build())
         .testEquals();
   }
 }

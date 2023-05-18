@@ -1305,15 +1305,28 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .keySet()
         .forEach(
             edge -> {
+              String ifaceName = edge.getHead().getInterfaceName();
+              Interface iface = _c.getAllInterfaces().get(ifaceName);
+              assert iface != null;
               OspfSessionProperties session = topology.getSession(edge).orElse(null);
               assert session != null; // Invariant of the edge being in the topology
               OspfArea areaConfig = _process.getAreas().get(session.getArea());
               OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
               assert neighborProcess != null;
+              Optional<RoutingPolicy> rp;
+              if (iface.getOspfSettings() != null
+                  && iface.getOspfSettings().getType5FilterPolicy() != null) {
+                rp =
+                    Optional.of(
+                        _c.getRoutingPolicies()
+                            .get(iface.getOspfSettings().getType5FilterPolicy()));
+              } else {
+                rp = Optional.empty();
+              }
               neighborProcess.enqueueMessagesType1(
                   edge.reverse(),
                   transformType1RoutesOnExport(
-                      filterExternalRoutesOnExport(type1, areaConfig),
+                      filterExternalRoutesOnExport(type1, areaConfig, rp),
                       areaConfig,
                       edge.getHead().getAddress().getIp()));
             });
@@ -1326,15 +1339,28 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .keySet()
         .forEach(
             edge -> {
+              String ifaceName = edge.getHead().getInterfaceName();
+              Interface iface = _c.getAllInterfaces().get(ifaceName);
+              assert iface != null;
               OspfSessionProperties session = topology.getSession(edge).orElse(null);
               assert session != null; // Invariant of the edge being in the topology
               OspfArea areaConfig = _process.getAreas().get(session.getArea());
               OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
               assert neighborProcess != null;
+              Optional<RoutingPolicy> rp;
+              if (iface.getOspfSettings() != null
+                  && iface.getOspfSettings().getType5FilterPolicy() != null) {
+                rp =
+                    Optional.of(
+                        _c.getRoutingPolicies()
+                            .get(iface.getOspfSettings().getType5FilterPolicy()));
+              } else {
+                rp = Optional.empty();
+              }
               neighborProcess.enqueueMessagesType2(
                   edge.reverse(),
                   transformType2RoutesOnExport(
-                      filterExternalRoutesOnExport(type2, areaConfig),
+                      filterExternalRoutesOnExport(type2, areaConfig, rp),
                       areaConfig,
                       edge.getHead().getAddress().getIp()));
             });
@@ -1353,7 +1379,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull
   @VisibleForTesting
   <T extends OspfExternalRoute> Stream<RouteAdvertisement<T>> filterExternalRoutesOnExport(
-      RibDelta<T> delta, OspfArea areaConfig) {
+      RibDelta<T> delta, OspfArea areaConfig, Optional<RoutingPolicy> type5filterRoutingPolicy) {
     // No external routes can propagate into a stub area
     if (areaConfig.getStubType() == StubType.STUB) {
       return Stream.of();
@@ -1365,6 +1391,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         && areaConfig.getNssa().getSuppressType7()
         && areaConfig.getStubType() == StubType.NSSA) {
       return Stream.of();
+    }
+
+    if (type5filterRoutingPolicy.isPresent() && areaConfig.getStubType() != StubType.NSSA) {
+      // Not a transformation policy - just filter.
+      return delta.stream()
+          .filter(
+              action ->
+                  type5filterRoutingPolicy
+                      .get()
+                      .process(action.getRoute(), action.getRoute().toBuilder(), Direction.OUT));
     }
 
     return delta.stream();
