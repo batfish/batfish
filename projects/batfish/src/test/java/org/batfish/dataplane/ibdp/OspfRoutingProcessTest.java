@@ -1130,7 +1130,7 @@ public class OspfRoutingProcessTest {
     // No filtering to regular area
     assertThat(
         _routingProcess
-            .filterExternalRoutesOnExport(routes, AREA0_CONFIG)
+            .filterExternalRoutesOnExport(routes, AREA0_CONFIG, null)
             .collect(Collectors.toList()),
         equalTo(routes.stream().collect(Collectors.toList())));
     // Filtering to STUB
@@ -1138,7 +1138,8 @@ public class OspfRoutingProcessTest {
         _routingProcess
             .filterExternalRoutesOnExport(
                 routes,
-                OspfArea.builder().setNumber(33).setStub(StubSettings.builder().build()).build())
+                OspfArea.builder().setNumber(33).setStub(StubSettings.builder().build()).build(),
+                null)
             .collect(Collectors.toList()),
         empty());
     // Filtering to NSSA with type7 suppression
@@ -1149,7 +1150,8 @@ public class OspfRoutingProcessTest {
                 OspfArea.builder()
                     .setNumber(33)
                     .setNssa(NssaSettings.builder().setSuppressType7(true).build())
-                    .build())
+                    .build(),
+                null)
             .collect(Collectors.toList()),
         empty());
     // No filtering to NSSA without type7 suppression
@@ -1160,7 +1162,60 @@ public class OspfRoutingProcessTest {
                 OspfArea.builder()
                     .setNumber(33)
                     .setNssa(NssaSettings.builder().setSuppressType7(false).build())
+                    .build(),
+                null)
+            .collect(Collectors.toList()),
+        equalTo(routes.stream().collect(Collectors.toList())));
+  }
+
+  @Test
+  public void testFilterExternalRoutesOnExportWithInterfaceFilter() {
+    RoutingPolicy rp_accept =
+        RoutingPolicy.builder()
+            .setName("~OSPF_TYPE_5_FILTER~")
+            .setOwner(_c)
+            .addStatement(Statements.ExitAccept.toStaticStatement())
+            .build();
+    RoutingPolicy rp_reject =
+        RoutingPolicy.builder()
+            .setName("~OSPF_TYPE_5_FILTER~")
+            .setOwner(_c)
+            .addStatement(Statements.ExitReject.toStaticStatement())
+            .build();
+
+    RibDelta<OspfExternalRoute> routes =
+        RibDelta.<OspfExternalRoute>builder()
+            .add(
+                OspfExternalType1Route.builder()
+                    .setNetwork(Prefix.parse("1.1.1.1/32"))
+                    .setNextHop(NextHopDiscard.instance())
+                    .setLsaMetric(0L)
+                    .setCostToAdvertiser(0L)
+                    .setAdvertiser("someNode")
+                    .setArea(OspfRoute.NO_AREA)
                     .build())
+            .build();
+    // Accept is a no-op - the route does not get filtered.
+    assertThat(
+        _routingProcess
+            .filterExternalRoutesOnExport(routes, AREA0_CONFIG, rp_accept)
+            .collect(Collectors.toList()),
+        equalTo(routes.stream().collect(Collectors.toList())));
+
+    // Reject means the route gets filtered.
+    assertThat(
+        _routingProcess
+            .filterExternalRoutesOnExport(routes, AREA0_CONFIG, rp_reject)
+            .collect(Collectors.toList()),
+        empty());
+
+    // type7 (to NSSA) do not get filtered
+    assertThat(
+        _routingProcess
+            .filterExternalRoutesOnExport(
+                routes,
+                OspfArea.builder().setNumber(33).setNssa(NssaSettings.builder().build()).build(),
+                rp_reject)
             .collect(Collectors.toList()),
         equalTo(routes.stream().collect(Collectors.toList())));
   }
