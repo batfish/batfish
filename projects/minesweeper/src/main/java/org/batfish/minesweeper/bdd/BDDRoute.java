@@ -121,7 +121,19 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
+  /**
+   * Contains a BDD variable for each source VRF that is encountered along the path. See {@link
+   * org.batfish.datamodel.routing_policy.expr.MatchSourceVrf}.
+   */
+  private BDD[] _sourceVrfs;
+
   private MutableBDDInteger _tag;
+
+  /**
+   * Contains a BDD variable for each "track" that is encountered along the path. See {@link
+   * org.batfish.datamodel.routing_policy.expr.TrackSucceeded}.
+   */
+  private BDD[] _tracks;
 
   private MutableBDDInteger _weight;
 
@@ -145,7 +157,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         factory,
         aps.getStandardCommunityAtomicPredicates().getNumAtomicPredicates()
             + aps.getNonStandardCommunityLiterals().size(),
-        aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+        aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(),
+        aps.getSourceVrfs().size(),
+        aps.getTracks().size());
   }
 
   /**
@@ -155,7 +169,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * number of such atomic predicates is provided.
    */
   public BDDRoute(
-      BDDFactory factory, int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
+      BDDFactory factory,
+      int numCommAtomicPredicates,
+      int numAsPathRegexAtomicPredicates,
+      int numSourceVrfs,
+      int numTracks) {
     _factory = factory;
 
     int numVars = factory.varNum();
@@ -166,6 +184,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
+            + numSourceVrfs
+            + numTracks
             + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
             + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
             + IntMath.log2(allMetricTypes.size(), RoundingMode.CEILING);
@@ -231,6 +251,20 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _bitNames.put(idx, "AS-path regex atomic predicate " + i);
       idx++;
     }
+    // Initialize one BDD per source VRF, each of which has a corresponding BDD variable
+    _sourceVrfs = new BDD[numSourceVrfs];
+    for (int i = 0; i < numSourceVrfs; i++) {
+      _sourceVrfs[i] = factory.ithVar(idx);
+      _bitNames.put(idx, "source VRF " + i);
+      idx++;
+    }
+    // Initialize one BDD per tracked name, each of which has a corresponding BDD variable
+    _tracks = new BDD[numTracks];
+    for (int i = 0; i < numTracks; i++) {
+      _tracks[i] = factory.ithVar(idx);
+      _bitNames.put(idx, "track " + i);
+      idx++;
+    }
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
@@ -264,11 +298,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _originType = new BDDDomain<>(other._originType);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
-    _prependedASes = new ArrayList(other._prependedASes);
+    _prependedASes = new ArrayList<>(other._prependedASes);
+    _sourceVrfs = other._sourceVrfs.clone();
+    _tracks = other._tracks.clone();
     _unsupported = other._unsupported;
   }
 
-  /**
+  /*
    * Constructs a new BDDRoute by restricting the given one to conform to the predicate pred.
    *
    * @param pred the predicate used to restrict the output routes
@@ -309,6 +345,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopDiscarded = route.getNextHopDiscarded();
     _unsupported = route.getUnsupported();
     _prependedASes = new ArrayList<>(route.getPrependedASes());
+    _sourceVrfs = route.getSourceVrfs();
+    _tracks = route.getTracks();
   }
 
   /*
@@ -355,6 +393,17 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _factory.orAll(elements.stream().map(bddDomain::value).collect(Collectors.toList()));
   }
 
+  /** Produce a constraint that at most one of the given array of BDDs is true. */
+  private BDD atMostOneOf(BDD[] bdds) {
+    BDD atMostOne = _factory.one();
+    for (int i = 0; i < bdds.length; i++) {
+      for (int j = i + 1; j < bdds.length; j++) {
+        atMostOne.andWith(bdds[i].nand(bdds[j]));
+      }
+    }
+    return atMostOne;
+  }
+
   /**
    * Not all assignments to the BDD variables that make up a BDDRoute represent valid BGP routes.
    * This method produces constraints that well-formed BGP routes must satisfy, represented as a
@@ -381,13 +430,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     // regexes are all pairwise disjoint
     // Note: the same constraint does not apply to community regexes because a route has a set
     // of communities, so more than one regex can be simultaneously true
-    BDD asPathConstraint = _factory.one();
-    for (int i = 0; i < _asPathRegexAtomicPredicates.length; i++) {
-      for (int j = i + 1; j < _asPathRegexAtomicPredicates.length; j++) {
-        asPathConstraint.andWith(
-            _asPathRegexAtomicPredicates[i].nand(_asPathRegexAtomicPredicates[j]));
-      }
-    }
+    BDD asPathConstraint = atMostOneOf(_asPathRegexAtomicPredicates);
+    // at most one source VRF should be in the environment
+    BDD sourceVrfConstraint = atMostOneOf(_sourceVrfs);
     // the next hop should be neither the min nor the max possible IP
     // this constraint is enforced by NextHopIp's constructor
     BDD nextHopConstraint = _nextHop.range(Ip.ZERO.asLong() + 1, Ip.MAX.asLong() - 1);
@@ -395,6 +440,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return protocolConstraint
         .andWith(prefLenConstraint)
         .andWith(asPathConstraint)
+        .andWith(sourceVrfConstraint)
         .andWith(nextHopConstraint);
   }
 
@@ -565,6 +611,18 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
+  public BDD[] getSourceVrfs() {
+    return _sourceVrfs;
+  }
+
+  public BDD[] getTracks() {
+    return _tracks;
+  }
+
+  public void setTracks(BDD[] tracks) {
+    _tracks = tracks;
+  }
+
   public MutableBDDInteger getWeight() {
     return _weight;
   }
@@ -602,6 +660,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
         && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
+        && Arrays.equals(_sourceVrfs, other._sourceVrfs)
+        && Arrays.equals(_tracks, other._tracks)
         && Objects.equals(_unsupported, other._unsupported);
   }
 }

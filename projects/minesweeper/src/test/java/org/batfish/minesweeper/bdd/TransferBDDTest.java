@@ -91,12 +91,14 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
@@ -186,7 +188,7 @@ public class TransferBDDTest {
   }
 
   private BDDRoute anyRoute(BDDFactory factory) {
-    return new BDDRoute(factory, 1, 1);
+    return new BDDRoute(factory, 1, 1, 0, 0);
   }
 
   // test whether two lists contain pairwise semantically equal TransferReturns
@@ -1222,6 +1224,56 @@ public class TransferBDDTest {
             ImmutableList.of(
                 new TransferReturn(any, clusterListLengthLETwo, true),
                 new TransferReturn(any, clusterListLengthLETwo.not(), false))));
+  }
+
+  @Test
+  public void testTrackSucceeded() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new TrackSucceeded("mytrack"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD trackPred = any.getTracks()[0];
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, trackPred, true),
+                new TransferReturn(any, trackPred.not(), false))));
+  }
+
+  @Test
+  public void testMatchSourceVrf() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchSourceVrf("mysource"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD sourcePred = any.getSourceVrfs()[0];
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, sourcePred, true),
+                new TransferReturn(any, sourcePred.not(), false))));
   }
 
   @Test

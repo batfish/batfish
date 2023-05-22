@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.utils.Tuple;
 
 public class ModelGeneration {
   private static Optional<Community> stringToCommunity(String str) {
@@ -172,6 +174,7 @@ public class ModelGeneration {
    */
   public static Bgpv4Route satAssignmentToInputRoute(
       BDD fullModel, ConfigAtomicPredicates configAPs) {
+
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
@@ -209,6 +212,41 @@ public class ModelGeneration {
     builder.setNextHop(NextHopIp.of(Ip.create(r.getNextHop().satAssignmentToLong(fullModel))));
 
     return builder.build();
+  }
+
+  /**
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete environment (for now, a predicate on tracks as well as an optional source VRF) that is
+   * consistent with the assignment.
+   *
+   * @param fullModel the satisfying assignment
+   * @param configAPs an object that provides information about the community atomic predicates
+   * @return a pair of a predicate on tracks and an optional source VRF
+   */
+  public static Tuple<Predicate<String>, String> satAssignmentToEnvironment(
+      BDD fullModel, ConfigAtomicPredicates configAPs) {
+
+    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
+
+    List<String> successfulTracks =
+        allSatisfyingItems(configAPs.getTracks(), r.getTracks(), fullModel);
+    List<String> sourceVrfs =
+        allSatisfyingItems(configAPs.getSourceVrfs(), r.getSourceVrfs(), fullModel);
+    checkState(
+        sourceVrfs.size() <= 1,
+        "Error in symbolic route analysis: at most one source VRF can be in the environment");
+
+    return new Tuple<>(successfulTracks::contains, sourceVrfs.isEmpty() ? null : sourceVrfs.get(0));
+  }
+
+  // Return a list of all items whose corresponding BDD is consistent with the given variable
+  // assignment.
+  private static List<String> allSatisfyingItems(
+      List<String> items, BDD[] itemBDDs, BDD fullModel) {
+    return IntStream.range(0, itemBDDs.length)
+        .filter(i -> itemBDDs[i].andSat(fullModel))
+        .mapToObj(items::get)
+        .collect(ImmutableList.toImmutableList());
   }
 
   /**
