@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -102,6 +103,8 @@ public class ConfigAtomicPredicatesTest {
     assertThat(
         asAPs.getAtomicPredicateAutomata().values(),
         hasItem(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton()));
+
+    assertEquals(cap.getTracks(), ImmutableList.of());
   }
 
   @Test
@@ -196,6 +199,9 @@ public class ConfigAtomicPredicatesTest {
         cap.getStandardCommunityAtomicPredicates(), copy.getStandardCommunityAtomicPredicates());
     assertNotSame(cap.getNonStandardCommunityLiterals(), copy.getNonStandardCommunityLiterals());
     assertNotSame(cap.getAsPathRegexAtomicPredicates(), copy.getAsPathRegexAtomicPredicates());
+    // the lists of tracks and source VRFs are immutable
+    assertEquals(cap.getTracks(), copy.getTracks());
+    assertEquals(cap.getSourceVrfs(), copy.getSourceVrfs());
   }
 
   @Test

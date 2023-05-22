@@ -6,9 +6,10 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.MutableBDDInteger;
 
-/*
- * Class that wraps a BDDInteger around a finite collection of values
- * and provides an API for dealing directly with the values.
+/**
+ * Class that wraps a BDDInteger around a finite collection of values and provides an API for
+ * dealing directly with the values. This class is similar to {@link
+ * org.batfish.common.bdd.BDDFiniteDomain} but wraps a mutable BDDInteger and so supports updates.
  */
 public class BDDDomain<T> {
 

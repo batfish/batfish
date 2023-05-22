@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.ReceivedFromSelf;
@@ -103,10 +105,16 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param policy the route policy to simulate
    * @param inputRoute the input route for the policy
    * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
    * @return a table row containing the results of the simulation
    */
-  public static Row rowResultFor(RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
-    return toRow(testPolicy(policy, inputRoute, direction));
+  public static Row rowResultFor(
+      RoutingPolicy policy,
+      Bgpv4Route inputRoute,
+      Direction direction,
+      Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
+    return toRow(testPolicy(policy, inputRoute, direction, successfulTrack, sourceVrf));
   }
 
   /**
@@ -122,14 +130,25 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy referencePolicy,
       RoutingPolicy proposedPolicy,
       Bgpv4Route inputRoute,
-      Direction direction) {
+      Direction direction,
+      Predicate<String> successfulTracks,
+      @Nullable String sourceVrf) {
     return toCompareRow(
-        testPolicy(proposedPolicy, inputRoute, direction),
-        testPolicy(referencePolicy, inputRoute, direction));
+        testPolicy(proposedPolicy, inputRoute, direction, successfulTracks, sourceVrf),
+        testPolicy(referencePolicy, inputRoute, direction, successfulTracks, sourceVrf));
   }
 
   private static Result testPolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
+    return testPolicy(policy, inputRoute, direction, null, null);
+  }
+
+  private static Result testPolicy(
+      RoutingPolicy policy,
+      Bgpv4Route inputRoute,
+      Direction direction,
+      @Nullable Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
     if (direction == Direction.OUT) {
@@ -139,7 +158,14 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     }
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
-    boolean permit = policy.process(inputRoute, outputRoute, direction, tracer);
+    boolean permit =
+        policy.process(
+            // include the source VRF in the route if it is not null
+            sourceVrf == null ? inputRoute : new AnnotatedRoute<>(inputRoute, sourceVrf),
+            outputRoute,
+            direction,
+            successfulTrack,
+            tracer);
     tracer.endSubTrace();
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),

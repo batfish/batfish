@@ -2,6 +2,7 @@ package org.batfish.minesweeper.question.compareroutepolicies;
 
 import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
+import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnvironment;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.diffRowResultsFor;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -26,7 +28,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -99,23 +100,33 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    *
    * @param referencePolicy the reference route policy that we compared against.
    * @param policy the proposed route policy.
+   * @param inRoute the input route to simulate on each policy
+   * @param env a pair of predicate that assigns truth values to tracks and a source VRF
    * @return the concrete input route and, if the desired action is PERMIT, the concrete output
    *     routes resulting from analyzing the given policies.
    */
-  private Row computeDifferencesForInputRoute(
-      RoutingPolicy referencePolicy, RoutingPolicy policy, Bgpv4Route inRoute) {
-    return diffRowResultsFor(referencePolicy, policy, inRoute, _direction);
+  private Row computeDifferencesForInputs(
+      RoutingPolicy referencePolicy,
+      RoutingPolicy policy,
+      Bgpv4Route inRoute,
+      Tuple<Predicate<String>, String> env) {
+    return diffRowResultsFor(
+        referencePolicy, policy, inRoute, _direction, env.getFirst(), env.getSecond());
   }
 
   /**
    * @param constraints Logical constraints that describe a set of routes.
    * @param configAPs the atomic predicates used for communities/as-paths.
-   * @return An input route that conforms to the given constraints.
+   * @return An input route, a predicate on tracks, and a (possibly null) source VRF that conform to
+   *     the given constraints.
    */
-  private Bgpv4Route constraintsToInputs(BDD constraints, ConfigAtomicPredicates configAPs) {
+  private Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> constraintsToInputs(
+      BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
     BDD fullModel = constraintsToModel(constraints, configAPs);
-    return satAssignmentToInputRoute(fullModel, configAPs);
+    return new Tuple<>(
+        satAssignmentToInputRoute(fullModel, configAPs),
+        satAssignmentToEnvironment(fullModel, configAPs));
   }
 
   /**
@@ -263,8 +274,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     }
     return differences.stream()
         .map(intersection -> constraintsToInputs(intersection, configAPs))
-        .sorted(Comparator.comparing(AbstractRoute::getNetwork))
-        .map(r -> computeDifferencesForInputRoute(referencePolicy, policy, r))
+        .sorted(Comparator.comparing(t -> t.getFirst().getNetwork()))
+        .map(t -> computeDifferencesForInputs(referencePolicy, policy, t.getFirst(), t.getSecond()))
         .collect(Collectors.toList());
   }
 

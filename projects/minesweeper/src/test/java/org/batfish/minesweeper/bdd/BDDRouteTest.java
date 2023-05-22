@@ -15,7 +15,7 @@ public class BDDRouteTest {
   @Test
   public void testCopyConstructorAndEquality() {
     BDDFactory factory = JFactory.init(100, 100);
-    BDDRoute r1 = new BDDRoute(factory, 3, 4);
+    BDDRoute r1 = new BDDRoute(factory, 3, 4, 5, 2);
     BDDRoute r2 = new BDDRoute(r1);
     boolean b = r1.equalsForTesting(r2);
     assertTrue(b);
