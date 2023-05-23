@@ -122,7 +122,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   /**
-   * Contains a BDD variable for each source VRF that is encountered along the path. See {@link
+   * Contains a BDD variable for next-hop interface that may be encountered along the path. See
+   * {@link org.batfish.datamodel.routing_policy.expr.MatchInterface}.
+   */
+  private BDD[] _nextHopInterfaces;
+
+  /**
+   * Contains a BDD variable for each source VRF that may be encountered along the path. See {@link
    * org.batfish.datamodel.routing_policy.expr.MatchSourceVrf}.
    */
   private BDD[] _sourceVrfs;
@@ -130,7 +136,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private MutableBDDInteger _tag;
 
   /**
-   * Contains a BDD variable for each "track" that is encountered along the path. See {@link
+   * Contains a BDD variable for each "track" that may be encountered along the path. See {@link
    * org.batfish.datamodel.routing_policy.expr.TrackSucceeded}.
    */
   private BDD[] _tracks;
@@ -158,6 +164,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         aps.getStandardCommunityAtomicPredicates().getNumAtomicPredicates()
             + aps.getNonStandardCommunityLiterals().size(),
         aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(),
+        aps.getNextHopInterfaces().size(),
         aps.getSourceVrfs().size(),
         aps.getTracks().size());
   }
@@ -168,10 +175,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * BDD variable and a BDD, and similarly for the atomic predicates for AS-path regexes, so the
    * number of such atomic predicates is provided.
    */
-  public BDDRoute(
+  @VisibleForTesting
+  BDDRoute(
       BDDFactory factory,
       int numCommAtomicPredicates,
       int numAsPathRegexAtomicPredicates,
+      int numNextHopInterfaces,
       int numSourceVrfs,
       int numTracks) {
     _factory = factory;
@@ -184,6 +193,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
+            + numNextHopInterfaces
             + numSourceVrfs
             + numTracks
             + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
@@ -251,6 +261,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _bitNames.put(idx, "AS-path regex atomic predicate " + i);
       idx++;
     }
+    // Initialize one BDD per next-hop interface name, each of which has a corresponding BDD
+    // variable
+    _nextHopInterfaces = new BDD[numNextHopInterfaces];
+    for (int i = 0; i < numNextHopInterfaces; i++) {
+      _nextHopInterfaces[i] = factory.ithVar(idx);
+      _bitNames.put(idx, "next-hop interface " + i);
+      idx++;
+    }
     // Initialize one BDD per source VRF, each of which has a corresponding BDD variable
     _sourceVrfs = new BDD[numSourceVrfs];
     for (int i = 0; i < numSourceVrfs; i++) {
@@ -299,6 +317,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
     _prependedASes = new ArrayList<>(other._prependedASes);
+    _nextHopInterfaces = other._nextHopInterfaces.clone();
     _sourceVrfs = other._sourceVrfs.clone();
     _tracks = other._tracks.clone();
     _unsupported = other._unsupported;
@@ -345,6 +364,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopDiscarded = route.getNextHopDiscarded();
     _unsupported = route.getUnsupported();
     _prependedASes = new ArrayList<>(route.getPrependedASes());
+    _nextHopInterfaces = route.getNextHopInterfaces();
     _sourceVrfs = route.getSourceVrfs();
     _tracks = route.getTracks();
   }
@@ -611,6 +631,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
+  public BDD[] getNextHopInterfaces() {
+    return _nextHopInterfaces;
+  }
+
   public BDD[] getSourceVrfs() {
     return _sourceVrfs;
   }
@@ -660,6 +684,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
         && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
+        && Arrays.equals(_nextHopInterfaces, other._nextHopInterfaces)
         && Arrays.equals(_sourceVrfs, other._sourceVrfs)
         && Arrays.equals(_tracks, other._tracks)
         && Objects.equals(_unsupported, other._unsupported);

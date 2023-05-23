@@ -188,7 +188,7 @@ public class TransferBDDTest {
   }
 
   private BDDRoute anyRoute(BDDFactory factory) {
-    return new BDDRoute(factory, 1, 1, 0, 0);
+    return new BDDRoute(factory, 1, 1, 0, 0, 0);
   }
 
   // test whether two lists contain pairwise semantically equal TransferReturns
