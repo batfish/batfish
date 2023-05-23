@@ -218,8 +218,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Juniper uses AD 170 for both EBGP and IBGP routes. */
   public static final int DEFAULT_BGP_ADMIN_DISTANCE = 170;
 
-  public static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA =
+  private static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA =
       ConnectedRouteMetadata.builder().setGenerateLocalNullRouteIfDown(true).build();
+
+  /** Do not generate any routes for a loopback address. */
+  private static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA_LOOPBACKS =
+      ConnectedRouteMetadata.builder()
+          .setGenerateLocalNullRouteIfDown(false)
+          .setGenerateConnectedRoute(false)
+          .setGenerateLocalRoute(false)
+          .build();
+
+  @VisibleForTesting
+  static @Nonnull ConnectedRouteMetadata getJuniperConnectedRouteMetadata(
+      ConcreteInterfaceAddress addr) {
+    if (Prefix.LOOPBACKS.containsIp(addr.getIp())) {
+      return JUNIPER_CONNECTED_ROUTE_METADATA_LOOPBACKS;
+    }
+    return JUNIPER_CONNECTED_ROUTE_METADATA;
+  }
 
   public static @Nonnull String computeFirewallFilterTermName(
       @Nonnull String filterName, @Nonnull String termName) {
@@ -1982,7 +1999,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         iface.getAllAddresses().stream()
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
-                    Ordering.natural(), a -> a, a -> JUNIPER_CONNECTED_ROUTE_METADATA)));
+                    Ordering.natural(),
+                    a -> a,
+                    JuniperConfiguration::getJuniperConnectedRouteMetadata)));
     if (!iface.getActive()) {
       newIface.adminDown();
     }

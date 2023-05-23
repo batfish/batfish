@@ -15,6 +15,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_C
 import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
 import static org.batfish.representation.juniper.JuniperConfiguration.getDefaultSourceAddress;
+import static org.batfish.representation.juniper.JuniperConfiguration.getJuniperConnectedRouteMetadata;
 import static org.batfish.representation.juniper.JuniperConfiguration.getPrimaryInterface;
 import static org.batfish.representation.juniper.JuniperConfiguration.getRouterId;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilter;
@@ -56,6 +57,7 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceType;
@@ -165,6 +167,30 @@ public class JuniperConfigurationTest {
             .build();
     config._c.getVrfs().get("vrf").addLayer3Vni(l3vni);
     assertThat(l3vni, equalTo(config._c.getVrfs().get("vrf").getLayer3Vnis().get(10100)));
+  }
+
+  @Test
+  public void testGetJuniperConnectedRouteMetadata() {
+    ConnectedRouteMetadata normalAddr =
+        getJuniperConnectedRouteMetadata(ConcreteInterfaceAddress.parse("1.2.3.4/24"));
+    assertThat(normalAddr.getAdmin(), nullValue());
+    assertThat(normalAddr.getTag(), nullValue());
+    assertThat(normalAddr.getGenerateConnectedRoute(), nullValue());
+    assertThat(normalAddr.getGenerateLocalRoute(), nullValue());
+    assertThat(normalAddr.getGenerateLocalNullRouteIfDown(), equalTo(true));
+
+    for (ConnectedRouteMetadata loopbackAddr :
+        new ConnectedRouteMetadata[] {
+          getJuniperConnectedRouteMetadata(ConcreteInterfaceAddress.parse("127.0.0.1/32")),
+          getJuniperConnectedRouteMetadata(ConcreteInterfaceAddress.parse("127.255.0.1/32")),
+          getJuniperConnectedRouteMetadata(ConcreteInterfaceAddress.parse("127.255.0.1/16")),
+        }) {
+      assertThat(loopbackAddr.getAdmin(), nullValue());
+      assertThat(loopbackAddr.getTag(), nullValue());
+      assertThat(loopbackAddr.getGenerateConnectedRoute(), equalTo(false));
+      assertThat(loopbackAddr.getGenerateLocalRoute(), equalTo(false));
+      assertThat(loopbackAddr.getGenerateLocalNullRouteIfDown(), equalTo(false));
+    }
   }
 
   @Test
