@@ -31,6 +31,9 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   /** A "0.0.0.0/0" prefix */
   public static final Prefix ZERO = create(Ip.ZERO, 0);
 
+  /** The "127.0.0.0/8" host prefix for loopback addresses */
+  public static final Prefix LOOPBACKS = Prefix.parse("127.0.0.0/8");
+
   /** Multicast IPs are in "244.0.0.0/4". */
   public static final Prefix MULTICAST = create(Ip.parse("224.0.0.0"), 4);
 

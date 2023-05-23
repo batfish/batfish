@@ -137,7 +137,6 @@ import org.batfish.datamodel.vxlan.Vni;
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
 public final class CumulusConversions {
-  private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
 
   public static final int DEFAULT_EBGP_ADMIN = 20;
   public static final int DEFAULT_IBGP_ADMIN = 200;
@@ -1225,7 +1224,7 @@ public final class CumulusConversions {
     if (c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
       Optional<ConcreteInterfaceAddress> maxLoIp =
           c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getAllConcreteAddresses().stream()
-              .filter(addr -> !LOOPBACK_PREFIX.containsIp(addr.getIp()))
+              .filter(addr -> !Prefix.LOOPBACKS.containsIp(addr.getIp()))
               .max(ConcreteInterfaceAddress::compareTo);
       if (maxLoIp.isPresent()) {
         return maxLoIp.get().getIp();
