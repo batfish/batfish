@@ -65,6 +65,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -541,6 +542,18 @@ public class TransferBDD {
           itemToBDD(
               ts.getTrackName(), _configAtomicPredicates.getTracks(), p.getData().getTracks());
       finalResults.add(result.setReturnValueBDD(trackPred).setReturnValueAccepted(true));
+
+    } else if (expr instanceof MatchInterface) {
+      MatchInterface mi = (MatchInterface) expr;
+      BDD[] nextHopInterfaces = routeForMatching(p.getData()).getNextHopInterfaces();
+      BDD miPred =
+          mi.getInterfaces().stream()
+              .map(
+                  nhi ->
+                      itemToBDD(
+                          nhi, _configAtomicPredicates.getNextHopInterfaces(), nextHopInterfaces))
+              .reduce(_factory.zero(), BDD::or);
+      finalResults.add(result.setReturnValueBDD(miPred).setReturnValueAccepted(true));
 
     } else {
       throw new UnsupportedFeatureException(expr.toString());
