@@ -6,6 +6,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_VRF_NAME;
@@ -917,8 +918,7 @@ final class AristaConversions {
     } else {
       withoutQuotes = ciscoRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 

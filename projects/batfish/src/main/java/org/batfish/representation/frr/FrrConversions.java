@@ -19,6 +19,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
@@ -1757,8 +1758,7 @@ public final class FrrConversions {
     } else {
       withoutQuotes = cumulusRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 

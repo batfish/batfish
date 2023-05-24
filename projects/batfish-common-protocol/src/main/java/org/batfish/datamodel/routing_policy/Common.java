@@ -28,6 +28,13 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 public final class Common {
 
   /**
+   * A translation for the underscore character in regular expressions that appear in routing
+   * policies. This is a default translation that works for many vendors, but some vendors may treat
+   * underscore differently and so may need their own translation.
+   */
+  public static final String DEFAULT_UNDERSCORE_REPLACEMENT = "(,|\\\\{|\\\\}|^|\\$| )";
+
+  /**
    * Creates a generation policy for the aggregate network with the given {@link Prefix}. The
    * generation policy matches any route with a destination more specific than {@code prefix}.
    *

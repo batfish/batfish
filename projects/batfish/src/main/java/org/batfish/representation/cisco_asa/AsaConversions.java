@@ -10,6 +10,7 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeBgpPeerImportPolicyName;
@@ -1642,8 +1643,7 @@ public class AsaConversions {
     } else {
       withoutQuotes = ciscoRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 

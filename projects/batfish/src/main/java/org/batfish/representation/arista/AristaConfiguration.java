@@ -14,6 +14,7 @@ import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPol
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getSourceInterfaceIp;
@@ -346,8 +347,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     } else {
       withoutQuotes = ciscoRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 

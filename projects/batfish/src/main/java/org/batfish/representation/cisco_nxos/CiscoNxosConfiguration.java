@@ -18,6 +18,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NETWORK;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -370,8 +371,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     } else {
       withoutQuotes = ciscoRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 
