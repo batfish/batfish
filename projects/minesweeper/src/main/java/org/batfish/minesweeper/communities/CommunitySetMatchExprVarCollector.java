@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import dk.brics.automaton.Automaton;
+import dk.brics.automaton.RegExp;
 import java.util.Collection;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -19,6 +21,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.HasSize;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.minesweeper.CommunityVar;
 
 /** Collect all community literals and regexes in a {@link CommunitySetMatchExpr}. */
@@ -60,9 +63,31 @@ public class CommunitySetMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetMatchRegex(
       CommunitySetMatchRegex communitySetMatchRegex, Configuration arg) {
-    // This is not supported, but rather than throw we do nothing. If we end up needing to model
-    // this structure, the later code will crash instead.
-    return ImmutableSet.of();
+    if (!(communitySetMatchRegex.getCommunitySetRendering()
+        instanceof TypesFirstAscendingSpaceSeparated)) {
+      throw new UnsupportedOperationException(
+          "Unsupported community set rendering "
+              + communitySetMatchRegex.getCommunitySetRendering());
+    }
+    String regex = communitySetMatchRegex.getRegex();
+    // a conservative check if the regex only matches on the existence of a single community in the
+    // set -- the regex optionally starts with _, optionally ends with _, and in the middle never
+    // matches against the characters represented by an underscore
+    String underscore = "(,|\\{|\\}|^|$| )";
+    if (regex.startsWith(underscore)) {
+      regex = regex.substring(underscore.length());
+    }
+    if (regex.endsWith(underscore)) {
+      regex = regex.substring(0, regex.length() - underscore.length());
+    }
+    Automaton regexAuto = new RegExp(regex).toAutomaton();
+    Automaton noUnderscoreChars = new RegExp("[^,\\{\\}^$ ]+").toAutomaton();
+    if (regexAuto.intersection(noUnderscoreChars).equals(regexAuto)) {
+      return ImmutableSet.of(CommunityVar.from(communitySetMatchRegex.getRegex()));
+    } else {
+      throw new UnsupportedOperationException(
+          "Unsupported community set regex: " + communitySetMatchRegex.getRegex());
+    }
   }
 
   @Override
