@@ -13,6 +13,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
@@ -100,8 +102,14 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-    // NOTE: when implementing, update CommunitySetMatchExprVarCollector#visitCommunitySetMatchRegex
-    throw new UnsupportedOperationException("Currently not supporting community set regexes");
+    /*
+     * We've already ensured in CommunitySetMatchExprVarCollector that this regex
+     * matches on a single community, so here we can simply treat it as such.
+     */
+    return new HasCommunity(
+            new CommunityMatchRegex(
+                ColonSeparatedRendering.instance(), communitySetMatchRegex.getRegex()))
+        .accept(this, arg);
   }
 
   @Override

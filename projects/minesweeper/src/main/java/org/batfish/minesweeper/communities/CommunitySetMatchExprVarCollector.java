@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.communities;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 
@@ -12,6 +13,7 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
@@ -65,16 +67,16 @@ public class CommunitySetMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetMatchRegex(
       CommunitySetMatchRegex communitySetMatchRegex, Configuration arg) {
-    if (!(communitySetMatchRegex.getCommunitySetRendering()
-        instanceof TypesFirstAscendingSpaceSeparated)) {
-      throw new UnsupportedOperationException(
-          "Unsupported community set rendering "
-              + communitySetMatchRegex.getCommunitySetRendering());
-    }
+    checkArgument(
+        communitySetMatchRegex
+            .getCommunitySetRendering()
+            .equals(new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance())),
+        "Unsupported community set rendering " + communitySetMatchRegex.getCommunitySetRendering());
+
     String regex = communitySetMatchRegex.getRegex();
     // a conservative check if the regex only matches on the existence of a single community in the
-    // set -- the regex optionally starts with _, optionally ends with _, and in the middle never
-    // matches against the characters represented by an underscore
+    // set -- the regex optionally starts with _, optionally ends with _, and in between only
+    // accepts strings containing digits and colons
     String underscore = StringEscapeUtils.unescapeJava(DEFAULT_UNDERSCORE_REPLACEMENT);
     if (regex.startsWith(underscore)) {
       regex = regex.substring(underscore.length());
