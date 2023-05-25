@@ -27,6 +27,8 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
@@ -165,6 +167,37 @@ public class ModelGeneration {
   }
 
   /**
+   * Given a single satisfying assignment to the constraints from symbolic route analysis, produce a
+   * next-hop for a given symbolic route that is consistent with the assignment.
+   *
+   * @param fullModel a full model of the symbolic route constraints
+   * @param r the symbolic route
+   * @param configAPs an object provides information about the AS-path regex atomic predicates
+   * @return a next-hop
+   */
+  static NextHop satAssignmentToNextHop(
+      BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
+    // Note: this is the only part of model generation that relies on the fact that we are solving
+    // for the input route.  If we also want to produce the output route from the model, given the
+    // BDDRoute that results from symbolic analysis, we need to consider the _direction as well as
+    // the values of the two next-hop flags in the BDDRoute, in order to do it properly.
+
+    Ip ip = Ip.create(r.getNextHop().satAssignmentToLong(fullModel));
+    // if we matched on a next-hop interface then include the interface name in the produced
+    // next-hop
+    List<String> nextHopInterfaces =
+        allSatisfyingItems(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), fullModel);
+    checkState(
+        nextHopInterfaces.size() <= 1,
+        "Error in symbolic route analysis: at most one source VRF can be in the environment");
+    if (nextHopInterfaces.isEmpty()) {
+      return NextHopIp.of(ip);
+    } else {
+      return NextHopInterface.of(nextHopInterfaces.get(0), ip);
+    }
+  }
+
+  /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
    * concrete input route that is consistent with the assignment.
    *
@@ -205,11 +238,8 @@ public class ModelGeneration {
     AsPath asPath = satAssignmentToAsPath(fullModel, r, configAPs);
     builder.setAsPath(asPath);
 
-    // Note: this is the only part of the method that relies on the fact that we are solving for the
-    // input route.  If we also want to produce the output route from the model, given the BDDRoute
-    // that results from symbolic analysis, we need to consider the _direction as well as the values
-    // of the two next-hop flags in the BDDRoute, in order to do it properly
-    builder.setNextHop(NextHopIp.of(Ip.create(r.getNextHop().satAssignmentToLong(fullModel))));
+    NextHop nextHop = satAssignmentToNextHop(fullModel, r, configAPs);
+    builder.setNextHop(nextHop);
 
     return builder.build();
   }

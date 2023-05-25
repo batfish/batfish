@@ -87,6 +87,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -1274,6 +1275,31 @@ public class TransferBDDTest {
             ImmutableList.of(
                 new TransferReturn(any, sourcePred, true),
                 new TransferReturn(any, sourcePred.not(), false))));
+  }
+
+  @Test
+  public void testMatchInterface() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchInterface(ImmutableSet.of("int1", "int2")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD intPred = any.getNextHopInterfaces()[0].or(any.getNextHopInterfaces()[1]);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, intPred, true),
+                new TransferReturn(any, intPred.not(), false))));
   }
 
   @Test

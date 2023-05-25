@@ -545,7 +545,12 @@ public class TransferBDD {
 
     } else if (expr instanceof MatchInterface) {
       MatchInterface mi = (MatchInterface) expr;
-      BDD[] nextHopInterfaces = routeForMatching(p.getData()).getNextHopInterfaces();
+      if (_useOutputAttributes) {
+        // we don't yet properly model the situation where a modified next-hop can be later matched
+        // upon, so we don't allow such matching
+        throw new UnsupportedFeatureException(expr.toString());
+      }
+      BDD[] nextHopInterfaces = p.getData().getNextHopInterfaces();
       BDD miPred =
           mi.getInterfaces().stream()
               .map(
