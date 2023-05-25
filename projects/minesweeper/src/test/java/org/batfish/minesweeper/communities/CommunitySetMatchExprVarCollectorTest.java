@@ -6,12 +6,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
@@ -121,7 +123,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchRegex() {
+  public void testVisitCommunitySetMatchRegexNotHandled1() {
     // We only support regexes that we can determine to match on a single community
     CommunitySetMatchRegex cmsr =
         new CommunitySetMatchRegex(
@@ -129,14 +131,23 @@ public class CommunitySetMatchExprVarCollectorTest {
             "^65000:123 65011:12[3]$");
     _expectedException.expect(UnsupportedOperationException.class);
     cmsr.accept(_varCollector, _baseConfig);
+  }
 
-    cmsr =
+  @Test
+  public void testVisitCommunitySetMatchRegexNotHandled2() {
+    CommunitySetMatchRegex cmsr =
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), "^$");
     _expectedException.expect(UnsupportedOperationException.class);
     cmsr.accept(_varCollector, _baseConfig);
+  }
 
-    cmsr =
+  @Test
+  public void testVisitCommunitySetMatchRegexHandled() {
+
+    String underscore = StringEscapeUtils.unescapeJava(Common.DEFAULT_UNDERSCORE_REPLACEMENT);
+
+    CommunitySetMatchRegex cmsr =
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), "53");
     Set<CommunityVar> result = cmsr.accept(_varCollector, _baseConfig);
@@ -150,11 +161,12 @@ public class CommunitySetMatchExprVarCollectorTest {
     cvar = CommunityVar.from("53:");
     assertEquals(ImmutableSet.of(cvar), result);
 
+    String regex = underscore + "53:";
     cmsr =
         new CommunitySetMatchRegex(
-            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), "_53:");
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), regex);
     result = cmsr.accept(_varCollector, _baseConfig);
-    cvar = CommunityVar.from("_53:");
+    cvar = CommunityVar.from(regex);
     assertEquals(ImmutableSet.of(cvar), result);
 
     cmsr =
@@ -164,11 +176,12 @@ public class CommunitySetMatchExprVarCollectorTest {
     cvar = CommunityVar.from(":53");
     assertEquals(ImmutableSet.of(cvar), result);
 
+    regex = ":53" + underscore;
     cmsr =
         new CommunitySetMatchRegex(
-            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), ":53_");
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), regex);
     result = cmsr.accept(_varCollector, _baseConfig);
-    cvar = CommunityVar.from(":53_");
+    cvar = CommunityVar.from(regex);
     assertEquals(ImmutableSet.of(cvar), result);
 
     cmsr =
@@ -178,12 +191,12 @@ public class CommunitySetMatchExprVarCollectorTest {
     cvar = CommunityVar.from("[0-9]+:");
     assertEquals(ImmutableSet.of(cvar), result);
 
+    regex = underscore + "[0-9]+:[123]*" + underscore;
     cmsr =
         new CommunitySetMatchRegex(
-            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-            "_[0-9]+:[123]*_");
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), regex);
     result = cmsr.accept(_varCollector, _baseConfig);
-    cvar = CommunityVar.from("_[0-9]+:[123]*_");
+    cvar = CommunityVar.from(regex);
     assertEquals(ImmutableSet.of(cvar), result);
   }
 
