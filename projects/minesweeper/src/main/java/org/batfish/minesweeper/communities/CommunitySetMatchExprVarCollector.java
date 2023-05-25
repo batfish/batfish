@@ -74,9 +74,9 @@ public class CommunitySetMatchExprVarCollector
         "Unsupported community set rendering " + communitySetMatchRegex.getCommunitySetRendering());
 
     String regex = communitySetMatchRegex.getRegex();
-    // a conservative check if the regex only matches on the existence of a single community in the
-    // set -- the regex optionally starts with _, optionally ends with _, and in between only
-    // accepts strings containing digits and colons
+    // a conservative check to determine if the regex only matches on the existence of a single
+    // community in the set: the regex optionally starts with _, optionally ends with _, and in
+    // between only accepts strings containing digits and colons
     String underscore = StringEscapeUtils.unescapeJava(DEFAULT_UNDERSCORE_REPLACEMENT);
     if (regex.startsWith(underscore)) {
       regex = regex.substring(underscore.length());

@@ -28,7 +28,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 public final class Common {
 
   /**
-   * A translation for the underscore character in regular expressions that appear in routing
+   * A Java regex translation for the underscore character that can appear in regexes in routing
    * policies. This is a default translation that works for many vendors, but some vendors may treat
    * underscore differently and so may need their own translation.
    */
