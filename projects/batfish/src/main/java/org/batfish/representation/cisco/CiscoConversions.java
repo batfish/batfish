@@ -12,6 +12,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
+import static org.batfish.datamodel.routing_policy.Common.communitySetMatchRegex;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
@@ -46,7 +47,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -107,14 +107,12 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -567,39 +565,8 @@ public class CiscoConversions {
   }
 
   static @Nonnull CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
-
-    String regex = line.getRegex();
-
-    // If the line's regex only requires some community in the set to have a particular format,
-    // create a regex on an individual community rather than on the whole set.
-    // Regexes on individual communities have a simpler semantics, and some questions
-    // (e.g. SearchRoutePolicies) do not handle arbitrary community-set regexes.
-    String containsAColon = "(_?\\d+)?:?(\\d+_?)?";
-    String noColon = "_?\\d+|\\d+_?";
-    String singleCommRegex = containsAColon + "|" + noColon;
-    Pattern p = Pattern.compile(singleCommRegex);
-    if (p.matcher(regex).matches()) {
-      return toCommunitySetAclLineOptimized(line);
-    } else {
-      return toCommunitySetAclLineUnoptimized(line);
-    }
-  }
-
-  // This method should only be used if the line's regex has a special form; see
-  // toCommunitySetAclLine(ExpandedCommunityListLine) above.
-  static @Nonnull CommunitySetAclLine toCommunitySetAclLineOptimized(
-      ExpandedCommunityListLine line) {
     return new CommunitySetAclLine(
-        line.getAction(), new HasCommunity(toCommunityMatchRegex(line.getRegex())));
-  }
-
-  static @Nonnull CommunitySetAclLine toCommunitySetAclLineUnoptimized(
-      ExpandedCommunityListLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(),
-        new CommunitySetMatchRegex(
-            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-            toJavaRegex(line.getRegex())));
+        line.getAction(), communitySetMatchRegex(toJavaRegex(line.getRegex())));
   }
 
   static String toJavaRegex(String ciscoRegex) {

@@ -1,19 +1,13 @@
 package org.batfish.minesweeper.communities;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import dk.brics.automaton.Automaton;
-import dk.brics.automaton.RegExp;
 import java.util.Collection;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
@@ -25,7 +19,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.HasSize;
-import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.minesweeper.CommunityVar;
 
 /** Collect all community literals and regexes in a {@link CommunitySetMatchExpr}. */
@@ -67,31 +60,8 @@ public class CommunitySetMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetMatchRegex(
       CommunitySetMatchRegex communitySetMatchRegex, Configuration arg) {
-    checkArgument(
-        communitySetMatchRegex
-            .getCommunitySetRendering()
-            .equals(new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance())),
-        "Unsupported community set rendering " + communitySetMatchRegex.getCommunitySetRendering());
-
-    String regex = communitySetMatchRegex.getRegex();
-    // a conservative check to determine if the regex only matches on the existence of a single
-    // community in the set: the regex optionally starts with _, optionally ends with _, and in
-    // between only accepts strings containing digits and colons
-    String underscore = StringEscapeUtils.unescapeJava(DEFAULT_UNDERSCORE_REPLACEMENT);
-    if (regex.startsWith(underscore)) {
-      regex = regex.substring(underscore.length());
-    }
-    if (regex.endsWith(underscore)) {
-      regex = regex.substring(0, regex.length() - underscore.length());
-    }
-    Automaton regexAuto = new RegExp(regex).toAutomaton();
-    Automaton digitsAndColons = new RegExp("[0-9:]+").toAutomaton();
-    if (regexAuto.intersection(digitsAndColons).equals(regexAuto)) {
-      return ImmutableSet.of(CommunityVar.from(communitySetMatchRegex.getRegex()));
-    } else {
-      throw new UnsupportedOperationException(
-          "Unsupported community set regex: " + communitySetMatchRegex.getRegex());
-    }
+    throw new UnsupportedOperationException(
+        "Currently not supporting community-set regexes: " + communitySetMatchRegex.getRegex());
   }
 
   @Override
