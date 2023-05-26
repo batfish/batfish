@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
-import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_HELLO_INTERVAL;
@@ -282,10 +282,10 @@ public class CiscoConversionsTest {
 
     assertThat(
         toCommunitySetAclLine(l0),
-        equalTo(new CommunitySetAclLine(LineAction.PERMIT, fromRegex("34"))));
+        equalTo(new CommunitySetAclLine(LineAction.PERMIT, toMatchExpr("34"))));
     assertThat(
         toCommunitySetAclLine(l1),
-        equalTo(new CommunitySetAclLine(LineAction.DENY, fromRegex(toJavaRegex("^34:567_")))));
+        equalTo(new CommunitySetAclLine(LineAction.DENY, toMatchExpr(toJavaRegex("^34:567_")))));
   }
 
   private static CiscoConfiguration basicCiscoConfig() {

@@ -22,7 +22,7 @@ import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REP
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
-import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
@@ -1235,7 +1235,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
       IpCommunityListExpandedLine line) {
-    return new CommunitySetAclLine(line.getAction(), fromRegex(toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), toMatchExpr(toJavaRegex(line.getRegex())));
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(

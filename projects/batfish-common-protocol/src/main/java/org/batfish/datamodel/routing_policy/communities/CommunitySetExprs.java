@@ -25,7 +25,7 @@ public final class CommunitySetExprs {
    * @param regex the regex
    * @return an expression that represents a community-set match on the regex
    */
-  public static @Nonnull CommunitySetMatchExpr fromRegex(String regex) {
+  public static @Nonnull CommunitySetMatchExpr toMatchExpr(String regex) {
     String trimmedRegex = regex;
     // a conservative check to determine if the regex only matches on the existence of a single
     // community in the set: the regex optionally starts with _, optionally ends with _, and in

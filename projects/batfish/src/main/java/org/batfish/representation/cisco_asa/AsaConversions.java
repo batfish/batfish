@@ -12,7 +12,7 @@ import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
-import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeIcmpObjectGroupAclName;
@@ -1627,7 +1627,7 @@ public class AsaConversions {
   @Nonnull
   private static CommunitySetAclLine toCommunitySetAclLineUnoptimized(
       ExpandedCommunityListLine line) {
-    return new CommunitySetAclLine(line.getAction(), fromRegex(toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), toMatchExpr(toJavaRegex(line.getRegex())));
   }
 
   @Nonnull
