@@ -1,7 +1,5 @@
 package org.batfish.minesweeper.bdd;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -19,7 +17,6 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
-import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIn;
@@ -135,9 +132,6 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
 
   @Override
   public BDD visitCommunityMatchRegex(CommunityMatchRegex communityMatchRegex, Arg arg) {
-    checkArgument(
-        communityMatchRegex.getCommunityRendering().equals(ColonSeparatedRendering.instance()),
-        "Currently only supporting community regexes using the colon-separated rendering");
     return CommunitySetMatchExprToBDD.communityVarsToBDD(
         communityMatchRegex.accept(
             new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),

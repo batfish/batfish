@@ -9,7 +9,7 @@ community-set all_community
   *:*
 end-set
 community-set hpr_routes_community
-  ios-regex '2153:*'
+  ios-regex '2153:.*'
 end-set
 community-set hpr_blackhole_community
   2153:666
@@ -24,7 +24,7 @@ community-set ucla_to_hpr_community_ipv6
   2153:65418
 end-set
 community-set dc_and_isp_routes_community
-  ios-regex '2152:*'
+  ios-regex '2152:.*'
 end-set
 community-set dc_and_isp_blackhole_community
   2152:666
