@@ -1,7 +1,5 @@
 package org.batfish.minesweeper.bdd;
 
-import static org.parboiled.common.Preconditions.checkArgument;
-
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,11 +100,10 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-
     // We've already ensured in CommunitySetMatchExprVarCollector that there are no community-set
     // regexes, so this code should be unreachable.
-    checkArgument(false, "Unexpected community set match regex");
-    return null;
+    throw new IllegalStateException(
+        String.format("Unexpected community set match regex %s", communitySetMatchRegex));
   }
 
   @Override
