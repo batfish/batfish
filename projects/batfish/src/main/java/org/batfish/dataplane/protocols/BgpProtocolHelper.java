@@ -198,8 +198,8 @@ public final class BgpProtocolHelper {
    * clients to clients and non-clients. reflect everything
    * received from non-clients to clients.
    */
-  public static boolean isReflectable(
-      BgpRoute route, BgpSessionProperties session, AddressFamily localAf) {
+  public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>> boolean isReflectable(
+      BgpRoute<B, R> route, BgpSessionProperties session, AddressFamily localAf) {
     switch (session.getSessionType()) {
       case IBGP:
       case IBGP_UNNUMBERED:
