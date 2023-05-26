@@ -7,8 +7,8 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
-import static org.batfish.datamodel.routing_policy.Common.communitySetMatchRegex;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.arista.AristaConfiguration.MAX_ADMINISTRATIVE_COST;
@@ -873,8 +873,7 @@ final class AristaConversions {
 
   @Nonnull
   static CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(), communitySetMatchRegex(toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), fromRegex(toJavaRegex(line.getRegex())));
   }
 
   @Nonnull

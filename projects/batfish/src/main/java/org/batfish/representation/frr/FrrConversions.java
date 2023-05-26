@@ -20,9 +20,9 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFER
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
-import static org.batfish.datamodel.routing_policy.Common.communitySetMatchRegex;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.frr.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.frr.FrrConfiguration.LINK_LOCAL_ADDRESS;
@@ -1737,8 +1737,7 @@ public final class FrrConversions {
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
       BgpCommunityListExpandedLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(), communitySetMatchRegex(toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), fromRegex(toJavaRegex(line.getRegex())));
   }
 
   private static @Nonnull CommunityAclLine toCommunityAclLine(BgpCommunityListExpandedLine line) {

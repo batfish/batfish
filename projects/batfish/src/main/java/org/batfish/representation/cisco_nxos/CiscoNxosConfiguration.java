@@ -19,10 +19,10 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NE
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
-import static org.batfish.datamodel.routing_policy.Common.communitySetMatchRegex;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
@@ -1235,8 +1235,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
       IpCommunityListExpandedLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(), communitySetMatchRegex(toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), fromRegex(toJavaRegex(line.getRegex())));
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(

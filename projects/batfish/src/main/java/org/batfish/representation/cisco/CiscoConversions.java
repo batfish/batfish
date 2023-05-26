@@ -12,8 +12,8 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
-import static org.batfish.datamodel.routing_policy.Common.communitySetMatchRegex;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
@@ -565,8 +565,7 @@ public class CiscoConversions {
   }
 
   static @Nonnull CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(), communitySetMatchRegex(toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), fromRegex(toJavaRegex(line.getRegex())));
   }
 
   static String toJavaRegex(String ciscoRegex) {

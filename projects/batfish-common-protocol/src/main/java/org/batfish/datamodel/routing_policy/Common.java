@@ -4,13 +4,10 @@ import static java.util.Collections.singletonList;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import dk.brics.automaton.Automaton;
-import dk.brics.automaton.RegExp;
 import java.util.Iterator;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -19,12 +16,6 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
-import org.batfish.datamodel.routing_policy.communities.HasCommunity;
-import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -42,36 +33,6 @@ public final class Common {
    * underscore differently and so may need their own translation.
    */
   public static final String DEFAULT_UNDERSCORE_REPLACEMENT = "(,|\\\\{|\\\\}|^|\\$| )";
-
-  /**
-   * Creates an expression that matches on the given community-set regex. If the regex can be
-   * identified as one that only requires the existence of a single community, then the result makes
-   * that explicit by using {@link CommunityMatchRegex} instead of {@link CommunitySetMatchRegex}.
-   *
-   * @param regex the regex
-   * @return an expression that represents a community-set match on the regex
-   */
-  public static @Nonnull CommunitySetMatchExpr communitySetMatchRegex(String regex) {
-    String trimmedRegex = regex;
-    // a conservative check to determine if the regex only matches on the existence of a single
-    // community in the set: the regex optionally starts with _, optionally ends with _, and in
-    // between only accepts strings containing digits and colons
-    String underscore = StringEscapeUtils.unescapeJava(DEFAULT_UNDERSCORE_REPLACEMENT);
-    if (trimmedRegex.startsWith(underscore)) {
-      trimmedRegex = trimmedRegex.substring(underscore.length());
-    }
-    if (trimmedRegex.endsWith(underscore)) {
-      trimmedRegex = trimmedRegex.substring(0, trimmedRegex.length() - underscore.length());
-    }
-    Automaton trimmedRegexAuto = new RegExp(trimmedRegex).toAutomaton();
-    Automaton digitsAndColons = new RegExp("[0-9:]+").toAutomaton();
-    if (trimmedRegexAuto.intersection(digitsAndColons).equals(trimmedRegexAuto)) {
-      return new HasCommunity(new CommunityMatchRegex(ColonSeparatedRendering.instance(), regex));
-    } else {
-      return new CommunitySetMatchRegex(
-          new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), regex);
-    }
-  }
 
   /**
    * Creates a generation policy for the aggregate network with the given {@link Prefix}. The

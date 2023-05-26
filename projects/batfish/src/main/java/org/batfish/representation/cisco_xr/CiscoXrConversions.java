@@ -15,8 +15,8 @@ import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-import static org.batfish.datamodel.routing_policy.Common.communitySetMatchRegex;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitReject;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.DEFAULT_EBGP_ADMIN;
@@ -773,13 +773,13 @@ public class CiscoXrConversions {
     public CommunitySetMatchExpr visitCommunitySetDfaRegex(
         XrCommunitySetDfaRegex communitySetDfaRegex, Configuration arg) {
       // TODO: properly differentiate from ios-regex
-      return communitySetMatchRegex(toJavaRegex(communitySetDfaRegex.getRegex()));
+      return fromRegex(toJavaRegex(communitySetDfaRegex.getRegex()));
     }
 
     @Override
     public CommunitySetMatchExpr visitCommunitySetIosRegex(
         XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
-      return communitySetMatchRegex(toJavaRegex(communitySetIosRegex.getRegex()));
+      return fromRegex(toJavaRegex(communitySetIosRegex.getRegex()));
     }
 
     @Override

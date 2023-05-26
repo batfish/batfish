@@ -18,9 +18,9 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFER
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
-import static org.batfish.datamodel.routing_policy.Common.communitySetMatchRegex;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.fromRegex;
 import static org.batfish.representation.cumulus_nclu.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME;
@@ -1428,8 +1428,7 @@ public final class CumulusConversions {
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
       IpCommunityListExpandedLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(), communitySetMatchRegex(toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), fromRegex(toJavaRegex(line.getRegex())));
   }
 
   private static @Nonnull CommunityAclLine toCommunityAclLine(IpCommunityListExpandedLine line) {
