@@ -100,8 +100,10 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-    // NOTE: when implementing, update CommunitySetMatchExprVarCollector#visitCommunitySetMatchRegex
-    throw new UnsupportedOperationException("Currently not supporting community set regexes");
+    // We've already ensured in CommunitySetMatchExprVarCollector that there are no community-set
+    // regexes, so this code should be unreachable.
+    throw new IllegalStateException(
+        String.format("Unexpected community set match regex %s", communitySetMatchRegex));
   }
 
   @Override

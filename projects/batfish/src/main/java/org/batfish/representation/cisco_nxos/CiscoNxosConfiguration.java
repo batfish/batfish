@@ -18,9 +18,11 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NETWORK;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
@@ -171,14 +173,12 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -370,8 +370,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     } else {
       withoutQuotes = ciscoRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 
@@ -1236,11 +1235,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
       IpCommunityListExpandedLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(),
-        new CommunitySetMatchRegex(
-            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-            toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), toMatchExpr(toJavaRegex(line.getRegex())));
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(

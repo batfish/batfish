@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_HELLO_INTERVAL;
@@ -11,8 +12,7 @@ import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
 import static org.batfish.representation.cisco.CiscoConversions.sanityCheckDistributeList;
 import static org.batfish.representation.cisco.CiscoConversions.sanityCheckEigrpDistributeList;
 import static org.batfish.representation.cisco.CiscoConversions.toCommunitySetAclLine;
-import static org.batfish.representation.cisco.CiscoConversions.toCommunitySetAclLineOptimized;
-import static org.batfish.representation.cisco.CiscoConversions.toCommunitySetAclLineUnoptimized;
+import static org.batfish.representation.cisco.CiscoConversions.toJavaRegex;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfDeadInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toRouteFilterList;
@@ -39,6 +39,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Before;
@@ -277,49 +278,14 @@ public class CiscoConversionsTest {
   @Test
   public void testToCommunitySetAclLine() {
     ExpandedCommunityListLine l0 = new ExpandedCommunityListLine(LineAction.PERMIT, "34");
-    ExpandedCommunityListLine l1 = new ExpandedCommunityListLine(LineAction.PERMIT, "_34:567_");
-    ExpandedCommunityListLine l2 = new ExpandedCommunityListLine(LineAction.DENY, "_34:567");
-    ExpandedCommunityListLine l3 = new ExpandedCommunityListLine(LineAction.PERMIT, "_34:");
-    ExpandedCommunityListLine l4 = new ExpandedCommunityListLine(LineAction.DENY, "_34");
-    ExpandedCommunityListLine l5 = new ExpandedCommunityListLine(LineAction.PERMIT, "34:");
-    ExpandedCommunityListLine l6 = new ExpandedCommunityListLine(LineAction.DENY, "34:567_");
-    ExpandedCommunityListLine l7 = new ExpandedCommunityListLine(LineAction.PERMIT, ":567");
-    ExpandedCommunityListLine l8 = new ExpandedCommunityListLine(LineAction.DENY, ":567_");
-    ExpandedCommunityListLine l85 = new ExpandedCommunityListLine(LineAction.PERMIT, "567_");
-    ExpandedCommunityListLine l9 = new ExpandedCommunityListLine(LineAction.PERMIT, "34:567");
-    ExpandedCommunityListLine l10 = new ExpandedCommunityListLine(LineAction.DENY, ":");
+    ExpandedCommunityListLine l1 = new ExpandedCommunityListLine(LineAction.DENY, "^34:567_");
 
-    ExpandedCommunityListLine l11 = new ExpandedCommunityListLine(LineAction.PERMIT, "^34:567_");
-    ExpandedCommunityListLine l12 = new ExpandedCommunityListLine(LineAction.DENY, "_34:567$");
-    ExpandedCommunityListLine l13 =
-        new ExpandedCommunityListLine(LineAction.PERMIT, "_34:56_78:9_");
-    ExpandedCommunityListLine l14 = new ExpandedCommunityListLine(LineAction.DENY, ":56_78:");
-    ExpandedCommunityListLine l15 = new ExpandedCommunityListLine(LineAction.PERMIT, "56_78");
-    ExpandedCommunityListLine l16 = new ExpandedCommunityListLine(LineAction.DENY, "^34:567$");
-    ExpandedCommunityListLine l17 = new ExpandedCommunityListLine(LineAction.DENY, "^34:");
-    ExpandedCommunityListLine l18 = new ExpandedCommunityListLine(LineAction.DENY, ":567$");
-
-    assertThat(toCommunitySetAclLine(l0), equalTo(toCommunitySetAclLineOptimized(l0)));
-    assertThat(toCommunitySetAclLine(l1), equalTo(toCommunitySetAclLineOptimized(l1)));
-    assertThat(toCommunitySetAclLine(l2), equalTo(toCommunitySetAclLineOptimized(l2)));
-    assertThat(toCommunitySetAclLine(l3), equalTo(toCommunitySetAclLineOptimized(l3)));
-    assertThat(toCommunitySetAclLine(l4), equalTo(toCommunitySetAclLineOptimized(l4)));
-    assertThat(toCommunitySetAclLine(l5), equalTo(toCommunitySetAclLineOptimized(l5)));
-    assertThat(toCommunitySetAclLine(l6), equalTo(toCommunitySetAclLineOptimized(l6)));
-    assertThat(toCommunitySetAclLine(l7), equalTo(toCommunitySetAclLineOptimized(l7)));
-    assertThat(toCommunitySetAclLine(l8), equalTo(toCommunitySetAclLineOptimized(l8)));
-    assertThat(toCommunitySetAclLine(l85), equalTo(toCommunitySetAclLineOptimized(l85)));
-    assertThat(toCommunitySetAclLine(l9), equalTo(toCommunitySetAclLineOptimized(l9)));
-    assertThat(toCommunitySetAclLine(l10), equalTo(toCommunitySetAclLineOptimized(l10)));
-
-    assertThat(toCommunitySetAclLine(l11), equalTo(toCommunitySetAclLineUnoptimized(l11)));
-    assertThat(toCommunitySetAclLine(l12), equalTo(toCommunitySetAclLineUnoptimized(l12)));
-    assertThat(toCommunitySetAclLine(l13), equalTo(toCommunitySetAclLineUnoptimized(l13)));
-    assertThat(toCommunitySetAclLine(l14), equalTo(toCommunitySetAclLineUnoptimized(l14)));
-    assertThat(toCommunitySetAclLine(l15), equalTo(toCommunitySetAclLineUnoptimized(l15)));
-    assertThat(toCommunitySetAclLine(l16), equalTo(toCommunitySetAclLineUnoptimized(l16)));
-    assertThat(toCommunitySetAclLine(l17), equalTo(toCommunitySetAclLineUnoptimized(l17)));
-    assertThat(toCommunitySetAclLine(l18), equalTo(toCommunitySetAclLineUnoptimized(l18)));
+    assertThat(
+        toCommunitySetAclLine(l0),
+        equalTo(new CommunitySetAclLine(LineAction.PERMIT, toMatchExpr("34"))));
+    assertThat(
+        toCommunitySetAclLine(l1),
+        equalTo(new CommunitySetAclLine(LineAction.DENY, toMatchExpr(toJavaRegex("^34:567_")))));
   }
 
   private static CiscoConfiguration basicCiscoConfig() {

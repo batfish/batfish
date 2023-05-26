@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.communities;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
@@ -11,6 +13,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIn;
@@ -107,6 +110,9 @@ public class CommunityMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunityMatchRegex(
       CommunityMatchRegex communityMatchRegex, Configuration arg) {
+    checkArgument(
+        communityMatchRegex.getCommunityRendering().equals(ColonSeparatedRendering.instance()),
+        "Currently only supporting community regexes using the colon-separated rendering");
     return ImmutableSet.of(CommunityVar.from(communityMatchRegex.getRegex()));
   }
 

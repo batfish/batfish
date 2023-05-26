@@ -173,6 +173,7 @@ java_library(
         "@maven//:com_ibm_icu_icu4j",
         "@maven//:commons_cli_commons_cli",
         "@maven//:commons_io_commons_io",
+        "@maven//:dk_brics_automaton",
         "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_configuration2",
