@@ -202,24 +202,28 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     if (questionsBgpRoute == null) {
       return null;
     }
-    return Bgpv4Route.builder()
-        .setWeight(questionsBgpRoute.getWeight())
-        .setNextHopIp(questionsBgpRoute.getNextHopIp())
-        .setProtocol(questionsBgpRoute.getProtocol())
-        .setSrcProtocol(questionsBgpRoute.getSrcProtocol())
-        .setOriginMechanism(questionsBgpRoute.getOriginMechanism())
-        .setOriginType(questionsBgpRoute.getOriginType())
-        .setOriginatorIp(questionsBgpRoute.getOriginatorIp())
-        .setPathId(questionsBgpRoute.getPathId())
-        .setMetric(questionsBgpRoute.getMetric())
-        .setLocalPreference(questionsBgpRoute.getLocalPreference())
-        .setTag(questionsBgpRoute.getTag())
-        .setTunnelEncapsulationAttribute(questionsBgpRoute.getTunnelEncapsulationAttribute())
-        .setNetwork(questionsBgpRoute.getNetwork())
-        .setCommunities(questionsBgpRoute.getCommunities())
-        .setAsPath(questionsBgpRoute.getAsPath())
-        .setReceivedFrom(ReceivedFromSelf.instance()) // TODO: support receivedFrom in input route
-        .build();
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.builder()
+            .setWeight(questionsBgpRoute.getWeight())
+            .setProtocol(questionsBgpRoute.getProtocol())
+            .setSrcProtocol(questionsBgpRoute.getSrcProtocol())
+            .setOriginMechanism(questionsBgpRoute.getOriginMechanism())
+            .setOriginType(questionsBgpRoute.getOriginType())
+            .setOriginatorIp(questionsBgpRoute.getOriginatorIp())
+            .setPathId(questionsBgpRoute.getPathId())
+            .setMetric(questionsBgpRoute.getMetric())
+            .setLocalPreference(questionsBgpRoute.getLocalPreference())
+            .setTag(questionsBgpRoute.getTag())
+            .setTunnelEncapsulationAttribute(questionsBgpRoute.getTunnelEncapsulationAttribute())
+            .setNetwork(questionsBgpRoute.getNetwork())
+            .setCommunities(questionsBgpRoute.getCommunities())
+            .setAsPath(questionsBgpRoute.getAsPath())
+            .setReceivedFrom(
+                ReceivedFromSelf.instance()); // TODO: support receivedFrom in input route
+    if (questionsBgpRoute.getNextHop() != null) {
+      builder.setNextHop(questionsBgpRoute.getNextHop());
+    }
+    return builder.build();
   }
 
   @Nullable
@@ -236,7 +240,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         // route map does not explicitly set the next hop.  If the simulated route map has direction
         // IN, AUTO/NONE can indicate that the route is explicitly discarded by the route map, but
         // it is also used in other situations (see AbstractRoute::NEXT_HOP_IP_EXTRACTOR).
-        .setNextHopIp(dataplaneBgpRoute.getNextHopIp())
+        .setNextHop(dataplaneBgpRoute.getNextHop())
         .setProtocol(dataplaneBgpRoute.getProtocol())
         .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
         .setOriginMechanism(dataplaneBgpRoute.getOriginMechanism())

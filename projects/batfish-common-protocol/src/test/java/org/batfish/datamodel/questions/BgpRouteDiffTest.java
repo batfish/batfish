@@ -5,7 +5,7 @@ import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
-import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP_IP;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
@@ -28,6 +28,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -130,7 +131,10 @@ public class BgpRouteDiffTest {
             new BgpRouteDiff(PROP_COMMUNITIES, "[0:1, 0:2]", "[0:2, 0:3]"),
             new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2"),
             new BgpRouteDiff(PROP_METRIC, "1", "2"),
-            new BgpRouteDiff(PROP_NEXT_HOP_IP, "1.1.1.1", "2.2.2.2"),
+            new BgpRouteDiff(
+                PROP_NEXT_HOP,
+                NextHopIp.of(Ip.parse("1.1.1.1")).toString(),
+                NextHopIp.of(Ip.parse("2.2.2.2")).toString()),
             new BgpRouteDiff(PROP_ORIGINATOR_IP, "1.1.1.1", "2.2.2.2"),
             new BgpRouteDiff(PROP_ORIGIN_TYPE, "IGP", "EGP"),
             new BgpRouteDiff(PROP_TAG, "1", "2"),

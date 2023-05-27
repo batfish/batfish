@@ -56,6 +56,8 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -513,7 +515,11 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
-            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_NEXT_HOP_IP, "1.1.1.1", "0.0.0.1")));
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    NextHopIp.of(Ip.parse("1.1.1.1")).toString(),
+                    NextHopIp.of(Ip.parse("0.0.0.1")).toString())));
 
     assertThat(
         answer.getRows().getData(),
@@ -555,7 +561,10 @@ public class CompareRoutePoliciesAnswererTest {
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
             ImmutableSet.of(
-                new BgpRouteDiff(BgpRoute.PROP_NEXT_HOP_IP, Ip.create(-1).toString(), "0.0.0.1")));
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    NextHopDiscard.instance().toString(),
+                    NextHopIp.of(Ip.parse("0.0.0.1")).toString())));
 
     assertThat(
         answer.getRows().getData(),
