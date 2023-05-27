@@ -191,6 +191,7 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -3615,6 +3616,26 @@ public class AristaGrammarTest {
       policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
     }
+  }
+
+  @Test
+  public void testBgpClientToClientReflectionExtraction() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_reflection");
+    Map<String, AristaBgpVrf> bgpVrfs = c.getAristaBgp().getVrfs();
+    assertThat(bgpVrfs, hasKeys("default", "vrf2", "vrf3"));
+    assertThat(bgpVrfs.get("default").getClientToClientReflection(), equalTo(false));
+    assertThat(bgpVrfs.get("vrf2").getClientToClientReflection(), nullValue());
+    assertThat(bgpVrfs.get("vrf3").getClientToClientReflection(), equalTo(true));
+  }
+
+  @Test
+  public void testBgpClientToClientReflectionConversion() {
+    Configuration c = parseConfig("arista_bgp_reflection");
+    Map<String, Vrf> vrfs = c.getVrfs();
+    assertThat(vrfs, hasKeys("default", "vrf2", "vrf3"));
+    assertThat(vrfs.get("default").getBgpProcess().getClientToClientReflection(), equalTo(false));
+    assertThat(vrfs.get("vrf2").getBgpProcess().getClientToClientReflection(), equalTo(true));
+    assertThat(vrfs.get("vrf3").getBgpProcess().getClientToClientReflection(), equalTo(true));
   }
 
   @Test
