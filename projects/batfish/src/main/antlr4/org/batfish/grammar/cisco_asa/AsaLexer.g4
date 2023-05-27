@@ -962,8 +962,6 @@ CLIENT_IDENTIFIER: 'client-identifier';
 
 CLIENT_NAME: 'client-name';
 
-CLIENT_TO_CLIENT: 'client-to-client';
-
 CLNS: 'clns';
 
 CLOCK: 'clock';

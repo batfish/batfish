@@ -837,6 +837,10 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
     newBgpProcess.setTieBreaker(tieBreaker);
 
+    // Client-to-client reflection is on by default.
+    newBgpProcess.setClientToClientReflection(
+        firstNonNull(bgpVrf.getClientToClientReflection(), true));
+
     // If confederations are present, convert
     if (bgpVrf.getConfederationIdentifier() != null) {
       LongSpace peers =

@@ -1491,6 +1491,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -3179,6 +3180,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -3712,6 +3714,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -5412,6 +5415,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -7073,6 +7077,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -7840,6 +7845,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -8523,6 +8529,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -9869,6 +9876,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -10888,6 +10896,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -11928,6 +11937,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -13492,6 +13502,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -14945,6 +14956,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -15595,6 +15607,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
