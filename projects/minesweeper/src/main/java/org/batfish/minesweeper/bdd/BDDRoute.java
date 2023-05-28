@@ -125,13 +125,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * Contains a BDD variable for next-hop interface that may be encountered along the path. See
    * {@link org.batfish.datamodel.routing_policy.expr.MatchInterface}.
    */
-  private BDD[] _nextHopInterfaces;
+  private final BDD[] _nextHopInterfaces;
 
   /**
    * Contains a BDD variable for each source VRF that may be encountered along the path. See {@link
    * org.batfish.datamodel.routing_policy.expr.MatchSourceVrf}.
    */
-  private BDD[] _sourceVrfs;
+  private final BDD[] _sourceVrfs;
 
   private MutableBDDInteger _tag;
 
@@ -456,12 +456,15 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     // the next hop should be neither the min nor the max possible IP
     // this constraint is enforced by NextHopIp's constructor
     BDD nextHopConstraint = _nextHop.range(Ip.ZERO.asLong() + 1, Ip.MAX.asLong() - 1);
+    // at most one next-hop interface name should be selected
+    BDD nextHopInterfaceConstraint = atMostOneOf(_nextHopInterfaces);
 
     return protocolConstraint
         .andWith(prefLenConstraint)
         .andWith(asPathConstraint)
         .andWith(sourceVrfConstraint)
-        .andWith(nextHopConstraint);
+        .andWith(nextHopConstraint)
+        .andWith(nextHopInterfaceConstraint);
   }
 
   /*
