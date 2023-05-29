@@ -202,28 +202,24 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     if (questionsBgpRoute == null) {
       return null;
     }
-    Bgpv4Route.Builder builder =
-        Bgpv4Route.builder()
-            .setWeight(questionsBgpRoute.getWeight())
-            .setProtocol(questionsBgpRoute.getProtocol())
-            .setSrcProtocol(questionsBgpRoute.getSrcProtocol())
-            .setOriginMechanism(questionsBgpRoute.getOriginMechanism())
-            .setOriginType(questionsBgpRoute.getOriginType())
-            .setOriginatorIp(questionsBgpRoute.getOriginatorIp())
-            .setPathId(questionsBgpRoute.getPathId())
-            .setMetric(questionsBgpRoute.getMetric())
-            .setLocalPreference(questionsBgpRoute.getLocalPreference())
-            .setTag(questionsBgpRoute.getTag())
-            .setTunnelEncapsulationAttribute(questionsBgpRoute.getTunnelEncapsulationAttribute())
-            .setNetwork(questionsBgpRoute.getNetwork())
-            .setCommunities(questionsBgpRoute.getCommunities())
-            .setAsPath(questionsBgpRoute.getAsPath())
-            .setReceivedFrom(
-                ReceivedFromSelf.instance()); // TODO: support receivedFrom in input route
-    if (questionsBgpRoute.getNextHop() != null) {
-      builder.setNextHop(questionsBgpRoute.getNextHop());
-    }
-    return builder.build();
+    return Bgpv4Route.builder()
+        .setWeight(questionsBgpRoute.getWeight())
+        .setProtocol(questionsBgpRoute.getProtocol())
+        .setSrcProtocol(questionsBgpRoute.getSrcProtocol())
+        .setOriginMechanism(questionsBgpRoute.getOriginMechanism())
+        .setOriginType(questionsBgpRoute.getOriginType())
+        .setOriginatorIp(questionsBgpRoute.getOriginatorIp())
+        .setPathId(questionsBgpRoute.getPathId())
+        .setMetric(questionsBgpRoute.getMetric())
+        .setLocalPreference(questionsBgpRoute.getLocalPreference())
+        .setTag(questionsBgpRoute.getTag())
+        .setTunnelEncapsulationAttribute(questionsBgpRoute.getTunnelEncapsulationAttribute())
+        .setNetwork(questionsBgpRoute.getNetwork())
+        .setNextHop(questionsBgpRoute.getNextHop())
+        .setCommunities(questionsBgpRoute.getCommunities())
+        .setAsPath(questionsBgpRoute.getAsPath())
+        .setReceivedFrom(ReceivedFromSelf.instance()) // TODO: support receivedFrom in input route
+        .build();
   }
 
   @Nullable
