@@ -1171,6 +1171,7 @@ public class TransferBDD {
       List<Ip> ips = ((IpNextHop) expr).getIps();
       Ip ip = ips.get(0);
       route.setNextHop(MutableBDDInteger.makeFromValue(_factory, 32, ip.asLong()));
+      route.setNextHopDiscarded(false);
     } else {
       throw new UnsupportedFeatureException(expr.toString());
     }

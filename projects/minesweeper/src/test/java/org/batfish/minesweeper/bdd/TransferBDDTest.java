@@ -1399,6 +1399,28 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testDiscardThenSetNextHop() {
+    _policyBuilder
+        .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
+        .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    expected.setNextHopSet(true);
+    expected.setNextHop(
+        MutableBDDInteger.makeFromValue(expected.getFactory(), 32, Ip.parse("1.1.1.1").asLong()));
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
   public void testUnsupportedSetNextHop() {
     _policyBuilder.addStatement(new SetNextHop(SelfNextHop.getInstance()));
     RoutingPolicy policy = _policyBuilder.build();
