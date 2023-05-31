@@ -53,6 +53,7 @@ public class BgpProcess implements Serializable {
 
   public static class Builder {
 
+    @Nullable private Boolean _clientToClientReflection;
     @Nullable private BgpConfederation _confederation;
     @Nullable private Integer _ebgpAdminCost;
     @Nullable private Integer _ibgpAdminCost;
@@ -92,6 +93,7 @@ public class BgpProcess implements Serializable {
               _ebgpAdminCost,
               _ibgpAdminCost,
               _localAdminCost,
+              _clientToClientReflection,
               _confederation,
               _networkPolicy,
               _mainRibIndependentNetworkPolicy,
@@ -103,6 +105,12 @@ public class BgpProcess implements Serializable {
         _vrf.setBgpProcess(bgpProcess);
       }
       return bgpProcess;
+    }
+
+    public @Nonnull Builder setClientToClientReflection(
+        @Nullable Boolean clientToClientReflection) {
+      _clientToClientReflection = clientToClientReflection;
+      return this;
     }
 
     @Nonnull
@@ -191,6 +199,7 @@ public class BgpProcess implements Serializable {
   }
 
   private static final String PROP_AGGREGATES = "aggregates";
+  private static final String PROP_CLIENT_TO_CLIENT_REFLECTION = "clientToClientReflection";
   private static final String PROP_CONFEDERATION = "confederation";
   private static final String PROP_EBGP_ADMIN_COST = "ebgpAdminCost";
   private static final String PROP_IBGP_ADMIN_COST = "ibgpAdminCost";
@@ -217,6 +226,7 @@ public class BgpProcess implements Serializable {
       "redistributeNextHopIpTieBreaker";
   private static final String PROP_TRACKS = "tracks";
 
+  private boolean _clientToClientReflection;
   @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
   private final int _ibgpAdminCost;
@@ -272,6 +282,7 @@ public class BgpProcess implements Serializable {
       int ebgpAdminCost,
       int ibgpAdminCost,
       int localAdminCost,
+      @Nullable Boolean clientToClientReflection,
       @Nullable BgpConfederation confederation,
       @Nullable String independentNetworkPolicy,
       @Nullable String mainRibIndependentNetworkPolicy,
@@ -281,6 +292,7 @@ public class BgpProcess implements Serializable {
       @Nonnull NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
     _activeNeighbors = new TreeMap<>();
     _aggregates = ImmutableMap.of();
+    _clientToClientReflection = firstNonNull(clientToClientReflection, true);
     _confederation = confederation;
     _ebgpAdminCost = ebgpAdminCost;
     _ibgpAdminCost = ibgpAdminCost;
@@ -305,6 +317,7 @@ public class BgpProcess implements Serializable {
   @JsonCreator
   private static BgpProcess create(
       @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
+      @Nullable @JsonProperty(PROP_CLIENT_TO_CLIENT_REFLECTION) Boolean clientToClientReflection,
       @Nullable @JsonProperty(PROP_CONFEDERATION) BgpConfederation confederation,
       @Nullable @JsonProperty(PROP_EBGP_ADMIN_COST) Integer ebgpAdminCost,
       @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost,
@@ -339,6 +352,7 @@ public class BgpProcess implements Serializable {
         ebgpAdminCost,
         ibgpAdminCost,
         localAdminCost,
+        clientToClientReflection,
         confederation,
         networkPolicy,
         mainRibIndependentNetworkPolicy,
@@ -439,6 +453,16 @@ public class BgpProcess implements Serializable {
       default:
         throw new IllegalArgumentException(String.format("Unrecognized BGP protocol %s", protocol));
     }
+  }
+
+  @JsonProperty(PROP_CLIENT_TO_CLIENT_REFLECTION)
+  public boolean getClientToClientReflection() {
+    return _clientToClientReflection;
+  }
+
+  @JsonProperty(PROP_CLIENT_TO_CLIENT_REFLECTION)
+  public void setClientToClientReflection(boolean clientToClientReflection) {
+    _clientToClientReflection = clientToClientReflection;
   }
 
   /** Return the global confederation config */

@@ -1176,6 +1176,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                           // RIB-failure routes included
                           || BgpProtocolHelper.isReflectable(
                               r.getRoute().getRoute(),
+                              _process.getClientToClientReflection(),
                               ourSession,
                               ourConfig.getAddressFamily(Type.IPV4_UNICAST))
                           // RIB-failure routes excluded

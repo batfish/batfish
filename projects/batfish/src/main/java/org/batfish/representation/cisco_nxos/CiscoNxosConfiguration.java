@@ -553,24 +553,29 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Admin distances are per-AF on NX-OS. Use the v4 unicast values for now.
+    Optional<BgpVrfIpv4AddressFamilyConfiguration> ipv4u =
+        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily());
     int ebgpAdmin =
-        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+        ipv4u
             .map(BgpVrfIpAddressFamilyConfiguration::getDistanceEbgp)
             .orElse(DEFAULT_DISTANCE_EBGP);
     int ibgpAdmin =
-        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+        ipv4u
             .map(BgpVrfIpAddressFamilyConfiguration::getDistanceIbgp)
             .orElse(DEFAULT_DISTANCE_IBGP);
     int localAdmin =
-        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+        ipv4u
             .map(BgpVrfIpAddressFamilyConfiguration::getDistanceLocal)
             .orElse(DEFAULT_DISTANCE_LOCAL_BGP);
+    boolean clientToClientReflection =
+        ipv4u.map(BgpVrfIpAddressFamilyConfiguration::getClientToClientReflection).orElse(true);
     org.batfish.datamodel.BgpProcess newBgpProcess =
         bgpProcessBuilder()
             .setRouterId(Conversions.getBgpRouterId(nxBgpVrf, _c, v, _w))
             .setEbgpAdminCost(ebgpAdmin)
             .setIbgpAdminCost(ibgpAdmin)
             .setLocalAdminCost(localAdmin)
+            .setClientToClientReflection(clientToClientReflection)
             .build();
     newBgpProcess.setClusterListAsIbgpCost(true);
     if (nxBgpVrf.getBestpathCompareRouterId()) {
