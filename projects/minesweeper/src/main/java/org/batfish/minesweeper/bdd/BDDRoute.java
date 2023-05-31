@@ -95,9 +95,18 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private MutableBDDInteger _nextHop;
 
   // to properly determine the next-hop IP that results from each path through a given route-map we
-  // need to track a few more pieces of information:  whether the next-hop is explicitly discarded
-  // by the route-map and whether the next-hop is explicitly set by the route-map
-  private boolean _nextHopDiscarded;
+  // need to track a few more pieces of information:
+
+  public enum NextHopType {
+    BGP_PEER_ADDRESS,
+    DISCARDED,
+    IP,
+    SELF
+  }
+
+  private NextHopType _nextHopType;
+
+  // was the next-hop explicitly set?
   private boolean _nextHopSet;
 
   private BDDDomain<OriginType> _originType;
@@ -222,7 +231,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     addBitNames("nextHop", 32, idx, false);
     idx += 32;
     _nextHopSet = false;
-    _nextHopDiscarded = false;
+    _nextHopType = NextHopType.IP;
     _tag = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("tag", 32, idx, false);
     idx += 32;
@@ -306,7 +315,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _prefix = new MutableBDDInteger(other._prefix);
     _nextHop = new MutableBDDInteger(other._nextHop);
     _nextHopSet = other._nextHopSet;
-    _nextHopDiscarded = other._nextHopDiscarded;
+    _nextHopType = other._nextHopType;
     _adminDist = new MutableBDDInteger(other._adminDist);
     _med = new MutableBDDInteger(other._med);
     _tag = new MutableBDDInteger(other._tag);
@@ -361,7 +370,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(pred, route.getOspfMetric());
     _bitNames = route._bitNames;
     _nextHopSet = route.getNextHopSet();
-    _nextHopDiscarded = route.getNextHopDiscarded();
+    _nextHopType = route.getNextHopType();
     _unsupported = route.getUnsupported();
     _prependedASes = new ArrayList<>(route.getPrependedASes());
     _nextHopInterfaces = route.getNextHopInterfaces();
@@ -574,20 +583,20 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHop = nextHop;
   }
 
-  public boolean getNextHopDiscarded() {
-    return _nextHopDiscarded;
-  }
-
-  public void setNextHopDiscarded(boolean nextHopDiscarded) {
-    _nextHopDiscarded = nextHopDiscarded;
-  }
-
   public boolean getNextHopSet() {
     return _nextHopSet;
   }
 
   public void setNextHopSet(boolean nextHopSet) {
     _nextHopSet = nextHopSet;
+  }
+
+  public NextHopType getNextHopType() {
+    return _nextHopType;
+  }
+
+  public void setNextHopType(NextHopType nextHopType) {
+    _nextHopType = nextHopType;
   }
 
   public BDDDomain<OriginType> getOriginType() {
@@ -680,8 +689,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_tag, other._tag)
         && Objects.equals(_weight, other._weight)
         && Objects.equals(_nextHop, other._nextHop)
-        && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
         && Objects.equals(_nextHopSet, other._nextHopSet)
+        && Objects.equals(_nextHopType, other._nextHopType)
         && Objects.equals(_prefix, other._prefix)
         && Objects.equals(_prefixLength, other._prefixLength)
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)

@@ -42,6 +42,7 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
+import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -80,6 +81,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
@@ -1165,18 +1167,22 @@ public class TransferBDD {
   }
 
   private void setNextHop(NextHopExpr expr, BDDRoute route) throws UnsupportedFeatureException {
+    // record the fact that the next-hop has been explicitly set by the route-map
+    route.setNextHopSet(true);
     if (expr instanceof DiscardNextHop) {
-      route.setNextHopDiscarded(true);
+      route.setNextHopType(BDDRoute.NextHopType.DISCARDED);
     } else if (expr instanceof IpNextHop && ((IpNextHop) expr).getIps().size() == 1) {
+      route.setNextHopType(BDDRoute.NextHopType.IP);
       List<Ip> ips = ((IpNextHop) expr).getIps();
       Ip ip = ips.get(0);
       route.setNextHop(MutableBDDInteger.makeFromValue(_factory, 32, ip.asLong()));
-      route.setNextHopDiscarded(false);
+    } else if (expr instanceof BgpPeerAddressNextHop) {
+      route.setNextHopType(BDDRoute.NextHopType.BGP_PEER_ADDRESS);
+    } else if (expr instanceof SelfNextHop) {
+      route.setNextHopType(BDDRoute.NextHopType.SELF);
     } else {
       throw new UnsupportedFeatureException(expr.toString());
     }
-    // record the fact that the next-hop has been explicitly set by the route-map
-    route.setNextHopSet(true);
   }
 
   private void prependASPath(AsPathListExpr expr, BDDRoute route)

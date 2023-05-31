@@ -215,7 +215,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD nextHopBDD = r.getNextHop().toBDD(optNextHopIp.get());
       if (outputRoute) {
         // make sure that the next hop was not discarded by the route map
-        if (r.getNextHopDiscarded()) {
+        if (r.getNextHopType() == BDDRoute.NextHopType.DISCARDED) {
           return r.getFactory().zero();
         }
         if (_direction == Environment.Direction.OUT && !r.getNextHopSet()) {

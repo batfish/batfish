@@ -166,7 +166,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         case LOCAL_PREF:
         case MED:
         case NEXTHOP:
-        case NEXTHOP_DISCARDED:
+        case NEXTHOP_TYPE:
         case NEXTHOP_SET:
         case TAG:
         case ADMIN_DIST:

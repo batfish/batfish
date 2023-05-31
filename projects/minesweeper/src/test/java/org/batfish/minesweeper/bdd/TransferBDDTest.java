@@ -98,8 +98,8 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
+import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
@@ -1369,7 +1369,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
-    expected.setNextHopDiscarded(true);
+    expected.setNextHopType(BDDRoute.NextHopType.DISCARDED);
     expected.setNextHopSet(true);
 
     List<TransferReturn> expectedPaths =
@@ -1422,7 +1422,7 @@ public class TransferBDDTest {
 
   @Test
   public void testUnsupportedSetNextHop() {
-    _policyBuilder.addStatement(new SetNextHop(SelfNextHop.getInstance()));
+    _policyBuilder.addStatement(new SetNextHop(UnchangedNextHop.getInstance()));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
@@ -1430,6 +1430,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
+    expected.setNextHopSet(true);
     expected.setUnsupported(true);
 
     List<TransferReturn> expectedPaths =
@@ -2865,7 +2866,7 @@ public class TransferBDDTest {
                         new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
                 // the SelfNextHop construct is not supported
                 ImmutableList.of(
-                    new SetNextHop(SelfNextHop.getInstance()),
+                    new SetNextHop(UnchangedNextHop.getInstance()),
                     new StaticStatement(Statements.ExitAccept))))
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
@@ -2881,6 +2882,7 @@ public class TransferBDDTest {
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
     BDDRoute expectedOut = new BDDRoute(any);
+    expectedOut.setNextHopSet(true);
     expectedOut.setUnsupported(true);
 
     assertTrue(
