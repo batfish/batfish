@@ -3554,6 +3554,7 @@
             }
           },
           "bgpProcess" : {
+            "clientToClientReflection" : true,
             "ebgpAdminCost" : 20,
             "ibgpAdminCost" : 200,
             "localAdminCost" : 200,

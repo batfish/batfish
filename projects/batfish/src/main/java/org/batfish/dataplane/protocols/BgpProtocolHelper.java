@@ -151,7 +151,9 @@ public final class BgpProtocolHelper {
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
        * modify the outgoing route as appropriate.
        */
-      if (!isReflectable(route, localSessionProperties, af) && !routeOriginatedLocally) {
+      if (!isReflectable(
+              route, localBgpProcess.getClientToClientReflection(), localSessionProperties, af)
+          && !routeOriginatedLocally) {
         /*
          * Neither reflecting nor originating this iBGP route, so don't send
          */
@@ -199,7 +201,10 @@ public final class BgpProtocolHelper {
    * received from non-clients to clients.
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>> boolean isReflectable(
-      BgpRoute<B, R> route, BgpSessionProperties session, AddressFamily localAf) {
+      BgpRoute<B, R> route,
+      boolean clientToClientReflection,
+      BgpSessionProperties session,
+      AddressFamily localAf) {
     switch (session.getSessionType()) {
       case IBGP:
       case IBGP_UNNUMBERED:
@@ -212,9 +217,11 @@ public final class BgpProtocolHelper {
       return false;
     }
 
-    // Advertise routes learned from Route Reflector clients to both RR clients and RR non-clients.
     if (route.getReceivedFromRouteReflectorClient()) {
-      return true;
+      // Advertise routes learned from Route Reflector clients to other clients only if
+      // client-to-client reflection is enabled. Non-RR clients get reflected routes
+      // unconditionally.
+      return clientToClientReflection || !localAf.getRouteReflectorClient();
     }
 
     // Advertise routes from RR non-clients to RR clients only.

@@ -9,6 +9,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.allowAsPathOut;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.isReflectable;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.Configuration;
@@ -35,8 +37,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
@@ -52,6 +56,66 @@ public class BgpProtocolHelperTest {
   private static final Ip ORIGINATOR_IP = Ip.parse("1.1.1.1");
   private final BgpProcess _process = BgpProcess.testBgpProcess(ORIGINATOR_IP);
   private Builder _baseBgpRouteBuilder;
+
+  @Test
+  public void testIsReflectableEbgp() {
+    Bgpv4Route route =
+        Bgpv4Route.testBuilder().setProtocol(RoutingProtocol.BGP).setNetwork(Prefix.ZERO).build();
+    assertThat(
+        isReflectable(
+            route,
+            true,
+            BgpSessionProperties.builder()
+                .setRemoteAs(2)
+                .setLocalAs(3)
+                .setRemoteIp(Ip.create(0))
+                .setLocalIp(Ip.create(1))
+                .setSessionType(BgpSessionProperties.SessionType.EBGP_SINGLEHOP)
+                .setAddressFamilies(ImmutableSet.of(AddressFamily.Type.IPV4_UNICAST))
+                .build(),
+            Ipv4UnicastAddressFamily.builder().build()),
+        equalTo(false));
+  }
+
+  @Test
+  public void testIsReflectableIbgp() {
+    Bgpv4Route rrc =
+        Bgpv4Route.testBuilder()
+            .setProtocol(RoutingProtocol.IBGP)
+            .setNetwork(Prefix.ZERO)
+            .setReceivedFromRouteReflectorClient(true)
+            .build();
+    Bgpv4Route norrc =
+        Bgpv4Route.testBuilder()
+            .setProtocol(RoutingProtocol.IBGP)
+            .setNetwork(Prefix.ZERO)
+            .setReceivedFromRouteReflectorClient(false)
+            .build();
+    BgpSessionProperties props =
+        BgpSessionProperties.builder()
+            .setRemoteAs(2)
+            .setLocalAs(2)
+            .setRemoteIp(Ip.create(0))
+            .setLocalIp(Ip.create(1))
+            .setSessionType(BgpSessionProperties.SessionType.IBGP)
+            .setAddressFamilies(ImmutableSet.of(AddressFamily.Type.IPV4_UNICAST))
+            .build();
+    Ipv4UnicastAddressFamily toRrc =
+        Ipv4UnicastAddressFamily.builder().setRouteReflectorClient(true).build();
+    Ipv4UnicastAddressFamily toNonRrc =
+        Ipv4UnicastAddressFamily.builder().setRouteReflectorClient(false).build();
+    // route learned from rrc is reflected to non-rrc and rrc if c2c is enabled
+    assertThat(isReflectable(rrc, true, props, toRrc), equalTo(true));
+    assertThat(isReflectable(rrc, true, props, toNonRrc), equalTo(true));
+    // route learned from rrc is reflected to non-rrc but not rrc if c2c is disabled
+    assertThat(isReflectable(rrc, false, props, toRrc), equalTo(false));
+    assertThat(isReflectable(rrc, false, props, toNonRrc), equalTo(true));
+    // route learned from non-rrc is reflected to rrc but not non-rrc in either case
+    assertThat(isReflectable(norrc, true, props, toRrc), equalTo(true));
+    assertThat(isReflectable(norrc, false, props, toRrc), equalTo(true));
+    assertThat(isReflectable(norrc, true, props, toNonRrc), equalTo(false));
+    assertThat(isReflectable(norrc, false, props, toNonRrc), equalTo(false));
+  }
 
   /** Reset route builder */
   @Before
