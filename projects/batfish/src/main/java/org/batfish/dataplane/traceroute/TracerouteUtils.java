@@ -15,13 +15,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -54,8 +52,6 @@ import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.SessionScopeVisitor;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
-import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
@@ -347,20 +343,5 @@ public final class TracerouteUtils {
     } else {
       return transformedFlow;
     }
-  }
-
-  static TraceAndReverseFlow toTraceAndReverseFlow(List<HopInfo> hopInfos) {
-    HopInfo lastHop = hopInfos.get(hopInfos.size() - 1);
-    FlowDisposition disposition = lastHop.getDisposition();
-    checkArgument(disposition != null, "Last hop of a complete trace must have a disposition");
-    List<Hop> hops =
-        hopInfos.stream().map(HopInfo::getHop).collect(ImmutableList.toImmutableList());
-    Set<FirewallSessionTraceInfo> newSessions =
-        hopInfos.stream()
-            .map(HopInfo::getFirewallSessionTraceInfo)
-            .filter(Objects::nonNull)
-            .collect(ImmutableSet.toImmutableSet());
-    return new TraceAndReverseFlow(
-        new Trace(disposition, hops), lastHop.getReturnFlow(), newSessions);
   }
 }
