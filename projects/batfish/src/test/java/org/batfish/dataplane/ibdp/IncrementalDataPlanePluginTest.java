@@ -6,9 +6,6 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
-import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
-import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
-import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,6 +13,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -81,7 +79,6 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
-import org.batfish.datamodel.bgp.BgpTopologyUtils.BgpSessionInitiationResult;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
@@ -96,6 +93,7 @@ import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -741,22 +739,22 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be reachable because it is only one hop away from the initiator
-    List<BgpSessionInitiationResult> initiationResults =
+    List<Ip> successfulInitiatorLocalIps =
         BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
             ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        Iterables.getOnlyElement(initiationResults);
-    assertTrue(bgpSessionInitiationResult.isSuccessful());
-    assertThat(
-        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
-        hasHops(contains(hasNodeName("node1"), hasNodeName("node2"))));
-    assertThat(
-        Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
-        hasHops(contains(hasNodeName("node2"), hasNodeName("node1"))));
+    Ip successfulInitiatorLocalIp = Iterables.getOnlyElement(successfulInitiatorLocalIps);
+    assertEquals(initiatorLocalIp, successfulInitiatorLocalIp);
+    //    assertTrue(bgpSessionInitiationResult.isSuccessful());
+    //    assertThat(
+    //        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
+    //        hasHops(contains(hasNodeName("node1"), hasNodeName("node2"))));
+    //    assertThat(
+    //        Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
+    //        hasHops(contains(hasNodeName("node2"), hasNodeName("node1"))));
   }
 
   @Test
@@ -786,22 +784,14 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be not be reachable because it is two hops away from the initiator
-    List<BgpSessionInitiationResult> initiationResults =
+    List<Ip> successfulInitiatorLocalIps =
         BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
             ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        Iterables.getOnlyElement(initiationResults);
-    assertFalse(bgpSessionInitiationResult.isSuccessful());
-    assertThat(
-        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
-        allOf(
-            hasDisposition(FlowDisposition.ACCEPTED),
-            hasHops(contains(hasNodeName("node1"), hasNodeName("node2"), hasNodeName("node3")))));
-    assertTrue(bgpSessionInitiationResult.getReverseTraces().isEmpty());
+    assertThat(successfulInitiatorLocalIps, Matchers.empty());
   }
 
   @Test
@@ -831,22 +821,15 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be reachable because multi-hops are allowed
-    List<BgpSessionInitiationResult> initiationResults =
+    List<Ip> successfulInitiatorLocalIps =
         BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
             ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        Iterables.getOnlyElement(initiationResults);
-    assertTrue(bgpSessionInitiationResult.isSuccessful());
-    assertThat(
-        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
-        hasHops(contains(hasNodeName("node1"), hasNodeName("node2"), hasNodeName("node3"))));
-    assertThat(
-        Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
-        hasHops(contains(hasNodeName("node3"), hasNodeName("node2"), hasNodeName("node1"))));
+    Ip successfulInitiatorLocalIp = Iterables.getOnlyElement(successfulInitiatorLocalIps);
+    assertEquals(initiatorLocalIp, successfulInitiatorLocalIp);
   }
 
   @Test
@@ -878,22 +861,14 @@ public class IncrementalDataPlanePluginTest {
 
     // the neighbor should not be reachable even though multihops are allowed as traceroute would be
     // denied in on node 3
-    List<BgpSessionInitiationResult> initiationResults =
+    List<Ip> successfulInitiatorLocalIps =
         BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
             ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        Iterables.getOnlyElement(initiationResults);
-    assertFalse(bgpSessionInitiationResult.isSuccessful());
-    assertThat(
-        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
-        allOf(
-            hasDisposition(FlowDisposition.DENIED_IN),
-            hasHops(contains(hasNodeName("node1"), hasNodeName("node2"), hasNodeName("node3")))));
-    assertTrue(bgpSessionInitiationResult.getReverseTraces().isEmpty());
+    assertThat(successfulInitiatorLocalIps, Matchers.empty());
   }
 
   @Test
@@ -925,22 +900,15 @@ public class IncrementalDataPlanePluginTest {
 
     // neighbor should be reachable because ACL allows established connection back into node1 and
     // allows everything out
-    List<BgpSessionInitiationResult> initiationResults =
+    List<Ip> successfulInitiatorLocalIps =
         BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
             ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        Iterables.getOnlyElement(initiationResults);
-    assertTrue(bgpSessionInitiationResult.isSuccessful());
-    assertThat(
-        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
-        hasHops(contains(hasNodeName("node1"), hasNodeName("node2"), hasNodeName("node3"))));
-    assertThat(
-        Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
-        hasHops(contains(hasNodeName("node3"), hasNodeName("node2"), hasNodeName("node1"))));
+    Ip successfulInitiatorLocalIp = Iterables.getOnlyElement(successfulInitiatorLocalIps);
+    assertEquals(initiatorLocalIp, successfulInitiatorLocalIp);
   }
 
   /**

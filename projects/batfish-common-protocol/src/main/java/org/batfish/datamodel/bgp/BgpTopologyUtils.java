@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.L3Adjacencies;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -51,14 +52,13 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /** Utility functions for computing BGP topology */
 public final class BgpTopologyUtils {
-
   /**
    * Result of initiating a BGP session by an active peer. Captures the flow used and forward and
    * reverse traces.
@@ -322,9 +322,6 @@ public final class BgpTopologyUtils {
                             neighbor,
                             feasibleLocalIpsForPeeringWithCandidate,
                             tracerouteEngine)
-                        .stream()
-                        .filter(BgpSessionInitiationResult::isSuccessful)
-                        .map(initiationResult -> initiationResult.getFlow().getSrcIp())
                         .forEach(
                             srcIp -> addEdges(neighbor, neighborId, srcIp, candidateId, graph, nc));
                   }
@@ -553,8 +550,7 @@ public final class BgpTopologyUtils {
                       }
                     }))
         .filter(Objects::nonNull)
-        .map(forwardingIfaceName -> c.getActiveInterfaces().get(forwardingIfaceName))
-        .filter(Objects::nonNull)
+        .map(forwardingIfaceName -> c.getAllInterfaces().get(forwardingIfaceName))
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -571,6 +567,45 @@ public final class BgpTopologyUtils {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  private static final class ReverseFlowAndFirewallSessions {
+    @Nonnull final Flow _reverseFlow;
+    @Nonnull final Set<FirewallSessionTraceInfo> _firewallSessions;
+
+    private ReverseFlowAndFirewallSessions(
+        @Nonnull Flow reverseFlow, @Nonnull Set<FirewallSessionTraceInfo> firewallSessions) {
+      _reverseFlow = reverseFlow;
+      _firewallSessions = firewallSessions;
+    }
+
+    @Nonnull
+    public Flow getReverseFlow() {
+      return _reverseFlow;
+    }
+
+    @Nonnull
+    public Set<FirewallSessionTraceInfo> getFirewallSessions() {
+      return _firewallSessions;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof ReverseFlowAndFirewallSessions)) {
+        return false;
+      }
+      ReverseFlowAndFirewallSessions that = (ReverseFlowAndFirewallSessions) o;
+      return _reverseFlow.equals(that._reverseFlow)
+          && _firewallSessions.equals(that._firewallSessions);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_reverseFlow, _firewallSessions);
+    }
+  }
+
   /**
    * Attempts to initiate a TCP connection from the active BGP peer represented by {@code
    * initiatorId} to its counterpart BGP peer represented by {@code listenerId}.
@@ -582,17 +617,16 @@ public final class BgpTopologyUtils {
    * initiatorFeasibleLocalIps} is a set of IP addresses that the initiator may use as its local IP
    * for initation.
    *
-   * @return The results of session initiations for each feasible local IP as a list of {@link
-   *     BgpSessionInitiationResult}.
+   * @return The feasible local IPs for which a session can be established.
    */
-  public static List<BgpSessionInitiationResult> initiateBgpSessions(
+  public static List<Ip> initiateBgpSessions(
       @Nonnull BgpPeerConfigId initiatorId,
       @Nonnull BgpPeerConfigId listenerId,
       @Nonnull BgpActivePeerConfig initiator,
       @Nonnull Set<Ip> initiatorFeasibleLocalIps,
       @Nonnull TracerouteEngine tracerouteEngine) {
     assert initiatorId.getType() == BgpPeerConfigType.ACTIVE;
-    ImmutableList.Builder<BgpSessionInitiationResult> initiationResults = ImmutableList.builder();
+    ImmutableList.Builder<Ip> successfulLocalIps = ImmutableList.builder();
     for (Ip potentialLocalIp : initiatorFeasibleLocalIps) {
       Flow flowFromSrc =
           Flow.builder()
@@ -606,17 +640,18 @@ public final class BgpTopologyUtils {
               .setDstPort(NamedPort.BGP.number())
               .build();
 
-      List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
+      TraceDag forwardTraceDag =
           tracerouteEngine
-              .computeTracesAndReverseFlows(ImmutableSet.of(flowFromSrc), false)
+              .computeTraceDags(ImmutableSet.of(flowFromSrc), ImmutableSet.of(), false)
               .get(flowFromSrc);
 
       // TODO Session should be eBGP single-hop if either initiator or listener is eBGP single-hop
       boolean bgpSingleHop =
           BgpSessionProperties.getSessionType(initiator) == SessionType.EBGP_SINGLEHOP;
 
-      List<TraceAndReverseFlow> reverseTraces =
-          forwardTracesAndReverseFlows.stream()
+      boolean successful =
+          forwardTraceDag
+              .getTraces()
               .filter(
                   traceAndReverseFlow -> {
                     Trace forwardTrace = traceAndReverseFlow.getTrace();
@@ -634,43 +669,37 @@ public final class BgpTopologyUtils {
                               .getReverseFlow()
                               .getIngressVrf()
                               .equals(listenerId.getVrfName()))
-              .flatMap(
-                  traceAndReverseFlow ->
-                      tracerouteEngine
-                          .computeTracesAndReverseFlows(
-                              ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
-                              traceAndReverseFlow.getNewFirewallSessions(),
-                              false)
-                          .get(traceAndReverseFlow.getReverseFlow())
-                          .stream())
-              .collect(ImmutableList.toImmutableList());
-
-      boolean successful =
-          reverseTraces.stream()
+              // many traces will have the same reverse flow and firewall sessions. dedup
+              .map(
+                  tarf ->
+                      new ReverseFlowAndFirewallSessions(
+                          tarf.getReverseFlow(), tarf.getNewFirewallSessions()))
+              .distinct()
               .anyMatch(
-                  traceAndReverseFlow -> {
-                    Trace reverseTrace = traceAndReverseFlow.getTrace();
-                    List<Hop> hops = reverseTrace.getHops();
-                    return !hops.isEmpty()
-                        && hops.get(hops.size() - 1)
-                            .getNode()
-                            .getName()
-                            .equals(initiatorId.getHostname())
-                        && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
-                  });
-
-      initiationResults.add(
-          new BgpSessionInitiationResult(
-              flowFromSrc,
-              forwardTracesAndReverseFlows.stream()
-                  .map(TraceAndReverseFlow::getTrace)
-                  .collect(ImmutableList.toImmutableList()),
-              reverseTraces.stream()
-                  .map(TraceAndReverseFlow::getTrace)
-                  .collect(ImmutableList.toImmutableList()),
-              successful));
+                  reverseFlowAndFirewallSessions ->
+                      tracerouteEngine
+                          .computeTraceDags(
+                              ImmutableSet.of(reverseFlowAndFirewallSessions.getReverseFlow()),
+                              reverseFlowAndFirewallSessions.getFirewallSessions(),
+                              false)
+                          .get(reverseFlowAndFirewallSessions.getReverseFlow())
+                          .getTraces()
+                          .anyMatch(
+                              traceAndReverseFlow -> {
+                                Trace reverseTrace = traceAndReverseFlow.getTrace();
+                                List<Hop> hops = reverseTrace.getHops();
+                                return !hops.isEmpty()
+                                    && hops.get(hops.size() - 1)
+                                        .getNode()
+                                        .getName()
+                                        .equals(initiatorId.getHostname())
+                                    && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
+                              }));
+      if (successful) {
+        successfulLocalIps.add(potentialLocalIp);
+      }
     }
-    return initiationResults.build();
+    return successfulLocalIps.build();
   }
 
   @Nullable
