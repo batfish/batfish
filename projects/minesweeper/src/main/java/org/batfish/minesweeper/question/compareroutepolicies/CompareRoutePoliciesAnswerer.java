@@ -28,6 +28,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -108,10 +109,16 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   private Row computeDifferencesForInputs(
       RoutingPolicy referencePolicy,
       RoutingPolicy policy,
-      Bgpv4Route inRoute,
-      Tuple<Predicate<String>, String> env) {
+      Tuple<Bgpv4Route, String> inRoute,
+      Tuple<BgpSessionProperties, Predicate<String>> env) {
     return diffRowResultsFor(
-        referencePolicy, policy, inRoute, _direction, env.getFirst(), env.getSecond());
+        referencePolicy,
+        policy,
+        inRoute.getFirst(),
+        env.getFirst(),
+        _direction,
+        env.getSecond(),
+        inRoute.getSecond());
   }
 
   /**
@@ -120,8 +127,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @return An input route, a predicate on tracks, and a (possibly null) source VRF that conform to
    *     the given constraints.
    */
-  private Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> constraintsToInputs(
-      BDD constraints, ConfigAtomicPredicates configAPs) {
+  private Tuple<Tuple<Bgpv4Route, String>, Tuple<BgpSessionProperties, Predicate<String>>>
+      constraintsToInputs(BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
     BDD fullModel = constraintsToModel(constraints, configAPs);
     return new Tuple<>(
@@ -274,7 +281,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     }
     return differences.stream()
         .map(intersection -> constraintsToInputs(intersection, configAPs))
-        .sorted(Comparator.comparing(t -> t.getFirst().getNetwork()))
+        .sorted(Comparator.comparing(t -> t.getFirst().getFirst().getNetwork()))
         .map(t -> computeDifferencesForInputs(referencePolicy, policy, t.getFirst(), t.getSecond()))
         .collect(Collectors.toList());
   }

@@ -29,6 +29,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.ReceivedFromSelf;
@@ -111,10 +112,11 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static Row rowResultFor(
       RoutingPolicy policy,
       Bgpv4Route inputRoute,
+      BgpSessionProperties properties,
       Direction direction,
       Predicate<String> successfulTrack,
       @Nullable String sourceVrf) {
-    return toRow(testPolicy(policy, inputRoute, direction, successfulTrack, sourceVrf));
+    return toRow(testPolicy(policy, inputRoute, properties, direction, successfulTrack, sourceVrf));
   }
 
   /**
@@ -130,22 +132,25 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy referencePolicy,
       RoutingPolicy proposedPolicy,
       Bgpv4Route inputRoute,
+      BgpSessionProperties properties,
       Direction direction,
       Predicate<String> successfulTracks,
       @Nullable String sourceVrf) {
     return toCompareRow(
-        testPolicy(proposedPolicy, inputRoute, direction, successfulTracks, sourceVrf),
-        testPolicy(referencePolicy, inputRoute, direction, successfulTracks, sourceVrf));
+        testPolicy(proposedPolicy, inputRoute, properties, direction, successfulTracks, sourceVrf),
+        testPolicy(
+            referencePolicy, inputRoute, properties, direction, successfulTracks, sourceVrf));
   }
 
   private static Result testPolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
-    return testPolicy(policy, inputRoute, direction, null, null);
+    return testPolicy(policy, inputRoute, null, direction, null, null);
   }
 
   private static Result testPolicy(
       RoutingPolicy policy,
       Bgpv4Route inputRoute,
+      @Nullable BgpSessionProperties properties,
       Direction direction,
       @Nullable Predicate<String> successfulTrack,
       @Nullable String sourceVrf) {
@@ -163,6 +168,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             // include the source VRF in the route if it is not null
             sourceVrf == null ? inputRoute : new AnnotatedRoute<>(inputRoute, sourceVrf),
             outputRoute,
+            properties,
             direction,
             successfulTrack,
             tracer);

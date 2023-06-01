@@ -30,6 +30,7 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
@@ -131,11 +132,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     } else {
       BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
 
-      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
-      Tuple<Predicate<String>, String> env =
+      Tuple<Bgpv4Route, String> inputRouteInfo =
+          ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
+      Bgpv4Route inRoute = inputRouteInfo.getFirst();
+      String sourceVrf = inputRouteInfo.getSecond();
+      Tuple<BgpSessionProperties, Predicate<String>> env =
           ModelGeneration.satAssignmentToEnvironment(fullModel, configAPs);
-      Predicate<String> successfulTracks = env.getFirst();
-      String sourceVrf = env.getSecond();
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -150,7 +152,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
       Row result =
           TestRoutePoliciesAnswerer.rowResultFor(
-              policy, inRoute, _direction, successfulTracks, sourceVrf);
+              policy, inRoute, env.getFirst(), _direction, env.getSecond(), sourceVrf);
 
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
