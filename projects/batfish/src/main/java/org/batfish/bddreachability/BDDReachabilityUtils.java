@@ -258,6 +258,11 @@ public final class BDDReachabilityUtils {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  /**
+   * Return the {@link StateExpr} corresponding to the input {@link FlowDisposition}. Note: {@link
+   * FlowDisposition#LOOP} does not have a corresponding {@link StateExpr}, so this method will
+   * throw on that input. See {@link BDDLoopDetectionAnalysis}.
+   */
   public static StateExpr dispositionState(FlowDisposition disposition) {
     switch (disposition) {
       case ACCEPTED:
