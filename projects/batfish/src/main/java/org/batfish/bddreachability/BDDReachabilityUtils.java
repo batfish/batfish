@@ -32,8 +32,18 @@ import org.batfish.common.bdd.BDDIpProtocol;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.symbolic.IngressLocation;
+import org.batfish.symbolic.state.Accept;
+import org.batfish.symbolic.state.DeliveredToSubnet;
+import org.batfish.symbolic.state.DropAclIn;
+import org.batfish.symbolic.state.DropAclOut;
+import org.batfish.symbolic.state.DropNoRoute;
+import org.batfish.symbolic.state.DropNullRoute;
+import org.batfish.symbolic.state.ExitsNetwork;
+import org.batfish.symbolic.state.InsufficientInfo;
+import org.batfish.symbolic.state.NeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.StateExpr;
@@ -246,5 +256,32 @@ public final class BDDReachabilityUtils {
               return Stream.of(flow.build());
             })
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  public static StateExpr dispositionState(FlowDisposition disposition) {
+    switch (disposition) {
+      case ACCEPTED:
+        return Accept.INSTANCE;
+      case DELIVERED_TO_SUBNET:
+        return DeliveredToSubnet.INSTANCE;
+      case DENIED_IN:
+        return DropAclIn.INSTANCE;
+      case DENIED_OUT:
+        return DropAclOut.INSTANCE;
+      case EXITS_NETWORK:
+        return ExitsNetwork.INSTANCE;
+      case INSUFFICIENT_INFO:
+        return InsufficientInfo.INSTANCE;
+      case LOOP:
+        throw new BatfishException("FlowDisposition LOOP is unsupported");
+      case NEIGHBOR_UNREACHABLE:
+        return NeighborUnreachable.INSTANCE;
+      case NO_ROUTE:
+        return DropNoRoute.INSTANCE;
+      case NULL_ROUTED:
+        return DropNullRoute.INSTANCE;
+      default:
+        throw new BatfishException("Unknown FlowDisposition " + disposition);
+    }
   }
 }
