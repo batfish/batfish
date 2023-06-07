@@ -10,6 +10,7 @@ import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.batfish.datamodel.table.TableDiff.baseColumnName;
 import static org.batfish.datamodel.table.TableDiff.deltaColumnName;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
+import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -38,6 +39,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -208,6 +210,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     if (questionsBgpRoute == null) {
       return null;
     }
+    checkArgument(
+        questionsBgpRoute.getNextHop() instanceof NextHop,
+        "Unexpected next-hop: " + questionsBgpRoute.getNextHop());
     return Bgpv4Route.builder()
         .setWeight(questionsBgpRoute.getWeight())
         .setProtocol(questionsBgpRoute.getProtocol())
@@ -221,7 +226,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setTag(questionsBgpRoute.getTag())
         .setTunnelEncapsulationAttribute(questionsBgpRoute.getTunnelEncapsulationAttribute())
         .setNetwork(questionsBgpRoute.getNetwork())
-        .setNextHop(questionsBgpRoute.getNextHop())
+        .setNextHop((NextHop) questionsBgpRoute.getNextHop())
         .setCommunities(questionsBgpRoute.getCommunities())
         .setAsPath(questionsBgpRoute.getAsPath())
         .setReceivedFrom(ReceivedFromSelf.instance()) // TODO: support receivedFrom in input route

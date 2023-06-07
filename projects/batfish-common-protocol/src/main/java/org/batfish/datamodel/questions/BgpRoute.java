@@ -24,9 +24,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopResult;
 
 /** A user facing representation for IPv4 BGP route */
 @ParametersAreNonnullByDefault
@@ -55,7 +55,7 @@ public final class BgpRoute {
   private final long _localPreference;
   private final long _metric;
   @Nonnull private final Prefix _network;
-  @Nonnull private final NextHop _nextHop;
+  @Nonnull private final NextHopResult _nextHop;
   @Nonnull private final Ip _originatorIp;
   @Nonnull private final OriginMechanism _originMechanism;
   @Nonnull private final OriginType _originType;
@@ -73,7 +73,7 @@ public final class BgpRoute {
       long localPreference,
       long metric,
       Prefix network,
-      NextHop nextHop,
+      NextHopResult nextHop,
       Ip originatorIp,
       OriginMechanism originMechanism,
       OriginType originType,
@@ -109,7 +109,7 @@ public final class BgpRoute {
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long metric,
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP) NextHop nextHop,
+      @Nullable @JsonProperty(PROP_NEXT_HOP) NextHopResult nextHop,
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
@@ -181,7 +181,7 @@ public final class BgpRoute {
 
   @Nonnull
   @JsonProperty(PROP_NEXT_HOP)
-  public NextHop getNextHop() {
+  public NextHopResult getNextHop() {
     return _nextHop;
   }
 
@@ -319,7 +319,7 @@ public final class BgpRoute {
     private long _localPreference;
     private long _metric;
     @Nullable private Prefix _network;
-    @Nullable private NextHop _nextHop;
+    @Nullable private NextHopResult _nextHop;
     @Nullable private Ip _originatorIp;
     @Nullable private OriginMechanism _originMechanism;
     @Nullable private OriginType _originType;
@@ -390,7 +390,7 @@ public final class BgpRoute {
       return this;
     }
 
-    public Builder setNextHop(@Nullable NextHop nextHop) {
+    public Builder setNextHop(@Nullable NextHopResult nextHop) {
       _nextHop = nextHop;
       return this;
     }
