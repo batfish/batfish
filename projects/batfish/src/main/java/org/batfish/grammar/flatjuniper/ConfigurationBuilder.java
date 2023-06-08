@@ -5976,6 +5976,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_EXPORT, getLine(ctx.name.getStart()));
+    todo(ctx);
   }
 
   @Override
@@ -5983,6 +5984,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_IMPORT, getLine(ctx.name.getStart()));
+    todo(ctx);
   }
 
   @Override
@@ -5990,6 +5992,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String ifaceName = getInterfaceFullName(ctx.iface);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
+    todo(ctx);
   }
 
   @Override
