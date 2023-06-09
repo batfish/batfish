@@ -20,6 +20,7 @@ import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
+import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MutableBDDInteger;
@@ -76,6 +77,7 @@ import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -106,6 +108,7 @@ import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -125,7 +128,9 @@ import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link TransferBDD}. */
 public class TransferBDDTest {
@@ -137,6 +142,8 @@ public class TransferBDDTest {
   private IBatfish _batfish;
   private Configuration _baseConfig;
   private ConfigAtomicPredicates _configAPs;
+
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   private static final String AS_PATH_NAME = "asPathName";
 
@@ -2802,6 +2809,242 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setPrependedASes(ImmutableList.of(44L, 4L, 42L));
 
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testFirstMatchChain() {
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchMetric(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD if1 = any.getMed().value(42);
+
+    BDD if2 = any.getProtocolHistory().value(RoutingProtocol.BGP);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, if1, true),
+                new TransferReturn(any, if1.not().and(if2), true),
+                new TransferReturn(any, if1.not().and(if2.not()), false))));
+  }
+
+  @Test
+  public void testFirstMatchChainReturnFalse() {
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchMetric(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ReturnFalse))))
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD if1 = any.getMed().value(42);
+
+    BDD if2 = any.getProtocolHistory().value(RoutingProtocol.BGP);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, if1, false),
+                new TransferReturn(any, if1.not().and(if2), true),
+                new TransferReturn(any, if1.not().and(if2.not()), false))));
+  }
+
+  @Test
+  public void testSetDefaultPolicy() {
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String defaultName = "default";
+    RoutingPolicy defaultPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(defaultName)
+            .setOwner(_baseConfig)
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetDefaultPolicy(defaultName))
+            .addStatement(
+                new If(
+                    new FirstMatchChain(ImmutableList.of(new CallExpr(policy1Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, defaultName, defaultPolicy, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, any.getFactory().one(), false))));
+  }
+
+  @Test
+  public void testNoDefaultPolicy() {
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(ImmutableList.of(new CallExpr(policy1Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(ImmutableMap.of(policy1Name, policy1, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    _expectedException.expect(BatfishException.class);
+    tbdd.computePaths(ImmutableSet.of());
+  }
+
+  @Test
+  public void testFirstMatchChainStateful() {
+
+    // test proper stateful behavior for Juniper chains
+    setup(ConfigurationFormat.JUNIPER);
+
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetTag(new LiteralLong(42)))
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchTag(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute expected = new BDDRoute(any);
+    MutableBDDInteger tag = expected.getTag();
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+
+    // the tag set in policy1 is matched upon in policy2
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));

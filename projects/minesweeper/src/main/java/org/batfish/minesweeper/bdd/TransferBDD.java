@@ -356,8 +356,6 @@ public class TransferBDD {
         finalResults.addAll(currResults);
       }
 
-      // TODO: This code is here for backward-compatibility reasons but has not been tested and is
-      // not currently maintained
     } else if (expr instanceof FirstMatchChain) {
       p.debug("FirstMatchChain");
       FirstMatchChain chain = (FirstMatchChain) expr;
@@ -366,34 +364,31 @@ public class TransferBDD {
         BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
         chainPolicies.add(be);
       }
-      if (chainPolicies.isEmpty()) {
-        // No identity for an empty FirstMatchChain; default policy should always be set.
-        throw new BatfishException("Default policy is not set");
-      }
       TransferParam record = p;
       List<TransferResult> currResults = new ArrayList<>();
       currResults.add(result);
       for (BooleanExpr e : chainPolicies) {
         List<TransferResult> nextResults = new ArrayList<>();
         for (TransferResult curr : currResults) {
-          TransferParam param =
-              record
-                  .setDefaultPolicy(null)
-                  .setChainContext(TransferParam.ChainContext.CONJUNCTION)
-                  .indent();
+          BDD currBDD = curr.getReturnValue().getSecond();
+          TransferParam param = record.indent();
           compute(e, toTransferBDDState(param, curr))
               .forEach(
                   r -> {
-                    if (r.getFallthroughValue()) {
-                      nextResults.add(r);
+                    TransferResult updated =
+                        r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                    if (updated.getFallthroughValue()) {
+                      nextResults.add(updated.setFallthroughValue(false));
                     } else {
-                      finalResults.add(r);
+                      finalResults.add(updated);
                     }
                   });
         }
         currResults = nextResults;
       }
-      finalResults.addAll(currResults);
+      if (!currResults.isEmpty()) {
+        throw new BatfishException("Default policy is not set");
+      }
 
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
