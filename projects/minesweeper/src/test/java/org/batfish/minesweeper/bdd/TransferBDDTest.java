@@ -57,6 +57,7 @@ import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
@@ -2515,6 +2516,186 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testSetThenMatchOtherCommunity() {
+    Community comm1 = StandardCommunity.parse("30:40");
+    Community comm2 = StandardCommunity.parse("10:20");
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetCommunities(
+                CommunitySetUnion.of(
+                    InputCommunities.instance(), new LiteralCommunitySet(CommunitySet.of(comm1)))),
+            new If(
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(comm2))),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD[] aps = expected.getCommunityAtomicPredicates();
+    Set<Integer> ap1020 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm2));
+    Set<Integer> ap3040 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm1));
+
+    // the original route must have the community 10:20
+    BDD expectedBDD =
+        tbdd.getFactory().orAll(ap1020.stream().map(i -> aps[i]).collect(Collectors.toList()));
+
+    // each atomic predicate for 30:40 has the 1 BDD
+    for (int i : ap3040) {
+      aps[i] = tbdd.getFactory().one();
+    }
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
+
+    // now do the analysis again but use the output attributes for matching
+    setup(ConfigurationFormat.JUNIPER);
+    policy = _policyBuilder.setStatements(stmts).build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
+  }
+
+  @Test
+  public void testDeleteThenMatchNotCommunity() {
+    Community comm = StandardCommunity.parse("30:40");
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetCommunities(
+                new CommunitySetDifference(InputCommunities.instance(), new CommunityIs(comm))),
+            new If(
+                new MatchCommunities(
+                    InputCommunities.instance(),
+                    new HasCommunity(new CommunityNot(new CommunityIs(comm)))),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD[] aps = expected.getCommunityAtomicPredicates();
+    Set<Integer> ap3040 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm));
+
+    // the original route must have a community other than 30:40
+    BDD expectedBDD =
+        tbdd.getFactory()
+            .orAll(
+                IntStream.range(
+                        0,
+                        _configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates())
+                    .filter(i -> !ap3040.contains(i))
+                    .mapToObj(i -> aps[i])
+                    .collect(Collectors.toList()));
+
+    // each atomic predicate for 30:40 has the 0 BDD
+    for (int i : ap3040) {
+      aps[i] = tbdd.getFactory().zero();
+    }
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
+
+    // now do the analysis again but use the output attributes for matching
+    setup(ConfigurationFormat.JUNIPER);
+    policy = _policyBuilder.setStatements(stmts).build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
+  }
+
+  @Test
+  public void testDeleteThenMatchCommunity() {
+    Community comm = StandardCommunity.parse("30:40");
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetCommunities(
+                new CommunitySetDifference(InputCommunities.instance(), new CommunityIs(comm))),
+            new If(
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(comm))),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD[] aps = expected.getCommunityAtomicPredicates();
+    Set<Integer> ap3040 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm));
+
+    // the original route must have community 30:40
+    BDD expectedBDD =
+        tbdd.getFactory().orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
+
+    // each atomic predicate for 30:40 has the 0 BDD
+    for (int i : ap3040) {
+      aps[i] = tbdd.getFactory().zero();
+    }
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
+
+    // now do the analysis again but use the output attributes for matching
+    setup(ConfigurationFormat.JUNIPER);
+    policy = _policyBuilder.setStatements(stmts).build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
   }
 
   @Test
