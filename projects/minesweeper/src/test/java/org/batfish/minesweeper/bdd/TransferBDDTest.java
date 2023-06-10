@@ -3035,7 +3035,6 @@ public class TransferBDDTest {
         ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
-    // the analysis will use the original route for matching
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
@@ -3045,6 +3044,57 @@ public class TransferBDDTest {
     expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
 
     // the tag set in policy1 is matched upon in policy2
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testFirstMatchChainOverwrite() {
+
+    // test proper stateful behavior for Juniper chains
+    setup(ConfigurationFormat.JUNIPER);
+
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetTag(new LiteralLong(42)))
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetTag(new LiteralLong(10)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute expected = new BDDRoute(any);
+    MutableBDDInteger tag = expected.getTag();
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 10));
+
+    // the tag set in policy1 is overwritten in policy2
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));

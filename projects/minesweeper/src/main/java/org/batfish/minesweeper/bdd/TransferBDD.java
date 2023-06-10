@@ -367,14 +367,17 @@ public class TransferBDD {
       TransferParam record = p;
       List<TransferResult> currResults = new ArrayList<>();
       currResults.add(result);
-      for (BooleanExpr e : chainPolicies) {
+      for (BooleanExpr pol : chainPolicies) {
         List<TransferResult> nextResults = new ArrayList<>();
         for (TransferResult curr : currResults) {
           BDD currBDD = curr.getReturnValue().getSecond();
           TransferParam param = record.indent();
-          compute(e, toTransferBDDState(param, curr))
+          compute(pol, toTransferBDDState(param, curr))
               .forEach(
                   r -> {
+                    // r's BDD only represents the constraints on a path through the policy pol, so
+                    // we explicitly incorporate the constraints accrued on the path through the
+                    // prior policies in the chain
                     TransferResult updated =
                         r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
                     if (updated.getFallthroughValue()) {
@@ -387,7 +390,8 @@ public class TransferBDD {
         currResults = nextResults;
       }
       if (!currResults.isEmpty()) {
-        throw new BatfishException("Default policy is not set");
+        throw new BatfishException(
+            "The last policy in the chain should not try to fall through to the next policy");
       }
 
     } else if (expr instanceof MatchProtocol) {
