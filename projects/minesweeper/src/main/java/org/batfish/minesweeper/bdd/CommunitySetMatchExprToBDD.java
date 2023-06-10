@@ -129,9 +129,16 @@ public class CommunitySetMatchExprToBDD
      * otherwise, we would not be able to show that ap1 satisfies the community constraint (ap1 /\
      * !ap2), for example.
      */
+
+    // TODO: test this; check if it makes sense for matchExprBDD to be created using the current
+    // route;
+    // for example, what if we are matching on something that has been definitely set before?  will
+    // the right thing happen?  seems like no APs will be chosen and we'll have a problem
+
+    BDD[] originalAPs = arg.getTransferBDD().getOriginalRoute().getCommunityAtomicPredicates();
     IntStream disjuncts =
-        IntStream.range(0, aps.length)
-            .filter(i -> !exactlyOneAP(aps, i, arg).diffSat(matchExprBDD));
+        IntStream.range(0, originalAPs.length)
+            .filter(i -> !exactlyOneAP(originalAPs, i, arg).diffSat(matchExprBDD));
     /**
      * now return a disjunction of all of the satisfying atomic predicates. here we do NOT use the
      * exactlyOneAP function, because we are returning a BDD for a community set, which can satisfy
