@@ -330,6 +330,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -1188,6 +1189,24 @@ public final class FlatJuniperGrammarTest {
     Vrf def = c.getDefaultVrf();
     assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.BGP), equalTo(140));
     assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.IBGP), equalTo(140));
+
+    BgpProcess bgpProcess = def.getBgpProcess();
+    assertNotNull(bgpProcess);
+    BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Ip.parse("1.1.1.1"));
+    assertNotNull(neighbor);
+    String inName = neighbor.getAddressFamily(AddressFamily.Type.IPV4_UNICAST).getImportPolicy();
+    assertThat(c.getRoutingPolicies(), hasKey(inName));
+    RoutingPolicy in = c.getRoutingPolicies().get(inName);
+
+    Bgpv4Route.Builder received =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setAdmin(140);
+    in.process(received.build(), received, Direction.IN);
+    assertThat(received.build(), hasAdministrativeCost(150));
   }
 
   /** For https://github.com/batfish/batfish/issues/6710 */
