@@ -372,7 +372,7 @@ public class TransferBDD {
         for (TransferResult curr : currResults) {
           BDD currBDD = curr.getReturnValue().getSecond();
           TransferParam param = record.indent();
-          compute(pol, toTransferBDDState(param, curr))
+          compute(pol, toTransferBDDState(param, curr.setFallthroughValue(true)))
               .forEach(
                   r -> {
                     // r's BDD only represents the constraints on a path through the policy pol, so
@@ -1231,14 +1231,18 @@ public class TransferBDD {
    * Create the result of reaching a return statement, returning with the given value.
    */
   private TransferResult returnValue(TransferResult r, boolean accepted) {
-    return r.setReturnValue(r.getReturnValue().setAccepted(accepted)).setReturnAssignedValue(true);
+    return r.setReturnValue(r.getReturnValue().setAccepted(accepted))
+        .setReturnAssignedValue(true)
+        .setFallthroughValue(false);
   }
 
   /*
    * Create the result of reaching an exit statement, returning with the given value.
    */
   private TransferResult exitValue(TransferResult r, boolean accepted) {
-    return r.setReturnValue(r.getReturnValue().setAccepted(accepted)).setExitAssignedValue(true);
+    return r.setReturnValue(r.getReturnValue().setAccepted(accepted))
+        .setExitAssignedValue(true)
+        .setFallthroughValue(false);
   }
 
   // Returns the appropriate route to use for matching on attributes.

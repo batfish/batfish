@@ -3101,6 +3101,58 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testFirstMatchChainImplicitFallThrough() {
+
+    // test proper stateful behavior for Juniper chains
+    setup(ConfigurationFormat.JUNIPER);
+
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetTag(new LiteralLong(42)))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetMetric(new LiteralLong(42)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute expected = new BDDRoute(any);
+    MutableBDDInteger tag = expected.getTag();
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+    MutableBDDInteger med = expected.getMed();
+    expected.setMed(MutableBDDInteger.makeFromValue(med.getFactory(), 32, 42));
+
+    // the updates from both policies take effect
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
   public void testPartialUnsupportedStatement() {
     _policyBuilder
         .addStatement(
