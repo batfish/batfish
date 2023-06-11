@@ -372,7 +372,10 @@ public class TransferBDD {
         for (TransferResult curr : currResults) {
           BDD currBDD = curr.getReturnValue().getSecond();
           TransferParam param = record.indent();
-          compute(pol, toTransferBDDState(param, curr.setFallthroughValue(true)))
+          // we set the fallthrough flag to true initially in order to handle implicit fallthrough
+          // properly; if there is an exit or return in the policy then the flag will be unset
+          TransferResult updatedCurr = curr.setFallthroughValue(true);
+          compute(pol, toTransferBDDState(param, updatedCurr))
               .forEach(
                   r -> {
                     // r's BDD only represents the constraints on a path through the policy pol, so
@@ -391,7 +394,7 @@ public class TransferBDD {
       }
       if (!currResults.isEmpty()) {
         throw new BatfishException(
-            "The last policy in the chain should not try to fall through to the next policy");
+            "The last policy in the chain should not fall through to the next policy");
       }
 
     } else if (expr instanceof MatchProtocol) {
