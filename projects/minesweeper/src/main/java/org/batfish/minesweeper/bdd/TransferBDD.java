@@ -1284,6 +1284,10 @@ public class TransferBDD {
     return _configAtomicPredicates;
   }
 
+  public BDDRoute getOriginalRoute() {
+    return _originalRoute;
+  }
+
   public boolean getUseOutputAttributes() {
     return _useOutputAttributes;
   }

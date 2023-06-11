@@ -70365,6 +70365,18 @@
             },
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 201,
+              "Parser_Context" : "[ri_vtep_source_interface ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "vtep-source-interface lo0.0"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 203,
+              "Parser_Context" : "[ri_vrf_import ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "vrf-import fabric"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 211,
               "Parser_Context" : "[evo_vrf_target e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "vrf-target target:100:100"
@@ -70620,6 +70632,16 @@
               "Line" : 12,
               "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "priority 65"
+            }
+          ]
+        },
+        "configs/juniper_misc" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[ri_vtep_source_interface ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "vtep-source-interface lo0.0"
             }
           ]
         },
