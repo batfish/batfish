@@ -356,8 +356,6 @@ public class TransferBDD {
         finalResults.addAll(currResults);
       }
 
-      // TODO: This code is here for backward-compatibility reasons but has not been tested and is
-      // not currently maintained
     } else if (expr instanceof FirstMatchChain) {
       p.debug("FirstMatchChain");
       FirstMatchChain chain = (FirstMatchChain) expr;
@@ -366,34 +364,38 @@ public class TransferBDD {
         BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
         chainPolicies.add(be);
       }
-      if (chainPolicies.isEmpty()) {
-        // No identity for an empty FirstMatchChain; default policy should always be set.
-        throw new BatfishException("Default policy is not set");
-      }
       TransferParam record = p;
       List<TransferResult> currResults = new ArrayList<>();
       currResults.add(result);
-      for (BooleanExpr e : chainPolicies) {
+      for (BooleanExpr pol : chainPolicies) {
         List<TransferResult> nextResults = new ArrayList<>();
         for (TransferResult curr : currResults) {
-          TransferParam param =
-              record
-                  .setDefaultPolicy(null)
-                  .setChainContext(TransferParam.ChainContext.CONJUNCTION)
-                  .indent();
-          compute(e, toTransferBDDState(param, curr))
+          BDD currBDD = curr.getReturnValue().getSecond();
+          TransferParam param = record.indent();
+          // we set the fallthrough flag to true initially in order to handle implicit fallthrough
+          // properly; if there is an exit or return in the policy then the flag will be unset
+          TransferResult updatedCurr = curr.setFallthroughValue(true);
+          compute(pol, toTransferBDDState(param, updatedCurr))
               .forEach(
                   r -> {
-                    if (r.getFallthroughValue()) {
-                      nextResults.add(r);
+                    // r's BDD only represents the constraints on a path through the policy pol, so
+                    // we explicitly incorporate the constraints accrued on the path through the
+                    // prior policies in the chain
+                    TransferResult updated =
+                        r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                    if (updated.getFallthroughValue()) {
+                      nextResults.add(updated.setFallthroughValue(false));
                     } else {
-                      finalResults.add(r);
+                      finalResults.add(updated);
                     }
                   });
         }
         currResults = nextResults;
       }
-      finalResults.addAll(currResults);
+      if (!currResults.isEmpty()) {
+        throw new BatfishException(
+            "The last policy in the chain should not fall through to the next policy");
+      }
 
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
@@ -1232,14 +1234,18 @@ public class TransferBDD {
    * Create the result of reaching a return statement, returning with the given value.
    */
   private TransferResult returnValue(TransferResult r, boolean accepted) {
-    return r.setReturnValue(r.getReturnValue().setAccepted(accepted)).setReturnAssignedValue(true);
+    return r.setReturnValue(r.getReturnValue().setAccepted(accepted))
+        .setReturnAssignedValue(true)
+        .setFallthroughValue(false);
   }
 
   /*
    * Create the result of reaching an exit statement, returning with the given value.
    */
   private TransferResult exitValue(TransferResult r, boolean accepted) {
-    return r.setReturnValue(r.getReturnValue().setAccepted(accepted)).setExitAssignedValue(true);
+    return r.setReturnValue(r.getReturnValue().setAccepted(accepted))
+        .setExitAssignedValue(true)
+        .setFallthroughValue(false);
   }
 
   // Returns the appropriate route to use for matching on attributes.
@@ -1279,6 +1285,10 @@ public class TransferBDD {
 
   public ConfigAtomicPredicates getConfigAtomicPredicates() {
     return _configAtomicPredicates;
+  }
+
+  public BDDRoute getOriginalRoute() {
+    return _originalRoute;
   }
 
   public boolean getUseOutputAttributes() {
