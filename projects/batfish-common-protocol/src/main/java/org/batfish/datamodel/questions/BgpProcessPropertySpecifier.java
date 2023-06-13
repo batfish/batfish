@@ -117,7 +117,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
                       bgpProcess.getConfederation() != null
                           ? bgpProcess.getConfederation().getMembers()
                           : null,
-                  Schema.set(Schema.LONG),
+                  Schema.STRING,
                   "Set of autonomous system numbers visible only within this BGP confederation"))
           .build();
 
