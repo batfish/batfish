@@ -169,6 +169,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -180,6 +181,7 @@ import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -459,13 +461,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
-    int ebgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
-    int ibgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
+    // On Junos, BGP routes only have one administrative distance.
+    int bgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
     BgpProcess proc =
         bgpProcessBuilder()
             .setRouterId(getRouterId(routingInstance))
-            .setEbgpAdminCost(ebgpAdmin)
-            .setIbgpAdminCost(ibgpAdmin)
+            .setEbgpAdminCost(bgpAdmin)
+            .setIbgpAdminCost(bgpAdmin)
             .build();
 
     // https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/topic-map/basic-routing-policies.html#id-conditional-advertisement-and-import-policy-routing-table-with-certain-match-conditions
@@ -582,10 +584,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
 
-      if (firstNonNull(ig.getPreference(), ebgpAdmin) != ebgpAdmin) {
-        _w.redFlag("Currently do not support per-neighbor BGP preference");
-      }
-
       String authenticationKeyChainName = ig.getAuthenticationKeyChainName();
       if (ig.getAuthenticationKeyChainName() != null) {
         if (!_c.getAuthenticationKeyChains().containsKey(authenticationKeyChainName)) {
@@ -675,6 +673,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // default import policy is to accept
       peerImportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_IMPORT_POLICY_NAME));
       peerImportPolicy.getStatements().add(Statements.SetDefaultActionAccept.toStaticStatement());
+      if (ig.getPreference() != null && ig.getPreference() != bgpAdmin) {
+        peerImportPolicy
+            .getStatements()
+            .add(new SetAdministrativeCost(new LiteralInt(ig.getPreference())));
+      }
       List<BooleanExpr> importPolicyCalls = new ArrayList<>();
       ig.getImportPolicies()
           .forEach(
