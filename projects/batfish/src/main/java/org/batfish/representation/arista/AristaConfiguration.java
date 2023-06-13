@@ -848,8 +848,7 @@ public final class AristaConfiguration extends VendorConfiguration {
               bgpVrf.getConfederationPeers(),
               LongSpace.of(firstNonNull(bgpVrf.getLocalAs(), bgpGlobal.getAsn())));
       newBgpProcess.setConfederation(
-          // Assuming peers is a small space/set in most configs, so safe to enumerate
-          new BgpConfederation(bgpVrf.getConfederationIdentifier(), peers.enumerate()));
+          new BgpConfederation(bgpVrf.getConfederationIdentifier(), peers));
     }
 
     // Process vrf-level address family configuration, such as export policy.

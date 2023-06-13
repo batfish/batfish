@@ -3665,14 +3665,14 @@ public class AristaGrammarTest {
     {
       BgpConfederation confederation = c.getDefaultVrf().getBgpProcess().getConfederation();
       assertThat(confederation.getId(), equalTo(1111L));
-      assertThat(confederation.getMembers(), equalTo(ImmutableSet.of(3L, 4L, 5L, 6L)));
+      assertThat(confederation.getMembers().enumerate(), equalTo(ImmutableSet.of(3L, 4L, 5L, 6L)));
     }
     {
       BgpConfederation confederation = c.getVrfs().get("vrf2").getBgpProcess().getConfederation();
 
       assertThat(confederation.getId(), equalTo((22L << 16) + 22));
       assertThat(
-          confederation.getMembers(),
+          confederation.getMembers().enumerate(),
           containsInAnyOrder((1L << 16) + 1, (1L << 16) + 2, (3L << 16) + 3, 44L));
     }
   }

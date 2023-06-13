@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Range;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -89,7 +90,7 @@ public class BgpProcessConfigurationAnswererTest {
             .put(BgpProcessConfigurationAnswerer.COL_VRF, "vrf")
             .put(BgpProcessConfigurationAnswerer.COL_ROUTER_ID, Ip.ZERO)
             .put(CONFEDERATION_ID, 1L)
-            .put(CONFEDERATION_MEMBERS, ImmutableSet.of(2L, 3L))
+            .put(CONFEDERATION_MEMBERS, LongSpace.of(Range.closed(2L, 3L)))
             .put(BgpProcessPropertySpecifier.MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE, null)
             .put(BgpProcessPropertySpecifier.MULTIPATH_EBGP, false)
             .put(BgpProcessPropertySpecifier.MULTIPATH_IBGP, false)
