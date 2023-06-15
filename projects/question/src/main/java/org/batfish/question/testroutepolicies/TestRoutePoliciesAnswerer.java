@@ -38,6 +38,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -95,30 +96,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
-  public Result getResult(SpecifierContext context, Result.Key key, Direction direction) {
+  public Result<Bgpv4Route> getResult(
+      SpecifierContext context, Result.Key<Bgpv4Route> key, Direction direction) {
     RoutingPolicyId policyId = key.getPolicyId();
     RoutingPolicy policy =
         context.getConfigs().get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy());
-    return testPolicy(policy, key.getInputRoute(), direction);
-  }
-
-  /**
-   * Produce the results of simulating the given route policy on the given input route.
-   *
-   * @param policy the route policy to simulate
-   * @param inputRoute the input route for the policy
-   * @param direction whether the policy is used on import or export (IN or OUT)
-   * @param successfulTrack a predicate that indicates which tracks are successful
-   * @return a table row containing the results of the simulation
-   */
-  public static Row rowResultFor(
-      RoutingPolicy policy,
-      Bgpv4Route inputRoute,
-      BgpSessionProperties properties,
-      Direction direction,
-      Predicate<String> successfulTrack,
-      @Nullable String sourceVrf) {
-    return toRow(testPolicy(policy, inputRoute, properties, direction, successfulTrack, sourceVrf));
+    return simulatePolicy(policy, key.getInputRoute(), direction);
   }
 
   /**
@@ -139,17 +122,29 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       Predicate<String> successfulTracks,
       @Nullable String sourceVrf) {
     return toCompareRow(
-        testPolicy(proposedPolicy, inputRoute, properties, direction, successfulTracks, sourceVrf),
-        testPolicy(
+        simulatePolicy(
+            proposedPolicy, inputRoute, properties, direction, successfulTracks, sourceVrf),
+        simulatePolicy(
             referencePolicy, inputRoute, properties, direction, successfulTracks, sourceVrf));
   }
 
-  private static Result testPolicy(
+  private static Result<Bgpv4Route> simulatePolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
-    return testPolicy(policy, inputRoute, null, direction, null, null);
+    return simulatePolicy(policy, inputRoute, null, direction, null, null);
   }
 
-  private static Result testPolicy(
+  /**
+   * Produce the results of simulating the given route policy on the given input route.
+   *
+   * @param policy the route policy to simulate
+   * @param inputRoute the input route for the policy
+   * @param properties the properties of the Bgp session being simulated
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
+   * @param sourceVrf an optional name of the source VRF
+   * @return the results of the simulation
+   */
+  public static Result<Bgpv4Route> simulatePolicy(
       RoutingPolicy policy,
       Bgpv4Route inputRoute,
       @Nullable BgpSessionProperties properties,
@@ -175,7 +170,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             successfulTrack,
             tracer);
     tracer.endSubTrace();
-    return new Result(
+    return new Result<>(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
         inputRoute,
         permit ? PERMIT : DENY,
@@ -188,14 +183,15 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     SpecifierContext context = _batfish.specifierContext(snapshot);
 
     // Materialized for efficient parallelism.
-    List<Result.Key> tasks =
+    List<Result.Key<Bgpv4Route>> tasks =
         resolvePolicies(context).stream()
-            .flatMap(rpid -> _inputRoutes.stream().map(r -> new Key(rpid, r)))
+            .flatMap(rpid -> _inputRoutes.stream().map(r -> new Key<>(rpid, r)))
             .collect(ImmutableList.toImmutableList());
 
     List<Row> rows =
         tasks.parallelStream()
             .map(key -> getResult(context, key, _direction))
+            .map(TestRoutePoliciesAnswerer::toQuestionResult)
             .map(TestRoutePoliciesAnswerer::toRow)
             .collect(ImmutableList.toImmutableList());
 
@@ -275,17 +271,17 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         Sets.intersection(resolvePolicies(context), resolvePolicies(referenceCtx));
 
     // Materialized for efficient parallelism.
-    List<Result.Key> tasks =
+    List<Result.Key<Bgpv4Route>> tasks =
         policiesToTest.stream()
-            .flatMap(rpid -> _inputRoutes.stream().map(r -> new Key(rpid, r)))
+            .flatMap(rpid -> _inputRoutes.stream().map(r -> new Key<>(rpid, r)))
             .collect(ImmutableList.toImmutableList());
 
     List<Row> rows =
         tasks.parallelStream()
             .map(
                 key -> {
-                  Result snapshotResult = getResult(context, key, _direction);
-                  Result referenceResult = getResult(referenceCtx, key, _direction);
+                  Result<Bgpv4Route> snapshotResult = getResult(context, key, _direction);
+                  Result<Bgpv4Route> referenceResult = getResult(referenceCtx, key, _direction);
                   return toDiffRow(snapshotResult, referenceResult);
                 })
             .filter(Objects::nonNull)
@@ -425,11 +421,18 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
   }
 
-  private static Row toRow(Result result) {
-    org.batfish.datamodel.questions.BgpRoute inputRoute =
-        toQuestionsBgpRoute(result.getInputRoute());
-    org.batfish.datamodel.questions.BgpRoute outputRoute =
-        toQuestionsBgpRoute(result.getOutputRoute());
+  public static Result<BgpRoute> toQuestionResult(Result<Bgpv4Route> result) {
+    return new Result<>(
+        result.getPolicyId(),
+        toQuestionsBgpRoute(result.getInputRoute()),
+        result.getAction(),
+        toQuestionsBgpRoute(result.getOutputRoute()),
+        result.getTrace());
+  }
+
+  public static Row toRow(Result<BgpRoute> result) {
+    org.batfish.datamodel.questions.BgpRoute inputRoute = result.getInputRoute();
+    org.batfish.datamodel.questions.BgpRoute outputRoute = result.getOutputRoute();
     LineAction action = result.getAction();
     boolean permit = action == PERMIT;
     RoutingPolicyId policyId = result.getPolicyId();
@@ -452,7 +455,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * policy changed but the action and output attributes are identical across the two snapshots.
    */
   @VisibleForTesting
-  static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
+  static @Nullable Row toDiffRow(
+      Result<Bgpv4Route> snapshotResult, Result<Bgpv4Route> referenceResult) {
     assert snapshotResult.getKey().equals(referenceResult.getKey());
 
     if (snapshotResult.equals(referenceResult)) {
@@ -493,7 +497,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param snapshotResult the result from the current snapshot.
    * @return A row that includes the comparison of the two results.
    */
-  private static @Nullable Row toCompareRow(Result snapshotResult, Result referenceResult) {
+  private static @Nullable Row toCompareRow(
+      Result<Bgpv4Route> snapshotResult, Result<Bgpv4Route> referenceResult) {
 
     if (referenceResult.equals(snapshotResult)) {
       return null;
