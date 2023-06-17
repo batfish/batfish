@@ -328,6 +328,7 @@ public class EdgesAnswererTest {
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
             .setLocalAs(1L)
+            .setRemoteAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     bgp1.getActiveNeighbors().put(ip2, activePeer1);
@@ -337,6 +338,7 @@ public class EdgesAnswererTest {
         BgpActivePeerConfig.builder()
             .setLocalIp(ip2)
             .setLocalAs(2L)
+            .setRemoteAs(1L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     bgp2.getActiveNeighbors().put(ip1, activePeer2);
@@ -350,6 +352,7 @@ public class EdgesAnswererTest {
         BgpUnnumberedPeerConfig.builder()
             .setPeerInterface(iface1)
             .setLocalAs(1L)
+            .setRemoteAs(2L)
             .setLocalIp(Ip.parse("169.254.0.1"))
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
@@ -360,6 +363,7 @@ public class EdgesAnswererTest {
         BgpUnnumberedPeerConfig.builder()
             .setPeerInterface(iface2)
             .setLocalAs(2L)
+            .setRemoteAs(1L)
             .setLocalIp(Ip.parse("169.254.0.1"))
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();

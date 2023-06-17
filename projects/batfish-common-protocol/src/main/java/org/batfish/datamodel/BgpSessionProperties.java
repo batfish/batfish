@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.computeAsPair;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.AsPair;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -389,7 +391,7 @@ public final class BgpSessionProperties {
         directionalSender.getReplaceNonLocalAsesOnExport());
   }
 
-  /** For test use only. Does not support confederations. */
+  /** For test use only. */
   @VisibleForTesting
   public static BgpSessionProperties from(
       BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
@@ -398,14 +400,23 @@ public final class BgpSessionProperties {
     long initiatorLocalAs = checkNotNull(initiator.getLocalAs());
     Ip initiatorLocalIp = checkNotNull(initiator.getLocalIp());
     long listenerLocalAs = checkNotNull(listener.getLocalAs());
+    AsPair asPair =
+        checkNotNull(
+            computeAsPair(
+                initiatorLocalAs,
+                initiator.getConfederationAsn(),
+                initiator.getRemoteAsns(),
+                listenerLocalAs,
+                listener.getConfederationAsn(),
+                listener.getRemoteAsns()));
     return from(
         initiator,
         initiatorLocalIp,
         listener,
         reverseDirection,
-        initiatorLocalAs,
-        listenerLocalAs,
-        ConfedSessionType.NO_CONFED);
+        asPair.getLocalAs(),
+        asPair.getRemoteAs(),
+        asPair.getConfedSessionType());
   }
 
   /** Computes whether two peers have compatible configuration to enable add-path */
@@ -446,15 +457,43 @@ public final class BgpSessionProperties {
    * @return a {@link SessionType} the initiator is configured to establish.
    */
   public static @Nonnull SessionType getSessionType(BgpPeerConfig initiator) {
-    if (initiator.getLocalAs() == null || initiator.getRemoteAsns().isEmpty()) {
+    LongSpace remoteAsns = initiator.getRemoteAsns();
+    if (initiator.getLocalAs() == null || remoteAsns.isEmpty()) {
       return SessionType.UNSET;
     }
+    if (initiator.getConfederationAsn() != null) {
+      // eBGP vs iBGP cases:
+      // 1. iBGP within confederation: Remote ASNs contains exactly the local (sub-confed) AS
+      // 2. iBGP across confederation boundary: Remote ASNs contains exactly the confederation AS
+      // 3. (either within or across confederation) eBGP: Remote ASNs contains anything else
+      // TODO: What if remote ASNs contains (local or confed AS) and also something else?
+      if (remoteAsns.equals(LongSpace.of(initiator.getLocalAs()))) {
+        return getSessionType(initiator, initiator.getLocalAs());
+      } else if (remoteAsns.equals(LongSpace.of(initiator.getConfederationAsn()))) {
+        return getSessionType(initiator, initiator.getConfederationAsn());
+      }
+    }
+    return getSessionType(initiator, initiator.getLocalAs());
+  }
+
+  /**
+   * Determine what type of session {@code initiator} is configured to establish under an assumption
+   * about which local AS it will use for peerings.
+   *
+   * @param initiator the {@link BgpPeerConfig} representing the connection initiator.
+   * @param initiatorAs the local AS the initiator is assumed to use
+   * @return a {@link SessionType} the initiator is configured to establish.
+   */
+  private static @Nonnull SessionType getSessionType(BgpPeerConfig initiator, long initiatorAs) {
+    assert initiator.getLocalAs() != null;
+    assert Objects.equals(initiatorAs, initiator.getLocalAs())
+        || Objects.equals(initiatorAs, initiator.getConfederationAsn());
     if (initiator instanceof BgpUnnumberedPeerConfig) {
-      return initiator.getRemoteAsns().equals(LongSpace.of(initiator.getLocalAs()))
+      return initiator.getRemoteAsns().equals(LongSpace.of(initiatorAs))
           ? SessionType.IBGP_UNNUMBERED
           : SessionType.EBGP_UNNUMBERED;
     }
-    return initiator.getRemoteAsns().equals(LongSpace.of(initiator.getLocalAs()))
+    return initiator.getRemoteAsns().equals(LongSpace.of(initiatorAs))
         ? SessionType.IBGP
         : initiator.getEbgpMultihop() ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP;
   }

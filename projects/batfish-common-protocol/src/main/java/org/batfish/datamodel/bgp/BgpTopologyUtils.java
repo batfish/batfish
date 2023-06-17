@@ -804,7 +804,7 @@ public final class BgpTopologyUtils {
 
   @Nullable
   @VisibleForTesting
-  static AsPair computeAsPair(
+  public static AsPair computeAsPair(
       @Nullable Long initiatorLocalAs,
       @Nullable Long initiatorConfed,
       @Nonnull LongSpace initiatorRemoteAsns,
@@ -887,7 +887,7 @@ public final class BgpTopologyUtils {
   }
 
   @VisibleForTesting
-  static final class AsPair {
+  public static final class AsPair {
     private final long _localAs;
     private final long _remoteAs;
     private final ConfedSessionType _confedSessionType;
