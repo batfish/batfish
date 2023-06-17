@@ -2,7 +2,6 @@ package org.batfish.minesweeper.question.searchroutepolicies;
 
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
-import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toQuestionResult;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toRow;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
@@ -83,6 +82,20 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Set<String> _communityRegexes;
   @Nonnull private final Set<String> _asPathRegexes;
 
+  /**
+   * Some route-map statements, notably setting the next hop to the address of the BGP peer, require
+   * a BgpSessionProperties object to exist in the environment. For our purposes the specific
+   * property values can be anything, so we use this dummy object.
+   */
+  @Nonnull
+  public static BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
+      BgpSessionProperties.builder()
+          .setLocalAs(1)
+          .setLocalIp(Ip.parse("1.1.1.1"))
+          .setRemoteAs(2)
+          .setRemoteIp(Ip.parse("2.2.2.2"))
+          .build();
+
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
     _direction = question.getDirection();
@@ -158,12 +171,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
           TestRoutePoliciesAnswerer.simulatePolicy(
               policy,
               inRoute,
-              BgpSessionProperties.builder()
-                  .setLocalAs(1)
-                  .setLocalIp(Ip.parse("1.1.1.1"))
-                  .setRemoteAs(2)
-                  .setRemoteIp(Ip.parse("2.2.2.2"))
-                  .build(),
+              DUMMY_BGP_SESSION_PROPERTIES,
               _direction,
               env.getFirst(),
               env.getSecond());
@@ -177,32 +185,35 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       // result.
       assert result.getAction().equals(_action);
 
-      Result<BgpRoute> qResult = toQuestionResult(result);
-
-      if (_action == PERMIT) {
-        // update the output route's next-hop if it was set to the local or remote IP;
-        // rather than producing a concrete IP we use a special class that indicates that the
-        // local (remote) IP is used
-        switch (outputRoute.getNextHopType()) {
-          case SELF:
-            BgpRoute outRouteSelf =
-                qResult.getOutputRoute().toBuilder().setNextHop(NextHopSelf.instance()).build();
-            qResult = qResult.setOutputRoute(outRouteSelf);
-            break;
-          case BGP_PEER_ADDRESS:
-            BgpRoute outRoutePeer =
-                qResult.getOutputRoute().toBuilder()
-                    .setNextHop(NextHopBgpPeerAddress.instance())
-                    .build();
-            qResult = qResult.setOutputRoute(outRoutePeer);
-            break;
-          default:
-            break;
-        }
-      }
-
-      return Optional.of(toRow(qResult));
+      return Optional.of(toRow(toQuestionResult(result, outputRoute)));
     }
+  }
+
+  public static Result<BgpRoute> toQuestionResult(Result<Bgpv4Route> result, BDDRoute outputRoute) {
+    Result<BgpRoute> qResult = TestRoutePoliciesAnswerer.toQuestionResult(result);
+
+    if (result.getAction() == PERMIT) {
+      // update the output route's next-hop if it was set to the local or remote IP;
+      // rather than producing a concrete IP we use a special class that indicates that the
+      // local (remote) IP is used
+      switch (outputRoute.getNextHopType()) {
+        case SELF:
+          BgpRoute outRouteSelf =
+              qResult.getOutputRoute().toBuilder().setNextHop(NextHopSelf.instance()).build();
+          qResult = qResult.setOutputRoute(outRouteSelf);
+          break;
+        case BGP_PEER_ADDRESS:
+          BgpRoute outRoutePeer =
+              qResult.getOutputRoute().toBuilder()
+                  .setNextHop(NextHopBgpPeerAddress.instance())
+                  .build();
+          qResult = qResult.setOutputRoute(outRoutePeer);
+          break;
+        default:
+          break;
+      }
+    }
+    return qResult;
   }
 
   private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {

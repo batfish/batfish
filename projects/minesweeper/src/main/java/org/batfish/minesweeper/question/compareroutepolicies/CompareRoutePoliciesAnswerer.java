@@ -4,7 +4,6 @@ import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnvironment;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
-import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.diffRowResultsFor;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -30,6 +29,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
@@ -40,7 +40,9 @@ import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.BDDRouteDiff;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
+import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer;
 import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -105,13 +107,32 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @return the concrete input route and, if the desired action is PERMIT, the concrete output
    *     routes resulting from analyzing the given policies.
    */
-  private Row computeDifferencesForInputs(
+  private Tuple<Result<BgpRoute>, Result<BgpRoute>> computeDifferencesForInputs(
       RoutingPolicy referencePolicy,
       RoutingPolicy policy,
       Bgpv4Route inRoute,
-      Tuple<Predicate<String>, String> env) {
-    return diffRowResultsFor(
-        referencePolicy, policy, inRoute, null, _direction, env.getFirst(), env.getSecond());
+      Tuple<Predicate<String>, String> env,
+      BDDRoute outputRoutes,
+      BDDRoute outputRoutesOther) {
+    Result<Bgpv4Route> r1 =
+        TestRoutePoliciesAnswerer.simulatePolicy(
+            policy,
+            inRoute,
+            SearchRoutePoliciesAnswerer.DUMMY_BGP_SESSION_PROPERTIES,
+            _direction,
+            env.getFirst(),
+            env.getSecond());
+    Result<Bgpv4Route> r2 =
+        TestRoutePoliciesAnswerer.simulatePolicy(
+            referencePolicy,
+            inRoute,
+            SearchRoutePoliciesAnswerer.DUMMY_BGP_SESSION_PROPERTIES,
+            _direction,
+            env.getFirst(),
+            env.getSecond());
+    Result<BgpRoute> qRoute1 = SearchRoutePoliciesAnswerer.toQuestionResult(r1, outputRoutesOther);
+    Result<BgpRoute> qRoute2 = SearchRoutePoliciesAnswerer.toQuestionResult(r2, outputRoutes);
+    return new Tuple<>(qRoute1, qRoute2);
   }
 
   /**
@@ -219,7 +240,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   private List<Row> comparePolicies(
       RoutingPolicy referencePolicy, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     // The set of differences if any.
-    List<BDD> differences = new ArrayList<>();
+    List<Tuple<Result<BgpRoute>, Result<BgpRoute>>> differences = new ArrayList<>();
 
     BDDFactory factory = JFactory.init(100000, 10000);
     TransferBDD tBDD = new TransferBDD(factory, configAPs, referencePolicy);
@@ -250,7 +271,17 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         if (!intersection.isZero()) {
           // Naive check to see if both policies accepted/rejected the route(s).
           if (path.getAccepted() != otherPath.getAccepted()) {
-            differences.add(intersection);
+            Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
+                constraintsToInputs(intersection, configAPs);
+            Tuple<Result<BgpRoute>, Result<BgpRoute>> results =
+                computeDifferencesForInputs(
+                    referencePolicy,
+                    policy,
+                    t.getFirst(),
+                    t.getSecond(),
+                    path.getFirst(),
+                    otherPath.getFirst());
+            differences.add(results);
           } else {
             // If both policies perform the same action, then check that their outputs match.
             // We compute the outputs of interest, by restricting the sets of output routes to the
@@ -265,7 +296,17 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
               BDD outputConstraints =
                   counterExampleOutputConstraints(factory, diff, outputRoutes, outputRoutesOther);
               if (!diff.isEmpty()) {
-                differences.add(intersection.and(outputConstraints));
+                Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
+                    constraintsToInputs(intersection.and(outputConstraints), configAPs);
+                Tuple<Result<BgpRoute>, Result<BgpRoute>> results =
+                    computeDifferencesForInputs(
+                        referencePolicy,
+                        policy,
+                        t.getFirst(),
+                        t.getSecond(),
+                        outputRoutes,
+                        outputRoutesOther);
+                differences.add(results);
               }
             }
           }
@@ -273,9 +314,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       }
     }
     return differences.stream()
-        .map(intersection -> constraintsToInputs(intersection, configAPs))
-        .sorted(Comparator.comparing(t -> t.getFirst().getNetwork()))
-        .map(t -> computeDifferencesForInputs(referencePolicy, policy, t.getFirst(), t.getSecond()))
+        .sorted(Comparator.comparing(t -> t.getFirst().getInputRoute().getNetwork()))
+        .map(t -> TestRoutePoliciesAnswerer.toCompareRow(t.getFirst(), t.getSecond()))
         .collect(Collectors.toList());
   }
 

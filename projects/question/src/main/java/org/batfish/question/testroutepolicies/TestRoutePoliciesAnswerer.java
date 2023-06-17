@@ -113,21 +113,6 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param direction whether the policy is used on import or export (IN or OUT)
    * @return a table row containing the differences of the simulation
    */
-  public static Row diffRowResultsFor(
-      RoutingPolicy referencePolicy,
-      RoutingPolicy proposedPolicy,
-      Bgpv4Route inputRoute,
-      BgpSessionProperties properties,
-      Direction direction,
-      Predicate<String> successfulTracks,
-      @Nullable String sourceVrf) {
-    return toCompareRow(
-        simulatePolicy(
-            proposedPolicy, inputRoute, properties, direction, successfulTracks, sourceVrf),
-        simulatePolicy(
-            referencePolicy, inputRoute, properties, direction, successfulTracks, sourceVrf));
-  }
-
   private static Result<Bgpv4Route> simulatePolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
     return simulatePolicy(policy, inputRoute, null, direction, null, null);
@@ -497,17 +482,16 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param snapshotResult the result from the current snapshot.
    * @return A row that includes the comparison of the two results.
    */
-  private static @Nullable Row toCompareRow(
-      Result<Bgpv4Route> snapshotResult, Result<Bgpv4Route> referenceResult) {
+  public static @Nullable Row toCompareRow(
+      Result<BgpRoute> snapshotResult, Result<BgpRoute> referenceResult) {
 
     if (referenceResult.equals(snapshotResult)) {
       return null;
     }
 
     org.batfish.datamodel.questions.BgpRoute referenceOutputRoute =
-        toQuestionsBgpRoute(referenceResult.getOutputRoute());
-    org.batfish.datamodel.questions.BgpRoute snapshotOutputRoute =
-        toQuestionsBgpRoute(snapshotResult.getOutputRoute());
+        referenceResult.getOutputRoute();
+    org.batfish.datamodel.questions.BgpRoute snapshotOutputRoute = snapshotResult.getOutputRoute();
 
     boolean equalAction = referenceResult.getAction() == snapshotResult.getAction();
     boolean equalOutputRoutes = Objects.equals(referenceOutputRoute, snapshotOutputRoute);
@@ -518,12 +502,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     RoutingPolicyId referencePolicyId = referenceResult.getPolicyId();
     RoutingPolicyId policyId = snapshotResult.getPolicyId();
-    Bgpv4Route inputRoute = referenceResult.getInputRoute();
+    BgpRoute inputRoute = referenceResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
         .put(COL_REFERENCE_POLICY_NAME, referencePolicyId.getPolicy())
-        .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
+        .put(COL_INPUT_ROUTE, inputRoute)
         .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
         .put(baseColumnName(COL_ACTION), snapshotResult.getAction())
         .put(deltaColumnName(COL_OUTPUT_ROUTE), referenceOutputRoute)
