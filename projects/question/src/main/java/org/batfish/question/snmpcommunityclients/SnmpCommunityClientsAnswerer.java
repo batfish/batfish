@@ -7,8 +7,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
+import java.util.List;
+import java.util.Optional;
+import java.util.SortedMap;
 import net.sf.javabdd.BDD;
-
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
@@ -29,10 +31,6 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.SpecifierContext;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedMap;
 
 /** An answerer for {@link SnmpCommunityClientsQuestion}. */
 public class SnmpCommunityClientsAnswerer extends Answerer {

@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
