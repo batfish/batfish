@@ -7,7 +7,7 @@
     "instance": {
         "description": "Checks if an SNMP community permits specified client IPs.",
         "instanceName": "snmpCommunityClients",
-        "longDescription": "This question checks if the specified SNMP community permits the specified client IPs on specified nodes. For each device, it reports if the community does not exist or the set of permitted IPs does not match those specified in the question. If the community exists and permits exactly the specified client IPs, the device is not included in the output. The question currently only supports Arista, Cisco-NXOS, and Juniper devices. For all others, it will report an UNSUPPORTED_DEVICE status in the output.",
+        "longDescription": "This question checks if the specified SNMP community permits the specified client IPs on specified devices. It reports if any device does not have the community or the set of permitted client IPs by the community does not match those specified in the question. If the community exists and permits exactly the specified client IPs, the device is not included in the output. The question currently only supports Arista, Cisco-NXOS, and Juniper devices. For all others, it will report an UNSUPPORTED_DEVICE status in the output.",
         "orderedVariableNames": [
             "community",
             "clients",
