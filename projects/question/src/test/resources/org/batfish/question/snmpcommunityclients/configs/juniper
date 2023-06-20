@@ -1,0 +1,8 @@
+#RANCID-CONTENT-TYPE: juniper
+#
+set system host-name juniper
+#
+set policy-options prefix-list SNMP_ACCESS_LIST 1.2.3.4/32
+#
+set snmp community COMM client-list-name SNMP_ACCESS_LIST
+#
