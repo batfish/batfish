@@ -27,10 +27,11 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.bgp.community.Community;
 
 /** A representation of one difference between two routes. */
 @ParametersAreNonnullByDefault
-public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
+public class BgpRouteDiff implements Comparable<BgpRouteDiff> {
   private static final String PROP_FIELD_NAME = "fieldName";
   private static final String PROP_OLD_VALUE = "oldValue";
   private static final String PROP_NEW_VALUE = "newValue";
@@ -138,7 +139,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
 
     return Stream.of(
             routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
-            routeDiff(route1, route2, PROP_COMMUNITIES, BgpRoute::getCommunities),
+            communityRouteDiff(route1, route2, BgpRoute::getCommunities),
             routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
             routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
             routeDiff(route1, route2, PROP_NEXT_HOP_IP, BgpRoute::getNextHopIp),
@@ -165,6 +166,13 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
         : Optional.of(
             new BgpRouteDiff(
                 name, o1 == null ? "null" : o1.toString(), o2 == null ? "null" : o2.toString()));
+  }
+
+  private static Optional<BgpRouteCommunityDiff> communityRouteDiff(
+      BgpRoute route1, BgpRoute route2, Function<BgpRoute, SortedSet<Community>> getter) {
+    SortedSet<Community> cs1 = getter.apply(route1);
+    SortedSet<Community> cs2 = getter.apply(route2);
+    return cs1.equals(cs2) ? Optional.empty() : Optional.of(new BgpRouteCommunityDiff(cs1, cs2));
   }
 
   @Override
